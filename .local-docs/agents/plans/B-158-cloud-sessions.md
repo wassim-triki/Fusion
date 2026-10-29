@@ -143,6 +143,6 @@ The team is gone after the internship, so the user's fork becomes the project's 
 | `cloud-session.sh` | clean in 22 s: links, deps from a cold store; dotnet 10.0.403, node 22.22.0, pnpm 10.33.0 |
 | Instructions | `CLAUDE.md` → AGENTS.md loaded once the repo was registered; MEMORY.md read |
 | Branch | `claude/b-161-cloud-pilot-part-2` from `origin/wassim/develop` |
-| Push / PR | branch pushed to the fork (`origin`) and PR opened into `wassim/develop` from the session; no 403 |
+| Push / PR | branch pushed to the fork (`origin`), no 403; PR [wassim-triki/Fusion#1](https://github.com/wassim-triki/Fusion/pull/1) into `wassim/develop`. `gh pr create` is refused (GraphQL blocked in cloud sessions): open PRs with `gh api repos/wassim-triki/Fusion/pulls -f base=… -f head=… -f title=… -F body=@file` |
 
 Fix: setup's `~/.claude/CLAUDE.md` now starts with a step for a session without a clone (attach `wassim-triki/Fusion`, clone `wassim/develop` to `/home/user/fusion`). Re-paste `setup.sh` into the environment for it to take effect. The lasting fix is on the user's side: attach the repository when starting a session.

@@ -12,6 +12,7 @@ Decided 2026-10-29 (B-158, plan `.local-docs/agents/plans/B-158-cloud-sessions.m
 
 - Repo home is the user's fork `wassim-triki/Fusion` (`origin`, default branch `wassim/develop`); the internship org repo is `upstream`, read-only (the user isn't an org admin and the team is gone after the internship).
 - Cloud does code, backend tests, frontend checks; pushes its own branch and opens a PR into `wassim/develop` (user merges). Stack, journeys and screens stay local; `claude --teleport` picks a session up (same account only).
+- In a cloud session `gh pr create` fails (GraphQL blocked); open PRs through REST: `gh api repos/wassim-triki/Fusion/pulls -f base=wassim/develop -f head=<branch> -f title=… -F body=@file`. Sessions may start with no repo attached: attach the fork and clone `wassim/develop`.
 - Switching Claude accounts mid-task is a handoff through the pushed branch and STATE, not a continuation; push before stepping away so the cloud sees the latest work.
 
 **Why:** the user wants work possible away from the PC without making it the main flow, and the org repo has no future after the internship.

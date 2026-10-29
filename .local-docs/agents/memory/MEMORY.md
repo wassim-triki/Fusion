@@ -97,6 +97,7 @@
 - [i18n speed mode](i18n-speed-mode.md) — after B-118: FR+AR just working, few demo screens, no polish; B-119 then B-115 lean.
 - [Name items, not just IDs](name-items-not-just-ids.md) — in replies say what B-NNN / a change is in plain words; bare IDs lose the user.
 - [Commit hook + message shape](commit-hook-and-message-shape.md) — pre-commit = full Frontend lint+type-check (minutes, background it); blank line after the subject.
+- [Prettier reflows whole files](prettier-reflows-whole-files.md) — `.prettierrc` is 80 cols, code is ~120+; prettier only new files.
 - [No cosmetic history rewrites](no-cosmetic-history-rewrites.md) — leave commits as they are unless it matters; don't raise cosmetic slips.
 - [Fresh session for applies](fresh-session-for-applies.md) — every apply/coding task starts in a new session; write a cold-pickup recipe into STATE first.
 - [Build speed mode](build-speed-mode.md) — scoped tests while building, full checks once, one commit per session, chunk-sized sessions; never cut authz/isolation tests (AGENTS.md › Build speed).

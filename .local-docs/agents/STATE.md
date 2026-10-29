@@ -6,15 +6,15 @@ Lets any agent resume mid-task. Update after each step. When done: log to `LOG.m
 
 ## Active work
 
-None.
+**B-156** Language and theme switchers back in the top bar, beside the bell. Set 2026-10-29; not started: the next session picks it up cold.
 
 ## Goal
 
-None.
+User 2026-10-29: "why is it removed from quick access where it lived beside the notification bell … bring it back along with the theme switcher". Both left the top bar for Settings › Preferences in B-071; they come back to the top bar (keep Preferences as is). Implementation left open (user: "leave the implementation details fresh").
 
 ## Plan & progress
 
-None.
+Cold pickup: read DESIGN.md (top bar, menus), then the top bar `packages/ds/src/shell/top-bar.tsx` and its hosts (shell `features/settings/settings-frame.tsx`, `features/home/fusion-home.tsx`, core `src/shell/core-pages-shell.tsx`, performance `src/shell/performance-pages-shell.tsx`; the bell sits in each). What exists: `ThemeToggle` in `packages/ds/src/shell/theme.tsx` (Light/System/Dark menu, kept "for other hosts"); the language choice lives in shell `features/settings/preferences.tsx` (`useLanguage`, saved on the account, NEXT_LOCALE, refetches the bell) — `useLanguage` comes from `@repo/auth`, so every app can reach it, since the switcher must work in every app's top bar. Check git history for the B-071 removal (pre-B-071 top bar) for the old placement. Then write the plan here before the first edit. Verify: type-check/lint/test of ds + each host, cold build (layouts change), screens on request only (dark, 1440×900). UI → In review.
 
 ## Decisions & reasoning
 

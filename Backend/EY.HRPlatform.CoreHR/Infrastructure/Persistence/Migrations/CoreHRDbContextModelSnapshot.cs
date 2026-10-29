@@ -113,6 +113,38 @@ namespace EY.HRPlatform.CoreHR.Infrastructure.Persistence.Migrations
                     b.ToTable("CoreNotifications", "corehr");
                 });
 
+            modelBuilder.Entity("EY.HRPlatform.CoreHR.Domain.Entities.CoreNotificationDefaults", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.PrimitiveCollection<List<string>>("Off")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.PrimitiveCollection<List<string>>("Required")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .IsUnique();
+
+                    b.ToTable("CoreNotificationDefaults", "corehr");
+                });
+
             modelBuilder.Entity("EY.HRPlatform.CoreHR.Domain.Entities.CoreNotificationPreference", b =>
                 {
                     b.Property<Guid>("Id")
@@ -120,6 +152,10 @@ namespace EY.HRPlatform.CoreHR.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.PrimitiveCollection<List<string>>("EmailOff")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.PrimitiveCollection<List<string>>("EmailOn")
                         .IsRequired()
                         .HasColumnType("text[]");
 

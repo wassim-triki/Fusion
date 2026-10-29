@@ -40,14 +40,13 @@ public sealed class PerformanceNotificationDispatcher(PerformanceDbContext db, I
     /// <summary>The in-app record the email is worded from is gone (purged, or never staged).</summary>
     public const string NoNotification = "no-notification";
 
-    /// <summary>Deadline reminders are always emailed; any other group follows the recipient's choice (B-071 D8).</summary>
-    private async Task<bool> OptedOutAsync(PerformanceOutboxMessage message, CancellationToken cancellationToken)
+    /// <summary>The kind's group follows the company's mode and the recipient's choice against it (B-002 N7).</summary>
+    private async Task<bool> OptedOutAsync(PerformanceOutboxMessage message, NotificationDefaults? defaults, CancellationToken cancellationToken)
     {
         var group = NotificationGroups.Of(message.Kind);
-        if (NotificationGroups.IsLocked(group) || message.RecipientEmployeeId == Guid.Empty) return false;
-        var preference = await db.NotificationPreferences.AsNoTracking()
+        var preference = message.RecipientEmployeeId == Guid.Empty ? null : await db.NotificationPreferences.AsNoTracking()
             .FirstOrDefaultAsync(row => row.RecipientEmployeeId == message.RecipientEmployeeId, cancellationToken);
-        return preference is not null && !preference.EmailsGroup(group);
+        return !NotificationPreference.EmailsGroup(preference, defaults, group);
     }
 
     public async Task DispatchAsync(PerformanceOutboxMessage message, DateTime now, CancellationToken cancellationToken)
@@ -55,8 +54,9 @@ public sealed class PerformanceNotificationDispatcher(PerformanceDbContext db, I
         if (!tenant.IsResolved || tenant.TenantId != message.TenantId)
             throw new InvalidOperationException("Notification dispatch requires the message's tenant context.");
         if (!message.IsPending || message.NextAttemptAt > now) return;
+        var defaults = await db.NotificationDefaults.AsNoTracking().FirstOrDefaultAsync(cancellationToken);
         if (!options.Value.Enabled) message.Skip("disabled");
-        else if (await OptedOutAsync(message, cancellationToken)) message.Skip(RecipientOptedOut);
+        else if (await OptedOutAsync(message, defaults, cancellationToken)) message.Skip(RecipientOptedOut);
         else
         {
             try
@@ -73,9 +73,9 @@ public sealed class PerformanceNotificationDispatcher(PerformanceDbContext db, I
                     var config = options.Value;
                     var reader = await audience.ReadAsync([message.RecipientEmployeeId], cancellationToken);
                     var content = PerformanceNotificationRenderer.Email(notification, reader.LanguageOf(message.RecipientEmployeeId),
-                        config.ShellBaseUrl, reader.TenantName);
+                        config.ShellBaseUrl, reader.TenantName, defaults);
                     await sender.SendAsync(new FusionOutgoingEmail(email, content, $"<{message.Id:N}@fusion-performance>",
-                        PerformanceNotificationRenderer.UnsubscribeUrl(message, config.ShellBaseUrl, config.UnsubscribeKey)), cancellationToken);
+                        PerformanceNotificationRenderer.UnsubscribeUrl(message, config.ShellBaseUrl, config.UnsubscribeKey, defaults)), cancellationToken);
                     message.MarkDispatched(PerformanceClock.UtcNow);
                 }
             }

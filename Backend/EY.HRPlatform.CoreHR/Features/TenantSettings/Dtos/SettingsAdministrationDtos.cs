@@ -8,6 +8,7 @@ public static class CoreSettingsSectionIds
     public const string Roles = "roles";
     public const string Invitations = "invitations";
     public const string ChangeHistory = "change-history";
+    public const string Notifications = "notifications";
 }
 
 /// <summary>The section ids recorded on <c>SettingsAuditEvent</c>, kept so existing history still attributes.</summary>
@@ -20,6 +21,7 @@ public static class SettingsSectionIds
     public const string AccessPermissions = "access-permissions";
     public const string Provisioning = "provisioning";
     public const string Governance = "governance";
+    public const string Notifications = "notifications";
 }
 
 public sealed record OrganizationSettingsDto(

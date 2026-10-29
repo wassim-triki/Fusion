@@ -17,7 +17,7 @@ namespace EY.HRPlatform.Performance.Features.Notifications;
 /// <summary>One line of a group, covering one or more kinds. <paramref name="Team"/> marks work about the caller's team.</summary>
 public sealed record NotificationPreferenceItemDto(string Label, bool Team, bool Always, int Count);
 
-/// <summary>A group with the caller's email choice. <paramref name="Locked"/> groups are always emailed.</summary>
+/// <summary>A group with the caller's email choice. <paramref name="Locked"/> groups are required by the company.</summary>
 public sealed record NotificationPreferenceGroupDto(string Key, string Label, string Summary, bool Email, bool Locked, int Count,
     IReadOnlyList<NotificationPreferenceItemDto> Items);
 
@@ -102,7 +102,12 @@ public static class NotificationPreferenceCatalog
     public static IEnumerable<(string Group, Kind Kind)> Listed()
         => Groups.SelectMany(group => group.Lines.SelectMany(line => line.Kinds.Select(kind => (group.Key, kind))));
 
-    public static IReadOnlyList<NotificationPreferenceGroupDto> For(NotificationAudience audience, NotificationPreference? preference)
+    /// <summary>A group's English name and the summary everyone reads, for the company's settings page.</summary>
+    public static (string Label, string Summary) Describe(string key)
+        => Groups.Single(group => group.Key == key) is var group ? (group.Label, group.Summary) : default;
+
+    public static IReadOnlyList<NotificationPreferenceGroupDto> For(NotificationAudience audience, NotificationPreference? preference,
+        NotificationDefaults? defaults)
         => Groups.Select(group =>
         {
             var items = group.Lines
@@ -113,12 +118,13 @@ public static class NotificationPreferenceCatalog
                     _ => true,
                 })
                 .Select(line => new NotificationPreferenceItemDto(line.Label, line.Audience != Reader.Everyone,
-                    line.Kinds.All(kind => NotificationGroups.IsLocked(NotificationGroups.Of(kind))), line.Kinds.Length))
+                    line.Kinds.All(kind => Required(NotificationGroups.Of(kind))), line.Kinds.Length))
                 .ToList();
-            var locked = NotificationGroups.IsLocked(group.Key);
             return new NotificationPreferenceGroupDto(group.Key, group.Label,
                 audience.LeadsPeople ? group.LeaderSummary : group.Summary,
-                locked || preference?.EmailsGroup(group.Key) != false, locked, items.Sum(item => item.Count), items);
+                NotificationPreference.EmailsGroup(preference, defaults, group.Key), Required(group.Key), items.Sum(item => item.Count), items);
+
+            bool Required(string key) => NotificationDefaults.ModeOf(defaults, key) == NotificationEmailMode.Required;
         }).ToList();
 }
 
@@ -133,9 +139,10 @@ internal static class NotificationPreferences
                 : Task.FromResult<NotificationPreference?>(null);
 
     public static async Task<NotificationPreferencesDto> ProjectAsync(ICoreWorkforceClient workforce, NotificationRecipient recipient,
-        NotificationAudience audience, string? accountEmail, NotificationPreference? preference, CancellationToken token)
+        NotificationAudience audience, string? accountEmail, NotificationPreference? preference, NotificationDefaults? defaults,
+        CancellationToken token)
         => new(await EmailAddressAsync(workforce, recipient, accountEmail, token),
-            NotificationPreferenceCatalog.For(audience, preference), preference?.Version ?? 0);
+            NotificationPreferenceCatalog.For(audience, preference, defaults), preference?.Version ?? 0);
 
     /// <summary>Where Performance emails go: the Core work email for an employee (as dispatch resolves it), else the account.</summary>
     private static async Task<string?> EmailAddressAsync(ICoreWorkforceClient workforce, NotificationRecipient recipient,
@@ -160,7 +167,8 @@ public sealed class GetNotificationPreferencesHandler(PerformanceDbContext db, I
     public async Task<Result<NotificationPreferencesDto>> Handle(GetNotificationPreferencesQuery query, CancellationToken token)
     {
         var preference = await NotificationPreferences.FindAsync(db, query.Recipient, token);
-        return await NotificationPreferences.ProjectAsync(workforce, query.Recipient, query.Audience, query.AccountEmail, preference, token);
+        var defaults = await db.NotificationDefaults.AsNoTracking().FirstOrDefaultAsync(token);
+        return await NotificationPreferences.ProjectAsync(workforce, query.Recipient, query.Audience, query.AccountEmail, preference, defaults, token);
     }
 }
 
@@ -175,6 +183,7 @@ public sealed class UpdateNotificationPreferencesHandler(PerformanceDbContext db
                 "Performance.CapabilityForbidden", "You do not have permission to do this."));
 
         var preference = await NotificationPreferences.FindAsync(db, recipient, token);
+        var defaults = await db.NotificationDefaults.AsNoTracking().FirstOrDefaultAsync(token);
         if (preference is null)
         {
             if (command.Request.ExpectedVersion != 0) return Result.Failure<NotificationPreferencesDto>(PerformanceErrors.Changed());
@@ -188,7 +197,7 @@ public sealed class UpdateNotificationPreferencesHandler(PerformanceDbContext db
 
         try
         {
-            preference.SetEmailOff(command.Request.EmailOff ?? []);
+            preference.SetEmailOff(command.Request.EmailOff ?? [], defaults);
         }
         catch (ArgumentException ex)
         {
@@ -196,7 +205,7 @@ public sealed class UpdateNotificationPreferencesHandler(PerformanceDbContext db
         }
 
         await db.SaveChangesAsync(token);
-        return await NotificationPreferences.ProjectAsync(workforce, recipient, command.Audience, command.AccountEmail, preference, token);
+        return await NotificationPreferences.ProjectAsync(workforce, recipient, command.Audience, command.AccountEmail, preference, defaults, token);
     }
 }
 
@@ -205,7 +214,8 @@ public sealed record UnsubscribeFromEmailGroupCommand(string? Token) : ICommand<
 
 /// <summary>
 /// Turns off the one email group the signed link names, for the person it was sent to. No sign-in: the token's
-/// signature is the authority, and it can only ever turn email off, never on or anything else.
+/// signature is the authority, and it can only ever turn email off, never on or anything else. A group the company
+/// requires (now, or since the email was sent) can't be turned off.
 /// </summary>
 public sealed class UnsubscribeFromEmailGroupHandler(PerformanceDbContext db, TenantContext tenant,
     IOptions<PerformanceNotificationOptions> options) : ICommandHandler<UnsubscribeFromEmailGroupCommand, Result<bool>>
@@ -214,19 +224,23 @@ public sealed class UnsubscribeFromEmailGroupHandler(PerformanceDbContext db, Te
     {
         var key = options.Value.UnsubscribeKey;
         var claim = string.IsNullOrWhiteSpace(key) ? null : UnsubscribeToken.Read(command.Token, key);
-        if (claim is null || !NotificationGroups.Optional.Contains(claim.Group)
+        if (claim is null || !NotificationGroups.All.Contains(claim.Group)
             || (tenant.IsResolved && tenant.TenantId != claim.TenantId))
             return Result.Failure<bool>(PerformanceErrors.Validation(PerformanceErrors.Codes.NotificationPreferencesInvalid,
                 "This unsubscribe link isn't valid."));
         if (!tenant.IsResolved) tenant.SetTenant(claim.TenantId);
 
+        var defaults = await db.NotificationDefaults.AsNoTracking().FirstOrDefaultAsync(token);
+        if (NotificationDefaults.ModeOf(defaults, claim.Group) == NotificationEmailMode.Required)
+            return Result.Failure<bool>(PerformanceErrors.Validation(PerformanceErrors.Codes.NotificationPreferencesInvalid,
+                "Your company requires this email."));
         var preference = await db.NotificationPreferences.FirstOrDefaultAsync(row => row.RecipientEmployeeId == claim.RecipientEmployeeId, token);
         if (preference is null)
         {
             preference = NotificationPreference.For(claim.TenantId, claim.RecipientEmployeeId, null);
             db.NotificationPreferences.Add(preference);
         }
-        preference.SetEmailOff([.. preference.EmailOff, claim.Group]);
+        preference.TurnOff(claim.Group, defaults);
         await db.SaveChangesAsync(token);
         return Result.Success(true);
     }

@@ -37,6 +37,7 @@ public static class PerformanceAuditActions
     public const string PraiseDeleted = "Praise.Deleted";
     public const string SettingsChanged = "Settings.Changed";
     public const string RatingScaleChanged = "RatingScale.Changed";
+    public const string NotificationDefaultsChanged = "NotificationDefaults.Changed";
     public const string CompetencyCreated = "Competency.Created";
     public const string CompetencyChanged = "Competency.Changed";
     public const string CompetencyArchived = "Competency.Archived";

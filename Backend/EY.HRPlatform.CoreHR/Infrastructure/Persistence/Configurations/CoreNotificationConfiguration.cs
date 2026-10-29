@@ -42,8 +42,24 @@ public sealed class CoreNotificationPreferenceConfiguration : IEntityTypeConfigu
         builder.Property(preference => preference.TenantId).IsRequired();
         builder.Property(preference => preference.RecipientEmployeeId).IsRequired();
         builder.Property(preference => preference.EmailOff).IsRequired();
+        builder.Property(preference => preference.EmailOn).IsRequired();
         builder.Property(preference => preference.Version).IsConcurrencyToken();
         builder.HasIndex(preference => new { preference.TenantId, preference.RecipientEmployeeId }).IsUnique()
             .HasDatabaseName("IX_CoreNotificationPreferences_TenantId_Recipient");
+    }
+}
+
+public sealed class CoreNotificationDefaultsConfiguration : IEntityTypeConfiguration<CoreNotificationDefaults>
+{
+    public void Configure(EntityTypeBuilder<CoreNotificationDefaults> builder)
+    {
+        builder.ToTable("CoreNotificationDefaults");
+        builder.HasKey(defaults => defaults.Id);
+        builder.Property(defaults => defaults.TenantId).IsRequired();
+        builder.Property(defaults => defaults.Required).IsRequired();
+        builder.Property(defaults => defaults.Off).IsRequired();
+        builder.Property(defaults => defaults.Version).IsConcurrencyToken();
+        // One row per tenant.
+        builder.HasIndex(defaults => defaults.TenantId).IsUnique();
     }
 }

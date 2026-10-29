@@ -46,6 +46,8 @@ public sealed class SettingsSectionRegistry(
             (policy, user) => policy.CanViewAccessProfiles(user), (policy, user) => policy.CanManageAccessProfiles(user)),
         new(CoreSettingsSectionIds.Invitations, "Invitations", SettingsSectionIds.Provisioning,
             (policy, user) => policy.CanViewProvisioningSettings(user), (policy, user) => policy.CanManageProvisioningSettings(user)),
+        new(CoreSettingsSectionIds.Notifications, "Notifications", SettingsSectionIds.Notifications,
+            (policy, user) => policy.CanViewOrganizationSettings(user), (policy, user) => policy.CanManageOrganizationSettings(user)),
         new(CoreSettingsSectionIds.ChangeHistory, "Change history", null,
             (policy, user) => policy.CanViewGovernanceSettings(user), null),
     ];
@@ -82,6 +84,9 @@ public sealed class SettingsSectionRegistry(
         var setUpAt = await dbContext.TenantSettings.AsNoTracking()
             .Select(settings => (DateTime?)settings.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken);
+        var notificationsSetUpAt = visible.Any(section => section.Id == CoreSettingsSectionIds.Notifications)
+            ? await dbContext.NotificationDefaults.AsNoTracking().Select(defaults => (DateTime?)defaults.CreatedAt).FirstOrDefaultAsync(cancellationToken)
+            : null;
 
         return visible.Select(section =>
         {
@@ -91,7 +96,16 @@ public sealed class SettingsSectionRegistry(
                 : null;
             if (section.Id == CoreSettingsSectionIds.Roles && roleChange is not null && (change is null || roleChange.OccurredAt > change.At))
                 change = new FusionSettingsLastChangeDto(roleChange.OccurredAt, ActorName(roleChange.ActorName));
-            return section with { LastChange = change, SetUpAt = auditId is null or SettingsSectionIds.AccessPermissions ? null : setUpAt };
+            return section with
+            {
+                LastChange = change,
+                SetUpAt = auditId switch
+                {
+                    null or SettingsSectionIds.AccessPermissions => null,
+                    SettingsSectionIds.Notifications => notificationsSetUpAt,
+                    _ => setUpAt,
+                },
+            };
         }).ToList();
     }
 

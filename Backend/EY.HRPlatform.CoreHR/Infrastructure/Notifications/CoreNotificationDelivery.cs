@@ -34,7 +34,9 @@ public static class CoreNotificationRenderer
         return (title, string.IsNullOrWhiteSpace(context) ? null : context);
     }
 
-    public static RenderedEmail Email(CoreNotification notification, string language, string shellBaseUrl, string companyName)
+    /// <summary>The email for one reader. <paramref name="defaults"/> are the company's modes (null: Fusion's).</summary>
+    public static RenderedEmail Email(CoreNotification notification, string language, string shellBaseUrl, string companyName,
+        CoreNotificationDefaults? defaults = null)
     {
         if (!Uri.TryCreate(shellBaseUrl, UriKind.Absolute, out var shell) || shell.Scheme is not ("https" or "http"))
             throw new InvalidOperationException("Notifications:ShellBaseUrl must be an absolute shell URL.");
@@ -51,13 +53,16 @@ public static class CoreNotificationRenderer
             new NotificationEmailText(Part("subject") ?? title, context is null ? title : $"{title}. {context}.",
                 Part("action") ?? FusionNotificationEmail.Text.Text(language, "action.open")!),
             $"{shellBaseUrl.TrimEnd('/')}{notification.Href}",
-            new NotificationEmailGroup(Catalog.Text(language, $"group.{group}") ?? group, CanTurnOff: true),
+            new NotificationEmailGroup(Catalog.Text(language, $"group.{group}") ?? group,
+                CanTurnOff: CoreNotificationDefaults.ModeOf(defaults, group) != NotificationEmailMode.Required),
             companyName, shellBaseUrl);
     }
 
-    public static string? UnsubscribeUrl(CoreNotification notification, string shellBaseUrl, string? key)
+    /// <summary>The one-click link that turns off this email's group; none for a group the company requires or without a key.</summary>
+    public static string? UnsubscribeUrl(CoreNotification notification, string shellBaseUrl, string? key, CoreNotificationDefaults? defaults = null)
     {
-        if (string.IsNullOrWhiteSpace(key)) return null;
+        if (string.IsNullOrWhiteSpace(key)
+            || CoreNotificationDefaults.ModeOf(defaults, CoreNotificationPreference.TeamAndJobChanges) == NotificationEmailMode.Required) return null;
         var token = UnsubscribeToken.Issue(
             new UnsubscribeClaim(notification.TenantId, notification.RecipientEmployeeId, CoreNotificationPreference.TeamAndJobChanges), key);
         return $"{shellBaseUrl.TrimEnd('/')}/api/corehr/notifications/unsubscribe?token={Uri.EscapeDataString(token)}";
@@ -113,9 +118,11 @@ public sealed class CoreNotificationDispatcher(CoreHRDbContext db, ITenantContex
             throw new InvalidOperationException("Notification dispatch requires the notification's tenant context.");
         if (!notification.EmailPending || notification.EmailNextAttemptAt > now) return;
         var config = options.Value;
+        var defaults = await db.NotificationDefaults.AsNoTracking().FirstOrDefaultAsync(cancellationToken);
+        var preference = await db.NotificationPreferences.AsNoTracking()
+            .FirstOrDefaultAsync(item => item.RecipientEmployeeId == notification.RecipientEmployeeId, cancellationToken);
         if (!config.Enabled) notification.SkipEmail("disabled");
-        else if (await db.NotificationPreferences.AsNoTracking().AnyAsync(item => item.RecipientEmployeeId == notification.RecipientEmployeeId
-                     && item.EmailOff.Contains(CoreNotificationPreference.TeamAndJobChanges), cancellationToken))
+        else if (!CoreNotificationPreference.EmailsGroup(preference, defaults, CoreNotificationPreference.TeamAndJobChanges))
             notification.SkipEmail(RecipientOptedOut);
         else
         {
@@ -128,9 +135,9 @@ public sealed class CoreNotificationDispatcher(CoreHRDbContext db, ITenantContex
                 {
                     var reader = await audience.ReadAsync([notification.RecipientEmployeeId], cancellationToken);
                     var content = CoreNotificationRenderer.Email(notification, reader.LanguageOf(notification.RecipientEmployeeId),
-                        config.ShellBaseUrl, reader.TenantName);
+                        config.ShellBaseUrl, reader.TenantName, defaults);
                     await sender.SendAsync(new FusionOutgoingEmail(email, content, $"<{notification.Id:N}@fusion-corehr>",
-                        CoreNotificationRenderer.UnsubscribeUrl(notification, config.ShellBaseUrl, config.UnsubscribeKey)), cancellationToken);
+                        CoreNotificationRenderer.UnsubscribeUrl(notification, config.ShellBaseUrl, config.UnsubscribeKey, defaults)), cancellationToken);
                     notification.MarkEmailSent(DateTime.UtcNow);
                 }
             }

@@ -1283,6 +1283,49 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                     b.ToTable("DevelopmentPlans", "performance");
                 });
 
+            modelBuilder.Entity("EY.HRPlatform.Performance.Domain.Notifications.NotificationDefaults", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.PrimitiveCollection<List<string>>("Off")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.PrimitiveCollection<List<string>>("Required")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .IsUnique();
+
+                    b.ToTable("PerformanceNotificationDefaults", "performance");
+                });
+
             modelBuilder.Entity("EY.HRPlatform.Performance.Domain.Notifications.NotificationPreference", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1296,6 +1339,10 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                         .HasColumnType("text");
 
                     b.PrimitiveCollection<List<string>>("EmailOff")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.PrimitiveCollection<List<string>>("EmailOn")
                         .IsRequired()
                         .HasColumnType("text[]");
 

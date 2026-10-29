@@ -1,7 +1,9 @@
+using EY.HRPlatform.Performance.Features.Notifications;
 using EY.HRPlatform.Performance.Features.Security;
 using EY.HRPlatform.Performance.Features.Settings;
 using EY.HRPlatform.Performance.Models;
 using EY.HRPlatform.SharedKernel.Api;
+using EY.HRPlatform.SharedKernel.Notifications;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -37,6 +39,22 @@ public sealed class SettingsController(IMediator mediator, IPerformanceAccessPol
     {
         if (!policy.CanManageSettings(User)) return CapabilityForbidden();
         return MapResult(await mediator.Send(new UpdateCycleSettingsCommand(request), cancellationToken));
+    }
+
+    /// <summary>The company's email mode per Performance notification group (B-002 N7).</summary>
+    [HttpGet("notifications")]
+    public async Task<ActionResult<ApiResponse<NotificationDefaultsDto>>> GetNotificationDefaults(CancellationToken cancellationToken)
+    {
+        if (!policy.CanViewSettings(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new GetNotificationDefaultsQuery(), cancellationToken));
+    }
+
+    [HttpPut("notifications")]
+    public async Task<ActionResult<ApiResponse<NotificationDefaultsDto>>> UpdateNotificationDefaults(
+        [FromBody] UpdateNotificationDefaultsRequest request, CancellationToken cancellationToken)
+    {
+        if (!policy.CanManageSettings(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new UpdateNotificationDefaultsCommand(request), cancellationToken));
     }
 
     [HttpGet("rating-scale")]

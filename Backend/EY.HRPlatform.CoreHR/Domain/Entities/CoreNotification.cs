@@ -139,15 +139,18 @@ public sealed record CoreNotificationMessage(string TitleKey, string? ContextKey
     string? ActorName, string Href, Guid? ActorEmployeeId = null);
 
 /// <summary>
-/// One person's email choice for Core HR notifications. No row means every group is emailed: "Team and job changes" is
-/// on by default (B-002 N8).
+/// One person's email choice for Core HR notifications, stored against the company's modes (B-002 N7): <c>EmailOff</c>
+/// lists On groups they turned off, <c>EmailOn</c> Off groups they turned on. No row means the person follows the company.
 /// </summary>
 public sealed class CoreNotificationPreference : ITenantEntity
 {
     public const string TeamAndJobChanges = "team-and-job-changes";
 
-    /// <summary>The groups whose email a person may turn off, in display order.</summary>
+    /// <summary>Every group, in display order.</summary>
     public static readonly IReadOnlyList<string> Groups = [TeamAndJobChanges];
+
+    /// <summary>Where a new company starts: "Team and job changes" on (B-002 N8).</summary>
+    public static NotificationEmailMode FusionDefault(string group) => NotificationEmailMode.On;
 
     private CoreNotificationPreference() { }
 
@@ -155,6 +158,7 @@ public sealed class CoreNotificationPreference : ITenantEntity
     public Guid TenantId { get; private set; }
     public Guid RecipientEmployeeId { get; private set; }
     public List<string> EmailOff { get; private set; } = [];
+    public List<string> EmailOn { get; private set; } = [];
     public uint Version { get; private set; }
 
     public static CoreNotificationPreference For(Guid tenantId, Guid employeeId)
@@ -163,16 +167,74 @@ public sealed class CoreNotificationPreference : ITenantEntity
         return new CoreNotificationPreference { TenantId = tenantId, RecipientEmployeeId = employeeId };
     }
 
-    public bool EmailsGroup(string group) => !EmailOff.Contains(group);
+    public static bool EmailsGroup(CoreNotificationPreference? preference, CoreNotificationDefaults? defaults, string group)
+        => NotificationEmailModes.Sends(CoreNotificationDefaults.ModeOf(defaults, group), group, preference?.EmailOn ?? [], preference?.EmailOff ?? []);
 
-    /// <summary>Replaces the groups turned off; unknown groups are refused.</summary>
-    public void SetEmailOff(IReadOnlyCollection<string> groups)
+    /// <summary>
+    /// Replaces the person's choices: <paramref name="wantedOff"/> names every group they want no email for. Groups the
+    /// company requires and unknown groups are refused.
+    /// </summary>
+    public void SetEmailOff(IReadOnlyCollection<string> wantedOff, CoreNotificationDefaults? defaults)
     {
-        if (groups.Any(group => !Groups.Contains(group)))
-            throw new ArgumentException("Only team and job change email can be turned off.", nameof(groups));
-        var next = Groups.Where(groups.Contains).ToList();
-        if (next.SequenceEqual(EmailOff)) return;
-        EmailOff = next;
+        if (wantedOff.Any(group => !Groups.Contains(group)))
+            throw new ArgumentException("Only team and job change email can be turned off.", nameof(wantedOff));
+        if (wantedOff.Any(group => CoreNotificationDefaults.ModeOf(defaults, group) == NotificationEmailMode.Required))
+            throw new ArgumentException("Your company requires this email.", nameof(wantedOff));
+        var (on, off) = NotificationEmailModes.Overrides(Groups.Select(group => (group, CoreNotificationDefaults.ModeOf(defaults, group))), wantedOff);
+        if (on.SequenceEqual(EmailOn) && off.SequenceEqual(EmailOff)) return;
+        EmailOn = on;
+        EmailOff = off;
+        Version++;
+    }
+
+    /// <summary>Turns one group's email off from an email's unsubscribe link. The caller refuses groups the company requires.</summary>
+    public void TurnOff(string group, CoreNotificationDefaults? defaults)
+        => SetEmailOff(Groups.Where(item => item == group || !EmailsGroup(this, defaults, item))
+            .Where(item => CoreNotificationDefaults.ModeOf(defaults, item) != NotificationEmailMode.Required).ToList(), defaults);
+}
+
+/// <summary>The company's email mode per Core HR group (B-002 N7). No row means Fusion's defaults; a group not listed is On.</summary>
+public sealed class CoreNotificationDefaults : ITenantEntity
+{
+    private CoreNotificationDefaults() { }
+
+    public Guid Id { get; private set; } = Guid.NewGuid();
+    public Guid TenantId { get; private set; }
+    public List<string> Required { get; private set; } = [];
+    public List<string> Off { get; private set; } = [];
+    public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+    public uint Version { get; private set; }
+
+    public static CoreNotificationDefaults For(Guid tenantId)
+    {
+        if (tenantId == Guid.Empty) throw new ArgumentException("TenantId is required.", nameof(tenantId));
+        var groups = CoreNotificationPreference.Groups;
+        return new CoreNotificationDefaults
+        {
+            TenantId = tenantId,
+            Required = groups.Where(group => CoreNotificationPreference.FusionDefault(group) == NotificationEmailMode.Required).ToList(),
+            Off = groups.Where(group => CoreNotificationPreference.FusionDefault(group) == NotificationEmailMode.Off).ToList(),
+        };
+    }
+
+    public static NotificationEmailMode ModeOf(CoreNotificationDefaults? defaults, string group)
+        => defaults is null ? CoreNotificationPreference.FusionDefault(group)
+            : defaults.Required.Contains(group) ? NotificationEmailMode.Required
+            : defaults.Off.Contains(group) ? NotificationEmailMode.Off
+            : NotificationEmailMode.On;
+
+    /// <summary>Sets the modes named; groups left out keep theirs. Unknown groups are refused.</summary>
+    public void Set(IReadOnlyDictionary<string, NotificationEmailMode> modes)
+    {
+        var groups = CoreNotificationPreference.Groups;
+        if (modes.Keys.Any(group => !groups.Contains(group)))
+            throw new ArgumentException("Only Core HR notification groups can be set.", nameof(modes));
+        var next = groups.ToDictionary(group => group, group => modes.TryGetValue(group, out var mode) ? mode : ModeOf(this, group));
+        var required = groups.Where(group => next[group] == NotificationEmailMode.Required).ToList();
+        var off = groups.Where(group => next[group] == NotificationEmailMode.Off).ToList();
+        if (required.SequenceEqual(Required) && off.SequenceEqual(Off)) return;
+        Required = required;
+        Off = off;
         Version++;
     }
 }

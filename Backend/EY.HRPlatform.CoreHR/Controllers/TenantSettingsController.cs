@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Features.Notifications;
 using EY.HRPlatform.CoreHR.Features.TenantSettings.Commands.UpdateTenantSettings;
 using EY.HRPlatform.CoreHR.Features.TenantSettings.Dtos;
 using EY.HRPlatform.CoreHR.Features.TenantSettings.Queries.GetTenantSettings;
@@ -5,6 +6,7 @@ using EY.HRPlatform.CoreHR.Features.TenantSettings.Services;
 using EY.HRPlatform.CoreHR.Features.Security;
 using EY.HRPlatform.SharedKernel.Api;
 using EY.HRPlatform.SharedKernel.Multitenancy;
+using EY.HRPlatform.SharedKernel.Notifications;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -116,6 +118,43 @@ public class TenantSettingsController(
 
         SetEtag(updated.Version);
         return Ok(ApiResponse<OrganizationSettingsDto>.Success(MapOrganization(updated)));
+    }
+
+    /// <summary>The company's email mode per Core HR notification group (B-002 N7).</summary>
+    [HttpGet("notifications")]
+    [ProducesResponseType(typeof(ApiResponse<NotificationDefaultsDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetNotificationDefaults(
+        [FromServices] CoreNotificationDefaultsService notificationDefaults, CancellationToken cancellationToken)
+    {
+        if (!accessPolicy.CanViewOrganizationSettings(User))
+        {
+            return Forbid();
+        }
+
+        return Ok(ApiResponse<NotificationDefaultsDto>.Success(await notificationDefaults.GetAsync(cancellationToken)));
+    }
+
+    [HttpPut("notifications")]
+    [ProducesResponseType(typeof(ApiResponse<NotificationDefaultsDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateNotificationDefaults(
+        [FromBody] UpdateNotificationDefaultsRequest request,
+        [FromServices] CoreNotificationDefaultsService notificationDefaults,
+        CancellationToken cancellationToken)
+    {
+        if (!accessPolicy.CanManageOrganizationSettings(User))
+        {
+            return Forbid();
+        }
+
+        var (value, refusal) = await notificationDefaults.UpdateAsync(request, User, cancellationToken);
+        return refusal switch
+        {
+            PreferencesRefusal.Changed => Conflict(ApiResponse<NotificationDefaultsDto>.Failure(
+                "Someone else changed notification settings. Reload and try again.")),
+            PreferencesRefusal.Invalid => BadRequest(ApiResponse<NotificationDefaultsDto>.Failure(
+                "Each Core HR notification group is required, on or off.")),
+            _ => Ok(ApiResponse<NotificationDefaultsDto>.Success(value!)),
+        };
     }
 
     [HttpGet("people-data")]

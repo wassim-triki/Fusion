@@ -32,7 +32,9 @@ public static class PerformanceNotificationRenderer
         return (title, string.IsNullOrWhiteSpace(context) ? null : context);
     }
 
-    public static RenderedEmail Email(PerformanceNotification notification, string language, string shellBaseUrl, string companyName)
+    /// <summary>The email for one reader. <paramref name="defaults"/> are the company's modes (null: Fusion's).</summary>
+    public static RenderedEmail Email(PerformanceNotification notification, string language, string shellBaseUrl, string companyName,
+        NotificationDefaults? defaults = null)
     {
         if (!Uri.TryCreate(shellBaseUrl, UriKind.Absolute, out var shell) || shell.Scheme is not ("https" or "http"))
             throw new InvalidOperationException("Notifications:ShellBaseUrl must be an absolute shell URL.");
@@ -47,15 +49,17 @@ public static class PerformanceNotificationRenderer
             new NotificationEmailText(Part("subject") ?? title, Part("lead") ?? title,
                 Part("action") ?? FusionNotificationEmail.Text.Text(language, "action.open")!),
             $"{shellBaseUrl.TrimEnd('/')}{notification.Href}",
-            new NotificationEmailGroup(Catalog.Text(language, $"group.{group}") ?? group, !NotificationGroups.IsLocked(group)),
+            new NotificationEmailGroup(Catalog.Text(language, $"group.{group}") ?? group,
+                NotificationDefaults.ModeOf(defaults, group) != NotificationEmailMode.Required),
             companyName, shellBaseUrl);
     }
 
-    /// <summary>The one-click link that turns off this email's group; none for deadline reminders or without a key.</summary>
-    public static string? UnsubscribeUrl(PerformanceOutboxMessage message, string shellBaseUrl, string? key)
+    /// <summary>The one-click link that turns off this email's group; none for a group the company requires or without a key.</summary>
+    public static string? UnsubscribeUrl(PerformanceOutboxMessage message, string shellBaseUrl, string? key, NotificationDefaults? defaults = null)
     {
         var group = NotificationGroups.Of(message.Kind);
-        if (NotificationGroups.IsLocked(group) || message.RecipientEmployeeId == Guid.Empty || string.IsNullOrWhiteSpace(key)) return null;
+        if (NotificationDefaults.ModeOf(defaults, group) == NotificationEmailMode.Required || message.RecipientEmployeeId == Guid.Empty
+            || string.IsNullOrWhiteSpace(key)) return null;
         var token = UnsubscribeToken.Issue(new UnsubscribeClaim(message.TenantId, message.RecipientEmployeeId, group), key);
         return $"{shellBaseUrl.TrimEnd('/')}/api/performance/notifications/unsubscribe?token={Uri.EscapeDataString(token)}";
     }

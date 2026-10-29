@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EY.HRPlatform.Performance.Features.Settings;
 
-/// <summary>Performance's seven settings sections (B-071 D1) and which cycle-settings fields each one holds (D6).</summary>
+/// <summary>Performance's settings sections (B-071 D1; Notifications from B-002 N7) and which cycle-settings fields each one holds (D6).</summary>
 public static class SettingsSections
 {
     public const string RatingScale = "rating-scale";
@@ -21,6 +21,7 @@ public static class SettingsSections
     public const string Planning = "planning";
     public const string Conversations = "conversations";
     public const string AiAndData = "ai-and-data";
+    public const string Notifications = "notifications";
 
     public sealed record Section(string Id, string Label);
 
@@ -33,6 +34,7 @@ public static class SettingsSections
         new(Planning, "Planning"),
         new(Conversations, "Conversations"),
         new(AiAndData, "AI and data"),
+        new(Notifications, "Notifications"),
     ];
 
     /// <summary>The sections that share the one <c>CycleSettings</c> aggregate (D7).</summary>
@@ -119,6 +121,7 @@ public sealed class GetSettingsSectionsHandler(PerformanceDbContext db, ICoreWor
         PerformanceAuditActions.ReviewQuestionArchived,
         PerformanceAuditActions.ReviewQuestionDeleted,
         PerformanceAuditActions.ReviewQuestionsReordered,
+        PerformanceAuditActions.NotificationDefaultsChanged,
     ];
 
     public async Task<Result<IReadOnlyList<FusionSettingsSectionDto>>> Handle(GetSettingsSectionsQuery query, CancellationToken token)
@@ -139,6 +142,7 @@ public sealed class GetSettingsSectionsHandler(PerformanceDbContext db, ICoreWor
             {
                 PerformanceAuditActions.SettingsChanged => SettingsSections.Of(entry.Summary),
                 PerformanceAuditActions.RatingScaleChanged => [SettingsSections.RatingScale],
+                PerformanceAuditActions.NotificationDefaultsChanged => [SettingsSections.Notifications],
                 _ when entry.Action.StartsWith("Competency.", StringComparison.Ordinal) => [SettingsSections.Competencies],
                 _ => [SettingsSections.ReviewQuestions],
             };
@@ -153,6 +157,7 @@ public sealed class GetSettingsSectionsHandler(PerformanceDbContext db, ICoreWor
             [SettingsSections.RatingScale] = await db.RatingScales.AsNoTracking().Select(item => (DateTime?)item.CreatedAt).FirstOrDefaultAsync(token),
             [SettingsSections.Competencies] = await db.Competencies.AsNoTracking().MinAsync(item => (DateTime?)item.CreatedAt, token),
             [SettingsSections.ReviewQuestions] = await db.ReviewQuestions.AsNoTracking().MinAsync(item => (DateTime?)item.CreatedAt, token),
+            [SettingsSections.Notifications] = await db.NotificationDefaults.AsNoTracking().Select(item => (DateTime?)item.CreatedAt).FirstOrDefaultAsync(token),
         };
         foreach (var section in SettingsSections.CycleSettingsSections) setUp[section] = settingsCreated;
         var sectionsDto = SettingsSections.All

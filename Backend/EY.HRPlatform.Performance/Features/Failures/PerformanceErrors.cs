@@ -115,6 +115,7 @@ public static class PerformanceErrors
         public const string ProgressViewForbidden = "Progress.ViewForbidden";
         public const string SettingsInvalid = "Settings.Invalid";
         public const string NotificationPreferencesInvalid = "NotificationPreferences.Invalid";
+        public const string NotificationDefaultsInvalid = "NotificationDefaults.Invalid";
         public const string RatingScaleInvalid = "RatingScale.Invalid";
         public const string ReviewRoundCycleNotActive = "ReviewRound.CycleNotActive";
         public const string ReviewRoundInvalid = "ReviewRound.Invalid";

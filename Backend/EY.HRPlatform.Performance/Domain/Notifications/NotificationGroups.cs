@@ -1,9 +1,11 @@
+using EY.HRPlatform.SharedKernel.Notifications;
+
 namespace EY.HRPlatform.Performance.Domain.Notifications;
 
 /// <summary>
 /// The groups a person turns email on or off for (B-071 D8). Every kind belongs to exactly one group; a new kind
 /// must be assigned here when it is introduced (the switch has no default, and a test walks every kind).
-/// Deadline reminders are always emailed.
+/// A company sets each group Required, On or Off (B-002 N7); new companies start with deadline reminders required.
 /// </summary>
 public static class NotificationGroups
 {
@@ -13,10 +15,12 @@ public static class NotificationGroups
     public const string FeedbackAndPraise = "feedback-and-praise";
     public const string DeadlineReminders = "deadline-reminders";
 
-    /// <summary>The groups whose email a person may turn off, in display order.</summary>
-    public static readonly IReadOnlyList<string> Optional = [PlansAndGoals, ReviewsAndCalibration, OneOnOnes, FeedbackAndPraise];
+    /// <summary>Every group, in display order.</summary>
+    public static readonly IReadOnlyList<string> All = [PlansAndGoals, ReviewsAndCalibration, OneOnOnes, FeedbackAndPraise, DeadlineReminders];
 
-    public static bool IsLocked(string group) => group == DeadlineReminders;
+    /// <summary>Where a new company starts: deadline reminders always emailed, the rest on.</summary>
+    public static NotificationEmailMode FusionDefault(string group)
+        => group == DeadlineReminders ? NotificationEmailMode.Required : NotificationEmailMode.On;
 
     public static string Of(PerformanceNotificationKind kind) => kind switch
     {

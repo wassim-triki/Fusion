@@ -23,7 +23,7 @@ using Moq;
 namespace EY.HRPlatform.CoreHR.Tests.Features.TenantSettings;
 
 /// <summary>
-/// Core HR in Fusion Settings (B-071): the five sections per caller with their last change, the field policy every
+/// Core HR in Fusion Settings (B-071): the six sections per caller with their last change, the field policy every
 /// member reads, the name lock, and the removed brand colour and overview.
 /// </summary>
 public class SettingsSectionRegistryTests
@@ -55,11 +55,11 @@ public class SettingsSectionRegistryTests
             (CorePermissions.SettingsManage, PermissionScopes.Tenant),
             (CorePermissions.AccessProfilesManageV2, PermissionScopes.Tenant)));
 
-        Assert.Equal(["company", "employee-fields", "roles", "invitations", "change-history"], sections.Select(section => section.Id));
-        Assert.Equal(["Company", "Employee fields", "Roles", "Invitations", "Change history"], sections.Select(section => section.Label));
-        Assert.Equal([1, 2, 3, 4, 5], sections.Select(section => section.Order));
-        Assert.All(sections.Take(4), section => Assert.Equal(FusionSettingsSectionDto.Manage, section.Access));
-        Assert.Equal(FusionSettingsSectionDto.View, sections[4].Access);
+        Assert.Equal(["company", "employee-fields", "roles", "invitations", "notifications", "change-history"], sections.Select(section => section.Id));
+        Assert.Equal(["Company", "Employee fields", "Roles", "Invitations", "Notifications", "Change history"], sections.Select(section => section.Label));
+        Assert.Equal([1, 2, 3, 4, 5, 6], sections.Select(section => section.Order));
+        Assert.All(sections.Take(5), section => Assert.Equal(FusionSettingsSectionDto.Manage, section.Access));
+        Assert.Equal(FusionSettingsSectionDto.View, sections[5].Access);
     }
 
     [Fact]
@@ -117,7 +117,7 @@ public class SettingsSectionRegistryTests
             Principal((CorePermissions.SettingsManage, PermissionScopes.Tenant), (CorePermissions.AccessProfilesManageV2, PermissionScopes.Tenant)),
             CancellationToken.None);
 
-        Assert.Equal(5, sections.Count);
+        Assert.Equal(6, sections.Count);
         Assert.Null(sections.Single(section => section.Id == "roles").LastChange);
     }
 

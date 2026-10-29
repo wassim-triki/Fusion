@@ -64,6 +64,7 @@ public static class ServiceCollectionExtensions
         services.Configure<CoreNotificationOptions>(configuration.GetSection("Notifications"));
         services.AddScoped<Features.Notifications.CoreChangeNotifications>();
         services.AddScoped<Features.Notifications.CoreNotificationFeed>();
+        services.AddScoped<Features.Notifications.CoreNotificationDefaultsService>();
         services.AddScoped<ICoreNotificationSender, SmtpCoreNotificationSender>();
         services.AddScoped<CoreNotificationDispatcher>();
         services.AddHostedService<CoreNotificationWorker>();

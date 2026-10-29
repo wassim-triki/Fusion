@@ -14,7 +14,7 @@ namespace EY.HRPlatform.CoreHR.Features.Notifications;
 /// <summary>One line of a group. <paramref name="Team"/> marks news about the caller's team.</summary>
 public sealed record NotificationPreferenceItemDto(string Label, bool Team, bool Always, int Count);
 
-/// <summary>A group with the caller's email choice (the same shape Performance serves).</summary>
+/// <summary>A group with the caller's email choice (the same shape Performance serves). <paramref name="Locked"/> groups are required by the company.</summary>
 public sealed record NotificationPreferenceGroupDto(string Key, string Label, string Summary, bool Email, bool Locked, int Count,
     IReadOnlyList<NotificationPreferenceItemDto> Items);
 
@@ -126,14 +126,18 @@ public sealed class CoreNotificationFeed(CoreHRDbContext db, TenantContext tenan
     {
         var preference = await db.NotificationPreferences.AsNoTracking()
             .FirstOrDefaultAsync(item => item.RecipientEmployeeId == employeeId, cancellationToken);
-        return await ProjectAsync(employeeId, leadsPeople, preference, cancellationToken);
+        var defaults = await db.NotificationDefaults.AsNoTracking().FirstOrDefaultAsync(cancellationToken);
+        return await ProjectAsync(employeeId, leadsPeople, preference, defaults, cancellationToken);
     }
 
     public async Task<(NotificationPreferencesDto? Value, PreferencesRefusal Refusal)> UpdatePreferencesAsync(Guid employeeId,
         bool leadsPeople, UpdateNotificationPreferencesRequest request, CancellationToken cancellationToken)
     {
         var emailOff = request.EmailOff ?? [];
-        if (emailOff.Any(group => !CoreNotificationPreference.Groups.Contains(group))) return (null, PreferencesRefusal.Invalid);
+        var defaults = await db.NotificationDefaults.AsNoTracking().FirstOrDefaultAsync(cancellationToken);
+        if (emailOff.Any(group => !CoreNotificationPreference.Groups.Contains(group)
+                || CoreNotificationDefaults.ModeOf(defaults, group) == NotificationEmailMode.Required))
+            return (null, PreferencesRefusal.Invalid);
         var preference = await db.NotificationPreferences.FirstOrDefaultAsync(item => item.RecipientEmployeeId == employeeId, cancellationToken);
         if (preference is null)
         {
@@ -145,7 +149,7 @@ public sealed class CoreNotificationFeed(CoreHRDbContext db, TenantContext tenan
         {
             return (null, PreferencesRefusal.Changed);
         }
-        preference.SetEmailOff(emailOff);
+        preference.SetEmailOff(emailOff, defaults);
 
         try
         {
@@ -156,12 +160,12 @@ public sealed class CoreNotificationFeed(CoreHRDbContext db, TenantContext tenan
             // Another save of the same person's choice won the race (version or the one-row-per-person index).
             return (null, PreferencesRefusal.Changed);
         }
-        return (await ProjectAsync(employeeId, leadsPeople, preference, cancellationToken), PreferencesRefusal.None);
+        return (await ProjectAsync(employeeId, leadsPeople, preference, defaults, cancellationToken), PreferencesRefusal.None);
     }
 
     /// <summary>
     /// A one-click unsubscribe from an email's List-Unsubscribe header (B-002 N6). No sign-in: the token's signature is
-    /// the authority, and it can only turn the one named group off.
+    /// the authority, and it can only turn the one named group off, never one the company requires.
     /// </summary>
     public async Task<bool> UnsubscribeAsync(string? token, CancellationToken cancellationToken)
     {
@@ -172,19 +176,21 @@ public sealed class CoreNotificationFeed(CoreHRDbContext db, TenantContext tenan
             return false;
         if (!tenant.IsResolved) tenant.SetTenant(claim.TenantId);
 
+        var defaults = await db.NotificationDefaults.AsNoTracking().FirstOrDefaultAsync(cancellationToken);
+        if (CoreNotificationDefaults.ModeOf(defaults, claim.Group) == NotificationEmailMode.Required) return false;
         var preference = await db.NotificationPreferences.FirstOrDefaultAsync(item => item.RecipientEmployeeId == claim.RecipientEmployeeId, cancellationToken);
         if (preference is null)
         {
             preference = CoreNotificationPreference.For(claim.TenantId, claim.RecipientEmployeeId);
             db.NotificationPreferences.Add(preference);
         }
-        preference.SetEmailOff([.. preference.EmailOff, claim.Group]);
+        preference.TurnOff(claim.Group, defaults);
         await db.SaveChangesAsync(cancellationToken);
         return true;
     }
 
     private async Task<NotificationPreferencesDto> ProjectAsync(Guid employeeId, bool leadsPeople, CoreNotificationPreference? preference,
-        CancellationToken cancellationToken)
+        CoreNotificationDefaults? defaults, CancellationToken cancellationToken)
     {
         var email = await db.Employees.AsNoTracking().Where(employee => employee.Id == employeeId)
             .Select(employee => employee.Email).FirstOrDefaultAsync(cancellationToken);
@@ -194,9 +200,10 @@ public sealed class CoreNotificationFeed(CoreHRDbContext db, TenantContext tenan
             new("A change to your job", false, false, 1),
         ];
         if (leadsPeople) items.Add(new("Someone joins or leaves your team", true, false, 2));
-        var group = new NotificationPreferenceGroupDto(CoreNotificationPreference.TeamAndJobChanges, "Team and job changes",
-            "Your manager, your job, your team", preference?.EmailsGroup(CoreNotificationPreference.TeamAndJobChanges) != false,
-            false, items.Sum(item => item.Count), items);
+        const string key = CoreNotificationPreference.TeamAndJobChanges;
+        var group = new NotificationPreferenceGroupDto(key, CoreNotificationDefaultsService.Label, CoreNotificationDefaultsService.Summary,
+            CoreNotificationPreference.EmailsGroup(preference, defaults, key),
+            CoreNotificationDefaults.ModeOf(defaults, key) == NotificationEmailMode.Required, items.Sum(item => item.Count), items);
         return new NotificationPreferencesDto(string.IsNullOrWhiteSpace(email) ? null : email, [group], preference?.Version ?? 0);
     }
 }

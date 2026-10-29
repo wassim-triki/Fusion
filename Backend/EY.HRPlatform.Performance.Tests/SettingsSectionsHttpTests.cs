@@ -27,7 +27,7 @@ public sealed class SettingsSectionsHttpTests
 
     private static readonly string[] Reads =
         ["/api/performance/settings", "/api/performance/settings/rating-scale", "/api/performance/settings/competencies",
-            "/api/performance/settings/review-questions"];
+            "/api/performance/settings/review-questions", "/api/performance/settings/notifications"];
 
     [Fact]
     public async Task A_viewer_reads_every_section_but_every_write_is_forbidden()
@@ -98,7 +98,7 @@ public sealed class SettingsSectionsHttpTests
     }
 
     [Fact]
-    public async Task Sections_list_all_seven_with_the_callers_access()
+    public async Task Sections_list_all_eight_with_the_callers_access()
     {
         await using var factory = new PerformanceApiFactory();
         using var viewer = factory.CreateAuthenticatedClient(permissions: Viewer);
@@ -106,10 +106,10 @@ public sealed class SettingsSectionsHttpTests
 
         var viewed = (await SectionsAsync(viewer)).EnumerateArray().ToList();
         Assert.Equal(
-            ["rating-scale", "competencies", "review-questions", "reviews", "planning", "conversations", "ai-and-data"],
+            ["rating-scale", "competencies", "review-questions", "reviews", "planning", "conversations", "ai-and-data", "notifications"],
             viewed.Select(section => section.GetProperty("id").GetString()));
         Assert.Equal(
-            ["Rating scale", "Competencies", "Review questions", "Reviews", "Planning", "Conversations", "AI and data"],
+            ["Rating scale", "Competencies", "Review questions", "Reviews", "Planning", "Conversations", "AI and data", "Notifications"],
             viewed.Select(section => section.GetProperty("label").GetString()));
         Assert.All(viewed, section =>
         {
@@ -252,6 +252,7 @@ public sealed class SettingsSectionsHttpTests
             await client.PutAsJsonAsync($"/api/performance/settings/review-questions/{id}", new { expectedVersion = 0, text = "Why?" }),
             await client.PostAsJsonAsync($"/api/performance/settings/review-questions/{id}/archive", new { expectedVersion = 0 }),
             await client.SendAsync(new HttpRequestMessage(HttpMethod.Delete, $"/api/performance/settings/review-questions/{id}") { Content = JsonContent.Create(new { expectedVersion = 0 }) }),
+            await client.PutAsJsonAsync("/api/performance/settings/notifications", new { expectedVersion = 0, modes = new Dictionary<string, string> { ["one-on-ones"] = "off" } }),
         ];
     }
 

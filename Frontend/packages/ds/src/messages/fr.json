@@ -233,6 +233,16 @@
       "clear": "Effacer",
       "clearFilters": "Effacer les filtres",
       "noOptions": "Aucun résultat"
+    },
+    "topBar": {
+      "language": "Langue",
+      "changeLanguage": "Changer de langue",
+      "languageNotSaved": "Impossible d'enregistrer votre langue. Réessayez.",
+      "theme": "Thème",
+      "changeTheme": "Changer de thème",
+      "light": "Clair",
+      "system": "Système",
+      "dark": "Sombre"
     }
   }
 }

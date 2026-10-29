@@ -3,6 +3,7 @@
 import { useEffect, useState, type ComponentProps } from "react";
 import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes";
 import { Check, Monitor, Moon, Sun } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "../lib/utils";
 import { Button } from "../components/ui/button";
 import {
@@ -33,16 +34,17 @@ export function ThemeProvider(
 }
 
 const THEME_OPTIONS = [
-  { value: "light", label: "Light", icon: Sun },
-  { value: "system", label: "System", icon: Monitor },
-  { value: "dark", label: "Dark", icon: Moon },
+  { value: "light", icon: Sun },
+  { value: "system", icon: Monitor },
+  { value: "dark", icon: Moon },
 ] as const;
 
 /** The device's appearance choice ("light", "dark" or "system"), shared by every Fusion app through next-themes. */
 export { useTheme };
 
-/** Light / System / Dark switcher. Fusion's apps choose appearance in Settings › Preferences; kept for other hosts. */
+/** The top bar's Light / System / Dark menu, the same device choice as Settings › Preferences. */
 export function ThemeToggle({ className }: { className?: string }) {
+  const t = useTranslations("ds.topBar");
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -67,7 +69,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       <Button
         variant="ghost"
         size="icon-sm"
-        aria-label="Change theme"
+        aria-label={t("changeTheme")}
         disabled
         className={cn("text-muted-foreground", className)}
       >
@@ -82,14 +84,14 @@ export function ThemeToggle({ className }: { className?: string }) {
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label="Change theme"
+          aria-label={t("changeTheme")}
           className={cn("text-muted-foreground hover:text-foreground", className)}
         >
           <ActiveIcon className="size-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-36">
-        <DropdownMenuLabel>Theme</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("theme")}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {THEME_OPTIONS.map((option) => {
           const Icon = option.icon;
@@ -101,7 +103,7 @@ export function ThemeToggle({ className }: { className?: string }) {
               className="gap-2"
             >
               <Icon className="size-4 text-muted-foreground" />
-              <span className="flex-1">{option.label}</span>
+              <span className="flex-1">{t(option.value)}</span>
               {active ? <Check className="size-3.5" /> : null}
             </DropdownMenuItem>
           );

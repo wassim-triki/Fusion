@@ -233,6 +233,16 @@
       "clear": "Clear",
       "clearFilters": "Clear filters",
       "noOptions": "No results"
+    },
+    "topBar": {
+      "language": "Language",
+      "changeLanguage": "Change language",
+      "languageNotSaved": "Couldn't save your language. Try again.",
+      "theme": "Theme",
+      "changeTheme": "Change theme",
+      "light": "Light",
+      "system": "System",
+      "dark": "Dark"
     }
   }
 }

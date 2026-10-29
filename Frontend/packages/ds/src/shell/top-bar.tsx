@@ -10,8 +10,8 @@ export interface TopBarProps {
 }
 
 /**
- * Shared shell, Core and Performance top bar: breadcrumb (left) and the page's own controls (right).
- * Theme and language live in Settings › Preferences, not here. Sits inside the AppShell sticky header slot.
+ * Shared shell, Core and Performance top bar: breadcrumb (left) and the page's own controls (right): the bell, then
+ * language and theme. Sits inside the AppShell sticky header slot.
  */
 export function TopBar({ left, children, className }: TopBarProps) {
   return (

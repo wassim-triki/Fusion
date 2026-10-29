@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import { TopBarPreferences } from "@repo/auth";
 import { AppShell, SettingsBreadcrumb, TopBar } from "@repo/ds/shell";
 import { usePerformanceSettingsLabel } from "@/features/settings/performance-settings";
 import { PerformanceSidebar } from "@/shell/navigation/performance-sidebar";
@@ -27,6 +28,7 @@ export function PerformancePagesShell({ children }: { children: ReactNode }) {
       <AppShell sidebar={<PerformanceSidebar />} header={
           <TopBar left={left}>
             <FusionNotificationBell />
+          <TopBarPreferences />
           </TopBar>
         }>
         {children}

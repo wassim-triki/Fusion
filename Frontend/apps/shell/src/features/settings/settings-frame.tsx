@@ -6,7 +6,7 @@ import { User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useFusionNavigation, useFusionSettings, useSettingsReturn } from "@repo/api/query";
 import { useFusionViewer } from "@repo/api/react";
-import { useAuth } from "@repo/auth";
+import { TopBarPreferences, useAuth } from "@repo/auth";
 import { AppShell, FusionSidebar, SettingsBreadcrumb, ThemeProvider, TopBar } from "@repo/ds/shell";
 import { ShellNotificationBell } from "@/features/home/shell-notification-bell";
 
@@ -54,6 +54,7 @@ export function SettingsFrame({ trail, children }: { trail: readonly string[]; c
         header={
           <TopBar left={<SettingsBreadcrumb trail={trail} />}>
             <ShellNotificationBell />
+            <TopBarPreferences />
           </TopBar>
         }
       >

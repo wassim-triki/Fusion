@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import { TopBarPreferences } from "@repo/auth";
 import { AppShell, SettingsBreadcrumb, TopBar } from "@repo/ds/shell";
 import { useCoreSettingsLabel } from "@/features/settings/core-settings";
 import { AppBreadcrumb } from "@/shell/app-breadcrumb";
@@ -27,6 +28,7 @@ export function CorePagesShell({ children }: { children: ReactNode }) {
       header={
         <TopBar left={breadcrumb}>
           <FusionNotificationBell />
+          <TopBarPreferences />
         </TopBar>
       }
     >

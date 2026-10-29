@@ -233,6 +233,16 @@
       "clear": "مسح",
       "clearFilters": "مسح عوامل التصفية",
       "noOptions": "لا نتائج"
+    },
+    "topBar": {
+      "language": "اللغة",
+      "changeLanguage": "تغيير اللغة",
+      "languageNotSaved": "تعذّر حفظ لغتك. حاول مرة أخرى.",
+      "theme": "المظهر",
+      "changeTheme": "تغيير المظهر",
+      "light": "فاتح",
+      "system": "النظام",
+      "dark": "داكن"
     }
   }
 }

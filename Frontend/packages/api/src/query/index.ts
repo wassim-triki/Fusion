@@ -26,6 +26,7 @@ export {
   FUSION_UPCOMING_DAYS,
   orderWorkItems,
   useFusionNotifications,
+  useRefreshFusionAttention,
   useFusionUpcoming,
   useFusionWork,
   type FusionModuleLoadStatus,

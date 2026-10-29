@@ -319,6 +319,18 @@ function useArrivals(
 }
 
 /**
+ * Asks every module's work, upcoming and notifications again, for after the person changes language: the servers word
+ * them in the language a request reads in.
+ */
+export function useRefreshFusionAttention(): () => Promise<void> {
+  const queryClient = useQueryClient();
+  return useCallback(
+    () => queryClient.invalidateQueries({ queryKey: fusionAttentionQueryKeys.all() }),
+    [queryClient]
+  );
+}
+
+/**
  * The signed-in person's notifications across the given modules, newest first.
  * Each module's live nudge refetches the moment something arrives or is read in
  * another tab; polling stays as a fallback (every 60 seconds without a stream,

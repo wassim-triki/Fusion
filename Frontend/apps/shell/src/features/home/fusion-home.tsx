@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { FUSION_ATTENTION_MODULES } from "@repo/api";
 import { useFusionUpcoming, useFusionWork, useMyCard } from "@repo/api/query";
-import { resolveFusionAttentionModules, useAuth } from "@repo/auth";
+import { resolveFusionAttentionModules, TopBarPreferences, useAuth } from "@repo/auth";
 import { Skeleton } from "@repo/ds";
 import {
   AppShell,
@@ -121,6 +121,7 @@ export function FusionHome() {
         header={
           <TopBar>
             <ShellNotificationBell />
+          <TopBarPreferences />
           </TopBar>
         }
       >

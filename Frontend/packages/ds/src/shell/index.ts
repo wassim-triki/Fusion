@@ -12,6 +12,8 @@ export type {
 export { AppShell } from "./app-shell";
 export type { AppShellProps } from "./app-shell";
 export { ThemeProvider, ThemeToggle, useTheme } from "./theme";
+export { LanguageMenu } from "./language-menu";
+export type { LanguageMenuValue } from "./language-menu";
 export { TopBar } from "./top-bar";
 export type { TopBarProps } from "./top-bar";
 export { AppBreadcrumb } from "./app-breadcrumb";

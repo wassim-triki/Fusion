@@ -44,6 +44,7 @@ vi.mock("@repo/auth", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   useAuth: () => ({ user: mocks.user, isLoading: false, logout: vi.fn() }),
   useNotificationAlerts: () => ({ alerts: { popups: true, sound: true }, save: vi.fn(), saving: false }),
+  TopBarPreferences: () => null,
 }));
 
 vi.mock("@repo/api/query", () => ({

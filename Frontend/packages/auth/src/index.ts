@@ -22,6 +22,7 @@ export {
   saveLanguage,
 } from "./auth-service";
 export { useLanguage } from "./language";
+export { TopBarPreferences } from "./components/top-bar-preferences";
 export { useNotificationAlerts } from "./notification-alerts";
 export type { NotificationAlerts } from "./auth-service";
 

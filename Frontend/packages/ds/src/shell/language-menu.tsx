@@ -16,9 +16,9 @@ import {
 
 /** Fusion's languages, each named in itself. */
 const LANGUAGES = [
-  { value: "en", name: "English", dir: "ltr" },
-  { value: "fr", name: "Français", dir: "ltr" },
-  { value: "ar", name: "العربية", dir: "rtl" },
+  { value: "en", name: "English" },
+  { value: "fr", name: "Français" },
+  { value: "ar", name: "العربية" },
 ] as const;
 
 export type LanguageMenuValue = (typeof LANGUAGES)[number]["value"];
@@ -85,7 +85,7 @@ export function LanguageMenu({
             }}
             className="gap-2"
           >
-            <span lang={language.value} dir={language.dir} className="flex-1">
+            <span lang={language.value} className="flex-1">
               {language.name}
             </span>
             {language.value === value ? (

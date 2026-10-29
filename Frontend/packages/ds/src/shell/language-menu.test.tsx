@@ -13,7 +13,7 @@ describe("LanguageMenu", () => {
     await userEvent.click(
       await screen.findByRole("button", { name: "Change language" })
     );
-    expect(screen.getByText("العربية")).toHaveAttribute("dir", "rtl");
+    expect(screen.getByText("العربية")).toHaveAttribute("lang", "ar");
     await userEvent.click(screen.getByText("Français"));
 
     expect(onChange).toHaveBeenCalledWith("fr");

@@ -187,6 +187,15 @@ Rule: **sans for the system, serif for the human,** visible but scarce. If unsur
 - **Footer:** range left ("1–10 of 14 people"), rows-per-page and pager right; controls disable rather than disappear.
 - "No matches + Clear filters" differs from an empty dataset; skeletons use the live columns; below `minWidth` the table scrolls in its frame.
 
+**Choices** come from `@repo/ds/choice`, never a hand-made group of pressed buttons or radios (lint-guarded). Pick by the job:
+- **Segmented:** one of 2–4 short options, always visible: a view switch (with icons), a setting like cadence or language, a direction.
+- **ChoiceMatrix:** many rows picking from the same few options; each option is a column said once.
+- **FilterChips:** narrowing a list or feed, one at a time (optionally clearable) or several.
+- **QuickPicks:** shortcuts beside a field that fill it; the field holds the answer.
+- **OptionCards:** one choice whose options each need a line (or a picture) to explain.
+
+Selection is an amber tint everywhere. A real one-off toggle (a chart node, a single on/off filter) or a picker whose options carry their own meaning in colour (progress status, competency values, the rating scale) stays bespoke, with a lint-disable line saying why.
+
 **Search and filters.** Searches with different scopes must look different. Active filters are visible and clearable; advanced ones use disclosure; filtered-empty differs from truly empty.
 
 **States** (every async or stateful view): loading, empty, no results, success, warning, error, partial failure, disabled, permission denied.

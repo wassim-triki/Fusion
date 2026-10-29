@@ -22,6 +22,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popove
 import { Skeleton } from "../components/ui/skeleton";
 import { formatDateParts } from "../lib/dates";
 import { claimChime, playChime, useChimeUnlock, useTabUnreadCount } from "./notification-arrival";
+import { FilterChips } from "../choice/choice";
 
 export type NotificationBellBadge = "praise" | "feedback" | "meeting" | "action" | "plan" | "review" | "reminder" | "team";
 
@@ -350,21 +351,14 @@ export function NotificationBell({
           </div>
 
           {modules.length > 1 ? (
-            <div role="group" aria-label={t("filterByModule")} className="flex gap-1 border-b border-border px-3 py-2">
-              {[{ key: null, label: t("all") }, ...modules.map((module) => ({ key: module.key as string | null, label: module.label }))].map(
-                (option) => (
-                  <Button
-                    key={option.key ?? "all"}
-                    variant={filter === option.key ? "secondary" : "ghost"}
-                    size="xs"
-                    aria-pressed={filter === option.key}
-                    onClick={() => setFilter(option.key)}
-                  >
-                    {option.label}
-                  </Button>
-                ),
-              )}
-            </div>
+            <FilterChips
+              type="single"
+              label={t("filterByModule")}
+              className="border-b border-border px-3 py-2"
+              value={filter ?? "all"}
+              onChange={(next: string) => setFilter(next === "all" ? null : next)}
+              options={[{ value: "all", label: t("all") }, ...modules.map((module) => ({ value: module.key as string, label: module.label }))]}
+            />
           ) : (
             <div />
           )}

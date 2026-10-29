@@ -106,6 +106,7 @@ export function PraiseReactions({
           <button
             key={kind}
             type="button"
+            // eslint-disable-next-line no-restricted-syntax -- a reaction is one toggle: you reacted or you did not
             aria-pressed={reaction.mine}
             aria-label={label}
             title={PRAISE_REACTION_LABEL[kind]}

@@ -88,7 +88,11 @@
         },
         "consequence": "Les choix de chacun sont conservés ; un e-mail obligatoire ne peut pas être désactivé.",
         "notSaved": "Les paramètres de notification n'ont pas été enregistrés. Réessayez.",
-        "leave": "Quitter sans enregistrer vos changements de notifications ?"
+        "leave": "Quitter sans enregistrer vos changements de notifications ?",
+        "group": "Groupe",
+        "requiredShort": "Toujours envoyé",
+        "onShort": "Désactivable",
+        "offShort": "Activable"
       }
     },
     "relative": {

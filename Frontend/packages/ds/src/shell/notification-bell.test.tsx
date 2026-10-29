@@ -86,7 +86,7 @@ describe("NotificationBell", () => {
       />,
     );
     await userEvent.click(screen.getByRole("button", { name: /Notifications/ }));
-    await userEvent.click(screen.getByRole("button", { name: "Core HR" }));
+    await userEvent.click(screen.getByRole("radio", { name: "Core HR" }));
     expect(screen.getByText("Core item")).toBeInTheDocument();
     expect(screen.queryByText("Nour submitted their plan 1")).not.toBeInTheDocument();
   });

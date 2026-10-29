@@ -15,6 +15,9 @@
  * Direction: layout follows the writing direction, so Arabic lays itself out from the same code. A left/right
  * utility with a start/end form warns and names it. Centring offsets (left-1/2), translate-x, inset-x, space-x and
  * anything under an explicit ltr: or rtl: variant are left alone.
+ * Choices: "pick one of a few" and "narrow this list" use @repo/ds/choice (Segmented, ChoiceMatrix, FilterChips,
+ * QuickPicks, OptionCards), never a hand-made group of pressed buttons or radios, nor the raw toggle or radio group. A
+ * real one-off toggle (a chart node, a single on/off filter) keeps aria-pressed with a disable line that says why.
  * See the radius, surface and type blocks in packages/ds/src/styles/tokens.css and DESIGN.md.
  */
 const RAW_RADIUS =
@@ -112,6 +115,15 @@ const typographyGuards = [
   { selector: `TemplateElement[value.raw=${STACKED_WEIGHT}]`, message: rawTypeMessage },
 ];
 
+const choiceMessage =
+  "Use a choice control from @repo/ds/choice (Segmented, ChoiceMatrix, FilterChips, QuickPicks, OptionCards). A real one-off toggle keeps aria-pressed with an eslint-disable line saying why.";
+const choiceGuards = [
+  { selector: "JSXAttribute[name.name='aria-pressed']", message: choiceMessage },
+  { selector: "JSXAttribute[name.name='role'][value.value='radiogroup']", message: choiceMessage },
+  // A slash ends an esquery regex, so the path's separators are matched with `.`.
+  { selector: "ImportDeclaration[source.value=/^@repo.ds(.components.ui.(toggle-group|radio-group))?$/] > ImportSpecifier[imported.name=/^(ToggleGroup|ToggleGroupItem|RadioGroup|RadioGroupItem)$/]", message: choiceMessage },
+];
+
 const toneMessage =
   "Use a surface tone: bg-section / bg-card / bg-inlay (bg-popover in overlays). Translucent neutrals are for state variants only.";
 
@@ -124,6 +136,7 @@ const guards = [
   { selector: `TemplateElement[value.raw=${UNKNOWN_TYPE_ROLE}]`, message: typeMessage },
   ...formattingGuards,
   ...directionGuards,
+  ...choiceGuards,
 ];
 
 module.exports = { guards, typographyGuards };

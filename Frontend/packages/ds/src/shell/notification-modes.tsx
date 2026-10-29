@@ -1,8 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
-import { SettingsRow, SettingsRows, SettingsValue } from "./settings";
+import { ChoiceMatrix } from "../choice/choice";
 
 export type NotificationModeValue = "required" | "on" | "off";
 
@@ -17,8 +16,8 @@ export interface NotificationModeGroup {
 const MODES: readonly NotificationModeValue[] = ["required", "on", "off"];
 
 /**
- * A company's email mode per notification group (B-002 N7): Required, On (people may turn it off) or Off (people may
- * turn it on). A view-only reader sees the mode as text.
+ * A company's email mode per notification group (B-002 N7) as a {@link ChoiceMatrix}: Required, On (people may turn it
+ * off) or Off (people may turn it on), each said once in the header. A view-only reader sees the choices, disabled.
  */
 export function NotificationModeList({
   groups,
@@ -36,45 +35,20 @@ export function NotificationModeList({
     const path = `groups.${key}.${part}` as Parameters<typeof t>[0];
     return t.has(path) ? t(path) : sent;
   };
+  const modeOf = new Map(groups.map((group) => [group.key, group.mode]));
   return (
-    <SettingsRows>
-      {groups.map((group) => {
-        const label = named(group.key, "name", group.label);
-        return (
-          <SettingsRow
-            key={group.key}
-            label={label}
-            description={named(group.key, "summary", group.summary)}
-          >
-            {editable ? (
-              <ToggleGroup
-                type="single"
-                value={group.mode}
-                onValueChange={(next) => {
-                  const mode = MODES.find((value) => value === next);
-                  if (mode) onChange(group.key, mode);
-                }}
-                aria-label={t("emailFor", { group: label })}
-                disabled={disabled}
-                className="rounded-control border bg-inlay p-0.5"
-              >
-                {MODES.map((mode) => (
-                  <ToggleGroupItem
-                    key={mode}
-                    value={mode}
-                    title={t(`${mode}Hint`)}
-                    className="px-3 type-body text-muted-foreground data-[state=on]:bg-foreground! data-[state=on]:text-background! data-[state=on]:shadow-raised"
-                  >
-                    {t(mode)}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
-            ) : (
-              <SettingsValue>{t(group.mode)}</SettingsValue>
-            )}
-          </SettingsRow>
-        );
-      })}
-    </SettingsRows>
+    <ChoiceMatrix
+      rowHeader={t("group")}
+      rows={groups.map((group) => ({
+        key: group.key,
+        label: named(group.key, "name", group.label),
+        description: named(group.key, "summary", group.summary),
+      }))}
+      columns={MODES.map((mode) => ({ value: mode, label: t(mode), description: t(`${mode}Short`), hint: t(`${mode}Hint`) }))}
+      valueOf={(key) => modeOf.get(key) ?? "on"}
+      onChange={(key, mode) => onChange(key, mode)}
+      editable={editable}
+      disabled={disabled}
+    />
   );
 }

@@ -88,7 +88,11 @@
         },
         "consequence": "Choices people made stay; a required group's email can't be turned off.",
         "notSaved": "Notification settings weren't saved. Try again.",
-        "leave": "Leave without saving your notification changes?"
+        "leave": "Leave without saving your notification changes?",
+        "group": "Group",
+        "requiredShort": "Always emailed",
+        "onShort": "People can turn off",
+        "offShort": "People can turn on"
       }
     },
     "relative": {

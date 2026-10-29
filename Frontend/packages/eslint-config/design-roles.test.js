@@ -106,3 +106,27 @@ test("raw text sizes and weights stacked on a role or size warn under typeRoles"
   // The default config doesn't carry the guard yet.
   assert.deepEqual(warnings(`const a = "text-sm";`), []);
 });
+
+test("hand-made choosers warn and name the choice controls", () => {
+  for (const code of [
+    `const a = <button aria-pressed={on} />;`,
+    `const a = <div role="radiogroup" />;`,
+    `import { ToggleGroup } from "@repo/ds";`,
+    `import { RadioGroup, RadioGroupItem } from "@repo/ds/components/ui/radio-group";`,
+    `import { ToggleGroupItem } from "@repo/ds/components/ui/toggle-group";`,
+  ]) {
+    const found = warnings(code);
+    assert.ok(found.length >= 1, code);
+    assert.match(found[0], /@repo\/ds\/choice/);
+  }
+});
+
+test("the choice controls themselves and other roles pass", () => {
+  for (const code of [
+    `import { Segmented, FilterChips } from "@repo/ds/choice";`,
+    `const a = <div role="group" />;`,
+    `import { DropdownMenuRadioGroup } from "@repo/ds";`,
+  ]) {
+    assert.deepEqual(warnings(code), [], code);
+  }
+});

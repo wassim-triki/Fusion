@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./shell": "./src/shell/index.ts",
+    "./choice": "./src/choice/index.ts",
     "./data-table": "./src/data-table/index.ts",
     "./flow": "./src/flow/index.ts",
     "./flow.css": "./src/flow/flow.css",

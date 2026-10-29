@@ -15,6 +15,7 @@ import type {
 } from "@repo/api";
 import { ApiError, REVIEW_POTENTIALS } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
+import { OptionCards } from "@repo/ds/choice";
 import { Input } from "@repo/ds/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ds/components/ui/popover";
 import { Textarea } from "@repo/ds/components/ui/textarea";
@@ -808,19 +809,18 @@ function ReviewerView({ record }: { record: PerformanceReviewDto }) {
           {record.potentialEnabled ? (
             <section className="mt-10" aria-labelledby="m-potential">
               <SectionHeading id="m-potential" title={t("potential")} aside={<span className="inline-flex items-center gap-1"><Lock className="size-3.5" aria-hidden />{t("neverShownTo", { subject })}</span>} />
-              <div role="radiogroup" aria-label={t("potential")} className={cn("grid gap-3 md:grid-cols-3", draft.missing?.potential && "rounded-surface ring-1 ring-destructive")}>
-                {REVIEW_POTENTIALS.map((level) => {
-                  const selected = draft.potential === level;
-                  return (
-                    <button key={level} type="button" role="radio" aria-checked={selected} disabled={!editable} onClick={() => draft.setPotential(level)}
-                      className={cn("rounded-surface border px-4 py-3 text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        selected ? "border-success bg-success/10" : "border-transparent bg-card hover:border-border")}>
-                      <span className="block type-label text-foreground">{parts(`potentialName.${level}`)}</span>
-                      <span className="block type-meta text-muted-foreground">{parts(`potential.${level}`)}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <OptionCards
+                label={t("potential")}
+                value={draft.potential}
+                disabled={!editable}
+                onChange={draft.setPotential}
+                className={cn(draft.missing?.potential && "rounded-surface ring-1 ring-destructive")}
+                options={REVIEW_POTENTIALS.map((level) => ({
+                  value: level,
+                  label: parts(`potentialName.${level}`),
+                  description: parts(`potential.${level}`),
+                }))}
+              />
             </section>
           ) : null}
         </>

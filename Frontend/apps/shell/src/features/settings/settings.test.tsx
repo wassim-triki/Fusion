@@ -150,7 +150,7 @@ describe("Preferences", () => {
     ).toBeTruthy();
     expect(screen.getByRole("radio", { name: "داكن" })).toBeTruthy();
     expect(
-      screen.getByRole("radio", { name: "العربية" }).getAttribute("lang")
+      screen.getByRole("radio", { name: "العربية" }).querySelector("[lang]")?.getAttribute("lang")
     ).toBe("ar");
   });
 

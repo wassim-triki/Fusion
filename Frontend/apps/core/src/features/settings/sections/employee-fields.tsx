@@ -4,7 +4,8 @@ import { useCallback, useMemo } from "react";
 import type { FusionSettingsSection, OrgChartAudience, PeopleDataSettingsDto } from "@repo/api";
 import { useSettingsConflictSaver } from "@repo/api/query";
 import { useStagedSettings } from "@repo/api/react";
-import { Checkbox, cn, RadioGroup, RadioGroupItem, Switch } from "@repo/ds";
+import { Checkbox, cn, Switch } from "@repo/ds";
+import { OptionCards } from "@repo/ds/choice";
 import {
   PageError,
   SettingsBlock,
@@ -250,29 +251,17 @@ export function EmployeeFieldsSettings({ section }: { section: FusionSettingsSec
 
           <SettingsBlock title={say("employeeFields.orgChart.title")}>
             {editable ? (
-              <RadioGroup
-                aria-label={say("employeeFields.orgChart.title")}
+              <OptionCards
+                columns={2}
+                label={say("employeeFields.orgChart.title")}
                 value={draft.orgChart}
-                onValueChange={(value) => staged.update((current) => ({ ...current, orgChart: value as OrgChartAudience }))}
-                className="gap-3"
-              >
-                {ORG_CHART_AUDIENCES.map((audience) => (
-                  <label
-                    key={audience}
-                    htmlFor={`org-chart-${audience}`}
-                    className={cn(
-                      "flex cursor-pointer items-start gap-3 rounded-surface border px-5 py-4 transition-colors",
-                      draft.orgChart === audience ? "border-primary bg-primary-tint" : "border-border bg-card hover:border-foreground/30"
-                    )}
-                  >
-                    <RadioGroupItem id={`org-chart-${audience}`} value={audience} className="mt-0.5" />
-                    <span className="flex flex-col gap-0.5">
-                      <span className="type-label font-semibold text-foreground">{say(`employeeFields.orgChart.${audience}.label`)}</span>
-                      <span className="type-meta text-muted-foreground">{say(`employeeFields.orgChart.${audience}.detail`)}</span>
-                    </span>
-                  </label>
-                ))}
-              </RadioGroup>
+                onChange={(value) => staged.update((current) => ({ ...current, orgChart: value }))}
+                options={ORG_CHART_AUDIENCES.map((audience) => ({
+                  value: audience,
+                  label: say(`employeeFields.orgChart.${audience}.label`),
+                  description: say(`employeeFields.orgChart.${audience}.detail`),
+                }))}
+              />
             ) : (
               <SettingsRows>
                 <SettingsRow

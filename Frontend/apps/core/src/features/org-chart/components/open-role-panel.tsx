@@ -5,7 +5,8 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Briefcase, X } from "lucide-react";
 import type { ChangePersonRef, OpenRoleStatus, OrgChartOpenRoleDto } from "@repo/api";
-import { Button, DatePicker, Input, cn } from "@repo/ds";
+import { Segmented } from "@repo/ds/choice";
+import { Button, DatePicker, Input } from "@repo/ds";
 import { useRefusal } from "@/i18n/words";
 import { Block, Footer, PersonPicker, UnitEditor } from "@/features/people/changes/change-panel";
 import { useOpenRoleMutations } from "../api/use-org-chart";
@@ -113,15 +114,12 @@ export function OpenRolePanel({
             onChange={(next) => setStart(next ?? "")} placeholder={t("pickDate")} />
         </Block>
         <Block title={t("statusLabel")}>
-          <div className="flex flex-wrap gap-1.5" role="group" aria-label={t("statusLabel")}>
-            {(editing ? STATUSES : STATUSES.slice(0, 2)).map((option) => (
-              <button key={option} type="button" aria-pressed={status === option} onClick={() => setStatus(option)}
-                className={cn("inline-flex h-8 items-center rounded-control border px-3 text-[13px] text-muted-foreground",
-                  status === option && "border-primary bg-primary-tint font-semibold text-foreground")}>
-                {t(`status.${option}`)}
-              </button>
-            ))}
-          </div>
+          <Segmented
+            label={t("statusLabel")}
+            value={status}
+            onChange={setStatus}
+            options={(editing ? STATUSES : STATUSES.slice(0, 2)).map((option) => ({ value: option, label: t(`status.${option}`) }))}
+          />
         </Block>
         {error ? <p role="alert" className="pt-2 type-body text-destructive">{error}</p> : null}
       </div>

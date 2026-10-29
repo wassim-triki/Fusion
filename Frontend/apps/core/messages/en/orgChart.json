@@ -37,7 +37,8 @@
     "review5": "Released",
     "reviewLoading": "Loading review progress",
     "reviewError": "Review progress didn't load.",
-    "reviewNone": "No reviews in progress"
+    "reviewNone": "No reviews in progress",
+    "legend": "Show only"
   },
   "card": {
     "you": "You",

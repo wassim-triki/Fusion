@@ -6,7 +6,8 @@
     "defineATargetWithA": "حدّد هدفًا بقيمة بداية ونهاية رقمية.",
     "weightedMilestones": "مراحل موزونة",
     "breakTheObjectiveIntoMilestones": "قسّم الهدف إلى مراحل بأوزان محددة.",
-    "youllUpdateProgressAsA": "ستحدّث التقدم كنسبة مئوية خلال الدورة."
+    "youllUpdateProgressAsA": "ستحدّث التقدم كنسبة مئوية خلال الدورة.",
+    "measurement": "طريقة قياس التقدم"
   },
   "NumericTargetEditor": {
     "enterANumberPutA": "أدخل رقمًا — ضع تسمية مثل M€ أو % في حقل الوحدة.",

@@ -10,8 +10,6 @@ import {
   Button,
   DatePicker,
   Label,
-  RadioGroup,
-  RadioGroupItem,
   Spinner,
   Tooltip,
   TooltipContent,
@@ -19,6 +17,7 @@ import {
   TooltipTrigger,
   cn,
 } from "@repo/ds";
+import { OptionCards } from "@repo/ds/choice";
 import { PageContainer } from "@repo/ds/shell";
 import { ArrowRight, ChevronRight, Clock, Download, FileSpreadsheet, FileText, Info, RotateCcw, Upload } from "lucide-react";
 import { ImportHeader } from "./import-header";
@@ -474,20 +473,14 @@ function SheetChoice({ fileNoun, sheets, value, onChange }: { fileNoun: string; 
       <legend className="sr-only">{t("upload.sheetLegend")}</legend>
       <p className="type-label font-semibold text-foreground">{t("upload.sheets")}</p>
       <p className="mt-1 type-meta text-muted-foreground">{t("upload.chooseSheet", { noun: fileNoun })}</p>
-      <RadioGroup value={value} onValueChange={onChange} className="mt-4 gap-2">
-        {sheets.map((sheet) => (
-          <label
-            key={sheet}
-            className={cn(
-              "flex cursor-pointer items-center gap-3 rounded-control border px-4 py-3 transition-colors",
-              value === sheet ? "border-primary/60 bg-primary/[0.05]" : "border-border hover:bg-muted/40"
-            )}
-          >
-            <RadioGroupItem value={sheet} aria-label={sheet} />
-            <span className="type-label font-medium text-foreground">{sheet}</span>
-          </label>
-        ))}
-      </RadioGroup>
+      <OptionCards
+        columns={1}
+        className="mt-4"
+        label={t("upload.sheetLegend")}
+        value={value}
+        onChange={onChange}
+        options={sheets.map((sheet) => ({ value: sheet, label: sheet }))}
+      />
     </fieldset>
   );
 }
@@ -499,24 +492,18 @@ function HeaderChoice({ candidates, value, onChange }: { candidates: UploadHeade
     <fieldset className="mt-5 rounded-control border border-border p-5">
       <legend className="sr-only">{t("upload.headerLegend")}</legend>
       <p className="type-label font-semibold text-foreground">{t("upload.headerQuestion")}</p>
-      <RadioGroup value={String(value)} onValueChange={(v) => onChange(Number(v))} className="mt-4 gap-2">
-        {candidates.map((candidate) => {
-          const cells = candidate.preview.filter((cell): cell is string => Boolean(cell?.trim()));
-          return (
-            <label
-              key={candidate.rowIndex}
-              className={cn(
-                "flex cursor-pointer items-center gap-3 rounded-control border px-4 py-3 transition-colors",
-                value === candidate.rowIndex ? "border-primary/60 bg-primary/[0.05]" : "border-border hover:bg-muted/40"
-              )}
-            >
-              <RadioGroupItem value={String(candidate.rowIndex)} aria-label={t("upload.row", { number: candidate.rowIndex + 1 })} />
-              <span className="shrink-0 type-meta tabular-nums text-muted-foreground">{t("upload.row", { number: candidate.rowIndex + 1 })}</span>
-              <span className="truncate type-label font-medium text-foreground">{cells.join(" · ")}</span>
-            </label>
-          );
-        })}
-      </RadioGroup>
+      <OptionCards
+        columns={1}
+        className="mt-4"
+        label={t("upload.headerLegend")}
+        value={String(value)}
+        onChange={(next) => onChange(Number(next))}
+        options={candidates.map((candidate) => ({
+          value: String(candidate.rowIndex),
+          label: candidate.preview.filter((cell): cell is string => Boolean(cell?.trim())).join(" · "),
+          description: t("upload.row", { number: candidate.rowIndex + 1 }),
+        }))}
+      />
     </fieldset>
   );
 }

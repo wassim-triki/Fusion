@@ -13,6 +13,7 @@ import { Check } from "@/lib/icons";
 import { bandLevels, bandRange, nearestLevel, POTENTIALS } from "./calibration-format";
 import { useTranslations } from "next-intl";
 import { performanceFailure } from "@/features/performance/api/performance-failure";
+import { LevelCards } from "../reviews/review-parts";
 
 export interface NineBoxMove {
   person: CalibrationCellPersonDto;
@@ -166,16 +167,7 @@ function DropForm({ drop, bands, onClose, onConfirm }: {
           </DialogDescription>
         </DialogHeader>
         {levels.length > 1 ? (
-          <div role="radiogroup" aria-label={t("rating")} className="grid gap-2" style={{ gridTemplateColumns: `repeat(${levels.length}, minmax(0, 1fr))` }}>
-            {levels.map((level) => (
-              <button key={level.value} type="button" role="radio" aria-checked={rating === level.value} onClick={() => setRating(level.value)}
-                className={cn("rounded-control border px-3 py-2.5 text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  rating === level.value ? "border-primary bg-primary-tint text-primary-ink" : "border-transparent bg-inlay text-foreground hover:border-border")}>
-                <span className="block type-label tabular-nums">{level.value}</span>
-                <span className="block type-meta text-muted-foreground">{level.label}</span>
-              </button>
-            ))}
-          </div>
+          <LevelCards levels={levels} value={rating} onChange={setRating} label={t("rating")} />
         ) : null}
         <label className="block">
           <span className="type-label text-foreground">{t("whyThisChanges")}</span>

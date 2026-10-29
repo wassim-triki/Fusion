@@ -13,6 +13,7 @@ import type {
   PlanObjectiveDto,
 } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
+import { OptionCards } from "@repo/ds/choice";
 import {
   Dialog,
   DialogContent,
@@ -439,28 +440,22 @@ export function PlanGoalComposer({
               title={tr("alignment")}
               hint={tr("chooseHowThisObjectiveConnects")}
             >
-              <div className="grid gap-3 sm:grid-cols-2">
-                <ChoiceTile
-                  active={mode === "aligned"}
-                  icon={Target}
-                  title={tr("alignedToDirection")}
-                  detail={tr("alignThisObjectiveToAn")}
-                  onClick={() => setMode("aligned")}
-                />
-                <ChoiceTile
-                  active={mode === "standalone"}
-                  icon={UserRound}
-                  title={tr("standaloneRoleObjective")}
-                  detail={
-                    standaloneAllowed
-                      ? tr("createAnObjectiveFocusedOn")
-                      : tr("notPermittedThisCycleEvery")
-                  }
-                  disabled={!standaloneAllowed}
-                  tone="info"
-                  onClick={() => standaloneAllowed && setMode("standalone")}
-                />
-              </div>
+              <OptionCards
+                columns={2}
+                label={tr("alignment")}
+                value={mode}
+                onChange={setMode}
+                options={[
+                  { value: "aligned", label: tr("alignedToDirection"), description: tr("alignThisObjectiveToAn"), icon: <Target aria-hidden /> },
+                  {
+                    value: "standalone",
+                    label: tr("standaloneRoleObjective"),
+                    description: standaloneAllowed ? tr("createAnObjectiveFocusedOn") : tr("notPermittedThisCycleEvery"),
+                    icon: <UserRound aria-hidden />,
+                    disabled: !standaloneAllowed,
+                  },
+                ]}
+              />
 
               {mode === "aligned" ? (
                 targets.length === 0 ? (
@@ -775,86 +770,6 @@ export function PlanGoalComposer({
 }
 
 // ── Alignment choice tile ───────────────────────────────────────────────────────────
-
-/** Aligned reads yellow and standalone reads blue, matching the objective rows. */
-const TILE_TONES = {
-  primary: {
-    active: "border-primary bg-primary/[0.05] ring-1 ring-primary/30",
-    hover: "hover:border-primary/40",
-    radio: "border-primary",
-    dot: "bg-primary",
-    icon: "text-primary-ink",
-  },
-  info: {
-    active: "border-info bg-info/[0.06] ring-1 ring-info/30",
-    hover: "hover:border-info/40",
-    radio: "border-info",
-    dot: "bg-info",
-    icon: "text-info",
-  },
-} as const;
-
-function ChoiceTile({
-  active,
-  icon: Icon,
-  title,
-  detail,
-  disabled = false,
-  tone = "primary",
-  onClick,
-}: {
-  active: boolean;
-  tone?: keyof typeof TILE_TONES;
-  icon: typeof Target;
-  title: string;
-  detail: string;
-  disabled?: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-pressed={active}
-      className={cn(
-        "flex items-start gap-3 rounded-surface border p-4 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        active
-          ? TILE_TONES[tone].active
-          : cn("border-border hover:bg-muted/40", TILE_TONES[tone].hover),
-        disabled &&
-          "cursor-not-allowed opacity-55 hover:border-border hover:bg-transparent"
-      )}
-    >
-      <span
-        className={cn(
-          "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border",
-          active ? TILE_TONES[tone].radio : "border-muted-foreground/40"
-        )}
-        aria-hidden
-      >
-        {active ? (
-          <span className={cn("size-2 rounded-full", TILE_TONES[tone].dot)} />
-        ) : null}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block type-subsection-title text-foreground">
-          {title}
-        </span>
-        <span className="mt-0.5 block type-meta leading-snug text-muted-foreground">
-          {detail}
-        </span>
-      </span>
-      <Icon
-        className={cn(
-          "size-5 shrink-0",
-          active ? TILE_TONES[tone].icon : "text-muted-foreground/50"
-        )}
-        aria-hidden
-      />
-    </button>
-  );
-}
 
 // ── Selected organizational objective (rich trigger content) ─────────────────────────
 

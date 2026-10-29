@@ -5,12 +5,12 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ApiError, type CalibrationConflictDto, type CalibrationSubjectDetailDto, type ReviewPotential } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
+import { Segmented } from "@repo/ds/choice";
 import { Checkbox } from "@repo/ds/components/ui/checkbox";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@repo/ds/components/ui/sheet";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { Textarea } from "@repo/ds/components/ui/textarea";
 import { AsyncButton } from "@repo/ds/shell";
-import { cn } from "@repo/ds/lib/utils";
 import { ObjectiveStatusBadge, PersonInitials } from "@repo/performance-ui";
 import { ArrowRight, Check, RotateCcw } from "@/lib/icons";
 import { reviewHref } from "@/lib/performance-routes";
@@ -195,17 +195,22 @@ function DrawerBody({ detail, readOnly, potentialEnabled, mutations, onClose }: 
         {potentialEnabled && person.originalPotential ? (
           <section aria-label={t("potential")} className="flex flex-wrap items-center justify-between gap-3">
             <p className="type-label text-foreground">{t("potential")}</p>
-            <div role="radiogroup" aria-label={t("potential")} className="inline-flex gap-1 rounded-control bg-inlay p-1">
-              {POTENTIALS.map((potential) => (
-                <button key={potential} type="button" role="radio" aria-checked={draft.potential === potential} disabled={readOnly}
-                  onClick={() => setDraft({ ...draft, potential })}
-                  className={cn("rounded-nested px-3 py-1 type-meta-strong transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    draft.potential === potential ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-                    person.originalPotential === potential && draft.potential !== potential && "ring-1 ring-inset ring-info")}>
-                  {potential}
-                </button>
-              ))}
-            </div>
+            {/* The dot marks the potential the reviewer gave, once HR has moved away from it. */}
+            <Segmented
+              size="sm"
+              label={t("potential")}
+              value={draft.potential}
+              disabled={readOnly}
+              onChange={(potential) => setDraft({ ...draft, potential })}
+              options={POTENTIALS.map((potential) => ({
+                value: potential,
+                label: potential,
+                icon:
+                  person.originalPotential === potential && draft.potential !== potential ? (
+                    <span aria-hidden className="size-1.5 rounded-full bg-info" />
+                  ) : undefined,
+              }))}
+            />
           </section>
         ) : null}
 

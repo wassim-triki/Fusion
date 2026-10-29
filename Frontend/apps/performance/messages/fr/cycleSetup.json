@@ -174,7 +174,8 @@
     "of": "sur",
     "rowsPerPage": "Lignes par page",
     "excludeEmployee": "Exclure {selectedCount} collaborateur",
-    "excludeEmployees": "Exclure {selectedCount} collaborateurs"
+    "excludeEmployees": "Exclure {selectedCount} collaborateurs",
+    "show": "Afficher"
   },
   "Pager": {
     "previousPage": "Page précédente",

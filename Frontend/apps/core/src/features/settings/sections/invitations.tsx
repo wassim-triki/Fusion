@@ -4,7 +4,8 @@ import { useCallback, useMemo } from "react";
 import type { FusionSettingsSection, ProvisioningSettingsDto } from "@repo/api";
 import { useSettingsConflictSaver } from "@repo/api/query";
 import { useStagedSettings } from "@repo/api/react";
-import { cn, Input, NativeSelect, NativeSelectOption, RadioGroup, RadioGroupItem } from "@repo/ds";
+import { Input, NativeSelect, NativeSelectOption } from "@repo/ds";
+import { OptionCards } from "@repo/ds/choice";
 import {
   PageError,
   SettingsBlock,
@@ -186,32 +187,17 @@ export function InvitationsSettings({ section }: { section: FusionSettingsSectio
 
           <SettingsBlock title={say("invitations.reinviteTitle")}>
             {editable ? (
-              <RadioGroup
-                aria-label={say("invitations.reinviteTitle")}
+              <OptionCards
+                columns={2}
+                label={say("invitations.reinviteTitle")}
                 value={draft.pendingInviteBehavior}
-                onValueChange={(value) => set({ pendingInviteBehavior: value })}
-                className="gap-3"
-              >
-                {REINVITE.map((option) => {
-                  const selected = draft.pendingInviteBehavior === option;
-                  return (
-                    <label
-                      key={option}
-                      htmlFor={`reinvite-${option}`}
-                      className={cn(
-                        "flex cursor-pointer items-start gap-3 rounded-surface border px-5 py-4 transition-colors",
-                        selected ? "border-primary bg-primary-tint" : "border-border bg-card hover:border-foreground/30"
-                      )}
-                    >
-                      <RadioGroupItem id={`reinvite-${option}`} value={option} className="mt-0.5" />
-                      <span className="flex flex-col gap-0.5">
-                        <span className="type-label font-semibold text-foreground">{say(`invitations.reinvite.${option}.label`)}</span>
-                        <span className="type-meta text-muted-foreground">{say(`invitations.reinvite.${option}.detail`)}</span>
-                      </span>
-                    </label>
-                  );
-                })}
-              </RadioGroup>
+                onChange={(value) => set({ pendingInviteBehavior: value })}
+                options={REINVITE.map((option) => ({
+                  value: option,
+                  label: say(`invitations.reinvite.${option}.label`),
+                  description: say(`invitations.reinvite.${option}.detail`),
+                }))}
+              />
             ) : (
               <SettingsRows>
                 {(REINVITE as readonly string[]).includes(draft.pendingInviteBehavior) ? (

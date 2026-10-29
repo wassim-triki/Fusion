@@ -6,7 +6,8 @@
     "defineATargetWithA": "Définissez une cible avec une valeur numérique de départ et d’arrivée.",
     "weightedMilestones": "Jalons pondérés",
     "breakTheObjectiveIntoMilestones": "Découpez l’objectif en jalons pondérés.",
-    "youllUpdateProgressAsA": "Vous mettrez à jour l’avancement en pourcentage pendant le cycle."
+    "youllUpdateProgressAsA": "Vous mettrez à jour l’avancement en pourcentage pendant le cycle.",
+    "measurement": "Mesure de la progression"
   },
   "NumericTargetEditor": {
     "enterANumberPutA": "Saisissez un nombre ; mettez une étiquette comme M€ ou % dans le champ Unité.",

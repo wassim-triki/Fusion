@@ -8,8 +8,6 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-  RadioGroup,
-  RadioGroupItem,
   Skeleton,
   cn,
 } from "@repo/ds";
@@ -33,38 +31,6 @@ export function flattenOrg(nodes: OrganizationHierarchyNodeDto[], depth = 0): Or
     { id: node.unit.id, name: node.unit.name, path: node.unit.path, depth },
     ...flattenOrg(node.children, depth + 1),
   ]);
-}
-
-/** Compact two-option segmented control — a mode choice, not two large cards. */
-export function Segmented<T extends string>({
-  value,
-  onValueChange,
-  options,
-  label,
-}: {
-  value: T;
-  onValueChange: (value: T) => void;
-  options: { value: T; label: string }[];
-  label: string;
-}) {
-  return (
-    <RadioGroup
-      value={value}
-      onValueChange={(next) => onValueChange(next as T)}
-      aria-label={label}
-      className="inline-flex flex-wrap gap-1 rounded-control border bg-inlay p-1"
-    >
-      {options.map((option) => (
-        <label
-          key={option.value}
-          className="cursor-pointer rounded-nested px-3.5 py-1.5 type-label text-muted-foreground transition-colors has-data-[state=checked]:bg-background has-data-[state=checked]:text-foreground has-data-[state=checked]:shadow-raised focus-within:ring-2 focus-within:ring-ring motion-reduce:transition-none"
-        >
-          <RadioGroupItem value={option.value} className="sr-only" />
-          {option.label}
-        </label>
-      ))}
-    </RadioGroup>
-  );
 }
 
 export function OrganizationPicker({
@@ -171,6 +137,7 @@ export function ManagerPicker({
               type="button"
               key={option.employeeId}
               onClick={() => onChange(option.employeeId)}
+              // eslint-disable-next-line no-restricted-syntax -- a row in a searchable people list marks the one picked; a list, not a few options
               aria-pressed={value === option.employeeId}
               className="flex w-full items-center justify-between gap-3 rounded-control px-2.5 py-2 text-start hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring aria-pressed:bg-muted"
             >

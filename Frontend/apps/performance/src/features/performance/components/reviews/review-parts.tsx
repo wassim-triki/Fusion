@@ -191,6 +191,7 @@ export function LevelCards({
 }) {
   const t = useTranslations("reviews.LevelCards");
   return (
+    // eslint-disable-next-line no-restricted-syntax -- the rating scale shows each level's number and the reviewer's marker; a scale, not a few options
     <div role="radiogroup" aria-label={label} className="grid gap-2" style={{ gridTemplateColumns: `repeat(${levels.length}, minmax(0, 1fr))` }}>
       {levels.map((level) => {
         const selected = value === level.value;

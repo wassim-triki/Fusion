@@ -135,6 +135,7 @@ function SummaryCard({
     <button
       type="button"
       onClick={onSelect}
+      // eslint-disable-next-line no-restricted-syntax -- a summary card is a figure that also filters the list; chips would lose the figures
       aria-pressed={isSelected}
       className={cn(
         "group flex h-full flex-col rounded-surface border p-[22px] text-start",

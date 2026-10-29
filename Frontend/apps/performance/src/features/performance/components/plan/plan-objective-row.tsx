@@ -125,6 +125,7 @@ export function PlanObjectiveRow({
             <button
               type="button"
               onClick={onViewDetails}
+              // eslint-disable-next-line no-restricted-syntax -- the title opens this objective in the side panel; pressed marks the one open
               aria-pressed={active}
               className="rounded-control text-start font-medium tracking-tight text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >

@@ -2,6 +2,7 @@
 
 import { englishMessages } from "@/i18n/messages";
 import { useWorkforceAccessWords } from "./access-language";
+import { Segmented } from "@repo/ds/choice";
 import { englishSay, useSay, type Say } from "@repo/ds/lib/say";
 import { useLocale, useTranslations } from "next-intl";
 import { useId, useMemo, useState } from "react";
@@ -595,33 +596,18 @@ function PlanRow({
           ) : null}
 
           {!blocked && editable && editing ? (
-            <div
-              className="inline-flex rounded-surface border bg-inlay p-0.5"
-              role="group"
-              aria-label={t("plan.recommendationFor", { name: person.displayName })}
-            >
-              {(["Employee", "Manager"] as const).map((choice) => (
-                <button
-                  key={choice}
-                  type="button"
-                  onClick={() => {
-                    onBaseline(choice);
-                    setEditing(false);
-                  }}
-                  aria-pressed={baseline === choice}
-                  className={cn(
-                    "inline-flex items-center gap-1 rounded-control px-2.5 py-1 type-meta transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    baseline === choice
-                      ? "bg-foreground text-background"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {baseline === choice ? (
-                    <Check className="size-3" aria-hidden />
-                  ) : null}
-                  {words.choice(choice)}
-                </button>
-              ))}
+            // Re-picking the current role closes the editor too; the control only reports a change.
+            <div onClickCapture={(event) => { if ((event.target as HTMLElement).closest("[data-state=checked]")) setEditing(false); }}>
+              <Segmented
+                size="sm"
+                label={t("plan.recommendationFor", { name: person.displayName })}
+                value={baseline}
+                onChange={(choice) => {
+                  onBaseline(choice);
+                  setEditing(false);
+                }}
+                options={(["Employee", "Manager"] as const).map((choice) => ({ value: choice, label: words.choice(choice) }))}
+              />
             </div>
           ) : !blocked ? (
             <div>

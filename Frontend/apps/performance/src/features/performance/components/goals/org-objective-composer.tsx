@@ -25,6 +25,7 @@ import type {
   UpdateOrganizationalObjectiveRequest,
 } from "@repo/api";
 import { Avatar, AvatarFallback } from "@repo/ds/components/ui/avatar";
+import { OptionCards } from "@repo/ds/choice";
 import { Button } from "@repo/ds/components/ui/button";
 import { DatePicker } from "@repo/ds/components/ui/date-picker";
 import {
@@ -48,8 +49,6 @@ import {
   ComboboxList,
   ComboboxTrigger,
 } from "@repo/ds/components/ui/combobox";
-import { RadioGroup, RadioGroupItem } from "@repo/ds/components/ui/radio-group";
-import { cn } from "@repo/ds/lib/utils";
 import {
   OrgUnitPicker,
   type PickedEmployee,
@@ -713,22 +712,16 @@ export function OrgObjectiveComposer({
                   {measurePreview(suggestions.measure)}
                 </CoachSuggestion>
               ) : null}
-              <div className="grid gap-3 sm:grid-cols-2">
-                <SourceCard
-                  active={source === "Direct"}
-                  icon={Gauge}
-                  title={tr("measureDirectly")}
-                  detail={tr("trackThisObjectiveWithIts")}
-                  onClick={() => setSource("Direct")}
-                />
-                <SourceCard
-                  active={source === "Calculated"}
-                  icon={Sigma}
-                  title={tr("calculateFromContributors")}
-                  detail={tr("rollUpFromPublishedDirect")}
-                  onClick={() => setSource("Calculated")}
-                />
-              </div>
+              <OptionCards
+                columns={2}
+                label={tr("measurement")}
+                value={source}
+                onChange={setSource}
+                options={[
+                  { value: "Direct", label: tr("measureDirectly"), description: tr("trackThisObjectiveWithIts"), icon: <Gauge aria-hidden /> },
+                  { value: "Calculated", label: tr("calculateFromContributors"), description: tr("rollUpFromPublishedDirect"), icon: <Sigma aria-hidden /> },
+                ]}
+              />
 
               {source === "Direct" ? (
                 <MeasurementEditor
@@ -840,61 +833,23 @@ function AlignmentEditor({
           {t("chooseTheOrganizationalDirectionThis")}
         </p>
       </div>
-      <RadioGroup
-        className="mt-4 grid gap-3 sm:grid-cols-2"
-        value={mode ?? ""}
-        onValueChange={(value) =>
-          onModeChange(value as "aligned" | "standalone")
-        }
-      >
-        <label
-          className={cn(
-            "flex cursor-pointer items-start gap-3 rounded-surface border p-3.5 transition-colors",
-            mode === "aligned"
-              ? "border-primary bg-primary/[0.06]"
-              : "border-border bg-card hover:border-primary/40",
-            (disabled || targets.length === 0) &&
-              "cursor-not-allowed opacity-60"
-          )}
-        >
-          <RadioGroupItem
-            value="aligned"
-            disabled={disabled || targets.length === 0}
-            className="mt-0.5"
-          />
-          <span>
-            <span className="block type-label text-foreground">
-              {t("alignToOrganizationalDirection")}
-            </span>
-            <span className="mt-0.5 block type-meta leading-snug text-muted-foreground">
-              {t("connectThisObjectiveToA")}
-            </span>
-          </span>
-        </label>
-        <label
-          className={cn(
-            "flex cursor-pointer items-start gap-3 rounded-surface border p-3.5 transition-colors",
-            mode === "standalone"
-              ? "border-primary bg-primary/[0.06]"
-              : "border-border bg-card hover:border-primary/40",
-            disabled && "cursor-not-allowed opacity-60"
-          )}
-        >
-          <RadioGroupItem
-            value="standalone"
-            disabled={disabled}
-            className="mt-0.5"
-          />
-          <span>
-            <span className="block type-label text-foreground">
-              {t("standaloneTeamObjective")}
-            </span>
-            <span className="mt-0.5 block type-meta leading-snug text-muted-foreground">
-              {t("keepThisObjectiveWithinMy")}
-            </span>
-          </span>
-        </label>
-      </RadioGroup>
+      <OptionCards
+        columns={2}
+        className="mt-4"
+        label={t("alignToOrganizationalDirection")}
+        value={mode}
+        disabled={disabled}
+        onChange={onModeChange}
+        options={[
+          {
+            value: "aligned",
+            label: t("alignToOrganizationalDirection"),
+            description: t("connectThisObjectiveToA"),
+            disabled: targets.length === 0,
+          },
+          { value: "standalone", label: t("standaloneTeamObjective"), description: t("keepThisObjectiveWithinMy") },
+        ]}
+      />
 
       {mode === "aligned" ? (
         <div className="mt-4 space-y-1.5">
@@ -1179,51 +1134,3 @@ function OwnerPicker({
   );
 }
 
-// ── Progress-source card (Direct vs Calculated) ──────────────────────────────────
-
-function SourceCard({
-  active,
-  icon: Icon,
-  title,
-  detail,
-  onClick,
-}: {
-  active: boolean;
-  icon: typeof Gauge;
-  title: string;
-  detail: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "group flex items-start gap-3 rounded-surface border p-3.5 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        active
-          ? "border-primary bg-primary/[0.06] ring-1 ring-primary/40"
-          : "border-border hover:border-primary/40 hover:bg-muted/40"
-      )}
-    >
-      <span
-        className={cn(
-          "flex size-10 shrink-0 items-center justify-center rounded-control transition-colors",
-          active
-            ? "bg-primary-tint text-primary-ink"
-            : "bg-muted text-muted-foreground group-hover:text-foreground"
-        )}
-      >
-        <Icon className="size-5" aria-hidden />
-      </span>
-      <span className="min-w-0">
-        <span className="block type-label text-foreground">
-          {title}
-        </span>
-        <span className="mt-0.5 block type-meta leading-snug text-muted-foreground">
-          {detail}
-        </span>
-      </span>
-    </button>
-  );
-}

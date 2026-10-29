@@ -13,6 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@repo/ds/components/ui/alert-dialog";
+import { Segmented } from "@repo/ds/choice";
 import { Button } from "@repo/ds/components/ui/button";
 import { DatePicker } from "@repo/ds/components/ui/date-picker";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@repo/ds/components/ui/dialog";
@@ -399,23 +400,13 @@ function GoalComposer({ plan, cycleId, employeeId, goal, onClose }: {
           </div>
           <fieldset className="space-y-1.5">
             <legend className="type-label text-foreground">{t("status")}</legend>
-            <div role="radiogroup" aria-label={t("status")} className="grid grid-cols-3 gap-2">
-              {STATUSES.map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  role="radio"
-                  aria-checked={status === value}
-                  onClick={() => setStatus(value)}
-                  className={cn(
-                    "rounded-control border px-3 py-2 type-label transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    status === value ? "border-primary bg-primary-tint text-primary-ink" : "border-border text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {words.developmentStatus(value)}
-                </button>
-              ))}
-            </div>
+            <Segmented
+              fill
+              label={t("status")}
+              value={status}
+              onChange={setStatus}
+              options={STATUSES.map((value) => ({ value, label: words.developmentStatus(value) }))}
+            />
           </fieldset>
           <fieldset className="space-y-2">
             <legend className="type-label text-foreground">{t("actions")} <span className="font-normal text-muted-foreground">{t("optional")}</span></legend>

@@ -114,12 +114,12 @@ describe("AI coach in the plan composer", () => {
   it("applying a parent in standalone switches the objective to aligned", async () => {
     coachObjective.mockResolvedValue(suggested({ title: null, measure: null }));
     renderComposer({ objective: objective({ isAligned: false }) });
-    expect(screen.getByRole("button", { name: /Standalone role objective/ }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("radio", { name: /Standalone role objective/ }).getAttribute("aria-checked")).toBe("true");
     await askCoach();
 
     fireEvent.click(within(await screen.findByRole("group", { name: "Suggested parent" })).getByRole("button", { name: "Apply suggested parent" }));
 
-    expect(screen.getByRole("button", { name: /Aligned to direction/ }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("radio", { name: /Aligned to direction/ }).getAttribute("aria-checked")).toBe("true");
     expect(screen.getByRole("combobox", { name: "Select organizational objective" }).textContent).toContain("Grow talent");
   });
 

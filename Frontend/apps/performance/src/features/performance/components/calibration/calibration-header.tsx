@@ -200,6 +200,7 @@ function OptionFilter({ label, value, options, onChange }: {
 
 function ToggleFilter({ label, on, onChange }: { label: string; on: boolean; onChange: (on: boolean) => void }) {
   return (
+    // eslint-disable-next-line no-restricted-syntax -- a single on/off filter button, not a choice among options
     <Button variant="outline" size="sm" aria-pressed={on} onClick={() => onChange(!on)}
       className={cn("h-9", on && "border-primary bg-primary-tint text-primary-ink hover:bg-primary-tint")}>
       {on ? <Check className="size-3.5" aria-hidden /> : null}{label}

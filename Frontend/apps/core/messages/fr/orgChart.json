@@ -37,7 +37,8 @@
     "review5": "Publiée",
     "reviewLoading": "Chargement de l'avancement",
     "reviewError": "L'avancement des évaluations n'a pas pu être chargé.",
-    "reviewNone": "Aucune évaluation en cours"
+    "reviewNone": "Aucune évaluation en cours",
+    "legend": "Afficher seulement"
   },
   "card": {
     "you": "Vous",

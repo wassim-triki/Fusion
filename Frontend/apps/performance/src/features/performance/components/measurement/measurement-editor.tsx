@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Flag, Info, LineChart, Percent, TrendingDown, TrendingUp } from "@/lib/icons";
 import type { ImprovementDirection, MeasurementMethod } from "@repo/api";
 import { Input } from "@repo/ds/components/ui/input";
+import { OptionCards, Segmented } from "@repo/ds/choice";
 import { Label } from "@repo/ds/components/ui/label";
 import {
   Autocomplete,
@@ -13,7 +14,6 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@repo/ds/components/ui/combobox";
-import { cn } from "@repo/ds/lib/utils";
 import { MilestoneEditor, type MilestoneRow } from "./milestone-editor";
 import { useTranslations } from "next-intl";
 
@@ -85,29 +85,16 @@ export function MeasurementEditor({
   const t = useTranslations("progress.MeasurementEditor");
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-3">
-        <MethodTile
-          active={method === "ManualPercentage"}
-          icon={Percent}
-          title={t("manualPercentage")}
-          detail={t("updateProgressAsAPercentage")}
-          onClick={() => onMethodChange("ManualPercentage")}
-        />
-        <MethodTile
-          active={method === "NumericTarget"}
-          icon={LineChart}
-          title={t("numericTarget")}
-          detail={t("defineATargetWithA")}
-          onClick={() => onMethodChange("NumericTarget")}
-        />
-        <MethodTile
-          active={method === "WeightedMilestones"}
-          icon={Flag}
-          title={t("weightedMilestones")}
-          detail={t("breakTheObjectiveIntoMilestones")}
-          onClick={() => onMethodChange("WeightedMilestones")}
-        />
-      </div>
+      <OptionCards
+        label={t("measurement")}
+        value={method}
+        onChange={onMethodChange}
+        options={[
+          { value: "ManualPercentage", label: t("manualPercentage"), description: t("updateProgressAsAPercentage"), icon: <Percent aria-hidden /> },
+          { value: "NumericTarget", label: t("numericTarget"), description: t("defineATargetWithA"), icon: <LineChart aria-hidden /> },
+          { value: "WeightedMilestones", label: t("weightedMilestones"), description: t("breakTheObjectiveIntoMilestones"), icon: <Flag aria-hidden /> },
+        ]}
+      />
 
       {method === "ManualPercentage" ? (
         <div className="flex items-center gap-2.5 rounded-surface border border-info/25 bg-info-subtle px-4 py-3 type-body text-info">
@@ -142,61 +129,6 @@ export function MeasurementEditor({
         />
       ) : null}
     </div>
-  );
-}
-
-// ── Method tile (icon + title + one-line detail) ──────────────────────────────────
-
-function MethodTile({
-  active,
-  icon: Icon,
-  title,
-  detail,
-  onClick,
-}: {
-  active: boolean;
-  icon: typeof Percent;
-  title: string;
-  detail: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "flex items-start gap-3 rounded-surface border p-4 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        active
-          ? "border-primary bg-primary/[0.05] ring-1 ring-primary/30"
-          : "border-border hover:border-primary/40 hover:bg-muted/40"
-      )}
-    >
-      <span
-        className={cn(
-          "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border",
-          active ? "border-primary" : "border-muted-foreground/40"
-        )}
-        aria-hidden
-      >
-        {active ? <span className="size-2 rounded-full bg-primary" /> : null}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block type-subsection-title text-foreground">
-          {title}
-        </span>
-        <span className="mt-0.5 block type-meta leading-snug text-muted-foreground">
-          {detail}
-        </span>
-      </span>
-      <Icon
-        className={cn(
-          "size-5 shrink-0",
-          active ? "text-primary-ink" : "text-muted-foreground/50"
-        )}
-        aria-hidden
-      />
-    </button>
   );
 }
 
@@ -258,20 +190,16 @@ function NumericTargetEditor({
         </div>
         <div className="space-y-1.5">
           <Label>{t("direction")}</Label>
-          <div className="grid grid-cols-2 gap-1 rounded-control border border-border p-0.5">
-            <DirectionOption
-              active={direction === "Increase"}
-              icon={TrendingUp}
-              label={t("increase")}
-              onClick={() => onDirection("Increase")}
-            />
-            <DirectionOption
-              active={direction === "Decrease"}
-              icon={TrendingDown}
-              label={t("decrease")}
-              onClick={() => onDirection("Decrease")}
-            />
-          </div>
+          <Segmented
+            fill
+            label={t("direction")}
+            value={direction}
+            onChange={onDirection}
+            options={[
+              { value: "Increase", label: t("increase"), icon: <TrendingUp aria-hidden /> },
+              { value: "Decrease", label: t("decrease"), icon: <TrendingDown aria-hidden /> },
+            ]}
+          />
         </div>
       </div>
       {error ? <p className="type-body text-destructive">{error}</p> : null}
@@ -353,31 +281,3 @@ function NumericField({
   );
 }
 
-function DirectionOption({
-  active,
-  icon: Icon,
-  label,
-  onClick,
-}: {
-  active: boolean;
-  icon: typeof TrendingUp;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "flex h-8 items-center justify-center gap-1.5 rounded-control px-2 type-label transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        active
-          ? "bg-primary-tint text-primary-ink"
-          : "text-muted-foreground hover:text-foreground"
-      )}
-    >
-      <Icon className="size-4 shrink-0" aria-hidden />
-      {label}
-    </button>
-  );
-}

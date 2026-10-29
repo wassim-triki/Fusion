@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
+import { QuickPicks } from "@repo/ds/choice";
 import { Button, DatePicker, Input, Skeleton, Textarea, cn } from "@repo/ds";
 import { StatusBadge } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
@@ -615,20 +616,18 @@ function WhenBlock({ label, value, onChange, options }: { label: string; value: 
   const t = useTranslations("changes.when");
   const format = useFormat();
   const today = todayIso();
-  const custom = !options.includes(value);
   return (
     <Block title={label}>
-      <div className="flex flex-wrap gap-1.5">
-        {options.map((option) => (
-          <button key={option} type="button" aria-pressed={value === option} onClick={() => onChange(option)}
-            className={cn("inline-flex h-8 items-center rounded-control border px-3 text-[13px] text-muted-foreground",
-              value === option && "border-primary bg-primary-tint font-semibold text-foreground")}>
-            {option === today ? t("today") : format.date(option)}
-          </button>
-        ))}
-        <div className={cn("w-40 [&_button]:h-8 [&_button]:text-[13px]", custom && "[&_button]:border-primary [&_button]:bg-primary-tint [&_button]:font-semibold")}>
-          <DatePicker value={custom ? value : ""} min={today} onChange={(next) => { if (next) onChange(next); }} placeholder={t("otherDate")} />
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="w-44">
+          <DatePicker value={value} min={today} onChange={(next) => { if (next) onChange(next); }} placeholder={t("otherDate")} />
         </div>
+        <QuickPicks
+          label={label}
+          value={value}
+          onPick={onChange}
+          options={options.map((option) => ({ value: option, label: option === today ? t("today") : format.date(option) }))}
+        />
       </div>
     </Block>
   );

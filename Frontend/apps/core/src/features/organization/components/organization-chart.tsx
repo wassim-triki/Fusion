@@ -90,6 +90,7 @@ const OrganizationNode = memo(function OrganizationNode({ data }: NodeProps<Orga
       <button
         type="button"
         aria-label={data.accessibleName}
+        // eslint-disable-next-line no-restricted-syntax -- a chart node toggles its own selection; not a choice among options
         aria-pressed={data.selected}
         onClick={() => data.onSelect(data.id)}
         className="flex h-full w-full flex-col justify-center gap-1 rounded-control px-3.5 text-start outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"

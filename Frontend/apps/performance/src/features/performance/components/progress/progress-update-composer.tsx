@@ -312,6 +312,7 @@ function StatusPicker({ value, onChange, disabled }: { value: ObjectiveStatus | 
   return (
     <fieldset>
       <legend className="type-subsection-title text-foreground">{t("howItsGoing")}</legend>
+      {/* eslint-disable-next-line no-restricted-syntax -- on track, at risk and off track keep their status colours when chosen */}
       <div role="radiogroup" aria-label={t("howItsGoing")} className="mt-2.5 grid grid-cols-3 gap-2.5">
         {STATUS_OPTIONS.map((option) => {
           const on = value === option.value;

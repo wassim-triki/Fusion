@@ -5,15 +5,12 @@ import { Monitor, Moon, Sun, type LucideIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
 import { fusionAttentionQueryKeys } from "@repo/api";
-import { isLocale, type Locale } from "@repo/i18n/config";
+import { type Locale } from "@repo/i18n/config";
 import { useLanguage } from "@repo/auth";
 import {
   cn,
-  RadioGroup,
-  RadioGroupItem,
-  ToggleGroup,
-  ToggleGroupItem,
 } from "@repo/ds";
+import { OptionCards, Segmented } from "@repo/ds/choice";
 import {
   SettingsBlock,
   SettingsPage,
@@ -151,47 +148,23 @@ export function Preferences() {
     <div lang={locale} className="contents">
       <SettingsPage title={t("title")} aside={<SettingsSaved at={savedAt} />}>
         <SettingsBlock title={t("appearance")} meta={t("thisDevice")}>
-          <RadioGroup
-            aria-label={t("appearance")}
-            value={appearance ?? ""}
-            onValueChange={(next) => {
+          <OptionCards
+            label={t("appearance")}
+            value={appearance}
+            onChange={(next) => {
               setTheme(next);
               setSavedAt(Date.now());
             }}
-            className="grid grid-cols-3 gap-3"
-          >
-            {APPEARANCES.map((option) => {
+            options={APPEARANCES.map((option) => {
               const Icon = option.icon;
-              const selected = appearance === option.value;
-              return (
-                <label
-                  key={option.value}
-                  htmlFor={`appearance-${option.value}`}
-                  className={cn(
-                    "flex cursor-pointer flex-col gap-3 rounded-surface border bg-card p-2.5 transition-colors",
-                    selected
-                      ? "border-primary ring-1 ring-primary"
-                      : "border-border hover:border-foreground/30"
-                  )}
-                >
-                  <AppearancePreview value={option.value} />
-                  <span className="flex items-center gap-2.5 px-1 pb-0.5">
-                    <RadioGroupItem
-                      id={`appearance-${option.value}`}
-                      value={option.value}
-                    />
-                    <span className="flex-1 type-label font-semibold text-foreground">
-                      {t(option.value)}
-                    </span>
-                    <Icon
-                      aria-hidden
-                      className="size-4 text-muted-foreground"
-                    />
-                  </span>
-                </label>
-              );
+              return {
+                value: option.value,
+                label: t(option.value),
+                icon: <Icon aria-hidden />,
+                preview: <AppearancePreview value={option.value} />,
+              };
             })}
-          </RadioGroup>
+          />
         </SettingsBlock>
 
         <SettingsBlock title={t("language")} meta={t("yourAccount")}>
@@ -206,30 +179,18 @@ export function Preferences() {
                 ) : undefined
               }
             >
-              <ToggleGroup
-                type="single"
-                aria-label={t("language")}
-                value={mounted ? language : ""}
-                disabled={savingLanguage}
-                onValueChange={(next) => {
-                  if (!isLocale(next) || next === language) return;
-                  void chooseLanguage(next);
+              <Segmented
+                label={t("language")}
+                value={language}
+                disabled={!mounted || savingLanguage}
+                onChange={(next) => {
+                  if (next !== language) void chooseLanguage(next);
                 }}
-                className="rounded-control border border-border bg-inlay p-0.5"
-                spacing={1}
-                size="sm"
-              >
-                {LANGUAGES.map((language) => (
-                  <ToggleGroupItem
-                    key={language.value}
-                    value={language.value}
-                    lang={language.value}
-                    className="rounded-nested px-3 font-semibold data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-raised"
-                  >
-                    {language.label}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
+                options={LANGUAGES.map((option) => ({
+                  value: option.value,
+                  label: <span lang={option.value}>{option.label}</span>,
+                }))}
+              />
             </SettingsRow>
           </SettingsRows>
         </SettingsBlock>

@@ -2,7 +2,7 @@
 
 import { useWorkforceAccessWords } from "./access-language";
 import { useTranslations } from "next-intl";
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type {
   OrganizationHierarchyNodeDto,
@@ -24,6 +24,7 @@ import {
   PopoverTrigger,
   cn,
 } from "@repo/ds";
+import { FilterChips, Segmented } from "@repo/ds/choice";
 import {
   PageContainer,
   PageHeader,
@@ -53,10 +54,10 @@ import {
 
 const PAGE_SIZE = 10;
 const BASELINE_FILTER_OPTIONS: Array<{
-  key: "Employee" | "Manager" | null;
+  key: "Employee" | "Manager" | "all";
   label: string;
 }> = [
-  { key: null, label: "baselineAll" },
+  { key: "all", label: "baselineAll" },
   { key: "Employee", label: "baselineEmployees" },
   { key: "Manager", label: "baselineManagers" },
 ];
@@ -474,6 +475,7 @@ function StatusBand({
         <button
           type="button"
           onClick={() => onSelect(null)}
+          // eslint-disable-next-line no-restricted-syntax -- the state band is a row of figures that also filters; chips would lose the figures
           aria-pressed={active === null}
           className={cn(
             "flex min-w-28 items-baseline gap-2 border-e px-4 py-3.5 text-start transition-colors",
@@ -502,6 +504,7 @@ function StatusBand({
               key={state}
               type="button"
               onClick={() => onSelect(state)}
+              // eslint-disable-next-line no-restricted-syntax -- the state band is a row of figures that also filters; chips would lose the figures
               aria-pressed={selected}
               className={`flex min-w-32 items-baseline gap-2 border-e px-4 py-3.5 text-start transition-colors last:border-e-0 ${
                 selected
@@ -799,19 +802,17 @@ function OrgFilter({
         className="w-[min(28rem,calc(100vw-2rem))] p-0"
       >
         {selectedId ? (
-          <div className="flex gap-2 border-b p-2">
-            <ScopeButton
-              active={scope === "Subtree"}
-              onClick={() => onScopeChange("Subtree")}
-            >
-              {t("unitBelow")}
-            </ScopeButton>
-            <ScopeButton
-              active={scope === "Direct"}
-              onClick={() => onScopeChange("Direct")}
-            >
-              {t("unitOnly")}
-            </ScopeButton>
+          <div className="border-b p-2">
+            <Segmented
+              fill
+              label={t("unitScope")}
+              value={scope}
+              onChange={onScopeChange}
+              options={[
+                { value: "Subtree", label: t("unitBelow") },
+                { value: "Direct", label: t("unitOnly") },
+              ]}
+            />
           </div>
         ) : null}
         <OrganizationTree
@@ -829,35 +830,8 @@ function OrgFilter({
   );
 }
 
-function ScopeButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "flex-1 rounded-control border px-3 py-1.5 type-meta transition-colors",
-        active
-          ? "border-foreground/30 bg-muted text-foreground"
-          : "border-border text-muted-foreground hover:bg-muted/50"
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
 /**
- * The Employee/Manager baseline filter: a two-option segmented control. Neither pressed
- * means the whole workforce; pressing the active option again clears it.
+ * The Employee/Manager baseline filter: All, Employees or Managers.
  */
 function BaselineFilter({
   value,
@@ -868,27 +842,12 @@ function BaselineFilter({
 }) {
   const t = useTranslations("wfAccess");
   return (
-    <div
-      className="inline-flex items-center rounded-control border p-0.5"
-      role="group"
-      aria-label={t("filterBaseline")}
-    >
-      {BASELINE_FILTER_OPTIONS.map((option) => (
-        <button
-          key={option.key ?? "all"}
-          type="button"
-          aria-pressed={value === option.key}
-          onClick={() => onSelect(option.key)}
-          className={cn(
-            "rounded-control px-3 py-1.5 type-meta transition-colors",
-            value === option.key
-              ? "bg-muted text-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          {t(option.label as "baselineAll")}
-        </button>
-      ))}
-    </div>
+    <FilterChips
+      type="single"
+      label={t("filterBaseline")}
+      value={value ?? "all"}
+      onChange={(next) => onSelect(next === "all" ? null : next)}
+      options={BASELINE_FILTER_OPTIONS.map((option) => ({ value: option.key, label: t(option.label as "baselineAll") }))}
+    />
   );
 }

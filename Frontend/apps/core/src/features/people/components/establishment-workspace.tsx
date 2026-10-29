@@ -16,10 +16,9 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-  RadioGroup,
-  RadioGroupItem,
   cn,
 } from "@repo/ds";
+import { Segmented } from "@repo/ds/choice";
 import { PageContainer, StatusBadge } from "@repo/ds/shell";
 import type {
   AddExistingEmployeeRequest,
@@ -74,38 +73,6 @@ function flattenOrg(nodes: OrganizationHierarchyNodeDto[], depth = 0): OrgChoice
     { id: node.unit.id, name: node.unit.name, path: node.unit.path, depth },
     ...flattenOrg(node.children, depth + 1),
   ]);
-}
-
-/** Compact two-option segmented control — a mode choice, not two large cards. */
-function Segmented<T extends string>({
-  value,
-  onValueChange,
-  options,
-  label,
-}: {
-  value: T;
-  onValueChange: (value: T) => void;
-  options: { value: T; label: string }[];
-  label: string;
-}) {
-  return (
-    <RadioGroup
-      value={value}
-      onValueChange={(next) => onValueChange(next as T)}
-      aria-label={label}
-      className="inline-flex flex-wrap gap-1 rounded-control border bg-inlay p-1"
-    >
-      {options.map((option) => (
-        <label
-          key={option.value}
-          className="cursor-pointer rounded-nested px-3.5 py-1.5 type-label text-muted-foreground transition-colors has-data-[state=checked]:bg-background has-data-[state=checked]:text-foreground has-data-[state=checked]:shadow-raised focus-within:ring-2 focus-within:ring-ring motion-reduce:transition-none"
-        >
-          <RadioGroupItem value={option.value} className="sr-only" />
-          {option.label}
-        </label>
-      ))}
-    </RadioGroup>
-  );
 }
 
 function OrganizationPicker({
@@ -372,7 +339,7 @@ export default function EstablishmentWorkspace({ mode }: { mode: EstablishmentMo
                 <Segmented
                   label={t("fields.numberMode")}
                   value={form.numberMode}
-                  onValueChange={(value) => {
+                  onChange={(value) => {
                     set("numberMode", value);
                     if (value === "Manual") window.requestAnimationFrame(() => manualNumberRef.current?.focus());
                   }}
@@ -434,7 +401,7 @@ export default function EstablishmentWorkspace({ mode }: { mode: EstablishmentMo
               <Segmented
                 label={t("fields.reporting")}
                 value={form.managerMode}
-                onValueChange={(value) => set("managerMode", value)}
+                onChange={(value) => set("managerMode", value)}
                 options={[{ value: "None", label: t("fields.noManager") }, { value: "Manager", label: t("fields.assignManager") }]}
               />
               {form.managerMode === "Manager" ? (

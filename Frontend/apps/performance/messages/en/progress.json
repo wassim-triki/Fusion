@@ -6,7 +6,8 @@
     "defineATargetWithA": "Define a target with a numeric start and end value.",
     "weightedMilestones": "Weighted milestones",
     "breakTheObjectiveIntoMilestones": "Break the objective into milestones with assigned weights.",
-    "youllUpdateProgressAsA": "You’ll update progress as a percentage during the cycle."
+    "youllUpdateProgressAsA": "You’ll update progress as a percentage during the cycle.",
+    "measurement": "How progress is measured"
   },
   "NumericTargetEditor": {
     "enterANumberPutA": "Enter a number — put a label like M€ or % in the Unit field.",

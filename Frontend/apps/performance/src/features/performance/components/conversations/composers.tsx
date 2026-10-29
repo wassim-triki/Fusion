@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useAuth } from "@repo/auth";
 import { newClientId, type FeedbackVisibility, type PraiseDto } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
+import { OptionCards } from "@repo/ds/choice";
 import { DatePicker } from "@repo/ds/components/ui/date-picker";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@repo/ds/components/ui/dialog";
 import { Label } from "@repo/ds/components/ui/label";
@@ -98,6 +99,7 @@ function SubjectPicker({ ownerId, value, onChange }: { ownerId: string | null; v
   const values = useCompanyValues();
   const toneOf = useValueTones();
   return (
+    // eslint-disable-next-line no-restricted-syntax -- each value keeps its own colour when chosen, which the choice controls do not carry
     <div role="radiogroup" aria-label={t("about")} className="flex flex-wrap gap-2">
       {ownerId ? <ObjectiveChoices ownerId={ownerId} value={value} onChange={onChange} /> : null}
       {(values.data ?? []).map((v) => {
@@ -153,33 +155,22 @@ function VisibilityChoice({ value, onChange, receiver }: { value: FeedbackVisibi
     },
   ];
   return (
-    <div role="radiogroup" aria-label={t("whoReadsIt")} className="grid gap-2 sm:grid-cols-2">
-      {options.map((option) => {
-        const on = value === option.value;
-        return (
-          <button
-            key={option.value}
-            type="button"
-            role="radio"
-            aria-checked={on}
-            onClick={() => onChange(option.value)}
-            className={cn(
-              "flex items-start gap-3 rounded-control border p-3 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              on ? "border-primary-ring bg-primary-tint" : "border-border hover:bg-inlay/60",
-            )}
-          >
-            <span aria-hidden className={cn("mt-0.5 size-4 shrink-0 rounded-full border", on ? "border-[5px] border-primary" : "border-input")} />
-            <span className="min-w-0 space-y-1.5">
-              <span className="block type-label text-foreground">{option.title}</span>
-              <span className="flex items-center gap-2">
-                {option.people}
-                <span className="type-meta text-muted-foreground">{option.who}</span>
-              </span>
-            </span>
-          </button>
-        );
-      })}
-    </div>
+    <OptionCards
+      columns={2}
+      label={t("whoReadsIt")}
+      value={value}
+      onChange={onChange}
+      options={options.map((option) => ({
+        value: option.value,
+        label: option.title,
+        description: (
+          <span className="flex items-center gap-2">
+            {option.people}
+            {option.who}
+          </span>
+        ),
+      }))}
+    />
   );
 }
 
@@ -409,6 +400,7 @@ export function PraiseComposer({ initialValue, onClose }: { initialValue?: strin
             <ColleaguesPicker id="praise-people" value={people} onChange={setPeople} max={MAX_RECIPIENTS} exclude={user?.employeeId ? [user.employeeId] : []} />
           </Field>
           <Field label={t("for")}>
+            {/* eslint-disable-next-line no-restricted-syntax -- each value keeps its own colour when chosen, which the choice controls do not carry */}
             <div role="radiogroup" aria-label={t("value")} className="grid gap-2 sm:grid-cols-2">
               {(values.data ?? []).map((v) => {
                 const on = value === v.id;

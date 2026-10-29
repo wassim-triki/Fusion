@@ -174,7 +174,8 @@
     "of": "of",
     "rowsPerPage": "Rows per page",
     "excludeEmployee": "Exclude {selectedCount} employee",
-    "excludeEmployees": "Exclude {selectedCount} employees"
+    "excludeEmployees": "Exclude {selectedCount} employees",
+    "show": "Show"
   },
   "Pager": {
     "previousPage": "Previous page",

@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
+import { QuickPicks } from "@repo/ds/choice";
 import { Button, DatePicker, Popover, PopoverContent, PopoverTrigger, cn } from "@repo/ds";
 import { useFormat } from "@repo/ds/lib/use-format";
 import type { ChangePersonRef, PeopleProfileDto } from "@repo/api";
@@ -97,7 +98,6 @@ function AddDottedLine({ person, onDone }: { person: PeopleProfileDto; onDone: (
   const [error, setError] = useState<string | null>(null);
   const today = todayIso();
   const options = [today, firstOfNextMonth()];
-  const custom = !options.includes(date);
   const taken = new Set([person.primaryManager?.employeeKey, ...person.dottedLineManagers.map((line) => line.employeeKey)]);
 
   const add = async () => {
@@ -116,17 +116,16 @@ function AddDottedLine({ person, onDone }: { person: PeopleProfileDto; onDone: (
     <div className="grid gap-3">
       <p className="type-label font-semibold">{t("dotted.addTitle")}</p>
       <PersonPicker date={date} value={manager} onChange={(next) => setManager(next && !taken.has(next.employeeKey) ? next : null)} excludeKey={person.identity.employeeKey} />
-      <div className="flex flex-wrap gap-1.5">
-        {options.map((option) => (
-          <button key={option} type="button" aria-pressed={date === option} onClick={() => setDate(option)}
-            className={cn("inline-flex h-8 items-center rounded-control border px-3 text-[13px] text-muted-foreground",
-              date === option && "border-primary bg-primary-tint font-semibold text-foreground")}>
-            {option === today ? t("when.today") : format.date(option)}
-          </button>
-        ))}
-        <div className={cn("w-36 [&_button]:h-8 [&_button]:text-[13px]", custom && "[&_button]:border-primary [&_button]:bg-primary-tint")}>
-          <DatePicker value={custom ? date : ""} min={today} onChange={(next) => { if (next) setDate(next); }} placeholder={t("when.otherDate")} />
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="w-44">
+          <DatePicker value={date} min={today} onChange={(next) => { if (next) setDate(next); }} placeholder={t("when.otherDate")} />
         </div>
+        <QuickPicks
+          label={t("when.from")}
+          value={date}
+          onPick={setDate}
+          options={options.map((option) => ({ value: option, label: option === today ? t("when.today") : format.date(option) }))}
+        />
       </div>
       {error ? <p role="alert" className="type-meta text-destructive">{error}</p> : null}
       <div className="flex justify-end gap-2">

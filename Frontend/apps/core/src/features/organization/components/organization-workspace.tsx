@@ -42,10 +42,9 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-  ToggleGroup,
-  ToggleGroupItem,
   cn,
 } from "@repo/ds";
+import { Segmented } from "@repo/ds/choice";
 import { PageHeader, PagePermissionNotice } from "@repo/ds/shell";
 import {
   AlertTriangle,
@@ -1000,33 +999,15 @@ export default function OrganizationWorkspace() {
                 </div>
               ) : null}
             </div>
-            <ToggleGroup
-              type="single"
+            <Segmented
+              label={t("views.label")}
               value={urlState.representation}
-              onValueChange={(value) => {
-                if (value === "chart" || value === "outline")
-                  navigate({ representation: value });
-              }}
-              aria-label={t("views.label")}
-              className="rounded-control border bg-inlay p-0.5"
-            >
-              <ToggleGroupItem
-                value="chart"
-                aria-label={t("views.chartLabel")}
-                className="gap-1.5 px-3 text-sm text-muted-foreground data-[state=on]:bg-foreground! data-[state=on]:text-background! data-[state=on]:shadow-raised"
-              >
-                <Network className="h-4 w-4" />
-                {t("views.chart")}
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                value="outline"
-                aria-label={t("views.outlineLabel")}
-                className="gap-1.5 px-3 text-sm text-muted-foreground data-[state=on]:bg-foreground! data-[state=on]:text-background! data-[state=on]:shadow-raised"
-              >
-                <ListTree className="h-4 w-4" />
-                {t("views.outline")}
-              </ToggleGroupItem>
-            </ToggleGroup>
+              onChange={(value) => navigate({ representation: value })}
+              options={[
+                { value: "chart", label: t("views.chart"), hint: t("views.chartLabel"), icon: <Network aria-hidden /> },
+                { value: "outline", label: t("views.outline"), hint: t("views.outlineLabel"), icon: <ListTree aria-hidden /> },
+              ]}
+            />
             {canManage && !readOnly ? (
               <Button
                 onClick={() =>

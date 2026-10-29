@@ -22,8 +22,6 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-  RadioGroup,
-  RadioGroupItem,
   Skeleton,
   Table,
   TableBody,
@@ -33,6 +31,7 @@ import {
   TableRow,
   cn,
 } from "@repo/ds";
+import { Segmented } from "@repo/ds/choice";
 import { PageContainer, PageHeader } from "@repo/ds/shell";
 import {
   canImportCoreEmployees,
@@ -176,19 +175,16 @@ function OrganizationFilter({
       <PopoverContent align="start" className="w-[min(28rem,calc(100vw-2rem))] p-0">
         {selectedId ? (
           <div className="border-b border-border p-3">
-            <RadioGroup
+            <Segmented
+              fill
+              label={t("scope")}
               value={scope}
-              onValueChange={(value) => onScopeChange(value as PeopleOrganizationScope)}
-              className="grid grid-cols-2 gap-2"
-              aria-label={t("scope")}
-            >
-              <label className="flex cursor-pointer items-center gap-2 rounded-control border px-3 py-2 text-sm has-data-[state=checked]:border-foreground/30 has-data-[state=checked]:bg-muted/50">
-                <RadioGroupItem value="Subtree" /> {t("subtree")}
-              </label>
-              <label className="flex cursor-pointer items-center gap-2 rounded-control border px-3 py-2 text-sm has-data-[state=checked]:border-foreground/30 has-data-[state=checked]:bg-muted/50">
-                <RadioGroupItem value="Direct" /> {t("direct")}
-              </label>
-            </RadioGroup>
+              onChange={onScopeChange}
+              options={[
+                { value: "Subtree", label: t("subtree") },
+                { value: "Direct", label: t("direct") },
+              ]}
+            />
           </div>
         ) : null}
         <OrganizationTree

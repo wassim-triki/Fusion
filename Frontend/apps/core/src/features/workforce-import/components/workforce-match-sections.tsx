@@ -14,6 +14,7 @@ import {
   SelectValue,
   cn,
 } from "@repo/ds";
+import { OptionCards } from "@repo/ds/choice";
 import type { WorkforceImportField, WorkforceImportMatch, WorkforceMatchUpdateRequest } from "@repo/api";
 import {
   COLUMN_GRID,
@@ -360,26 +361,18 @@ function InterpretationDecision({
           {t.rich("interpretation.inYourFile", { sample, b: (chunks) => <span className="font-medium text-foreground tabular-nums">{chunks}</span> })}
         </p>
       ) : null}
-      <div role="radiogroup" aria-label={kind === "date-format" ? t("interpretation.dateFormat") : t("interpretation.nameFormat")} className="grid max-w-md grid-cols-2 gap-2">
-        {choices.map((choice) => (
-          <button
-            key={choice.key}
-            type="button"
-            role="radio"
-            aria-checked={pending === choice.key}
-            disabled={disabled}
-            onClick={() => void edit(kind, choice.key, choice.change)}
-            className={cn(
-              "rounded-control border border-border bg-inlay px-3 py-2 text-start type-label font-medium text-foreground transition-colors",
-              "hover:border-primary/60 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50",
-              pending === choice.key && "border-primary bg-primary/10"
-            )}
-          >
-            <span className="block">{choice.primary}</span>
-            {choice.reading ? <span className="block type-meta font-normal text-muted-foreground">{choice.reading}</span> : null}
-          </button>
-        ))}
-      </div>
+      <OptionCards
+        columns={2}
+        className="max-w-md"
+        label={kind === "date-format" ? t("interpretation.dateFormat") : t("interpretation.nameFormat")}
+        value={pending}
+        disabled={disabled}
+        onChange={(key) => {
+          const choice = choices.find((item) => item.key === key);
+          if (choice) void edit(kind, choice.key, choice.change);
+        }}
+        options={choices.map((choice) => ({ value: choice.key, label: choice.primary, description: choice.reading }))}
+      />
     </div>
   );
 }

@@ -12,7 +12,8 @@ import {
 } from "@repo/api";
 import { useSettingsConflictSaver } from "@repo/api/query";
 import { useStagedSettings, type StagedSettings } from "@repo/api/react";
-import { cn, Input, NativeSelect, NativeSelectOption, RadioGroup, RadioGroupItem, Slider, Switch } from "@repo/ds";
+import { cn, Input, NativeSelect, NativeSelectOption, Slider, Switch } from "@repo/ds";
+import { OptionCards } from "@repo/ds/choice";
 import {
   PageError,
   SettingsBlock,
@@ -232,27 +233,13 @@ function Choices<T extends string>({
     );
   }
   return (
-    <RadioGroup aria-label={label} value={value} onValueChange={(next) => onChange(next as T)} className="gap-3">
-      {options.map((option) => {
-        const selected = option.value === value;
-        return (
-          <label
-            key={option.value}
-            htmlFor={`${label}-${option.value}`}
-            className={cn(
-              "flex cursor-pointer items-start gap-3 rounded-surface border px-5 py-4 transition-colors",
-              selected ? "border-primary bg-primary-tint" : "border-border bg-card hover:border-foreground/30"
-            )}
-          >
-            <RadioGroupItem id={`${label}-${option.value}`} value={option.value} className="mt-0.5" />
-            <span className="flex flex-col gap-0.5">
-              <span className="type-subsection-title text-foreground">{option.label}</span>
-              {option.detail ? <span className="type-meta text-muted-foreground">{option.detail}</span> : null}
-            </span>
-          </label>
-        );
-      })}
-    </RadioGroup>
+    <OptionCards
+      columns={1}
+      label={label}
+      value={value}
+      onChange={onChange}
+      options={options.map((option) => ({ value: option.value, label: option.label, description: option.detail }))}
+    />
   );
 }
 

@@ -4,6 +4,7 @@ import { useSay } from "@repo/ds/lib/say";
 import { useTranslations } from "next-intl";
 import { AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, CircleMinus, Search, UserCheck } from "lucide-react";
 import { Input, Skeleton, cn } from "@repo/ds";
+import { FilterChips } from "@repo/ds/choice";
 import type { WorkforceReviewCountsDto, WorkforceReviewRowDto } from "@repo/api";
 import { Monogram, useWorkforceDate } from "@/features/people/components/workforce-ui";
 import { employmentState, notImportedReason, pageList, reviewChips, type ReviewFilter } from "../model/review-view";
@@ -66,36 +67,19 @@ export function WorkforceProposal({
               className="h-10 ps-9"
             />
           </div>
-          <div role="group" aria-label={t("show")} className="flex flex-wrap items-center gap-2">
-            {reviewChips(counts, say).map((chip) => {
-              const active = filter === chip.key;
-              return (
-                <button
-                  key={chip.key || "all"}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => onFilter(chip.key)}
-                  className={cn(
-                    "flex h-10 items-center gap-2 rounded-full border px-4 type-meta font-medium transition-colors duration-[var(--duration-fast)] outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    active
-                      ? "border-primary bg-primary/[0.08] text-foreground"
-                      : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
-                  )}
-                >
-                  {chip.tone === "destructive" ? <span aria-hidden className="size-1.5 rounded-full bg-destructive" /> : null}
-                  {chip.label}
-                  <span
-                    className={cn(
-                      "rounded-full px-2 py-0.5 text-xs tabular-nums",
-                      active ? "bg-primary/15 text-foreground" : "bg-muted text-muted-foreground"
-                    )}
-                  >
-                    {chip.count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          {/* "" is All in the review's filter; a chip needs a value of its own. */}
+          <FilterChips
+            type="single"
+            label={t("show")}
+            value={filter || "all"}
+            onChange={(next: ReviewFilter | "all") => onFilter(next === "all" ? "" : next)}
+            options={reviewChips(counts, say).map((chip) => ({
+              value: (chip.key || "all") as ReviewFilter | "all",
+              label: chip.label,
+              count: chip.count,
+              icon: chip.tone === "destructive" ? <span aria-hidden className="size-1.5 rounded-full bg-destructive" /> : undefined,
+            }))}
+          />
         </div>
       </header>
 

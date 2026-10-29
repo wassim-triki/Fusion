@@ -266,5 +266,6 @@
     "back": "Retour à l’accès des collaborateurs",
     "missingEmail": "Adresse e-mail professionnelle manquante",
     "attentionMark": "À traiter"
-  }
+  },
+  "unitScope": "Quelles personnes"
 }

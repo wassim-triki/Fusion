@@ -6,13 +6,14 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { ReviewQuestionAudience, ReviewRoundDto, ReviewRoundIssueCode, ReviewRoundSubjectDto, UpdateReviewRoundRequest } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
+import { FilterChips } from "@repo/ds/choice";
 import { Checkbox } from "@repo/ds/components/ui/checkbox";
 import { Input } from "@repo/ds/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@repo/ds/components/ui/native-select";
 import { Switch } from "@repo/ds/components/ui/switch";
 import { AsyncButton, StatusBadge } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
-import { PersonInitials, ValueChip } from "@repo/performance-ui";
+import { PersonInitials } from "@repo/performance-ui";
 import { ArrowRight, Check, Growth, Layers, MessageSquare, Pencil, Rocket, Scale, Star, Target, Users, X } from "@/lib/icons";
 import { useCompetencies } from "../../api/use-performance";
 import { useEligibleReviewers, useReviewRoundMutations } from "../../api/use-reviews";
@@ -117,16 +118,15 @@ export function RoundSetup({ round }: { round: ReviewRoundDto }) {
           {round.competencyIds.length > 0 || (competencies.data?.length ?? 0) > 0 ? (
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <span className="type-meta text-muted-foreground">{t("competencies")}</span>
-              {(competencies.data ?? []).filter((c) => c.state === "Active").map((competency) => {
-                const on = round.competencyIds.includes(competency.id);
-                return (
-                  <button key={competency.id} type="button" aria-pressed={on}
-                    onClick={() => void save({ competencyIds: on ? round.competencyIds.filter((id) => id !== competency.id) : [...round.competencyIds, competency.id] })}
-                    className={cn("rounded-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", !on && "opacity-50 hover:opacity-80")}>
-                    <ValueChip value={{ id: competency.id, name: competency.name }} />
-                  </button>
-                );
-              })}
+              <FilterChips
+                type="multiple"
+                label={t("competencies")}
+                value={round.competencyIds}
+                onChange={(competencyIds) => void save({ competencyIds })}
+                options={(competencies.data ?? [])
+                  .filter((competency) => competency.state === "Active")
+                  .map((competency) => ({ value: competency.id, label: competency.name }))}
+              />
             </div>
           ) : null}
         </SetupSection>

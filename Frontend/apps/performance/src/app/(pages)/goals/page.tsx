@@ -7,7 +7,7 @@ import { ListView, MapView, Plus } from "@/lib/icons";
 import { toast } from "sonner";
 import { Button } from "@repo/ds/components/ui/button";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
-import { ToggleGroup, ToggleGroupItem } from "@repo/ds/components/ui/toggle-group";
+import { Segmented } from "@repo/ds/choice";
 import { useOrgHierarchy } from "@repo/workforce-ui";
 import { PageContainer, PageError, PageHeader, PagePermissionNotice, PageSkeleton } from "@repo/ds/shell";
 import { ContentUnavailable } from "@/features/performance/components/content-unavailable";
@@ -237,32 +237,15 @@ function GoalsWorkspace() {
   const meResolving = listing && !broad && me.isLoading;
 
   const viewSwitch = canList ? (
-    <ToggleGroup
-      type="single"
+    <Segmented
+      label={t("organizationDirectionView")}
       value={view}
-      onValueChange={(value) => {
-        if (value === "map" || value === "list") replaceContext({ view: value });
-      }}
-      aria-label={t("organizationDirectionView")}
-      className="rounded-control border bg-inlay p-0.5"
-    >
-      <ToggleGroupItem
-        value="map"
-        aria-label={t("mapView")}
-        className="gap-1.5 px-3 type-body text-muted-foreground data-[state=on]:bg-foreground! data-[state=on]:text-background! data-[state=on]:shadow-raised"
-      >
-        <MapView className="size-4" />
-        {t("map")}
-      </ToggleGroupItem>
-      <ToggleGroupItem
-        value="list"
-        aria-label={t("listView")}
-        className="gap-1.5 px-3 type-body text-muted-foreground data-[state=on]:bg-foreground! data-[state=on]:text-background! data-[state=on]:shadow-raised"
-      >
-        <ListView className="size-4" />
-        {t("list")}
-      </ToggleGroupItem>
-    </ToggleGroup>
+      onChange={(value) => replaceContext({ view: value })}
+      options={[
+        { value: "map", label: t("map"), icon: <MapView aria-hidden /> },
+        { value: "list", label: t("list"), icon: <ListView aria-hidden /> },
+      ]}
+    />
   ) : null;
 
   const actions = (

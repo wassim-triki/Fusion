@@ -23,6 +23,7 @@ import {
 import type { GoalNodeDto, GoalsOverviewDto } from "@repo/api";
 import { ScopeMark } from "../scope-mark";
 import { Avatar, AvatarFallback } from "@repo/ds/components/ui/avatar";
+import { FilterChips } from "@repo/ds/choice";
 import { Button } from "@repo/ds/components/ui/button";
 import {
   DropdownMenu,
@@ -1238,25 +1239,17 @@ function DirectionSelector({
       <span className="type-meta me-1 text-muted-foreground">
         {t("alignUnder")}
       </span>
-      {directions.map((direction) => {
-        const active = direction.id === selectedId;
-        return (
-          <button
-            key={direction.id}
-            type="button"
-            onClick={() => onSelect(direction.id)}
-            aria-pressed={active}
-            className={cn(
-              "max-w-[16rem] truncate rounded-control border px-2.5 py-1 type-meta-strong transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-              active
-                ? "border-primary bg-primary/[0.08] text-foreground"
-                : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
-            )}
-          >
-            {direction.title}
-          </button>
-        );
-      })}
+      <FilterChips
+        type="single"
+        label={t("alignUnder")}
+        value={selectedId}
+        onChange={onSelect}
+        options={directions.map((direction) => ({
+          value: direction.id,
+          label: <span className="max-w-[16rem] truncate">{direction.title}</span>,
+          hint: direction.title,
+        }))}
+      />
     </div>
   );
 }

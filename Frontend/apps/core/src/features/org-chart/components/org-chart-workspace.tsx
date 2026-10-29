@@ -27,11 +27,10 @@ import {
   SelectTrigger,
   SelectValue,
   Skeleton,
-  ToggleGroup,
-  ToggleGroupItem,
   Spinner,
   cn,
 } from "@repo/ds";
+import { FilterChips, Segmented } from "@repo/ds/choice";
 import { PageHeader, PagePermissionNotice } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { canAccessEmployeeRoster } from "@/lib/employee-roster-access";
@@ -688,22 +687,15 @@ function OrgChart({ data, asOf, onAsOf }: { data: OrgChartDto; asOf: string | nu
       title={t("title")}
       description={t("meta", { people: headcount, divisions, open: openCount })}
       actions={
-        <ToggleGroup
-          type="single"
+        <Segmented
+          label={t("views.label")}
           value={view}
-          onValueChange={(next) => { if (next === "focus" || next === "company") switchView(next); }}
-          aria-label={t("views.label")}
-          className="rounded-control border bg-inlay p-0.5"
-        >
-          {tree.viewerKey || focus ? (
-            <ToggleGroupItem value="focus" className="px-3 text-sm text-muted-foreground data-[state=on]:bg-foreground! data-[state=on]:text-background! data-[state=on]:shadow-raised">
-              {aroundLabel}
-            </ToggleGroupItem>
-          ) : null}
-          <ToggleGroupItem value="company" className="px-3 text-sm text-muted-foreground data-[state=on]:bg-foreground! data-[state=on]:text-background! data-[state=on]:shadow-raised">
-            {t("views.company")}
-          </ToggleGroupItem>
-        </ToggleGroup>
+          onChange={switchView}
+          options={[
+            ...(tree.viewerKey || focus ? [{ value: "focus" as const, label: aroundLabel }] : []),
+            { value: "company" as const, label: t("views.company") },
+          ]}
+        />
       }
     >
       <div className="flex shrink-0 items-center gap-3 border-y px-6 py-3">
@@ -811,6 +803,7 @@ function OrgChart({ data, asOf, onAsOf }: { data: OrgChartDto; asOf: string | nu
                 role={isMore(id) && !loadsMore ? undefined : "button"}
                 tabIndex={isMore(id) && !loadsMore ? -1 : 0}
                 aria-label={label}
+                // eslint-disable-next-line no-restricted-syntax -- a chart node toggles its own selection; not a choice among options
                 aria-pressed={isMore(id) || isChain ? undefined : selected === id}
                 onKeyDown={(event) => onNodeKey(event, id, node.kind)}
                 onClick={() => (isChain ? centreOn(id) : loadsMore ? loadBranch(parentOf(tree, id)!) : isMore(id) ? undefined : select(id))}
@@ -849,25 +842,22 @@ function OrgChart({ data, asOf, onAsOf }: { data: OrgChartDto; asOf: string | nu
         </div>
 
         {legend.length ? (
-          <div data-oc-overlay className="absolute bottom-3.5 start-3.5 flex max-w-[calc(100%-10rem)] flex-wrap gap-1.5">
-            {legend.map((entry) => (
-              <button
-                key={entry.key}
-                type="button"
-                aria-pressed={filter === entry.key}
-                aria-label={t("lens.filter", { label: entry.label })}
-                onClick={() => { setFilter((current) => (current === entry.key ? null : entry.key)); setAnimate(false); }}
-                className={cn(
-                  "inline-flex h-7 items-center gap-1.5 rounded-full border bg-popover px-2.5 text-xs",
-                  filter === entry.key && "border-foreground",
-                  filter && filter !== entry.key && "opacity-45",
-                )}
-              >
-                {entry.color ? <i className="oc-swatch" style={{ background: entry.color }} /> : null}
-                {entry.label}
-                <span className="text-muted-foreground tabular-nums">{entry.n}</span>
-              </button>
-            ))}
+          <div data-oc-overlay className="absolute bottom-3.5 start-3.5 max-w-[calc(100%-10rem)]">
+            <FilterChips
+              type="single"
+              clearable
+              overlay
+              label={t("lens.legend")}
+              value={filter}
+              onChange={(next) => { setFilter(next); setAnimate(false); }}
+              options={legend.map((entry) => ({
+                value: entry.key,
+                label: entry.label,
+                count: entry.n,
+                hint: t("lens.filter", { label: entry.label }),
+                icon: entry.color ? <i className="oc-swatch" style={{ background: entry.color }} /> : undefined,
+              }))}
+            />
           </div>
         ) : lensKey === "review" ? (
           <div data-oc-overlay className="absolute bottom-3.5 start-3.5 inline-flex h-7 items-center gap-1.5 rounded-full border bg-popover px-2.5 text-xs text-muted-foreground">
@@ -987,7 +977,14 @@ function TimeBar({
   const shown = format.date(date, { year: "always" });
   return (
     <div className="oc-timebar ms-auto">
-      <Button type="button" variant="outline" size="sm" aria-pressed={replaying} onClick={onReplay}>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={onReplay}
+        // eslint-disable-next-line no-restricted-syntax -- the replay button toggles one thing on and off
+        aria-pressed={replaying}
+      >
         {replaying ? <Square /> : <Play />}
         {replaying ? t("stop") : t("replay")}
       </Button>

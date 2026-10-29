@@ -14,8 +14,8 @@ import type {
   PopulationMode,
 } from "@repo/api";
 import { Avatar, AvatarFallback } from "@repo/ds/components/ui/avatar";
+import { OptionCards } from "@repo/ds/choice";
 import { Button } from "@repo/ds/components/ui/button";
-import { cn } from "@repo/ds/lib/utils";
 
 import { OrgScopePicker } from "./org-scope-picker";
 import { initials } from "./population-model";
@@ -57,6 +57,7 @@ export function PopulationScope({
 }) {
   const format = useFormat();
   const t = useTranslations("cycleSetup.PopulationScope");
+  const tile = useTranslations("cycleSetup.ScopeTile");
   const byScope = mode === "ByScope";
 
   return (
@@ -89,23 +90,32 @@ export function PopulationScope({
         </span>
       </div>
 
-      <div className="mt-5 grid gap-3 md:grid-cols-2">
-        <ScopeTile
-          selected={!byScope}
-          onClick={() => onSetMode("AllActive")}
-          icon={<UsersRound className="size-5" strokeWidth={1.75} />}
-          title={t("allActiveEmployees")}
-          description={t("everyoneEligibleAcross", { value: tenantName ?? "the organization" })}
-          recommended
-        />
-        <ScopeTile
-          selected={byScope}
-          onClick={() => onSetMode("ByScope")}
-          icon={<Network className="size-5" strokeWidth={1.75} />}
-          title={t("selectedOrganizationUnits")}
-          description={t("chooseSpecificUnitsAndOptionally")}
-        />
-      </div>
+      <OptionCards
+        columns={2}
+        className="mt-5"
+        label={t("populationScope")}
+        value={byScope ? "ByScope" : "AllActive"}
+        onChange={onSetMode}
+        options={[
+          {
+            value: "AllActive",
+            label: (
+              <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                {t("allActiveEmployees")}
+                <span className="rounded-control bg-primary-tint px-2 py-0.5 type-meta-strong text-primary-ink">{tile("recommended")}</span>
+              </span>
+            ),
+            description: t("everyoneEligibleAcross", { value: tenantName ?? "the organization" }),
+            icon: <UsersRound aria-hidden strokeWidth={1.75} />,
+          },
+          {
+            value: "ByScope",
+            label: t("selectedOrganizationUnits"),
+            description: t("chooseSpecificUnitsAndOptionally"),
+            icon: <Network aria-hidden strokeWidth={1.75} />,
+          },
+        ]}
+      />
 
       {byScope ? (
         <OrgScopePicker
@@ -190,71 +200,5 @@ export function PopulationScope({
         </div>
       ) : null}
     </section>
-  );
-}
-
-function ScopeTile({
-  selected,
-  onClick,
-  icon,
-  title,
-  description,
-  recommended,
-}: {
-  selected: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  recommended?: boolean;
-}) {
-  const t = useTranslations("cycleSetup.ScopeTile");
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={selected}
-      className={cn(
-        "group flex min-w-0 items-center gap-3 rounded-surface border px-4 py-4 text-start transition-colors sm:gap-4 sm:px-5",
-        selected
-          ? "border-primary/80 bg-primary/[0.07] shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--primary)_35%,transparent)]"
-          : "border-border bg-inlay hover:border-muted-foreground/30 hover:bg-muted"
-      )}
-    >
-      <span
-        className={cn(
-          "flex size-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-          selected ? "border-primary" : "border-muted-foreground/40 group-hover:border-muted-foreground/60"
-        )}
-        aria-hidden
-      >
-        {selected ? (
-          <span className="size-3 rounded-full bg-primary" />
-        ) : null}
-      </span>
-      <span
-        className={cn(
-          "flex size-10 shrink-0 items-center justify-center rounded-control transition-colors sm:size-12",
-          selected
-            ? "bg-primary-tint text-primary-ink"
-            : "bg-muted text-foreground/80"
-        )}
-      >
-        {icon}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="type-subsection-title text-foreground">{title}</span>
-          {recommended ? (
-            <span className="rounded-control bg-primary-tint px-2 py-0.5 type-meta-strong text-primary-ink">
-              {t("recommended")}
-            </span>
-          ) : null}
-        </span>
-        <span className="mt-0.5 block type-body-secondary text-muted-foreground">
-          {description}
-        </span>
-      </span>
-    </button>
   );
 }

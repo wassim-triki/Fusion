@@ -7,6 +7,7 @@ import { useAuth } from "@repo/auth";
 import type { FeedbackDto, FeedbackRequestRowDto, FeedbackSummaryDto, FeedbackView, PraiseScope, PraiseSummaryDto } from "@repo/api";
 import { useReactToPraise } from "@repo/api/query";
 import { Button } from "@repo/ds/components/ui/button";
+import { FilterChips } from "@repo/ds/choice";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@repo/ds/components/ui/tabs";
 import { PageContainer, PageHeader, StatusBadge } from "@repo/ds/shell";
@@ -559,26 +560,24 @@ function PraiseTab({
       <PlanDocument
         main={
           <section aria-label={t("praise")}>
-            <div className="mb-4 flex flex-wrap gap-1.5" role="group" aria-label={t("showPraise")}>
-              {PRAISE_FILTERS.map((filter) => (
-                <button
-                  key={filter.value}
-                  type="button"
-                  aria-pressed={!employeeId && scope === filter.value}
-                  onClick={() => {
-                    setCursors([null]);
-                    onScope(filter.value);
-                  }}
-                  className={cn(
-                    "inline-flex h-8 items-center gap-1.5 rounded-control px-3 type-label transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    !employeeId && scope === filter.value ? "bg-foreground text-background" : "bg-inlay text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {t(`filters.${filter.value}`)}
-                  {filter.value === "forMe" && forMe > 0 ? <span className="tabular-nums opacity-70">{forMe}</span> : null}
-                </button>
-              ))}
-            </div>
+            {/* No chip is on while a person's praise is shown; picking one goes back to a scope. */}
+            <FilterChips
+              type="single"
+              clearable
+              className="mb-4"
+              label={t("showPraise")}
+              value={employeeId ? null : scope}
+              onChange={(next) => {
+                if (!next) return;
+                setCursors([null]);
+                onScope(next);
+              }}
+              options={PRAISE_FILTERS.map((filter) => ({
+                value: filter.value,
+                label: t(`filters.${filter.value}`),
+                count: filter.value === "forMe" && forMe > 0 ? forMe : undefined,
+              }))}
+            />
             <div className="space-y-3">
               {cursors.map((before, index) => (
                 <PraisePage

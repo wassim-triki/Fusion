@@ -266,5 +266,6 @@
     "back": "Back to workforce access",
     "missingEmail": "Work email missing",
     "attentionMark": "Needs attention"
-  }
+  },
+  "unitScope": "Which people"
 }

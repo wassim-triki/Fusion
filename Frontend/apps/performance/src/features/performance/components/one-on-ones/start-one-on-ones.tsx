@@ -16,7 +16,7 @@ import { cn } from "@repo/ds/lib/utils";
 import { ObjectiveStatusBadge, PersonInitials } from "@repo/performance-ui";
 import { OneOnOnes, PencilLine, Plus, X } from "@/lib/icons";
 import { useOneOnOneStart, useStartOneOnOne } from "../../api/use-conversations";
-import { Segmented } from "../conversations/segmented";
+import { Segmented } from "@repo/ds/choice";
 import { CADENCES, TIME_SLOTS, defaultFirstMeeting, localDate, nextOccurrences, shortDay, toInstant, useOneOnOneWords } from "./one-on-one-lib";
 import { SourceWell } from "./one-on-one-parts";
 import { useTranslations } from "next-intl";
@@ -107,7 +107,7 @@ function StartForm({
           value={cadence}
           onChange={setCadence}
           options={CADENCES.map((value) => ({ value, label: w.cadence[value] }))}
-          className="w-full [&>*]:flex-1"
+          fill
         />
       </div>
       <div className="space-y-2">

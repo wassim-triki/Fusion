@@ -19,6 +19,7 @@ import {
 } from "@/lib/icons";
 import type { PopulationCandidateDto } from "@repo/api";
 import { Input } from "@repo/ds/components/ui/input";
+import { FilterChips } from "@repo/ds/choice";
 import { Button } from "@repo/ds/components/ui/button";
 import { Checkbox } from "@repo/ds/components/ui/checkbox";
 import { StatusBadge } from "@repo/ds/shell";
@@ -275,35 +276,18 @@ export function PeopleInScope({
               className="ps-9"
             />
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <FilterChip
-              active={filter === "all"}
-              onClick={() => changeFilter("all")}
-              label={t("all")}
-              count={counts.all}
-            />
-            <FilterChip
-              active={filter === "ready"}
-              onClick={() => changeFilter("ready")}
-              label={t("ready")}
-              count={counts.ready}
-              dot="bg-emerald-500"
-            />
-            <FilterChip
-              active={filter === "attention"}
-              onClick={() => changeFilter("attention")}
-              label={t("needsAttention")}
-              count={counts.attention}
-              dot="bg-amber-500"
-            />
-            <FilterChip
-              active={filter === "excluded"}
-              onClick={() => changeFilter("excluded")}
-              label={t("excluded")}
-              count={counts.excluded}
-              dot="bg-muted-foreground/60"
-            />
-          </div>
+          <FilterChips
+            type="single"
+            label={t("show")}
+            value={filter}
+            onChange={changeFilter}
+            options={[
+              { value: "all", label: t("all"), count: counts.all },
+              { value: "ready", label: t("ready"), count: counts.ready, icon: <span aria-hidden className="size-1.5 rounded-full bg-emerald-500" /> },
+              { value: "attention", label: t("needsAttention"), count: counts.attention, icon: <span aria-hidden className="size-1.5 rounded-full bg-amber-500" /> },
+              { value: "excluded", label: t("excluded"), count: counts.excluded, icon: <span aria-hidden className="size-1.5 rounded-full bg-muted-foreground/60" /> },
+            ]}
+          />
         </div>
 
         {selectionVisible && selectedCount > 0 ? (
@@ -588,47 +572,6 @@ function SortableHead({
         />
       </button>
     </TableHead>
-  );
-}
-
-function FilterChip({
-  active,
-  onClick,
-  label,
-  count,
-  dot,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-  count: number;
-  dot?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "flex items-center gap-2 rounded-control border px-3 py-1.5 type-label transition-colors",
-        active
-          ? "border-primary/50 bg-primary/[0.08] text-foreground"
-          : "border-border text-muted-foreground hover:text-foreground"
-      )}
-    >
-      {dot ? (
-        <span className={cn("size-1.5 rounded-full", dot)} aria-hidden />
-      ) : null}
-      {label}
-      <span
-        className={cn(
-          "tabular-nums",
-          active ? "text-foreground" : "text-muted-foreground/70"
-        )}
-      >
-        {count}
-      </span>
-    </button>
   );
 }
 

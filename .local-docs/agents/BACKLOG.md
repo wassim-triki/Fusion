@@ -24,11 +24,10 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In progress
 
-- [ ] **B-156** Language and theme switchers back in the top bar, beside the bell · Shell, DS, Core HR, Performance · 2026-10-29
-      User 2026-10-29: "why is it removed from quick access where it lived beside the notification bell … bring it back along with the theme switcher". Both left the top bar for Settings › Preferences in B-071. How to build it is left open until it's picked up (user: "leave the implementation details fresh").
-
 ## In review
 
+- [ ] **B-156** Language and theme switchers back in the top bar, beside the bell · Shell, DS, Core HR, Performance · 2026-10-29
+      User 2026-10-29: "why is it removed from quick access where it lived beside the notification bell … bring it back along with the theme switcher". Both left the top bar for Settings › Preferences in B-071. How to build it is left open until it's picked up (user: "leave the implementation details fresh"). Built 2026-10-29: look at the top bar on Home, Core HR, Performance and Settings (bell, then language "EN" menu, then theme), switch to Français and العربية and back, and Light/Dark.
 - [ ] **B-106** Company-wide notification defaults: per email group a company picks Required, On (people may turn off) or Off (people may turn on); new companies start at today's behaviour; the bell is never affected; Settings › Company › Notifications for whoever administers the module, and the personal screen shows what's locked · Shell, Performance, Core HR · 2026-10-23
       From B-071 C-5: v1 is per person (email per group, deadline reminders locked). Call N7. Last of B-002's children. Built 2026-10-29: look at Settings › Performance › Notifications and Settings › Core HR › Notifications (Required / On / Off per group, save bar), then Settings › Notifications as an employee (a required group shows a "Required" lock).
 - [ ] **B-104** Final manual verification pass, once the big features are done (Settings, any wow feature): the user verifies B-089 phase 2 and everything since by hand, then the little stuff that's left · Performance · 2026-10-23

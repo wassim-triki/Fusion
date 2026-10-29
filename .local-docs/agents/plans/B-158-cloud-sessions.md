@@ -115,7 +115,7 @@ Unproven until the pilot (B-161): the setup inside 5 min, whether the snapshot k
 | Branch | clone on `master` (no agent docs); fixed by the `~/.claude/CLAUDE.md` step that switches onto `wassim/develop` |
 | Push / PR | 403: Claude GitHub App not installed on the `Fusion-hr-solution` org |
 
-Starting a session: select the repository `Fusion-hr-solution/Fusion` and the Fusion environment.
+Starting a session: select the repository `wassim-triki/Fusion` (the fork; see below) and the Fusion environment.
 
 ### Pushing through a fork (decided 2026-10-29)
 
@@ -134,3 +134,15 @@ Local stays the normal flow. The cloud is an occasional fallback when the PC isn
 
 The team is gone after the internship, so the user's fork becomes the project's home: local `origin` = `wassim-triki/Fusion` (`gh` default), `upstream` = the org repo, read-only; a merge back to the org would be a later request, if ever. This replaces "Pushing through a fork" above: one push target, cloud sessions open their own PRs into `wassim/develop` on the fork, and `claude --teleport` works again (same repository).
 
+### Second cloud session (B-161 part 2, 2026-10-29)
+
+| Check | Result |
+|---|---|
+| Setup warm-up | skipped again: `/tmp/fusion-setup/` holds only `dotnet.log` (SDK 10.0.403 installed) and `no-clone.log`; no repository was attached when the session started, so no pnpm, restore or links logs |
+| Repository | attached by the agent mid-session (`wassim-triki/Fusion`, push access), cloned to `/home/user/fusion` on `wassim/develop` (7646b80); the fork was chosen over the org repo because it is ahead and is the project's home |
+| `cloud-session.sh` | clean in 22 s: links, deps from a cold store; dotnet 10.0.403, node 22.22.0, pnpm 10.33.0 |
+| Instructions | `CLAUDE.md` → AGENTS.md loaded once the repo was registered; MEMORY.md read |
+| Branch | `claude/b-161-cloud-pilot-part-2` from `origin/wassim/develop` |
+| Push / PR | branch pushed to the fork (`origin`) and PR opened into `wassim/develop` from the session; no 403 |
+
+Fix: setup's `~/.claude/CLAUDE.md` now starts with a step for a session without a clone (attach `wassim-triki/Fusion`, clone `wassim/develop` to `/home/user/fusion`). Re-paste `setup.sh` into the environment for it to take effect. The lasting fix is on the user's side: attach the repository when starting a session.

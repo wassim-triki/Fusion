@@ -53,6 +53,8 @@ cat >"$HOME/.claude/CLAUDE.md" <<'EOF'
 # Fusion cloud session
 
 This is a Claude Code cloud session on Fusion: Linux, no PowerShell, no running stack.
+0. No clone under `/home/user`? Attach the repository `wassim-triki/Fusion` (push access) and
+   clone its `wassim/develop` to `/home/user/fusion`, then carry on from there.
 1. Work branches off `wassim/develop`, not the default branch. If the checkout lacks
    `.agents/skills/fusion-dev/`, run `git fetch origin wassim/develop` and switch your session
    branch onto it (`git checkout -B <your branch> origin/wassim/develop`) before anything else.

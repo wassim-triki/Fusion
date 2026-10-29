@@ -16,7 +16,7 @@ One backend-only item end to end in a cloud session (tests, commit, push, PR int
 
 1. [x] Environment checks in the cloud (bootstrap, relational tests, hook): pass.
 2. [x] Fixed: setup warms caches from a `master` clone; `~/.claude/CLAUDE.md` switches onto `wassim/develop` (local commit pending).
-3. [ ] Fork: user runs the fork + remote commands (auto mode blocked them for the agent), installs the Claude app on the fork; agent sets the fork's default branch to `wassim/develop`. Docs updated for the fork flow.
+3. [x] Fork: user runs the fork + remote commands (auto mode blocked them for the agent), installs the Claude app on the fork; agent sets the fork's default branch to `wassim/develop`. Docs updated for the fork flow.
 4. [ ] Cloud session: one backend item end to end with push + PR. None small and backend-only is Ready; pick or split one with the user.
 5. [ ] Teleport locally, check, merge.
 
@@ -27,7 +27,7 @@ One backend-only item end to end in a cloud session (tests, commit, push, PR int
 
 ## Where it stands
 
-Fork created (`wassim-triki/Fusion`, default `wassim/develop`, `fork` remote added, both pushed at fb0310f3); app installed on it by the user. Pilot part 2 cloud session started by the user; waiting for its result (push + compare link).
+Pilot part 2 cloud session (2026-10-29): bootstrap checks recorded in the B-158 plan › Second cloud session; setup's `~/.claude/CLAUDE.md` gained a no-clone step (user re-pastes `setup.sh`). Branch `claude/b-161-cloud-pilot-part-2` pushed to the fork with a PR into `wassim/develop` (push and PR from the session worked). Next: user merges; local `claude --teleport` check; then close B-161 and B-158.
 
 ## Open questions & blockers
 

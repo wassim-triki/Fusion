@@ -22,11 +22,12 @@ One backend-only item end to end in a cloud session (tests, commit, push, PR int
 
 ## Decisions & reasoning
 
+- User 2026-10-29: local is the normal flow; the cloud is an occasional fallback on one account (B-158 plan › How it's used). Then the fork became the home: `origin` = `wassim-triki/Fusion`, `upstream` = org repo read-only, `gh` default set (user ran the remote commands). The pilot shrinks to proving a push to the fork; then B-161 and B-158 close.
 - The pilot's findings commit (34a1c2c) stayed in its container; recorded locally instead of recovering it.
 
 ## Where it stands
 
-Waiting on the user to create the fork and install the app on it; then a cloud session on the fork pushes a trivial change to prove the flow.
+Fork created (`wassim-triki/Fusion`, default `wassim/develop`, `fork` remote added, both pushed at fb0310f3); app installed on it by the user. Pilot part 2 cloud session started by the user; waiting for its result (push + compare link).
 
 ## Open questions & blockers
 

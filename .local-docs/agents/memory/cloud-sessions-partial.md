@@ -1,6 +1,6 @@
 ---
 name: cloud-sessions-partial
-description: "Fusion work moves partly to Claude Code cloud sessions (B-158): cloud codes/tests/checks, local bursts for stack/journeys/screens via teleport"
+description: "Local is the normal flow; Claude Code cloud sessions are an occasional fallback (B-158) on the fork wassim-triki/Fusion, which is now the project home"
 metadata:
   node_type: memory
   type: project
@@ -8,12 +8,11 @@ metadata:
   modified: 2026-10-29T14:35:14.708Z
 ---
 
-Decided 2026-10-29 (B-158, plan `.local-docs/agents/plans/B-158-cloud-sessions.md`): partial move to Claude Code cloud sessions so the user's PC stays usable. Cloud VM: ~4 vCPU / 16 GB / 30 GB, Postgres 16 preinstalled, .NET not (setup script), nothing keeps running between sessions.
+Decided 2026-10-29 (B-158, plan `.local-docs/agents/plans/B-158-cloud-sessions.md`). Local is the normal flow; a cloud session is an occasional fallback when the PC isn't available, on one Claude account (environments are per account). Cloud VM: ~4 vCPU / 16 GB / 30 GB, Postgres 16 preinstalled, .NET via the setup script (`.agents/skills/fusion-dev/cloud/setup.sh`), nothing keeps running between sessions.
 
-- Cloud does code, backend tests, frontend checks; pushes its own branch and opens a PR into `wassim/develop` (user merges). One cloud session at a time at first.
-- Stack, API journeys and screens stay local in short bursts: `claude --teleport` picks up the session, runs them, pushes, stops the stack.
-- Agent docs (`.local-docs/agents/`, with this memory and the canonical AGENTS.md) are tracked since B-159; the root AGENTS.md/CLAUDE.md are local pointers, so the cloud setup (B-160) must recreate them, the `.claude/skills/fusion-dev` link and the memory-folder link.
-- Local-only work must keep working; cloud hooks guard on `CLAUDE_CODE_REMOTE`.
+- Repo home is the user's fork `wassim-triki/Fusion` (`origin`, default branch `wassim/develop`); the internship org repo is `upstream`, read-only (the user isn't an org admin and the team is gone after the internship).
+- Cloud does code, backend tests, frontend checks; pushes its own branch and opens a PR into `wassim/develop` (user merges). Stack, journeys and screens stay local; `claude --teleport` picks a session up (same account only).
+- Switching Claude accounts mid-task is a handoff through the pushed branch and STATE, not a continuation; push before stepping away so the cloud sees the latest work.
 
-**Why:** the user wants the PC free without building a full cloud stack ("not at the cost of tooling the migration fully, if it's complicated").
-**How to apply:** this narrows [[agent-commits-everything]] (cloud sessions now push branches and open PRs); keep [[machine-memory-checks]] for local bursts.
+**Why:** the user wants work possible away from the PC without making it the main flow, and the org repo has no future after the internship.
+**How to apply:** this narrows [[agent-commits-everything]] (cloud sessions push branches and open PRs); never push to `upstream` unless asked; keep [[machine-memory-checks]] for local work.

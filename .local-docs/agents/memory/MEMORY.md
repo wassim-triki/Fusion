@@ -13,7 +13,7 @@
 - [Presentation diagrams](presentation-diagrams.md) — `.local-docs/diagrams/`, Mermaid + PlantUML use-case, `-v0` versioning.
 - [Audit/history deferred](audit-history-deferred.md) — change-history UI deferred to a unified Perf+Core audit integration.
 
-- [Cloud sessions, partial](cloud-sessions-partial.md) — B-158: cloud codes/tests/checks + pushes branch/PR; local teleport bursts for stack/journeys/screens; agent docs to be tracked.
+- [Cloud sessions, fallback](cloud-sessions-partial.md) — local is normal; cloud occasional (B-158); home repo is the fork `wassim-triki/Fusion` (`origin`), org repo read-only `upstream`.
 
 ## Design system & doctrine
 - [Radius role system](radius-role-system.md) — radii are roles (squircle tier surface 28/control 18/menu/inset/nested/detail/full), ChatGPT-fitted, lint-guarded.

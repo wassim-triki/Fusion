@@ -126,3 +126,11 @@ The user is a member of `Fusion-hr-solution` with push rights but not an admin; 
 - Lost: `claude --teleport` (it refuses a fork's session from the org checkout), so a local check fetches the branch instead; the conversation doesn't carry, the repo's STATE and board do. Cloud sessions can't open PRs on the org repo.
 - If the org admin installs the app later: drop the fork, sessions run on the org repo and teleport works.
 
+### How it's used (user, 2026-10-29)
+
+Local stays the normal flow. The cloud is an occasional fallback when the PC isn't available, on one Claude account (environments are per account; the second account gets one only if needed: connect GitHub as wassim-triki, recreate the environment from `cloud/setup.sh`). A cloud session belongs to its account, so switching accounts mid-task is a handoff through the pushed branch and STATE, not a continuation. Habit that makes it work: push `wassim/develop` (to `origin` and `fork`) before stepping away; back home, merge the cloud branch (PR or `git fetch fork`) and carry on locally.
+
+### The fork is the home (user, 2026-10-29)
+
+The team is gone after the internship, so the user's fork becomes the project's home: local `origin` = `wassim-triki/Fusion` (`gh` default), `upstream` = the org repo, read-only; a merge back to the org would be a later request, if ever. This replaces "Pushing through a fork" above: one push target, cloud sessions open their own PRs into `wassim/develop` on the fork, and `claude --teleport` works again (same repository).
+

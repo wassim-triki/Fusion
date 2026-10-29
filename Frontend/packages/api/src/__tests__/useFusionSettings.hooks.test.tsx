@@ -51,6 +51,8 @@ function api(overrides: Partial<FusionSettingsApi> = {}): FusionSettingsApi {
     getNotificationPreferences: vi.fn(),
     updateNotificationPreferences: vi.fn(),
     getFieldVisibility: vi.fn(),
+    getNotificationDefaults: vi.fn(),
+    updateNotificationDefaults: vi.fn(),
     ...overrides,
   };
 }

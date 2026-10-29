@@ -51,10 +51,12 @@ export {
 export {
   useFieldVisibility,
   useFusionSettings,
+  useNotificationDefaults,
   useNotificationPreferences,
   useSettingsConflictSaver,
   useSettingsReturn,
   useSettingsSections,
+  useUpdateNotificationDefaults,
   useUpdateNotificationPreferences,
   type FusionSettingsGroup,
   type FusionSettingsGroupStatus,

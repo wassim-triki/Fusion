@@ -110,6 +110,8 @@ export {
   settingsWhen,
   useSettingsWhen,
 } from "./settings";
+export { NotificationModeList } from "./notification-modes";
+export type { NotificationModeGroup, NotificationModeValue } from "./notification-modes";
 export type {
   SettingsBlockProps,
   SettingsConflict,

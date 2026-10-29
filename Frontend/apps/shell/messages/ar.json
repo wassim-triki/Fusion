@@ -28,7 +28,7 @@
       "inFusion": "في Fusion",
       "email": "البريد الإلكتروني",
       "alwaysInFusion": "دائمًا في Fusion",
-      "always": "دائمًا",
+      "always": "إلزامي",
       "emailFor": "البريد لـ{group}",
       "count": "{count, plural, one {إشعار واحد} two {إشعاران} other {# إشعارات}}",
       "yourTeam": "فريقك",

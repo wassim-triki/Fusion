@@ -2,6 +2,7 @@
 
 import { use } from "react";
 import { PerformanceSettingsSectionHost } from "@/features/settings/section-host";
+import { NotificationsSettings } from "@/features/settings/sections/notifications";
 import { CompetenciesSettings } from "@/features/settings/sections/competencies";
 import {
   AiAndDataSettings,
@@ -32,6 +33,8 @@ export default function SettingsSectionPage({ params }: { params: Promise<{ sect
             return <PlanningSettings section={section} />;
           case "conversations":
             return <ConversationsSettings section={section} />;
+          case "notifications":
+            return <NotificationsSettings section={section} />;
           default:
             return <AiAndDataSettings section={section} />;
         }

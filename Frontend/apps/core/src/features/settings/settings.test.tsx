@@ -146,6 +146,12 @@ describe("In French", () => {
       sentence: "Téléphone : les managers le voient désormais",
     });
     expect(describeChange("provisioning.inviteExpiryDays", 7, 14, sayInFrench).after).toBe("14 jours");
+    expect(describeChange("team-and-job-changes", "on", "required")).toEqual({
+      label: "Team and job change email",
+      before: "on",
+      after: "required",
+      sentence: "Team and job change email is now required",
+    });
     expect(describeChange("orgChart.audience", undefined, "ManagersAndHr", sayInFrench)).toEqual({
       label: "Qui voit l’organigramme",
       before: "Tout le monde",

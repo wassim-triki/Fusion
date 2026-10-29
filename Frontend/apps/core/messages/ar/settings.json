@@ -297,6 +297,13 @@
       "canManage": "أصبح بإمكان شاغلي {role} إدارة {what}",
       "changedWhat": "عدّل ما يتيحه دور {role}",
       "changed": "عدّل دور {role}"
+    },
+    "notificationLabel": "بريد تغييرات الفريق والوظيفة",
+    "notificationSentence": "أصبح بريد تغييرات الفريق والوظيفة: {mode}",
+    "mode": {
+      "required": "إلزامي",
+      "on": "مفعّل",
+      "off": "متوقف"
     }
   }
 }

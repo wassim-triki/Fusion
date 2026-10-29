@@ -9,6 +9,7 @@ export const PERFORMANCE_SETTINGS_SECTIONS = [
   { id: "planning", label: "Planning" },
   { id: "conversations", label: "Conversations" },
   { id: "ai-and-data", label: "AI and data" },
+  { id: "notifications", label: "Notifications" },
 ] as const;
 
 /** The sections that share one settings record: saving one changes the version of all four (B-071 D7). */

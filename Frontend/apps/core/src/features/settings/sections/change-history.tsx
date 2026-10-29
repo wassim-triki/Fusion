@@ -130,6 +130,15 @@ export function describeChange(path: string, before: unknown, after: unknown, sa
       sentence: said("reinviteSentence", { choice: choice.charAt(0).toLowerCase() + choice.slice(1) }),
     };
   }
+  if (path === "team-and-job-changes") {
+    const mode = (value: unknown) => said(`mode.${value === "required" || value === "off" ? value : "on"}`);
+    return {
+      label: said("notificationLabel"),
+      before: mode(before),
+      after: mode(after),
+      sentence: said("notificationSentence", { mode: mode(after) }),
+    };
+  }
   if (path.endsWith("defaultAccessProfileId")) {
     const role = (value: unknown) => said(value ? "chosenRole" : "defaultRole");
     return { label: said("roleLabel"), before: role(before), after: role(after), sentence: said("roleSentence") };

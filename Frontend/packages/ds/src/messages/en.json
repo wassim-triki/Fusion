@@ -51,7 +51,45 @@
       "reload": "Reload",
       "discard": "Discard",
       "save": "Save",
-      "breadcrumb": "Breadcrumb"
+      "breadcrumb": "Breadcrumb",
+      "notificationModes": {
+        "required": "Required",
+        "on": "On",
+        "off": "Off",
+        "requiredHint": "Always emailed; people can't turn it off",
+        "onHint": "Emailed unless a person turns it off",
+        "offHint": "Not emailed unless a person turns it on",
+        "emailFor": "Email for {group}",
+        "groups": {
+          "team-and-job-changes": {
+            "name": "Team and job changes",
+            "summary": "A person's manager or job changes, someone joins or leaves a team"
+          },
+          "plans-and-goals": {
+            "name": "Plans and goals",
+            "summary": "Plans sent, approved or returned, updates asked, objectives at risk"
+          },
+          "reviews-and-calibration": {
+            "name": "Reviews and calibration",
+            "summary": "Reviews open and are released, peer input, calibration"
+          },
+          "one-on-ones": {
+            "name": "1:1s",
+            "summary": "A 1:1 started or moved, actions assigned"
+          },
+          "feedback-and-praise": {
+            "name": "Feedback and praise",
+            "summary": "Feedback and praise given, requests and answers"
+          },
+          "deadline-reminders": {
+            "name": "Deadline reminders",
+            "summary": "Something due soon or late"
+          }
+        },
+        "consequence": "Choices people made stay; a required group's email can't be turned off.",
+        "notSaved": "Notification settings weren't saved. Try again.",
+        "leave": "Leave without saving your notification changes?"
+      }
     },
     "relative": {
       "now": "Just now",

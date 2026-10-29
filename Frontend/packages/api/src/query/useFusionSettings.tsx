@@ -15,8 +15,10 @@ import {
   type FusionSettingsGroupKey,
   type FusionSettingsModuleKey,
   type FusionSettingsSection,
+  type NotificationDefaults,
   type NotificationPreferences,
   type SettingsReturn,
+  type UpdateNotificationDefaultsRequest,
   type UpdateNotificationPreferencesRequest,
 } from "../fusion-settings";
 import { createPlatformApiClient } from "../platform";
@@ -108,7 +110,6 @@ export function useSettingsSections(module: "core" | "performance", options: Use
   });
 }
 
-/** The person's own Performance notification choices. */
 /** The person's email choices for one module's notifications. A 403 means the module tells them nothing. */
 export function useNotificationPreferences(module: FusionSettingsModuleKey, options: UseFusionSettingsOptions = {}) {
   const { viewer } = useFusionViewer();
@@ -130,6 +131,35 @@ export function useUpdateNotificationPreferences(module: FusionSettingsModuleKey
   return useMutation({
     mutationFn: (request: UpdateNotificationPreferencesRequest) => api.updateNotificationPreferences(module, request),
     onSuccess: (saved) => client.setQueryData(key, saved),
+  });
+}
+
+/** The company's email mode per group for one module (its Settings › Notifications). */
+export function useNotificationDefaults(module: FusionSettingsModuleKey, options: UseFusionSettingsOptions = {}) {
+  const { viewer } = useFusionViewer();
+  const api = useSettingsApi(options.api);
+  return useQuery<NotificationDefaults>({
+    queryKey: fusionSettingsQueryKeys.notificationDefaults(module, viewer?.tenantId ?? null),
+    queryFn: ({ signal }) => api.getNotificationDefaults(module, signal),
+    enabled: Boolean(viewer?.tenantId),
+    retry: false,
+  });
+}
+
+/**
+ * Saves the company's email modes for one module. The response replaces the cached modes; people's own choices and the
+ * section list (its last change) are asked again.
+ */
+export function useUpdateNotificationDefaults(module: FusionSettingsModuleKey, options: UseFusionSettingsOptions = {}) {
+  const { viewer } = useFusionViewer();
+  const api = useSettingsApi(options.api);
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (request: UpdateNotificationDefaultsRequest) => api.updateNotificationDefaults(module, request),
+    onSuccess: async (saved) => {
+      client.setQueryData(fusionSettingsQueryKeys.notificationDefaults(module, viewer?.tenantId ?? null), saved);
+      await client.invalidateQueries({ queryKey: fusionSettingsQueryKeys.all() });
+    },
   });
 }
 

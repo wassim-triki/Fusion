@@ -6,6 +6,7 @@ import { ChangeHistorySettings } from "@/features/settings/sections/change-histo
 import { CompanySettings } from "@/features/settings/sections/company";
 import { EmployeeFieldsSettings } from "@/features/settings/sections/employee-fields";
 import { InvitationsSettings } from "@/features/settings/sections/invitations";
+import { NotificationsSettings } from "@/features/settings/sections/notifications";
 import { RolesSettings } from "@/features/settings/sections/roles";
 
 /** One Core HR settings section, shown once the server says the person may see it. */
@@ -24,6 +25,8 @@ export default function SettingsSectionPage({ params }: { params: Promise<{ sect
             return <RolesSettings section={section} />;
           case "invitations":
             return <InvitationsSettings section={section} />;
+          case "notifications":
+            return <NotificationsSettings section={section} />;
           default:
             return <ChangeHistorySettings section={section} />;
         }

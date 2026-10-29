@@ -38,6 +38,8 @@ export const fusionSettingsPaths = {
   notificationPreferences: (module: FusionSettingsModuleKey) =>
     module === "core" ? "/corehr/notification-preferences" : "/performance/notification-preferences",
   fieldVisibility: () => "/corehr/settings/field-visibility",
+  notificationDefaults: (module: FusionSettingsModuleKey) =>
+    module === "core" ? "/corehr/settings/notifications" : "/performance/settings/notifications",
 } as const;
 
 export const fusionSettingsQueryKeys = {
@@ -47,6 +49,8 @@ export const fusionSettingsQueryKeys = {
   notificationPreferences: (module: FusionSettingsModuleKey, tenantId: string | null, userId: string | null) =>
     [...fusionSettingsQueryKeys.all(), "notification-preferences", module, tenantId ?? "none", userId ?? "none"] as const,
   fieldVisibility: (tenantId: string | null) => [...fusionSettingsQueryKeys.all(), "field-visibility", tenantId ?? "none"] as const,
+  notificationDefaults: (module: FusionSettingsModuleKey, tenantId: string | null) =>
+    [...fusionSettingsQueryKeys.all(), "notification-defaults", module, tenantId ?? "none"] as const,
 };
 
 // ── The You group: the shell serves it, so it is static ──
@@ -147,7 +151,7 @@ export interface NotificationPreferenceItem {
   label: string;
   /** About the person's team rather than themselves. */
   team: boolean;
-  /** Always emailed (deadline reminders). */
+  /** Every kind on the line is in a group the company requires. */
   always: boolean;
   /** How many notification kinds the line covers. */
   count: number;
@@ -158,6 +162,7 @@ export interface NotificationPreferenceGroup {
   label: string;
   summary: string;
   email: boolean;
+  /** The company requires this group's email (B-002 N7). */
   locked: boolean;
   count: number;
   items: NotificationPreferenceItem[];
@@ -172,7 +177,33 @@ export interface NotificationPreferences {
 
 export interface UpdateNotificationPreferencesRequest {
   expectedVersion: number;
+  /** Every group the person wants no email for; the module stores only what differs from the company. */
   emailOff: NotificationGroupKey[];
+}
+
+// ── Company email modes per group (B-002 N7), each module's Settings › Notifications ──
+
+/** Required: always emailed. On: people may turn it off. Off: people may turn it on. The bell is never affected. */
+export type NotificationEmailMode = "required" | "on" | "off";
+
+export interface NotificationDefaultGroup {
+  key: NotificationGroupKey;
+  label: string;
+  summary: string;
+  mode: NotificationEmailMode;
+  /** Where a new company starts. */
+  fusionDefault: NotificationEmailMode;
+}
+
+export interface NotificationDefaults {
+  groups: NotificationDefaultGroup[];
+  /** 0 before the company first saved. */
+  version: number;
+}
+
+export interface UpdateNotificationDefaultsRequest {
+  expectedVersion: number;
+  modes: Partial<Record<NotificationGroupKey, NotificationEmailMode>>;
 }
 
 // ── Field visibility (Core HR's field policy, readable by every member) ──
@@ -200,6 +231,10 @@ export function createFusionSettingsApi(client: ApiClient) {
       client.put<NotificationPreferences>(fusionSettingsPaths.notificationPreferences(module), request),
     getFieldVisibility: (signal?: AbortSignal) =>
       client.get<FieldVisibility>(fusionSettingsPaths.fieldVisibility(), { signal }),
+    getNotificationDefaults: (module: FusionSettingsModuleKey, signal?: AbortSignal) =>
+      client.get<NotificationDefaults>(fusionSettingsPaths.notificationDefaults(module), { signal }),
+    updateNotificationDefaults: (module: FusionSettingsModuleKey, request: UpdateNotificationDefaultsRequest) =>
+      client.put<NotificationDefaults>(fusionSettingsPaths.notificationDefaults(module), request),
   };
 }
 

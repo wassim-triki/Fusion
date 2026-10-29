@@ -28,7 +28,7 @@
       "inFusion": "Dans Fusion",
       "email": "E-mail",
       "alwaysInFusion": "Toujours dans Fusion",
-      "always": "Toujours",
+      "always": "Obligatoire",
       "emailFor": "E-mail pour {group}",
       "count": "{count, plural, one {# notification} other {# notifications}}",
       "yourTeam": "Votre équipe",

@@ -256,7 +256,7 @@ const isUnavailable = (error: unknown) => error instanceof ApiError && error.sta
 
 /**
  * Settings › Notifications: pop-ups and their chime, then what each module tells the person, always in Fusion, and by
- * email per group. A module that tells the person nothing (403) shows no block. Deadline reminders are always emailed.
+ * email per group. A module that tells the person nothing (403) shows no block. Groups the company requires show a lock.
  * Each choice saves the moment it changes.
  */
 export function Notifications() {

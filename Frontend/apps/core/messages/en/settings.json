@@ -297,6 +297,13 @@
       "canManage": "People holding {role} can now manage {what}",
       "changedWhat": "Changed what the {role} role can do",
       "changed": "Changed the {role} role"
+    },
+    "notificationLabel": "Team and job change email",
+    "notificationSentence": "Team and job change email is now {mode}",
+    "mode": {
+      "required": "required",
+      "on": "on",
+      "off": "off"
     }
   }
 }

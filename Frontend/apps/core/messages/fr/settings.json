@@ -297,6 +297,13 @@
       "canManage": "Les titulaires du rôle « {role} » peuvent désormais gérer {what}",
       "changedWhat": "A modifié ce que permet le rôle « {role} »",
       "changed": "A modifié le rôle « {role} »"
+    },
+    "notificationLabel": "E-mails Équipe et changements de poste",
+    "notificationSentence": "Les e-mails Équipe et changements de poste sont désormais : {mode}",
+    "mode": {
+      "required": "obligatoires",
+      "on": "activés",
+      "off": "désactivés"
     }
   }
 }

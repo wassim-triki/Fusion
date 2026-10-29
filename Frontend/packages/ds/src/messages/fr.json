@@ -51,7 +51,45 @@
       "reload": "Recharger",
       "discard": "Annuler",
       "save": "Enregistrer",
-      "breadcrumb": "Fil d’Ariane"
+      "breadcrumb": "Fil d’Ariane",
+      "notificationModes": {
+        "required": "Obligatoire",
+        "on": "Activé",
+        "off": "Désactivé",
+        "requiredHint": "Toujours envoyé ; personne ne peut le désactiver",
+        "onHint": "Envoyé, sauf si la personne le désactive",
+        "offHint": "Non envoyé, sauf si la personne l'active",
+        "emailFor": "E-mail pour {group}",
+        "groups": {
+          "team-and-job-changes": {
+            "name": "Équipe et changements de poste",
+            "summary": "Changement de responsable ou de poste, arrivée ou départ dans une équipe"
+          },
+          "plans-and-goals": {
+            "name": "Plans et objectifs",
+            "summary": "Plans envoyés, approuvés ou renvoyés, mises à jour demandées, objectifs à risque"
+          },
+          "reviews-and-calibration": {
+            "name": "Évaluations et calibrage",
+            "summary": "Ouverture et publication des évaluations, avis des pairs, calibrage"
+          },
+          "one-on-ones": {
+            "name": "Entretiens individuels",
+            "summary": "Un entretien commencé ou déplacé, actions assignées"
+          },
+          "feedback-and-praise": {
+            "name": "Feedback et reconnaissance",
+            "summary": "Feedback et reconnaissance reçus, demandes et réponses"
+          },
+          "deadline-reminders": {
+            "name": "Rappels d'échéance",
+            "summary": "Une échéance proche ou dépassée"
+          }
+        },
+        "consequence": "Les choix de chacun sont conservés ; un e-mail obligatoire ne peut pas être désactivé.",
+        "notSaved": "Les paramètres de notification n'ont pas été enregistrés. Réessayez.",
+        "leave": "Quitter sans enregistrer vos changements de notifications ?"
+      }
     },
     "relative": {
       "now": "À l’instant",

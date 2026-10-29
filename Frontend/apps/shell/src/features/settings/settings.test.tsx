@@ -286,7 +286,7 @@ const PREFERENCES: NotificationPreferences = {
 };
 
 describe("Notifications", () => {
-  it("shows where email goes, a switch per group and reminders always emailed", () => {
+  it("shows where email goes, a switch per group and what the company requires", () => {
     mocks.preferences = PREFERENCES;
     render(<Notifications />);
     expect(screen.getByText("aicha.bouazizi@example.test")).toBeTruthy();
@@ -303,7 +303,7 @@ describe("Notifications", () => {
     expect(
       screen.queryByRole("switch", { name: "Email for Deadline reminders" })
     ).not.toBeTruthy();
-    expect(screen.getAllByText("Always").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Required").length).toBeGreaterThan(0);
   });
 
   it("lists Core HR's team and job changes beside Performance, switchable by email", () => {

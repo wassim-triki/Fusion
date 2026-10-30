@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-197.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-203.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -43,6 +43,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
     - [ ] **B-181** Fields: the company's own fields and sections, a gallery, who sees and changes each; records to complete (D-18) · Core HR · 2026-10-30
       - [ ] **B-196** Where employment type is set: it's a value of the company's list since B-175 and the API takes it on hire, rejoin and the legacy update, but no form sets it (an earlier product call kept it off the hire form, held by tests). Decide with the fields model · Core HR · 2026-10-30
     - [ ] **B-182** People, the directory and invitations: HR table, portrait cards, the invite sheet, Settings › Sign-in, Export everywhere (D-11, D-13, D-28) · Core HR, Shared · 2026-10-30
+      - [ ] **B-199** Redesign the hire / add-one-person form ("Add people", D-13): the current page is old UI the explorer never drew (user 2026-10-30: very bad). Design it in the accepted grammar, keep the job and place pickers from B-175 · Core HR · 2026-10-30
     - [ ] **B-183** Organization in time: one place, three views, one time slider, unit pages, open roles (D-17) · Core HR · 2026-10-30
     - [ ] **B-184** Joining and leaving: checklists, a joiner's first week, celebrations · Core HR, Shell · 2026-10-30
       - [ ] **B-146** Celebrations: birthdays and work anniversaries on Home (BambooHR-style life); who sees a birthday (day and month only) · Shell, Core HR · 2026-10-28
@@ -55,12 +56,15 @@ Open work only. Agents keep it current from the conversation; closed items leave
     - [ ] **B-190** Core HR's front page: Growth and People on one time slider, department cards (D-30) · Core HR · 2026-10-30
     - [ ] **B-191** Single sign-on: Microsoft, Google, a company's own provider, required per domain · Identity, Shell · 2026-10-30
     - [ ] **B-192** Seams and finish: colleague modules only when on, one vocabulary, replaced surfaces gone, demo presets for the tour · All · 2026-10-30
+      - [ ] **B-200** Reorder list values by drag and drop (a handle on each row) instead of up and down arrows, in Settings › Lists; reuse the milestone editor's drag if it fits · Core HR · 2026-10-30
+      - [ ] **B-201** Make the Places table richer: it does its job but reads lackluster (user 2026-10-30, not urgent) · Core HR · 2026-10-30
       - [ ] **B-194** Remove the legacy employee write endpoints (`POST /employees`, `PUT /employees/{id}`, rehire, terminate, change-manager) and their commands: no screen calls them; B-175 had to move them onto job and place ids anyway · Core HR · 2026-10-30
 
 ## In review
 
 - [ ] **B-175** Jobs, places and the company's lists (slice 1 of B-167): jobs as objects with family and level, places, Settings › Lists, job and place pickers in the hire, change and open-role forms · Core HR · 2026-10-30
       [decisions](plans/B-175-jobs-places-lists.md). Look at: [screens](plans/B-175-screens/) (dark 1440×900, Amira on Carthage). Organization › Jobs grouped by family with level and who holds each (01, 04), the edit dialog (02), merging a duplicate (03), Organization › Places (05), Settings › Lists (06, 07), the hire form's job picker with search and "Add the job" (08, 09), the Organization lenses (10). These screens weren't drawn in the explorer: judge them against the accepted grammar. Live at `/core/organization/jobs`, `/core/organization/places`, `/core/settings/lists`.
+  - [ ] **B-198** Redo the Structure · Jobs · Places switch to match the target design: today it's the old Structure lens strip turned into links, reused only because it existed (user 2026-10-30). Pick the view switch the accepted grammar calls for (D-01 band tabs, D-17 views); do it with B-183 if that slice comes first, so it's built once · Core HR · 2026-10-30
 - [ ] **B-104** Final manual verification pass, once the big features are done (Settings, any wow feature): the user verifies B-089 phase 2 and everything since by hand, then the little stuff that's left · Performance · 2026-10-23
       2026-10-29: the fixes are done (B-089 audit, phase 2 committed ba8f58af, which also closed B-088's ask); only the user's hand check is left, so this sits In review.
       User: "once we establish a bunch of things and the big features all done and only the little stuff left, maybe we'll do a manual thing right there and verify everything". B-089 phase 2 waits on it; committed 2026-10-25 at the user's request (ba8f58af), still unverified by hand.
@@ -71,6 +75,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## Ready
 
+- [ ] **B-202** `fusion-dev` script that adds an EF migration without stopping the running service (build to the artifacts path, then `dotnet ef … --no-build` against it); B-175 had to stop CoreHR for it · Tooling · 2026-10-30
 - [ ] **B-090** Product tour: an interactive walkthrough that takes a new tenant from the platform admin's invite through its first real use of Fusion · Shell, Core, Performance · 2026-10-20
       User: another wow factor that, done right, also carries a realistic demo from the tenant's point of view, "taking over after the initial platform admin invite". Open: where it starts and ends, who it's for (tenant admin, HR, manager, employee), guided steps vs. checklist vs. contextual hints, and whether it runs on real or demo data. Best after B-089 and the demo seeder, so it walks finished screens.
       User again 2026-10-29: onboard the person in real time, a tutorial that shows them around and guides them to set up their things; would carry the demo too. No details yet, discussion first.
@@ -93,7 +98,6 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## Needs discussion
 
-- [ ] **B-193** Streamline a session's build and check cadence: the user noticed B-175's long run of builds and tests (2026-10-30). Proposed: frontend lint and type-check left to the commit hook; no cross-module tests unless that module or a contract it reads changed; a `fusion-dev` migration script that builds to the artifacts path (no CoreHR stop); one full backend suite, one cold build only for route changes; optionally split contract-heavy slices into backend and screens sessions · Tooling · 2026-10-30
 - [ ] **B-169** Core HR after the rebuild: the rungs chosen at checkpoint 2 to keep for later, so they aren't lost · Core HR, Shell · 2026-10-30
       From B-164's scope page (brief §6b). Each is the next rung above what B-167 builds.
   - [ ] **B-170** Companies arrange the person page's sections from their own fields (P1 rung 3) · Core HR · 2026-10-30

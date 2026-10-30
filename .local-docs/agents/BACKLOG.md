@@ -29,7 +29,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
   - [ ] **B-110** Tenant configurability as a hero: branding (logo, theme/accent, branded sign-in, own address, email branding) and internal configuration (company defaults and whatever the research puts on the ladder), depth chosen on B-163's scope page · Shell, Platform, Core HR, Identity · 2026-10-24
         User 2026-10-30: "I really wanna establish it as a core wow factor"; EY discussed it a lot but never gave specs or how far to take it. Earlier (2026-10-24) brain dump, ideas not requirements. A tenant's default language meets B-105. Context: B-071 removed the unused brand colour from Core's branding settings; Core's branding settings store a `LogoUrl` that no screen sets or shows; Company settings show name and locale.
   - [ ] **B-167** Rebuild: slices in dependency order, each end to end with screens for the taste check ([decisions](plans/B-164-decisions.md), D-01–D-30; [slices](plans/B-167-rebuild.md)) · 2026-10-30
-        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 in review (2026-10-30); B-177 next, fresh session at xhigh.
+        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 next, fresh session at xhigh.
     - [ ] **B-198** One tab and view-switch pattern across Fusion, matching the target design: every tab strip and view switch today is reused old UI (the Organization lenses are the latest example). Define it once in `@repo/ds` from the accepted grammar (D-01 band tabs, D-17 views), first where a slice draws tabs (B-180's person page or B-183's Organization, whichever comes first), then replace every other use; B-192 checks none is left · All · 2026-10-30
     - [ ] **B-177** One roles model: areas × level × reach, holders by rule, the roles table and a role page with a live preview (D-25) · Identity, Core HR · 2026-10-30
     - [ ] **B-178** Administrators as a protected role, seeing Fusion as someone, the old token roles retired (D-25) · Identity, Core HR · 2026-10-30
@@ -62,16 +62,6 @@ Open work only. Agents keep it current from the conversation; closed items leave
       - [ ] **B-194** Remove the legacy employee write endpoints (`POST /employees`, `PUT /employees/{id}`, rehire, terminate, change-manager) and their commands: no screen calls them; B-175 had to move them onto job and place ids anyway · Core HR · 2026-10-30
 
 ## In review
-
-- [ ] **B-176** Brand studio: logo, colour, language with a live preview; applied across Fusion, sign-in and emails (D-02) · Core HR, Shell, Identity · 2026-10-30
-      Slice 2 of B-167. Look at: Settings › Brand in Carthage (logo, colour from the logo, readable check, default language, the three previews), Home and Core HR in the blue, sign-in signed out (`/auth/signin?company=carthage-digital-group`), an invitation in Mailpit. [notes](plans/B-176-brand-studio.md), screens in `plans/B-176-screens/`.
-  - [x] **B-207** Studio: Save and Discard sit in the page header beside the title, as in the explorer, instead of the save bar at the bottom · Core HR · 2026-10-30
-        User 2026-10-30 reviewing the screens: "I like the artifact approach more."
-  - [x] **B-208** Selected state of segmented and toggle controls (DS primitive): outline with a faint tint, not a solid fill; every use across Fusion · DS · 2026-10-30
-        User 2026-10-30, on Default language: prefers the explorer's outline and faded background "in these types of UIs"; a primitive, so sooner.
-  - [x] **B-209** Drop the contrast ratio under Color: text colour is already picked automatically and the preview shows it live; nobody needs the score · Core HR · 2026-10-30
-  - [ ] **B-210** Sign-in's company column feels empty (logo and name on a wash); give it more, canvas first · Shell · 2026-10-30
-        User 2026-10-30 on the Arabic sign-in: "looks clean, still lacking … especially the empty column holding the title of the organization".
 
 - [ ] **B-104** Final manual verification pass, once the big features are done (Settings, any wow feature): the user verifies B-089 phase 2 and everything since by hand, then the little stuff that's left · Performance · 2026-10-23
       2026-10-29: the fixes are done (B-089 audit, phase 2 committed ba8f58af, which also closed B-088's ask); only the user's hand check is left, so this sits In review.
@@ -111,6 +101,8 @@ Open work only. Agents keep it current from the conversation; closed items leave
         From B-114 D8: AI output (plan coach, review starters, calibration summaries) answers in the person's language.
         2026-10-26, user: skip for now ("skin b116 for now"); French and Arabic screens are done (B-114, B-115 closed). Not next.
       User 2026-10-30: B-116 is low priority for now.
+- [ ] **B-210** Sign-in's company column feels empty (logo and name on a wash); give it more, canvas first · Shell · 2026-10-30
+      User 2026-10-30 on the Arabic sign-in: "looks clean, still lacking … especially the empty column holding the title of the organization". Revisit later, not urgent (user, same day).
 
 ## Needs discussion
 

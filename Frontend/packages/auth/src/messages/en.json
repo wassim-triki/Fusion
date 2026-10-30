@@ -18,6 +18,14 @@
       "invalidCredentials": "Invalid credentials.",
       "failed": "Login failed. Please try again.",
       "to": "to {company}"
+    },
+    "search": {
+      "label": "Search",
+      "placeholder": "Go to…",
+      "places": "Places",
+      "home": "Home",
+      "settings": "Settings",
+      "nothing": "Nothing matches"
     }
   }
 }

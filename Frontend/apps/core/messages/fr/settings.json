@@ -18,15 +18,17 @@
     "fusion": "Fusion",
     "fusionAmber": "Ambre Fusion",
     "anyColor": "Autre couleur",
-    "readable": "Le texte se lit bien dessus · {ratio}:1",
-    "hardToRead": "Le texte se lit mal dessus · {ratio}:1",
     "language": "Langue par défaut",
     "languageHint": "Chacun peut toujours choisir la sienne",
     "preview": "Aperçu",
     "previewHome": "Accueil",
     "previewSignIn": "Connexion",
     "previewEmail": "E-mail d'invitation",
-    "emailDidNotLoad": "L'aperçu de l'e-mail n'a pas pu être chargé"
+    "emailDidNotLoad": "L'aperçu de l'e-mail n'a pas pu être chargé",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "discard": "Annuler",
+    "unsaved": "Modifications non enregistrées"
   },
   "details": {
     "didNotLoad": "Impossible de charger les informations de l’entreprise",

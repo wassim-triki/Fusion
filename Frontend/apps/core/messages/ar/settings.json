@@ -18,15 +18,17 @@
     "fusion": "Fusion",
     "fusionAmber": "كهرماني Fusion",
     "anyColor": "أي لون",
-    "readable": "النص عليه مقروء · {ratio}:1",
-    "hardToRead": "النص عليه صعب القراءة · {ratio}:1",
     "language": "اللغة الافتراضية",
     "languageHint": "يمكن لكل شخص اختيار لغته",
     "preview": "معاينة",
     "previewHome": "الرئيسية",
     "previewSignIn": "تسجيل الدخول",
     "previewEmail": "بريد الدعوة",
-    "emailDidNotLoad": "تعذّر تحميل معاينة البريد"
+    "emailDidNotLoad": "تعذّر تحميل معاينة البريد",
+    "save": "حفظ التغييرات",
+    "saving": "جارٍ الحفظ…",
+    "discard": "تجاهل",
+    "unsaved": "تغييرات غير محفوظة"
   },
   "details": {
     "didNotLoad": "تعذّر تحميل تفاصيل الشركة",

@@ -92,9 +92,9 @@ describe("Brand studio", () => {
     await user.click(screen.getByRole("button", { name: "#2f5fd0" }));
     await user.click(screen.getByRole("radio", { name: "العربية" }));
     expect(mocks.save).not.toHaveBeenCalled();
-    expect(screen.getByText(/Text on it reads well/)).toBeInTheDocument();
+    expect(screen.getByText("Unsaved changes")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Save" }));
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
 
     await waitFor(() =>
       expect(mocks.save).toHaveBeenCalledWith({
@@ -121,5 +121,6 @@ describe("Brand studio", () => {
     expect(screen.getByText("View only")).toBeInTheDocument();
     expect(screen.getByLabelText("Company name")).toBeDisabled();
     expect(screen.queryByRole("button", { name: "Upload" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Save changes" })).not.toBeInTheDocument();
   });
 });

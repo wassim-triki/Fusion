@@ -14,10 +14,11 @@ import {
 } from "@repo/api";
 import { useTenantSummary } from "@repo/api/query";
 import { useFusionViewer, useStagedSettings } from "@repo/api/react";
-import { Button, Input, ToggleGroup, ToggleGroupItem } from "@repo/ds";
+import { Button, Input } from "@repo/ds";
+import { Segmented } from "@repo/ds/choice";
 import { FUSION_COLORS, applyCompanyColor, isBrandColor, readableText } from "@repo/ds/brand";
 import { cn } from "@repo/ds/lib/utils";
-import { PageError, SettingsPage, SettingsSaveBar, useSettingsSectionName } from "@repo/ds/shell";
+import { PageError, SettingsPage, useSettingsSectionName } from "@repo/ds/shell";
 import { EmailPreview, HomePreview, SignInPreview, type BrandDraftView } from "../brand/brand-previews";
 import { prepareLogo, storedLogoColors } from "../brand/prepare-logo";
 import { useSaveFailure } from "../say";
@@ -165,7 +166,6 @@ export function BrandSettings({ section }: { section: FusionSettingsSection }) {
   const view: BrandDraftView | null = draft
     ? { name: draft.name, color: draft.color, language: draft.language, logoSrc: draft.logo }
     : null;
-  const check = draft?.color ? readableText(draft.color) : null;
   const nameValid = (draft?.name.trim().length ?? 0) >= 2;
   const firstName = viewer?.fullName?.split(" ")[0] ?? "";
   const anyColor = draft?.color && !FUSION_COLORS.includes(draft.color as never) && !logoColors.includes(draft.color)
@@ -173,9 +173,43 @@ export function BrandSettings({ section }: { section: FusionSettingsSection }) {
     : null;
 
   return (
-    <SettingsPage title={title} lastChange={null} viewOnly={!editable} loading={!draft} studio>
+    <SettingsPage
+      title={title}
+      lastChange={null}
+      viewOnly={!editable}
+      loading={!draft}
+      studio
+      aside={
+        editable && draft ? (
+          <div className="flex items-center gap-3">
+            {staged.dirty ? <span className="type-meta text-muted-foreground">{t("unsaved")}</span> : null}
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={!staged.dirty || staged.saving}
+              onClick={() => {
+                staged.discard();
+                setLogoError(null);
+              }}
+            >
+              {t("discard")}
+            </Button>
+            <Button
+              type="button"
+              disabled={!staged.dirty || staged.saving || !nameValid}
+              onClick={() => void staged.submit()}
+            >
+              {staged.saving ? t("saving") : t("save")}
+            </Button>
+          </div>
+        ) : null
+      }
+    >
       {draft && view ? (
         <>
+          {staged.error ? (
+            <p role="alert" className="-mt-4 type-body text-destructive">{failure(staged.error, t("notSaved"))}</p>
+          ) : null}
           <div className="grid grid-cols-[320px_minmax(0,1fr)] items-start gap-10">
             <div className="flex flex-col">
               <Control label={t("logo")} hint={logoError ?? t("logoHint")}>
@@ -266,51 +300,35 @@ export function BrandSettings({ section }: { section: FusionSettingsSection }) {
                     </label>
                   </div>
                 </div>
-                {check ? (
-                  <p className={cn("flex items-center gap-2 type-meta", check.readable ? "text-success" : "text-destructive")}>
-                    <span
-                      aria-hidden
-                      className="grid h-6 w-9 place-items-center rounded-detail text-xs font-semibold"
-                      style={{ background: draft.color!, color: check.text }}
-                    >
-                      Aa
-                    </span>
-                    {t(check.readable ? "readable" : "hardToRead", { ratio: check.ratio.toFixed(1) })}
-                  </p>
-                ) : null}
               </Control>
 
               <Control label={t("language")} hint={t("languageHint")}>
-                <ToggleGroup
-                  type="single"
-                  variant="outline"
+                <Segmented
+                  className="self-start"
+                  label={t("language")}
                   value={draft.language}
                   disabled={!editable}
-                  onValueChange={(value) => value && set({ language: value as CompanyLanguage })}
-                  aria-label={t("language")}
-                >
-                  {LANGUAGES.map((language) => (
-                    <ToggleGroupItem key={language.value} value={language.value} lang={language.value} className="px-3">
-                      {language.label}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
+                  onChange={(language) => set({ language })}
+                  options={LANGUAGES.map((language) => ({
+                    value: language.value,
+                    label: <span lang={language.value}>{language.label}</span>,
+                  }))}
+                />
               </Control>
             </div>
 
             <div className="flex flex-col gap-4 rounded-surface bg-section p-4">
-              <ToggleGroup
-                type="single"
-                variant="outline"
+              <Segmented
+                label={t("preview")}
                 value={preview}
-                onValueChange={(value) => value && setPreview(value as PreviewKind)}
-                aria-label={t("preview")}
+                onChange={setPreview}
                 className="self-start"
-              >
-                <ToggleGroupItem value="home" className="gap-1.5 px-3"><Home className="size-4" />{t("previewHome")}</ToggleGroupItem>
-                <ToggleGroupItem value="signin" className="gap-1.5 px-3"><Lock className="size-4" />{t("previewSignIn")}</ToggleGroupItem>
-                <ToggleGroupItem value="email" className="gap-1.5 px-3"><Mail className="size-4" />{t("previewEmail")}</ToggleGroupItem>
-              </ToggleGroup>
+                options={[
+                  { value: "home", label: t("previewHome"), icon: <Home /> },
+                  { value: "signin", label: t("previewSignIn"), icon: <Lock /> },
+                  { value: "email", label: t("previewEmail"), icon: <Mail /> },
+                ]}
+              />
               {preview === "home" ? (
                 <HomePreview draft={view} firstName={firstName} label={t("previewHome")} />
               ) : preview === "signin" ? (
@@ -321,21 +339,6 @@ export function BrandSettings({ section }: { section: FusionSettingsSection }) {
             </div>
           </div>
 
-          {editable && saved ? (
-            <SettingsSaveBar
-              changes={staged.changes}
-              saving={staged.saving}
-              error={failure(staged.error, t("notSaved"))}
-              onDiscard={() => {
-                staged.discard();
-                setLogoError(null);
-              }}
-              onSave={() => {
-                if (nameValid) void staged.submit();
-              }}
-              onReload={staged.reload}
-            />
-          ) : null}
         </>
       ) : null}
     </SettingsPage>

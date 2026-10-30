@@ -18,6 +18,14 @@
       "invalidCredentials": "بيانات الدخول غير صحيحة.",
       "failed": "تعذّر تسجيل الدخول. أعد المحاولة.",
       "to": "إلى {company}"
+    },
+    "search": {
+      "label": "بحث",
+      "placeholder": "انتقل إلى…",
+      "places": "الصفحات",
+      "home": "الرئيسية",
+      "settings": "الإعدادات",
+      "nothing": "لا نتائج"
     }
   }
 }

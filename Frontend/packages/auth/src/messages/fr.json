@@ -18,6 +18,14 @@
       "invalidCredentials": "Adresse e-mail ou mot de passe incorrect.",
       "failed": "Connexion impossible. Réessayez.",
       "to": "à {company}"
+    },
+    "search": {
+      "label": "Rechercher",
+      "placeholder": "Aller à…",
+      "places": "Pages",
+      "home": "Accueil",
+      "settings": "Paramètres",
+      "nothing": "Aucun résultat"
     }
   }
 }

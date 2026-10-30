@@ -18,15 +18,17 @@
     "fusion": "Fusion",
     "fusionAmber": "Fusion amber",
     "anyColor": "Any color",
-    "readable": "Text on it reads well · {ratio}:1",
-    "hardToRead": "Text on it is hard to read · {ratio}:1",
     "language": "Default language",
     "languageHint": "Each person can still pick their own",
     "preview": "Preview",
     "previewHome": "Home",
     "previewSignIn": "Sign-in",
     "previewEmail": "Invitation email",
-    "emailDidNotLoad": "The email preview didn't load"
+    "emailDidNotLoad": "The email preview didn't load",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "discard": "Discard",
+    "unsaved": "Unsaved changes"
   },
   "details": {
     "didNotLoad": "Company details didn't load",

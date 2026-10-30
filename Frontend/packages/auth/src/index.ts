@@ -23,6 +23,7 @@ export {
 } from "./auth-service";
 export { useLanguage } from "./language";
 export { TopBarPreferences } from "./components/top-bar-preferences";
+export { TopBarSearch } from "./components/top-bar-search";
 export { useNotificationAlerts } from "./notification-alerts";
 export type { NotificationAlerts } from "./auth-service";
 

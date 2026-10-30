@@ -109,6 +109,7 @@
 - [Colleague modules only must not break](colleague-modules-only-must-not-break.md) — don't coordinate with or wait on Learning/Recruitment/Interview/Onboarding; just keep them working; since 2026-10-30 (internship over, fork) product plans may hide or replace them.
 - Deviate from issue wording when the architecture suggests a better fit.
 - [Rewrites acceptable](rewrites-acceptable.md) — don't bias toward refactor-in-place.
+- [Port accepted drawings closely](port-accepted-drawings-closely.md) — build to the explorer's specs (spacing, chips, hues, borderless cards); user reviews side by side (B-177 round 1).
 - [Reuse only if it fits](reuse-only-if-it-fits.md) — never keep a UI pattern because it exists; judge it against the target design, redo or board it (B-175 tabs, hire form).
 - [UI: no explanatory text](ui-no-explanatory-text.md) — carry state with structure, never caption sentences.
 - [Polish includes UI/UX + refactor](polish-includes-uiux-and-refactor.md) — polish requests expect audit-then-fix, not wording.

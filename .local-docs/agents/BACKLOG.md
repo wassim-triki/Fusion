@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-215.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-219.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -32,6 +32,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
         Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 in review (2026-10-30); B-178 next, fresh session at xhigh.
     - [ ] **B-198** One tab and view-switch pattern across Fusion, matching the target design: every tab strip and view switch today is reused old UI (the Organization lenses are the latest example). Define it once in `@repo/ds` from the accepted grammar (D-01 band tabs, D-17 views), first where a slice draws tabs (B-180's person page or B-183's Organization, whichever comes first), then replace every other use; B-192 checks none is left · All · 2026-10-30
     - [ ] **B-178** Administrators as a protected role, seeing Fusion as someone, the old token roles retired (D-25) · Identity, Core HR · 2026-10-30
+          User 2026-10-31 (B-177 review): the drawn Administrators page is "way cooler and way cleaner"; port it as drawn (two slots, Everything card, History).
       - [ ] **B-213** A role change reaches a signed-in person at their next token refresh (up to 60 minutes), as profile edits always did; revoking by rule or by edit should end the old permissions sooner (refresh the holders' tokens, or bump a soft revision the frontend answers with a refresh rather than a sign-out) · Identity, Shell · 2026-10-30
       - [ ] **B-173** Check whether an HR admin can make someone a tenant administrator through Identity's old invitation endpoint (`POST /api/identity/tenants/{id}/invites` with role "OrgAdmin" is not refused), bypassing the administrator invitation flow and its continuity lock · Identity · 2026-10-30
             Found answering the user's A2 note (brief §6b). The operator side holds: both old endpoints require the caller's own membership. Verify with an API journey (create, inspect, revoke) at the start of B-178, which retires the endpoint with the token roles.
@@ -39,6 +40,8 @@ Open work only. Agents keep it current from the conversation; closed items leave
           Roles already store who proposes and who approves (`core.change.propose`@team, `core.change.approve`@everyone; Managers propose, HR approves; B-177): enforce those keys here.
       - [ ] **B-168** A deep link that opens a change on a person's record (`?change=job|end`) leaves the address without `/core`, so a refresh lands outside Core HR · Core HR · 2026-10-30
             Found in the B-165 walk: `features/people/changes/change-sheet.tsx` passes `usePathname()` (basePath-less) to `history.replaceState`. Fixed with the rebuilt change sheet.
+    - [ ] **B-217** Cards without a contrasting border, as the drawings have them: our DS card and section frames carry a border that stands out from the fill; the user prefers the borderless look. Change it in `@repo/ds` (and DESIGN.md's surface rules), then check every app · DS, All · 2026-10-31
+    - [ ] **B-218** People's initials in identity hues (D-05: "initials in identity hues stay the fallback"): `PersonAvatar` is grey today; tint from the person's id as the drawings do (hue text, 16% fill, 60% ring), everywhere a face shows · DS, All · 2026-10-31
     - [ ] **B-212** Reach "their unit" for roles (D-25 draws it): Core HR's record reads and Performance resolve the viewer's unit and the units under it, then the Jobs, Personal and Plans areas offer it. Not offered in B-177 because nothing enforces it yet (`performance.cycle.view@OrgUnit` is unseeded and treated as a team) · Core HR, Performance, Identity · 2026-10-30
     - [ ] **B-180** One person page across Core HR and Performance: tabs, Personal and Access, documents, on leave, photos (D-01, D-16) · Core HR, Performance · 2026-10-30
       - [ ] **B-195** Show the job's family and level on the person page's Job tab; the profile read already carries `jobFamily`, `jobLevel`, `jobId`, `placeId` (B-175) · Core HR · 2026-10-30
@@ -68,6 +71,9 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 - [ ] **B-177** One roles model: ten areas × level × reach, holders by rule that update themselves, a person's roles with why; every role as one table and a role page in sentences with a live preview (D-25, slice 3 of B-167) · Identity, Core HR · 2026-10-30
       Look at: [checklist](plans/B-177-roles.md) and `plans/B-177-screens/` (01 table, 02 HR, 03 rule, 04 Jobs moving with Personal, 05 Administrators, 06 Leila's Access tab). Two deviations from the drawing to judge: "their unit" isn't offered yet (B-212) and Personal details move with Jobs (B-214).
+      Review round 1 (user, 2026-10-31): the surfaces drift from the accepted drawing in spacing and consistency; port it closely. Specs in the [checklist](plans/B-177-roles.md#review-round-1-user-2026-10-31-side-by-side-with-the-accepted-drawing).
+  - [ ] **B-215** Roles table as drawn: avatars in identity hues, wider area column with smaller one-line labels, reference row height and column padding, pips and words centred whether one line or two · Core HR · 2026-10-31
+  - [ ] **B-216** Role page as drawn: "Who has it" with segmented condition chips, dashed add buttons and the result row ("night and day" today), the sentence rows and picks of "What X can do", the preview card with its bar and person band · Core HR · 2026-10-31
 
 - [ ] **B-104** Final manual verification pass, once the big features are done (Settings, any wow feature): the user verifies B-089 phase 2 and everything since by hand, then the little stuff that's left · Performance · 2026-10-23
       2026-10-29: the fixes are done (B-089 audit, phase 2 committed ba8f58af, which also closed B-088's ask); only the user's hand check is left, so this sits In review.

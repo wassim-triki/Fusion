@@ -17,6 +17,15 @@ Built 2026-10-30 from D-25. Screens: `plans/B-177-screens/` (dark, 1440×900, Ca
 - **Approving changes** is stored on roles (Managers propose, HR approves) but takes effect with B-179's approval flow.
 - **Reports** offers only "See for everyone" (the Core HR overview and change history) until B-189 builds reports.
 
+## Review round 1 (user, 2026-10-31, side by side with the accepted drawing)
+
+Verdict: the model is fine; the surfaces drift from the drawing in spacing and consistency, and the role page's "Who has it" is "almost night and day". Port the drawing closely. Reference: [explorer 3b](https://claude.ai/artifact/V2bfDx2cEZ8s37XQjVgekM) (`plans/B-164-explorer-3b.html`, Roles section; CSS lines ~813–870).
+
+- **Table (B-215).** Avatars in identity hues, not grey (B-218). Horizontal scroll is fine for many roles. The area column gets more room and smaller text, no wrapping ("Jobs and history" on one line). Tighter: reference `.mx td` is `height: 50px; padding: 0 12px`, header `padding: 22px 12px 14px`, first column `230px`, group rows `52px`. Cells: pips and words vertically centred whether there's one line (Change) or two (Change · themselves); reference `.lv` is one inline row, `gap: 9px`, reach in muted text beside the level, `white-space: nowrap`. Pips `12×8px`, radius 3, empty ones `inlay` with an `input` border, filled ones foreground at 78%. Administrators column `opacity: .7`.
+- **Role page (B-216).** "Who has it" as drawn (`.holders2`, padding `20px 22px`, gap 16): one line per part, a short muted label ("Rule", "Also") then segmented condition chips (`.cond`: height 32, radius 11, `inlay` fill, border; "Department · is · **People & Growth** · ×" as joined segments) and dashed add buttons (`.addc`: "+ Condition", "+ Person"); the result row under a hairline (faces, "11 people", "10 from the rule, 1 chosen", "Show them →"). No segmented control for the holder kind on top: the kind (everyone, anyone with a team, a rule, chosen only) becomes the first line's own pick, in the drawing's chip language. "What X can do" as `.can`/`.sent` rows (min-height 54, hairlines, picks `height 30, radius 10, inlay, border, 600`), the flash a short ring (`pickFlash`), not a pulse. The preview as `.preview-card` (section tone, padding 16, sticky): a bar "As Nour sees Aicha Bouazizi" with the person picker inside the card, then `.pv-person` (background tone, radius 18, border) with a section-tone band (avatar 56, name, unit · place, tabs that vanish) and rows.
+- **Administrators (in B-178).** Port the drawn page (two slots with "1 of at least 2", the Everything card, History) as it is.
+- **Cards (B-217).** The drawing's cards have no visible border (`.card { background: var(--card); border-radius }`); ours carry a border that stands out from the fill. Adopt borderless cards in `@repo/ds` and check the other apps.
+
 ## Behaviour changes to know
 
 - Managers is now everyone with a team (9 people at Carthage instead of the 3 chosen at their invitation); Employees is everyone.

@@ -170,83 +170,185 @@
     }
   },
   "roles": {
-    "didNotLoad": "تعذّر تحميل الأدوار",
+    "didNotLoad": "لم يتم تحميل الأدوار",
+    "title": "الأدوار",
     "newRole": "دور جديد",
-    "list": "الأدوار",
-    "builtIn": "مدمج",
-    "yours": "أدوارك",
-    "people": "{count, plural, one {شخص واحد} two {شخصان} other {# أشخاص}}",
-    "name": "الاسم",
-    "purpose": "الغرض منه",
-    "create": "إنشاء الدور",
-    "cancel": "إلغاء",
-    "notCreated": "لم يُنشأ الدور.",
-    "delete": "حذف",
-    "edit": "تعديل",
-    "done": "تم",
-    "holdsOne": "يشغله {name}",
-    "holdsMany": "يشغله {name} و{count} آخرون",
-    "nobody": "لا أحد يشغله",
-    "holdCount": "{count, plural, one {يشغله شخص واحد} two {يشغله شخصان} other {يشغله # أشخاص}}",
-    "manageInAccess": "الإدارة في الوصول",
-    "leave": "المغادرة دون حفظ؟ ستُتجاهل تغييراتك على {role}.",
-    "notSaved": "لم يُحفظ الدور.",
-    "levels": {
-      "None": "لا شيء",
-      "View": "عرض",
-      "Manage": "إدارة"
-    },
-    "consequence": {
-      "None": "يفقد شاغلو {role} {what}.",
-      "View": "يمكن لشاغلي {role} رؤية {what}.",
-      "Manage": "يمكن لشاغلي {role} إدارة {what}.",
-      "more": "{sentence} و{count} أخرى."
+    "groups": {
+      "core": "Core HR",
+      "performance": "الأداء",
+      "company": "الشركة"
     },
     "areas": {
-      "cycles": {
-        "label": "الدورات",
-        "what": "الدورات"
+      "job": {
+        "label": "الوظائف والسجل",
+        "what": "الوظائف والسجل"
       },
-      "performance-settings": {
-        "label": "إعدادات الأداء",
-        "what": "إعدادات الأداء"
+      "personal": {
+        "label": "البيانات الشخصية",
+        "what": "البيانات الشخصية"
       },
-      "company-objectives": {
-        "label": "أهداف الشركة",
-        "what": "أهداف الشركة"
-      },
-      "company-direction": {
-        "label": "توجه الشركة",
-        "what": "توجه الشركة"
-      },
-      "calibration": {
-        "label": "المعايرة",
-        "what": "المعايرة"
-      },
-      "people": {
-        "label": "الموظفون",
-        "what": "الموظفين"
-      },
-      "organization": {
+      "org": {
         "label": "الهيكل التنظيمي",
         "what": "الهيكل التنظيمي"
       },
-      "employee-fields": {
-        "label": "حقول الموظفين",
-        "what": "حقول الموظفين"
+      "approve": {
+        "label": "الموافقة على التغييرات",
+        "what": "التغييرات"
+      },
+      "reports": {
+        "label": "التقارير",
+        "what": "التقارير"
+      },
+      "signin": {
+        "label": "الدعوات وتسجيل الدخول",
+        "what": "الدعوات وتسجيل الدخول"
+      },
+      "plans": {
+        "label": "الخطط ونقاط المتابعة",
+        "what": "الخطط ونقاط المتابعة"
+      },
+      "cycles": {
+        "label": "الدورات والمعايرة",
+        "what": "الدورات والمعايرة"
+      },
+      "brand": {
+        "label": "الهوية والحقول والقوائم",
+        "what": "الهوية والحقول والقوائم"
       },
       "roles": {
-        "label": "الأدوار والوصول",
-        "what": "الأدوار والوصول"
-      },
-      "invitations": {
-        "label": "الدعوات",
-        "what": "الدعوات"
-      },
-      "change-history": {
-        "label": "سجل التغييرات",
-        "what": "سجل التغييرات"
+        "label": "الأدوار",
+        "what": "الأدوار"
       }
+    },
+    "levels": {
+      "none": "لا وصول",
+      "see": "عرض",
+      "change": "تعديل",
+      "propose": "اقتراح",
+      "approve": "موافقة"
+    },
+    "reaches": {
+      "self": "أنفسهم",
+      "team": "فريقهم",
+      "everyone": "الجميع"
+    },
+    "for": "لـ",
+    "levelOf": "ما يمكن لـ {role} فعله في {what}",
+    "reachOf": "لمن: {what}",
+    "administratorsOnly": "للمسؤولين فقط",
+    "linked": "يتغير مع {area}: Core HR يعدّل الاثنين في سجل واحد",
+    "holders": {
+      "chosen": "أشخاص مختارون",
+      "everyone": "الجميع",
+      "team": "كل من لديه فريق",
+      "rule": "قاعدة",
+      "summaryChosen": "{count, plural, =0 {لم يُختر أحد} one {شخص مختار} two {شخصان مختاران} few {# مختارين} many {# مختارًا} other {# مختار}}",
+      "summaryRule": "حسب قاعدة",
+      "summaryRulePlus": "حسب قاعدة + {count}",
+      "summaryTeamPlus": "من لديه فريق + {count}",
+      "protected": "محمي"
+    },
+    "people": "{count, plural, =0 {لا أحد} one {شخص واحد} two {شخصان} few {# أشخاص} many {# شخصًا} other {# شخص}}",
+    "whoHasIt": "من لديه",
+    "whatItCanDo": "ما يمكن لـ {role} فعله",
+    "rule": "القاعدة",
+    "also": "أيضًا",
+    "conditionKinds": {
+      "department": "القسم",
+      "job": "الوظيفة",
+      "place": "المكان",
+      "unit": "الوحدة"
+    },
+    "is": "هو",
+    "or": "أو",
+    "condition": "شرط",
+    "person": "شخص",
+    "addValue": "إضافة: {kind}",
+    "findValue": "بحث: {kind}",
+    "noValues": "لا نتائج",
+    "findPerson": "ابحث عن شخص يسجّل الدخول",
+    "nobodyFound": "لا أحد ممن يسجّلون الدخول يطابق",
+    "remove": "إزالة {name}",
+    "fromRule": "{rule, plural, =0 {} other {# من القاعدة}}{both, select, yes {، } other {}}{chosen, plural, =0 {} other {# مختار}}",
+    "everyoneWho": "كل من يسجّل الدخول لديه هذا الدور",
+    "teamWho": "كل من يتبعه شخص واحد على الأقل",
+    "showThem": "عرضهم",
+    "hideThem": "إخفاء",
+    "byRule": "قاعدة",
+    "chosenTag": "مختار",
+    "updatesOnSave": "تُحدَّث القائمة عند الحفظ",
+    "unknownValue": "محذوف",
+    "administrators": {
+      "name": "المسؤولون",
+      "everything": "كل شيء",
+      "everythingAt": "كل شيء في {company}",
+      "line": "كل مجال، كل شخص، كل إعداد",
+      "manage": "فتح المسؤولين"
+    },
+    "save": "حفظ التغييرات",
+    "saving": "جارٍ الحفظ",
+    "discard": "تجاهل",
+    "unsaved": "تغييرات غير محفوظة",
+    "notSaved": "لم يُحفظ الدور.",
+    "stale": "غيّر أحدهم هذا الدور منذ فتحه. أعد التحميل لرؤية تغييراته.",
+    "reload": "إعادة التحميل",
+    "back": "الأدوار",
+    "more": "المزيد",
+    "rename": "إعادة التسمية",
+    "delete": "حذف الدور",
+    "deleteTitle": "حذف {role}؟",
+    "deleteBody": "{count, plural, =0 {لا أحد لديه هذا الدور.} one {سيفقد شخص واحد ما يمنحه.} other {سيفقد # شخص ما يمنحه.}}",
+    "cancel": "إلغاء",
+    "notDeleted": "لم يُحذف الدور.",
+    "name": "الاسم",
+    "create": "إنشاء الدور",
+    "notCreated": "لم يُنشأ الدور.",
+    "renameTitle": "إعادة تسمية {role}",
+    "renameAction": "إعادة التسمية",
+    "notFound": "هذا الدور لم يعد موجودًا",
+    "preview": {
+      "title": "{subject} كما يراه {viewer}",
+      "titleSelf": "{viewer} على صفحته",
+      "nobody": "لا أحد لديه {role} بعد",
+      "nobodyLine": "اختر من لديه لرؤية ما يراه",
+      "viewer": "يراه",
+      "subject": "صفحة",
+      "tabs": {
+        "overview": "نظرة عامة",
+        "job": "الوظيفة",
+        "personal": "شخصي",
+        "performance": "الأداء",
+        "access": "الوصول"
+      },
+      "job": "الوظيفة",
+      "personal": "شخصي",
+      "performance": "الأداء",
+      "signin": "تسجيل الدخول",
+      "changes": "التغييرات",
+      "makeChange": "إجراء تغيير",
+      "proposeChange": "اقتراح تغيير",
+      "approve": "الموافقة على التغييرات",
+      "edit": "تعديل",
+      "update": "تحديث",
+      "manage": "إدارة",
+      "since": "منذ {date}",
+      "noPhone": "لا هاتف",
+      "plan": "الخطة ونقاط المتابعة",
+      "signsIn": "يسجّل الدخول إلى Fusion",
+      "outside": "{area}: {subject} ليس {where}",
+      "whereSelf": "{viewer}",
+      "whereTeam": "في فريق {viewer}",
+      "didNotLoad": "لم يتم تحميل هذه الصفحة"
+    },
+    "access": {
+      "title": "الأدوار",
+      "everyone": "الجميع لديه",
+      "team": "{count, plural, =0 {لديه فريق} other {لديه فريق من #}}",
+      "chosen": "مختار",
+      "administrator": "مسؤول",
+      "none": "لا أدوار بعد",
+      "didNotLoad": "لم يتم تحميل الأدوار",
+      "open": "فتح {role}"
     }
   },
   "changeHistory": {
@@ -319,11 +421,11 @@
       "deleted": "حذف دور {role}",
       "name": "الاسم",
       "renamed": "غيّر اسم دور {before} إلى {after}",
-      "canNone": "لم يعد شاغلو {role} يرون {what}",
-      "canView": "أصبح بإمكان شاغلي {role} رؤية {what}",
-      "canManage": "أصبح بإمكان شاغلي {role} إدارة {what}",
       "changedWhat": "عدّل ما يتيحه دور {role}",
-      "changed": "عدّل دور {role}"
+      "changed": "عدّل دور {role}",
+      "area": "{area}: {setting} لـ {role}",
+      "holders": "غيّر من لديه {role}",
+      "settingNone": "لا وصول"
     },
     "notificationLabel": "بريد تغييرات الفريق والوظيفة",
     "notificationSentence": "أصبح بريد تغييرات الفريق والوظيفة: {mode}",

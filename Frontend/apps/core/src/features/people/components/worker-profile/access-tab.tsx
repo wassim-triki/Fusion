@@ -14,6 +14,7 @@ export function AccessTab({
   onRetry,
   accessAction,
   workEmailAction,
+  roles,
 }: {
   view: WorkerProfileView;
   state: "loading" | "error" | "ready";
@@ -22,6 +23,8 @@ export function AccessTab({
   accessAction?: ReactNode;
   /** Add or edit the work email. */
   workEmailAction?: ReactNode;
+  /** The person's roles and why they have each. */
+  roles?: ReactNode;
 }) {
   const t = useTranslations("profile");
   const access = view.access;
@@ -66,6 +69,7 @@ export function AccessTab({
           </dl>
         )}
       </section>
+      {roles}
     </div>
   );
 }

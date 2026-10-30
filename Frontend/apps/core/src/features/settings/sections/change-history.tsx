@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { ChevronRight } from "lucide-react";
-import type { AccessAuditEventDto, AccessProfileSummaryDto, FusionSettingsSection, SettingsAuditEventDto } from "@repo/api";
+import type { AccessAuditEventDto, FusionSettingsSection, RoleCellDto, SettingsAuditEventDto } from "@repo/api";
 import { cn, NativeSelect, NativeSelectOption } from "@repo/ds";
 import { formatDate, formatDateParts, formatTime } from "@repo/ds/lib/dates";
 import { PageError, SettingsPage, useSettingsSectionName } from "@repo/ds/shell";
@@ -11,7 +11,7 @@ import { useAccessAudit } from "@/features/settings/api/use-core-access";
 import { useSettingsAudit } from "@/features/settings/api/use-tenant-settings";
 import { AUDIT_SECTION_IDS } from "@/features/settings/core-settings";
 import { sayInEnglish, useSettingsSay, type Say } from "@/features/settings/say";
-import { levelsOf, ROLE_AREAS } from "@/features/settings/sections/roles";
+import { settingWords } from "@/features/settings/roles/role-words";
 
 /** The profile fields Employee fields names (`employeeFields.fields.<key>.label`). */
 const FIELDS = new Set(["firstName", "lastName", "email", "hireDate", "phone", "jobTitle", "workLocation", "employmentType"]);
@@ -191,13 +191,14 @@ interface Holder {
   accessProfiles?: { id: string; name: string }[];
 }
 
-/** A role as Identity's audit records it (`AccessProfileSummaryDto`). */
+/** A role as Identity's audit records it: `RoleSummaryDto` since B-177, `AccessProfileSummaryDto` (grants) before. */
 interface RoleRecord {
   name?: string;
   grants?: { permissionKey: string }[];
+  cells?: RoleCellDto[];
+  holderKind?: string;
+  conditions?: { kind: string; targetId: string }[];
 }
-
-const AREAS = ROLE_AREAS.flatMap((group) => group.areas);
 
 function headlineOf(lines: ChangeLine[], say: Say): string {
   const first = lines[0]!.sentence;
@@ -230,16 +231,42 @@ function assignmentLines(before: unknown, after: unknown, say: Say): ChangeLine[
   });
 }
 
-/** What a role can do in each Roles area, as lines from one set of grants to another. */
-function grantLines(role: string, before: RoleRecord | null, after: RoleRecord | null, say: Say): ChangeLine[] {
-  const was = levelsOf({ grants: (before?.grants ?? []) as AccessProfileSummaryDto["grants"] });
-  const is = levelsOf({ grants: (after?.grants ?? []) as AccessProfileSummaryDto["grants"] });
-  return AREAS.filter((area) => was[area.id] !== is[area.id]).map((area) => ({
-    label: say(`roles.areas.${area.id}.label`),
-    before: say(`roles.levels.${was[area.id]}`),
-    after: say(`roles.levels.${is[area.id]}`),
-    sentence: say(`changeHistory.roles.can${is[area.id]}`, { role, what: say(`roles.areas.${area.id}.what`) }),
-  }));
+/** What a role can do in each area, as lines from one record's cells to the next. Older records carry grants only. */
+function cellLines(role: string, before: RoleRecord | null, after: RoleRecord | null, say: Say): ChangeLine[] {
+  if (!after?.cells) return [];
+  const was = new Map((before?.cells ?? []).map((cell) => [cell.areaId, cell]));
+  return after.cells
+    .filter((cell) => {
+      const old = was.get(cell.areaId);
+      return before?.cells ? !old || old.level !== cell.level || old.reach !== cell.reach : cell.level !== "none";
+    })
+    .map((cell) => {
+      const old: RoleCellDto = was.get(cell.areaId) ?? { areaId: cell.areaId, level: "none", reach: null };
+      const area = say(`roles.areas.${cell.areaId}.label`);
+      return {
+        label: area,
+        before: settingWords(old, say),
+        after: settingWords(cell, say),
+        sentence: say("changeHistory.roles.area", {
+          area,
+          setting: cell.level === "none" ? say("changeHistory.roles.settingNone") : settingWords(cell, say),
+          role,
+        }),
+      };
+    });
+}
+
+/** Who has the role, when its holders changed. */
+function holderLines(role: string, before: RoleRecord | null, after: RoleRecord | null, say: Say): ChangeLine[] {
+  if (!before?.holderKind || !after?.holderKind) return [];
+  const key = (record: RoleRecord) => `${record.holderKind}|${JSON.stringify((record.conditions ?? []).map((item) => item.targetId).sort())}`;
+  if (key(before) === key(after)) return [];
+  return [{
+    label: say("roles.whoHasIt"),
+    before: say(`roles.holders.${before.holderKind}`),
+    after: say(`roles.holders.${after.holderKind}`),
+    sentence: say("changeHistory.roles.holders", { role }),
+  }];
 }
 
 /**
@@ -262,14 +289,15 @@ export function roleChange(
   const was = before && typeof before === "object" ? (before as RoleRecord) : null;
   const is = after && typeof after === "object" ? (after as RoleRecord) : null;
   if (action === "access.profile.created" && is?.name)
-    return { headline: said("created", { role: is.name }), lines: grantLines(is.name, null, is, say) };
+    return { headline: said("created", { role: is.name }), lines: cellLines(is.name, null, is, say) };
   if (action === "access.profile.deleted" && was?.name) return { headline: said("deleted", { role: was.name }), lines: [] };
   if (action === "access.profile.updated" && was?.name && is?.name) {
     const lines = [
       ...(was.name !== is.name
         ? [{ label: said("name"), before: was.name, after: is.name, sentence: said("renamed", { before: was.name, after: is.name }) }]
         : []),
-      ...grantLines(is.name, was, is, say),
+      ...cellLines(is.name, was, is, say),
+      ...holderLines(is.name, was, is, say),
     ];
     if (lines.length) return { headline: headlineOf(lines, say), lines };
     const keys = (role: RoleRecord) => JSON.stringify((role.grants ?? []).map((grant) => grant.permissionKey).sort());

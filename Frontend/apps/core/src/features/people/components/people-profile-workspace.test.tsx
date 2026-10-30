@@ -55,6 +55,9 @@ vi.mock("@/shell/breadcrumb-overrides", () => ({
   useBreadcrumbLabel: () => undefined,
 }));
 
+// The Access tab's roles read Identity and Core HR's catalogue; they're tested on their own.
+vi.mock("@/features/settings/roles/person-roles", () => ({ PersonRoles: () => null }));
+
 vi.mock("@repo/auth", () => ({
   useAuth: () => ({
     user: { id: "u1", employeeId: "viewer-1" },

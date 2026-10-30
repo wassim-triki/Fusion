@@ -9,7 +9,7 @@ import { EmployeeFieldsSettings } from "@/features/settings/sections/employee-fi
 import { InvitationsSettings } from "@/features/settings/sections/invitations";
 import { ListsSettings } from "@/features/settings/sections/lists";
 import { NotificationsSettings } from "@/features/settings/sections/notifications";
-import { RolesSettings } from "@/features/settings/sections/roles";
+import { RolesSettings } from "@/features/settings/roles/roles-table";
 
 /** One Core HR settings section, shown once the server says the person may see it. */
 export default function SettingsSectionPage({ params }: { params: Promise<{ section: string }> }) {

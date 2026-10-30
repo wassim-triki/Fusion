@@ -171,82 +171,184 @@
   },
   "roles": {
     "didNotLoad": "Roles didn't load",
+    "title": "Roles",
     "newRole": "New role",
-    "list": "Roles",
-    "builtIn": "Built in",
-    "yours": "Yours",
-    "people": "{count, plural, one {# person} other {# people}}",
-    "name": "Name",
-    "purpose": "What it is for",
-    "create": "Create role",
-    "cancel": "Cancel",
-    "notCreated": "The role wasn't created.",
-    "delete": "Delete",
-    "edit": "Edit",
-    "done": "Done",
-    "holdsOne": "{name} holds it",
-    "holdsMany": "{name} and {count} more hold it",
-    "nobody": "Nobody holds it",
-    "holdCount": "{count, plural, one {# person holds it} other {# people hold it}}",
-    "manageInAccess": "Manage in Access",
-    "leave": "Leave without saving? Your changes to {role} are discarded.",
-    "notSaved": "The role didn't save.",
-    "levels": {
-      "None": "None",
-      "View": "View",
-      "Manage": "Manage"
-    },
-    "consequence": {
-      "None": "People holding {role} lose {what}.",
-      "View": "People holding {role} can see {what}.",
-      "Manage": "People holding {role} can manage {what}.",
-      "more": "{sentence} And {count} more."
+    "groups": {
+      "core": "Core HR",
+      "performance": "Performance",
+      "company": "Company"
     },
     "areas": {
-      "cycles": {
-        "label": "Cycles",
-        "what": "cycles"
+      "job": {
+        "label": "Jobs and history",
+        "what": "jobs and history"
       },
-      "performance-settings": {
-        "label": "Performance settings",
-        "what": "performance settings"
+      "personal": {
+        "label": "Personal details",
+        "what": "personal details"
       },
-      "company-objectives": {
-        "label": "Company objectives",
-        "what": "company objectives"
-      },
-      "company-direction": {
-        "label": "Company direction",
-        "what": "company direction"
-      },
-      "calibration": {
-        "label": "Calibration",
-        "what": "calibration"
-      },
-      "people": {
-        "label": "People",
-        "what": "people"
-      },
-      "organization": {
+      "org": {
         "label": "Organization",
-        "what": "organization"
+        "what": "the organization"
       },
-      "employee-fields": {
-        "label": "Employee fields",
-        "what": "employee fields"
+      "approve": {
+        "label": "Approving changes",
+        "what": "changes"
+      },
+      "reports": {
+        "label": "Reports",
+        "what": "reports"
+      },
+      "signin": {
+        "label": "Invitations and sign-in",
+        "what": "invitations and sign-in"
+      },
+      "plans": {
+        "label": "Plans and check-ins",
+        "what": "plans and check-ins"
+      },
+      "cycles": {
+        "label": "Cycles and calibration",
+        "what": "cycles and calibration"
+      },
+      "brand": {
+        "label": "Brand, fields and lists",
+        "what": "brand, fields and lists"
       },
       "roles": {
-        "label": "Roles and access",
-        "what": "roles and access"
-      },
-      "invitations": {
-        "label": "Invitations",
-        "what": "invitations"
-      },
-      "change-history": {
-        "label": "Change history",
-        "what": "change history"
+        "label": "Roles",
+        "what": "roles"
       }
+    },
+    "levels": {
+      "none": "No access",
+      "see": "See",
+      "change": "Change",
+      "propose": "Propose",
+      "approve": "Approve"
+    },
+    "reaches": {
+      "self": "themselves",
+      "team": "their team",
+      "everyone": "everyone"
+    },
+    "for": "for",
+    "levelOf": "What {role} can do with {what}",
+    "reachOf": "Whose {what}",
+    "administratorsOnly": "Administrators only",
+    "linked": "Moves with {area}: Core HR edits both on one record",
+    "holders": {
+      "chosen": "Chosen people",
+      "everyone": "Everyone",
+      "team": "Anyone with a team",
+      "rule": "A rule",
+      "summaryChosen": "{count, plural, =0 {Nobody chosen} one {# chosen} other {# chosen}}",
+      "summaryRule": "By rule",
+      "summaryRulePlus": "By rule + {count}",
+      "summaryTeamPlus": "Anyone with a team + {count}",
+      "protected": "Protected"
+    },
+    "people": "{count, plural, =0 {Nobody} one {# person} other {# people}}",
+    "whoHasIt": "Who has it",
+    "whatItCanDo": "What {role} can do",
+    "rule": "Rule",
+    "also": "Also",
+    "conditionKinds": {
+      "department": "Department",
+      "job": "Job",
+      "place": "Place",
+      "unit": "Unit"
+    },
+    "is": "is",
+    "or": "or",
+    "condition": "Condition",
+    "person": "Person",
+    "addValue": "Add a {kind}",
+    "findValue": "Find a {kind}",
+    "noValues": "Nothing matches",
+    "findPerson": "Find someone who signs in",
+    "nobodyFound": "Nobody who signs in matches",
+    "remove": "Remove {name}",
+    "fromRule": "{rule, plural, =0 {} one {# from the rule} other {# from the rule}}{both, select, yes {, } other {}}{chosen, plural, =0 {} one {# chosen} other {# chosen}}",
+    "everyoneWho": "Everyone who signs in has it",
+    "teamWho": "Everyone with at least one person reporting to them",
+    "showThem": "Show them",
+    "hideThem": "Hide them",
+    "byRule": "Rule",
+    "chosenTag": "Chosen",
+    "updatesOnSave": "Who has it updates when you save",
+    "unknownValue": "Removed",
+    "administrators": {
+      "name": "Administrators",
+      "everything": "Everything",
+      "everythingAt": "Everything at {company}",
+      "line": "Every area, every person, every setting",
+      "manage": "Open Administrators"
+    },
+    "save": "Save changes",
+    "saving": "Saving",
+    "discard": "Discard",
+    "unsaved": "Unsaved changes",
+    "notSaved": "The role didn't save.",
+    "stale": "Someone changed this role since you opened it. Reload to see their changes.",
+    "reload": "Reload",
+    "back": "Roles",
+    "more": "More",
+    "rename": "Rename",
+    "delete": "Delete role",
+    "deleteTitle": "Delete {role}?",
+    "deleteBody": "{count, plural, =0 {Nobody holds it.} one {# person loses what it gives them.} other {# people lose what it gives them.}}",
+    "cancel": "Cancel",
+    "notDeleted": "The role wasn't deleted.",
+    "name": "Name",
+    "create": "Create role",
+    "notCreated": "The role wasn't created.",
+    "renameTitle": "Rename {role}",
+    "renameAction": "Rename",
+    "notFound": "This role doesn't exist anymore",
+    "preview": {
+      "title": "As {viewer} sees {subject}",
+      "titleSelf": "As {viewer} sees their own page",
+      "nobody": "Nobody has {role} yet",
+      "nobodyLine": "Choose who has it to see their view",
+      "viewer": "Seen by",
+      "subject": "Page of",
+      "tabs": {
+        "overview": "Overview",
+        "job": "Job",
+        "personal": "Personal",
+        "performance": "Performance",
+        "access": "Access"
+      },
+      "job": "Job",
+      "personal": "Personal",
+      "performance": "Performance",
+      "signin": "Sign-in",
+      "changes": "Changes",
+      "makeChange": "Make a change",
+      "proposeChange": "Propose a change",
+      "approve": "Approve changes",
+      "edit": "Edit",
+      "update": "Update",
+      "manage": "Manage",
+      "since": "since {date}",
+      "noPhone": "No phone",
+      "plan": "Plan and check-ins",
+      "signsIn": "Signs in to Fusion",
+      "outside": "{area}: {subject} isn't {where}",
+      "whereSelf": "{viewer}",
+      "whereTeam": "in {viewer}'s team",
+      "didNotLoad": "This page didn't load"
+    },
+    "access": {
+      "title": "Roles",
+      "everyone": "Everyone has it",
+      "team": "{count, plural, =0 {Has a team} one {Has a team of #} other {Has a team of #}}",
+      "chosen": "Chosen",
+      "administrator": "Administrator",
+      "none": "No roles yet",
+      "didNotLoad": "Roles didn't load",
+      "open": "Open {role}"
     }
   },
   "changeHistory": {
@@ -319,11 +421,11 @@
       "deleted": "Deleted the {role} role",
       "name": "Name",
       "renamed": "Renamed the {before} role to {after}",
-      "canNone": "People holding {role} no longer see {what}",
-      "canView": "People holding {role} can now see {what}",
-      "canManage": "People holding {role} can now manage {what}",
       "changedWhat": "Changed what the {role} role can do",
-      "changed": "Changed the {role} role"
+      "changed": "Changed the {role} role",
+      "area": "Set {area} to {setting} for {role}",
+      "holders": "Changed who has {role}",
+      "settingNone": "no access"
     },
     "notificationLabel": "Team and job change email",
     "notificationSentence": "Team and job change email is now {mode}",

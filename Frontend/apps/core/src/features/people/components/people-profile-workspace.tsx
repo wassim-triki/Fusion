@@ -70,6 +70,7 @@ import { WorkerProfile } from "./worker-profile/worker-profile";
 import { PerformanceRecordView } from "./record-views";
 import { WorkerProfileSkeleton } from "./worker-profile/worker-profile-skeleton";
 import { fromPeopleProfile } from "./worker-profile/worker-profile-view";
+import { PersonRoles } from "@/features/settings/roles/person-roles";
 import { AccessTab } from "./worker-profile/access-tab";
 import { JobTab } from "./worker-profile/job-tab";
 import { PersonalTab } from "./worker-profile/personal-tab";
@@ -276,6 +277,7 @@ export default function PeopleProfileWorkspace({ employeeKey }: { employeeKey: s
       onRetry={() => void access.refetch()}
       accessAction={accessAction}
       workEmailAction={workEmailAction}
+      roles={<PersonRoles employeeId={employee.identity.employeeId} />}
     />
   ) : (
     <JobTab

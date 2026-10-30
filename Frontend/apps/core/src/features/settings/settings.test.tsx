@@ -25,7 +25,6 @@ import { loadCoreMessages } from "@/i18n/messages";
 import type { Say } from "./say";
 import { describeChange, periodOf, roleChange } from "./sections/change-history";
 import { invitationsConsequence } from "./sections/invitations";
-import { roleConsequence } from "./sections/roles";
 import { CoreSettingsSectionHost } from "./section-host";
 import { EmployeeFieldsSettings, employeeFieldsConsequence, toDraft } from "./sections/employee-fields";
 
@@ -133,9 +132,6 @@ describe("In French", () => {
         sayInFrench
       )
     ).toBe("Les invitations envoyées à partir de maintenant expirent après 1 jour. Une nouvelle invitation conserve le premier lien.");
-    expect(roleConsequence("Recruteur", { calibration: "None" }, { calibration: "Manage" }, sayInFrench)).toBe(
-      "Les titulaires du rôle « Recruteur » peuvent gérer le calibrage."
-    );
   });
 
   it("writes change history's lines in French", () => {
@@ -168,6 +164,14 @@ const holder = (roles: string[], person = { userId: "u1", fullName: "Khaled Sass
   accessProfiles: roles.map((name) => ({ id: `id-${name}`, name, type: "Custom", isSystemProtected: false })),
 });
 const role = (name: string, keys: string[]) => ({ id: "r1", name, grants: keys.map((permissionKey) => ({ permissionKey, scope: "Tenant" })) });
+/** A role as Identity records it since B-177: its cells and holders. */
+const cells = (name: string, set: Record<string, [string, string | null]>, holderKind = "chosen") => ({
+  id: "r1",
+  name,
+  holderKind,
+  conditions: [],
+  cells: ["job", "plans"].map((areaId) => ({ areaId, level: set[areaId]?.[0] ?? "none", reach: set[areaId]?.[1] ?? null })),
+});
 const json = (value: unknown) => JSON.stringify(value);
 
 describe("Role changes in change history", () => {
@@ -203,18 +207,27 @@ describe("Role changes in change history", () => {
   });
 
   it("says what a role was created, renamed or changed to do", () => {
-    const created = roleChange("access.profile.created", null, json(role("Performance lead", ["performance.cycle.manage"])));
+    const created = roleChange("access.profile.created", null, json(cells("Performance lead", { plans: ["see", "everyone"] })));
     expect(created?.headline).toBe("Created the Performance lead role");
     expect(created?.lines).toEqual([
-      { label: "Cycles", before: "None", after: "Manage", sentence: "People holding Performance lead can now manage cycles" },
+      {
+        label: "Plans and check-ins",
+        before: "No access",
+        after: "See · everyone",
+        sentence: "Set Plans and check-ins to See · everyone for Performance lead",
+      },
     ]);
-    expect(roleChange("access.profile.deleted", json(role("Recruiter", [])), null)).toEqual({ headline: "Deleted the Recruiter role", lines: [] });
+    expect(roleChange("access.profile.deleted", json(cells("Recruiter", {})), null)).toEqual({ headline: "Deleted the Recruiter role", lines: [] });
     expect(
-      roleChange("access.profile.updated", json(role("Recruiter", [])), json(role("Talent", ["core.employee.view"])))?.headline
+      roleChange("access.profile.updated", json(cells("Recruiter", {})), json(cells("Talent", { job: ["see", "team"] })))?.headline
     ).toBe("Renamed the Recruiter role to Talent, and 1 more");
     expect(
-      roleChange("access.profile.updated", json(role("Talent", ["core.employee.view"])), json(role("Talent", [])))?.lines[0]?.sentence
-    ).toBe("People holding Talent no longer see people");
+      roleChange("access.profile.updated", json(cells("Talent", { job: ["see", "team"] })), json(cells("Talent", {})))?.lines[0]?.sentence
+    ).toBe("Set Jobs and history to no access for Talent");
+    expect(
+      roleChange("access.profile.updated", json(cells("Talent", {})), json(cells("Talent", {}, "everyone")))?.lines[0]?.sentence
+    ).toBe("Changed who has Talent");
+    // Records from before the roles model carry grants only.
     expect(
       roleChange("access.profile.updated", json(role("Talent", [])), json(role("Talent", ["performance.goal.view"])))
     ).toEqual({ headline: "Changed what the Talent role can do", lines: [] });
@@ -235,13 +248,13 @@ describe("Role changes in change history", () => {
     expect(roleChange(...gave, sayInFrench)?.headline).toBe("A attribué le rôle « Performance lead » à Khaled Sassi");
     expect(roleChange(...gave, sayInArabic)?.headline).toBe("منح Khaled Sassi دور Performance lead");
     expect(
-      roleChange("access.profile.updated", json(role("Recruteur", [])), json(role("Recruteur", ["performance.review.calibrate"])), sayInFrench)
+      roleChange("access.profile.updated", json(cells("Recruteur", {})), json(cells("Recruteur", { plans: ["see", "everyone"] })), sayInFrench)
         ?.lines[0]
     ).toEqual({
-      label: "Calibrage",
-      before: "Aucun",
-      after: "Gestion",
-      sentence: "Les titulaires du rôle « Recruteur » peuvent désormais gérer le calibrage",
+      label: "Plans et points d'étape",
+      before: "Aucun accès",
+      after: "Voir · tout le monde",
+      sentence: "Plans et points d'étape : Voir · tout le monde pour Recruteur",
     });
   });
 });

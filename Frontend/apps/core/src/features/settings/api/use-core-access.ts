@@ -5,12 +5,15 @@ import {
   coreAccessPaths,
   coreAccessQueryKeys,
   createPlatformApiClient,
+  fusionNavigationQueryKeys,
   type AccessAuditEventDto,
   type AccessProfileSummaryDto,
-  type CorePermissionCatalogItemDto,
-  type CreateAccessProfileRequest,
-  type UpdateAccessProfileRequest,
-  type UserAccessAssignmentDto,
+  type CreateRoleRequest,
+  type PersonRoleDto,
+  type RoleCandidateDto,
+  type RoleDetailDto,
+  type RolesOverviewDto,
+  type SaveRoleRequest,
 } from "@repo/api";
 import {
   useApiMutation,
@@ -19,153 +22,128 @@ import {
 } from "@repo/api/query";
 import { useAuth } from "@repo/auth";
 
-interface UpdateAccessProfileArgs {
-  profileId: string;
-  expectedVersion: number;
-  input: UpdateAccessProfileRequest;
-}
-
-interface DeleteAccessProfileArgs {
-  profileId: string;
-}
-
 type ApiQueryClient = ReturnType<typeof useApiQueryClient>;
 
-async function invalidateAccessProfileQueries(queryClient: ApiQueryClient) {
+/** A role change can move who holds what, so the lists, the history and the settings' "last changed" refresh. */
+async function invalidateRoleQueries(queryClient: ApiQueryClient) {
   await Promise.all([
-    queryClient.invalidateQueries({
-      queryKey: coreAccessQueryKeys.profiles(),
-    }),
-    queryClient.invalidateQueries({
-      queryKey: coreAccessQueryKeys.assignments(),
-    }),
-    queryClient.invalidateQueries({
-      queryKey: coreAccessQueryKeys.audit(),
-    }),
+    queryClient.invalidateQueries({ queryKey: coreAccessQueryKeys.roles() }),
+    queryClient.invalidateQueries({ queryKey: coreAccessQueryKeys.profiles() }),
+    queryClient.invalidateQueries({ queryKey: coreAccessQueryKeys.audit() }),
+    queryClient.invalidateQueries({ queryKey: [...coreAccessQueryKeys.all(), "person"] }),
+    queryClient.invalidateQueries({ queryKey: fusionNavigationQueryKeys.all() }),
   ]);
 }
 
-export function useCorePermissionCatalog(enabled = true) {
-  const { isAuthenticated } = useAuth();
-  const client = useMemo(() => createPlatformApiClient(), []);
-
-  const queryFn = useCallback(
-    (signal: AbortSignal) =>
-      client.get<CorePermissionCatalogItemDto[]>(coreAccessPaths.catalog(), {
-        signal,
-      }),
-    [client]
-  );
-
-  return useApiQuery(coreAccessQueryKeys.catalog(), queryFn, {
-    enabled: isAuthenticated && enabled,
-  });
+function useClient() {
+  return useMemo(() => createPlatformApiClient(), []);
 }
 
 export function useAccessProfiles(enabled = true) {
   const { isAuthenticated } = useAuth();
-  const client = useMemo(() => createPlatformApiClient(), []);
-
+  const client = useClient();
   const queryFn = useCallback(
-    (signal: AbortSignal) =>
-      client.get<AccessProfileSummaryDto[]>(coreAccessPaths.profiles(), {
-        signal,
-      }),
+    (signal: AbortSignal) => client.get<AccessProfileSummaryDto[]>(coreAccessPaths.profiles(), { signal }),
     [client]
   );
-
-  return useApiQuery(coreAccessQueryKeys.profiles(), queryFn, {
-    enabled: isAuthenticated && enabled,
-  });
-}
-
-export function useUserAccessAssignments(enabled = true) {
-  const { isAuthenticated } = useAuth();
-  const client = useMemo(() => createPlatformApiClient(), []);
-
-  const queryFn = useCallback(
-    (signal: AbortSignal) =>
-      client.get<UserAccessAssignmentDto[]>(coreAccessPaths.assignments(), {
-        signal,
-      }),
-    [client]
-  );
-
-  return useApiQuery(coreAccessQueryKeys.assignments(), queryFn, {
-    enabled: isAuthenticated && enabled,
-  });
+  return useApiQuery(coreAccessQueryKeys.profiles(), queryFn, { enabled: isAuthenticated && enabled });
 }
 
 export function useAccessAudit(enabled = true) {
   const { isAuthenticated } = useAuth();
-  const client = useMemo(() => createPlatformApiClient(), []);
-
+  const client = useClient();
   const queryFn = useCallback(
-    (signal: AbortSignal) =>
-      client.get<AccessAuditEventDto[]>(coreAccessPaths.audit(), {
-        signal,
-      }),
+    (signal: AbortSignal) => client.get<AccessAuditEventDto[]>(coreAccessPaths.audit(), { signal }),
     [client]
   );
+  return useApiQuery(coreAccessQueryKeys.audit(), queryFn, { enabled: isAuthenticated && enabled });
+}
 
-  return useApiQuery(coreAccessQueryKeys.audit(), queryFn, {
+/** Every role with its areas and holders. */
+export function useRoles(enabled = true) {
+  const { isAuthenticated } = useAuth();
+  const client = useClient();
+  const queryFn = useCallback(
+    (signal: AbortSignal) => client.get<RolesOverviewDto>(coreAccessPaths.roles(), { signal }),
+    [client]
+  );
+  return useApiQuery(coreAccessQueryKeys.roles(), queryFn, { enabled: isAuthenticated && enabled });
+}
+
+/** One role, the areas it can be set in, and everyone who holds it. */
+export function useRole(roleId: string) {
+  const { isAuthenticated } = useAuth();
+  const client = useClient();
+  const queryFn = useCallback(
+    (signal: AbortSignal) => client.get<RoleDetailDto>(coreAccessPaths.role(roleId), { signal }),
+    [client, roleId]
+  );
+  return useApiQuery(coreAccessQueryKeys.role(roleId), queryFn, { enabled: isAuthenticated && Boolean(roleId) });
+}
+
+/** People who sign in and can be chosen for a role (or previewed), by name or email. */
+export function useRoleCandidates(search: string, enabled = true) {
+  const { isAuthenticated } = useAuth();
+  const client = useClient();
+  const queryFn = useCallback(
+    (signal: AbortSignal) => client.get<RoleCandidateDto[]>(coreAccessPaths.roleCandidates(search), { signal }),
+    [client, search]
+  );
+  return useApiQuery(coreAccessQueryKeys.roleCandidates(search), queryFn, {
     enabled: isAuthenticated && enabled,
+    placeholderData: (previous) => previous,
   });
 }
 
-export function useCreateAccessProfile(opts?: {
-  onSuccess?: (data: AccessProfileSummaryDto) => void;
-}) {
-  const client = useMemo(() => createPlatformApiClient(), []);
-  const queryClient = useApiQueryClient();
+/** A person's roles and why they have each. */
+export function usePersonRoles(employeeId: string | null, enabled = true) {
+  const { isAuthenticated } = useAuth();
+  const client = useClient();
+  const queryFn = useCallback(
+    (signal: AbortSignal) => client.get<PersonRoleDto[]>(coreAccessPaths.personRoles(employeeId ?? ""), { signal }),
+    [client, employeeId]
+  );
+  return useApiQuery(coreAccessQueryKeys.personRoles(employeeId ?? ""), queryFn, {
+    enabled: isAuthenticated && enabled && Boolean(employeeId),
+  });
+}
 
-  return useApiMutation<AccessProfileSummaryDto, CreateAccessProfileRequest>(
-    (input) =>
-      client.post<AccessProfileSummaryDto>(coreAccessPaths.profiles(), input),
+export function useCreateRole(opts?: { onSuccess?: (data: RoleDetailDto) => void }) {
+  const client = useClient();
+  const queryClient = useApiQueryClient();
+  return useApiMutation<RoleDetailDto, CreateRoleRequest>(
+    (input) => client.post<RoleDetailDto>(coreAccessPaths.roles(), input),
     {
       onSuccess: async (data) => {
-        await invalidateAccessProfileQueries(queryClient);
+        await invalidateRoleQueries(queryClient);
         await opts?.onSuccess?.(data);
       },
     }
   );
 }
 
-export function useUpdateAccessProfile(opts?: {
-  onSuccess?: (data: AccessProfileSummaryDto) => void;
-}) {
-  const client = useMemo(() => createPlatformApiClient(), []);
+export function useSaveRole(roleId: string) {
+  const client = useClient();
   const queryClient = useApiQueryClient();
-
-  return useApiMutation<AccessProfileSummaryDto, UpdateAccessProfileArgs>(
-    ({ profileId, expectedVersion, input }) =>
-      client.put<AccessProfileSummaryDto>(
-        coreAccessPaths.profile(profileId),
-        input,
-        {
-          headers: { "If-Match": `"${expectedVersion}"` },
-        }
-      ),
+  return useApiMutation<RoleDetailDto, { version: number; input: SaveRoleRequest }>(
+    ({ version, input }) =>
+      client.put<RoleDetailDto>(coreAccessPaths.role(roleId), input, { headers: { "If-Match": `"${version}"` } }),
     {
       onSuccess: async (data) => {
-        await invalidateAccessProfileQueries(queryClient);
-        await opts?.onSuccess?.(data);
+        queryClient.setQueryData(coreAccessQueryKeys.role(roleId), data);
+        await invalidateRoleQueries(queryClient);
       },
     }
   );
 }
 
-export function useDeleteAccessProfile(opts?: { onSuccess?: () => void }) {
-  const client = useMemo(() => createPlatformApiClient(), []);
+export function useDeleteRole(roleId: string, opts?: { onSuccess?: () => void }) {
+  const client = useClient();
   const queryClient = useApiQueryClient();
-
-  return useApiMutation<void, DeleteAccessProfileArgs>(
-    ({ profileId }) => client.delete<void>(coreAccessPaths.profile(profileId)),
-    {
-      onSuccess: async () => {
-        await invalidateAccessProfileQueries(queryClient);
-        await opts?.onSuccess?.();
-      },
-    }
-  );
+  return useApiMutation<void, void>(() => client.delete<void>(coreAccessPaths.role(roleId)), {
+    onSuccess: async () => {
+      await invalidateRoleQueries(queryClient);
+      await opts?.onSuccess?.();
+    },
+  });
 }

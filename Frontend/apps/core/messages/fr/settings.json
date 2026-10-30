@@ -170,83 +170,185 @@
     }
   },
   "roles": {
-    "didNotLoad": "Impossible de charger les rôles",
+    "didNotLoad": "Les rôles ne se sont pas chargés",
+    "title": "Rôles",
     "newRole": "Nouveau rôle",
-    "list": "Rôles",
-    "builtIn": "Intégrés",
-    "yours": "Les vôtres",
-    "people": "{count, plural, one {# personne} other {# personnes}}",
-    "name": "Nom",
-    "purpose": "À quoi il sert",
-    "create": "Créer le rôle",
-    "cancel": "Annuler",
-    "notCreated": "Le rôle n’a pas été créé.",
-    "delete": "Supprimer",
-    "edit": "Modifier",
-    "done": "Terminé",
-    "holdsOne": "{name} a ce rôle",
-    "holdsMany": "{count, plural, one {{name} et # autre personne ont ce rôle} other {{name} et # autres personnes ont ce rôle}}",
-    "nobody": "Personne n’a ce rôle",
-    "holdCount": "{count, plural, one {# personne a ce rôle} other {# personnes ont ce rôle}}",
-    "manageInAccess": "Gérer dans Accès",
-    "leave": "Quitter sans enregistrer ? Vos modifications de « {role} » seront perdues.",
-    "notSaved": "Le rôle n’a pas été enregistré.",
-    "levels": {
-      "None": "Aucun",
-      "View": "Lecture",
-      "Manage": "Gestion"
-    },
-    "consequence": {
-      "None": "Les titulaires du rôle « {role} » ne voient plus {what}.",
-      "View": "Les titulaires du rôle « {role} » peuvent voir {what}.",
-      "Manage": "Les titulaires du rôle « {role} » peuvent gérer {what}.",
-      "more": "{sentence} Et {count} de plus."
+    "groups": {
+      "core": "Core HR",
+      "performance": "Performance",
+      "company": "Entreprise"
     },
     "areas": {
-      "cycles": {
-        "label": "Cycles",
-        "what": "les cycles"
+      "job": {
+        "label": "Postes et historique",
+        "what": "les postes et l'historique"
       },
-      "performance-settings": {
-        "label": "Paramètres Performance",
-        "what": "les paramètres Performance"
+      "personal": {
+        "label": "Données personnelles",
+        "what": "les données personnelles"
       },
-      "company-objectives": {
-        "label": "Objectifs de l’entreprise",
-        "what": "les objectifs de l’entreprise"
-      },
-      "company-direction": {
-        "label": "Orientation de l’entreprise",
-        "what": "l’orientation de l’entreprise"
-      },
-      "calibration": {
-        "label": "Calibrage",
-        "what": "le calibrage"
-      },
-      "people": {
-        "label": "Collaborateurs",
-        "what": "les collaborateurs"
-      },
-      "organization": {
+      "org": {
         "label": "Organisation",
-        "what": "l’organisation"
+        "what": "l'organisation"
       },
-      "employee-fields": {
-        "label": "Champs collaborateur",
-        "what": "les champs collaborateur"
+      "approve": {
+        "label": "Approbation des changements",
+        "what": "les changements"
+      },
+      "reports": {
+        "label": "Rapports",
+        "what": "les rapports"
+      },
+      "signin": {
+        "label": "Invitations et connexion",
+        "what": "les invitations et la connexion"
+      },
+      "plans": {
+        "label": "Plans et points d'étape",
+        "what": "les plans et points d'étape"
+      },
+      "cycles": {
+        "label": "Cycles et calibrage",
+        "what": "les cycles et le calibrage"
+      },
+      "brand": {
+        "label": "Marque, champs et listes",
+        "what": "la marque, les champs et les listes"
       },
       "roles": {
-        "label": "Rôles et accès",
-        "what": "les rôles et accès"
-      },
-      "invitations": {
-        "label": "Invitations",
-        "what": "les invitations"
-      },
-      "change-history": {
-        "label": "Historique des modifications",
-        "what": "l’historique des modifications"
+        "label": "Rôles",
+        "what": "les rôles"
       }
+    },
+    "levels": {
+      "none": "Aucun accès",
+      "see": "Voir",
+      "change": "Modifier",
+      "propose": "Proposer",
+      "approve": "Approuver"
+    },
+    "reaches": {
+      "self": "eux-mêmes",
+      "team": "leur équipe",
+      "everyone": "tout le monde"
+    },
+    "for": "pour",
+    "levelOf": "Ce que {role} peut faire avec {what}",
+    "reachOf": "Pour qui : {what}",
+    "administratorsOnly": "Administrateurs seulement",
+    "linked": "Évolue avec {area} : Core HR modifie les deux sur une même fiche",
+    "holders": {
+      "chosen": "Personnes choisies",
+      "everyone": "Tout le monde",
+      "team": "Toute personne avec une équipe",
+      "rule": "Une règle",
+      "summaryChosen": "{count, plural, =0 {Personne n'est choisi} one {# choisie} other {# choisies}}",
+      "summaryRule": "Par règle",
+      "summaryRulePlus": "Par règle + {count}",
+      "summaryTeamPlus": "Avec une équipe + {count}",
+      "protected": "Protégé"
+    },
+    "people": "{count, plural, =0 {Personne} one {# personne} other {# personnes}}",
+    "whoHasIt": "Qui l'a",
+    "whatItCanDo": "Ce que {role} peut faire",
+    "rule": "Règle",
+    "also": "Aussi",
+    "conditionKinds": {
+      "department": "Département",
+      "job": "Poste",
+      "place": "Lieu",
+      "unit": "Unité"
+    },
+    "is": "est",
+    "or": "ou",
+    "condition": "Condition",
+    "person": "Personne",
+    "addValue": "Ajouter : {kind}",
+    "findValue": "Chercher : {kind}",
+    "noValues": "Aucun résultat",
+    "findPerson": "Chercher une personne qui se connecte",
+    "nobodyFound": "Personne qui se connecte ne correspond",
+    "remove": "Retirer {name}",
+    "fromRule": "{rule, plural, =0 {} one {# par la règle} other {# par la règle}}{both, select, yes {, } other {}}{chosen, plural, =0 {} one {# choisie} other {# choisies}}",
+    "everyoneWho": "Toute personne qui se connecte l'a",
+    "teamWho": "Toute personne à qui au moins une personne est rattachée",
+    "showThem": "Les voir",
+    "hideThem": "Masquer",
+    "byRule": "Règle",
+    "chosenTag": "Choisie",
+    "updatesOnSave": "Qui l'a se met à jour à l'enregistrement",
+    "unknownValue": "Supprimé",
+    "administrators": {
+      "name": "Administrateurs",
+      "everything": "Tout",
+      "everythingAt": "Tout chez {company}",
+      "line": "Chaque domaine, chaque personne, chaque réglage",
+      "manage": "Ouvrir Administrateurs"
+    },
+    "save": "Enregistrer",
+    "saving": "Enregistrement",
+    "discard": "Annuler les changements",
+    "unsaved": "Changements non enregistrés",
+    "notSaved": "Le rôle n'a pas été enregistré.",
+    "stale": "Quelqu'un a modifié ce rôle depuis son ouverture. Rechargez pour voir ses changements.",
+    "reload": "Recharger",
+    "back": "Rôles",
+    "more": "Plus",
+    "rename": "Renommer",
+    "delete": "Supprimer le rôle",
+    "deleteTitle": "Supprimer {role} ?",
+    "deleteBody": "{count, plural, =0 {Personne ne l'a.} one {# personne perd ce qu'il lui donne.} other {# personnes perdent ce qu'il leur donne.}}",
+    "cancel": "Annuler",
+    "notDeleted": "Le rôle n'a pas été supprimé.",
+    "name": "Nom",
+    "create": "Créer le rôle",
+    "notCreated": "Le rôle n'a pas été créé.",
+    "renameTitle": "Renommer {role}",
+    "renameAction": "Renommer",
+    "notFound": "Ce rôle n'existe plus",
+    "preview": {
+      "title": "{subject} vu par {viewer}",
+      "titleSelf": "{viewer} sur sa propre page",
+      "nobody": "Personne n'a {role} pour l'instant",
+      "nobodyLine": "Choisissez qui l'a pour voir sa vue",
+      "viewer": "Vu par",
+      "subject": "Page de",
+      "tabs": {
+        "overview": "Aperçu",
+        "job": "Poste",
+        "personal": "Personnel",
+        "performance": "Performance",
+        "access": "Accès"
+      },
+      "job": "Poste",
+      "personal": "Personnel",
+      "performance": "Performance",
+      "signin": "Connexion",
+      "changes": "Changements",
+      "makeChange": "Faire un changement",
+      "proposeChange": "Proposer un changement",
+      "approve": "Approuver les changements",
+      "edit": "Modifier",
+      "update": "Mettre à jour",
+      "manage": "Gérer",
+      "since": "depuis le {date}",
+      "noPhone": "Pas de téléphone",
+      "plan": "Plan et points d'étape",
+      "signsIn": "Se connecte à Fusion",
+      "outside": "{area} : {subject} n'est pas {where}",
+      "whereSelf": "{viewer}",
+      "whereTeam": "dans l'équipe de {viewer}",
+      "didNotLoad": "Cette page ne s'est pas chargée"
+    },
+    "access": {
+      "title": "Rôles",
+      "everyone": "Tout le monde l'a",
+      "team": "{count, plural, =0 {A une équipe} one {A une équipe de #} other {A une équipe de #}}",
+      "chosen": "Choisi",
+      "administrator": "Administrateur",
+      "none": "Aucun rôle pour l'instant",
+      "didNotLoad": "Les rôles ne se sont pas chargés",
+      "open": "Ouvrir {role}"
     }
   },
   "changeHistory": {
@@ -319,11 +421,11 @@
       "deleted": "A supprimé le rôle « {role} »",
       "name": "Nom",
       "renamed": "A renommé le rôle « {before} » en « {after} »",
-      "canNone": "Les titulaires du rôle « {role} » ne voient plus {what}",
-      "canView": "Les titulaires du rôle « {role} » peuvent désormais voir {what}",
-      "canManage": "Les titulaires du rôle « {role} » peuvent désormais gérer {what}",
       "changedWhat": "A modifié ce que permet le rôle « {role} »",
-      "changed": "A modifié le rôle « {role} »"
+      "changed": "A modifié le rôle « {role} »",
+      "area": "{area} : {setting} pour {role}",
+      "holders": "A modifié qui a {role}",
+      "settingNone": "aucun accès"
     },
     "notificationLabel": "E-mails Équipe et changements de poste",
     "notificationSentence": "Les e-mails Équipe et changements de poste sont désormais : {mode}",

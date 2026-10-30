@@ -20,7 +20,7 @@ The design authority for Fusion's user-facing surfaces (shell and the micro-fron
 | Minimal | Empty |
 | Expressive | Decorative |
 
-**The brief, for any design skill or agent:** Fusion is a dense enterprise HRIS, not a marketing site. Distinctiveness comes from hierarchy, typography, composition and polish inside a calm operational product, never from hero sections, gradients or bold aesthetic experiments. The goals: cleanliness, a "wow" that comes from polish and clarity, consistency across modules, and UI that explains itself.
+**The brief, for any design skill or agent:** Fusion is serious HR software that feels friendly and alive, never a legacy enterprise console or a marketing site. Friendly is never cute or playful. People come first: faces, names and real events give it life, and motion responds to what changes. Distinctiveness comes from hierarchy, typography, composition and polish inside a calm operational product, never from hero sections, gradients or bold aesthetic experiments. The goals: cleanliness, a "wow" that comes from polish and clarity, consistency across modules, and UI that explains itself.
 
 ### Principles
 

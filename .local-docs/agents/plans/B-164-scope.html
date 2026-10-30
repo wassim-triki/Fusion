@@ -1,0 +1,675 @@
+<title>Fusion Core HR Scope</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* One reading column. A sticky tally carries the state and the copy action; every feature is a row with its ladder. */
+:root {
+  --bg: #101012; --surface: #19191c; --inlay: #222226; --fg: #ececef; --muted: #a2a2ab; --line: #2d2d33;
+  --accent: #ffd21f; --accent-ink: #1b1600; --accent-soft: #3a3110;
+  --parity: #8fb4ff; --parity-soft: #18233a; --improve: #4cc98a; --improve-soft: #16301f; --new: #e59cff; --new-soft: #2e1a35;
+  --changed: #f2b44f; --changed-soft: #35270f; --focus: #7aa7ff;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --r-surface: 20px; --r-control: 12px;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f4f4f6; --surface: #ffffff; --inlay: #f0f0f3; --fg: #18181b; --muted: #5d5d66; --line: #e2e2e7;
+    --accent: #f2c200; --accent-ink: #1b1600; --accent-soft: #fff6cc;
+    --parity: #2f5fb8; --parity-soft: #e6eefc; --improve: #157347; --improve-soft: #e3f4ea; --new: #8a2fa8; --new-soft: #f6e8fb;
+    --changed: #a35f00; --changed-soft: #fdf0dc; --focus: #2f6fdb;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f4f4f6; --surface: #ffffff; --inlay: #f0f0f3; --fg: #18181b; --muted: #5d5d66; --line: #e2e2e7;
+  --accent: #f2c200; --accent-ink: #1b1600; --accent-soft: #fff6cc;
+  --parity: #2f5fb8; --parity-soft: #e6eefc; --improve: #157347; --improve-soft: #e3f4ea; --new: #8a2fa8; --new-soft: #f6e8fb;
+  --changed: #a35f00; --changed-soft: #fdf0dc; --focus: #2f6fdb;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+main { max-width: 980px; margin: 0 auto; padding-block: 40px 120px; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); display: grid; gap: 48px; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; margin: 0; }
+h1 { font-size: 40px; letter-spacing: -0.01em; }
+h2 { font-size: 26px; }
+h3 { font-size: 18px; }
+p { margin: 0; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+.muted { color: var(--muted); }
+.lede { font-size: 17px; color: var(--muted); max-width: 680px; }
+header { display: grid; gap: 14px; }
+.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.road { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.road span { border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: 13px; color: var(--muted); }
+.road .done { color: var(--fg); }
+.road .here { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.tally { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.tally-in { max-width: 980px; margin: 0 auto; padding-block: 10px; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.copybox { display: grid; gap: 8px; }
+.copybox textarea { min-height: 180px; font-family: var(--font-mono); font-size: 12px; }
+.stat { font-size: 13px; color: var(--muted); }
+.stat b { color: var(--fg); font-family: var(--font-mono); font-weight: 500; }
+.spacer { flex: 1; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: var(--r-control); padding: 7px 14px; cursor: pointer; font-weight: 500; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.saved { font-size: 12px; color: var(--muted); min-width: 70px; text-align: right; }
+.banner { background: var(--inlay); border: 1px solid var(--line); border-radius: var(--r-control); padding: 10px 14px; font-size: 13px; color: var(--muted); }
+.jobs { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.job { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-surface); padding: 14px 16px; display: grid; gap: 6px; }
+.job .n { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
+.job .t { font-weight: 600; }
+.job .today { font-size: 13px; color: var(--muted); }
+section { display: grid; gap: 16px; }
+.heroes { display: grid; grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); gap: 14px; }
+.hero { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-surface); padding: 20px; display: grid; gap: 12px; align-content: start; }
+.hero .num { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
+.hero dl { margin: 0; display: grid; gap: 8px; }
+.hero dt { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.hero dd { margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 12px; border-radius: 999px; padding: 2px 10px; border: 1px solid var(--line); text-decoration: none; white-space: nowrap; }
+.chip.parity { color: var(--parity); background: var(--parity-soft); border-color: transparent; }
+.chip.improvement { color: var(--improve); background: var(--improve-soft); border-color: transparent; }
+.chip.new { color: var(--new); background: var(--new-soft); border-color: transparent; }
+.chip.hero { color: var(--accent); background: var(--accent-soft); border-color: transparent; }
+.chip.changed { color: var(--changed); background: var(--changed-soft); border-color: transparent; }
+.area { display: grid; gap: 12px; }
+.area-head { display: grid; gap: 4px; }
+.item { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-surface); padding: 18px 20px; display: grid; gap: 12px; scroll-margin-top: 70px; }
+.item.is-changed { border-color: var(--changed); }
+.item-head { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: baseline; }
+.item-head h3 { margin-right: 4px; }
+.id { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); }
+.dots { letter-spacing: 2px; color: var(--fg); }
+.ladder { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.rung { position: relative; text-align: left; border: 1px solid var(--line); background: var(--inlay); border-radius: var(--r-control); padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 6px; }
+.rung:disabled { opacity: 0.35; cursor: default; }
+.rung .rn { font-family: var(--font-mono); font-size: 12px; color: var(--muted); padding-right: 16px; }
+.rung .rt { font-size: 13px; line-height: 1.4; flex: 1; }
+.rung .rc { font-size: 12px; color: var(--muted); }
+.rung[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+.rung[aria-pressed="true"] .rn { color: var(--accent); font-weight: 600; }
+.rung .star { position: absolute; top: 6px; right: 8px; font-size: 12px; color: var(--accent); }
+.detail { background: var(--inlay); border-radius: var(--r-control); padding: 10px 14px; font-size: 14px; display: grid; gap: 4px; }
+.detail .cost { font-size: 12px; color: var(--muted); }
+.note-row { display: grid; gap: 6px; }
+.note-toggle { background: none; border: 0; padding: 0; color: var(--muted); font-size: 13px; cursor: pointer; justify-self: start; text-decoration: underline; text-underline-offset: 3px; }
+textarea { width: 100%; min-height: 64px; resize: vertical; background: var(--inlay); color: var(--fg); border: 1px solid var(--line); border-radius: var(--r-control); padding: 10px 12px; font: inherit; font-size: 14px; }
+.out { display: grid; gap: 8px; }
+.out-item { display: flex; gap: 14px; align-items: center; justify-content: space-between; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-control); padding: 10px 14px; }
+.out-item.pulled { border-color: var(--changed); }
+.out-item .why { font-size: 13px; color: var(--muted); }
+.switch { border: 1px solid var(--line); background: var(--inlay); border-radius: 999px; padding: 4px 12px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.switch[aria-pressed="true"] { background: var(--changed-soft); color: var(--changed); border-color: var(--changed); }
+.q { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-surface); padding: 18px 20px; display: grid; gap: 10px; }
+.opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+.opt { text-align: left; border: 1px solid var(--line); background: var(--inlay); border-radius: var(--r-control); padding: 10px 12px; cursor: pointer; display: grid; gap: 2px; }
+.opt[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.opt .rec { font-size: 12px; color: var(--accent); }
+.sources { font-size: 13px; color: var(--muted); display: grid; gap: 4px; }
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 8px 14px; border-radius: var(--r-control); font-size: 13px; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+.toast.on { opacity: 1; }
+@media (max-width: 720px) {
+  h1 { font-size: 30px; }
+  .heroes { grid-template-columns: 1fr; }
+  .ladder { grid-template-columns: repeat(2, 1fr); }
+  .out-item { flex-direction: column; align-items: flex-start; }
+}
+</style>
+<div class="tally" role="region" aria-label="Your choices">
+  <div class="tally-in">
+    <span class="stat">Changed from my picks <b id="t-changed">0</b></span>
+    <span class="stat">Pulled back <b id="t-pulled">0</b></span>
+    <span class="stat">Questions <b id="t-answered">0</b>/<b id="t-questions">0</b></span>
+    <span class="stat">Notes <b id="t-notes">0</b></span>
+    <span class="spacer"></span>
+    <span class="saved" id="saved" aria-live="polite"></span>
+    <button class="btn" id="reset" type="button">Back to my picks</button>
+    <button class="btn primary" id="copy" type="button">Copy my choices</button>
+  </div>
+</div>
+<main>
+  <header>
+    <div class="top">
+      <span class="eyebrow">Fusion · Core HR rebuild · Scope</span>
+    </div>
+    <h1>What Core HR will be</h1>
+    <p class="lede">My picks are already selected. Change a rung where you'd go further or less far, pull back anything from "Not doing", answer the five questions.</p>
+    <div class="road" aria-label="Roadmap">
+      <span class="done">1 · Map ✓</span><span class="here">2 · Scope</span><span>3 · Screens</span><span>4 · Rebuild</span><span>5 · Product tour</span>
+    </div>
+    <div class="banner" id="banner" hidden></div>
+    <div class="copybox" id="copybox" hidden>
+      <span class="muted">Copying was blocked here. Select this text and copy it.</span>
+      <textarea id="copytext" readonly aria-label="Your choices as text"></textarea>
+    </div>
+  </header>
+
+  <section aria-labelledby="jobs-h">
+    <h2 id="jobs-h">Core HR does seven jobs</h2>
+    <p class="muted">The company's living record of who works here, how it's organised, and how both change. Every feature below serves one of these.</p>
+    <div class="jobs" id="jobs"></div>
+  </section>
+
+  <section aria-labelledby="heroes-h">
+    <h2 id="heroes-h">Four heroes</h2>
+    <p class="muted">Where Fusion goes past what existing products do. Everything else is clean at the level established products reach.</p>
+    <div class="heroes" id="heroes"></div>
+  </section>
+
+  <section aria-labelledby="cat-h">
+    <h2 id="cat-h">Every feature, and how far</h2>
+    <div class="meta"><span>0 not built · 1 works, minimal · 2 what established products do · 3 showcase · each rung includes the ones before it</span><span>★ my pick</span><span><span class="chip parity">Parity</span> same as them, done well</span><span><span class="chip improvement">Improvement</span> better than them</span><span><span class="chip new">New</span> nobody does it</span></div>
+    <div id="areas"></div>
+  </section>
+
+  <section aria-labelledby="out-h">
+    <h2 id="out-h">Not doing</h2>
+    <p class="muted">Each with its reason. Pull back anything you want in.</p>
+    <div class="out" id="out"></div>
+  </section>
+
+  <section aria-labelledby="q-h">
+    <h2 id="q-h">Five questions</h2>
+    <div id="questions" style="display:grid;gap:12px"></div>
+  </section>
+
+  <section aria-labelledby="more-h">
+    <h2 id="more-h">Anything missing?</h2>
+    <textarea id="extra" aria-labelledby="more-h" placeholder="A feature, an idea, something you saw elsewhere…"></textarea>
+  </section>
+
+  <section aria-labelledby="src-h">
+    <h3 id="src-h">Sources</h3>
+    <div class="sources" id="sources"></div>
+  </section>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const JOBS = [
+  ["J1", "Know who works here", "Strong model; the record is thin and split across pages"],
+  ["J2", "Know how the company is shaped", "Units and lines strong; jobs and places are free text"],
+  ["J3", "Keep it true over time", "Strong: dated changes, schedules, history"],
+  ["J4", "Right people see and do the right things", "Two authority systems, a separate access list"],
+  ["J5", "Help people find each other", "Org chart strong; no directory below HR"],
+  ["J6", "Show the state of the workforce", "A generic dashboard; nothing reaches Home"],
+  ["J7", "Fit the company", "Mostly fixed; company settings read-only"],
+];
+
+const HEROES = [
+  { id: "H1", title: "Make it yours", line: "A company makes Fusion its own: name, logo, colour, language, its own fields and lists, with a live preview.",
+    sees: "The accent colour and logo change, and Home, the sign-in page and an invitation email change in front of them. A \"Certifications\" section added once appears on every profile.",
+    beyond: "BambooHR stops at a logo and a palette of colour schemes. Fusion previews every change and brands the front door.",
+    items: ["C1", "C2", "C3"] },
+  { id: "H2", title: "Bring your company", line: "Drop the spreadsheets you have. Fusion builds the organisation, the people, their managers and a clean job catalogue, and shows it as a chart to correct.",
+    sees: "A messy 100-row file becomes a live org chart in a minute; 87 job titles become 23; \"Engineering B reports to Product\" fixes it in words.",
+    beyond: "Import tools map columns. Fusion understands hierarchies, managers and jobs, and reviews the result as the org itself.",
+    items: ["I1", "O2"] },
+  { id: "H3", title: "The organisation in time", line: "One place for the organisation: the people chart and the structure chart you like, a page per unit, and one slider through past and planned changes.",
+    sees: "Drag the slider: last year's company, today's, and January's after the scheduled reorganisation.",
+    beyond: "HR org charts show today; planning tools live outside the HR record. Fusion's history and scheduled changes already exist underneath.",
+    items: ["O1", "O3"] },
+  { id: "H4", title: "One person, one place", line: "A person has one page and a manager one team page across Core HR and Performance; access and people events live where people are.",
+    sees: "From \"starting Monday\" on Home to the joiner's page, their checklist, their access and later their objectives, without changing app.",
+    beyond: "Lattice added an HRIS to a performance product; Fusion is one record from the start.",
+    items: ["P1", "D3", "A1", "D1"] },
+];
+
+const AREAS = [
+  { id: "first", title: "First run", blurb: "The first minutes of a new company in Fusion.", items: [
+    { id: "F1", title: "Setup guide on Home", tag: "improvement", biz: 3, demo: 3, pick: 2,
+      what: "A new company's administrator lands on Home with a short guide made of real actions, instead of an admin console.",
+      today: "A Getting started page under Core HR › Administration; Home redirects there while the company is empty.",
+      rungs: ["Keep the Getting started page.",
+        ["A guide on Home: your company, organisation, people, invitations, Performance. Each step is a real action; the guide leaves when done.", "S"],
+        ["Plus every empty page shows what will be there and the one next step, instead of zeros.", "M"],
+        ["Plus a sample company to explore the finished Fusion before importing your own, removable in one click.", "L"]] },
+    { id: "F2", title: "The administrator is a person", tag: "parity", biz: 2, demo: 2, pick: 2,
+      what: "Whoever sets Fusion up appears in their own company from the first second: profile, org chart, team.",
+      today: "A new administrator has no employee record; their profile tells them to contact HR.",
+      rungs: ["As today.",
+        ["Activation asks whether they also work there and creates their record.", "S"],
+        ["Plus the import recognises them in the file and links them.", "S"], null] },
+  ]},
+  { id: "org", title: "The organisation", blurb: "How the company is shaped: units, reporting lines, jobs, places.", items: [
+    { id: "O1", title: "One Organisation place", tag: "improvement", hero: "H3", biz: 2, demo: 3, pick: 3,
+      what: "The people chart and the structure chart become views of one place, with a page for every unit.",
+      today: "Two pages: Organization (units; opens zoomed out past reading) and Org chart (people, with Replay).",
+      rungs: ["Keep the two pages.",
+        ["One Organisation page with People, Structure and List views; both charts kept.", "S"],
+        ["Plus a page per unit: its people, manager, open roles and coming changes, reachable from both charts.", "M"],
+        ["Plus one time slider for every view: replay the past, preview scheduled changes, see the company on any date.", "M"]] },
+    { id: "O2", title: "Job catalogue", tag: "parity", hero: "H2", biz: 3, demo: 2, pick: 2,
+      what: "Jobs as a managed catalogue instead of whatever was typed.",
+      today: "Job title is free text on each person.",
+      rungs: ["Free text.",
+        ["A company list of job titles; people pick, not type.", "S"],
+        ["A catalogue: title, family and level, used in filters, insights and Performance.", "M"],
+        ["Positions: seats that outlive their holder, with headcount per unit (Workday, HiBob).", "L"]] },
+    { id: "O3", title: "Open roles", tag: "parity", hero: "H3", biz: 2, demo: 2, pick: 2,
+      what: "Roles the company means to fill, where people look for them.",
+      today: "Open roles shown on the org chart.",
+      rungs: ["Remove them.",
+        ["As today, on the chart.", "S"],
+        ["First-class: on unit pages, and hiring someone fills the role.", "S"],
+        ["A headcount plan per unit, approved before roles open (HiBob workforce planning).", "L"]] },
+    { id: "O4", title: "Places", tag: "parity", biz: 2, demo: 1, pick: 1,
+      what: "Where people work, as something the company manages.",
+      today: "Work location is free text.",
+      rungs: ["Free text.",
+        ["A company list of places.", "S"],
+        ["Places with country, time zone and work week, used for dates and reminders.", "M"],
+        ["Rules per place: holidays, policies.", "L"]] },
+  ]},
+  { id: "people", title: "People and their records", blurb: "Who works here, and everything about them.", items: [
+    { id: "P1", title: "One person page", tag: "improvement", hero: "H4", biz: 3, demo: 3, pick: 2,
+      what: "A person has one page everywhere; each module is a section of it.",
+      today: "A Core HR record (Job, Personal, Performance, Access) and a separate Performance person page.",
+      rungs: ["As today.",
+        ["One person page everywhere; Performance is a section of it.", "S"],
+        ["Plus a lively profile: big photo, about, contact, team and place in the org at a glance, then the sections.", "M"],
+        ["Plus each company arranges its own sections from its own fields.", "M"]] },
+    { id: "P2", title: "A directory for everyone", tag: "parity", biz: 3, demo: 2, pick: 2,
+      what: "Anyone can find a colleague, seeing what the company lets them see.",
+      today: "Only HR sees People; managers and employees have the org chart.",
+      rungs: ["HR only.",
+        ["Everyone gets a directory; the company chooses which fields each audience sees.", "S"],
+        ["Plus filters by team, place and job, and who's new.", "S"],
+        ["Plus who's away today (needs absences).", "M"]] },
+    { id: "P3", title: "Documents on a person", tag: "parity", biz: 2, demo: 1, pick: 1,
+      what: "Contracts and papers kept with the person they belong to.",
+      today: "None. File storage for production is still undecided (B-053).",
+      rungs: ["None.",
+        ["Files on a person, with who may see them.", "M"],
+        ["Categories, expiry reminders, employees upload their own.", "M"],
+        ["Letters generated from the record (offer, certificate).", "L"]] },
+    { id: "P4", title: "Data health", tag: "improvement", biz: 2, demo: 2, pick: 2,
+      what: "What's missing or wrong in the records, and the quickest way to fix it.",
+      today: "\"Readiness\" and \"records ready\" percentages, in system words.",
+      rungs: ["Remove it.",
+        ["Plain \"missing information\" on a person, and a filter.", "S"],
+        ["A health view for HR with fixes in place, and asking people to complete their own details.", "M"],
+        ["Plus AI spots what rules can't: likely duplicates, odd titles, managers with too many reports, and proposes fixes.", "M"]] },
+    { id: "P5", title: "On leave", tag: "parity", biz: 2, demo: 1, pick: 1,
+      what: "Someone away for a long stretch is shown as away, without a time-off engine.",
+      today: "Nothing between active and gone.",
+      rungs: ["None.",
+        ["Mark someone on leave for dates; shown on their page, team and chart.", "S"],
+        ["Plus leave types as a company list, and Performance pauses their tasks.", "M"], null] },
+  ]},
+  { id: "life", title: "Joiners, movers, leavers", blurb: "The events that change the record.", items: [
+    { id: "L1", title: "Adding people", tag: "parity", biz: 3, demo: 2, pick: 2,
+      what: "Bringing someone into the record, one at a time or many.",
+      today: "Hire, Add existing and Import as three entries, worded as \"establish\".",
+      rungs: ["As today.",
+        ["One \"Add people\" with three plain ways: a new joiner, someone already here, a file.", "S"],
+        ["Plus hiring into an open role; a joiner shows as starting soon everywhere.", "M"], null] },
+    { id: "L2", title: "Changes", tag: "parity", biz: 3, demo: 2, pick: 2,
+      what: "A new job, a new manager, a move, leaving: dated, explained, kept.",
+      today: "Dated job, manager and end changes in a sheet; scheduled changes listed.",
+      rungs: ["As today.",
+        ["One Change sheet for any change, in plain words.", "S"],
+        ["Plus reasons from company lists (promotion, transfer, resignation) and a history that reads as a story.", "M"],
+        ["Plus changes for many people at once (move a team).", "M"]] },
+    { id: "L3", title: "Approvals", tag: "parity", biz: 3, demo: 2, pick: 2,
+      what: "Some changes need someone's yes before they happen.",
+      today: "None: whoever has the right applies a change.",
+      rungs: ["None.",
+        ["Managers propose; HR applies them from Home.", "S"],
+        ["Approval for the change types the company picks: approve or decline with a comment, history kept.", "M"],
+        ["Approval paths by unit or place, several steps (BambooHR, Personio).", "L"]] },
+    { id: "L4", title: "Joining and leaving checklists", tag: "parity", biz: 3, demo: 3, pick: 2,
+      what: "Everything that has to happen around a start or a last day, assigned and tracked.",
+      today: "None in Core HR. Onboarding is a colleague's separate module.",
+      rungs: ["None.",
+        ["A checklist per joiner or leaver from a company template: tasks for HR, the manager and the person.", "M"],
+        ["Plus templates by unit or place, due dates from the start or end date, tasks on Home, a first-day page for the joiner.", "M"],
+        ["Plus the joiner completes their details and documents before day one.", "L"]] },
+  ]},
+  { id: "access", title: "Access and roles", blurb: "Who can sign in, see and change what.", items: [
+    { id: "A1", title: "Access on the person", tag: "parity", hero: "H4", biz: 3, demo: 2, pick: 2,
+      what: "Whether someone can sign in is part of who they are, not a second list of everyone.",
+      today: "A separate Workforce access page lists the same 100 people again.",
+      rungs: ["As today.",
+        ["Access shown on the person and as a People filter; invite many from People.", "S"],
+        ["Plus joiners invited automatically on their start date, reminders for pending invitations.", "M"], null] },
+    { id: "A2", title: "One roles model", tag: "parity", biz: 2, demo: 2, pick: 2,
+      what: "One way to say who can do what, administrators included.",
+      today: "Administrators and roles are two systems; 34 permission keys in three naming schemes, some legacy.",
+      rungs: ["As today.",
+        ["Administrator becomes a protected role in Roles, never fewer than two.", "S"],
+        ["Plus roles built from plain groups (see, change, per area) with a \"what can this role do\" preview.", "M"],
+        ["Plus roles that fill themselves by rule: everyone in Finance, every manager (Rippling, Personio).", "M"]] },
+  ]},
+  { id: "daily", title: "Every day", blurb: "Core HR in people's days, by role.", items: [
+    { id: "D1", title: "Core HR on Home", tag: "parity", hero: "H4", biz: 2, demo: 3, pick: 2,
+      what: "People events and Core HR tasks reach Home, next to Performance's.",
+      today: "Nothing; every Home item comes from Performance.",
+      rungs: ["None.",
+        ["Joiners, leavers and changes in my team on Home.", "S"],
+        ["Plus celebrations (birthdays if people opt in, work anniversaries) and Core HR tasks (checklists, approvals, invitations).", "M"],
+        ["Plus a weekly people digest by email.", "S"]] },
+    { id: "D2", title: "Core HR's front page, by role", tag: "parity", biz: 3, demo: 3, pick: 2,
+      what: "Opening Core HR shows each role what matters to them.",
+      today: "A generic dashboard (all zeros when empty); different ones for managers and employees.",
+      rungs: ["As today.",
+        ["HR: what changed and what needs doing; manager: the team; employee: their own page.", "S"],
+        ["Plus insights: headcount over time, movements, turnover, tenure, spans of control, by unit or place.", "M"],
+        ["Plus questions in plain words about your people (the Fusion assistant, B-147).", "L"]] },
+    { id: "D3", title: "One team page", tag: "improvement", hero: "H4", biz: 2, demo: 2, pick: 1,
+      what: "A manager's team in one place, whatever the module.",
+      today: "Two My Team pages: a plain list in Core HR, a rich one in Performance.",
+      rungs: ["As today.",
+        ["One Team page: people, jobs and what's coming, with each module's section.", "M"],
+        ["Plus a team calendar: joiners, anniversaries, 1:1s, changes.", "M"], null] },
+    { id: "D4", title: "Self-service", tag: "parity", biz: 2, demo: 2, pick: 2,
+      what: "People keep their own details current.",
+      today: "Employees can change their preferred name and phone.",
+      rungs: ["As today.",
+        ["Employees change what the company allows, field by field.", "S"],
+        ["Plus sensitive changes go to HR for approval.", "S"], null] },
+    { id: "D5", title: "Export", tag: "parity", biz: 2, demo: 1, pick: 1,
+      what: "Take the data out.",
+      today: "None.",
+      rungs: ["None.",
+        ["Export the People list as shown, with its filters.", "S"],
+        ["Saved views and scheduled exports.", "M"], null] },
+  ]},
+  { id: "config", title: "Make it yours", blurb: "Configurability: the wow you asked for.", items: [
+    { id: "C1", title: "Company identity and branding", tag: "improvement", hero: "H1", biz: 2, demo: 3, pick: 3,
+      what: "The company sets who it is and how Fusion looks for its people.",
+      today: "Read-only: name, address, industry, language, time zone, modules. A logo field nothing sets.",
+      rungs: ["As today.",
+        ["The company edits its name, language, time zone, work week and year start.", "S"],
+        ["Plus logo and accent colour across Fusion, sign-in and emails.", "M"],
+        ["Plus a live studio: Home, sign-in and an email change as you edit; a branded sign-in at the company's own address.", "L"]] },
+    { id: "C2", title: "Your own fields", tag: "parity", hero: "H1", biz: 3, demo: 3, pick: 2,
+      what: "The company records what it needs, not only what Fusion ships.",
+      today: "Eight fixed fields, with required and visibility per audience.",
+      rungs: ["As today.",
+        ["Add fields (text, number, date, choice) to a section: required, who sees, who edits.", "M"],
+        ["Plus your own sections and tables (skills, certifications), and fields in filters, import and export.", "M"],
+        ["Plus fields drive rules: role membership, checklists, approvals (HiBob, Rippling).", "L"]] },
+    { id: "C3", title: "Your own lists", tag: "improvement", hero: "H1", biz: 2, demo: 2, pick: 2,
+      what: "The values people pick from are the company's own.",
+      today: "Free text or fixed values.",
+      rungs: ["As today.",
+        ["Company lists for job titles, places, contract types, change reasons, leave types.", "S"],
+        ["Plus each value in English, French and Arabic, and retiring a value without losing history.", "M"], null] },
+  ]},
+  { id: "ai", title: "AI where it removes work", blurb: "Always reviewable before it writes anything.", items: [
+    { id: "I1", title: "Bring your company", tag: "improvement", hero: "H2", biz: 3, demo: 3, pick: 3,
+      what: "The import, rebuilt: from spreadsheets to a whole company.",
+      today: "Two imports (organisation, people), three stages each; AI matching you called clunky.",
+      rungs: ["As today.",
+        ["One import for organisation and people, in plain steps.", "M"],
+        ["AI reads any spreadsheet and proposes organisation, people, managers and job catalogue in one pass; asks only what it's unsure of; you review a chart, not rows.", "L"],
+        ["Plus correct it by saying what's wrong, and import again later to update, not only create.", "L"]] },
+    { id: "I2", title: "Describe a change", tag: "new", biz: 2, demo: 3, pick: 0,
+      what: "Say a change in words; Fusion drafts it.",
+      today: "None.",
+      rungs: ["None.", null,
+        ["Say a change in a sentence (\"Aicha moves to Product in January\"); AI drafts it as a dated change to review.", "M"],
+        ["Whole reorganisations drafted as a scenario on the chart, applied when approved (ChartHop's direction).", "L"]] },
+  ]},
+  { id: "frame", title: "One product", blurb: "What you said you hate most: every page with its own words and look.", items: [
+    { id: "X1", title: "One voice, one look", tag: "parity", biz: 2, demo: 3, pick: 2,
+      what: "Every Core HR page speaks the same words and follows the same layout rules as Performance.",
+      today: "Each page has its own words, layout and refusal message (four kinds of \"no access\").",
+      rungs: ["As today.",
+        ["One glossary for every module; one way to refuse; nothing shown that a role can't use.", "S"],
+        ["Plus one layout grammar for records, lists, sheets and empty states, applied to every Core HR page.", "M"], null] },
+  ]},
+];
+
+const OUT = [
+  ["N1", "Payroll", "Country-specific and regulated; a product of its own."],
+  ["N2", "Benefits", "Insurer integrations, mostly a US need."],
+  ["N3", "Time-off engine", "Accruals, policies and calendars are a rules engine of their own; \"On leave\" covers the record."],
+  ["N4", "Time and attendance", "Shifts and clocking are another category."],
+  ["N5", "Compensation", "Pay history and pay reviews are sensitive and heavy; a later candidate, next to Performance."],
+  ["N6", "Recruiting", "A colleague's module; Fusion stops at open roles."],
+  ["N7", "Learning", "A colleague's module."],
+  ["N8", "Engagement surveys", "A category of its own (Culture Amp)."],
+  ["N9", "Company feed and announcements", "Praise already covers recognition."],
+  ["N10", "Expenses, devices, IT", "Outside HR."],
+  ["N11", "Legal entities and multi-country employment", "Groups can model entities as top units for now."],
+  ["N12", "Report builder", "Insights by role instead."],
+  ["N13", "Single sign-on, automatic provisioning, public API", "Platform work nobody sees in a demo."],
+  ["N14", "Mobile app", "The web app works on a phone."],
+  ["N15", "E-signature", "Third-party territory."],
+  ["N16", "Org scenarios with budgets", "No cost data in Fusion; \"Describe a change\" is the light version."],
+];
+
+const QUESTIONS = [
+  { id: "Q1", text: "What should a brand-new administrator see first?", rec: "a", options: [
+    ["a", "Home with a setup guide", "Real actions, the guide leaves when done."],
+    ["b", "A full-screen setup wizard", "Nothing else until setup is finished."],
+    ["c", "A sample company to explore first", "See finished Fusion, then start your own."]] },
+  { id: "Q2", text: "Should every employee have a people directory?", rec: "a", options: [
+    ["a", "Yes, with the fields the company chooses", ""],
+    ["b", "No, the org chart is enough", ""],
+    ["c", "Each company decides in Settings", ""]] },
+  { id: "Q3", text: "Learning, Recruitment, Onboarding and Interview in a company's Fusion?", rec: "a", options: [
+    ["a", "Only when the company has them on", "Off in demo companies; joining checklists replace Onboarding."],
+    ["b", "Always listed, as today", ""],
+    ["c", "Removed from our companies entirely", ""]] },
+  { id: "Q4", text: "Do changes go through approval in the story?", rec: "a", options: [
+    ["a", "Yes", "A manager proposes a promotion, HR approves."],
+    ["b", "No", "Whoever has the right applies it."]] },
+  { id: "Q5", text: "Which hero should shine first?", rec: "H1", options: HEROES.map(h => [h.id, h.title, ""]) },
+];
+
+const SOURCES = [
+  ["BambooHR: 100+ ways to customize BambooHR", "https://www.bamboohr.com/resources/guides/100-ways-to-customize-bamboohr"],
+  ["HiBob: categories and permissions (API docs)", "https://apidocs.hibob.com/docs/categories-and-permissions.md"],
+  ["HiBob: workforce planning", "https://www.hibob.com/product-briefs/workforce-planning/"],
+  ["Personio: onboarding and offboarding workflows", "https://support.personio.de/hc/en-us/articles/115002529589-Create-onboarding-and-offboarding-workflows"],
+  ["Personio: employee data change approvals", "https://support.personio.de/hc/en-us/articles/21453114449053-Set-up-employee-data-change-approval-workflows"],
+  ["Rippling: platform tiers (employee graph, supergroups, custom fields)", "https://rippling.com/rippling-platform-tiers"],
+  ["Workday: staffing models (job vs position)", "https://doc.workday.com/workday-education/en-us/course-manuals/hcm-core-for-administrators/staffing-models.html"],
+  ["Lattice: a new era in HRIS", "https://lattice.com/blog/a-new-era-in-hris-redefining-the-employee-experience"],
+  ["ChartHop: headcount planning and scenarios", "https://www.charthop.com/platform/headcount-planning"],
+  ["Flatfile: AI mapping", "https://flatfile.com/product/mapping/"],
+];
+
+// ---- state ----
+const KEY = "fusion-b163-scope-v1";
+const picks = {}; for (const a of AREAS) for (const i of a.items) picks[i.id] = i.pick;
+const blank = () => ({ rungs: {}, notes: {}, pulled: {}, answers: {}, extra: "" });
+let state = blank();
+let db = null;
+try { const saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved) state = { ...blank(), ...saved }; } catch {}
+
+const rungOf = id => (id in state.rungs ? state.rungs[id] : picks[id]);
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v; else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const k of kids.flat()) if (k != null) n.append(k.nodeType ? k : document.createTextNode(k));
+  return n;
+};
+const dots = n => "●".repeat(n) + "○".repeat(3 - n);
+const TAG = { parity: "Parity", improvement: "Improvement", new: "New" };
+const COST = { S: "Small", M: "Medium", L: "Large" };
+
+let saveTimer = null, writing = false, dirty = false;
+function persist() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+  const s = document.getElementById("saved");
+  if (!db) { s.textContent = "Saved in this browser"; return; }
+  dirty = true; s.textContent = "Saving…";
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(flush, 600);
+}
+// One write at a time to the choices document; edits made during a write go out right after it.
+async function flush() {
+  if (writing || !dirty) return;
+  writing = true; dirty = false;
+  const s = document.getElementById("saved");
+  try { await db.doc("scope/main").set({ ...state, at: new Date().toISOString() }); s.textContent = dirty ? "Saving…" : "Saved"; }
+  catch (e) { s.textContent = "Not saved"; if (e && e.code === "invalid_argument") banner("You can view this page but not change it."); }
+  writing = false;
+  if (dirty) flush();
+}
+function banner(text) { const b = document.getElementById("banner"); b.textContent = text; b.hidden = false; }
+function toast(text) { const t = document.getElementById("toast"); t.textContent = text; t.classList.add("on"); setTimeout(() => t.classList.remove("on"), 1600); }
+
+// ---- render ----
+function renderJobs() {
+  document.getElementById("jobs").replaceChildren(...JOBS.map(([n, t, today]) =>
+    el("div", { class: "job" }, el("span", { class: "n" }, n), el("span", { class: "t" }, t), el("span", { class: "today" }, "Today: " + today))));
+}
+function renderHeroes() {
+  const all = Object.fromEntries(AREAS.flatMap(a => a.items).map(i => [i.id, i]));
+  document.getElementById("heroes").replaceChildren(...HEROES.map(h => el("article", { class: "hero" },
+    el("span", { class: "num" }, h.id), el("h3", {}, h.title), el("p", {}, h.line),
+    el("dl", {}, el("dt", {}, "What the jury sees"), el("dd", {}, h.sees), el("dt", {}, "Beyond existing products"), el("dd", {}, h.beyond)),
+    el("div", { class: "chips" }, h.items.map(id => el("a", { class: "chip", href: "#" + id }, `${id} ${all[id].title} · ${rungOf(id)}`))))));
+}
+function renderItem(i) {
+  const chosen = rungOf(i.id);
+  const changed = chosen !== i.pick;
+  const ladder = el("div", { class: "ladder", role: "group", "aria-label": `${i.title}: how far` },
+    i.rungs.map((r, n) => {
+      const text = r == null ? "—" : (Array.isArray(r) ? r[0] : r);
+      const short = n === 0 ? "Not built" : ["", "Minimal", "Like them", "Showcase"][n];
+      return el("button", { class: "rung", type: "button", disabled: r == null, "aria-pressed": String(chosen === n),
+        onclick: () => { if (n === i.pick) delete state.rungs[i.id]; else state.rungs[i.id] = n; persist(); render(); } },
+        el("span", { class: "rn" }, `${n} · ${short}`), el("span", { class: "rt" }, text),
+        Array.isArray(r) ? el("span", { class: "rc" }, `Effort: ${COST[r[1]]}`) : null,
+        n === i.pick ? el("span", { class: "star", "aria-label": "my pick" }, "★") : null);
+    }));
+  const hasNote = Boolean(state.notes[i.id]);
+  const note = el("div", { class: "note-row" });
+  const area = el("textarea", { "aria-label": `Note on ${i.title}`, placeholder: "Your note" });
+  area.value = state.notes[i.id] || "";
+  area.addEventListener("input", () => { if (area.value.trim()) state.notes[i.id] = area.value; else delete state.notes[i.id]; persist(); updateTally(); });
+  if (hasNote) note.append(area);
+  else note.append(el("button", { class: "note-toggle", type: "button", onclick: () => { note.replaceChildren(area); area.focus(); } }, "Add a note"));
+  return el("article", { class: "item" + (changed ? " is-changed" : ""), id: i.id },
+    el("div", { class: "item-head" },
+      el("span", { class: "id" }, i.id), el("h3", {}, i.title),
+      el("span", { class: "chip " + i.tag }, TAG[i.tag]),
+      i.hero ? el("span", { class: "chip hero" }, "Hero · " + HEROES.find(h => h.id === i.hero).title) : null,
+      changed ? el("span", { class: "chip changed" }, `Changed from ${i.pick}`) : null),
+    el("p", {}, i.what),
+    el("div", { class: "meta" },
+      el("span", {}, "Today: " + i.today),
+      el("span", {}, "Business ", el("span", { class: "dots", "aria-label": `${i.biz} of 3` }, dots(i.biz))),
+      el("span", {}, "Demo ", el("span", { class: "dots", "aria-label": `${i.demo} of 3` }, dots(i.demo)))),
+    ladder, note);
+}
+function renderAreas() {
+  document.getElementById("areas").replaceChildren(...AREAS.map(a => el("div", { class: "area", style: "margin-top:28px" },
+    el("div", { class: "area-head" }, el("h3", { style: "font-size:21px" }, a.title), el("p", { class: "muted" }, a.blurb)),
+    a.items.map(renderItem))));
+}
+function renderOut() {
+  document.getElementById("out").replaceChildren(...OUT.map(([id, title, why]) => {
+    const on = Boolean(state.pulled[id]);
+    return el("div", { class: "out-item" + (on ? " pulled" : "") },
+      el("div", {}, el("div", {}, el("span", { class: "id" }, id + " "), el("b", {}, title)), el("div", { class: "why" }, why)),
+      el("button", { class: "switch", type: "button", "aria-pressed": String(on),
+        onclick: () => { if (on) delete state.pulled[id]; else state.pulled[id] = true; persist(); render(); } }, on ? "Pulled back" : "Pull back"));
+  }));
+}
+function renderQuestions() {
+  document.getElementById("questions").replaceChildren(...QUESTIONS.map(q => el("div", { class: "q" },
+    el("div", {}, el("span", { class: "id" }, q.id + " "), el("b", {}, q.text)),
+    el("div", { class: "opts", role: "group", "aria-label": q.text }, q.options.map(([oid, label, hint]) =>
+      el("button", { class: "opt", type: "button", "aria-pressed": String(state.answers[q.id] === oid),
+        onclick: () => { state.answers[q.id] = oid; persist(); render(); } },
+        el("span", {}, label), hint ? el("span", { class: "muted", style: "font-size:13px" }, hint) : null,
+        oid === q.rec ? el("span", { class: "rec" }, "★ my recommendation") : null))))));
+}
+function updateTally() {
+  document.getElementById("t-changed").textContent = Object.keys(state.rungs).length;
+  document.getElementById("t-pulled").textContent = Object.keys(state.pulled).length;
+  document.getElementById("t-answered").textContent = Object.keys(state.answers).length;
+  document.getElementById("t-questions").textContent = QUESTIONS.length;
+  document.getElementById("t-notes").textContent = Object.keys(state.notes).length;
+}
+function render() {
+  const y = window.scrollY;
+  renderHeroes(); renderAreas(); renderOut(); renderQuestions(); updateTally();
+  const extra = document.getElementById("extra"); if (document.activeElement !== extra) extra.value = state.extra || "";
+  window.scrollTo(0, y);
+}
+
+// ---- copy ----
+function summary() {
+  const items = Object.fromEntries(AREAS.flatMap(a => a.items).map(i => [i.id, i]));
+  const lines = ["B-163 scope: my choices", ""];
+  const changed = Object.entries(state.rungs);
+  lines.push(changed.length ? "Changed rungs:" : "Rungs: all as you picked.");
+  for (const [id, n] of changed) lines.push(`- ${id} ${items[id].title}: ${items[id].pick} → ${n}`);
+  const notes = Object.entries(state.notes);
+  if (notes.length) { lines.push("", "Notes:"); for (const [id, t] of notes) lines.push(`- ${id} ${items[id].title}: ${t.trim()}`); }
+  const pulled = Object.keys(state.pulled);
+  if (pulled.length) { lines.push("", "Pulled back from Not doing:"); for (const id of pulled) lines.push(`- ${id} ${OUT.find(o => o[0] === id)[1]}`); }
+  lines.push("", "Answers:");
+  for (const q of QUESTIONS) {
+    const a = state.answers[q.id];
+    const opt = q.options.find(o => o[0] === a);
+    lines.push(`- ${q.id} ${q.text} ${opt ? opt[1] + (a === q.rec ? " (as recommended)" : "") : "not answered"}`);
+  }
+  if ((state.extra || "").trim()) lines.push("", "Anything missing:", state.extra.trim());
+  return lines.join("\n");
+}
+document.getElementById("copy").addEventListener("click", async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); toast("Copied. Paste it in the chat."); }
+  catch {
+    const box = document.getElementById("copybox"), area = document.getElementById("copytext");
+    area.value = text; box.hidden = false; area.focus(); area.select();
+  }
+});
+let resetArmed = null;
+document.getElementById("reset").addEventListener("click", e => {
+  const b = e.currentTarget;
+  if (!resetArmed) {
+    b.textContent = "Click again to clear";
+    resetArmed = setTimeout(() => { resetArmed = null; b.textContent = "Back to my picks"; }, 3000);
+    return;
+  }
+  clearTimeout(resetArmed); resetArmed = null; b.textContent = "Back to my picks";
+  state = blank(); persist(); render();
+});
+document.getElementById("extra").addEventListener("input", e => { state.extra = e.target.value; persist(); });
+
+document.getElementById("sources").replaceChildren(...SOURCES.map(([t, u]) => el("a", { href: u, target: "_blank", rel: "noopener" }, t)));
+renderJobs(); render();
+
+// Published on claude.ai, choices are saved where Claude can read them; opened as a file, they stay in this browser.
+(async () => {
+  try {
+    db = window.claude?.use ? await window.claude.use("db") : null;
+  } catch { db = null; }
+  if (!db) { document.getElementById("saved").textContent = ""; return; }
+  db.doc("scope/main").onSnapshot(snap => {
+    // Local edits not yet saved win over what the store last had.
+    if (!snap.exists || dirty || writing || snap.metadata.hasPendingWrites) return;
+    if (document.activeElement?.tagName === "TEXTAREA") return;
+    // Snapshots are frozen: copy before keeping them as editable state.
+    const data = JSON.parse(JSON.stringify(snap.data() || {}));
+    state = { ...blank(), rungs: data.rungs || {}, notes: data.notes || {}, pulled: data.pulled || {}, answers: data.answers || {}, extra: data.extra || "" };
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+    render();
+  }, () => { document.getElementById("saved").textContent = ""; });
+})();
+</script>

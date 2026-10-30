@@ -18,11 +18,23 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-164.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-175.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
 ## In progress
+
+- [ ] **B-164** The tenant experience, rebuilt from first principles: from a new tenant administrator's first sign-in to everyday use by every role, design-first, coherent and demo-ready; Core HR reworked deepest, Performance checked at its seams · Core HR, Shell, Performance · 2026-10-30
+      User 2026-10-30, before any other task: Core HR was winged without specs and feels dated; clean it up, remove/merge/redesign/re-architect, BambooHR-like, no vibe-code feel, the same way as the Performance rework (research, recommendations, an interactive artifact, taste questions). Platform admin out. Order: thin map → independent target → the audit is the diff, in one explorer → decisions → rebuild → tour. [plan](plans/B-164-tenant-experience-overhaul.md)
+  - [ ] **B-173** Check whether an HR admin can make someone a tenant administrator through Identity's old invitation endpoint (`POST /api/identity/tenants/{id}/invites` with role "OrgAdmin" is not refused), bypassing the administrator invitation flow and its continuity lock · Identity · 2026-10-30
+        Found answering the user's A2 note (brief §6b, Platform roles). The operator side was checked in code and holds: both old endpoints require the caller's own membership. Verify this one with an API journey (create, inspect, revoke), and if it's live fix it with `security-review` ahead of B-167, which retires these endpoints with the token-role copy anyway.
+  - [ ] **B-146** Celebrations: birthdays and work anniversaries on Home (BambooHR-style life), once B-127 stores dates of birth; decide who sees a birthday (day and month only) · Shell, Core HR · 2026-10-28
+        User 2026-10-30: lowest priority. Later that day it came into B-164's scope as part of D1 "Core HR on Home" (rung 2: birthdays if people opt in, work anniversaries); built in B-167.
+  - [ ] **B-110** Tenant configurability as a hero: branding (logo, theme/accent, branded sign-in, own address, email branding) and internal configuration (company defaults and whatever the research puts on the ladder), depth chosen on B-163's scope page · Shell, Platform, Core HR, Identity · 2026-10-24
+        User 2026-10-30: "I really wanna establish it as a core wow factor"; EY discussed it a lot but never gave specs or how far to take it. Earlier (2026-10-24) brain dump, ideas not requirements. A tenant's default language meets B-105. Context: B-071 removed the unused brand colour from Core's branding settings; Core's branding settings store a `LogoUrl` that no screen sets or shows; Company settings show name and locale.
+  - [ ] **B-166** Explorer and decisions: one artifact showing the target journey per persona, a verdict on every existing surface (keep, redesign, merge, remove) and every missing one, the catalogue to pick from and the tour moments; the user's verdict becomes the decisions document · 2026-10-30
+        2026-10-30: checkpoint 3a closed: the feel is set by three accepted screens (Aicha's page, the brand studio, Home on day one after five drafts), D-01–D-09 in [decisions](plans/B-166-decisions.md); [explorer](https://claude.ai/artifact/NzayZdgpvuCE3oUQk5s2CH). Next: the whole journey on the same page, in a fresh session.
+  - [ ] **B-167** Rebuild: slices in dependency order, each end to end with screens for the taste check; split into children once decisions are accepted · 2026-10-30
 
 ## In review
 
@@ -40,8 +52,10 @@ Open work only. Agents keep it current from the conversation; closed items leave
       User: another wow factor that, done right, also carries a realistic demo from the tenant's point of view, "taking over after the initial platform admin invite". Open: where it starts and ends, who it's for (tenant admin, HR, manager, employee), guided steps vs. checklist vs. contextual hints, and whether it runs on real or demo data. Best after B-089 and the demo seeder, so it walks finished screens.
       User again 2026-10-29: onboard the person in real time, a tutorial that shows them around and guides them to set up their things; would carry the demo too. No details yet, discussion first.
       User 2026-10-30: "i would want a product tour, its a good prio feature". Next up; starts with a decision page (where it starts and ends, who it guides, how it moves through real screens) before any code.
-- [ ] **B-163** Feature gap audit: Core HR and Performance against what a company expects from an HRIS of this kind (BambooHR, Lattice, HiBob, Workday-class), ranked by what a customer would miss first · Core HR, Performance · 2026-10-30
-      User 2026-10-30: "depends tho if our modeuls feaures are good as they are or if therye missing", and on scope: "not necesraily on that, just in geenral". A general check of whether our modules are complete; what it finds also informs the assistant (B-147).
+      User 2026-10-30, later: the tour needs cleanly engineered features first, so it follows B-164; its storyline is B-166's journey, and the explorer marks the tour-worthy moments.
+      User 2026-10-30, checkpoint 2: consolidate with B-164's setup guide (F1). One guidance system: the setup guide on Home is the tour's administrator track; each step opens the real screen where the tour takes over. B-167 builds the guide for the tour to extend.
+- [ ] **B-168** A deep link that opens a change on a person's record (`?change=job|end`) leaves the address without `/core`, so a refresh lands outside Core HR · Core HR · 2026-10-30
+      Found in the B-165 walk. `features/people/changes/change-sheet.tsx` passes `usePathname()` (basePath-less) to `history.replaceState`. Small fix; may be overtaken by B-167 if the record is rebuilt.
 
 - [ ] **B-065** Rebuild Performance from first principles into a complete, integrated, demo-ready module · Performance · 2026-10-15
       2026-10-26: all seven slices (B-070), Settings (B-071) and English/French/Arabic are done and committed. What's left: the user's hand pass (B-104, In review); the polish itself (B-089) is done. Inventory done ([B-067](plans/B-067-performance-inventory.md)); decisions accepted ([B-068](plans/B-068-decisions.md)). With Claude. Research → feature catalogue and decisions → surface architecture and role × state design → contracts → implementation. The agent owns product knowledge, architecture, contracts, implementation and surface design; the user agrees add-ons and wow features from the agent's recommendations. Settings is reworked once, last. See [plan](plans/B-065-performance-first-principles-rework.md).
@@ -59,13 +73,21 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## Needs discussion
 
+- [ ] **B-169** Core HR after the rebuild: the rungs chosen at checkpoint 2 to keep for later, so they aren't lost · Core HR, Shell · 2026-10-30
+      From B-164's scope page (brief §6b). Each is the next rung above what B-167 builds.
+  - [ ] **B-170** Companies arrange the person page's sections from their own fields (P1 rung 3) · Core HR · 2026-10-30
+        User: "Showcase is a nice to have, record it for now".
+  - [ ] **B-171** AI data health: likely duplicates, odd job titles, managers with too many reports, with proposed fixes (P4 rung 3) · Core HR · 2026-10-30
+        User: "Keep ai for later nice to have potentially".
+  - [ ] **B-172** A weekly people digest by email: joiners, leavers, changes, celebrations (D1 rung 3) · Core HR, Shell · 2026-10-30
+        User: "Record Weekly digest for later".
+  - [ ] **B-174** E-signature: HR sends documents to sign; people sign in Fusion; the signed copy and signing record stay on the person (pulled back at checkpoint 2, then parked) · Core HR · 2026-10-30
+        User: "e-signature can stay on nice to haves for now recorded". Shape if built: brief §6b (E1), on top of documents on a person.
 - [ ] **B-147** Fusion assistant: one AI assistant across the app that answers questions from the tenant's own data (people, org, goals, reviews, conversations) through retrieval over our modules, within what the asker may see; another wow feature for the demo. Decide scope, which modules it reads first, and how it respects permissions (retrieval runs as the asker, never a wider index) · Shell, Core HR, Performance · 2026-10-28
-      User 2026-10-30: depends on whether our modules are complete (B-163 checks that).
-- [ ] **B-110** Fusion that feels like the customer's own: per-tenant configuration and branding (logo, theme/accent, a branded sign-in, their own address or subdomain, email branding, company defaults) and what earns a "wow" in a demo · Shell, Platform, Core HR, Identity · 2026-10-24
-      User brain dump, ideas not requirements. Next step: research how HRIS/SaaS products do it, reason from first principles, and bring a well-rounded interactive artifact to discuss before any plan. Discuss together with B-111: the tenant-branded sign-in (their address, logo, language) and the public landing page are two faces of one front door. A tenant's default language meets B-105. Context: B-071 removed the unused brand colour from Core's branding settings; Core's branding settings already store a `LogoUrl` that no screen sets or shows; Company settings show name and locale.
-  - [ ] **B-111** A proper landing page for Fusion: the public front door before sign-in · Shell · 2026-10-24
-      User idea; research and artifact together with B-110. Today visitors who aren't signed in go straight to `/auth/signin`.
+      User 2026-10-30: depends on whether our modules are complete (B-163, part of B-164, checks that).
+      2026-10-30, B-164 scope: questions about people in plain words (D2 rung 3, reports) land here; "describe a change" (I2) is built in B-167 and can share its AI plumbing.
+- [ ] **B-111** A proper landing page for Fusion: the public front door before sign-in · Shell · 2026-10-24
+      User idea; research and artifact together with B-110 (now under B-164): the tenant-branded sign-in and the public landing page are two faces of one front door. Today visitors who aren't signed in go straight to `/auth/signin`.
+      2026-10-30, B-164 scope: branding stops short of the company's own web address; that address belongs here, with hosting.
 - [ ] **B-053** Complete the production evidence storage gate · Performance · 2026-10-08
       The tenant retention setting and app-side expiry are implemented under B-056. Production use remains gated until a private shared object store is selected, backup/restore is tested, and malware scanning is in place. Provider selection is still undecided. See [plan](plans/B-053-performance-evidence-storage.md).
-- [ ] **B-146** Celebrations: birthdays and work anniversaries on Home (BambooHR-style life), once B-127 stores dates of birth; decide who sees a birthday (day and month only) · Shell, Core HR · 2026-10-28
-      User 2026-10-30: lowest priority.

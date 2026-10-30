@@ -26,6 +26,7 @@
 - [Icon set: Hugeicons](icon-set-hugeicons.md) — Performance + Platform icons via `src/lib/icons.tsx` adapters (lint-guarded); core/shell/DS chrome still Lucide.
 - [No side-stripe accents](no-side-stripe-accents.md) — coloured left-border status edges read as vibecoded to the user (B-083).
 - [Refine the liked version, don't redraw](vibecode-tells-tinted-hero-cards.md) — B-166 Home went downhill through 4 redraws; "could be nicer" = polish; steppers and tinted hero cards read vibe-coded.
+- [Beyond primitives](bespoke-ui-beyond-primitives.md) — crafted UI for specific moments, shadcn-based libraries (ReUI) allowed; front pages: visual design and wow first, offer variants.
 - [Anti-vibecode design governance](design-governance-antivibecode.md) — DESIGN.md §33 tells→rules + §34 test; motion/elevation tokens.
 - [DS preset provenance](ds-preset-provenance.md) — `@repo/ds` = shadcn preset b6GMQMg3l (zinc + yellow + amber); 5 deliberate overrides.
 - [No useEffectEvent under Next 15.5](next-bundled-react-no-useeffectevent.md) — Next's bundled React lacks it; type-check passes, page crashes; use a ref.
@@ -111,6 +112,7 @@
 - [Prefers minimal-overhead fix](prefers-minimal-overhead-fix.md) — smallest root-cause fix; hardening as a footnote.
 - [No reduced-motion gating](no-reduced-motion-gating.md) — plain animate-*, never motion-safe unless asked.
 - [No disuse cleanup on thin window](no-disuse-cleanup-thin-window.md) — don't disable tools from low usage over short windows.
+- [Explorers show only new screens](explorers-show-only-new-screens.md) — accepted screens stay in the decisions file, not redrawn; new account = new artifact link.
 - [Decide yourself, show an explorer](decide-surface-architecture-yourself.md) — product/architecture calls are mine from research + first principles; ask only on taste; present as an interactive artifact.
 - [Artifact db snapshots are frozen](artifact-db-snapshots-frozen.md) — clone `snap.data()` before using it as page state, or clicks silently do nothing.
 - [Scope with depth ladders](scope-with-depth-ladders.md) — big reworks: derive intent yourself, open long list, a 0–3 depth ladder per feature the user picks; no closed research spec.

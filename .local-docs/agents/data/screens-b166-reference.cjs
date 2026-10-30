@@ -109,6 +109,9 @@ async function as(browser, email, run) {
       await visit(page, "perf-feedback", "/performance/feedback");
       await visit(page, "perf-alignment-map", "/performance/goals", 3000);
       await visit(page, "perf-team", "/performance/team");
+      // Insights and comparison: references for Core HR's front page and reports.
+      await visit(page, "perf-overview", "/performance", 3000);
+      await visit(page, "perf-cycle", "/performance/cycle", 3000);
       await visit(page, "settings-perf", "/performance/settings");
       await visit(page, "settings-roles", "/core/settings/roles");
       await open(page, "notifications-panel", "/", 'button[aria-label^="Notifications"]', 1500);

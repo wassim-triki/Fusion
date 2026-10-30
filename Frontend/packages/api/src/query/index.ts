@@ -45,6 +45,7 @@ export { usePeoplePhotos, usePhoto } from "./usePhoto";
 export {
   useFusionNavigation,
   useMyCard,
+  useTenantSummary,
   type FusionNavigationModule,
   type FusionNavigationState,
   type UseFusionNavigationOptions,

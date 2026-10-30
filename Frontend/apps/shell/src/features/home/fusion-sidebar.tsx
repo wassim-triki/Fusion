@@ -16,6 +16,8 @@ export function FusionSidebar() {
   return (
     <FusionSidebarFrame
       tenantName={navigation.tenantName}
+      tenantLogoUrl={navigation.tenantLogoUrl}
+      brandColor={navigation.brandColor}
       homeCount={navigation.homeCount}
       modules={navigation.modules}
       activePath="/"

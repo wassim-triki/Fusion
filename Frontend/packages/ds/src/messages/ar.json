@@ -20,7 +20,8 @@
       "sections": {
         "preferences": "التفضيلات",
         "notifications": "الإشعارات",
-        "company": "الشركة",
+        "brand": "الهوية",
+        "details": "التفاصيل",
         "employee-fields": "حقول الموظفين",
         "lists": "القوائم",
         "roles": "الأدوار",

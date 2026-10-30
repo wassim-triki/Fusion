@@ -3,7 +3,8 @@
 import { use } from "react";
 import { CoreSettingsSectionHost } from "@/features/settings/section-host";
 import { ChangeHistorySettings } from "@/features/settings/sections/change-history";
-import { CompanySettings } from "@/features/settings/sections/company";
+import { BrandSettings } from "@/features/settings/sections/brand";
+import { DetailsSettings } from "@/features/settings/sections/details";
 import { EmployeeFieldsSettings } from "@/features/settings/sections/employee-fields";
 import { InvitationsSettings } from "@/features/settings/sections/invitations";
 import { ListsSettings } from "@/features/settings/sections/lists";
@@ -18,8 +19,10 @@ export default function SettingsSectionPage({ params }: { params: Promise<{ sect
       id={id}
       render={(section) => {
         switch (section.id) {
-          case "company":
-            return <CompanySettings section={section} />;
+          case "brand":
+            return <BrandSettings section={section} />;
+          case "details":
+            return <DetailsSettings section={section} />;
           case "employee-fields":
             return <EmployeeFieldsSettings section={section} />;
           case "lists":

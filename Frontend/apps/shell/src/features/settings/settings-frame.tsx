@@ -25,6 +25,8 @@ function SettingsSidebar() {
       mode="settings"
       settings={{ back, groups: settings.groups }}
       tenantName={platformAdministrator ? "Platform" : navigation.tenantName}
+      tenantLogoUrl={platformAdministrator ? null : navigation.tenantLogoUrl}
+      brandColor={platformAdministrator ? undefined : navigation.brandColor}
       modules={navigation.modules}
       activePath={pathname}
       person={{

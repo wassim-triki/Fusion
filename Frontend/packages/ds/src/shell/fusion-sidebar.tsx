@@ -31,6 +31,7 @@ import {
   TriangleAlert,
   type LucideIcon,
 } from "lucide-react";
+import { useCompanyColor } from "../brand/use-company-color";
 import { cn } from "../lib/utils";
 import {
   DropdownMenu,
@@ -140,7 +141,15 @@ function rowClass(active: boolean, collapsed: boolean, disabled = false) {
 }
 
 const BRAND_MARK =
-  "grid size-9 shrink-0 place-items-center rounded-detail bg-primary text-base font-bold text-primary-foreground";
+  "grid size-9 shrink-0 place-items-center overflow-hidden rounded-detail bg-primary text-base font-bold text-primary-foreground";
+
+/** The company's logo, else its initial on its colour; Fusion's F before the company is known. */
+function CompanyMark({ name, logoUrl }: { name?: string | null; logoUrl?: string | null }) {
+  if (logoUrl) {
+    return <img src={logoUrl} alt="" className="size-full bg-card object-contain" />;
+  }
+  return <>{name?.trim().charAt(0).toUpperCase() || "F"}</>;
+}
 
 function ActiveMark({ active }: { active: boolean }) {
   return active ? <span className="absolute top-1/2 inset-s-0 h-5 w-0.5 -translate-y-1/2 rounded-full bg-primary" /> : null;
@@ -174,6 +183,8 @@ export function FusionSidebar({
   mode = "module",
   settings,
   tenantName,
+  tenantLogoUrl,
+  brandColor,
   homeCount,
   modules,
   currentModuleKey,
@@ -188,6 +199,7 @@ export function FusionSidebar({
   const t = useTranslations("ds.sidebar");
   const locale = useLocale();
   const [collapsed, setCollapsed] = useState(false);
+  useCompanyColor(brandColor);
   const describeModule = (module: FusionSidebarModule) => {
     const key = `moduleDescriptions.${module.key}` as Parameters<typeof t>[0];
     return t.has(key) ? t(key) : module.description;
@@ -270,30 +282,30 @@ export function FusionSidebar({
           collapsed ? "w-[68px]" : "w-[264px]",
         )}
       >
-        {/* Brand: Fusion and the tenant */}
+        {/* Brand: the company's logo and name */}
         <div className={cn("flex items-center gap-2.5 px-4 pt-4 pb-3", collapsed && "justify-center px-0")}>
           {collapsed ? (
             withTooltip(
               true,
               t("expand"),
               <button type="button" onClick={() => setCollapsed(false)} aria-label={t("expand")} className={BRAND_MARK}>
-                F
+                <CompanyMark name={tenantName} logoUrl={tenantLogoUrl} />
               </button>,
             )
           ) : (
             <span aria-hidden className={BRAND_MARK}>
-              F
+              <CompanyMark name={tenantName} logoUrl={tenantLogoUrl} />
             </span>
           )}
           {!collapsed ? (
             <>
               <span className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-sm font-semibold leading-tight">EY Fusion</span>
                 {tenantName ? (
-                  <span className="truncate text-xs text-muted-foreground">{tenantName}</span>
+                  <span className="truncate text-sm font-semibold leading-tight">{tenantName}</span>
                 ) : (
-                  <Skeleton className="mt-1 h-2.5 w-28" />
+                  <Skeleton className="h-3 w-28" />
                 )}
+                <span className="truncate text-xs text-muted-foreground">Fusion</span>
               </span>
               <button
                 type="button"

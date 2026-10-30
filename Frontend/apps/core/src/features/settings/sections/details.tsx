@@ -3,13 +3,10 @@
 import { useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
-  createFusionNavigationApi,
-  createPlatformApiClient,
-  fusionNavigationQueryKeys,
   visibleFusionModules,
   type FusionSettingsSection,
 } from "@repo/api";
-import { useApiQuery } from "@repo/api/query";
+import { useTenantSummary } from "@repo/api/query";
 import { useFusionViewer } from "@repo/api/react";
 import {
   FUSION_MODULE_ICONS,
@@ -49,21 +46,16 @@ export function timeZoneLabel(timeZone: string, now: Date = new Date(), language
 }
 
 /**
- * Settings › Company: the tenant's facts as text, set when it joined Fusion and changed by the Fusion provider, and
- * the modules that are on. Nothing here is editable.
+ * Settings › Details: the company's facts set when it joined Fusion and changed by the Fusion provider (workspace,
+ * industry, time zone), and the modules that are on. Nothing here is editable; the name and language are in Brand.
  */
-export function CompanySettings({ section }: { section: FusionSettingsSection }) {
-  const t = useTranslations("settings.company");
+export function DetailsSettings({ section }: { section: FusionSettingsSection }) {
+  const t = useTranslations("settings.details");
   const describe = useTranslations("ds.sidebar.moduleDescriptions");
   const locale = useLocale();
   const title = useSettingsSectionName()(section);
   const { viewer } = useFusionViewer();
-  const api = useMemo(() => createFusionNavigationApi(createPlatformApiClient()), []);
-  const tenant = useApiQuery(
-    [...fusionNavigationQueryKeys.tenant(viewer?.tenantId ?? "none"), "facts"],
-    (signal) => api.getTenant(signal),
-    { enabled: Boolean(viewer?.tenantId) }
-  );
+  const tenant = useTenantSummary();
   const modules = useMemo(
     () => visibleFusionModules(viewer).filter((module) => module.entitlement),
     [viewer]
@@ -87,9 +79,6 @@ export function CompanySettings({ section }: { section: FusionSettingsSection })
       {facts ? (
         <>
           <SettingsRows>
-            <SettingsRow label={t("name")}>
-              <SettingsValue>{facts.name}</SettingsValue>
-            </SettingsRow>
             {facts.slug ? (
               <SettingsRow label={t("workspace")}>
                 <SettingsValue className="type-code">{facts.slug}</SettingsValue>
@@ -98,11 +87,6 @@ export function CompanySettings({ section }: { section: FusionSettingsSection })
             {facts.industry ? (
               <SettingsRow label={t("industry")}>
                 <SettingsValue>{facts.industry}</SettingsValue>
-              </SettingsRow>
-            ) : null}
-            {facts.locale ? (
-              <SettingsRow label={t("language")} description={t("languageDetail")}>
-                <SettingsValue>{languageName(facts.locale, locale)}</SettingsValue>
               </SettingsRow>
             ) : null}
             {facts.timeZone ? (

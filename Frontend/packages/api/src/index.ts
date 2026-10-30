@@ -39,4 +39,5 @@ export * from "./performance-reviews";
 export * from "./fusion-attention";
 export * from "./fusion-feed";
 export * from "./fusion-navigation";
+export * from "./company-brand";
 export * from "./fusion-settings";

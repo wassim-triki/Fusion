@@ -2,7 +2,8 @@ import { useSettingsSectionName } from "@repo/ds/shell";
 
 /** Core HR's sections in Fusion Settings, in order (the server decides which a person sees). */
 export const CORE_SETTINGS_SECTIONS = [
-  { id: "company", label: "Company" },
+  { id: "brand", label: "Brand" },
+  { id: "details", label: "Details" },
   { id: "employee-fields", label: "Employee fields" },
   { id: "lists", label: "Lists" },
   { id: "roles", label: "Roles" },
@@ -25,7 +26,7 @@ export function useCoreSettingsLabel(): (id: string) => string {
 
 /** The settings section an audit entry belongs to, by the audit's own section id. */
 export const AUDIT_SECTION_IDS: Record<string, CoreSettingsSectionId> = {
-  organization: "company",
+  organization: "details",
   "people-data": "employee-fields",
   lists: "lists",
   provisioning: "invitations",

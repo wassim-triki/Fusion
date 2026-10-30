@@ -53,7 +53,7 @@ describe("FusionSidebar", () => {
   it("inside a module: tenant, Home first, the switcher naming the module, its sections and the person", () => {
     renderSidebar();
     const nav = screen.getByRole("complementary", { name: "Fusion navigation" });
-    expect(within(nav).getByText("EY Fusion")).toBeInTheDocument();
+    expect(within(nav).getByText("Fusion")).toBeInTheDocument();
     expect(within(nav).getByText("Carthage Digital Group")).toBeInTheDocument();
     const links = within(nav).getAllByRole("link");
     expect(links[0]).toHaveAttribute("href", "/");

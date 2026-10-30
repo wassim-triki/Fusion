@@ -16,7 +16,8 @@
       "sso": "Sign in with SSO",
       "agreement": "By signing in, you agree to our <terms>Terms</terms> and <privacy>Privacy Policy</privacy>.",
       "invalidCredentials": "Invalid credentials.",
-      "failed": "Login failed. Please try again."
+      "failed": "Login failed. Please try again.",
+      "to": "to {company}"
     }
   }
 }

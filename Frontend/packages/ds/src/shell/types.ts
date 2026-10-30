@@ -132,6 +132,10 @@ export interface FusionSidebarProps {
   /** Required in settings mode. */
   settings?: FusionSidebarSettings;
   tenantName?: string | null;
+  /** The company's logo address; the company's initial shows without one. */
+  tenantLogoUrl?: string | null;
+  /** The company's colour, applied to every screen; undefined leaves the page's colour as it is. */
+  brandColor?: string | null;
   /** All of the person's waiting work; absent until a module answers. */
   homeCount?: number;
   /** The modules the person can enter, in sidebar order. */

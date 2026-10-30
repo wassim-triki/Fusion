@@ -54,6 +54,8 @@ function SidebarFrame({ sections, pending }: { sections: ShellNavSection[]; pend
       mode={inSettings ? "settings" : "module"}
       settings={inSettings ? { back, groups: settings.groups } : undefined}
       tenantName={navigation.tenantName}
+      tenantLogoUrl={navigation.tenantLogoUrl}
+      brandColor={navigation.brandColor}
       homeCount={navigation.homeCount}
       modules={navigation.modules}
       currentModuleKey="performance"

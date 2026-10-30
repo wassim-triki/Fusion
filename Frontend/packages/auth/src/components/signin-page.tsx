@@ -29,6 +29,10 @@ import {
   type OrganizationReadinessSignal,
 } from "../routing";
 import { fetchOrganizationReadySignal } from "../organization-ready-landing";
+import { useSignInBrand } from "../sign-in-brand";
+import { persistLanguageCookie } from "@repo/api";
+import { LanguageMenu } from "@repo/ds/shell";
+import { isLocale } from "@repo/i18n/config";
 
 export interface SignInPageProps {
   /** Called after successful login or when already authenticated. Defaults to callbackUrl/next or "/" */
@@ -72,6 +76,7 @@ export function SignInPage({
   const searchParams = useSearchParams();
   const { login, user, isLoading: authLoading, isAuthenticated } = useAuth();
   const intended = intendedDestination(searchParams);
+  const brand = useSignInBrand(searchParams.get("company"), locale);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -136,26 +141,25 @@ export function SignInPage({
   };
 
   return (
-    <div lang={locale} className="dark relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-10 text-foreground">
-      {/* Ambient brand glow — quiet, token-driven, never competes with the card. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-40 left-1/2 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-primary/10 blur-[120px]"
-      />
-
-      <div className="relative w-full max-w-[26rem]">
-        <div className="rounded-surface border border-border bg-card px-8 py-9 shadow-overlay">
-          <div className="flex flex-col items-center gap-6">
-            <Wordmark />
-
-            <div className="flex flex-col items-center gap-1 text-center">
-              <h1 className="type-page-title text-card-foreground">{t("title")}</h1>
-              <p className="type-body text-muted-foreground">
-                {t("subtitle")}
-              </p>
-            </div>
-          </div>
-
+    <SignInFrame
+      brand={brand.value}
+      pending={brand.pending}
+      language={
+        <LanguageMenu
+          value={isLocale(locale) ? locale : "en"}
+          onChange={(next) => {
+            persistLanguageCookie(next);
+            window.location.reload();
+          }}
+        />
+      }
+    >
+      <div className="flex flex-col gap-1">
+        <h1 className="type-page-title text-foreground">{t("title")}</h1>
+        <p className="type-body text-muted-foreground">
+          {brand.value ? t("to", { company: brand.value.name }) : t("subtitle")}
+        </p>
+      </div>
           <form onSubmit={handleSubmit} className="mt-8">
             <FieldGroup>
               {errors.length > 0 && (
@@ -273,36 +277,94 @@ export function SignInPage({
               </Button>
             </FieldGroup>
           </form>
-        </div>
+      <p className="mt-6 type-meta text-muted-foreground">
+        {t.rich("agreement", {
+          terms: (chunks) => (
+            <a href="#" className="text-primary-ink hover:underline">
+              {chunks}
+            </a>
+          ),
+          privacy: (chunks) => (
+            <a href="#" className="text-primary-ink hover:underline">
+              {chunks}
+            </a>
+          ),
+        })}
+      </p>
+    </SignInFrame>
+  );
+}
 
-        <p className="mt-6 px-6 text-center type-meta text-muted-foreground">
-          {t.rich("agreement", {
-            terms: (chunks) => (
-              <a href="#" className="text-primary hover:underline">
-                {chunks}
-              </a>
-            ),
-            privacy: (chunks) => (
-              <a href="#" className="text-primary hover:underline">
-                {chunks}
-              </a>
-            ),
-          })}
-        </p>
-      </div>
+/** The company a sign-in page carries, as far as it is known. */
+export interface SignInBrand {
+  name: string;
+  logoUrl: string | null;
+}
+
+/**
+ * Sign-in's frame (D-02): the company's side (logo and name, in a wash of its colour) beside the form; Fusion's own
+ * side when no company is named. Forced dark like every page before sign-in. The brand studio previews this frame.
+ */
+export function SignInFrame({
+  brand,
+  pending = false,
+  language,
+  className,
+  children,
+}: {
+  brand: SignInBrand | null;
+  pending?: boolean;
+  language?: React.ReactNode;
+  /** The studio's preview sizes the frame to its own box instead of the screen. */
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={`dark grid bg-background text-foreground lg:grid-cols-2 ${className ?? "min-h-screen"}`}>
+      <aside className="hidden flex-col justify-between bg-[color-mix(in_oklab,var(--primary)_16%,var(--section))] px-16 py-14 lg:flex">
+        <div className="flex flex-col gap-7">
+          {pending ? (
+            <>
+              <span className="size-[84px] animate-pulse rounded-surface bg-inlay" />
+              <span className="h-12 w-80 animate-pulse rounded-control bg-inlay" />
+            </>
+          ) : brand ? (
+            <>
+              <BrandLogo name={brand.name} logoUrl={brand.logoUrl} />
+              <h2 className="max-w-[32rem] font-editorial text-5xl font-medium leading-[1.1] tracking-tight">{brand.name}</h2>
+            </>
+          ) : (
+            <Wordmark />
+          )}
+        </div>
+        <p className="type-meta text-muted-foreground">Fusion</p>
+      </aside>
+      <main className="relative flex items-center justify-center px-6 py-16">
+        {language ? <div className="absolute end-8 top-8">{language}</div> : null}
+        <div className="w-full max-w-[26rem]">{children}</div>
+      </main>
     </div>
+  );
+}
+
+function BrandLogo({ name, logoUrl }: SignInBrand) {
+  if (logoUrl) {
+    return <img src={logoUrl} alt="" className="size-[84px] rounded-surface bg-card object-contain" />;
+  }
+  return (
+    <span className="grid size-[84px] place-items-center rounded-surface bg-primary font-heading text-4xl font-bold text-primary-foreground">
+      {name.trim().charAt(0).toUpperCase()}
+    </span>
   );
 }
 
 function Wordmark() {
   return (
-    <div className="flex items-center gap-2.5">
-      <span className="grid size-9 place-items-center rounded-control bg-primary font-heading text-lg font-bold text-primary-foreground">
+    <div className="flex flex-col gap-7">
+      <span className="grid size-[84px] place-items-center rounded-surface bg-primary font-heading text-4xl font-bold text-primary-foreground">
         F
       </span>
-      <span className="type-section-title text-xl text-card-foreground">
-        Fusion
-      </span>
+      <h2 className="font-editorial text-5xl font-medium leading-[1.1] tracking-tight">Fusion</h2>
     </div>
   );
 }

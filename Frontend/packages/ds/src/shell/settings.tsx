@@ -161,15 +161,17 @@ export interface SettingsPageProps {
   aside?: ReactNode;
   /** Roles: a list beside the role it opens needs 960px. */
   wide?: boolean;
+  /** Brand: the controls beside a live preview need the full width. */
+  studio?: boolean;
   /** Values still loading: the title shows, the rows wait. */
   loading?: boolean;
   children?: ReactNode;
 }
 
 /** One settings section: title, last change, then its blocks. The frame and title render before the values. */
-export function SettingsPage({ title, lastChange, setUpAt, note, viewOnly, aside, wide, loading, children }: SettingsPageProps) {
+export function SettingsPage({ title, lastChange, setUpAt, note, viewOnly, aside, wide, studio, loading, children }: SettingsPageProps) {
   return (
-    <div className={cn("mx-auto w-full px-6 pt-10 pb-16", wide ? "max-w-[960px]" : "max-w-[760px]")}>
+    <div className={cn("mx-auto w-full px-6 pt-10 pb-16", studio ? "max-w-[1240px]" : wide ? "max-w-[960px]" : "max-w-[760px]")}>
       <header className="mb-8 flex items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-2">
           <h1 className="type-page-title">{title}</h1>

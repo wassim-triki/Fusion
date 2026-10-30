@@ -20,7 +20,8 @@
       "sections": {
         "preferences": "Préférences",
         "notifications": "Notifications",
-        "company": "Entreprise",
+        "brand": "Marque",
+        "details": "Détails",
         "employee-fields": "Champs collaborateur",
         "lists": "Listes",
         "roles": "Rôles",

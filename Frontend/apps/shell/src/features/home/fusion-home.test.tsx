@@ -135,7 +135,7 @@ describe("FusionHome", () => {
     };
     render(<FusionHome />);
     expect(screen.getByRole("heading", { level: 1 }).textContent).toMatch(/, Nour$/);
-    expect(screen.getByText("EY Fusion")).toBeTruthy();
+    expect(screen.getByText("Fusion")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Notifications" })).toBeTruthy();
     expect(screen.getByRole("heading", { level: 2, name: "Complete your self-assessment" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Also needs you" })).toBeTruthy();

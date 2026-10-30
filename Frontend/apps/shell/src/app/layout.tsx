@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { directionOf } from "@repo/ds/i18n";
+import { BRAND_COOKIE, BrandStyle } from "@repo/ds/brand";
+import { cookies } from "next/headers";
 import "./globals.css";
 import { PageProgressBar } from "../components/page-progress-bar";
 import { Providers } from "./providers";
@@ -25,10 +27,13 @@ export default async function RootLayout({
   // before sign-in). Every shell screen speaks it, so the page does too.
   const locale = await getLocale();
   const dir = directionOf(locale);
+  // The company colour this browser last saw, so the page opens in it; the sidebar keeps it current.
+  const brandColor = (await cookies()).get(BRAND_COOKIE)?.value;
   return (
     // next-themes sets the appearance class on <html> before hydration (Settings › Preferences).
     <html lang={locale} dir={dir} suppressHydrationWarning>
       <body className="min-h-screen bg-background text-foreground font-sans antialiased">
+        <BrandStyle cookie={brandColor} />
         <Suspense fallback={null}>
           <PageProgressBar />
         </Suspense>

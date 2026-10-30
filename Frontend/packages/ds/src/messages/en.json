@@ -20,7 +20,8 @@
       "sections": {
         "preferences": "Preferences",
         "notifications": "Notifications",
-        "company": "Company",
+        "brand": "Brand",
+        "details": "Details",
         "employee-fields": "Employee fields",
         "lists": "Lists",
         "roles": "Roles",

@@ -205,7 +205,7 @@ export interface CoreMeCardDto {
   photoUrl: string | null;
 }
 
-/** The caller's own tenant, from Identity: the sidebar's brand line and Settings › Company's facts. */
+/** The caller's own tenant, from Identity: the sidebar's brand line, the brand studio and Settings › Details. */
 export interface FusionTenantSummaryDto {
   tenantId: string;
   name: string;
@@ -213,6 +213,12 @@ export interface FusionTenantSummaryDto {
   industry?: string | null;
   locale?: string;
   timeZone?: string;
+  /** The company's colour (`#rrggbb`); null keeps Fusion's own. */
+  brandColor?: string | null;
+  /** API-relative logo address with its version; null without a logo. */
+  logoUrl?: string | null;
+  /** The company's default language: en, fr or ar. */
+  language?: string;
 }
 
 export const fusionNavigationPaths = {

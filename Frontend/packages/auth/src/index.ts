@@ -101,7 +101,7 @@ export {
   SidebarUserPanel,
   getSidebarAccountLabel,
 } from "./components/sidebar-user-panel";
-export { SignInPage } from "./components/signin-page";
+export { SignInFrame, SignInPage, type SignInBrand } from "./components/signin-page";
 export type { SignInPageProps } from "./components/signin-page";
 export { SignUpPage } from "./components/signup-page";
 export type { SignUpPageProps } from "./components/signup-page";

@@ -19,7 +19,7 @@
 - [Radius role system](radius-role-system.md) — radii are roles (squircle tier surface 28/control 18/menu/inset/nested/detail/full), ChatGPT-fitted, lint-guarded.
 - [Surface tone ladder](surface-tone-ladder.md) — containers lift per level: canvas → `bg-section` → `bg-card` → `bg-inlay` (overlays `bg-popover`); no translucent fills at rest; `@repo/eslint-config/design-roles`.
 - [Document + sidebar layout](layout-document-sidebar.md) — frame objects not columns; unframed sticky sidebar; no height-matching/filler; actions in header; Plan pages done, sweep pending.
-- [Friendly, not enterprise](design-friendly-not-enterprise.md) — BambooHR-like warmth, alive, self-explanatory; pre-October designs aren't references; read `plans/B-166-design-direction.md` first; style frame before big generations.
+- [Friendly, not enterprise](design-friendly-not-enterprise.md) — BambooHR-like warmth, alive, self-explanatory; pre-October designs aren't references; read `plans/B-164-design-direction.md` first; style frame before big generations.
 - [Person pages: lively, not document](person-pages-lively-not-document.md) — band grammar (big photo, glance row, tabs in band, left rail) accepted at B-166 3a and carried to Home; document layout reads newspaper-like.
 - [Layout from first principles](layout-from-first-principles.md) — sidebar isn't mandatory; pick the layout that conveys the screen's job (single column, full width, new).
 - [Data table kit](data-table-kit.md) — `@repo/ds/data-table` on TanStack v9: useDataTable + DataTable/Search/Views/FacetFilter/Pagination; adoption follow-ups.

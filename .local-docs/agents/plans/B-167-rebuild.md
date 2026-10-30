@@ -1,6 +1,6 @@
 # B-167 — The rebuild, in slices
 
-**Status:** Proposed 2026-10-30, waiting on the user's go before slice 1. Authority: `plans/B-166-decisions.md` (D-01–D-30), then the brief's §6b (scope), `DESIGN.md`, and the map (§4–§6) as evidence of what exists.
+**Status:** Proposed 2026-10-30, waiting on the user's go before slice 1. Authority: `plans/B-164-decisions.md` (D-01–D-30), then the brief's §6b (scope), `DESIGN.md`, and the map (§4–§6) as evidence of what exists.
 
 ## Rules for every slice
 

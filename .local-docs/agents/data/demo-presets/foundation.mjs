@@ -6,6 +6,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { FileBlob, SpreadsheetFile } from "@oai/artifact-tool";
 import { BASE, MAILPIT, PASSWORD, as, send, sleep, Refused } from "./client.mjs";
+import { groupJobs } from "./jobs.mjs";
 
 export const PLATFORM_ADMIN = "admin@ey-hr.com";
 
@@ -232,6 +233,7 @@ export async function buildFoundation({ name, domain, asOf, work, log, people = 
     await sleep(1000);
   }
   log(`workforce published (${people.length} people)`);
+  await groupJobs(amira, log);
 
   const subjects = [];
   for (let page = 1; ; page++) {

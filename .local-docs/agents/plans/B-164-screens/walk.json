@@ -1,0 +1,2921 @@
+{
+  "empty_meta": {
+    "tenantId": "9f42364e-bc7f-4d8b-b696-588b21369a54",
+    "email": "amira.khelifi@map-empty-202610300224.example.test",
+    "subject": "Set up your Fusion administrator account for Map · Empty 202610300224",
+    "link": "http://localhost:3000/activate-invitation?credential=…"
+  },
+  "empty-00-activation": {
+    "url": "/activate-invitation?credential=…",
+    "landed": "/activate-invitation?credential=…",
+    "ms": 11780,
+    "title": "Create administrator account - Fusion",
+    "headings": [
+      "Join Map · Empty 202610300224",
+      "Set up your account"
+    ],
+    "sidebar": [],
+    "actions": [
+      "Set up account"
+    ],
+    "tabs": [],
+    "body": "F Fusion YOU'RE INVITED Join Map · Empty 202610300224 You've been invited to set up your Fusion account and get started with Map · Empty 202610300224. ORGANIZATION Map · Empty 202610300224 ASSIGNED ROLE Tenant Administrator INVITATION SENT TO amira.khelifi@map-empty-202610300224.example.test This invitation is secure and tied to the invited email address. Only the intended recipient can use this link. PEOPLE WORK TOGETHER Set up your account Accept your invitation from Map · Empty 202610300224 to create your Fusion account. First name Last name Work email READ ONLY Create password 10 characters or more — not yet met A letter — not yet met A number — not yet met Confirm password Set up account Already have a Fusion account? Sign in to continue"
+  },
+  "empty-02-after-activation": {
+    "landed": "/getting-started",
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Welcome, Map · Empty 202610300224",
+      "Set up your organization",
+      "Tenant foundation",
+      "Administrator access",
+      "Organization",
+      "Workforce",
+      "Workforce access",
+      "Administration & configuration",
+      "Administrator continuity",
+      "Tenant configuration"
+    ],
+    "sidebar": [
+      "Home 2",
+      "Core HR",
+      "Overview",
+      "People 1",
+      "Org chart",
+      "Organization 1",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "TENANT SETUP Welcome, Map · Empty 202610300224 Your tenant is ready. Start building the foundation your organization will use. FOUNDATION 1 / 4 ready RECOMMENDED NEXT STEP Set up your organization Define the structure your workforce and future HR processes will build on. Open Organization Tenant foundation 1 of 4 ready Administrator access Manage who can administer this tenant. Organization Define the structure your workforce and future HR processes will build on. Open Organization Workforce Add and manage the people who work in this tenant. Available after organization setup Workforce access Connect workforce identities to Fusion accounts and access. Available after workforce setup Administration & configuration Administrator continuity At risk 1 active administrator Manage access Tenant configuration Set tenant identity, regional, communication, and experience defaults. Not available in this build"
+  },
+  "empty-home": {
+    "url": "/",
+    "landed": "/getting-started",
+    "ms": 68345,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Welcome, Map · Empty 202610300224",
+      "Set up your organization",
+      "Tenant foundation",
+      "Administrator access",
+      "Organization",
+      "Workforce",
+      "Workforce access",
+      "Administration & configuration",
+      "Administrator continuity",
+      "Tenant configuration"
+    ],
+    "sidebar": [
+      "Home 2",
+      "Core HR",
+      "Overview",
+      "People 1",
+      "Org chart",
+      "Organization 1",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "TENANT SETUP Welcome, Map · Empty 202610300224 Your tenant is ready. Start building the foundation your organization will use. FOUNDATION 1 / 4 ready RECOMMENDED NEXT STEP Set up your organization Define the structure your workforce and future HR processes will build on. Open Organization Tenant foundation 1 of 4 ready Administrator access Manage who can administer this tenant. Organization Define the structure your workforce and future HR processes will build on. Open Organization Workforce Add and manage the people who work in this tenant. Available after organization setup Workforce access Connect workforce identities to Fusion accounts and access. Available after workforce setup Administration & configuration Administrator continuity At risk 1 active administrator Manage access Tenant configuration Set tenant identity, regional, communication, and experience defaults. Not available in this build"
+  },
+  "empty-core-overview": {
+    "url": "/core",
+    "landed": "/core",
+    "ms": 67767,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Dashboard",
+      "Headcount by department",
+      "Composition",
+      "Hiring trend",
+      "Tenure",
+      "People needing attention",
+      "Upcoming anniversaries",
+      "Recent hires",
+      "Quick actions"
+    ],
+    "sidebar": [
+      "Home 2",
+      "Core HR",
+      "Overview",
+      "People 1",
+      "Org chart",
+      "Organization 1",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Dashboard Workforce health and the work that needs your attention. ACTIVE HEADCOUNT 0 0 total · 0 inactive WORKFORCE READINESS 0% 0 of 0 records ready NEEDS ATTENTION 0 All records healthy NEW HIRES (90D) 0 0 managers Headcount by department Where your people sit across the organization. Organization No org units assigned yet. Composition Active vs inactive headcount. 0 PEOPLE Active 0 Inactive 0 Records ready 0% Hiring trend New hires over the last 12 months. Nov Dec Jan Feb Mar Apr May Jun Jul Aug Sept Oct 0 1 2 3 4 Tenure How long people have been here. < 1 yr 1–3 yrs 3–5 yrs 5+ yrs People needing attention Records with blocking or data-quality issues — resolve to keep the workforce trustworthy. Review all Every workforce record is complete and healthy. Upcoming anniversaries Work anniversaries in the next 45 days. No anniversaries in the next 45 days. Recent hires Newest people joining the workforce. All employees No recent hires yet. Quick actions Add employee Manage access Open organization Getting started"
+  },
+  "empty-core-getting-started": {
+    "url": "/core/getting-started",
+    "landed": "/core/getting-started",
+    "ms": 64791,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Welcome, Map · Empty 202610300224",
+      "Set up your organization",
+      "Tenant foundation",
+      "Administrator access",
+      "Organization",
+      "Workforce",
+      "Workforce access",
+      "Administration & configuration",
+      "Administrator continuity",
+      "Tenant configuration"
+    ],
+    "sidebar": [
+      "Home 2",
+      "Core HR",
+      "Overview",
+      "People 1",
+      "Org chart",
+      "Organization 1",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "TENANT SETUP Welcome, Map · Empty 202610300224 Your tenant is ready. Start building the foundation your organization will use. FOUNDATION 1 / 4 ready RECOMMENDED NEXT STEP Set up your organization Define the structure your workforce and future HR processes will build on. Open Organization Tenant foundation 1 of 4 ready Administrator access Manage who can administer this tenant. Organization Define the structure your workforce and future HR processes will build on. Open Organization Workforce Add and manage the people who work in this tenant. Available after organization setup Workforce access Connect workforce identities to Fusion accounts and access. Available after workforce setup Administration & configuration Administrator continuity At risk 1 active administrator Manage access Tenant configuration Set tenant identity, regional, communication, and experience defaults. Not available in this build"
+  },
+  "empty-core-organization": {
+    "url": "/core/organization",
+    "landed": "/core/organization",
+    "ms": 70455,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Organization",
+      "Give the official hierarchy its anchor."
+    ],
+    "sidebar": [
+      "Home 2",
+      "Core HR",
+      "Overview",
+      "People 1",
+      "Org chart",
+      "Organization 1",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [
+      "Structure",
+      "Create organization"
+    ],
+    "tabs": [],
+    "body": "Organization Define how your organization is structured. Structure Start your organization structure Give the official hierarchy its anchor. This is the top level of your organization; everything else lives beneath it. Import an existing structure Name Business code Editable until the root becomes effective. Type Organization System-defined Effective date Effective Today Create organization"
+  },
+  "empty-core-people": {
+    "url": "/core/people",
+    "landed": "/core/people",
+    "ms": 67821,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "People",
+      "Bring your people into Fusion"
+    ],
+    "sidebar": [
+      "Home 2",
+      "Core HR",
+      "Overview",
+      "People 1",
+      "Org chart",
+      "Organization 1",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [
+      "Add employee",
+      "All organizations"
+    ],
+    "tabs": [],
+    "body": "People Import Add employee All states Active Scheduled Former Incomplete All organizations Sort Name A–Z Name Z–A Employee Number Newest start EMPLOYEE WORK MANAGER EMPLOYMENT ESTABLISH YOUR WORKFORCE Bring your people into Fusion Import workforce Add existing employee Hire employee"
+  },
+  "empty-core-people-hire": {
+    "url": "/core/people/hire",
+    "landed": "/core/people/hire",
+    "ms": 66883,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Hire employee",
+      "EMPLOYEE",
+      "EMPLOYMENT",
+      "WORK",
+      "REPORTING"
+    ],
+    "sidebar": [
+      "Home 2",
+      "Core HR",
+      "Overview",
+      "People 1",
+      "Org chart",
+      "Organization 1",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [
+      "Generate automatically",
+      "Enter manually",
+      "Additional details",
+      "Select organization",
+      "No manager",
+      "Assign a manager",
+      "Review hire"
+    ],
+    "tabs": [],
+    "body": "People NEW HIRE Hire employee EMPLOYEE First name Last name Preferred name Optional Work email Optional Employee Number Generate automatically Enter manually Additional details EMPLOYMENT Start date WORK Organization Select organization Display title Location Optional REPORTING No manager Assign a manager Review hire RESULTING EMPLOYEE EMPLOYEE Add a name to begin EMPLOYMENT Active Starts 30 Oct 2026 WORK Display title Organization not set REPORTING No manager"
+  },
+  "empty-core-people-import": {
+    "url": "/core/people/import",
+    "landed": "/core/people/import",
+    "ms": 72265,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Import workforce",
+      "File and workforce date"
+    ],
+    "sidebar": [
+      "Home 2",
+      "Core HR",
+      "Overview",
+      "People 1",
+      "Org chart",
+      "Organization 1",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [
+      "Choose file",
+      "30 Oct 2026",
+      "Start import",
+      "Download"
+    ],
+    "tabs": [],
+    "body": "Import workforce Bring in your people from Excel or CSV and review them before publishing. 1 Upload 2 Match 3 Review File and workforce date Select your workforce file and the date it describes. Drop your workforce file here Or choose it from your computer Choose file XLSX, CSV · one sheet per import attempt Workforce as of 30 Oct 2026 Start import Cancel Download Fusion template Prefer the standard format? Start from our template. Download"
+  },
+  "empty-core-org-chart": {
+    "url": "/core/org-chart",
+    "landed": "/core/org-chart",
+    "ms": 68198,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Org chart"
+    ],
+    "sidebar": [
+      "Home 2",
+      "Core HR",
+      "Overview",
+      "People 1",
+      "Org chart",
+      "Organization 1",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Org chart No one is on the chart yet. Open People"
+  },
+  "empty-core-team": {
+    "url": "/core/team",
+    "landed": "/core/team",
+    "ms": 10401,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "My Team",
+      "No team to manage"
+    ],
+    "sidebar": [
+      "Home 2",
+      "Core HR",
+      "Overview",
+      "People 1",
+      "Org chart",
+      "Organization 1",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "My Team Direct reports. No team to manage The team workspace shows people who report to you. You don’t have any direct reports right now. Go to overview"
+  },
+  "empty-core-profile": {
+    "url": "/core/profile",
+    "landed": "/core/profile",
+    "ms": 10250,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Profile",
+      "No linked employee profile"
+    ],
+    "sidebar": [
+      "Home 2",
+      "Core HR",
+      "Overview",
+      "People 1",
+      "Org chart",
+      "Organization 1",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Profile No linked employee record. No linked employee profile Contact a tenant HR administrator to link your record."
+  },
+  "empty-core-workforce-access": {
+    "url": "/core/workforce-access",
+    "landed": "/core/workforce-access",
+    "ms": 12929,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Workforce access"
+    ],
+    "sidebar": [
+      "Home 2",
+      "Core HR",
+      "Overview",
+      "People 1",
+      "Org chart",
+      "Organization 1",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [
+      "0 All",
+      "0 Active",
+      "0 Pending",
+      "0 No access",
+      "0 Review",
+      "0 Suspended",
+      "All organizations",
+      "All",
+      "Employees",
+      "Managers"
+    ],
+    "tabs": [],
+    "body": "Workforce access Set up and manage Fusion access for 0 people. 0 All 0 Active 0 Pending 0 No access 0 Review 0 Suspended All organizations All Employees Managers No workforce to show yet. Establish or import your workforce first."
+  },
+  "empty-core-access": {
+    "url": "/core/access",
+    "landed": "/core/access",
+    "ms": 16476,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Administrators",
+      "Active administrators (1)",
+      "Pending invitations (0)",
+      "Suspended administrators (0)"
+    ],
+    "sidebar": [
+      "Home 2",
+      "Core HR",
+      "Overview",
+      "People 1",
+      "Org chart",
+      "Organization 1",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [
+      "Invite administrator",
+      "Administrators",
+      "Removed (0)",
+      "Suspend administrator Temporarily remove access. Can be reactivated.",
+      "Remove administrator authority Permanently remove administrator access.",
+      "Remove yourself You will lose administrator access immediately, including access to this page."
+    ],
+    "tabs": [
+      "Administrators",
+      "Removed (0)"
+    ],
+    "body": "TENANT ADMINISTRATION Administrators Manage who can administer this tenant. Invite, suspend, or remove administrator access. View activity log ADMINISTRATIVE CONTINUITY At risk One administrator is a single point of failure. Invite another so access can’t be lost with them. 1 Active 0 Pending 0 Suspended Invite administrator Administrators Removed (0) Active administrators (1) NAME EMAIL STATUS ADDED ON AK Amira Khelifi You amira.khelifi@map-empty-202610300224.example.test Active 30 Oct 2026 Pending invitations (0) No pending invitations Invite an administrator to see it here. Suspended administrators (0) No suspended administrators Suspended administrators will appear here. AK Amira Khelifi You Tenant Administrator ACCOUNT INFORMATION Email amira.khelifi@map-empty-202610300224.example.test Status Active Added on 30 Oct 2026 Added by System (tenant activation) RECENT ACTIVITY Administrator access established 30 Oct, 3:24 ADMINISTRATOR ACTIONS Suspend administrator Temporarily remove access. Can be reactivated. Remove administrator authority Permanently remove administrator access. Remove yourself You will lose administrator access immediately, including access to this page."
+  },
+  "empty-core-settings": {
+    "url": "/core/settings",
+    "landed": "/core/settings/company",
+    "ms": 25035,
+    "title": "Core HR — Fusion",
+    "headings": [],
+    "sidebar": [
+      "Back to Home",
+      "Preferences"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": ""
+  },
+  "empty-core-settings-company": {
+    "url": "/core/settings/company",
+    "landed": "/core/settings/company",
+    "ms": 21113,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Company",
+      "Modules 2 on"
+    ],
+    "sidebar": [
+      "Back to Core HR",
+      "Preferences",
+      "Notifications",
+      "Company",
+      "Employee fields",
+      "Roles",
+      "Invitations",
+      "Notifications",
+      "Change history",
+      "Rating scale",
+      "Competencies",
+      "Review questions",
+      "Reviews",
+      "Planning",
+      "Conversations",
+      "AI and data",
+      "Notifications",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Company Set when Map · Empty 202610300224 joined Fusion. Your Fusion provider changes these. Company name Map · Empty 202610300224 Workspace address map-empty-202610300224 Industry Technology Language and formats Dates, numbers and emails Fusion sends English (United States) Time zone Deadlines and reminders follow it Africa/Tunis · UTC+1 Modules 2 on Core HR People and organization Performance Goals, conversations and reviews"
+  },
+  "empty-core-settings-employee-fields": {
+    "url": "/core/settings/employee-fields",
+    "landed": "/core/settings/employee-fields",
+    "ms": 14972,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Employee fields",
+      "On a profile",
+      "Employees can change",
+      "Who sees the org chart"
+    ],
+    "sidebar": [
+      "Back to Core HR",
+      "Preferences",
+      "Notifications",
+      "Company",
+      "Employee fields",
+      "Roles",
+      "Invitations",
+      "Notifications",
+      "Change history",
+      "Rating scale",
+      "Competencies",
+      "Review questions",
+      "Reviews",
+      "Planning",
+      "Conversations",
+      "AI and data",
+      "Notifications",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [
+      "Everyone Everyone sees the whole company.",
+      "Managers and HR HR sees the whole company and managers their own line. Nobody else sees the chart."
+    ],
+    "tabs": [],
+    "body": "Employee fields On a profile Field Required The employee Their manager HR First name Last name Work email Hire date Phone Job title Work location Employment type Employees can change Their preferred name Their phone number Who sees the org chart Everyone Everyone sees the whole company. Managers and HR HR sees the whole company and managers their own line. Nobody else sees the chart."
+  },
+  "empty-core-settings-roles": {
+    "url": "/core/settings/roles",
+    "landed": "/core/settings/roles",
+    "ms": 7890,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Roles",
+      "Employee",
+      "Performance",
+      "Core HR"
+    ],
+    "sidebar": [
+      "Back to Core HR",
+      "Preferences",
+      "Notifications",
+      "Company",
+      "Employee fields",
+      "Roles",
+      "Invitations",
+      "Notifications",
+      "Change history",
+      "Rating scale",
+      "Competencies",
+      "Review questions",
+      "Reviews",
+      "Planning",
+      "Conversations",
+      "AI and data",
+      "Notifications",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [
+      "New role",
+      "Employee Access to own profile and self-service details. 0",
+      "HR Admin Manages workforce records, reporting lines, imports, and account activation. 0",
+      "Manager Access to own profile and direct team. 0",
+      "Org Admin Manages tenant setup, structure, settings, access profiles, and Core administration. 0",
+      "Tenant Administrator Broad administration within the tenant across its enabled Fusion modules. Grants no Platform access and no permission to change tenant entitlements. 0"
+    ],
+    "tabs": [],
+    "body": "Roles New role Built in Employee Access to own profile and self-service details. 0 HR Admin Manages workforce records, reporting lines, imports, and account activation. 0 Manager Access to own profile and direct team. 0 Org Admin Manages tenant setup, structure, settings, access profiles, and Core administration. 0 Tenant Administrator Broad administration within the tenant across its enabled Fusion modules. Grants no Platform access and no permission to change tenant entitlements. 0 Employee Access to own profile and self-service details. Nobody holds it Manage in Access Performance Cycles View Performance settings None Company objectives None Company direction None Calibration None Core HR People View Organization None Employee fields None Roles and access None Invitations None Change history None"
+  },
+  "empty-core-settings-invitations": {
+    "url": "/core/settings/invitations",
+    "landed": "/core/settings/invitations",
+    "ms": 6373,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Invitations",
+      "Inviting someone who already has an invitation"
+    ],
+    "sidebar": [
+      "Back to Core HR",
+      "Preferences",
+      "Notifications",
+      "Company",
+      "Employee fields",
+      "Roles",
+      "Invitations",
+      "Notifications",
+      "Change history",
+      "Rating scale",
+      "Competencies",
+      "Review questions",
+      "Reviews",
+      "Planning",
+      "Conversations",
+      "AI and data",
+      "Notifications",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [
+      "Send a fresh one The earlier link stops working",
+      "Keep the first one Nothing is sent again"
+    ],
+    "tabs": [],
+    "body": "Invitations Invitation expires after days People can ask for a new one after hours Role for new accounts Employee HR Admin Manager Org Admin Tenant Administrator Inviting someone who already has an invitation Send a fresh one The earlier link stops working Keep the first one Nothing is sent again"
+  },
+  "empty-core-settings-change-history": {
+    "url": "/core/settings/change-history",
+    "landed": "/core/settings/change-history",
+    "ms": 6103,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Change history"
+    ],
+    "sidebar": [
+      "Back to Core HR",
+      "Preferences",
+      "Notifications",
+      "Company",
+      "Employee fields",
+      "Roles",
+      "Invitations",
+      "Notifications",
+      "Change history",
+      "Rating scale",
+      "Competencies",
+      "Review questions",
+      "Reviews",
+      "Planning",
+      "Conversations",
+      "AI and data",
+      "Notifications",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Change history All sections Anyone No settings have changed yet."
+  },
+  "empty-settings-you": {
+    "url": "/settings",
+    "landed": "/settings",
+    "ms": 7337,
+    "title": "Fusion",
+    "headings": [
+      "Preferences",
+      "Appearance This device",
+      "Language Your account"
+    ],
+    "sidebar": [
+      "Back to Core HR",
+      "Preferences",
+      "Notifications",
+      "Company",
+      "Employee fields",
+      "Roles",
+      "Invitations",
+      "Notifications",
+      "Change history",
+      "Rating scale",
+      "Competencies",
+      "Review questions",
+      "Reviews",
+      "Planning",
+      "Conversations",
+      "AI and data",
+      "Notifications",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [
+      "Dark",
+      "Light",
+      "Match this device",
+      "English",
+      "Français",
+      "العربية"
+    ],
+    "tabs": [],
+    "body": "Preferences Appearance This device Dark Light Match this device Language Your account Language English Français العربية"
+  },
+  "empty-perf-overview": {
+    "url": "/performance",
+    "landed": "/performance",
+    "ms": 77659,
+    "title": "Performance — Fusion",
+    "headings": [
+      "Overview",
+      "Performance cycle"
+    ],
+    "sidebar": [
+      "Home 2",
+      "Performance",
+      "Overview",
+      "Feedback",
+      "Cycle",
+      "Settings",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Overview Performance cycle Cycle No performance cycle yet Set up a cycle 0 units with people in Core HR (needs a look) 0 of 0 people have a manager (ready) Rating scale and competencies (needs a look) 5 levels, 0 competencies Settings"
+  },
+  "empty-perf-plan": {
+    "url": "/performance/plan",
+    "landed": "/performance/plan",
+    "ms": 27781,
+    "title": "Performance — Fusion",
+    "headings": [
+      "You're not part of a performance cycle"
+    ],
+    "sidebar": [
+      "Home",
+      "Performance",
+      "Overview",
+      "Feedback",
+      "Cycle",
+      "Settings",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "You're not part of a performance cycle"
+  },
+  "empty-perf-team": {
+    "url": "/performance/team",
+    "landed": "/performance/team",
+    "ms": 40358,
+    "title": "Performance — Fusion",
+    "headings": [
+      "My Team"
+    ],
+    "sidebar": [
+      "Home 2",
+      "Performance",
+      "Overview",
+      "Feedback",
+      "Cycle",
+      "Settings",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "My Team No one reports to you Go to Overview"
+  },
+  "empty-perf-cycle": {
+    "url": "/performance/cycle",
+    "landed": "/performance",
+    "ms": 43676,
+    "title": "Performance — Fusion",
+    "headings": [
+      "Overview",
+      "Performance cycle"
+    ],
+    "sidebar": [
+      "Home 2",
+      "Performance",
+      "Overview",
+      "Feedback",
+      "Cycle",
+      "Settings",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Overview Performance cycle Cycle No performance cycle yet Set up a cycle 0 units with people in Core HR (needs a look) 0 of 0 people have a manager (ready) Rating scale and competencies (needs a look) 5 levels, 0 competencies Settings"
+  },
+  "empty-perf-reviews": {
+    "url": "/performance/reviews",
+    "landed": "/performance/reviews",
+    "ms": 31351,
+    "title": "Performance — Fusion",
+    "headings": [
+      "Reviews",
+      "Set up the cycle review"
+    ],
+    "sidebar": [
+      "Home 2",
+      "Performance",
+      "Overview",
+      "Feedback",
+      "Cycle",
+      "Settings",
+      "AK Amira Khelifi Tenant Administrator"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Reviews New round Set up the cycle review New round"
+  },
+  "empty-perf-settings": {
+    "url": "/performance/settings",
+    "landed": "/performance/settings/rating-scale",
+    "ms": 43854,
+    "title": "Performance — Fusion",
+    "headings": [],
+    "sidebar": [
+      "Back to Home",
+      "Preferences"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": ""
+  },
+  "mid-admin-home": {
+    "url": "/",
+    "landed": "/",
+    "ms": 15819,
+    "title": "Fusion",
+    "headings": [
+      "Good morning, Amira",
+      "Share the revised estimate with the client",
+      "Also needs you",
+      "Next two weeks",
+      "Your year",
+      "Praise"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Core HR",
+      "Performance 7",
+      "Learning",
+      "Recruitment",
+      "Onboarding",
+      "Interview",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "The incident drill was the best we have run. Clear roles, and every follow-up has an owner.",
+      "Your data pipeline fix saved the client demo. Quick, quiet and thorough."
+    ],
+    "tabs": [],
+    "body": "Good morning, Amira Friday 30 October · Chief Technology Officer, Product A Platform Performance1:1 with Mariam Gharbi Share the revised estimate with the client 10days late Due Tue 20 Oct Open the 1:1 Also needs you P 1:1 with Mariam Gharbi Not completed yet 8 days late RS Rania Sahli's objective is off track Document the team's runbooks EJ Elyes Jaziri's objective is off track Cut release lead time EJ Elyes Jaziri's objective is at risk Document the team's runbooks MG Mariam Gharbi's objective is at risk Build role-relevant technical capability MK Mouna Kooli's objective is at risk Cut release lead time Next two weeks Thu 5 Nov 11:00 1:1 with Omar Mansour Your year My Plan 39% 3 objectives 2 on track 1 at risk Last update 20 days ago Praise Give praise AB LB Aicha Bouazizi and Leila Baccouche from Salah Ben Hassine · 5 Oct The incident drill was the best we have run. Clear roles, and every follow-up has an owner. Data-Informed Decision Making SJ Sofiene Jebali from Meriem Hamrouni · 8 Sept Your data pipeline fix saved the client demo. Quick, quiet and thorough. Secure Engineering All praise"
+  },
+  "mid-admin-core-overview": {
+    "url": "/core",
+    "landed": "/core",
+    "ms": 27832,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Dashboard",
+      "Headcount by department",
+      "Composition",
+      "Hiring trend",
+      "Tenure",
+      "People needing attention",
+      "Upcoming anniversaries",
+      "Recent hires",
+      "Quick actions"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "People",
+      "Org chart",
+      "Organization",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Dashboard Workforce health and the work that needs your attention. ACTIVE HEADCOUNT 100 100 total · 0 inactive WORKFORCE READINESS 100% 100 of 100 records ready NEEDS ATTENTION 0 All records healthy NEW HIRES (90D) 0 20 managers Headcount by department Where your people sit across the organization. Organization Engineering APlatform Engineering BCore Product B Core Product BPlatform Consulting APlatform Engineering ACore Product A Core Composition Active vs inactive headcount. 100 PEOPLE Active 100 Inactive 0 Records ready 100% Hiring trend New hires over the last 12 months. Nov Dec Jan Feb Mar Apr May Jun Jul Aug Sept Oct 0 1 2 3 4 Tenure How long people have been here. < 1 yr 1–3 yrs 3–5 yrs 5+ yrs People needing attention Records with blocking or data-quality issues — resolve to keep the workforce trustworthy. Review all Every workforce record is complete and healthy. Upcoming anniversaries Work anniversaries in the next 45 days. Tarek Ayari 4 yrs · 31 Oct Moncef Gharsalli 3 yrs · 2 Nov Moez Najar 7 yrs · 4 Nov Noureddine Boussetta 6 yrs · 6 Nov Nour Ben Ali 7 yrs · 12 Nov Recent hires Newest people joining the workforce. All employees Hatem Toumi Implementation Consultant 8 Mar 2024 Sana Mokni Implementation Consultant 9 Feb 2024 Mouna Kooli Recruitment Partner 22 Jan 2024 Lotfi Bouhlel Recruitment Partner 23 Dec 2023 Hela Ben Amor Cybersecurity Manager 1 Dec 2023 Quick actions Add employee Manage access Open organization Getting started"
+  },
+  "mid-admin-core-getting-started": {
+    "url": "/core/getting-started",
+    "landed": "/core/getting-started",
+    "ms": 28978,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Getting started",
+      "Tenant foundation",
+      "Administrator access",
+      "Organization",
+      "Workforce",
+      "Workforce access",
+      "Administration & configuration",
+      "Administrator continuity",
+      "Tenant configuration"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "People",
+      "Org chart",
+      "Organization",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "TENANT SETUP Getting started Review and manage the foundation your tenant uses. FOUNDATION 4 / 4 ready Tenant foundation 4 of 4 ready Administrator access Manage who can administer this tenant. Organization Define the structure your workforce and future HR processes will build on. Organization ready Review organization Workforce Add and manage the people who work in this tenant. 100 active Manage workforce Workforce access Connect workforce identities to Fusion accounts and access. 100 with access Manage workforce access Administration & configuration Administrator continuity At risk 1 active administrator Manage access Tenant configuration Set tenant identity, regional, communication, and experience defaults. Not available in this build"
+  },
+  "mid-admin-core-organization": {
+    "url": "/core/organization",
+    "landed": "/core/organization",
+    "ms": 18788,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Organization"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "People",
+      "Org chart",
+      "Organization",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "As of 30 Oct 2026",
+      "Structure",
+      "Chart",
+      "Outline",
+      "Add unit",
+      "Carthage Digital Group Organization · CDG",
+      "Client Solutions Business Unit · CDG-CLIENT",
+      "Consulting Division · CDG-CLIENT-1",
+      "Consulting A Department · CDG-CLIENT-1-D1",
+      "Consulting A Core Team · CDG-CLIENT-1-D1-T1",
+      "Consulting A Platform Team · CDG-CLIENT-1-D1-T2",
+      "Consulting B Department · CDG-CLIENT-1-D2",
+      "Consulting B Core Team · CDG-CLIENT-1-D2-T1",
+      "Consulting B Platform Team · CDG-CLIENT-1-D2-T2",
+      "Delivery Division · CDG-CLIENT-2",
+      "Delivery A Department · CDG-CLIENT-2-D1",
+      "Delivery A Core Team · CDG-CLIENT-2-D1-T1",
+      "Delivery B Department · CDG-CLIENT-2-D2",
+      "Delivery B Core Team · CDG-CLIENT-2-D2-T1",
+      "Corporate Services Business Unit · CDG-CORP",
+      "Finance & Operations Division · CDG-CORP-1",
+      "Finance & Operations A Department · CDG-CORP-1-D1",
+      "Finance & Operations A Core Team · CDG-CORP-1-D1-T1",
+      "Finance & Operations B Department · CDG-CORP-1-D2",
+      "Finance & Operations B Core Team · CDG-CORP-1-D2-T1",
+      "People & Growth Division · CDG-CORP-2",
+      "People & Growth A Department · CDG-CORP-2-D1",
+      "People & Growth A Core Team · CDG-CORP-2-D1-T1",
+      "People & Growth B Department · CDG-CORP-2-D2",
+      "People & Growth B Core Team · CDG-CORP-2-D2-T1",
+      "Product & Engineering Business Unit · CDG-TECH",
+      "Engineering Division · CDG-TECH-2",
+      "Engineering A Department · CDG-TECH-2-D1",
+      "Engineering A Core Team · CDG-TECH-2-D1-T1",
+      "Engineering A Platform Team · CDG-TECH-2-D1-T2",
+      "Engineering B Department · CDG-TECH-2-D2",
+      "Engineering B Core Team · CDG-TECH-2-D2-T1",
+      "Engineering B Platform Team · CDG-TECH-2-D2-T2",
+      "Product Division · CDG-TECH-1",
+      "Product A Department · CDG-TECH-1-D1"
+    ],
+    "tabs": [],
+    "body": "Organization Define how your organization is structured. As of 30 Oct 2026 Structure Chart Outline Add unit Import structure Carthage Digital Group Organization · CDG Client Solutions Business Unit · CDG-CLIENT Consulting Division · CDG-CLIENT-1 Consulting A Department · CDG-CLIENT-1-D1 Consulting A Core Team · CDG-CLIENT-1-D1-T1 Consulting A Platform Team · CDG-CLIENT-1-D1-T2 Consulting B Department · CDG-CLIENT-1-D2 Consulting B Core Team · CDG-CLIENT-1-D2-T1 Consulting B Platform Team · CDG-CLIENT-1-D2-T2 Delivery Division · CDG-CLIENT-2 Delivery A Department · CDG-CLIENT-2-D1 Delivery A Core Team · CDG-CLIENT-2-D1-T1 Delivery B Department · CDG-CLIENT-2-D2 Delivery B Core Team · CDG-CLIENT-2-D2-T1 Corporate Services Business Unit · CDG-CORP Finance & Operations Division · CDG-CORP-1 Finance & Operations A Department · CDG-CORP-1-D1 Finance & Operations A Core Team · CDG-CORP-1-D1-T1 Finance & Operations B Department · CDG-CORP-1-D2 Finance & Operations B Core Team · CDG-CORP-1-D2-T1 People & Growth Division · CDG-CORP-2 People & Growth A Department · CDG-CORP-2-D1 People & Growth A Core Team · CDG-CORP-2-D1-T1 People & Growth B Department · CDG-CORP-2-D2 People & Growth B Core Team · CDG-CORP-2-D2-T1 Product & Engineering Business Unit · CDG-TECH Engineering Division · CDG-TECH-2 Engineering A Department · CDG-TECH-2-D1 Engineering A Core Team · CDG-TECH-2-D1-T1 Engineering A Platform Team · CDG-TECH-2-D1-T2 Engineering B Department · CDG-TECH-2-D2 Engineering B Core Team"
+  },
+  "mid-admin-core-people": {
+    "url": "/core/people",
+    "landed": "/core/people",
+    "ms": 31380,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "People"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "People",
+      "Org chart",
+      "Organization",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "Add employee",
+      "All organizations",
+      "Previous",
+      "1",
+      "2",
+      "3",
+      "4",
+      "10",
+      "Next"
+    ],
+    "tabs": [],
+    "body": "People Import Add employee All states Active Scheduled Former Incomplete All organizations Sort Name A–Z Name Z–A Employee Number Newest start EMPLOYEE WORK MANAGER LOCATION EMPLOYMENT AB Adel Brahim CDG-034 Security Analyst Finance & Operations B Core Omar Mansour Ariana Active Since 8 May 2019 AB Aicha Bouazizi CDG-027 QA Automation Engineer Consulting A Core Mariam Gharbi Ariana Active Since 15 Dec 2021 AB Ala Bouzgarrou CDG-062 Site Reliability Engineer Engineering B Platform Mehdi Kacem Ariana Active Since 6 Jan 2022 AB Amani Boukhris CDG-087 Site Reliability Engineer Finance & Operations A Core Sana Ben Salem Remote - Tunisia Active Since 7 Dec 2021 AO Amina Ben Othman CDG-041 Machine Learning Engineer Engineering A Core Ines Chaabane Ariana Active Since 1 Oct 2022 AH Amine Hamdi CDG-024 Technology Consultant Engineering A Platform Mehdi Kacem Remote - Tunisia Active Since 21 Feb 2020 AK Amira Khelifi CDG-002 Chief Technology Officer Product A Platform Sami Ben Youssef Sousse Active Since 14 Jan 2022 AK Anis Khalfallah CDG-018 Delivery Manager People & Growth B Core Karim Jaziri Sfax Active Since 29 Aug 2020 AH Anouar Ben Hassen CDG-090 Software Engineer People & Growth B Core Walid Dridi Ariana Active Since 4 Sept 2023 AF Asma Ferchichi CDG-045 Product Designer Consulting A Core Yasmine Saidi Remote - Tunisia Active Since 28 May 2023 Showing 1–10 of 100 people Previous 1 2 3 4 … 10 Next"
+  },
+  "mid-admin-core-people-hire": {
+    "url": "/core/people/hire",
+    "landed": "/core/people/hire",
+    "ms": 10453,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Hire employee",
+      "EMPLOYEE",
+      "EMPLOYMENT",
+      "WORK",
+      "REPORTING"
+    ],
+    "sidebar": [
+      "Home",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "People",
+      "Org chart",
+      "Organization",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "Generate automatically",
+      "Enter manually",
+      "Additional details",
+      "Select organization",
+      "No manager",
+      "Assign a manager",
+      "Review hire"
+    ],
+    "tabs": [],
+    "body": "People NEW HIRE Hire employee EMPLOYEE First name Last name Preferred name Optional Work email Optional Employee Number Generate automatically Enter manually Additional details EMPLOYMENT Start date WORK Organization Select organization Display title Location Optional REPORTING No manager Assign a manager Review hire RESULTING EMPLOYEE EMPLOYEE Add a name to begin EMPLOYMENT Active Starts 30 Oct 2026 WORK Display title Organization not set REPORTING No manager"
+  },
+  "mid-admin-core-people-import": {
+    "url": "/core/people/import",
+    "landed": "/core/people/import",
+    "ms": 14107,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Import workforce",
+      "File and workforce date"
+    ],
+    "sidebar": [
+      "Home",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "People",
+      "Org chart",
+      "Organization",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "Choose file",
+      "30 Oct 2026",
+      "Start import",
+      "Download"
+    ],
+    "tabs": [],
+    "body": "Import workforce Bring in your people from Excel or CSV and review them before publishing. 1 Upload 2 Match 3 Review File and workforce date Select your workforce file and the date it describes. Drop your workforce file here Or choose it from your computer Choose file XLSX, CSV · one sheet per import attempt Workforce as of 30 Oct 2026 Start import Cancel Download Fusion template Prefer the standard format? Start from our template. Download"
+  },
+  "mid-admin-core-org-chart": {
+    "url": "/core/org-chart",
+    "landed": "/core/org-chart",
+    "ms": 21185,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Org chart"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "People",
+      "Org chart",
+      "Organization",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "Around you",
+      "Whole company",
+      "Colour by Division",
+      "Replay",
+      "Today",
+      "6",
+      "8",
+      "Client Solutions 2",
+      "Product & Engineering 5"
+    ],
+    "tabs": [],
+    "body": "Org chart 100 people · 3 divisions Around you Whole company Colour by Division Replay Feb Apr Jun Aug Dec Today Today, 30 Oct 2026 100 people AK You Amira Khelifi Chief Technology Officer Product A Platform Sousse EJ HD MG MK +2 6 direct · 45 in all EJ Elyes Jaziri Finance Analyst Nabeul · since 2021 HD Houssem Dhaouadi Mobile Engineer Sousse · since 2019 MK Mouna Kooli Recruitment Partner Sfax · since 2024 RS Rania Sahli Product Analyst Monastir · since 2020 MG Mariam Gharbi VP, Product Engineering A Core Nabeul AB FL MH SH +2 6 direct · 14 in all 6 OM Omar Mansour VP, Engineering Engineering A Platform Ariana AB HA MK OS +4 8 direct · 25 in all 8 SY Sami Ben Youssef Chief Executive Officer Client Solutions 2 Product & Engineering 5 100%"
+  },
+  "mid-admin-core-team": {
+    "url": "/core/team",
+    "landed": "/core/team",
+    "ms": 26271,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "My Team"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "People",
+      "Org chart",
+      "Organization",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "My Team Direct reports. Show in org chart Direct reports 6 direct reports Rania Sahli rania.sahli@midyear-5.example.test Product Analyst Omar Mansour omar.mansour@midyear-5.example.test VP, Engineering Houssem Dhaouadi houssem.dhaouadi@midyear-5.example.test Mobile Engineer Mariam Gharbi mariam.gharbi@midyear-5.example.test VP, Product Elyes Jaziri elyes.jaziri@midyear-5.example.test Finance Analyst Mouna Kooli mouna.kooli@midyear-5.example.test Recruitment Partner"
+  },
+  "mid-admin-core-profile": {
+    "url": "/core/profile",
+    "landed": "/core/profile",
+    "ms": 27072,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Amira Khelifi",
+      "Employment",
+      "History"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "People",
+      "Org chart",
+      "Organization",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "AK Amira Khelifi Active Chief Technology Officer Product A Platform Job Personal Performance amira.khelifi@midyear-5.example.test Sousse Hire date 14 January 2022 4 years, 9 months Employee number CDG-002 Manager SY Sami Ben Youssef Direct reports 6 HD Houssem Dhaouadi MG Mariam Gharbi EJ Elyes Jaziri MK Mouna Kooli OM Omar Mansour View all 6 reports Show on the org chart Employment Started 14 Jan 2022 With the company 4y 9m In this job 4y 9m History 14 Jan 2022 Manager assigned Manager No managerSami Ben Youssef 14 Jan 2022 Employment started 14 Jan 2022 Current work established in Fusion"
+  },
+  "mid-admin-core-workforce-access": {
+    "url": "/core/workforce-access",
+    "landed": "/core/workforce-access",
+    "ms": 33121,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Workforce access"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "People",
+      "Org chart",
+      "Organization",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "100 All",
+      "100 Active",
+      "0 Pending",
+      "0 No access",
+      "0 Review",
+      "0 Suspended",
+      "All organizations",
+      "All",
+      "Employees",
+      "Managers",
+      "Previous",
+      "Next"
+    ],
+    "tabs": [],
+    "body": "Workforce access Set up and manage Fusion access for 100 people. 100 All 100 Active 0 Pending 0 No access 0 Review 0 Suspended All organizations All Employees Managers Select this page TA Tarek Ayari CDG-016 UX Design Manager · Finance & Operations B Core tarek.ayari@midyear-5.example.test Manager · 4 reports Active NB Noura Baccar CDG-067 Senior Consultant · Delivery A Core noura.baccar@midyear-5.example.test Employee Active LB Leila Baccouche CDG-021 Project Manager · Product B Core leila.baccouche@midyear-5.example.test Employee Active SB Sonia Bchir CDG-072 Senior Software Engineer · People & Growth B Core sonia.bchir@midyear-5.example.test Employee Active DB Dorsaf Belaid CDG-037 Site Reliability Engineer · Product A Core dorsaf.belaid@midyear-5.example.test Employee Active SB Syrine Belhaj CDG-039 Customer Success Manager · Product B Core syrine.belhaj@midyear-5.example.test Employee Active SA Seif Ben Aissa CDG-054 Operations Analyst · People & Growth B Core seif.ben.aissa@midyear-5.example.test Employee Active NA Nour Ben Ali CDG-004 Chief People and Operations Officer · Product B Platform nour.ben.ali@midyear-5.example.test Manager · 6 reports Active HA Hela Ben Amor CDG-015 Cybersecurity Manager · Finance & Operations A Core hela.ben.amor@midyear-5.example.test Manager · 5 reports Active IA Ismail Ben Amor CDG-068 People Operations Specialist · Delivery B Core ismail.ben.amor@midyear-5.example.test Employee Active Page 1 of 10 · 100 people Previous Next"
+  },
+  "mid-admin-core-access": {
+    "url": "/core/access",
+    "landed": "/core/access",
+    "ms": 27028,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Administrators",
+      "Active administrators (1)",
+      "Pending invitations (0)",
+      "Suspended administrators (0)"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "People",
+      "Org chart",
+      "Organization",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "Invite administrator",
+      "Administrators",
+      "Removed (0)",
+      "Suspend administrator Temporarily remove access. Can be reactivated.",
+      "Remove administrator authority Permanently remove administrator access.",
+      "Remove yourself You will lose administrator access immediately, including access to this page."
+    ],
+    "tabs": [
+      "Administrators",
+      "Removed (0)"
+    ],
+    "body": "TENANT ADMINISTRATION Administrators Manage who can administer this tenant. Invite, suspend, or remove administrator access. View activity log ADMINISTRATIVE CONTINUITY At risk One administrator is a single point of failure. Invite another so access can’t be lost with them. 1 Active 0 Pending 0 Suspended Invite administrator Administrators Removed (0) Active administrators (1) NAME EMAIL STATUS ADDED ON AK Amira Khelifi You amira.khelifi@midyear-5.example.test Active 22 Oct 2026 Pending invitations (0) No pending invitations Invite an administrator to see it here. Suspended administrators (0) No suspended administrators Suspended administrators will appear here. AK Amira Khelifi You Tenant Administrator ACCOUNT INFORMATION Email amira.khelifi@midyear-5.example.test Status Active Added on 22 Oct 2026 Added by System (tenant activation) ADMINISTRATOR ACTIONS Suspend administrator Temporarily remove access. Can be reactivated. Remove administrator authority Permanently remove administrator access. Remove yourself You will lose administrator access immediately, including access to this page."
+  },
+  "mid-admin-core-settings": {
+    "url": "/core/settings",
+    "landed": "/core/settings/company",
+    "ms": 20392,
+    "title": "Core HR — Fusion",
+    "headings": [],
+    "sidebar": [
+      "Back to Home",
+      "Preferences"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": ""
+  },
+  "mid-admin-core-settings-company": {
+    "url": "/core/settings/company",
+    "landed": "/core/settings/company",
+    "ms": 29444,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Company",
+      "Modules 2 on"
+    ],
+    "sidebar": [
+      "Back to Core HR",
+      "Preferences",
+      "Notifications",
+      "Company",
+      "Employee fields",
+      "Roles",
+      "Invitations",
+      "Notifications",
+      "Change history",
+      "Rating scale",
+      "Competencies",
+      "Review questions",
+      "Reviews",
+      "Planning",
+      "Conversations",
+      "AI and data",
+      "Notifications",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Company Set when Carthage · Mid-year joined Fusion. Your Fusion provider changes these. Company name Carthage · Mid-year Workspace address carthage-mid-year-build-5 Industry Technology Language and formats Dates, numbers and emails Fusion sends English (United States) Time zone Deadlines and reminders follow it Africa/Tunis · UTC+1 Modules 2 on Core HR People and organization Performance Goals, conversations and reviews"
+  },
+  "mid-admin-core-settings-employee-fields": {
+    "url": "/core/settings/employee-fields",
+    "landed": "/core/settings/employee-fields",
+    "ms": 21925,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Employee fields",
+      "On a profile",
+      "Employees can change",
+      "Who sees the org chart"
+    ],
+    "sidebar": [
+      "Back to Core HR",
+      "Preferences",
+      "Notifications",
+      "Company",
+      "Employee fields",
+      "Roles",
+      "Invitations",
+      "Notifications",
+      "Change history",
+      "Rating scale",
+      "Competencies",
+      "Review questions",
+      "Reviews",
+      "Planning",
+      "Conversations",
+      "AI and data",
+      "Notifications",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "Everyone Everyone sees the whole company.",
+      "Managers and HR HR sees the whole company and managers their own line. Nobody else sees the chart."
+    ],
+    "tabs": [],
+    "body": "Employee fields On a profile Field Required The employee Their manager HR First name Last name Work email Hire date Phone Job title Work location Employment type Employees can change Their preferred name Their phone number Who sees the org chart Everyone Everyone sees the whole company. Managers and HR HR sees the whole company and managers their own line. Nobody else sees the chart."
+  },
+  "mid-admin-core-settings-roles": {
+    "url": "/core/settings/roles",
+    "landed": "/core/settings/roles",
+    "ms": 24846,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Roles",
+      "Manager reviewer without team view",
+      "Performance",
+      "Core HR"
+    ],
+    "sidebar": [
+      "Back to Core HR",
+      "Preferences",
+      "Notifications",
+      "Company",
+      "Employee fields",
+      "Roles",
+      "Invitations",
+      "Notifications",
+      "Change history",
+      "Rating scale",
+      "Competencies",
+      "Review questions",
+      "Reviews",
+      "Planning",
+      "Conversations",
+      "AI and data",
+      "Notifications",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "New role",
+      "Employee Access to own profile and self-service details. 80",
+      "HR Admin Manages workforce records, reporting lines, imports, and account activation. 0",
+      "Manager Access to own profile and direct team. 19",
+      "Org Admin Manages tenant setup, structure, settings, access profiles, and Core administration. 0",
+      "Tenant Administrator Broad administration within the tenant across its enabled Fusion modules. Grants no Platform access and no permission to change tenant entitlements. 0",
+      "Manager reviewer without team view Local demo reviewer access without team-view permission. 1",
+      "Edit"
+    ],
+    "tabs": [],
+    "body": "Roles AK Amira Khelifi changed it on 22 Oct 2026 New role Built in Employee Access to own profile and self-service details. 80 HR Admin Manages workforce records, reporting lines, imports, and account activation. 0 Manager Access to own profile and direct team. 19 Org Admin Manages tenant setup, structure, settings, access profiles, and Core administration. 0 Tenant Administrator Broad administration within the tenant across its enabled Fusion modules. Grants no Platform access and no permission to change tenant entitlements. 0 Yours Manager reviewer without team view Local demo reviewer access without team-view permission. 1 Manager reviewer without team view Local demo reviewer access without team-view permission. Edit OM Omar Mansour holds it Manage in Access Performance Cycles View Performance settings None Company objectives Manage Company direction None Calibration None Core HR People View Organization View Employee fields None Roles and access None Invitations None Change history None"
+  },
+  "mid-admin-core-settings-invitations": {
+    "url": "/core/settings/invitations",
+    "landed": "/core/settings/invitations",
+    "ms": 20459,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Invitations",
+      "Inviting someone who already has an invitation"
+    ],
+    "sidebar": [
+      "Back to Core HR",
+      "Preferences",
+      "Notifications",
+      "Company",
+      "Employee fields",
+      "Roles",
+      "Invitations",
+      "Notifications",
+      "Change history",
+      "Rating scale",
+      "Competencies",
+      "Review questions",
+      "Reviews",
+      "Planning",
+      "Conversations",
+      "AI and data",
+      "Notifications",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "Send a fresh one The earlier link stops working",
+      "Keep the first one Nothing is sent again"
+    ],
+    "tabs": [],
+    "body": "Invitations Invitation expires after days People can ask for a new one after hours Role for new accounts Employee Manager reviewer without team view HR Admin Manager Org Admin Tenant Administrator Inviting someone who already has an invitation Send a fresh one The earlier link stops working Keep the first one Nothing is sent again"
+  },
+  "mid-admin-core-settings-change-history": {
+    "url": "/core/settings/change-history",
+    "landed": "/core/settings/change-history",
+    "ms": 19635,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Change history",
+      "October"
+    ],
+    "sidebar": [
+      "Back to Core HR",
+      "Preferences",
+      "Notifications",
+      "Company",
+      "Employee fields",
+      "Roles",
+      "Invitations",
+      "Notifications",
+      "Change history",
+      "Rating scale",
+      "Competencies",
+      "Review questions",
+      "Reviews",
+      "Planning",
+      "Conversations",
+      "AI and data",
+      "Notifications",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "22 Oct AK Amira Khelifi Roles Gave Omar Mansour the Manager reviewer without team view role, and 1 more",
+      "22 Oct AK Amira Khelifi Roles Created the Manager reviewer without team view role"
+    ],
+    "tabs": [],
+    "body": "Change history All sections Roles Anyone Amira Khelifi October 22 Oct AK Amira Khelifi Roles Gave Omar Mansour the Manager reviewer without team view role, and 1 more 22 Oct AK Amira Khelifi Roles Created the Manager reviewer without team view role"
+  },
+  "mid-admin-settings-you": {
+    "url": "/settings",
+    "landed": "/settings",
+    "ms": 10397,
+    "title": "Fusion",
+    "headings": [
+      "Preferences",
+      "Appearance This device",
+      "Language Your account"
+    ],
+    "sidebar": [
+      "Back to Core HR",
+      "Preferences",
+      "Notifications",
+      "Company",
+      "Employee fields",
+      "Roles",
+      "Invitations",
+      "Notifications",
+      "Change history",
+      "Rating scale",
+      "Competencies",
+      "Review questions",
+      "Reviews",
+      "Planning",
+      "Conversations",
+      "AI and data",
+      "Notifications",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "Dark",
+      "Light",
+      "Match this device",
+      "English",
+      "Français",
+      "العربية"
+    ],
+    "tabs": [],
+    "body": "Preferences Appearance This device Dark Light Match this device Language Your account Language English Français العربية"
+  },
+  "mid-admin-perf-overview": {
+    "url": "/performance",
+    "landed": "/performance",
+    "ms": 28021,
+    "title": "Performance — Fusion",
+    "headings": [
+      "Overview",
+      "Execution",
+      "FY2027",
+      "Your team",
+      "Your plan",
+      "Conversations",
+      "Organization direction"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Performance",
+      "Overview",
+      "My Plan",
+      "My Team 5",
+      "1:1s 2",
+      "Feedback",
+      "Reviews",
+      "Cycle",
+      "Settings",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "Build a resilient, secure cloud platform 2 aligned objectives, owned by Amira Khelifi",
+      "Grow sustainable Tunisian digital capabilities 1 aligned objective, owned by Amira Khelifi",
+      "Improve customer delivery predictability 0 aligned objectives, owned by Amira Khelifi"
+    ],
+    "tabs": [],
+    "body": "Overview Execution 176 days left Year ends Sat 24 Apr 2027 Today Planning 25 Apr – 25 May Execution 26 May – 25 Mar Review 26 Mar – 24 Apr FY2027 99 of 99 plans approved Insights 93 of 99 approved plans updated in the last 30 days Open the cycle Objective status, as their owners set it · 297 objectives 204 on track 53 at risk 30 off track 10 no status yet Furthest behind Delivery A Core 3 of 5 updated · 2 not 60% Finance & Operations B Core 4 of 5 updated · 1 not 80% Product A Core 4 of 5 updated · 1 not 80% Your team 6 people · 18 objectives My Team 5 objectives are off track or at risk Open My Team Elyes Jaziri · Cut release lead time \"Lost two people to the client escalation; this objective needs a new date.\" · since Sat 11 Jul Off track 20% Rania Sahli · Document the team's runbooks \"The migration is blocked on the network change; replanning with the platform team.\" · since Sun 12 Jul Off track 20% Mouna Kooli · Cut release lead time \"Two dependencies slipped; recovering in the next sprint.\" · since Fri 10 Jul At risk 33% 6 of 6 updated in the last 30 days Your plan My Plan 2 on track, 1 at risk · 39% Last update 21 days ago Conversations 1:1s THU 11:00 1:1 with Mariam Gharbi Overdue since Thu 22 Oct · 1 open action THU 11:00 1:1 with Omar Mansour In 6 days · 1 open action 1 action item is overdue Share the revised estimate with the client · was due Tue 20 Oct Open the 1:1 Organization direction 3 company objectives Open the map Build a resilient, secure cloud platform 2 "
+  },
+  "mid-admin-perf-plan": {
+    "url": "/performance/plan",
+    "landed": "/performance/plan",
+    "ms": 27466,
+    "title": "Performance — Fusion",
+    "headings": [
+      "My Plan",
+      "Objectives 3",
+      "Development",
+      "Status",
+      "Plan progress",
+      "Reviewer",
+      "Direction"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Performance",
+      "Overview",
+      "My Plan",
+      "My Team 5",
+      "1:1s 2",
+      "Feedback",
+      "Reviews",
+      "Cycle",
+      "Settings",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "Grow recurring client revenue",
+      "Grow sustainable Tunisian digital capabilities",
+      "Update progress",
+      "Roll out the new client onboarding",
+      "Update progress",
+      "Shorten code review turnaround",
+      "Update progress",
+      "Add a goal"
+    ],
+    "tabs": [],
+    "body": "My Plan Approved Objectives 3 Grow recurring client revenue Aligned toGrow sustainable Tunisian digital capabilities · Company strategy Measurement Numeric target Target 0% growth increase to 15% growth Duration 25 Apr 2026 – 24 Apr 2027 25 Apr 24 Apr 2027 Weight 40% Current value 7.2% growth Updated 9 Oct On track Update progress Roll out the new client onboarding Standalone role objective Measurement Weighted milestones Milestones 1 of 3 done Duration 25 Apr 2026 – 24 Apr 2027 25 Apr 24 Apr 2027 Weight 25% Milestone progress 1 of 3 milestones completed· 1 overdue Updated 11 Jul On track Update progress Shorten code review turnaround Standalone role objective Measurement Manual percentage Measure Single percentage Duration 25 Apr 2026 – 24 Apr 2027 25 Apr 24 Apr 2027 Weight 35% Current progress 34% Updated 9 Oct At risk Update progress Development No development goals yet Add a goal Status Approved & locked 5 May Approved by Sami Ben Youssef Plan progress 39% overall progress Weighted across 3 objectives 2 on track 1 at risk Reviewer SB Sami Ben Youssef sami.ben.youssef@midyear-5.example.test Direction Grow sustainable Tunisian digital capabilities Company strategy"
+  },
+  "mid-admin-perf-team": {
+    "url": "/performance/team",
+    "landed": "/performance/team",
+    "ms": 28438,
+    "title": "Performance — Fusion",
+    "headings": [
+      "My Team",
+      "Upstream direction",
+      "No direction selected",
+      "Create a team objective",
+      "Team objectives 1"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Performance",
+      "Overview",
+      "My Plan",
+      "My Team 5",
+      "1:1s 2",
+      "Feedback",
+      "Reviews",
+      "Cycle",
+      "Settings",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "All",
+      "25",
+      "1",
+      "3 eligible objectives",
+      "Standalone allowed",
+      "Choose an upstream objective",
+      "Create team objective",
+      "Make every team's growth plan visible",
+      "Grow sustainable Tunisian digital capabilities"
+    ],
+    "tabs": [],
+    "body": "My Team 6 people · 18 objectives Objectives 13 on track 3 at risk 2 off track 0 no status yet 6 of 6 updated in the last 30 days Show is All Person Objectives Needs attention Plan progress Last update Update requests Open Needs you · 4 EJ Elyes Jaziri Finance Analyst · Consulting A Platform Cut release lead time · off track \"Lost two people to the client escalation; this objective needs a new date.\" · since Sat 11 Jul 27% 21 days ago — RS Rania Sahli Product Analyst · Consulting A Core Document the team's runbooks · off track \"The migration is blocked on the network change; replanning with the platform team.\" · since Sun 12 Jul 34% 20 days ago — MG Mariam Gharbi VP, Product · Engineering A Core Build role-relevant technical capability · at risk \"Waiting on the security review before the next release.\" · since Fri 10 Jul 44% 22 days ago — MK Mouna Kooli Recruitment Partner · Engineering B Core Cut release lead time · at risk \"Two dependencies slipped; recovering in the next sprint.\" · since Fri 10 Jul 38% 22 days ago — The rest · 2 HD Houssem Dhaouadi Mobile Engineer · Engineering B Platform — 44% 23 days ago — OM Omar Mansour VP, Engineering · Engineering A Platform — 44% 21 days ago — 1–6 of 6 people Rows per page 25 1 Upstream direction Open organization direction No direction selected Choose one of the eligible objectives for this team, or continue without alignment for a standalone team objective. 3 eligible objectives Standalone allowed Next team objective Create a team "
+  },
+  "mid-admin-perf-cycle": {
+    "url": "/performance/cycle",
+    "landed": "/performance/cycle",
+    "ms": 19443,
+    "title": "Performance — Fusion",
+    "headings": [
+      "FY2027",
+      "Without an approved plan"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Performance",
+      "Overview",
+      "My Plan",
+      "My Team 5",
+      "1:1s 2",
+      "Feedback",
+      "Reviews",
+      "Cycle",
+      "Settings",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "Close cycle",
+      "Status",
+      "Insights"
+    ],
+    "tabs": [
+      "Status",
+      "Insights"
+    ],
+    "body": "FY2027 Execution Close cycle Status Insights Direction published Population confirmed Planning opened Planning completed 5 Performance end 6 Closure ready Without an approved plan 99 of 99 approved Every participant has an approved plan."
+  },
+  "mid-admin-perf-reviews": {
+    "url": "/performance/reviews",
+    "landed": "/performance/reviews",
+    "ms": 40633,
+    "title": "Performance — Fusion",
+    "headings": [
+      "Reviews"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Performance",
+      "Overview",
+      "My Plan",
+      "My Team 5",
+      "1:1s 2",
+      "Feedback",
+      "Reviews",
+      "Cycle",
+      "Settings",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Reviews"
+  },
+  "mid-admin-perf-settings": {
+    "url": "/performance/settings",
+    "landed": "/performance/settings/rating-scale",
+    "ms": 22010,
+    "title": "Performance — Fusion",
+    "headings": [],
+    "sidebar": [
+      "Back to Home",
+      "Preferences"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": ""
+  },
+  "mid-admin-person": {
+    "url": "/core/people/E-C8105DC7853945AAB1D43E6395F2BD0B",
+    "landed": "/core/people/E-C8105DC7853945AAB1D43E6395F2BD0B",
+    "ms": 41015,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Aicha Bouazizi",
+      "Employment",
+      "Job information",
+      "Dotted lines",
+      "Coming up",
+      "History"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "People",
+      "Org chart",
+      "Organization",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "Aicha Bouazizi Person",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "Change job",
+      "Effective",
+      "10",
+      "1",
+      "Add dotted line",
+      "Schedule a change"
+    ],
+    "tabs": [],
+    "body": "People AB Aicha Bouazizi Active QA Automation Engineer Consulting A Core, in Consulting A As of Today · View as of a date Change job Job Personal Performance Access aicha.bouazizi@midyear-5.example.test Ariana Hire date 15 December 2021 4 years, 10 months Employee number CDG-027 Manager MG Mariam Gharbi CDG-005 Teammates 4 TA SH MH SJ Show on the org chart Employment Started 15 Dec 2021 With the company 4y 10m In this job 4y 10m In Consulting A Core 4y 10m Job information 2 records Effective Job title Unit Location Reports to 11 Oct 2023 Current QA Automation Engineer Consulting A Core Ariana MG Mariam Gharbi 15 Dec 2021 QA Automation Engineer Consulting A Core Ariana No manager 1–2 of 2 records Rows per page 10 1 Dotted lines No dotted-line managers Add dotted line Coming up Nothing scheduled Schedule a change History 15 Dec 2021 Employment started 15 Dec 2021 Current work established in Fusion 11 Oct 2023 Manager assigned Manager No managerMariam Gharbi"
+  },
+  "mid-admin-person-tab-personal": {
+    "url": "/core/people/E-C8105DC7853945AAB1D43E6395F2BD0B?tab=personal",
+    "landed": "/core/people/E-C8105DC7853945AAB1D43E6395F2BD0B?tab=personal",
+    "ms": 26081,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Aicha Bouazizi",
+      "Name",
+      "Contact",
+      "Home address",
+      "Emergency contacts"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "People",
+      "Org chart",
+      "Organization",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "Aicha Bouazizi Person",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "Change job",
+      "Edit",
+      "Edit",
+      "Edit",
+      "Edit"
+    ],
+    "tabs": [],
+    "body": "People AB Aicha Bouazizi Active QA Automation Engineer Consulting A Core, in Consulting A As of Today · View as of a date Change job Job Personal Performance Access aicha.bouazizi@midyear-5.example.test Ariana Hire date 15 December 2021 4 years, 10 months Employee number CDG-027 Manager MG Mariam Gharbi CDG-005 Show on the org chart Name Edit Legal name Aicha Bouazizi Preferred name Not set Date of birth Not set Contact Edit Mobile Not set Personal email Not set Work email aicha.bouazizi@midyear-5.example.test Home address Edit No address Only Aicha Bouazizi and HR Emergency contacts Edit No emergency contacts Only Aicha Bouazizi and HR"
+  },
+  "mid-admin-person-tab-performance": {
+    "url": "/core/people/E-C8105DC7853945AAB1D43E6395F2BD0B?tab=performance",
+    "landed": "/core/people/E-C8105DC7853945AAB1D43E6395F2BD0B?tab=performance",
+    "ms": 29129,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Aicha Bouazizi",
+      "Plan, FY2027",
+      "Review",
+      "Results",
+      "Objectives",
+      "Reviews",
+      "Development",
+      "Feedback 3",
+      "Praise 5"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "People",
+      "Org chart",
+      "Organization",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "Aicha Bouazizi Person",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "Change job",
+      "The incident drill was the best we have run. Clear roles, and every follow-up has an owner.",
+      "Kept two client releases on track while covering regression for another team.",
+      "Thank you for running the onboarding sessions. New joiners shipped in their first week.",
+      "Thank you for running the onboarding sessions. New joiners shipped in their first week.",
+      "Your data pipeline fix saved the client demo. Quick, quiet and thorough."
+    ],
+    "tabs": [],
+    "body": "People AB Aicha Bouazizi Active QA Automation Engineer Consulting A Core, in Consulting A As of Today · View as of a date Change job Job Personal Performance Access aicha.bouazizi@midyear-5.example.test Ariana Hire date 15 December 2021 4 years, 10 months Employee number CDG-027 Manager MG Mariam Gharbi CDG-005 Teammates 4 TA SH MH SJ Show on the org chart Plan, FY2027 38% Approved 3 objectives 1 at risk Review No review in progress Results Strong FY2026 Objectives Open plan Automate the regression suite Aligned to Cut production incidents by 40% 40% 34% At risk Build role-relevant technical capability Standalone 25% 30% On track Make estimates clients can rely on Standalone 35% 48% On track Reviews Year-end review, FY2026 Finalized 6 Apr Strong Development Open development Lead a client release end to end In progress · Inclusive Collaboration · by 19 Feb 2027 Present the test automation approach at the guild Not started · Data-Informed Decision Making · by 19 Feb 2027 Feedback 3 Open feedback AK Amira Khelifi 14 May Your incident write-up was clear and blameless. The on-call team now uses it as the template. LB Leila Baccouche Customer Partnership 30 Dec 2025 The milestone breakdown made the risk visible early. Keep flagging blockers this way. FL Fares Lachheb Customer Partnership 1 Oct 2025 Thanks for pairing on the flaky tests. The suite has been green all week. Praise 5 AB LB Aicha Bouazizi and Leila Baccouche from Salah Ben Hassine · 5 Oct The incident drill was the best"
+  },
+  "mid-admin-person-tab-access": {
+    "url": "/core/people/E-C8105DC7853945AAB1D43E6395F2BD0B?tab=access",
+    "landed": "/core/people/E-C8105DC7853945AAB1D43E6395F2BD0B?tab=access",
+    "ms": 27680,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Aicha Bouazizi",
+      "Fusion access"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "People",
+      "Org chart",
+      "Organization",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "Aicha Bouazizi Person",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "Change job",
+      "Edit work email"
+    ],
+    "tabs": [],
+    "body": "People AB Aicha Bouazizi Active QA Automation Engineer Consulting A Core, in Consulting A As of Today · View as of a date Change job Job Personal Performance Access aicha.bouazizi@midyear-5.example.test Ariana Hire date 15 December 2021 4 years, 10 months Employee number CDG-027 Manager MG Mariam Gharbi CDG-005 Teammates 4 TA SH MH SJ Show on the org chart Fusion access Account status Active Employee access Review workforce access Work email aicha.bouazizi@midyear-5.example.test Edit work email"
+  },
+  "mid-admin-person-change-job": {
+    "url": "/core/people/E-C8105DC7853945AAB1D43E6395F2BD0B?change=job",
+    "landed": "/people/E-C8105DC7853945AAB1D43E6395F2BD0B",
+    "ms": 31446,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Aicha Bouazizi",
+      "Employment",
+      "Job information",
+      "Dotted lines",
+      "Coming up",
+      "History"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "People",
+      "Org chart",
+      "Organization",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "Aicha Bouazizi Person",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "Change job",
+      "Effective",
+      "10",
+      "1",
+      "Add dotted line",
+      "Schedule a change"
+    ],
+    "tabs": [],
+    "body": "People AB Aicha Bouazizi Active QA Automation Engineer Consulting A Core, in Consulting A As of Today · View as of a date Change job Job Personal Performance Access aicha.bouazizi@midyear-5.example.test Ariana Hire date 15 December 2021 4 years, 10 months Employee number CDG-027 Manager MG Mariam Gharbi CDG-005 Teammates 4 TA SH MH SJ Show on the org chart Employment Started 15 Dec 2021 With the company 4y 10m In this job 4y 10m In Consulting A Core 4y 10m Job information 2 records Effective Job title Unit Location Reports to 11 Oct 2023 Current QA Automation Engineer Consulting A Core Ariana MG Mariam Gharbi 15 Dec 2021 QA Automation Engineer Consulting A Core Ariana No manager 1–2 of 2 records Rows per page 10 1 Dotted lines No dotted-line managers Add dotted line Coming up Nothing scheduled Schedule a change History 15 Dec 2021 Employment started 15 Dec 2021 Current work established in Fusion 11 Oct 2023 Manager assigned Manager No managerMariam Gharbi"
+  },
+  "mid-admin-person-change-end": {
+    "url": "/core/people/E-C8105DC7853945AAB1D43E6395F2BD0B?change=end",
+    "landed": "/people/E-C8105DC7853945AAB1D43E6395F2BD0B",
+    "ms": 11159,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Aicha Bouazizi",
+      "Employment",
+      "Job information",
+      "Dotted lines",
+      "Coming up",
+      "History"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "People",
+      "Org chart",
+      "Organization",
+      "Getting started",
+      "Workforce access",
+      "Administrators",
+      "Settings",
+      "Aicha Bouazizi Person",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "Change job",
+      "Effective",
+      "10",
+      "1",
+      "Add dotted line",
+      "Schedule a change"
+    ],
+    "tabs": [],
+    "body": "People AB Aicha Bouazizi Active QA Automation Engineer Consulting A Core, in Consulting A As of Today · View as of a date Change job Job Personal Performance Access aicha.bouazizi@midyear-5.example.test Ariana Hire date 15 December 2021 4 years, 10 months Employee number CDG-027 Manager MG Mariam Gharbi CDG-005 Teammates 4 TA SH MH SJ Show on the org chart Employment Started 15 Dec 2021 With the company 4y 10m In this job 4y 10m In Consulting A Core 4y 10m Job information 2 records Effective Job title Unit Location Reports to 11 Oct 2023 Current QA Automation Engineer Consulting A Core Ariana MG Mariam Gharbi 15 Dec 2021 QA Automation Engineer Consulting A Core Ariana No manager 1–2 of 2 records Rows per page 10 1 Dotted lines No dotted-line managers Add dotted line Coming up Nothing scheduled Schedule a change History 15 Dec 2021 Employment started 15 Dec 2021 Current work established in Fusion 11 Oct 2023 Manager assigned Manager No managerMariam Gharbi"
+  },
+  "mid-admin-perf-person": {
+    "url": "/performance/people/c8105dc7-8539-45aa-b1d4-3e6395f2bd0b",
+    "landed": "/performance/people/c8105dc7-8539-45aa-b1d4-3e6395f2bd0b",
+    "ms": 23992,
+    "title": "Performance — Fusion",
+    "headings": [
+      "Aicha Bouazizi",
+      "Plan, FY2027",
+      "Review",
+      "Results",
+      "Objectives",
+      "Reviews",
+      "Development",
+      "Feedback 3",
+      "Praise 5"
+    ],
+    "sidebar": [
+      "Home 7",
+      "Performance",
+      "Overview",
+      "My Plan",
+      "My Team 5",
+      "1:1s 2",
+      "Feedback",
+      "Reviews",
+      "Cycle",
+      "Settings",
+      "Aicha Bouazizi Person",
+      "AK Amira Khelifi Chief Technology Officer"
+    ],
+    "actions": [
+      "Give feedback",
+      "The incident drill was the best we have run. Clear roles, and every follow-up has an owner.",
+      "Kept two client releases on track while covering regression for another team.",
+      "Thank you for running the onboarding sessions. New joiners shipped in their first week.",
+      "Thank you for running the onboarding sessions. New joiners shipped in their first week.",
+      "Your data pipeline fix saved the client demo. Quick, quiet and thorough."
+    ],
+    "tabs": [],
+    "body": "Aicha Bouazizi QA Automation Engineer, Consulting A Core Open Core HR record Give feedback Plan, FY2027 38% Approved 3 objectives 1 at risk Review No review in progress Results Strong FY2026 Objectives Open plan Automate the regression suite Aligned to Cut production incidents by 40% 40% 34% At risk Build role-relevant technical capability Standalone 25% 30% On track Make estimates clients can rely on Standalone 35% 48% On track Reviews Year-end review, FY2026 Finalized 6 Apr Strong Development Open development Lead a client release end to end In progress · Inclusive Collaboration · by 19 Feb 2027 Present the test automation approach at the guild Not started · Data-Informed Decision Making · by 19 Feb 2027 Feedback 3 Open feedback AK Amira Khelifi 14 May Your incident write-up was clear and blameless. The on-call team now uses it as the template. LB Leila Baccouche Customer Partnership 30 Dec 2025 The milestone breakdown made the risk visible early. Keep flagging blockers this way. FL Fares Lachheb Customer Partnership 1 Oct 2025 Thanks for pairing on the flaky tests. The suite has been green all week. Praise 5 AB LB Aicha Bouazizi and Leila Baccouche from Salah Ben Hassine · 5 Oct The incident drill was the best we have run. Clear roles, and every follow-up has an owner. Data-Informed Decision Making AB SB Aicha Bouazizi and Salah Ben Hassine from Fares Lachheb · 12 Aug Kept two client releases on track while covering regression for another team. Customer Partnership AB Aich"
+  },
+  "mid-manager-home": {
+    "url": "/",
+    "landed": "/",
+    "ms": 5275,
+    "title": "Fusion",
+    "headings": [
+      "Good morning, Mariam",
+      "1:1 with Aicha Bouazizi",
+      "Also needs you",
+      "Next two weeks",
+      "Your year",
+      "Praise"
+    ],
+    "sidebar": [
+      "Home 9",
+      "Core HR",
+      "Performance 9",
+      "Learning",
+      "Recruitment",
+      "Onboarding",
+      "Interview",
+      "MG Mariam Gharbi VP, Product"
+    ],
+    "actions": [
+      "The incident drill was the best we have run. Clear roles, and every follow-up has an owner.",
+      "Your data pipeline fix saved the client demo. Quick, quiet and thorough."
+    ],
+    "tabs": [],
+    "body": "Good morning, Mariam Friday 30 October · VP, Product, Engineering A Core PerformanceNot completed yet 1:1 with Aicha Bouazizi 8days late Due Thu 22 Oct Complete or reschedule Also needs you P 1:1 with Amira Khelifi Not completed yet 8 days late AB Aicha Bouazizi's objective is at risk Automate the regression suite SJ Sofiene Jebali's objective is off track Document the team's runbooks SJ Sofiene Jebali's objective is at risk Raise client satisfaction on delivered work MH Meriem Hamrouni's objective is at risk Raise client satisfaction on delivered work FL Fares Lachheb's objective is off track Document the team's runbooks FL Fares Lachheb's objective is off track Grow recurring client revenue FL Fares Lachheb's objective is off track Run the platform migration Next two weeks Nothing is scheduled in the next two weeks Your year My Plan 44% 3 objectives 2 on track 1 at risk Last update 21 days ago Praise Give praise AB LB Aicha Bouazizi and Leila Baccouche from Salah Ben Hassine · 5 Oct The incident drill was the best we have run. Clear roles, and every follow-up has an owner. Data-Informed Decision Making SJ Sofiene Jebali from Meriem Hamrouni · 8 Sept Your data pipeline fix saved the client demo. Quick, quiet and thorough. Secure Engineering All praise"
+  },
+  "mid-manager-core-overview": {
+    "url": "/core",
+    "landed": "/core",
+    "ms": 8010,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Dashboard",
+      "My team",
+      "My reporting context"
+    ],
+    "sidebar": [
+      "Home 9",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "Org chart",
+      "Organization",
+      "MG Mariam Gharbi VP, Product"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Dashboard Your team at a glance, Mariam. DIRECT REPORTS 6 TEAM ACTIVE 6 of 6 direct NEEDS ATTENTION 0 Team records healthy MY STATUS Active VP, Product My team 6 direct reports · 6 active Open team Tarek Ayari UX Design Manager Salah Ben Hassine Security Analyst Aicha Bouazizi QA Automation Engineer Meriem Hamrouni Software Engineer Sofiene Jebali Project Manager Fares Lachheb Product Manager My reporting context My status Active Reports to Amira Khelifi Org unit Engineering A Core Open my team Organization My profile"
+  },
+  "mid-manager-core-getting-started": {
+    "url": "/core/getting-started",
+    "landed": "/core/getting-started",
+    "ms": 5620,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Access denied",
+      "This area is not available to your account"
+    ],
+    "sidebar": [
+      "Home 9",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "Org chart",
+      "Organization",
+      "MG Mariam Gharbi VP, Product"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Access denied You do not have permission to open this area. This area is not available to your account Open another Fusion area you can use, or contact your administrator if you expected access. Open Fusion"
+  },
+  "mid-manager-core-organization": {
+    "url": "/core/organization",
+    "landed": "/core/organization?unit=5ff61bc5-38e4-4a4b-822a-d13627f36bf9",
+    "ms": 9827,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Organization"
+    ],
+    "sidebar": [
+      "Home 9",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "Org chart",
+      "Organization",
+      "MG Mariam Gharbi VP, Product"
+    ],
+    "actions": [
+      "As of 30 Oct 2026",
+      "Structure",
+      "Chart",
+      "Outline",
+      "Carthage Digital Group Organization · CDG",
+      "Client Solutions Business Unit · CDG-CLIENT",
+      "Consulting Division · CDG-CLIENT-1",
+      "Consulting A Department · CDG-CLIENT-1-D1",
+      "Consulting A Core Team · CDG-CLIENT-1-D1-T1",
+      "Consulting A Platform Team · CDG-CLIENT-1-D1-T2",
+      "Consulting B Department · CDG-CLIENT-1-D2",
+      "Consulting B Core Team · CDG-CLIENT-1-D2-T1",
+      "Consulting B Platform Team · CDG-CLIENT-1-D2-T2",
+      "Delivery Division · CDG-CLIENT-2",
+      "Delivery A Department · CDG-CLIENT-2-D1",
+      "Delivery A Core Team · CDG-CLIENT-2-D1-T1",
+      "Delivery B Department · CDG-CLIENT-2-D2",
+      "Delivery B Core Team · CDG-CLIENT-2-D2-T1",
+      "Corporate Services Business Unit · CDG-CORP",
+      "Finance & Operations Division · CDG-CORP-1",
+      "Finance & Operations A Department · CDG-CORP-1-D1",
+      "Finance & Operations A Core Team · CDG-CORP-1-D1-T1",
+      "Finance & Operations B Department · CDG-CORP-1-D2",
+      "Finance & Operations B Core Team · CDG-CORP-1-D2-T1",
+      "People & Growth Division · CDG-CORP-2",
+      "People & Growth A Department · CDG-CORP-2-D1",
+      "People & Growth A Core Team · CDG-CORP-2-D1-T1",
+      "People & Growth B Department · CDG-CORP-2-D2",
+      "People & Growth B Core Team · CDG-CORP-2-D2-T1",
+      "Product & Engineering Business Unit · CDG-TECH",
+      "Engineering Division · CDG-TECH-2",
+      "Engineering A Department · CDG-TECH-2-D1",
+      "Engineering A Core Team · CDG-TECH-2-D1-T1",
+      "Engineering A Platform Team · CDG-TECH-2-D1-T2",
+      "Engineering B Department · CDG-TECH-2-D2",
+      "Engineering B Core Team · CDG-TECH-2-D2-T1",
+      "Engineering B Platform Team · CDG-TECH-2-D2-T2",
+      "Product Division · CDG-TECH-1",
+      "Product A Department · CDG-TECH-1-D1",
+      "Product A Core Team · CDG-TECH-1-D1-T1"
+    ],
+    "tabs": [
+      "Details",
+      "History"
+    ],
+    "body": "Organization Define how your organization is structured. As of 30 Oct 2026 Structure Chart Outline Carthage Digital Group Organization · CDG Client Solutions Business Unit · CDG-CLIENT Consulting Division · CDG-CLIENT-1 Consulting A Department · CDG-CLIENT-1-D1 Consulting A Core Team · CDG-CLIENT-1-D1-T1 Consulting A Platform Team · CDG-CLIENT-1-D1-T2 Consulting B Department · CDG-CLIENT-1-D2 Consulting B Core Team · CDG-CLIENT-1-D2-T1 Consulting B Platform Team · CDG-CLIENT-1-D2-T2 Delivery Division · CDG-CLIENT-2 Delivery A Department · CDG-CLIENT-2-D1 Delivery A Core Team · CDG-CLIENT-2-D1-T1 Delivery B Department · CDG-CLIENT-2-D2 Delivery B Core Team · CDG-CLIENT-2-D2-T1 Corporate Services Business Unit · CDG-CORP Finance & Operations Division · CDG-CORP-1 Finance & Operations A Department · CDG-CORP-1-D1 Finance & Operations A Core Team · CDG-CORP-1-D1-T1 Finance & Operations B Department · CDG-CORP-1-D2 Finance & Operations B Core Team · CDG-CORP-1-D2-T1 People & Growth Division · CDG-CORP-2 People & Growth A Department · CDG-CORP-2-D1 People & Growth A Core Team · CDG-CORP-2-D1-T1 People & Growth B Department · CDG-CORP-2-D2 People & Growth B Core Team · CDG-CORP-2-D2-T1 Product & Engineering Business Unit · CDG-TECH Engineering Division · CDG-TECH-2 Engineering A Department · CDG-TECH-2-D1 Engineering A Core Team · CDG-TECH-2-D1-T1 Engineering A Platform Team · CDG-TECH-2-D1-T2 Engineering B Department · CDG-TECH-2-D2 Engineering B Core Team · CDG-TECH-2-D2-T1 Engine"
+  },
+  "mid-manager-core-people": {
+    "url": "/core/people",
+    "landed": "/core/people",
+    "ms": 8974,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "People"
+    ],
+    "sidebar": [
+      "Home",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "Org chart",
+      "Organization",
+      "MG Mariam Gharbi VP, Product"
+    ],
+    "actions": [
+      "All organizations",
+      "Clear filters"
+    ],
+    "tabs": [],
+    "body": "People All states Active Scheduled Former Incomplete All organizations Sort Name A–Z Name Z–A Employee Number Newest start EMPLOYEE WORK MANAGER EMPLOYMENT No matching people Clear filters"
+  },
+  "mid-manager-core-org-chart": {
+    "url": "/core/org-chart",
+    "landed": "/core/org-chart",
+    "ms": 14964,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Org chart"
+    ],
+    "sidebar": [
+      "Home 9",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "Org chart",
+      "Organization",
+      "MG Mariam Gharbi VP, Product"
+    ],
+    "actions": [
+      "Around you",
+      "Whole company",
+      "Colour by Division",
+      "4",
+      "4",
+      "Client Solutions 5",
+      "Corporate Services 1",
+      "Product & Engineering 1"
+    ],
+    "tabs": [],
+    "body": "Org chart 100 people · 3 divisions Around you Whole company Colour by Division MG You Mariam Gharbi VP, Product Engineering A Core Nabeul AB FL MH SH +2 6 direct · 14 in all AB Aicha Bouazizi QA Automation Engineer Ariana · since 2021 MH Meriem Hamrouni Software Engineer Sousse · since 2023 SH Salah Ben Hassine Security Analyst Monastir · since 2020 SJ Sofiene Jebali Project Manager Sfax · since 2022 FL Fares Lachheb Product Manager Consulting B Platform Nabeul EC HM OM RM 4 direct 4 TA Tarek Ayari UX Design Manager Finance & Operations B Core Sousse KZ MO SM ZS 4 direct 4 SY Sami Ben Youssef Chief Executive Officer AK Amira Khelifi Chief Technology Officer Client Solutions 5 Corporate Services 1 Product & Engineering 1 100%"
+  },
+  "mid-manager-core-team": {
+    "url": "/core/team",
+    "landed": "/core/team",
+    "ms": 9220,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "My Team"
+    ],
+    "sidebar": [
+      "Home 9",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "Org chart",
+      "Organization",
+      "MG Mariam Gharbi VP, Product"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "My Team Direct reports. Show in org chart Direct reports 6 direct reports Aicha Bouazizi aicha.bouazizi@midyear-5.example.test QA Automation Engineer Sofiene Jebali sofiene.jebali@midyear-5.example.test Project Manager Meriem Hamrouni meriem.hamrouni@midyear-5.example.test Software Engineer Salah Ben Hassine salah.ben.hassine@midyear-5.example.test Security Analyst Fares Lachheb fares.lachheb@midyear-5.example.test Product Manager Tarek Ayari tarek.ayari@midyear-5.example.test UX Design Manager"
+  },
+  "mid-manager-core-profile": {
+    "url": "/core/profile",
+    "landed": "/core/profile",
+    "ms": 10451,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Mariam Gharbi",
+      "Employment",
+      "History"
+    ],
+    "sidebar": [
+      "Home 9",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "Org chart",
+      "Organization",
+      "MG Mariam Gharbi VP, Product"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "MG Mariam Gharbi Active VP, Product Engineering A Core Job Personal Performance mariam.gharbi@midyear-5.example.test Nabeul Hire date 11 October 2023 3 years Employee number CDG-005 Manager AK Amira Khelifi Direct reports 6 TA Tarek Ayari SH Salah Ben Hassine AB Aicha Bouazizi MH Meriem Hamrouni SJ Sofiene Jebali View all 6 reports Show on the org chart Employment Started 11 Oct 2023 With the company 3y In this job 3y History 11 Oct 2023 Manager assigned Manager No managerAmira Khelifi 11 Oct 2023 Employment started 11 Oct 2023 Current work established in Fusion"
+  },
+  "mid-manager-core-workforce-access": {
+    "url": "/core/workforce-access",
+    "landed": "/core/workforce-access",
+    "ms": 5122,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Workforce access",
+      "You do not have access to this page"
+    ],
+    "sidebar": [
+      "Home",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "Org chart",
+      "Organization",
+      "MG Mariam Gharbi VP, Product"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Workforce access You do not have access to this page Ask an administrator if you need to manage workforce access for this tenant."
+  },
+  "mid-manager-core-access": {
+    "url": "/core/access",
+    "landed": "/core/access",
+    "ms": 6871,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Access denied",
+      "This area is not available to your account"
+    ],
+    "sidebar": [
+      "Home 9",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "My Team",
+      "Org chart",
+      "Organization",
+      "MG Mariam Gharbi VP, Product"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Access denied You do not have permission to open this area. This area is not available to your account Open another Fusion area you can use, or contact your administrator if you expected access. Open Fusion"
+  },
+  "mid-manager-core-settings": {
+    "url": "/core/settings",
+    "landed": "/settings",
+    "ms": 8522,
+    "title": "Fusion",
+    "headings": [
+      "Preferences",
+      "Appearance This device",
+      "Language Your account"
+    ],
+    "sidebar": [
+      "Back to Core HR",
+      "Preferences",
+      "Notifications",
+      "MG Mariam Gharbi VP, Product"
+    ],
+    "actions": [
+      "Dark",
+      "Light",
+      "Match this device",
+      "English",
+      "Français",
+      "العربية"
+    ],
+    "tabs": [],
+    "body": "Preferences Appearance This device Dark Light Match this device Language Your account Language English Français العربية"
+  },
+  "mid-manager-settings-you": {
+    "url": "/settings",
+    "landed": "/settings",
+    "ms": 5169,
+    "title": "Fusion",
+    "headings": [
+      "Preferences",
+      "Appearance This device",
+      "Language Your account"
+    ],
+    "sidebar": [
+      "Back to Core HR",
+      "Preferences",
+      "Notifications",
+      "MG Mariam Gharbi VP, Product"
+    ],
+    "actions": [
+      "Dark",
+      "Light",
+      "Match this device",
+      "English",
+      "Français",
+      "العربية"
+    ],
+    "tabs": [],
+    "body": "Preferences Appearance This device Dark Light Match this device Language Your account Language English Français العربية"
+  },
+  "mid-manager-perf-overview": {
+    "url": "/performance",
+    "landed": "/performance",
+    "ms": 13498,
+    "title": "Performance — Fusion",
+    "headings": [
+      "Overview",
+      "Execution",
+      "Your team",
+      "Your plan",
+      "Conversations",
+      "Organization direction"
+    ],
+    "sidebar": [
+      "Home 9",
+      "Performance",
+      "Overview",
+      "My Plan",
+      "My Team 7",
+      "1:1s 2",
+      "Feedback",
+      "Reviews",
+      "MG Mariam Gharbi VP, Product"
+    ],
+    "actions": [
+      "Build a resilient, secure cloud platform 2 aligned objectives, owned by Amira Khelifi",
+      "Grow sustainable Tunisian digital capabilities 1 aligned objective, owned by Amira Khelifi",
+      "Improve customer delivery predictability 0 aligned objectives, owned by Amira Khelifi"
+    ],
+    "tabs": [],
+    "body": "Overview Execution 176 days left Year ends Sat 24 Apr 2027 Today Planning 25 Apr – 25 May Execution 26 May – 25 Mar Review 26 Mar – 24 Apr Your team 6 people · 18 objectives My Team 7 objectives are off track or at risk Open My Team Fares Lachheb · Document the team's runbooks \"The migration is blocked on the network change; replanning with the platform team.\" · since Thu 9 Jul Off track 20% Fares Lachheb · Run the platform migration \"The migration is blocked on the network change; replanning with the platform team.\" · since Thu 9 Jul Off track 30% Fares Lachheb · Grow recurring client revenue \"Lost two people to the client escalation; this objective needs a new date.\" · since Thu 9 Jul Off track 20% 6 of 6 updated in the last 30 days 1 update request open Your plan My Plan 2 on track, 1 at risk · 44% Last update 22 days ago Conversations 1:1s THU 11:00 1:1 with Aicha Bouazizi Overdue since Thu 22 Oct · 1 open action THU 11:00 1:1 with Amira Khelifi Overdue since Thu 22 Oct · 1 open action Organization direction 3 company objectives Open the map Build a resilient, secure cloud platform 2 aligned objectives, owned by Amira Khelifi Grow sustainable Tunisian digital capabilities 1 aligned objective, owned by Amira Khelifi Improve customer delivery predictability 0 aligned objectives, owned by Amira Khelifi"
+  },
+  "mid-manager-perf-plan": {
+    "url": "/performance/plan",
+    "landed": "/performance/plan",
+    "ms": 12866,
+    "title": "Performance — Fusion",
+    "headings": [
+      "My Plan",
+      "Objectives 3",
+      "Development",
+      "Status",
+      "Plan progress",
+      "Reviewer",
+      "Direction"
+    ],
+    "sidebar": [
+      "Home 9",
+      "Performance",
+      "Overview",
+      "My Plan",
+      "My Team 7",
+      "1:1s 2",
+      "Feedback",
+      "Reviews",
+      "MG Mariam Gharbi VP, Product"
+    ],
+    "actions": [
+      "Raise client satisfaction on delivered work",
+      "Make every team's growth plan visible",
+      "Update progress",
+      "Build role-relevant technical capability",
+      "Update progress",
+      "Shorten code review turnaround",
+      "Update progress",
+      "Add a goal"
+    ],
+    "tabs": [],
+    "body": "My Plan Approved Objectives 3 Raise client satisfaction on delivered work Aligned toMake every team's growth plan visible · Product A Platform Measurement Numeric target Target 70 increase to 90 CSAT Duration 25 Apr 2026 – 24 Apr 2027 25 Apr 24 Apr 2027 Weight 40% Current value 79.6 CSAT Updated 8 Oct On track Update progress Build role-relevant technical capability Standalone role objective Measurement Weighted milestones Milestones 1 of 3 done Duration 25 Apr 2026 – 24 Apr 2027 25 Apr 24 Apr 2027 Weight 25% Milestone progress 1 of 3 milestones completed· 1 overdue Updated 10 Jul At risk Update progress Shorten code review turnaround Standalone role objective Measurement Manual percentage Measure Single percentage Duration 25 Apr 2026 – 24 Apr 2027 25 Apr 24 Apr 2027 Weight 35% Current progress 48% Updated 8 Oct On track Update progress Development No development goals yet Add a goal Status Approved & locked 11 May Approved by Amira Khelifi Plan progress 44% overall progress Weighted across 3 objectives 2 on track 1 at risk Reviewer AK Amira Khelifi amira.khelifi@midyear-5.example.test Direction Make every team's growth plan visible Product A Platform Grow sustainable Tunisian digital capabilities Company strategy"
+  },
+  "mid-manager-perf-team": {
+    "url": "/performance/team",
+    "landed": "/performance/team",
+    "ms": 23648,
+    "title": "Performance — Fusion",
+    "headings": [
+      "My Team",
+      "Upstream direction",
+      "No direction selected",
+      "Create a team objective",
+      "Team objectives 1"
+    ],
+    "sidebar": [
+      "Home 9",
+      "Performance",
+      "Overview",
+      "My Plan",
+      "My Team 7",
+      "1:1s 2",
+      "Feedback",
+      "Reviews",
+      "MG Mariam Gharbi VP, Product"
+    ],
+    "actions": [
+      "All",
+      "25",
+      "1",
+      "3 eligible objectives",
+      "Standalone allowed",
+      "Choose an upstream objective",
+      "Create team objective",
+      "Cut production incidents by 40%",
+      "Build a resilient, secure cloud platform"
+    ],
+    "tabs": [],
+    "body": "My Team 6 people · 18 objectives Objectives 11 on track 3 at risk 4 off track 0 no status yet 6 of 6 updated in the last 30 days Show is All Person Objectives Needs attention Plan progress Last update Update requests Open Needs you · 4 FL Fares Lachheb Product Manager · Consulting B Platform Grow recurring client revenue · off track \"Lost two people to the client escalation; this objective needs a new date.\" · since Thu 9 Jul 23% 23 days ago — SJ Sofiene Jebali Project Manager · Consulting A Platform Document the team's runbooks · off track \"The migration is blocked on the network change; replanning with the platform team.\" · since Sat 11 Jul 28% 21 days ago — AB Aicha Bouazizi QA Automation Engineer · Consulting A Core Automate the regression suite · at risk \"Vendor API is late; the second half moves a month.\" · since Sun 12 Jul 38% 20 days ago 1 open · asked Sun 18 Oct MH Meriem Hamrouni Software Engineer · Consulting B Core Raise client satisfaction on delivered work · at risk \"Two dependencies slipped; recovering in the next sprint.\" · since Fri 10 Jul 38% 22 days ago — The rest · 2 SB Salah Ben Hassine Security Analyst · Consulting B Platform — 44% 23 days ago — TA Tarek Ayari UX Design Manager · Finance & Operations B Core — 44% 23 days ago — 1–6 of 6 people Rows per page 25 1 Upstream direction Open organization direction No direction selected Choose one of the eligible objectives for this team, or continue without alignment for a standalone team objective. 3 eligible "
+  },
+  "mid-manager-perf-cycle": {
+    "url": "/performance/cycle",
+    "landed": "/performance/cycle",
+    "ms": 9846,
+    "title": "Performance — Fusion",
+    "headings": [
+      "Administration only"
+    ],
+    "sidebar": [
+      "Home 9",
+      "Performance",
+      "Overview",
+      "My Plan",
+      "My Team 7",
+      "1:1s 2",
+      "Feedback",
+      "Reviews",
+      "MG Mariam Gharbi VP, Product"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Administration only Cycle administration is available to performance administrators."
+  },
+  "mid-manager-perf-reviews": {
+    "url": "/performance/reviews",
+    "landed": "/performance/reviews",
+    "ms": 13996,
+    "title": "Performance — Fusion",
+    "headings": [
+      "Reviews",
+      "Past results"
+    ],
+    "sidebar": [
+      "Home 9",
+      "Performance",
+      "Overview",
+      "My Plan",
+      "My Team 7",
+      "1:1s 2",
+      "Feedback",
+      "Reviews",
+      "MG Mariam Gharbi VP, Product"
+    ],
+    "actions": [
+      "PDF"
+    ],
+    "tabs": [],
+    "body": "Reviews No review yet in FY2027. Past results Effective FY2026 year-end review · acknowledged PDF"
+  },
+  "mid-manager-perf-settings": {
+    "url": "/performance/settings",
+    "landed": "/settings",
+    "ms": 10740,
+    "title": "Fusion",
+    "headings": [
+      "Preferences",
+      "Appearance This device",
+      "Language Your account"
+    ],
+    "sidebar": [
+      "Back to Performance",
+      "Preferences",
+      "Notifications",
+      "MG Mariam Gharbi VP, Product"
+    ],
+    "actions": [
+      "Dark",
+      "Light",
+      "Match this device",
+      "English",
+      "Français",
+      "العربية"
+    ],
+    "tabs": [],
+    "body": "Preferences Appearance This device Dark Light Match this device Language Your account Language English Français العربية"
+  },
+  "mid-employee-home": {
+    "url": "/",
+    "landed": "/",
+    "ms": 4876,
+    "title": "(1) Fusion",
+    "headings": [
+      "Good morning, Aicha",
+      "Share the revised estimate with the client",
+      "Also needs you",
+      "Next two weeks",
+      "Your year",
+      "Praise"
+    ],
+    "sidebar": [
+      "Home 3",
+      "Core HR",
+      "Performance 3",
+      "Learning",
+      "Recruitment",
+      "Onboarding",
+      "Interview",
+      "AB Aicha Bouazizi QA Automation Engineer"
+    ],
+    "actions": [
+      "The incident drill was the best we have run. Clear roles, and every follow-up has an owner.",
+      "Your data pipeline fix saved the client demo. Quick, quiet and thorough."
+    ],
+    "tabs": [],
+    "body": "Good morning, Aicha Friday 30 October · QA Automation Engineer, Consulting A Core Performance1:1 with Mariam Gharbi Share the revised estimate with the client 17days late Due Tue 13 Oct Open the 1:1 Also needs you P 1:1 with Mariam Gharbi Not completed yet 8 days late P Update progress on Build role-relevant technical capability Mariam Gharbi asked for an update Next two weeks Nothing is scheduled in the next two weeks Your year My Plan 38% 3 objectives 2 on track 1 at risk Last update 19 days ago Praise Give praise AB LB Aicha Bouazizi and Leila Baccouche from Salah Ben Hassine · 5 Oct To you The incident drill was the best we have run. Clear roles, and every follow-up has an owner. Data-Informed Decision Making SJ Sofiene Jebali from Meriem Hamrouni · 8 Sept Your data pipeline fix saved the client demo. Quick, quiet and thorough. Secure Engineering All praise"
+  },
+  "mid-employee-core-overview": {
+    "url": "/core",
+    "landed": "/core",
+    "ms": 8006,
+    "title": "(1) Core HR — Fusion",
+    "headings": [
+      "Dashboard",
+      "My profile",
+      "Quick actions"
+    ],
+    "sidebar": [
+      "Home 3",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "Org chart",
+      "AB Aicha Bouazizi QA Automation Engineer"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Dashboard Welcome, Aicha. Your profile and work details. STATUS Active JOB TITLE Set QA Automation Engineer ORG UNIT Assigned Consulting A Core MANAGER Assigned Mariam Gharbi My profile Aicha Bouazizi · QA Automation Engineer Open profile Status Active Manager Mariam Gharbi Org unit Consulting A Core Preferred name — Quick actions View profile Edit preferences"
+  },
+  "mid-employee-core-getting-started": {
+    "url": "/core/getting-started",
+    "landed": "/core/getting-started",
+    "ms": 5264,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Access denied",
+      "This area is not available to your account"
+    ],
+    "sidebar": [
+      "Home",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "AB Aicha Bouazizi QA Automation Engineer"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Access denied You do not have permission to open this area. This area is not available to your account Open another Fusion area you can use, or contact your administrator if you expected access. Open Fusion"
+  },
+  "mid-employee-core-organization": {
+    "url": "/core/organization",
+    "landed": "/core/organization",
+    "ms": 7910,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Organization",
+      "Organization access required"
+    ],
+    "sidebar": [
+      "Home 3",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "Org chart",
+      "AB Aicha Bouazizi QA Automation Engineer"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Organization Organization access required You do not have permission to view this tenant’s Organization."
+  },
+  "mid-employee-core-people": {
+    "url": "/core/people",
+    "landed": "/core/people",
+    "ms": 4997,
+    "title": "(1) Core HR — Fusion",
+    "headings": [
+      "People"
+    ],
+    "sidebar": [
+      "Home 3",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "Org chart",
+      "AB Aicha Bouazizi QA Automation Engineer"
+    ],
+    "actions": [
+      "All organizations",
+      "Clear filters"
+    ],
+    "tabs": [],
+    "body": "People All states Active Scheduled Former Incomplete All organizations Sort Name A–Z Name Z–A Employee Number Newest start EMPLOYEE WORK MANAGER EMPLOYMENT No matching people Clear filters"
+  },
+  "mid-employee-core-org-chart": {
+    "url": "/core/org-chart",
+    "landed": "/core/org-chart",
+    "ms": 8128,
+    "title": "(1) Core HR — Fusion",
+    "headings": [
+      "Org chart"
+    ],
+    "sidebar": [
+      "Home 3",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "Org chart",
+      "AB Aicha Bouazizi QA Automation Engineer"
+    ],
+    "actions": [
+      "Around you",
+      "Whole company",
+      "Colour by Division",
+      "4",
+      "4",
+      "Client Solutions 5",
+      "Corporate Services 1",
+      "Product & Engineering 1"
+    ],
+    "tabs": [],
+    "body": "Org chart 100 people · 3 divisions Around you Whole company Colour by Division MG Mariam Gharbi VP, Product Engineering A Core Nabeul AB FL MH SH +2 6 direct · 14 in all AB You Aicha Bouazizi QA Automation Engineer Ariana · since 2021 MH Meriem Hamrouni Software Engineer Sousse · since 2023 SH Salah Ben Hassine Security Analyst Monastir · since 2020 SJ Sofiene Jebali Project Manager Sfax · since 2022 FL Fares Lachheb Product Manager Consulting B Platform Nabeul EC HM OM RM 4 direct 4 TA Tarek Ayari UX Design Manager Finance & Operations B Core Sousse KZ MO SM ZS 4 direct 4 SY Sami Ben Youssef Chief Executive Officer AK Amira Khelifi Chief Technology Officer Client Solutions 5 Corporate Services 1 Product & Engineering 1 100%"
+  },
+  "mid-employee-core-team": {
+    "url": "/core/team",
+    "landed": "/core/team",
+    "ms": 5195,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "My Team",
+      "No team to manage"
+    ],
+    "sidebar": [
+      "Home",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "Org chart",
+      "AB Aicha Bouazizi QA Automation Engineer"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "My Team Direct reports. No team to manage The team workspace shows people who report to you. You don’t have any direct reports right now. Go to your profile"
+  },
+  "mid-employee-core-profile": {
+    "url": "/core/profile",
+    "landed": "/core/profile",
+    "ms": 14502,
+    "title": "(1) Core HR — Fusion",
+    "headings": [
+      "Aicha Bouazizi",
+      "Employment",
+      "History"
+    ],
+    "sidebar": [
+      "Home 3",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "Org chart",
+      "AB Aicha Bouazizi QA Automation Engineer"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "AB Aicha Bouazizi Active QA Automation Engineer Consulting A Core Job Personal Performance aicha.bouazizi@midyear-5.example.test Ariana Hire date 15 December 2021 4 years, 10 months Employee number CDG-027 Manager MG Mariam Gharbi Show on the org chart Employment Started 15 Dec 2021 With the company 4y 10m In this job 4y 10m History 15 Dec 2021 Employment started 15 Dec 2021 Current work established in Fusion 11 Oct 2023 Manager assigned Manager No managerMariam Gharbi"
+  },
+  "mid-employee-core-workforce-access": {
+    "url": "/core/workforce-access",
+    "landed": "/core/workforce-access",
+    "ms": 8293,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Workforce access",
+      "You do not have access to this page"
+    ],
+    "sidebar": [
+      "Home",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "AB Aicha Bouazizi QA Automation Engineer"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Workforce access You do not have access to this page Ask an administrator if you need to manage workforce access for this tenant."
+  },
+  "mid-employee-core-access": {
+    "url": "/core/access",
+    "landed": "/core/access",
+    "ms": 10231,
+    "title": "Core HR — Fusion",
+    "headings": [
+      "Access denied",
+      "This area is not available to your account"
+    ],
+    "sidebar": [
+      "Home",
+      "Core HR",
+      "Overview",
+      "My Profile",
+      "AB Aicha Bouazizi QA Automation Engineer"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Access denied You do not have permission to open this area. This area is not available to your account Open another Fusion area you can use, or contact your administrator if you expected access. Open Fusion"
+  },
+  "mid-employee-core-settings": {
+    "url": "/core/settings",
+    "landed": "/settings",
+    "ms": 25775,
+    "title": "(1) Fusion",
+    "headings": [
+      "Preferences",
+      "Appearance This device",
+      "Language Your account"
+    ],
+    "sidebar": [
+      "Back to Core HR",
+      "Preferences",
+      "Notifications",
+      "AB Aicha Bouazizi QA Automation Engineer"
+    ],
+    "actions": [
+      "Dark",
+      "Light",
+      "Match this device",
+      "English",
+      "Français",
+      "العربية"
+    ],
+    "tabs": [],
+    "body": "Preferences Appearance This device Dark Light Match this device Language Your account Language English Français العربية"
+  },
+  "mid-employee-settings-you": {
+    "url": "/settings",
+    "landed": "/settings",
+    "ms": 7762,
+    "title": "(1) Fusion",
+    "headings": [
+      "Preferences",
+      "Appearance This device",
+      "Language Your account"
+    ],
+    "sidebar": [
+      "Back to Core HR",
+      "Preferences",
+      "Notifications",
+      "AB Aicha Bouazizi QA Automation Engineer"
+    ],
+    "actions": [
+      "Dark",
+      "Light",
+      "Match this device",
+      "English",
+      "Français",
+      "العربية"
+    ],
+    "tabs": [],
+    "body": "Preferences Appearance This device Dark Light Match this device Language Your account Language English Français العربية"
+  },
+  "mid-employee-perf-overview": {
+    "url": "/performance",
+    "landed": "/performance",
+    "ms": 22764,
+    "title": "(1) Performance — Fusion",
+    "headings": [
+      "Overview",
+      "Execution",
+      "Your plan",
+      "Conversations",
+      "Organization direction"
+    ],
+    "sidebar": [
+      "Home 3",
+      "Performance",
+      "Overview",
+      "My Plan 1",
+      "1:1s 2",
+      "Feedback",
+      "Reviews",
+      "AB Aicha Bouazizi QA Automation Engineer"
+    ],
+    "actions": [
+      "Build a resilient, secure cloud platform 2 aligned objectives, owned by Amira Khelifi",
+      "Grow sustainable Tunisian digital capabilities 1 aligned objective, owned by Amira Khelifi",
+      "Improve customer delivery predictability 0 aligned objectives, owned by Amira Khelifi"
+    ],
+    "tabs": [],
+    "body": "Overview Execution 176 days left Year ends Sat 24 Apr 2027 Today Planning 25 Apr – 25 May Execution 26 May – 25 Mar Review 26 Mar – 24 Apr Your plan My Plan Mariam Gharbi asked for an update Record progress Build role-relevant technical capability Conversations 1:1s THU 11:00 1:1 with Mariam Gharbi Overdue since Thu 22 Oct · 1 open action 1 action item is overdue Share the revised estimate with the client · was due Tue 13 Oct Open the 1:1 Organization direction 3 company objectives Open the map Build a resilient, secure cloud platform 2 aligned objectives, owned by Amira Khelifi Grow sustainable Tunisian digital capabilities 1 aligned objective, owned by Amira Khelifi Improve customer delivery predictability 0 aligned objectives, owned by Amira Khelifi"
+  },
+  "mid-employee-perf-plan": {
+    "url": "/performance/plan",
+    "landed": "/performance/plan",
+    "ms": 20815,
+    "title": "(1) Performance — Fusion",
+    "headings": [
+      "My Plan",
+      "Objectives 3",
+      "Development 2",
+      "Status",
+      "Plan progress",
+      "Reviewer",
+      "Direction"
+    ],
+    "sidebar": [
+      "Home 3",
+      "Performance",
+      "Overview",
+      "My Plan 1",
+      "1:1s 2",
+      "Feedback",
+      "Reviews",
+      "AB Aicha Bouazizi QA Automation Engineer"
+    ],
+    "actions": [
+      "Automate the regression suite",
+      "Cut production incidents by 40%",
+      "Update progress",
+      "Build role-relevant technical capability",
+      "Update progress",
+      "Make estimates clients can rely on",
+      "Update progress",
+      "Add goal",
+      "Dismiss",
+      "Bring over",
+      "In progress",
+      "Not started"
+    ],
+    "tabs": [],
+    "body": "My Plan Approved Objectives 3 Automate the regression suite Aligned toCut production incidents by 40% · Engineering A Core Measurement Numeric target Target 20% automated increase to 85% automated Duration 25 Apr 2026 – 24 Apr 2027 25 Apr 24 Apr 2027 Weight 40% Current value 42.1% automated Updated 10 Oct At risk Update progress Build role-relevant technical capability Standalone role objective Measurement Weighted milestones Milestones 1 of 3 done Duration 25 Apr 2026 – 24 Apr 2027 25 Apr 24 Apr 2027 Weight 25% Milestone progress 1 of 3 milestones completed· 1 overdue Updated 12 Jul On track Mariam asked · 18 Oct Update progress Make estimates clients can rely on Standalone role objective Measurement Manual percentage Measure Single percentage Duration 25 Apr 2026 – 24 Apr 2027 25 Apr 24 Apr 2027 Weight 35% Current progress 48% Updated 10 Oct On track Update progress Development 2 Add goal 2 open goals from FY2026 Present the test automation approach at the guild, Lead a client release end to end Dismiss Bring over Lead a client release end to end Inclusive Collaboration By 19 Feb 2027 In progress Agree the scope with my manager Present the test automation approach at the guild Data-Informed Decision Making By 19 Feb 2027 Not started Agree the scope with my manager Status Approved & locked 9 May Approved by Mariam Gharbi Plan progress 38% overall progress Weighted across 3 objectives 2 on track 1 at risk Reviewer MG Mariam Gharbi mariam.gharbi@midyear-5.example.test Directio"
+  },
+  "mid-employee-perf-team": {
+    "url": "/performance/team",
+    "landed": "/performance/team",
+    "ms": 15504,
+    "title": "(1) Performance — Fusion",
+    "headings": [
+      "My Team"
+    ],
+    "sidebar": [
+      "Home 3",
+      "Performance",
+      "Overview",
+      "My Plan 1",
+      "1:1s 2",
+      "Feedback",
+      "Reviews",
+      "AB Aicha Bouazizi QA Automation Engineer"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "My Team No one reports to you in FY2027 Go to Overview"
+  },
+  "mid-employee-perf-cycle": {
+    "url": "/performance/cycle",
+    "landed": "/performance/cycle",
+    "ms": 13224,
+    "title": "(1) Performance — Fusion",
+    "headings": [
+      "Administration only"
+    ],
+    "sidebar": [
+      "Home 3",
+      "Performance",
+      "Overview",
+      "My Plan 1",
+      "1:1s 2",
+      "Feedback",
+      "Reviews",
+      "AB Aicha Bouazizi QA Automation Engineer"
+    ],
+    "actions": [],
+    "tabs": [],
+    "body": "Administration only Cycle administration is available to performance administrators."
+  },
+  "mid-employee-perf-reviews": {
+    "url": "/performance/reviews",
+    "landed": "/performance/reviews",
+    "ms": 16131,
+    "title": "(1) Performance — Fusion",
+    "headings": [
+      "Reviews",
+      "Past results"
+    ],
+    "sidebar": [
+      "Home 3",
+      "Performance",
+      "Overview",
+      "My Plan 1",
+      "1:1s 2",
+      "Feedback",
+      "Reviews",
+      "AB Aicha Bouazizi QA Automation Engineer"
+    ],
+    "actions": [
+      "PDF"
+    ],
+    "tabs": [],
+    "body": "Reviews No review yet in FY2027. Past results Strong FY2026 year-end review · acknowledged PDF"
+  },
+  "mid-employee-perf-settings": {
+    "url": "/performance/settings",
+    "landed": "/settings",
+    "ms": 12413,
+    "title": "(1) Fusion",
+    "headings": [
+      "Preferences",
+      "Appearance This device",
+      "Language Your account"
+    ],
+    "sidebar": [
+      "Back to Performance",
+      "Preferences",
+      "Notifications",
+      "AB Aicha Bouazizi QA Automation Engineer"
+    ],
+    "actions": [
+      "Dark",
+      "Light",
+      "Match this device",
+      "English",
+      "Français",
+      "العربية"
+    ],
+    "tabs": [],
+    "body": "Preferences Appearance This device Dark Light Match this device Language Your account Language English Français العربية"
+  }
+}

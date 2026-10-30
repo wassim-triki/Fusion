@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-193.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-197.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -28,9 +28,8 @@ Open work only. Agents keep it current from the conversation; closed items leave
       User 2026-10-30, before any other task: Core HR was winged without specs and feels dated; clean it up, remove/merge/redesign/re-architect, BambooHR-like, no vibe-code feel, the same way as the Performance rework (research, recommendations, an interactive artifact, taste questions). Platform admin out. Order: thin map → independent target → the audit is the diff, in one explorer → decisions → rebuild → tour. [plan](plans/B-164-tenant-experience-overhaul.md)
   - [ ] **B-110** Tenant configurability as a hero: branding (logo, theme/accent, branded sign-in, own address, email branding) and internal configuration (company defaults and whatever the research puts on the ladder), depth chosen on B-163's scope page · Shell, Platform, Core HR, Identity · 2026-10-24
         User 2026-10-30: "I really wanna establish it as a core wow factor"; EY discussed it a lot but never gave specs or how far to take it. Earlier (2026-10-24) brain dump, ideas not requirements. A tenant's default language meets B-105. Context: B-071 removed the unused brand colour from Core's branding settings; Core's branding settings store a `LogoUrl` that no screen sets or shows; Company settings show name and locale.
-  - [ ] **B-167** Rebuild: slices in dependency order, each end to end with screens for the taste check ([decisions](plans/B-166-decisions.md), D-01–D-30; [slices](plans/B-167-rebuild.md)) · 2026-10-30
+  - [ ] **B-167** Rebuild: slices in dependency order, each end to end with screens for the taste check ([decisions](plans/B-164-decisions.md), D-01–D-30; [slices](plans/B-167-rebuild.md)) · 2026-10-30
         Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 is next, in a fresh session at high.
-    - [ ] **B-175** Jobs, places and the company's lists: jobs as objects, places, lists; titles and locations off free text · Core HR · 2026-10-30
     - [ ] **B-176** Brand studio: logo, colour, language with a live preview; applied across Fusion, sign-in and emails (D-02) · Core HR, Shell, Identity · 2026-10-30
     - [ ] **B-177** One roles model: areas × level × reach, holders by rule, the roles table and a role page with a live preview (D-25) · Identity, Core HR · 2026-10-30
     - [ ] **B-178** Administrators as a protected role, seeing Fusion as someone, the old token roles retired (D-25) · Identity, Core HR · 2026-10-30
@@ -40,7 +39,9 @@ Open work only. Agents keep it current from the conversation; closed items leave
       - [ ] **B-168** A deep link that opens a change on a person's record (`?change=job|end`) leaves the address without `/core`, so a refresh lands outside Core HR · Core HR · 2026-10-30
             Found in the B-165 walk: `features/people/changes/change-sheet.tsx` passes `usePathname()` (basePath-less) to `history.replaceState`. Fixed with the rebuilt change sheet.
     - [ ] **B-180** One person page across Core HR and Performance: tabs, Personal and Access, documents, on leave, photos (D-01, D-16) · Core HR, Performance · 2026-10-30
+      - [ ] **B-195** Show the job's family and level on the person page's Job tab; the profile read already carries `jobFamily`, `jobLevel`, `jobId`, `placeId` (B-175) · Core HR · 2026-10-30
     - [ ] **B-181** Fields: the company's own fields and sections, a gallery, who sees and changes each; records to complete (D-18) · Core HR · 2026-10-30
+      - [ ] **B-196** Where employment type is set: it's a value of the company's list since B-175 and the API takes it on hire, rejoin and the legacy update, but no form sets it (an earlier product call kept it off the hire form, held by tests). Decide with the fields model · Core HR · 2026-10-30
     - [ ] **B-182** People, the directory and invitations: HR table, portrait cards, the invite sheet, Settings › Sign-in, Export everywhere (D-11, D-13, D-28) · Core HR, Shared · 2026-10-30
     - [ ] **B-183** Organization in time: one place, three views, one time slider, unit pages, open roles (D-17) · Core HR · 2026-10-30
     - [ ] **B-184** Joining and leaving: checklists, a joiner's first week, celebrations · Core HR, Shell · 2026-10-30
@@ -54,9 +55,12 @@ Open work only. Agents keep it current from the conversation; closed items leave
     - [ ] **B-190** Core HR's front page: Growth and People on one time slider, department cards (D-30) · Core HR · 2026-10-30
     - [ ] **B-191** Single sign-on: Microsoft, Google, a company's own provider, required per domain · Identity, Shell · 2026-10-30
     - [ ] **B-192** Seams and finish: colleague modules only when on, one vocabulary, replaced surfaces gone, demo presets for the tour · All · 2026-10-30
+      - [ ] **B-194** Remove the legacy employee write endpoints (`POST /employees`, `PUT /employees/{id}`, rehire, terminate, change-manager) and their commands: no screen calls them; B-175 had to move them onto job and place ids anyway · Core HR · 2026-10-30
 
 ## In review
 
+- [ ] **B-175** Jobs, places and the company's lists (slice 1 of B-167): jobs as objects with family and level, places, Settings › Lists, job and place pickers in the hire, change and open-role forms · Core HR · 2026-10-30
+      [decisions](plans/B-175-jobs-places-lists.md). Look at: [screens](plans/B-175-screens/) (dark 1440×900, Amira on Carthage). Organization › Jobs grouped by family with level and who holds each (01, 04), the edit dialog (02), merging a duplicate (03), Organization › Places (05), Settings › Lists (06, 07), the hire form's job picker with search and "Add the job" (08, 09), the Organization lenses (10). These screens weren't drawn in the explorer: judge them against the accepted grammar. Live at `/core/organization/jobs`, `/core/organization/places`, `/core/settings/lists`.
 - [ ] **B-104** Final manual verification pass, once the big features are done (Settings, any wow feature): the user verifies B-089 phase 2 and everything since by hand, then the little stuff that's left · Performance · 2026-10-23
       2026-10-29: the fixes are done (B-089 audit, phase 2 committed ba8f58af, which also closed B-088's ask); only the user's hand check is left, so this sits In review.
       User: "once we establish a bunch of things and the big features all done and only the little stuff left, maybe we'll do a manual thing right there and verify everything". B-089 phase 2 waits on it; committed 2026-10-25 at the user's request (ba8f58af), still unverified by hand.
@@ -89,6 +93,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## Needs discussion
 
+- [ ] **B-193** Streamline a session's build and check cadence: the user noticed B-175's long run of builds and tests (2026-10-30). Proposed: frontend lint and type-check left to the commit hook; no cross-module tests unless that module or a contract it reads changed; a `fusion-dev` migration script that builds to the artifacts path (no CoreHR stop); one full backend suite, one cold build only for route changes; optionally split contract-heavy slices into backend and screens sessions · Tooling · 2026-10-30
 - [ ] **B-169** Core HR after the rebuild: the rungs chosen at checkpoint 2 to keep for later, so they aren't lost · Core HR, Shell · 2026-10-30
       From B-164's scope page (brief §6b). Each is the next rung above what B-167 builds.
   - [ ] **B-170** Companies arrange the person page's sections from their own fields (P1 rung 3) · Core HR · 2026-10-30

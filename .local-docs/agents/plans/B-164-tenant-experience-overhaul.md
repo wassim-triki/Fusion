@@ -68,7 +68,7 @@ So: a thin **map** of what is (no verdicts) → a **target** from first principl
 | 0. Shape | B-164 | This conversation: the user's brain dump organised into this plan (the roadmap). Nothing is started until the user says so. | in conversation |
 | 1. Map | B-165 | `plans/B-164-map.md`: every tenant surface per role and state, the domain and role models as built, the Core ↔ Performance ↔ shell seams. Facts and open questions only. | 1 session |
 | 2. Target | B-163 | `plans/B-164-target-brief.md` (what Core HR is in BambooHR, HiBob, Personio, Rippling, Factorial, Workday; personas; IA; a company's first run) and the **scope page**, an artifact: the wide long list, each feature with its ladder, business case, demo value, cost and recommended rung, the proposed heroes and the "not doing" list. The user picks rungs, adds, pulls back. Cheap and wide: no screens yet. | 1 session |
-| 3. Explorer | B-166 | One artifact for the chosen scope only: journey stage × persona, target surfaces mocked in Fusion's look, a verdict on every existing surface (keep, redesign, merge, remove) and every missing one (build) with its reason, the tour moments, taste questions. The user's verdict becomes `plans/B-166-decisions.md` (D-IDs), the only authority. | 1–2 sessions |
+| 3. Explorer | B-166 | One artifact for the chosen scope only: journey stage × persona, target surfaces mocked in Fusion's look, a verdict on every existing surface (keep, redesign, merge, remove) and every missing one (build) with its reason, the tour moments, taste questions. The user's verdict becomes `plans/B-164-decisions.md` (D-IDs), the only authority. | 1–2 sessions |
 | 4. Rebuild | B-167 | Slices in dependency order, each end to end (domain, contracts, UI in every state, tests), canvas first for taste-heavy surfaces, screens at the end of each. Split into children once decisions are accepted. | sized after 3 |
 | 5. Tour | B-090 | The product tour walks the finished journey; its storyline is the explorer's journey. | after 4 |
 
@@ -80,7 +80,7 @@ The user wants to see where this is going at all times, without the process expl
 | --- | --- | --- |
 | 1 | Map what exists (B-165) | **1, short, in chat:** what exists, the problems seen, the questions raised; the user flags what's missing or hated. Catches gaps early. |
 | 2 | Target research and the scope page (B-163) | **2, the big back-and-forth:** scope page, picks preselected, iterate until scope is settled. |
-| 3 | The journey's screens (B-166), drawn to [the design direction](B-166-design-direction.md) | **3a, quick:** a style frame of three anchor screens: is this the feel? **3:** screens page, taste questions, verdicts → decisions document. |
+| 3 | The journey's screens (B-166), drawn to [the design direction](B-164-design-direction.md) | **3a, quick:** a style frame of three anchor screens: is this the feel? **3:** screens page, taste questions, verdicts → decisions document. |
 | 4 | Rebuild slices (B-167) | After each slice: screenshots of the real screens. |
 | 5 | Product tour (B-090) | Its own review. |
 
@@ -91,7 +91,7 @@ The user wants to see where this is going at all times, without the process expl
 
 ## Authority
 
-1. `plans/B-166-decisions.md` once accepted. 2. Approved product contracts and `DESIGN.md`. 3. Research (the target brief) is input. 4. Existing code is evidence of what exists, not authority.
+1. `plans/B-164-decisions.md` once accepted. 2. Approved product contracts and `DESIGN.md`. 3. Research (the target brief) is input. 4. Existing code is evidence of what exists, not authority.
 
 ## Checkpoint 1 (user, 2026-10-30)
 

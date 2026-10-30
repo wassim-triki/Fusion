@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-207.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-212.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -52,6 +52,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
     - [ ] **B-186** The import, one flow: any number of files, What Fusion understood, the chart, bringing in (D-22–D-24, D-29) · Core HR · 2026-10-30
     - [ ] **B-187** The import again and when it goes wrong: create or update, resumable, bad files (D-22, D-23, D-29) · Core HR · 2026-10-30
     - [ ] **B-188** Day one and Home: activation, the setup guide (the tour's admin track), Home every day (D-09, D-10, D-12) · Shell, Core HR, Identity · 2026-10-30
+          Also: the brand studio's Home preview is a stand-in; once Home is rebuilt the preview draws the real Home (user 2026-10-30 found it lacking). Activation keeps the password strength meter (ReUI) already on invitation acceptance.
     - [ ] **B-189** Reports: standard and your own, on a date or between two, run as the viewer (D-14) · Core HR · 2026-10-30
     - [ ] **B-190** Core HR's front page: Growth and People on one time slider, department cards (D-30) · Core HR · 2026-10-30
     - [ ] **B-191** Single sign-on: Microsoft, Google, a company's own provider, required per domain · Identity, Shell · 2026-10-30
@@ -64,6 +65,13 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 - [ ] **B-176** Brand studio: logo, colour, language with a live preview; applied across Fusion, sign-in and emails (D-02) · Core HR, Shell, Identity · 2026-10-30
       Slice 2 of B-167. Look at: Settings › Brand in Carthage (logo, colour from the logo, readable check, default language, the three previews), Home and Core HR in the blue, sign-in signed out (`/auth/signin?company=carthage-digital-group`), an invitation in Mailpit. [notes](plans/B-176-brand-studio.md), screens in `plans/B-176-screens/`.
+  - [x] **B-207** Studio: Save and Discard sit in the page header beside the title, as in the explorer, instead of the save bar at the bottom · Core HR · 2026-10-30
+        User 2026-10-30 reviewing the screens: "I like the artifact approach more."
+  - [x] **B-208** Selected state of segmented and toggle controls (DS primitive): outline with a faint tint, not a solid fill; every use across Fusion · DS · 2026-10-30
+        User 2026-10-30, on Default language: prefers the explorer's outline and faded background "in these types of UIs"; a primitive, so sooner.
+  - [x] **B-209** Drop the contrast ratio under Color: text colour is already picked automatically and the preview shows it live; nobody needs the score · Core HR · 2026-10-30
+  - [ ] **B-210** Sign-in's company column feels empty (logo and name on a wash); give it more, canvas first · Shell · 2026-10-30
+        User 2026-10-30 on the Arabic sign-in: "looks clean, still lacking … especially the empty column holding the title of the organization".
 
 - [ ] **B-104** Final manual verification pass, once the big features are done (Settings, any wow feature): the user verifies B-089 phase 2 and everything since by hand, then the little stuff that's left · Performance · 2026-10-23
       2026-10-29: the fixes are done (B-089 audit, phase 2 committed ba8f58af, which also closed B-088's ask); only the user's hand check is left, so this sits In review.
@@ -74,6 +82,9 @@ Open work only. Agents keep it current from the conversation; closed items leave
           User, locking B-087 in: "generally its not bad, although idk if its gonna be the final polish, in terms of specific ui ux and routing and layout and design". Folded into B-089.
 
 ## Ready
+
+- [ ] **B-211** Search in the top bar, made real: people first, then records and settings, as one place to find anything; a candidate small wow · Shell, Core HR, Performance · 2026-10-30
+      User 2026-10-30: "we should even have that search bar like we exactly have it in the artifacts … even if the functionality is not there yet … could be part of a small wow factor … just wire it in." Wired 2026-10-30 under B-176: the field (Ctrl/⌘ K) opens a palette of the places the person can open.
 
 - [ ] **B-203** Brand changes in Change history: a save in Settings › Brand is stored in Identity and isn't in Core HR's change history yet; fold into the unified audit (see the audit-history-deferred note) · Identity, Core HR · 2026-10-30
 - [ ] **B-204** Notification emails from Core HR and Performance in the company's brand (name, logo, colour), as invitations are since B-176; the modules don't hold the brand, so Identity serves it to them · Core HR, Performance, Identity · 2026-10-30

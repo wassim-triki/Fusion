@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Mail;
 using EY.HRPlatform.Identity.Domain.Enums;
 using EY.HRPlatform.Identity.Features.Invitations;
+using EY.HRPlatform.SharedKernel.Localization;
+using EY.HRPlatform.SharedKernel.Notifications;
 using Microsoft.Extensions.Options;
 
 namespace EY.HRPlatform.Identity.Features.WorkforceAccounts;
@@ -101,7 +103,9 @@ public static class WorkforceInvitationMailAssembly
             ActionUrl: invitation.InviteLink,
             ExpiresAtUtc: invitation.ExpiresAt,
             RecipientName: invitation.RecipientName,
-            AccessSummary: ResolveAccessSummary(invitation.AccessProfileNames)));
+            AccessSummary: ResolveAccessSummary(invitation.AccessProfileNames),
+            Language: invitation.Branding?.Language ?? FusionLanguages.English,
+            Brand: invitation.Branding?.Brand));
 
     public static MailMessage Build(
         WorkforceInvitationEmailMessage invitation,
@@ -117,8 +121,7 @@ public static class WorkforceInvitationMailAssembly
             From = new MailAddress(options.FromEmail, options.FromName),
         };
 
-        mail.AlternateViews.Add(
-            AlternateView.CreateAlternateViewFromString(rendered.Html, null, "text/html"));
+        mail.AlternateViews.Add(FusionMailer.HtmlView(rendered.Html, rendered.Images));
 
         mail.To.Add(invitation.Email);
 

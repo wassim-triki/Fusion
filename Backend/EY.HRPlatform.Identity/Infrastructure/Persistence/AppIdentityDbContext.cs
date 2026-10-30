@@ -17,6 +17,7 @@ public class AppIdentityDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Tenant> Tenants => Set<Tenant>();
+    public DbSet<TenantLogo> TenantLogos => Set<TenantLogo>();
     public DbSet<InviteToken> InviteTokens => Set<InviteToken>();
     public DbSet<AccessProfile> AccessProfiles => Set<AccessProfile>();
     public DbSet<AccessProfileGrant> AccessProfileGrants => Set<AccessProfileGrant>();
@@ -122,6 +123,7 @@ public class AppIdentityDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
         // Tenant table configuration
         builder.ApplyConfiguration(new TenantConfiguration());
+        builder.ApplyConfiguration(new TenantLogoConfiguration());
 
         // InviteToken table configuration
         builder.ApplyConfiguration(new InviteTokenConfiguration());

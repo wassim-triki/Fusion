@@ -1,6 +1,7 @@
 using EY.HRPlatform.Identity.Domain.Entities;
 using EY.HRPlatform.Identity.Domain.Enums;
 using EY.HRPlatform.Identity.Features.AccessProfiles;
+using EY.HRPlatform.Identity.Features.Branding;
 using EY.HRPlatform.Identity.Features.TenantAdministration;
 using EY.HRPlatform.Identity.Features.TenantProvisioning;
 using EY.HRPlatform.Identity.Features.WorkforceAccess;
@@ -1024,6 +1025,7 @@ public sealed class WorkforceAccountsController(
             .Select(tenant => tenant.Name)
             .FirstOrDefaultAsync(cancellationToken)
             ?? throw new InvalidOperationException("Tenant not found or inactive.");
+        var branding = await CompanyBrandReader.ForInvitationAsync(dbContext, tenantId, cancellationToken);
         var actorId = GetActingUserId();
         var prepared = new List<PreparedBulkInvitation>(creations.Count);
 
@@ -1081,7 +1083,8 @@ public sealed class WorkforceAccountsController(
                         BuildFullName(item.Invite.FirstName, item.Invite.LastName),
                         BuildInviteLink(item.RawCredential),
                         item.Invite.ExpiresAt,
-                        [item.Creation.Profile.Name]),
+                        [item.Creation.Profile.Name],
+                        branding),
                     cancellationToken);
             }
             finally
@@ -1302,6 +1305,7 @@ public sealed class WorkforceAccountsController(
         CancellationToken cancellationToken)
     {
         var accessProfiles = await accessProfileService.GetInviteAccessProfilesAsync(invite.Id, cancellationToken);
+        var branding = await CompanyBrandReader.ForInvitationAsync(dbContext, invite.TenantId, cancellationToken);
         var delivery = await workforceInvitationEmailSender.SendInviteAsync(
             new WorkforceInvitationEmailMessage(
                 invite.Id,
@@ -1312,7 +1316,8 @@ public sealed class WorkforceAccountsController(
                 BuildFullName(invite.FirstName, invite.LastName),
                 BuildInviteLink(rawCredential),
                 invite.ExpiresAt,
-                accessProfiles.Select(profile => profile.Name).ToList()),
+                accessProfiles.Select(profile => profile.Name).ToList(),
+                branding),
             cancellationToken);
 
         invite.RecordDelivery(delivery.Status, delivery.Message, delivery.RecordedAt);

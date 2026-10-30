@@ -53,6 +53,12 @@ public class TenantConfiguration : IEntityTypeConfiguration<Tenant>
         builder.Property(t => t.Industry)
             .HasMaxLength(Tenant.IndustryMaxLength);
 
+        builder.Property(t => t.BrandColor)
+            .HasMaxLength(7);
+
+        builder.Property(t => t.LogoVersion)
+            .HasMaxLength(32);
+
         builder.HasIndex(t => t.AdministratorActivationStatus);
 
         builder.HasIndex(t => t.IsActive);

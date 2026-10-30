@@ -529,6 +529,10 @@ namespace EY.HRPlatform.Identity.Infrastructure.Persistence.Migrations
                         .HasMaxLength(48)
                         .HasColumnType("character varying(48)");
 
+                    b.Property<string>("BrandColor")
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -556,6 +560,10 @@ namespace EY.HRPlatform.Identity.Infrastructure.Persistence.Migrations
                         .HasMaxLength(35)
                         .HasColumnType("character varying(35)")
                         .HasDefaultValue("en-US");
+
+                    b.Property<string>("LogoVersion")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -706,6 +714,28 @@ namespace EY.HRPlatform.Identity.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("IX_TenantBootstrapAuditEvents_TenantId_OccurredAt");
 
                     b.ToTable("TenantBootstrapAuditEvents", "identity");
+                });
+
+            modelBuilder.Entity("EY.HRPlatform.Identity.Domain.Entities.TenantLogo", b =>
+                {
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.HasKey("TenantId");
+
+                    b.ToTable("TenantLogos", "identity");
                 });
 
             modelBuilder.Entity("EY.HRPlatform.Identity.Domain.Entities.TenantMembership", b =>
@@ -1105,6 +1135,15 @@ namespace EY.HRPlatform.Identity.Infrastructure.Persistence.Migrations
                     b.Navigation("TenantMembership");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EY.HRPlatform.Identity.Domain.Entities.TenantLogo", b =>
+                {
+                    b.HasOne("EY.HRPlatform.Identity.Domain.Entities.Tenant", null)
+                        .WithOne()
+                        .HasForeignKey("EY.HRPlatform.Identity.Domain.Entities.TenantLogo", "TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("EY.HRPlatform.Identity.Domain.Entities.TenantMembership", b =>

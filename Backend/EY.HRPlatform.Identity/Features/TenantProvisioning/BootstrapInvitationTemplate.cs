@@ -1,5 +1,8 @@
 using EY.HRPlatform.Identity.Domain.Enums;
+using EY.HRPlatform.Identity.Features.Branding;
 using EY.HRPlatform.Identity.Features.Invitations;
+using EY.HRPlatform.SharedKernel.Localization;
+using EY.HRPlatform.SharedKernel.Notifications;
 
 namespace EY.HRPlatform.Identity.Features.TenantProvisioning;
 
@@ -22,9 +25,13 @@ public sealed record BootstrapInvitationMessage(
     string ActivationLink,
     DateTime ExpiresAtUtc,
     InvitationPurpose Purpose = InvitationPurpose.OrganizationBootstrap,
-    string? InviterName = null);
+    string? InviterName = null,
+    InvitationBranding? Branding = null);
 
-public sealed record RenderedBootstrapInvitation(string Subject, string Html, string Text);
+public sealed record RenderedBootstrapInvitation(string Subject, string Html, string Text)
+{
+    public IReadOnlyList<FusionEmailImage> Images { get; init; } = [];
+}
 
 /// <summary>
 /// The approved Fusion administrative invitation message, now rendered through the
@@ -48,9 +55,11 @@ public static class BootstrapInvitationTemplate
             Email: message.Email,
             ActionUrl: message.ActivationLink,
             ExpiresAtUtc: message.ExpiresAtUtc,
-            InviterName: message.InviterName));
+            InviterName: message.InviterName,
+            Language: message.Branding?.Language ?? FusionLanguages.English,
+            Brand: message.Branding?.Brand));
 
-        return new RenderedBootstrapInvitation(rendered.Subject, rendered.Html, rendered.Text);
+        return new RenderedBootstrapInvitation(rendered.Subject, rendered.Html, rendered.Text) { Images = rendered.Images };
     }
 
     /// <summary>

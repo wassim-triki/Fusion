@@ -37,7 +37,7 @@ public static class FusionMailer
             IsBodyHtml = false,
         };
         mail.To.Add(email.To);
-        mail.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(email.Content.Html, Encoding.UTF8, MediaTypeNames.Text.Html));
+        mail.AlternateViews.Add(HtmlView(email.Content.Html, email.Content.Images));
         mail.Headers.Add("Message-ID", email.MessageId);
         if (email.UnsubscribeUrl is not null)
         {
@@ -45,6 +45,21 @@ public static class FusionMailer
             mail.Headers.Add("List-Unsubscribe-Post", "List-Unsubscribe=One-Click");
         }
         return mail;
+    }
+
+    /// <summary>The HTML part, with the images it shows by <c>cid:</c> attached to it.</summary>
+    public static AlternateView HtmlView(string html, IReadOnlyList<FusionEmailImage> images)
+    {
+        var view = AlternateView.CreateAlternateViewFromString(html, Encoding.UTF8, MediaTypeNames.Text.Html);
+        foreach (var image in images)
+        {
+            view.LinkedResources.Add(new LinkedResource(new MemoryStream(image.Content), image.MediaType)
+            {
+                ContentId = image.ContentId,
+                TransferEncoding = TransferEncoding.Base64,
+            });
+        }
+        return view;
     }
 
     public static async Task SendAsync(FusionSmtpOptions smtp, FusionOutgoingEmail email, CancellationToken cancellationToken)

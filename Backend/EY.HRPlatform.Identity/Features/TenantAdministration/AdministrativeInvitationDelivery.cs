@@ -1,5 +1,6 @@
 using EY.HRPlatform.Identity.Domain.Entities;
 using EY.HRPlatform.Identity.Domain.Enums;
+using EY.HRPlatform.Identity.Features.Branding;
 using EY.HRPlatform.Identity.Features.TenantProvisioning;
 using EY.HRPlatform.Identity.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -58,6 +59,7 @@ public sealed class AdministrativeInvitationDelivery(
                 .Select(item => new
                 {
                     item.ExpiresAt,
+                    item.TenantId,
                     TenantName = dbContext.Tenants.IgnoreQueryFilters()
                         .Where(tenant => tenant.Id == item.TenantId)
                         .Select(tenant => tenant.Name)
@@ -73,7 +75,8 @@ public sealed class AdministrativeInvitationDelivery(
                 Email: email,
                 ActivationLink: link,
                 ExpiresAtUtc: context?.ExpiresAt ?? DateTime.UtcNow,
-                Purpose: purpose);
+                Purpose: purpose,
+                Branding: context is null ? null : await CompanyBrandReader.ForInvitationAsync(dbContext, context.TenantId, cancellationToken));
 
             var outcome = await emailSender.SendAsync(message, cancellationToken);
 

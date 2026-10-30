@@ -1,3 +1,5 @@
+using EY.HRPlatform.Identity.Features.Branding;
+
 namespace EY.HRPlatform.Identity.Features.WorkforceAccounts;
 
 public sealed record WorkforceInvitationEmailMessage(
@@ -9,7 +11,8 @@ public sealed record WorkforceInvitationEmailMessage(
     string? RecipientName,
     string InviteLink,
     DateTime ExpiresAt,
-    IReadOnlyList<string> AccessProfileNames);
+    IReadOnlyList<string> AccessProfileNames,
+    InvitationBranding? Branding = null);
 
 public sealed record WorkforceInvitationDeliveryResult(
     string Status,

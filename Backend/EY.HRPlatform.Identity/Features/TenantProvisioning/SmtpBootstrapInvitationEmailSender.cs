@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Mail;
+using EY.HRPlatform.SharedKernel.Notifications;
 using Microsoft.Extensions.Options;
 
 namespace EY.HRPlatform.Identity.Features.TenantProvisioning;
@@ -116,8 +117,7 @@ public sealed class SmtpBootstrapInvitationEmailSender(
             From = new MailAddress(options.FromEmail, options.FromName),
         };
 
-        mail.AlternateViews.Add(
-            AlternateView.CreateAlternateViewFromString(rendered.Html, null, "text/html"));
+        mail.AlternateViews.Add(FusionMailer.HtmlView(rendered.Html, rendered.Images));
 
         mail.To.Add(message.Email);
 

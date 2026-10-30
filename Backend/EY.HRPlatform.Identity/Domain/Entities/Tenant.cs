@@ -1,4 +1,5 @@
 using EY.HRPlatform.Identity.Domain.Enums;
+using EY.HRPlatform.SharedKernel.Localization;
 
 namespace EY.HRPlatform.Identity.Domain.Entities;
 
@@ -40,6 +41,12 @@ public class Tenant
     /// it is nullable and absence is a legitimate state rather than a default.
     /// </summary>
     public string? Industry { get; private set; }
+
+    /// <summary>The company's colour as <c>#rrggbb</c>; null keeps Fusion's own.</summary>
+    public string? BrandColor { get; private set; }
+
+    /// <summary>The stored logo's version (a content hash, part of its address); null when the company has no logo.</summary>
+    public string? LogoVersion { get; private set; }
 
     /// <summary>Applied when a caller does not choose a locale.</summary>
     public const string DefaultLocale = "en-US";
@@ -233,6 +240,35 @@ public class Tenant
 
         AdministratorActivationStatus = TenantAdministratorActivationStatus.Active;
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// The brand studio's one save: name, colour, default language and the logo's version together, so nobody sees
+    /// half a brand. The language becomes the locale unless the locale already speaks it (<c>fr-FR</c> stays for
+    /// French); people who chose their own language keep it.
+    /// </summary>
+    public void Rebrand(string name, string? brandColor, string language, string? logoVersion)
+    {
+        ValidateName(name);
+        if (!FusionLanguages.IsSupported(language))
+            throw new ArgumentException("Choose English, French or Arabic.", nameof(language));
+
+        Name = name.Trim();
+        BrandColor = NormalizeBrandColor(brandColor);
+        if (FusionLanguages.FromLocale(Locale) != language)
+            Locale = language;
+        LogoVersion = string.IsNullOrWhiteSpace(logoVersion) ? null : logoVersion.Trim();
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary><c>#rrggbb</c> in lower case, or null for Fusion's own colour.</summary>
+    public static string? NormalizeBrandColor(string? color)
+    {
+        if (string.IsNullOrWhiteSpace(color)) return null;
+        var trimmed = color.Trim().ToLowerInvariant();
+        if (!System.Text.RegularExpressions.Regex.IsMatch(trimmed, "^#[0-9a-f]{6}$"))
+            throw new ArgumentException("A colour is written as #rrggbb.", nameof(color));
+        return trimmed;
     }
 
     public static string NormalizeLocale(string? locale)

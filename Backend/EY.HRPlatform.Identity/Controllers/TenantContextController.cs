@@ -1,3 +1,4 @@
+using EY.HRPlatform.Identity.Features.Branding;
 using EY.HRPlatform.Identity.Features.TenantContext;
 using EY.HRPlatform.Identity.Features.TenantContext.Dtos;
 using EY.HRPlatform.Identity.Infrastructure.Persistence;
@@ -92,6 +93,9 @@ public class TenantContextController(
             tenant.IsArchived,
             tenant.Industry,
             tenant.Locale,
-            tenant.TimeZone)));
+            tenant.TimeZone,
+            tenant.BrandColor,
+            BrandAddresses.LogoUrl(tenant.Id, tenant.LogoVersion),
+            BrandAddresses.LanguageOf(tenant))));
     }
 }

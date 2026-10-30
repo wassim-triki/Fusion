@@ -9,4 +9,7 @@ public sealed record TenantSummaryDto(
     bool IsArchived,
     string? Industry = null,
     string? Locale = null,
-    string? TimeZone = null);
+    string? TimeZone = null,
+    string? BrandColor = null,
+    string? LogoUrl = null,
+    string? Language = null);

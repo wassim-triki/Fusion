@@ -11,6 +11,7 @@ When LOG passes ~150 lines, move the oldest days to `archive/LOG-YYYY-MM*.md`.
 
 ## 2026-10-30
 
+- `15:47` ↻ **B-167** rebuild sized into 18 slices, B-175–B-192, in dependency order with a recommended effort per session ([slices](plans/B-167-rebuild.md)); B-173 moved under B-178, B-168 under B-179, B-146 under B-184. Order accepted by the user (asked for the next session's prompt). User preference saved: every handover names the session's effort (medium, high or xhigh) · Claude
 - `15:28` ✓ **B-166** screens decided: every screen of the tenant journey has an accepted design, D-01–D-30 in `plans/B-166-decisions.md`, the only authority for the rebuild (B-167). The last rounds: 3b redrew five screens ([explorer](https://claude.ai/artifact/Q2T82SYhfa4Y4AtSTkuToC)): Roles as a new model (one table of roles × ten plain areas, a page per role written as sentences with a live preview, protected administrators, seeing Fusion as someone), the Team page in the person page's layout, the portrait directory card, the import end to end with keep/rework verdicts on its engine; 3c refined the import's bring-in into one frame that fills in place and Core HR's front page into growth, people and departments on one time slider. Every step rendered headless without script errors · Claude
 - **B-166** preference saved: replies and explorer text name people with their roles ("Amira Khelifi, the administrator"), user's request during 3b · Claude
 

@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-175.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-193.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -26,13 +26,34 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 - [ ] **B-164** The tenant experience, rebuilt from first principles: from a new tenant administrator's first sign-in to everyday use by every role, design-first, coherent and demo-ready; Core HR reworked deepest, Performance checked at its seams · Core HR, Shell, Performance · 2026-10-30
       User 2026-10-30, before any other task: Core HR was winged without specs and feels dated; clean it up, remove/merge/redesign/re-architect, BambooHR-like, no vibe-code feel, the same way as the Performance rework (research, recommendations, an interactive artifact, taste questions). Platform admin out. Order: thin map → independent target → the audit is the diff, in one explorer → decisions → rebuild → tour. [plan](plans/B-164-tenant-experience-overhaul.md)
-  - [ ] **B-173** Check whether an HR admin can make someone a tenant administrator through Identity's old invitation endpoint (`POST /api/identity/tenants/{id}/invites` with role "OrgAdmin" is not refused), bypassing the administrator invitation flow and its continuity lock · Identity · 2026-10-30
-        Found answering the user's A2 note (brief §6b, Platform roles). The operator side was checked in code and holds: both old endpoints require the caller's own membership. Verify this one with an API journey (create, inspect, revoke), and if it's live fix it with `security-review` ahead of B-167, which retires these endpoints with the token-role copy anyway.
-  - [ ] **B-146** Celebrations: birthdays and work anniversaries on Home (BambooHR-style life), once B-127 stores dates of birth; decide who sees a birthday (day and month only) · Shell, Core HR · 2026-10-28
-        User 2026-10-30: lowest priority. Later that day it came into B-164's scope as part of D1 "Core HR on Home" (rung 2: birthdays if people opt in, work anniversaries); built in B-167.
   - [ ] **B-110** Tenant configurability as a hero: branding (logo, theme/accent, branded sign-in, own address, email branding) and internal configuration (company defaults and whatever the research puts on the ladder), depth chosen on B-163's scope page · Shell, Platform, Core HR, Identity · 2026-10-24
         User 2026-10-30: "I really wanna establish it as a core wow factor"; EY discussed it a lot but never gave specs or how far to take it. Earlier (2026-10-24) brain dump, ideas not requirements. A tenant's default language meets B-105. Context: B-071 removed the unused brand colour from Core's branding settings; Core's branding settings store a `LogoUrl` that no screen sets or shows; Company settings show name and locale.
-  - [ ] **B-167** Rebuild: slices in dependency order, each end to end with screens for the taste check; split into children now that the screens are decided ([decisions](plans/B-166-decisions.md), D-01–D-30) · 2026-10-30
+  - [ ] **B-167** Rebuild: slices in dependency order, each end to end with screens for the taste check ([decisions](plans/B-166-decisions.md), D-01–D-30; [slices](plans/B-167-rebuild.md)) · 2026-10-30
+        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 is next, in a fresh session at high.
+    - [ ] **B-175** Jobs, places and the company's lists: jobs as objects, places, lists; titles and locations off free text · Core HR · 2026-10-30
+    - [ ] **B-176** Brand studio: logo, colour, language with a live preview; applied across Fusion, sign-in and emails (D-02) · Core HR, Shell, Identity · 2026-10-30
+    - [ ] **B-177** One roles model: areas × level × reach, holders by rule, the roles table and a role page with a live preview (D-25) · Identity, Core HR · 2026-10-30
+    - [ ] **B-178** Administrators as a protected role, seeing Fusion as someone, the old token roles retired (D-25) · Identity, Core HR · 2026-10-30
+      - [ ] **B-173** Check whether an HR admin can make someone a tenant administrator through Identity's old invitation endpoint (`POST /api/identity/tenants/{id}/invites` with role "OrgAdmin" is not refused), bypassing the administrator invitation flow and its continuity lock · Identity · 2026-10-30
+            Found answering the user's A2 note (brief §6b). The operator side holds: both old endpoints require the caller's own membership. Verify with an API journey (create, inspect, revoke) at the start of B-178, which retires the endpoint with the token roles.
+    - [ ] **B-179** Changes and approvals: describe a change, the draft is the request, approval per change type from Home (D-15, D-16) · Core HR, Shell · 2026-10-30
+      - [ ] **B-168** A deep link that opens a change on a person's record (`?change=job|end`) leaves the address without `/core`, so a refresh lands outside Core HR · Core HR · 2026-10-30
+            Found in the B-165 walk: `features/people/changes/change-sheet.tsx` passes `usePathname()` (basePath-less) to `history.replaceState`. Fixed with the rebuilt change sheet.
+    - [ ] **B-180** One person page across Core HR and Performance: tabs, Personal and Access, documents, on leave, photos (D-01, D-16) · Core HR, Performance · 2026-10-30
+    - [ ] **B-181** Fields: the company's own fields and sections, a gallery, who sees and changes each; records to complete (D-18) · Core HR · 2026-10-30
+    - [ ] **B-182** People, the directory and invitations: HR table, portrait cards, the invite sheet, Settings › Sign-in, Export everywhere (D-11, D-13, D-28) · Core HR, Shared · 2026-10-30
+    - [ ] **B-183** Organization in time: one place, three views, one time slider, unit pages, open roles (D-17) · Core HR · 2026-10-30
+    - [ ] **B-184** Joining and leaving: checklists, a joiner's first week, celebrations · Core HR, Shell · 2026-10-30
+      - [ ] **B-146** Celebrations: birthdays and work anniversaries on Home (BambooHR-style life); who sees a birthday (day and month only) · Shell, Core HR · 2026-10-28
+            In B-164's scope as part of D1 (rung 2: birthdays if people opt in, work anniversaries).
+    - [ ] **B-185** Team page: the team as a small chart, Overview · Performance · Org chart, Coming up (D-19, D-27) · Core HR, Performance · 2026-10-30
+    - [ ] **B-186** The import, one flow: any number of files, What Fusion understood, the chart, bringing in (D-22–D-24, D-29) · Core HR · 2026-10-30
+    - [ ] **B-187** The import again and when it goes wrong: create or update, resumable, bad files (D-22, D-23, D-29) · Core HR · 2026-10-30
+    - [ ] **B-188** Day one and Home: activation, the setup guide (the tour's admin track), Home every day (D-09, D-10, D-12) · Shell, Core HR, Identity · 2026-10-30
+    - [ ] **B-189** Reports: standard and your own, on a date or between two, run as the viewer (D-14) · Core HR · 2026-10-30
+    - [ ] **B-190** Core HR's front page: Growth and People on one time slider, department cards (D-30) · Core HR · 2026-10-30
+    - [ ] **B-191** Single sign-on: Microsoft, Google, a company's own provider, required per domain · Identity, Shell · 2026-10-30
+    - [ ] **B-192** Seams and finish: colleague modules only when on, one vocabulary, replaced surfaces gone, demo presets for the tour · All · 2026-10-30
 
 ## In review
 
@@ -52,9 +73,6 @@ Open work only. Agents keep it current from the conversation; closed items leave
       User 2026-10-30: "i would want a product tour, its a good prio feature". Next up; starts with a decision page (where it starts and ends, who it guides, how it moves through real screens) before any code.
       User 2026-10-30, later: the tour needs cleanly engineered features first, so it follows B-164; its storyline is B-166's journey, and the explorer marks the tour-worthy moments.
       User 2026-10-30, checkpoint 2: consolidate with B-164's setup guide (F1). One guidance system: the setup guide on Home is the tour's administrator track; each step opens the real screen where the tour takes over. B-167 builds the guide for the tour to extend.
-- [ ] **B-168** A deep link that opens a change on a person's record (`?change=job|end`) leaves the address without `/core`, so a refresh lands outside Core HR · Core HR · 2026-10-30
-      Found in the B-165 walk. `features/people/changes/change-sheet.tsx` passes `usePathname()` (basePath-less) to `history.replaceState`. Small fix; may be overtaken by B-167 if the record is rebuilt.
-
 - [ ] **B-065** Rebuild Performance from first principles into a complete, integrated, demo-ready module · Performance · 2026-10-15
       2026-10-26: all seven slices (B-070), Settings (B-071) and English/French/Arabic are done and committed. What's left: the user's hand pass (B-104, In review); the polish itself (B-089) is done. Inventory done ([B-067](plans/B-067-performance-inventory.md)); decisions accepted ([B-068](plans/B-068-decisions.md)). With Claude. Research → feature catalogue and decisions → surface architecture and role × state design → contracts → implementation. The agent owns product knowledge, architecture, contracts, implementation and surface design; the user agrees add-ons and wow features from the agent's recommendations. Settings is reworked once, last. See [plan](plans/B-065-performance-first-principles-rework.md).
 - [ ] **B-105** Real internationalization: English, French and Arabic fully configured across our modules (Arabic means right-to-left layouts too); screens are done in all three, only server text (B-116) is left and parked · Shell, Core HR, Performance, Platform · 2026-10-23

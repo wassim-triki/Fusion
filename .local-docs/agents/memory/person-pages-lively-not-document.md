@@ -12,4 +12,6 @@ On the B-127 profile canvas (2026-10-28) the user picked the classic direction (
 
 **Why:** person-centric screens should feel alive and human; hairline-ruled, text-led layouts read as a newspaper to them.
 
-**How to apply:** for screens about a person, lead with the photo and a framed identity area and give the page some life; don't default to the document + sidebar doctrine ([[layout-document-sidebar]]) there. Ask before carrying the "document" feel to other people surfaces.
+Confirmed at B-166 checkpoint 3a (2026-10-30): Aicha's page drawn as a section-tone band (large photo, Lora name, glance row of manager / team faces / tenure, tabs in the band), an unframed left rail, and an Overview of About · Coming up · Performance · Job and history: "oof i like that very much, clean and friendly and actually nice looking ui". The same grammar then carried Home (company band, setup steps as the band's tabs) after a plain checklist Home was judged "could be a lot nicer". Decisions D-01–D-08 in `plans/B-166-decisions.md`.
+
+**How to apply:** for screens about a person (and screens about one thing, like the company on Home), use that band grammar; lead with the photo and a framed identity area and give the page some life; don't default to the document + sidebar doctrine ([[layout-document-sidebar]]) there. Ask before carrying the "document" feel to other people surfaces.

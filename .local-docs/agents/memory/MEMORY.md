@@ -19,11 +19,13 @@
 - [Radius role system](radius-role-system.md) — radii are roles (squircle tier surface 28/control 18/menu/inset/nested/detail/full), ChatGPT-fitted, lint-guarded.
 - [Surface tone ladder](surface-tone-ladder.md) — containers lift per level: canvas → `bg-section` → `bg-card` → `bg-inlay` (overlays `bg-popover`); no translucent fills at rest; `@repo/eslint-config/design-roles`.
 - [Document + sidebar layout](layout-document-sidebar.md) — frame objects not columns; unframed sticky sidebar; no height-matching/filler; actions in header; Plan pages done, sweep pending.
-- [Person pages: lively, not document](person-pages-lively-not-document.md) — profiles go BambooHR-style (band, big photo, left rail); user finds the document layout newspaper-like.
+- [Friendly, not enterprise](design-friendly-not-enterprise.md) — BambooHR-like warmth, alive, self-explanatory; pre-October designs aren't references; read `plans/B-166-design-direction.md` first; style frame before big generations.
+- [Person pages: lively, not document](person-pages-lively-not-document.md) — band grammar (big photo, glance row, tabs in band, left rail) accepted at B-166 3a and carried to Home; document layout reads newspaper-like.
 - [Layout from first principles](layout-from-first-principles.md) — sidebar isn't mandatory; pick the layout that conveys the screen's job (single column, full width, new).
 - [Data table kit](data-table-kit.md) — `@repo/ds/data-table` on TanStack v9: useDataTable + DataTable/Search/Views/FacetFilter/Pagination; adoption follow-ups.
 - [Icon set: Hugeicons](icon-set-hugeicons.md) — Performance + Platform icons via `src/lib/icons.tsx` adapters (lint-guarded); core/shell/DS chrome still Lucide.
 - [No side-stripe accents](no-side-stripe-accents.md) — coloured left-border status edges read as vibecoded to the user (B-083).
+- [Refine the liked version, don't redraw](vibecode-tells-tinted-hero-cards.md) — B-166 Home went downhill through 4 redraws; "could be nicer" = polish; steppers and tinted hero cards read vibe-coded.
 - [Anti-vibecode design governance](design-governance-antivibecode.md) — DESIGN.md §33 tells→rules + §34 test; motion/elevation tokens.
 - [DS preset provenance](ds-preset-provenance.md) — `@repo/ds` = shadcn preset b6GMQMg3l (zinc + yellow + amber); 5 deliberate overrides.
 - [No useEffectEvent under Next 15.5](next-bundled-react-no-useeffectevent.md) — Next's bundled React lacks it; type-check passes, page crashes; use a ref.
@@ -101,7 +103,7 @@
 - [No cosmetic history rewrites](no-cosmetic-history-rewrites.md) — leave commits as they are unless it matters; don't raise cosmetic slips.
 - [Fresh session for applies](fresh-session-for-applies.md) — every apply/coding task starts in a new session; write a cold-pickup recipe into STATE first.
 - [Build speed mode](build-speed-mode.md) — scoped tests while building, full checks once, one commit per session, chunk-sized sessions; never cut authz/isolation tests (AGENTS.md › Build speed).
-- [Colleague modules only must not break](colleague-modules-only-must-not-break.md) — don't coordinate with or wait on Learning/Recruitment/Interview/Onboarding; just keep them working.
+- [Colleague modules only must not break](colleague-modules-only-must-not-break.md) — don't coordinate with or wait on Learning/Recruitment/Interview/Onboarding; just keep them working; since 2026-10-30 (internship over, fork) product plans may hide or replace them.
 - Deviate from issue wording when the architecture suggests a better fit.
 - [Rewrites acceptable](rewrites-acceptable.md) — don't bias toward refactor-in-place.
 - [UI: no explanatory text](ui-no-explanatory-text.md) — carry state with structure, never caption sentences.
@@ -110,6 +112,10 @@
 - [No reduced-motion gating](no-reduced-motion-gating.md) — plain animate-*, never motion-safe unless asked.
 - [No disuse cleanup on thin window](no-disuse-cleanup-thin-window.md) — don't disable tools from low usage over short windows.
 - [Decide yourself, show an explorer](decide-surface-architecture-yourself.md) — product/architecture calls are mine from research + first principles; ask only on taste; present as an interactive artifact.
+- [Artifact db snapshots are frozen](artifact-db-snapshots-frozen.md) — clone `snap.data()` before using it as page state, or clicks silently do nothing.
+- [Scope with depth ladders](scope-with-depth-ladders.md) — big reworks: derive intent yourself, open long list, a 0–3 depth ladder per feature the user picks; no closed research spec.
+- [Brain dumps are examples](brain-dumps-are-examples.md) — named features/exclusions are signals, not rules; contextual questions draw out their thinking; keep process to yourself.
+- [Graduation demo and report](graduation-demo-and-report.md) — jury audience, but build a real self-explanatory HRIS, no demo-story dumbing; time never constrains scope; report studies existing solutions → mark parity / improvement / new.
 - [Architecture-durable planning](architecture-durable-planning.md) — cycle-aware identity, one domain authz policy, capability composition not personas, no dubious aggregates.
 
 ## Working notes (tracked since B-159, 2026-10-29)

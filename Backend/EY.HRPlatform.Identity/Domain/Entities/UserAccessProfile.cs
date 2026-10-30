@@ -21,6 +21,19 @@ public class UserAccessProfile : ITenantEntity
 
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
 
+    /// <summary>Chosen for the role by name. The row stays while it is chosen or matched by the role's holders.</summary>
+    public bool IsChosen { get; private set; } = true;
+
+    /// <summary>Held because the role's holders (everyone, anyone with a team, a rule) include this person.</summary>
+    public bool ByRule { get; private set; }
+
+    /// <summary>Whether anything still gives this person the role.</summary>
+    public bool IsHeld => IsChosen || ByRule;
+
+    public void SetChosen(bool chosen) => IsChosen = chosen;
+
+    public void SetByRule(bool byRule) => ByRule = byRule;
+
     public ApplicationUser? User { get; private set; }
     public AccessProfile? AccessProfile { get; private set; }
     public TenantMembership? TenantMembership { get; private set; }
@@ -61,5 +74,14 @@ public class UserAccessProfile : ITenantEntity
         ArgumentNullException.ThrowIfNull(membership);
 
         return Create(membership.TenantId, membership.UserId, accessProfileId, membership.Id);
+    }
+
+    /// <summary>A row held only because the role's holders include the person.</summary>
+    public static UserAccessProfile MatchedByRule(Guid tenantId, Guid userId, Guid accessProfileId, Guid tenantMembershipId)
+    {
+        var assignment = Create(tenantId, userId, accessProfileId, tenantMembershipId);
+        assignment.IsChosen = false;
+        assignment.ByRule = true;
+        return assignment;
     }
 }

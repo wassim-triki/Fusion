@@ -1,3 +1,4 @@
+using EY.HRPlatform.Identity.Domain.Entities;
 using EY.HRPlatform.SharedKernel.Auth;
 
 namespace EY.HRPlatform.Identity.Features.AccessProfiles;
@@ -7,87 +8,70 @@ public sealed record SeededAccessProfileTemplate(
     string Name,
     string Description,
     IReadOnlyList<EffectivePermissionGrant> Grants,
-    bool IsSystemProtected = true);
+    bool IsSystemProtected = true,
+    string HolderKind = AccessProfileHolderKinds.Chosen);
 
+/// <summary>
+/// The roles every company starts with, written as area cells (D-25). Employees is everyone, Managers is anyone
+/// with a team, HR is chosen people; Administrators is the canonical authority, composed separately.
+/// </summary>
 public static class AccessProfileTemplates
 {
-    public static readonly SeededAccessProfileTemplate Employee = new(
-        "employee",
-        "Employee",
-        "Access to own profile and self-service details.",
-        [
-            new(CorePermissions.ProfileSelfView, PermissionScopes.Self),
-            new(CorePermissions.ProfileSelfUpdate, PermissionScopes.Self),
-            new(CorePermissions.EmployeeView, PermissionScopes.Self),
-            new(CorePermissions.OrgChartView, PermissionScopes.Tenant),
-        ]);
+    private static RoleAreaCell C(string area, string level, string? reach = null) => new(area, level, reach);
 
-    public static readonly SeededAccessProfileTemplate Manager = new(
-        "manager",
-        "Manager",
-        "Access to own profile and direct team.",
-        [
-            new(CorePermissions.ProfileSelfView, PermissionScopes.Self),
-            new(CorePermissions.ProfileSelfUpdate, PermissionScopes.Self),
-            new(CorePermissions.EmployeeView, PermissionScopes.DirectReports),
-            new(CorePermissions.TeamView, PermissionScopes.DirectReports),
-            new(CorePermissions.OrgChartView, PermissionScopes.Tenant),
-        ]);
+    private static readonly RoleAreaCell[] EmployeeCells =
+    [
+        C("job", RoleLevels.See, RoleReaches.Self),
+        C("personal", RoleLevels.Change, RoleReaches.Self),
+        C("org", RoleLevels.See),
+        C("plans", RoleLevels.Change, RoleReaches.Self),
+    ];
 
-    public static readonly SeededAccessProfileTemplate HrAdmin = new(
-        "hr-admin",
-        "HR Admin",
-        "Manages workforce records, reporting lines, imports, and account activation.",
-        [
-            new(CorePermissions.OverviewView, PermissionScopes.Tenant),
-            new(CorePermissions.SetupView, PermissionScopes.Tenant),
-            new(CorePermissions.OrganizationView, PermissionScopes.Tenant),
-            new(CorePermissions.EmployeeView, PermissionScopes.Tenant),
-            new(CorePermissions.EmployeeManage, PermissionScopes.Tenant),
-            new(CorePermissions.EmployeeImport, PermissionScopes.Tenant),
-            new(CorePermissions.ReportingManage, PermissionScopes.Tenant),
-            new(CorePermissions.OrgChartView, PermissionScopes.Tenant),
-            new(CorePermissions.AccessView, PermissionScopes.Tenant),
-            new(CorePermissions.AccessManage, PermissionScopes.Tenant),
-            new(CorePermissions.AccessAssignmentsView, PermissionScopes.Tenant),
-            new(CorePermissions.AccessAssignmentsManage, PermissionScopes.Tenant),
-            new(CorePermissions.SettingsPeopleDataView, PermissionScopes.Tenant),
-            new(CorePermissions.SettingsStructureView, PermissionScopes.Tenant),
-            new(CorePermissions.SettingsProvisioningView, PermissionScopes.Tenant),
-            new(CorePermissions.SettingsGovernanceView, PermissionScopes.Tenant),
-        ]);
+    private static readonly RoleAreaCell[] ManagerCells =
+    [
+        C("job", RoleLevels.See, RoleReaches.Team),
+        C("personal", RoleLevels.See, RoleReaches.Team),
+        C("org", RoleLevels.See),
+        C("approve", RoleLevels.Propose, RoleReaches.Team),
+        C("plans", RoleLevels.Change, RoleReaches.Team),
+    ];
 
-    public static readonly SeededAccessProfileTemplate OrgAdmin = new(
-        "org-admin",
-        "Org Admin",
-        "Manages tenant setup, structure, settings, access profiles, and Core administration.",
-        [
-            new(CorePermissions.OverviewView, PermissionScopes.Tenant),
-            new(CorePermissions.SetupView, PermissionScopes.Tenant),
-            new(CorePermissions.SetupManage, PermissionScopes.Tenant),
-            new(CorePermissions.OrganizationView, PermissionScopes.Tenant),
-            new(CorePermissions.OrganizationManage, PermissionScopes.Tenant),
-            new(CorePermissions.EmployeeView, PermissionScopes.Tenant),
-            new(CorePermissions.EmployeeManage, PermissionScopes.Tenant),
-            new(CorePermissions.EmployeeImport, PermissionScopes.Tenant),
-            new(CorePermissions.ReportingManage, PermissionScopes.Tenant),
-            new(CorePermissions.OrgChartView, PermissionScopes.Tenant),
-            new(CorePermissions.AccessView, PermissionScopes.Tenant),
-            new(CorePermissions.AccessManage, PermissionScopes.Tenant),
-            new(CorePermissions.AccessAssignmentsView, PermissionScopes.Tenant),
-            new(CorePermissions.AccessAssignmentsManage, PermissionScopes.Tenant),
-            new(CorePermissions.SettingsOrganizationView, PermissionScopes.Tenant),
-            new(CorePermissions.SettingsOrganizationManage, PermissionScopes.Tenant),
-            new(CorePermissions.SettingsPeopleDataView, PermissionScopes.Tenant),
-            new(CorePermissions.SettingsPeopleDataManage, PermissionScopes.Tenant),
-            new(CorePermissions.SettingsStructureView, PermissionScopes.Tenant),
-            new(CorePermissions.SettingsStructureManage, PermissionScopes.Tenant),
-            new(CorePermissions.SettingsProvisioningView, PermissionScopes.Tenant),
-            new(CorePermissions.SettingsProvisioningManage, PermissionScopes.Tenant),
-            new(CorePermissions.SettingsGovernanceView, PermissionScopes.Tenant),
-            new(CorePermissions.AccessProfilesView, PermissionScopes.Tenant),
-            new(CorePermissions.AccessProfilesManageV2, PermissionScopes.Tenant),
-        ]);
+    private static readonly RoleAreaCell[] HrCells =
+    [
+        C("job", RoleLevels.Change, RoleReaches.Everyone),
+        C("personal", RoleLevels.Change, RoleReaches.Everyone),
+        C("org", RoleLevels.Change),
+        C("approve", RoleLevels.Approve, RoleReaches.Everyone),
+        C("reports", RoleLevels.See, RoleReaches.Everyone),
+        C("signin", RoleLevels.Change),
+        C("plans", RoleLevels.See, RoleReaches.Everyone),
+        C("cycles", RoleLevels.Change),
+    ];
+
+    private static IReadOnlyList<EffectivePermissionGrant> Grants(IEnumerable<RoleAreaCell> cells, bool performanceEnabled)
+    {
+        var areas = RoleAreas.For(performanceEnabled ? [PermissionModuleKeys.Performance] : [])
+            .Select(area => area.Id)
+            .ToHashSet(StringComparer.Ordinal);
+        return RoleAreas.Compose(cells.Where(cell => areas.Contains(cell.AreaId)), []);
+    }
+
+    private static SeededAccessProfileTemplate Build(string key, string name, string description, RoleAreaCell[] cells, bool performanceEnabled, string holderKind)
+        => new(key, name, description, Grants(cells, performanceEnabled), HolderKind: holderKind);
+
+    private static IReadOnlyList<SeededAccessProfileTemplate> Seeded(bool performanceEnabled) =>
+    [
+        Build("employee", "Employees", "Everyone in the company.", EmployeeCells, performanceEnabled, AccessProfileHolderKinds.Everyone),
+        Build("manager", "Managers", "Anyone with a team.", ManagerCells, performanceEnabled, AccessProfileHolderKinds.Team),
+        Build("hr-admin", "HR", "The people who look after everyone's records.", HrCells, performanceEnabled, AccessProfileHolderKinds.Chosen),
+    ];
+
+    public static readonly SeededAccessProfileTemplate Employee = Seeded(performanceEnabled: false)[0];
+    public static readonly SeededAccessProfileTemplate Manager = Seeded(performanceEnabled: false)[1];
+    public static readonly SeededAccessProfileTemplate HrAdmin = Seeded(performanceEnabled: false)[2];
+
+    /// <summary>The retired Org Admin role's key: no longer seeded, removed wherever nobody holds it.</summary>
+    public const string RetiredOrgAdminKey = "org-admin";
 
     /// <summary>
     /// The canonical Tenant Administrator definition for one tenant.
@@ -103,89 +87,18 @@ public static class AccessProfileTemplates
             TenantAdministratorAuthority.Description,
             TenantAdministratorAuthority.BuildGrants(enabledModuleKeys));
 
-    /// <summary>
-    /// Statically declared seeded profiles. The Tenant Administrator definition is
-    /// entitlement-dependent and is composed through
-    /// <see cref="BuildTenantAdministrator"/> instead.
-    /// </summary>
-    public static IReadOnlyList<SeededAccessProfileTemplate> All => [Employee, Manager, HrAdmin, OrgAdmin];
+    /// <summary>Statically declared seeded roles, without module areas.</summary>
+    public static IReadOnlyList<SeededAccessProfileTemplate> All => [Employee, Manager, HrAdmin];
 
     /// <summary>
-    /// Performance participation grants added to each seeded profile only when the
-    /// tenant holds the Performance entitlement. This is the entitlement-gated seed
-    /// path referenced by the Performance authorization design: the widest aggregate
-    /// visibility an ordinary profile carries in the MVP is <c>@DirectReports</c>
-    /// (managers reviewing their own reports), and <c>performance.cycle.view @OrgUnit</c>
-    /// remains unseeded (viewing aggregate data is not a write authority). The Manager
-    /// profile additionally carries <c>performance.objective.org.manage @Tenant</c>: the
-    /// authority to establish/publish organizational objectives, paired with read-only
-    /// <c>core.organization.view @Tenant</c> so an author can read the org tree to choose a
-    /// scope. In the direct MVP this is deliberately coarse (tenant-wide); fine-grained
-    /// per-org-unit scoping is deferred to the future tenant Access/Profile design. Broad
-    /// tenant administration and strategy authority ride on <see cref="BuildTenantAdministrator"/>.
+    /// The seeded roles for a tenant, with the Performance areas included only when the tenant holds Performance.
+    /// The Tenant Administrator is composed separately through <see cref="BuildTenantAdministrator"/>.
     /// </summary>
-    private static readonly IReadOnlyDictionary<string, IReadOnlyList<EffectivePermissionGrant>> PerformanceGrantsByInternalKey =
-        new Dictionary<string, IReadOnlyList<EffectivePermissionGrant>>(StringComparer.Ordinal)
-        {
-            ["employee"] =
-            [
-                new(PerformancePermissions.CycleView, PermissionScopes.Self),
-                new(PerformancePermissions.ObjectiveSelfManage, PermissionScopes.Self),
-            ],
-            ["manager"] =
-            [
-                new(PerformancePermissions.CycleView, PermissionScopes.DirectReports),
-                new(PerformancePermissions.ObjectiveSelfManage, PermissionScopes.Self),
-                new(PerformancePermissions.ObjectiveOrgManage, PermissionScopes.Tenant),
-                // Establishing/publishing organizational objectives requires reading the org
-                // tree to choose a scope, so the org-authoring authority above is paired with
-                // read-only tenant org visibility. Granted here (not on the base Manager
-                // template) so it rides in only with the Performance entitlement that adds
-                // org authoring — a non-Performance Manager stays scoped to their direct team.
-                new(CorePermissions.OrganizationView, PermissionScopes.Tenant),
-            ],
-            ["hr-admin"] =
-            [
-                new(PerformancePermissions.CycleView, PermissionScopes.Tenant),
-                new(PerformancePermissions.CycleManage, PermissionScopes.Tenant),
-                new(PerformancePermissions.ReviewCalibrate, PermissionScopes.Tenant),
-                new(PerformancePermissions.SettingsView, PermissionScopes.Tenant),
-                new(PerformancePermissions.SettingsManage, PermissionScopes.Tenant),
-            ],
-            ["org-admin"] =
-            [
-                new(PerformancePermissions.CycleView, PermissionScopes.Tenant),
-                new(PerformancePermissions.CycleManage, PermissionScopes.Tenant),
-                new(PerformancePermissions.StrategyPublish, PermissionScopes.Tenant),
-                new(PerformancePermissions.ReviewCalibrate, PermissionScopes.Tenant),
-                new(PerformancePermissions.SettingsView, PermissionScopes.Tenant),
-                new(PerformancePermissions.SettingsManage, PermissionScopes.Tenant),
-            ],
-        };
-
-    /// <summary>
-    /// The seeded profiles for a tenant, with each module's participation grants
-    /// folded in only when the tenant holds that module's entitlement. The Tenant
-    /// Administrator is composed separately through <see cref="BuildTenantAdministrator"/>.
-    /// </summary>
-    public static IReadOnlyList<SeededAccessProfileTemplate> ComposeSeeded(bool performanceEnabled)
-        => All
-            .Select(template =>
-            {
-                if (!performanceEnabled
-                    || !PerformanceGrantsByInternalKey.TryGetValue(template.InternalKey, out var extra))
-                {
-                    return template;
-                }
-
-                return template with { Grants = [.. template.Grants, .. extra] };
-            })
-            .ToList();
+    public static IReadOnlyList<SeededAccessProfileTemplate> ComposeSeeded(bool performanceEnabled) => Seeded(performanceEnabled);
 
     public static SeededAccessProfileTemplate? GetByInternalKey(string internalKey)
         => All.FirstOrDefault(t =>
             string.Equals(t.InternalKey, internalKey, StringComparison.Ordinal));
-
 
     /// <summary>
     /// Maps legacy/old profile names to their target internal key for migration.

@@ -1,6 +1,6 @@
 using EY.HRPlatform.Identity.Features.Notifications;
 using EY.HRPlatform.Identity.Features.AccessProfiles;
-using EY.HRPlatform.Identity.Features.TenantAdministration;
+using EY.HRPlatform.Identity.Features.Roles;
 using EY.HRPlatform.Identity.Models.Requests;
 using EY.HRPlatform.Identity.Models.Responses;
 using EY.HRPlatform.SharedKernel.Auth;
@@ -18,7 +18,7 @@ namespace EY.HRPlatform.Identity.Controllers;
 public sealed class CoreAccessController(
     IAccessProfileService accessProfileService,
     IAccessAuditService accessAuditService,
-    ITenantContinuityCommandExecutor continuity,
+    IRoleService roles,
     ITenantContext tenantContext,
     IAdministratorRoleMail roleMail) : ControllerBase
 {
@@ -45,20 +45,6 @@ public sealed class CoreAccessController(
 
         var response = await accessProfileService.GetCurrentUserAccessAsync(user, cancellationToken);
         return Ok(ApiResponse<CurrentUserAccessDto>.Success(response));
-    }
-
-    [HttpGet("catalog")]
-    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<CorePermissionCatalogItemDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<ApiResponse<IReadOnlyList<CorePermissionCatalogItemDto>>>> GetCatalog(CancellationToken cancellationToken)
-    {
-        if (!CanReadPermissionCatalog())
-        {
-            return Forbid();
-        }
-
-        var response = await accessProfileService.GetPermissionCatalogAsync(cancellationToken);
-        return Ok(ApiResponse<IReadOnlyList<CorePermissionCatalogItemDto>>.Success(response));
     }
 
     [HttpGet("profiles")]
@@ -126,132 +112,139 @@ public sealed class CoreAccessController(
             : Ok(ApiResponse<AccessProfileSummaryDto>.Success(response));
     }
 
-    [HttpPost("profiles")]
-    [ProducesResponseType(typeof(ApiResponse<AccessProfileSummaryDto>), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ApiResponse<AccessProfileSummaryDto>>> CreateProfile(
-        [FromBody] CreateAccessProfileRequest request,
-        CancellationToken cancellationToken)
+    [HttpGet("roles")]
+    public async Task<ActionResult<ApiResponse<RolesOverviewDto>>> GetRoles(CancellationToken cancellationToken)
     {
         var tenantId = ResolveTenantId();
         if (!tenantId.HasValue)
-        {
-            return BadRequest(ApiResponse<AccessProfileSummaryDto>.Failure("Tenant context is required."));
-        }
-
-        if (!CanManageAccessProfiles())
-        {
+            return BadRequest(ApiResponse<RolesOverviewDto>.Failure("Tenant context is required."));
+        if (!CanReadAccessProfiles())
             return Forbid();
-        }
+
+        return Ok(ApiResponse<RolesOverviewDto>.Success(await roles.GetOverviewAsync(tenantId.Value, cancellationToken)));
+    }
+
+    [HttpGet("roles/{roleId:guid}")]
+    public async Task<ActionResult<ApiResponse<RoleDetailDto>>> GetRole(Guid roleId, CancellationToken cancellationToken)
+    {
+        var tenantId = ResolveTenantId();
+        if (!tenantId.HasValue)
+            return BadRequest(ApiResponse<RoleDetailDto>.Failure("Tenant context is required."));
+        if (!CanReadAccessProfiles())
+            return Forbid();
 
         try
         {
-            var response = await accessProfileService.CreateProfileAsync(tenantId.Value, request, cancellationToken);
-            await accessAuditService.RecordAsync(
-                tenantId.Value,
-                "access.profile.created",
-                "AccessProfile",
-                response.Id.ToString(),
-                $"Access profile '{response.Name}' created.",
-                null,
-                response,
-                User,
-                cancellationToken);
-            return CreatedAtAction(nameof(GetProfile), new { profileId = response.Id }, ApiResponse<AccessProfileSummaryDto>.Success(response));
+            var role = await roles.GetRoleAsync(tenantId.Value, roleId, cancellationToken);
+            Response.Headers.ETag = $"\"{role.Role.Version}\"";
+            return Ok(ApiResponse<RoleDetailDto>.Success(role));
         }
-        catch (InvalidOperationException exception)
+        catch (RoleNotFoundException)
         {
-            return BadRequest(ApiResponse<AccessProfileSummaryDto>.Failure(exception.Message));
+            return NotFound(ApiResponse<RoleDetailDto>.Failure("Role not found."));
         }
     }
 
-    [HttpPut("profiles/{profileId:guid}")]
-    [ProducesResponseType(typeof(ApiResponse<AccessProfileSummaryDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<ApiResponse<AccessProfileSummaryDto>>> UpdateProfile(
-        Guid profileId,
-        [FromBody] UpdateAccessProfileRequest request,
+    /// <summary>People who sign in and can be chosen for a role.</summary>
+    [HttpGet("roles/candidates")]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<RoleCandidateDto>>>> GetCandidates(
+        [FromQuery] string? search, CancellationToken cancellationToken)
+    {
+        var tenantId = ResolveTenantId();
+        if (!tenantId.HasValue)
+            return BadRequest(ApiResponse<IReadOnlyList<RoleCandidateDto>>.Failure("Tenant context is required."));
+        if (!CanManageAccessProfiles())
+            return Forbid();
+
+        return Ok(ApiResponse<IReadOnlyList<RoleCandidateDto>>.Success(await roles.FindCandidatesAsync(tenantId.Value, search, cancellationToken)));
+    }
+
+    [HttpPost("roles")]
+    public async Task<ActionResult<ApiResponse<RoleDetailDto>>> CreateRole([FromBody] CreateRoleRequest request, CancellationToken cancellationToken)
+    {
+        var tenantId = ResolveTenantId();
+        if (!tenantId.HasValue)
+            return BadRequest(ApiResponse<RoleDetailDto>.Failure("Tenant context is required."));
+        if (!CanManageAccessProfiles())
+            return Forbid();
+
+        try
+        {
+            var role = await roles.CreateRoleAsync(tenantId.Value, request, cancellationToken);
+            await accessAuditService.RecordAsync(tenantId.Value, "access.profile.created", "AccessProfile", role.Role.Id.ToString(),
+                $"Role '{role.Role.Name}' created.", null, role.Role, User, cancellationToken);
+            return CreatedAtAction(nameof(GetRole), new { roleId = role.Role.Id }, ApiResponse<RoleDetailDto>.Success(role));
+        }
+        catch (InvalidOperationException exception)
+        {
+            return BadRequest(ApiResponse<RoleDetailDto>.Failure(exception.Message));
+        }
+    }
+
+    [HttpPut("roles/{roleId:guid}")]
+    public async Task<ActionResult<ApiResponse<RoleDetailDto>>> SaveRole(
+        Guid roleId,
+        [FromBody] SaveRoleRequest request,
         [FromHeader(Name = "If-Match")] string? ifMatch,
         CancellationToken cancellationToken)
     {
         var tenantId = ResolveTenantId();
         if (!tenantId.HasValue)
-        {
-            return BadRequest(ApiResponse<AccessProfileSummaryDto>.Failure("Tenant context is required."));
-        }
-
+            return BadRequest(ApiResponse<RoleDetailDto>.Failure("Tenant context is required."));
         if (!CanManageAccessProfiles())
-        {
             return Forbid();
-        }
-
         if (!TryParseVersion(ifMatch, out var version))
-        {
-            return Conflict(ApiResponse<AccessProfileSummaryDto>.Failure("If-Match header with a valid version is required."));
-        }
+            return Conflict(ApiResponse<RoleDetailDto>.Failure("If-Match header with a valid version is required."));
 
         try
         {
-            var before = await accessProfileService.GetProfileAsync(tenantId.Value, profileId, cancellationToken);
-            var response = await accessProfileService.UpdateProfileAsync(tenantId.Value, profileId, version, request, cancellationToken);
-            await accessAuditService.RecordAsync(
-                tenantId.Value,
-                "access.profile.updated",
-                "AccessProfile",
-                response.Id.ToString(),
-                $"Access profile '{response.Name}' updated.",
-                before,
-                response,
-                User,
-                cancellationToken);
-            Response.Headers.ETag = $"\"{response.Version}\"";
-            return Ok(ApiResponse<AccessProfileSummaryDto>.Success(response));
+            var before = await roles.GetRoleAsync(tenantId.Value, roleId, cancellationToken);
+            var after = await roles.SaveRoleAsync(tenantId.Value, roleId, version, request, cancellationToken);
+            await accessAuditService.RecordAsync(tenantId.Value, "access.profile.updated", "AccessProfile", roleId.ToString(),
+                $"Role '{after.Role.Name}' updated.", before.Role, after.Role, User, cancellationToken);
+            await roleMail.SendProfileChangesAsync(tenantId.Value, User.GetUserId(), HolderChanges(roleId, before, after), cancellationToken);
+            Response.Headers.ETag = $"\"{after.Role.Version}\"";
+            return Ok(ApiResponse<RoleDetailDto>.Success(after));
         }
-        catch (DbUpdateConcurrencyException exception)
+        catch (RoleNotFoundException)
         {
-            return Conflict(ApiResponse<AccessProfileSummaryDto>.Failure(exception.Message));
+            return NotFound(ApiResponse<RoleDetailDto>.Failure("Role not found."));
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Conflict(ApiResponse<RoleDetailDto>.Failure("Someone changed this role since you opened it."));
         }
         catch (InvalidOperationException exception)
         {
-            return BadRequest(ApiResponse<AccessProfileSummaryDto>.Failure(exception.Message));
+            return BadRequest(ApiResponse<RoleDetailDto>.Failure(exception.Message));
+        }
+        catch (HttpRequestException)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                ApiResponse<RoleDetailDto>.Failure("Fusion couldn't check the rule's departments, jobs, places and units. Try again."));
         }
     }
 
-    [HttpDelete("profiles/{profileId:guid}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> DeleteProfile(Guid profileId, CancellationToken cancellationToken)
+    [HttpDelete("roles/{roleId:guid}")]
+    public async Task<IActionResult> DeleteRole(Guid roleId, CancellationToken cancellationToken)
     {
         var tenantId = ResolveTenantId();
         if (!tenantId.HasValue)
-        {
             return BadRequest(ApiResponse.Failure("Tenant context is required."));
-        }
-
         if (!CanManageAccessProfiles())
-        {
             return Forbid();
-        }
 
         try
         {
-            var before = await accessProfileService.GetProfileAsync(tenantId.Value, profileId, cancellationToken);
-            await accessProfileService.DeleteProfileAsync(tenantId.Value, profileId, cancellationToken);
-            await accessAuditService.RecordAsync(
-                tenantId.Value,
-                "access.profile.deleted",
-                "AccessProfile",
-                profileId.ToString(),
-                before is null ? "Access profile deleted." : $"Access profile '{before.Name}' deleted.",
-                before,
-                null,
-                User,
-                cancellationToken);
+            var before = await roles.GetRoleAsync(tenantId.Value, roleId, cancellationToken);
+            await roles.DeleteRoleAsync(tenantId.Value, roleId, cancellationToken);
+            await accessAuditService.RecordAsync(tenantId.Value, "access.profile.deleted", "AccessProfile", roleId.ToString(),
+                $"Role '{before.Role.Name}' deleted.", before.Role, null, User, cancellationToken);
             return NoContent();
+        }
+        catch (RoleNotFoundException)
+        {
+            return NotFound(ApiResponse.Failure("Role not found."));
         }
         catch (InvalidOperationException exception)
         {
@@ -259,161 +252,33 @@ public sealed class CoreAccessController(
         }
     }
 
-    [HttpGet("assignments")]
-    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<UserAccessAssignmentDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<ApiResponse<IReadOnlyList<UserAccessAssignmentDto>>>> GetAssignments(CancellationToken cancellationToken)
+    /// <summary>A person's roles and why they have each (their Access tab). Someone without an account has none.</summary>
+    [HttpGet("people/{employeeId:guid}/roles")]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<PersonRoleDto>>>> GetPersonRoles(Guid employeeId, CancellationToken cancellationToken)
     {
         var tenantId = ResolveTenantId();
         if (!tenantId.HasValue)
-        {
-            return BadRequest(ApiResponse<IReadOnlyList<UserAccessAssignmentDto>>.Failure("Tenant context is required."));
-        }
-
-        if (!CanReadAssignments())
-        {
+            return BadRequest(ApiResponse<IReadOnlyList<PersonRoleDto>>.Failure("Tenant context is required."));
+        if (!CanReadAccessProfiles() && User.GetEmployeeId() != employeeId)
             return Forbid();
-        }
 
-        var response = await accessProfileService.GetUserAssignmentsAsync(tenantId.Value, cancellationToken);
-        return Ok(ApiResponse<IReadOnlyList<UserAccessAssignmentDto>>.Success(response));
+        var result = await roles.GetPersonRolesAsync(tenantId.Value, employeeId, cancellationToken);
+        return Ok(ApiResponse<IReadOnlyList<PersonRoleDto>>.Success(result ?? []));
     }
 
-    [HttpPut("assignments/{userId:guid}")]
-    [ProducesResponseType(typeof(ApiResponse<UserAccessAssignmentDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ApiResponse<UserAccessAssignmentDto>>> SetAssignments(
-        Guid userId,
-        [FromBody] SetUserAccessProfilesRequest request,
-        CancellationToken cancellationToken)
+    /// <summary>Who gained or lost the role, for the administrator-role mail.</summary>
+    private static IReadOnlyList<(Guid UserId, IReadOnlyCollection<Guid> Before, IReadOnlyCollection<Guid> After)> HolderChanges(
+        Guid roleId, RoleDetailDto before, RoleDetailDto after)
     {
-        var tenantId = ResolveTenantId();
-        if (!tenantId.HasValue)
-        {
-            return BadRequest(ApiResponse<UserAccessAssignmentDto>.Failure("Tenant context is required."));
-        }
-
-        if (!CanManageAccess())
-        {
-            return Forbid();
-        }
-
-        try
-        {
-            var before = (await accessProfileService.GetUserAssignmentsAsync(tenantId.Value, cancellationToken))
-                .FirstOrDefault(assignment => assignment.UserId == userId);
-            // Reassigning access profiles can change what a person can do in this
-            // tenant, so it is serialized with every other authority-affecting
-            // command. Without this, two administrators could each reassign the
-            // other's profiles concurrently and the continuity check would never
-            // see the combined result.
-            var outcome = await continuity.ExecuteAsync(
-                tenantId.Value,
-                User.GetUserId(),
-                async _ => ContinuityResult<UserAccessAssignmentDto>.Ok(
-                    await accessProfileService.SetUserAccessProfilesAsync(
-                        tenantId.Value, userId, request.AccessProfileIds, cancellationToken)),
-                cancellationToken);
-
-            if (!outcome.Succeeded)
-            {
-                return Conflict(ApiResponse<UserAccessAssignmentDto>.Failure(
-                    outcome.Failure == ContinuityFailure.FinalAdministrator
-                        ? "This change would leave the tenant without a usable Tenant Administrator."
-                        : outcome.Reason ?? "That change could not be applied."));
-            }
-
-            var response = outcome.Value!;
-
-            await accessAuditService.RecordAsync(
-                tenantId.Value,
-                "access.assignment.updated",
-                "UserAccessAssignment",
-                userId.ToString(),
-                $"Access profiles updated for '{response.Email}'.",
-                before,
-                response,
-                User,
-                cancellationToken);
-            await roleMail.SendProfileChangesAsync(tenantId.Value, User.GetUserId(),
-                [(userId, ProfileIds(before), ProfileIds(response))], cancellationToken);
-
-            return Ok(ApiResponse<UserAccessAssignmentDto>.Success(response));
-        }
-        catch (InvalidOperationException exception)
-        {
-            return BadRequest(ApiResponse<UserAccessAssignmentDto>.Failure(exception.Message));
-        }
+        var was = before.Holders.Select(holder => holder.UserId).ToHashSet();
+        var now = after.Holders.Select(holder => holder.UserId).ToHashSet();
+        return was.Union(now)
+            .Where(userId => was.Contains(userId) != now.Contains(userId))
+            .Select(userId => (userId,
+                (IReadOnlyCollection<Guid>)(was.Contains(userId) ? [roleId] : []),
+                (IReadOnlyCollection<Guid>)(now.Contains(userId) ? [roleId] : [])))
+            .ToList();
     }
-
-    [HttpPut("assignments")]
-    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<UserAccessAssignmentDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ApiResponse<IReadOnlyList<UserAccessAssignmentDto>>>> SetAssignmentsBulk(
-        [FromBody] BulkSetUserAccessProfilesRequest request,
-        CancellationToken cancellationToken)
-    {
-        var tenantId = ResolveTenantId();
-        if (!tenantId.HasValue)
-        {
-            return BadRequest(ApiResponse<IReadOnlyList<UserAccessAssignmentDto>>.Failure("Tenant context is required."));
-        }
-
-        if (!CanManageAccess())
-        {
-            return Forbid();
-        }
-
-        try
-        {
-            var before = (await accessProfileService.GetUserAssignmentsAsync(tenantId.Value, cancellationToken))
-                .Where(assignment => request.UserIds.Contains(assignment.UserId))
-                .ToList();
-            var outcome = await continuity.ExecuteAsync(
-                tenantId.Value,
-                User.GetUserId(),
-                async _ => ContinuityResult<IReadOnlyList<UserAccessAssignmentDto>>.Ok(
-                    await accessProfileService.SetUserAccessProfilesBulkAsync(
-                        tenantId.Value, request.UserIds, request.AccessProfileIds, cancellationToken)),
-                cancellationToken);
-
-            if (!outcome.Succeeded)
-            {
-                return Conflict(ApiResponse<IReadOnlyList<UserAccessAssignmentDto>>.Failure(
-                    outcome.Failure == ContinuityFailure.FinalAdministrator
-                        ? "This change would leave the tenant without a usable Tenant Administrator."
-                        : outcome.Reason ?? "That change could not be applied."));
-            }
-
-            var response = outcome.Value!;
-
-            await accessAuditService.RecordAsync(
-                tenantId.Value,
-                "access.assignment.bulkUpdated",
-                "UserAccessAssignment",
-                null,
-                $"Access profiles updated for {response.Count} users.",
-                before,
-                response,
-                User,
-                cancellationToken);
-            await roleMail.SendProfileChangesAsync(tenantId.Value, User.GetUserId(),
-                response.Select(after => (after.UserId,
-                    ProfileIds(before.FirstOrDefault(item => item.UserId == after.UserId)), ProfileIds(after))).ToList(),
-                cancellationToken);
-
-            return Ok(ApiResponse<IReadOnlyList<UserAccessAssignmentDto>>.Success(response));
-        }
-        catch (InvalidOperationException exception)
-        {
-            return BadRequest(ApiResponse<IReadOnlyList<UserAccessAssignmentDto>>.Failure(exception.Message));
-        }
-    }
-
-    private static IReadOnlyCollection<Guid> ProfileIds(UserAccessAssignmentDto? assignment)
-        => assignment?.AccessProfiles.Select(profile => profile.Id).ToList() ?? [];
 
     private Guid? ResolveTenantId()
         => tenantContext.TenantIdOrDefault;
@@ -425,18 +290,6 @@ public sealed class CoreAccessController(
             || User.HasCorePermission(CorePermissions.AccessManage, PermissionScopes.Tenant)
             || User.HasCorePermission(CorePermissions.SettingsProvisioningView, PermissionScopes.Tenant)
             || User.HasCorePermission(CorePermissions.SettingsProvisioningManage, PermissionScopes.Tenant);
-
-    private bool CanManageAccess()
-        => User.HasCorePermission(CorePermissions.AccessManage, PermissionScopes.Tenant)
-            || User.HasCorePermission(CorePermissions.AccessAssignmentsManage, PermissionScopes.Tenant);
-
-    private bool CanReadAssignments()
-        => CanManageAccess()
-            || User.HasCorePermission(CorePermissions.AccessAssignmentsView, PermissionScopes.Tenant);
-
-    private bool CanReadPermissionCatalog()
-        => CanReadAccessProfiles()
-            || CanReadAssignments();
 
     private bool CanManageAccessProfiles()
         => User.HasCorePermission(CorePermissions.AccessProfilesManageV2, PermissionScopes.Tenant)

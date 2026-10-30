@@ -72,6 +72,23 @@ public static class ServiceCollectionExtensions
 
             client.BaseAddress = new Uri(baseUrl.EndsWith('/') ? baseUrl : $"{baseUrl}/");
         });
+        // Roles held by rule read Core HR's facts (unit chain, job, place, team) over the same signed channel.
+        services.AddHttpClient<Infrastructure.Core.ICoreRoleFacts, Infrastructure.Core.CoreRoleFacts>(client =>
+        {
+            var baseUrl = configuration["ServiceUrls:CoreHRApiBaseUrl"];
+            if (string.IsNullOrWhiteSpace(baseUrl))
+            {
+                throw new InvalidOperationException(
+                    "ServiceUrls:CoreHRApiBaseUrl is not configured. Set it via environment variable or appsettings.");
+            }
+
+            client.BaseAddress = new Uri(baseUrl.EndsWith('/') ? baseUrl : $"{baseUrl}/");
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
+        services.AddSingleton<Features.Roles.RoleRecomputeQueue>();
+        services.AddScoped<Features.Roles.IRoleHolderService, Features.Roles.RoleHolderService>();
+        services.AddScoped<Features.Roles.IRoleService, Features.Roles.RoleService>();
+        services.AddHostedService<Features.Roles.RoleRecomputeWorker>();
         services.AddScoped<Features.WorkforceBinding.IWorkforceBindingBackfillService, Features.WorkforceBinding.WorkforceBindingBackfillService>();
         services.AddHostedService<Features.WorkforceBinding.WorkforceBindingBackfillStartupTask>();
         services.AddScoped<Features.WorkforceAccess.IWorkforceAccountCandidateResolver, Features.WorkforceAccess.WorkforceAccountCandidateResolver>();

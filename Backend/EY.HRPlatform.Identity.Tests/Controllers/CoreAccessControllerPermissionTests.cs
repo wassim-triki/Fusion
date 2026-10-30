@@ -2,17 +2,17 @@ using System.Security.Claims;
 using EY.HRPlatform.Identity.Controllers;
 using EY.HRPlatform.Identity.Domain.Entities;
 using EY.HRPlatform.Identity.Features.AccessProfiles;
-using EY.HRPlatform.Identity.Features.TenantAdministration;
-using EY.HRPlatform.Identity.Models.Requests;
+using EY.HRPlatform.Identity.Features.Roles;
 using EY.HRPlatform.Identity.Models.Responses;
 using EY.HRPlatform.Identity.Tests.TestHelpers;
-using EY.HRPlatform.SharedKernel.Api;
 using EY.HRPlatform.SharedKernel.Auth;
+using EY.HRPlatform.SharedKernel.Multitenancy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EY.HRPlatform.Identity.Tests.Controllers;
 
+/// <summary>Who may read and change roles (B-177): reading for the access readers, changing only for the roles area.</summary>
 public class CoreAccessControllerPermissionTests
 {
     [Fact]
@@ -26,144 +26,114 @@ public class CoreAccessControllerPermissionTests
     }
 
     [Fact]
-    public async Task SetAssignments_WithAccessManagePermission_ReturnsOk()
+    public async Task GetRoles_WithAccessViewPermission_ReturnsOk()
     {
-        var controller = CreateController((CorePermissions.AccessManage, PermissionScopes.Tenant));
+        var controller = CreateController((CorePermissions.AccessView, PermissionScopes.Tenant));
 
-        var result = await controller.SetAssignments(
-            Guid.NewGuid(),
-            new SetUserAccessProfilesRequest { AccessProfileIds = [] },
-            CancellationToken.None);
+        var result = await controller.GetRoles(CancellationToken.None);
 
         Assert.IsType<OkObjectResult>(result.Result);
     }
 
     [Fact]
-    public async Task SetAssignmentsBulk_WithAccessManagePermission_ReturnsOk()
+    public async Task GetRoles_WithoutAnyAccessPermission_ReturnsForbid()
     {
-        var controller = CreateController((CorePermissions.AccessManage, PermissionScopes.Tenant));
+        var controller = CreateController((CorePermissions.EmployeeView, PermissionScopes.Tenant));
 
-        var result = await controller.SetAssignmentsBulk(
-            new BulkSetUserAccessProfilesRequest
-            {
-                UserIds = [Guid.NewGuid()],
-                AccessProfileIds = [],
-            },
-            CancellationToken.None);
+        Assert.IsType<ForbidResult>((await controller.GetRoles(CancellationToken.None)).Result);
+        Assert.IsType<ForbidResult>((await controller.GetRole(Guid.NewGuid(), CancellationToken.None)).Result);
+    }
 
-        Assert.IsType<OkObjectResult>(result.Result);
+    [Theory]
+    [InlineData(CorePermissions.AccessManage)]
+    [InlineData(CorePermissions.AccessProfilesView)]
+    [InlineData(CorePermissions.EmployeeManage)]
+    [InlineData(CorePermissions.AccessAssignmentsManage)]
+    public async Task Changing_roles_needs_the_roles_area(string permission)
+    {
+        var controller = CreateController((permission, PermissionScopes.Tenant));
+
+        Assert.IsType<ForbidResult>((await controller.CreateRole(new CreateRoleRequest("Recruiters", null), CancellationToken.None)).Result);
+        Assert.IsType<ForbidResult>((await controller.SaveRole(Guid.NewGuid(), SaveRequest(), "\"1\"", CancellationToken.None)).Result);
+        Assert.IsType<ForbidResult>(await controller.DeleteRole(Guid.NewGuid(), CancellationToken.None));
+        Assert.IsType<ForbidResult>((await controller.GetCandidates(null, CancellationToken.None)).Result);
     }
 
     [Fact]
-    public async Task SetAssignments_WithAccessViewPermission_ReturnsForbid()
-    {
-        var controller = CreateController((CorePermissions.AccessView, PermissionScopes.Tenant));
-
-        var result = await controller.SetAssignments(
-            Guid.NewGuid(),
-            new SetUserAccessProfilesRequest { AccessProfileIds = [] },
-            CancellationToken.None);
-
-        Assert.IsType<ForbidResult>(result.Result);
-    }
-
-    [Fact]
-    public async Task SetAssignmentsBulk_WithAccessViewPermission_ReturnsForbid()
-    {
-        var controller = CreateController((CorePermissions.AccessView, PermissionScopes.Tenant));
-
-        var result = await controller.SetAssignmentsBulk(
-            new BulkSetUserAccessProfilesRequest
-            {
-                UserIds = [Guid.NewGuid()],
-                AccessProfileIds = [],
-            },
-            CancellationToken.None);
-
-        Assert.IsType<ForbidResult>(result.Result);
-    }
-
-    [Fact]
-    public async Task CreateProfile_WithOnlyAccessManagePermission_ReturnsForbid()
-    {
-        var controller = CreateController((CorePermissions.AccessManage, PermissionScopes.Tenant));
-
-        var result = await controller.CreateProfile(
-            new CreateAccessProfileRequest
-            {
-                Name = "Access Operator",
-                Grants = [],
-            },
-            CancellationToken.None);
-
-        Assert.IsType<ForbidResult>(result.Result);
-    }
-
-    [Fact]
-    public async Task CreateProfile_WithAccessProfilesManagePermission_ReturnsCreated()
+    public async Task CreateRole_WithAccessProfilesManagePermission_ReturnsCreated()
     {
         var controller = CreateController((CorePermissions.AccessProfilesManageV2, PermissionScopes.Tenant));
 
-        var result = await controller.CreateProfile(
-            new CreateAccessProfileRequest
-            {
-                Name = "Profile Definition Admin",
-                Grants = [],
-            },
-            CancellationToken.None);
+        var result = await controller.CreateRole(new CreateRoleRequest("Recruiters", null), CancellationToken.None);
 
         Assert.IsType<CreatedAtActionResult>(result.Result);
     }
 
     [Fact]
-    public async Task CreateProfile_WithPlatformAdminRole_ReturnsForbid()
+    public async Task SaveRole_without_a_version_is_a_conflict()
+    {
+        var controller = CreateController((CorePermissions.AccessProfilesManageV2, PermissionScopes.Tenant));
+
+        var result = await controller.SaveRole(Guid.NewGuid(), SaveRequest(), null, CancellationToken.None);
+
+        Assert.IsType<ConflictObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task Changing_roles_is_refused_to_a_platform_operator()
     {
         var controller = CreateController(roles: [PlatformRole.PlatformAdmin]);
 
-        var result = await controller.CreateProfile(
-            new CreateAccessProfileRequest
-            {
-                Name = "Platform Access Operator",
-                Grants = [],
-            },
-            CancellationToken.None);
-
-        Assert.IsType<ForbidResult>(result.Result);
+        Assert.IsType<ForbidResult>((await controller.CreateRole(new CreateRoleRequest("Recruiters", null), CancellationToken.None)).Result);
+        Assert.IsType<ForbidResult>((await controller.SaveRole(Guid.NewGuid(), SaveRequest(), "\"1\"", CancellationToken.None)).Result);
     }
 
     [Fact]
-    public async Task GetAssignments_WithAssignmentsViewPermission_ReturnsOk()
+    public async Task A_person_reads_their_own_roles_but_not_someone_elses()
     {
-        var controller = CreateController((CorePermissions.AccessAssignmentsView, PermissionScopes.Tenant));
+        var employeeId = Guid.NewGuid();
+        var controller = CreateController(roles: null, employeeId: employeeId, (CorePermissions.ProfileSelfView, PermissionScopes.Self));
 
-        var result = await controller.GetAssignments(CancellationToken.None);
-
-        Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<OkObjectResult>((await controller.GetPersonRoles(employeeId, CancellationToken.None)).Result);
+        Assert.IsType<ForbidResult>((await controller.GetPersonRoles(Guid.NewGuid(), CancellationToken.None)).Result);
     }
 
     [Fact]
-    public async Task GetCatalog_WithAccessProfilesViewPermission_ReturnsOk()
+    public async Task Without_a_tenant_nothing_is_read_or_changed()
     {
-        var controller = CreateController((CorePermissions.AccessProfilesView, PermissionScopes.Tenant));
+        var controller = CreateController(
+            roles: null, employeeId: null, tenant: TestTenantContext.Unresolved(),
+            (CorePermissions.AccessProfilesManageV2, PermissionScopes.Tenant));
 
-        var result = await controller.GetCatalog(CancellationToken.None);
-
-        Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsType<BadRequestObjectResult>((await controller.GetRoles(CancellationToken.None)).Result);
+        Assert.IsType<BadRequestObjectResult>((await controller.SaveRole(Guid.NewGuid(), SaveRequest(), "\"1\"", CancellationToken.None)).Result);
     }
 
-    private static CoreAccessController CreateController(
-        params (string PermissionKey, string Scope)[] grants)
-        => CreateController(null, grants);
+    private static SaveRoleRequest SaveRequest()
+        => new("Recruiters", null, [], AccessProfileHolderKinds.Chosen, [], []);
+
+    private static CoreAccessController CreateController(params (string PermissionKey, string Scope)[] grants)
+        => CreateController(null, null, null, grants);
+
+    private static CoreAccessController CreateController(IEnumerable<string>? roles = null, params (string PermissionKey, string Scope)[] grants)
+        => CreateController(roles, null, null, grants);
 
     private static CoreAccessController CreateController(
-        IEnumerable<string>? roles = null,
+        IEnumerable<string>? roles,
+        Guid? employeeId,
         params (string PermissionKey, string Scope)[] grants)
-    {
-        var controller = new CoreAccessController(
+        => CreateController(roles, employeeId, null, grants);
+
+    private static CoreAccessController CreateController(
+        IEnumerable<string>? roles,
+        Guid? employeeId,
+        ITenantContext? tenant,
+        params (string PermissionKey, string Scope)[] grants)
+        => new(
             new StubAccessProfileService(),
             new StubAccessAuditService(),
-            new PassThroughContinuityExecutor(),
-            TestTenantContext.WithTenant(Guid.NewGuid()),
+            new StubRoleService(),
+            tenant ?? TestTenantContext.WithTenant(Guid.NewGuid()),
             new SilentRoleMail())
         {
             ControllerContext = new ControllerContext
@@ -174,6 +144,7 @@ public class CoreAccessControllerPermissionTests
                     [
                         new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
                         new Claim(ClaimTypes.Email, "controller.test@example.com"),
+                        .. employeeId is { } id ? [new Claim(CustomClaimTypes.EmployeeId, id.ToString())] : Array.Empty<Claim>(),
                         .. (roles ?? []).Select(role => new Claim(ClaimTypes.Role, role)),
                         .. grants.Select(grant => new Claim(
                             CustomClaimTypes.CorePermission,
@@ -183,9 +154,6 @@ public class CoreAccessControllerPermissionTests
             }
         };
 
-        return controller;
-    }
-
     private sealed class StubAccessProfileService : IAccessProfileService
     {
         public Task EnsureSeedDataAsync(CancellationToken cancellationToken = default)
@@ -194,52 +162,19 @@ public class CoreAccessControllerPermissionTests
         public Task EnsureTenantAccessProfilesAsync(Guid tenantId, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
-        public Task<IReadOnlyList<CorePermissionCatalogItemDto>> GetPermissionCatalogAsync(CancellationToken cancellationToken = default)
-            => Task.FromResult<IReadOnlyList<CorePermissionCatalogItemDto>>([]);
-
         public Task<IReadOnlyList<AccessProfileSummaryDto>> GetProfilesAsync(Guid tenantId, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<AccessProfileSummaryDto>>([
                 new AccessProfileSummaryDto
                 {
                     Id = Guid.NewGuid(),
-                    Name = "Employee",
+                    Name = "Employees",
                     Type = AccessProfileTypes.SystemSeeded,
-                    IsSystemProtected = true,
+                    IsSystemProtected = false,
                 }
             ]);
 
         public Task<AccessProfileSummaryDto?> GetProfileAsync(Guid tenantId, Guid profileId, CancellationToken cancellationToken = default)
-            => Task.FromResult<AccessProfileSummaryDto?>(new AccessProfileSummaryDto { Id = profileId, Name = "Employee" });
-
-        public Task<AccessProfileSummaryDto> CreateProfileAsync(Guid tenantId, CreateAccessProfileRequest request, CancellationToken cancellationToken = default)
-            => Task.FromResult(new AccessProfileSummaryDto { Id = Guid.NewGuid(), Name = request.Name });
-
-        public Task<AccessProfileSummaryDto> UpdateProfileAsync(Guid tenantId, Guid profileId, uint expectedVersion, UpdateAccessProfileRequest request, CancellationToken cancellationToken = default)
-            => Task.FromResult(new AccessProfileSummaryDto { Id = profileId, Name = request.Name ?? string.Empty });
-
-        public Task DeleteProfileAsync(Guid tenantId, Guid profileId, CancellationToken cancellationToken = default)
-            => Task.CompletedTask;
-
-        public Task<IReadOnlyList<UserAccessAssignmentDto>> GetUserAssignmentsAsync(Guid tenantId, CancellationToken cancellationToken = default)
-            => Task.FromResult<IReadOnlyList<UserAccessAssignmentDto>>([]);
-
-        public Task<UserAccessAssignmentDto> SetUserAccessProfilesAsync(Guid tenantId, Guid userId, IReadOnlyCollection<Guid> accessProfileIds, CancellationToken cancellationToken = default)
-            => Task.FromResult(new UserAccessAssignmentDto
-            {
-                UserId = userId,
-                Email = "controller.test@example.com",
-                FullName = "Controller Test",
-                AccessProfiles = [],
-            });
-
-        public Task<IReadOnlyList<UserAccessAssignmentDto>> SetUserAccessProfilesBulkAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, IReadOnlyCollection<Guid> accessProfileIds, CancellationToken cancellationToken = default)
-            => Task.FromResult<IReadOnlyList<UserAccessAssignmentDto>>(userIds.Select(userId => new UserAccessAssignmentDto
-            {
-                UserId = userId,
-                Email = "controller.test@example.com",
-                FullName = "Controller Test",
-                AccessProfiles = [],
-            }).ToList());
+            => Task.FromResult<AccessProfileSummaryDto?>(new AccessProfileSummaryDto { Id = profileId, Name = "Employees" });
 
         public Task<CurrentUserAccessDto> GetCurrentUserAccessAsync(ApplicationUser user, CancellationToken cancellationToken = default)
             => Task.FromResult(new CurrentUserAccessDto());
@@ -269,19 +204,31 @@ public class CoreAccessControllerPermissionTests
             => PlatformRole.Employee;
     }
 
-    /// <summary>
-    /// These tests are about permission gating, which is decided before any
-    /// mutation runs. The executor is stubbed out so they do not need a database
-    /// to reach the decision they are actually asserting.
-    /// </summary>
-    private sealed class PassThroughContinuityExecutor : ITenantContinuityCommandExecutor
+    private sealed class StubRoleService : IRoleService
     {
-        public Task<ContinuityResult<T>> ExecuteAsync<T>(
-            Guid tenantId,
-            Guid? actorUserId,
-            Func<TenantContinuityContext, Task<ContinuityResult<T>>> mutate,
-            CancellationToken cancellationToken = default)
-            => mutate(new TenantContinuityContext(null!, tenantId, actorUserId));
+        private static RoleDetailDto Detail(Guid id, string name)
+            => new(new RoleSummaryDto(id, name, null, false, false, false, AccessProfileHolderKinds.Chosen, [], 0, [], [], 1, null), [], []);
+
+        public Task<RolesOverviewDto> GetOverviewAsync(Guid tenantId, CancellationToken cancellationToken)
+            => Task.FromResult(new RolesOverviewDto([], [], null));
+
+        public Task<RoleDetailDto> GetRoleAsync(Guid tenantId, Guid roleId, CancellationToken cancellationToken)
+            => Task.FromResult(Detail(roleId, "Role"));
+
+        public Task<RoleDetailDto> CreateRoleAsync(Guid tenantId, CreateRoleRequest request, CancellationToken cancellationToken)
+            => Task.FromResult(Detail(Guid.NewGuid(), request.Name));
+
+        public Task<RoleDetailDto> SaveRoleAsync(Guid tenantId, Guid roleId, uint expectedVersion, SaveRoleRequest request, CancellationToken cancellationToken)
+            => Task.FromResult(Detail(roleId, request.Name));
+
+        public Task DeleteRoleAsync(Guid tenantId, Guid roleId, CancellationToken cancellationToken)
+            => Task.CompletedTask;
+
+        public Task<IReadOnlyList<PersonRoleDto>?> GetPersonRolesAsync(Guid tenantId, Guid employeeId, CancellationToken cancellationToken)
+            => Task.FromResult<IReadOnlyList<PersonRoleDto>?>([]);
+
+        public Task<IReadOnlyList<RoleCandidateDto>> FindCandidatesAsync(Guid tenantId, string? search, CancellationToken cancellationToken)
+            => Task.FromResult<IReadOnlyList<RoleCandidateDto>>([]);
     }
 
     private sealed class StubAccessAuditService : IAccessAuditService

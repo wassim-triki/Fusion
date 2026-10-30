@@ -15,15 +15,8 @@ public interface IAccessProfileService
 
     /// <summary>Seeds the standard access profiles for one tenant. A newly provisioned tenant has none until this runs.</summary>
     Task EnsureTenantAccessProfilesAsync(Guid tenantId, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<CorePermissionCatalogItemDto>> GetPermissionCatalogAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<AccessProfileSummaryDto>> GetProfilesAsync(Guid tenantId, CancellationToken cancellationToken = default);
     Task<AccessProfileSummaryDto?> GetProfileAsync(Guid tenantId, Guid profileId, CancellationToken cancellationToken = default);
-    Task<AccessProfileSummaryDto> CreateProfileAsync(Guid tenantId, CreateAccessProfileRequest request, CancellationToken cancellationToken = default);
-    Task<AccessProfileSummaryDto> UpdateProfileAsync(Guid tenantId, Guid profileId, uint expectedVersion, UpdateAccessProfileRequest request, CancellationToken cancellationToken = default);
-    Task DeleteProfileAsync(Guid tenantId, Guid profileId, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<UserAccessAssignmentDto>> GetUserAssignmentsAsync(Guid tenantId, CancellationToken cancellationToken = default);
-    Task<UserAccessAssignmentDto> SetUserAccessProfilesAsync(Guid tenantId, Guid userId, IReadOnlyCollection<Guid> accessProfileIds, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<UserAccessAssignmentDto>> SetUserAccessProfilesBulkAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, IReadOnlyCollection<Guid> accessProfileIds, CancellationToken cancellationToken = default);
     Task<CurrentUserAccessDto> GetCurrentUserAccessAsync(ApplicationUser user, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<AccessProfileAssignmentSummaryDto>> GetAssignedProfilesAsync(ApplicationUser user, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<EffectivePermissionGrant>> GetEffectivePermissionsAsync(ApplicationUser user, CancellationToken cancellationToken = default);
@@ -37,7 +30,8 @@ public interface IAccessProfileService
 
 public sealed class AccessProfileService(
     AppIdentityDbContext dbContext,
-    UserManager<ApplicationUser> userManager) : IAccessProfileService
+    UserManager<ApplicationUser> userManager,
+    Roles.RoleRecomputeQueue? recomputeQueue = null) : IAccessProfileService
 {
     /// <summary>
     /// Resolves the Active membership that authorizes an access assignment.
@@ -117,19 +111,6 @@ public sealed class AccessProfileService(
         }
     }
 
-    public Task<IReadOnlyList<CorePermissionCatalogItemDto>> GetPermissionCatalogAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult<IReadOnlyList<CorePermissionCatalogItemDto>>(
-            PermissionCatalog.All
-                .Select(definition => new CorePermissionCatalogItemDto
-                {
-                    PermissionKey = definition.Key,
-                    Label = definition.Label,
-                    Group = definition.Group,
-                    HelperText = definition.HelperText,
-                    AllowedScopes = definition.AllowedScopes.ToList(),
-                })
-                .ToList());
-
     public async Task<IReadOnlyList<AccessProfileSummaryDto>> GetProfilesAsync(Guid tenantId, CancellationToken cancellationToken = default)
     {
         var profiles = await LoadProfilesAsync(tenantId, cancellationToken);
@@ -144,233 +125,6 @@ public sealed class AccessProfileService(
             .FirstOrDefaultAsync(item => item.TenantId == tenantId && item.Id == profileId, cancellationToken);
 
         return profile is null ? null : MapProfile(profile);
-    }
-
-    public async Task<AccessProfileSummaryDto> CreateProfileAsync(Guid tenantId, CreateAccessProfileRequest request, CancellationToken cancellationToken = default)
-    {
-        var normalizedGrants = NormalizeGrantInputs(request.Grants);
-        await EnsureProfileNameAvailableAsync(tenantId, request.Name, profileId: null, cancellationToken);
-
-        var profile = AccessProfile.Create(
-            tenantId,
-            request.Name,
-            request.Description,
-            AccessProfileTypes.Custom,
-            isSystemProtected: false);
-
-        profile.ReplaceGrants(normalizedGrants
-            .Select(grant => AccessProfileGrant.Create(tenantId, profile.Id, grant.PermissionKey, grant.Scope)));
-
-        dbContext.AccessProfiles.Add(profile);
-        await dbContext.SaveChangesAsync(cancellationToken);
-        return MapProfile(profile);
-    }
-
-    public async Task<AccessProfileSummaryDto> UpdateProfileAsync(
-        Guid tenantId,
-        Guid profileId,
-        uint expectedVersion,
-        UpdateAccessProfileRequest request,
-        CancellationToken cancellationToken = default)
-    {
-        var profile = await dbContext.AccessProfiles
-            .Include(item => item.Grants)
-            .Include(item => item.UserAssignments)
-            .FirstOrDefaultAsync(item => item.TenantId == tenantId && item.Id == profileId, cancellationToken)
-            ?? throw new InvalidOperationException("Access profile not found.");
-
-        if (profile.Version != expectedVersion)
-            throw new DbUpdateConcurrencyException("Access profile version mismatch.");
-
-        if (profile.IsSystemProtected)
-        {
-            if (!string.Equals(profile.Name, request.Name?.Trim(), StringComparison.Ordinal))
-                throw new InvalidOperationException("System access profile names cannot be renamed.");
-
-            if (!string.Equals(profile.Description ?? string.Empty, request.Description ?? string.Empty, StringComparison.Ordinal))
-                throw new InvalidOperationException("System access profile descriptions cannot be changed.");
-
-            var currentGrantKeys = profile.Grants
-                .Select(grant => $"{grant.PermissionKey}:{grant.Scope}")
-                .OrderBy(key => key)
-                .ToArray();
-            var incomingGrantKeys = NormalizeGrantInputs(request.Grants)
-                .Select(grant => $"{grant.PermissionKey}:{grant.Scope}")
-                .OrderBy(key => key)
-                .ToArray();
-
-            if (!currentGrantKeys.SequenceEqual(incomingGrantKeys, StringComparer.Ordinal))
-                throw new InvalidOperationException("System access profile permissions cannot be modified.");
-        }
-
-        await EnsureProfileNameAvailableAsync(tenantId, request.Name ?? string.Empty, profile.Id, cancellationToken);
-        var normalizedGrants = NormalizeGrantInputs(request.Grants);
-
-        // The canonical administrator definition is system-protected: it is the
-        // meaning of the tenant's one predefined administration role, not a bundle
-        // a tenant can edit.
-        await EnsureNotAdministratorDefinitionAsync(tenantId, [profileId], cancellationToken);
-
-        profile.UpdateDetails(request.Name ?? string.Empty, request.Description);
-        profile.ReplaceGrants(normalizedGrants
-            .Select(grant => AccessProfileGrant.Create(tenantId, profile.Id, grant.PermissionKey, grant.Scope)));
-
-        await dbContext.SaveChangesAsync(cancellationToken);
-
-        foreach (var assignment in profile.UserAssignments)
-        {
-            var user = await dbContext.Users.IgnoreQueryFilters()
-                .FirstOrDefaultAsync(item => item.Id == assignment.UserId, cancellationToken);
-            if (user is not null)
-            {
-                await SyncCompatibilityRolesAsync(user, cancellationToken);
-            }
-        }
-
-        return MapProfile(profile);
-    }
-
-    public async Task DeleteProfileAsync(Guid tenantId, Guid profileId, CancellationToken cancellationToken = default)
-    {
-        var profile = await dbContext.AccessProfiles
-            .Include(item => item.UserAssignments)
-            .FirstOrDefaultAsync(item => item.TenantId == tenantId && item.Id == profileId, cancellationToken)
-            ?? throw new InvalidOperationException("Access profile not found.");
-
-        if (profile.IsSystemProtected)
-            throw new InvalidOperationException("System access profiles cannot be deleted.");
-
-        if (profile.UserAssignments.Count > 0)
-            throw new InvalidOperationException("Assigned users must be reassigned before deleting this access profile.");
-
-        dbContext.AccessProfiles.Remove(profile);
-        await dbContext.SaveChangesAsync(cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<UserAccessAssignmentDto>> GetUserAssignmentsAsync(Guid tenantId, CancellationToken cancellationToken = default)
-    {
-        var users = await dbContext.Users
-            .IgnoreQueryFilters()
-            .Where(user => user.TenantMemberships.Any(membership =>
-                membership.TenantId == tenantId
-                && membership.Status == TenantMembershipStatus.Active))
-            .OrderBy(user => user.FirstName)
-            .ThenBy(user => user.LastName)
-            .ToListAsync(cancellationToken);
-
-        var summariesByUserId = await LoadAssignedProfileSummariesByUserIdAsync(tenantId, users.Select(user => user.Id).ToList(), cancellationToken);
-        var employeeIdsByUserId = await LoadActiveEmployeeBindingsByUserIdAsync(
-            tenantId,
-            users.Select(user => user.Id).ToArray(),
-            cancellationToken);
-
-        return users.Select(user => MapUserAssignment(
-            user,
-            employeeIdsByUserId.GetValueOrDefault(user.Id),
-            summariesByUserId.GetValueOrDefault(user.Id, []))).ToList();
-    }
-
-    public async Task<UserAccessAssignmentDto> SetUserAccessProfilesAsync(
-        Guid tenantId,
-        Guid userId,
-        IReadOnlyCollection<Guid> accessProfileIds,
-        CancellationToken cancellationToken = default)
-    {
-        var assignments = await SetUserAccessProfilesBulkAsync(
-            tenantId,
-            [userId],
-            accessProfileIds,
-            cancellationToken);
-
-        return assignments.Single();
-    }
-
-    public async Task<IReadOnlyList<UserAccessAssignmentDto>> SetUserAccessProfilesBulkAsync(
-        Guid tenantId,
-        IReadOnlyCollection<Guid> userIds,
-        IReadOnlyCollection<Guid> accessProfileIds,
-        CancellationToken cancellationToken = default)
-    {
-        var normalizedUserIds = userIds
-            .Where(userId => userId != Guid.Empty)
-            .Distinct()
-            .ToArray();
-
-        if (normalizedUserIds.Length == 0)
-        {
-            return [];
-        }
-
-        var users = await dbContext.Users
-            .IgnoreQueryFilters()
-            .Where(item => normalizedUserIds.Contains(item.Id)
-                && item.TenantMemberships.Any(m => m.TenantId == tenantId && m.Status == TenantMembershipStatus.Active))
-            .ToListAsync(cancellationToken);
-
-        if (users.Count != normalizedUserIds.Length)
-        {
-            throw new InvalidOperationException(
-                normalizedUserIds.Length == 1
-                    ? "User not found."
-                    : "One or more users were not found.");
-        }
-
-        var normalizedIds = accessProfileIds
-            .Where(profileId => profileId != Guid.Empty)
-            .Distinct()
-            .ToArray();
-
-        var validProfileIds = await dbContext.AccessProfiles
-            .Where(profile => profile.TenantId == tenantId && normalizedIds.Contains(profile.Id))
-            .Select(profile => profile.Id)
-            .ToListAsync(cancellationToken);
-
-        if (validProfileIds.Count != normalizedIds.Length)
-            throw new InvalidOperationException("One or more access profiles do not belong to this tenant.");
-
-        // Tenant Administrator authority is granted and revoked through its own
-        // commands. Reaching it by reassigning access profiles would be a second
-        // way to change who administers the tenant, which is exactly what one
-        // canonical authority exists to prevent.
-        await EnsureNotAdministratorDefinitionAsync(tenantId, normalizedIds, cancellationToken);
-
-        var existingAssignments = await dbContext.UserAccessProfiles
-            .IgnoreQueryFilters()
-            .Where(assignment => assignment.TenantId == tenantId && normalizedUserIds.Contains(assignment.UserId))
-            .ToListAsync(cancellationToken);
-
-        dbContext.UserAccessProfiles.RemoveRange(existingAssignments);
-
-        foreach (var currentUserId in normalizedUserIds)
-        {
-            var membershipId = await ResolveActiveMembershipIdAsync(tenantId, currentUserId, cancellationToken);
-            dbContext.UserAccessProfiles.AddRange(normalizedIds.Select(profileId =>
-                UserAccessProfile.Create(tenantId, currentUserId, profileId, membershipId)));
-        }
-
-        await dbContext.SaveChangesAsync(cancellationToken);
-
-        foreach (var user in users)
-        {
-            await SyncCompatibilityRolesAsync(user, cancellationToken);
-        }
-
-        var profilesByUserId = await LoadAssignedProfileSummariesByUserIdAsync(
-            tenantId,
-            normalizedUserIds,
-            cancellationToken);
-        var employeeIdsByUserId = await LoadActiveEmployeeBindingsByUserIdAsync(
-            tenantId,
-            normalizedUserIds,
-            cancellationToken);
-        var usersById = users.ToDictionary(user => user.Id);
-
-        return normalizedUserIds
-            .Select(currentUserId => MapUserAssignment(
-                usersById[currentUserId],
-                employeeIdsByUserId.GetValueOrDefault(currentUserId),
-                profilesByUserId.GetValueOrDefault(currentUserId, [])))
-            .ToList();
     }
 
     public async Task<CurrentUserAccessDto> GetCurrentUserAccessAsync(ApplicationUser user, CancellationToken cancellationToken = default)
@@ -484,9 +238,17 @@ public sealed class AccessProfileService(
             return [];
         }
 
+        // The administrator definition grants only through the canonical assignment above. A row naming it (an
+        // invitation or an old assignment) is never a second way to administer the tenant.
+        var definitionIds = await dbContext.AccessProfiles
+            .IgnoreQueryFilters()
+            .Where(profile => profile.TenantId == permissionTenantId && profile.InternalKey == TenantAdministratorAuthority.InternalKey)
+            .Select(profile => profile.Id)
+            .ToListAsync(cancellationToken);
+        var held = assignments.Where(profileId => !definitionIds.Contains(profileId));
         var sourceProfileIds = administratorDefinitionId is null
-            ? assignments
-            : assignments.Append(administratorDefinitionId.Value).Distinct().ToList();
+            ? held.ToList()
+            : held.Append(administratorDefinitionId.Value).Distinct().ToList();
 
         var grants = await dbContext.AccessProfileGrants
             .AsNoTracking()
@@ -589,14 +351,18 @@ public sealed class AccessProfileService(
             .Distinct()
             .ToArray();
 
-        var validProfileIds = await dbContext.AccessProfiles
+        var validProfiles = await dbContext.AccessProfiles
             .IgnoreQueryFilters()
             .Where(profile => profile.TenantId == tenantId && normalizedIds.Contains(profile.Id))
-            .Select(profile => profile.Id)
+            .Select(profile => new { profile.Id, profile.InternalKey })
             .ToListAsync(cancellationToken);
 
-        if (validProfileIds.Count != normalizedIds.Length)
+        if (validProfiles.Count != normalizedIds.Length)
             throw new InvalidOperationException("One or more access profiles do not belong to this tenant.");
+
+        // Administrators are added through their own protected flow, never by an invitation's roles.
+        if (validProfiles.Any(profile => profile.InternalKey is TenantAdministratorAuthority.InternalKey or AccessProfileTemplates.RetiredOrgAdminKey))
+            throw new InvalidOperationException("An invitation can't make someone an administrator.");
 
         var existing = await dbContext.InviteAccessProfiles
             .IgnoreQueryFilters()
@@ -657,19 +423,33 @@ public sealed class AccessProfileService(
             .Where(assignment => assignment.TenantId == invite.TenantId && assignment.UserId == user.Id)
             .ToListAsync(cancellationToken);
 
+        // A role people hold by its holders (everyone, anyone with a team, a rule) is held provisionally here so
+        // the first sign-in has it; the next recompute confirms or removes it. Any other role was chosen.
+        var heldByRule = await dbContext.AccessProfiles
+            .IgnoreQueryFilters()
+            .Where(profile => profile.TenantId == invite.TenantId
+                && inviteProfiles.Contains(profile.Id)
+                && profile.HolderKind != AccessProfileHolderKinds.Chosen)
+            .Select(profile => profile.Id)
+            .ToListAsync(cancellationToken);
+
         var assignedIds = existingAssignments.Select(assignment => assignment.AccessProfileId).ToHashSet();
         var inviteMembershipId = await ResolveActiveMembershipIdAsync(invite.TenantId, user.Id, cancellationToken);
         foreach (var profileId in inviteProfiles)
         {
             if (assignedIds.Add(profileId))
             {
-                dbContext.UserAccessProfiles.Add(
-                    UserAccessProfile.Create(invite.TenantId, user.Id, profileId, inviteMembershipId));
+                dbContext.UserAccessProfiles.Add(heldByRule.Contains(profileId)
+                    ? UserAccessProfile.MatchedByRule(invite.TenantId, user.Id, profileId, inviteMembershipId)
+                    : UserAccessProfile.Create(invite.TenantId, user.Id, profileId, inviteMembershipId));
             }
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
         await SyncCompatibilityRolesAsync(user, cancellationToken);
+
+        // The new person may match rules (a department, a team) the invitation didn't name.
+        recomputeQueue?.Enqueue(invite.TenantId);
     }
 
     public async Task SyncCompatibilityRolesAsync(ApplicationUser user, CancellationToken cancellationToken = default)
@@ -741,13 +521,13 @@ public sealed class AccessProfileService(
     }
 
     private static bool HasOrgAdminCompatibilityCoverage(IReadOnlyCollection<EffectivePermissionGrant> effectivePermissions)
-        => AccessProfileTemplates.OrgAdmin.Grants.All(required =>
+        => CompatibilityRoleCoverage.OrgAdmin.All(required =>
             effectivePermissions.Any(grant =>
                 string.Equals(grant.PermissionKey, required.PermissionKey, StringComparison.Ordinal)
                 && PermissionScopes.GetRank(grant.Scope) >= PermissionScopes.GetRank(required.Scope)));
 
     private static bool HasHrAdminCompatibilityCoverage(IReadOnlyCollection<EffectivePermissionGrant> effectivePermissions)
-        => AccessProfileTemplates.HrAdmin.Grants.All(required =>
+        => CompatibilityRoleCoverage.HrAdmin.All(required =>
             effectivePermissions.Any(grant =>
                 string.Equals(grant.PermissionKey, required.PermissionKey, StringComparison.Ordinal)
                 && PermissionScopes.GetRank(grant.Scope) >= PermissionScopes.GetRank(required.Scope)));
@@ -889,8 +669,35 @@ public sealed class AccessProfileService(
             .Append(AccessProfileTemplates.BuildTenantAdministrator(modulePermissionKeys))
             .ToList();
 
+        var withoutPerformance = AccessProfileTemplates.ComposeSeeded(performanceEnabled: false)
+            .ToDictionary(template => template.InternalKey, StringComparer.Ordinal);
+        var takenNames = existingProfiles.Select(profile => profile.NormalizedName).ToHashSet(StringComparer.Ordinal);
+
         foreach (var template in templates)
         {
+            if (existingByKey.TryGetValue(template.InternalKey, out var seeded)
+                && template.InternalKey != TenantAdministratorAuthority.InternalKey)
+            {
+                if (seeded.IsSystemProtected)
+                {
+                    await AdoptSeededRoleAsync(seeded, template, takenNames, cancellationToken);
+                    changed = true;
+                }
+                else if (performanceEnabled
+                    && !seeded.Grants.Any(grant => PerformancePermissions.All.Contains(grant.PermissionKey, StringComparer.Ordinal)))
+                {
+                    // The company gained Performance: the role starts with the template's Performance areas.
+                    var added = template.Grants
+                        .Where(grant => !withoutPerformance[template.InternalKey].Grants.Contains(grant))
+                        .Where(grant => seeded.Grants.All(held => held.PermissionKey != grant.PermissionKey));
+                    seeded.Grants.AddRange(added.Select(grant =>
+                        AccessProfileGrant.Create(tenantId, seeded.Id, grant.PermissionKey, grant.Scope)));
+                    changed = true;
+                }
+
+                continue;
+            }
+
             if (existingByKey.TryGetValue(template.InternalKey, out var existing))
             {
                 // Update existing system profile if name/description changed
@@ -920,16 +727,38 @@ public sealed class AccessProfileService(
             else
             {
                 // Create new profile from template
+                // The seeded roles other than Administrators are the company's to change (areas and holders).
+                var isAdministrator = template.InternalKey == TenantAdministratorAuthority.InternalKey;
                 var profile = AccessProfile.Create(
                     tenantId,
                     template.Name,
                     template.Description,
                     AccessProfileTypes.SystemSeeded,
-                    template.IsSystemProtected,
+                    isAdministrator,
                     template.InternalKey);
                 profile.ReplaceGrants(template.Grants.Select(grant =>
                     AccessProfileGrant.Create(tenantId, profile.Id, grant.PermissionKey, grant.Scope)));
+                profile.SetHolders(template.HolderKind, []);
                 dbContext.AccessProfiles.Add(profile);
+                changed = true;
+            }
+        }
+
+        // Brand, fields, lists and roles are the Administrators' alone (D-25).
+        foreach (var profile in existingProfiles.Where(profile => profile.InternalKey is not (TenantAdministratorAuthority.InternalKey or AccessProfileTemplates.RetiredOrgAdminKey)))
+        {
+            var stripped = profile.Grants.RemoveAll(grant => RoleAreas.AdministratorOnlyKeys.Contains(grant.PermissionKey));
+            changed |= stripped > 0;
+        }
+
+        // Org Admin is no longer seeded; it goes wherever nobody holds it or is invited to it.
+        foreach (var retired in existingProfiles.Where(profile => profile.InternalKey == AccessProfileTemplates.RetiredOrgAdminKey))
+        {
+            var held = await dbContext.UserAccessProfiles.IgnoreQueryFilters().AnyAsync(assignment => assignment.AccessProfileId == retired.Id, cancellationToken)
+                || await dbContext.InviteAccessProfiles.IgnoreQueryFilters().AnyAsync(assignment => assignment.AccessProfileId == retired.Id, cancellationToken);
+            if (!held)
+            {
+                dbContext.AccessProfiles.Remove(retired);
                 changed = true;
             }
         }
@@ -937,6 +766,43 @@ public sealed class AccessProfileService(
         if (changed)
         {
             await dbContext.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// Moves a seeded role from the fixed profiles to the roles model, once: its areas and name from the template
+    /// (keeping grants no area owns), its holders from the template, and the people who held it through the old
+    /// baseline marked as held by those holders, so the next recompute confirms them.
+    /// </summary>
+    private async Task AdoptSeededRoleAsync(
+        AccessProfile profile,
+        SeededAccessProfileTemplate template,
+        HashSet<string> takenNames,
+        CancellationToken cancellationToken)
+    {
+        var normalized = template.Name.ToUpperInvariant();
+        var name = profile.NormalizedName == normalized || takenNames.Add(normalized) ? template.Name : profile.Name;
+        profile.UpdateDetails(name, template.Description, template.InternalKey);
+        var kept = profile.Grants
+            .Where(grant => !RoleAreas.OwnedKeys.Contains(grant.PermissionKey))
+            .Select(grant => new EffectivePermissionGrant(grant.PermissionKey, grant.Scope));
+        profile.ReplaceGrants(template.Grants.Concat(kept).DistinctBy(grant => grant.PermissionKey)
+            .Select(grant => AccessProfileGrant.Create(profile.TenantId, profile.Id, grant.PermissionKey, grant.Scope)));
+        profile.SetHolders(template.HolderKind, []);
+        profile.MarkSystemState(AccessProfileTypes.SystemSeeded, isSystemProtected: false);
+
+        if (template.HolderKind == AccessProfileHolderKinds.Chosen)
+        {
+            return;
+        }
+
+        var rows = await dbContext.UserAccessProfiles.IgnoreQueryFilters()
+            .Where(assignment => assignment.AccessProfileId == profile.Id)
+            .ToListAsync(cancellationToken);
+        foreach (var row in rows)
+        {
+            row.SetChosen(false);
+            row.SetByRule(true);
         }
     }
 
@@ -992,91 +858,6 @@ public sealed class AccessProfileService(
             .OrderBy(profile => profile.Type)
             .ThenBy(profile => profile.Name)
             .ToListAsync(cancellationToken);
-
-    private static IReadOnlyList<EffectivePermissionGrant> NormalizeGrantInputs(IEnumerable<AccessProfileGrantInputDto> grants)
-    {
-        var normalized = new Dictionary<string, EffectivePermissionGrant>(StringComparer.Ordinal);
-
-        foreach (var input in grants)
-        {
-            var grant = PermissionCatalog.NormalizeGrant(input.PermissionKey, input.Scope)
-                ?? throw new InvalidOperationException($"Invalid permission or scope: {input.PermissionKey} / {input.Scope}.");
-
-            if (!normalized.TryGetValue(grant.PermissionKey, out var current))
-            {
-                normalized[grant.PermissionKey] = grant;
-                continue;
-            }
-
-            normalized[grant.PermissionKey] =
-                PermissionScopes.GetRank(grant.Scope) > PermissionScopes.GetRank(current.Scope)
-                    ? grant
-                    : current;
-        }
-
-        return normalized.Values.ToList();
-    }
-
-    private async Task EnsureProfileNameAvailableAsync(Guid tenantId, string name, Guid? profileId, CancellationToken cancellationToken)
-    {
-        var normalizedName = name.Trim().ToUpperInvariant();
-        var exists = await dbContext.AccessProfiles
-            .AnyAsync(profile =>
-                profile.TenantId == tenantId
-                && profile.NormalizedName == normalizedName
-                && (!profileId.HasValue || profile.Id != profileId.Value), cancellationToken);
-
-        if (exists)
-            throw new InvalidOperationException("An access profile with this name already exists.");
-    }
-
-    private async Task<Dictionary<Guid, List<AccessProfileAssignmentSummaryDto>>> LoadAssignedProfileSummariesByUserIdAsync(
-        Guid tenantId,
-        IReadOnlyCollection<Guid> userIds,
-        CancellationToken cancellationToken)
-    {
-        var rows = await dbContext.UserAccessProfiles
-            .Where(assignment => assignment.TenantId == tenantId && userIds.Contains(assignment.UserId))
-            .Join(
-                dbContext.AccessProfiles,
-                assignment => assignment.AccessProfileId,
-                profile => profile.Id,
-                (assignment, profile) => new
-                {
-                    assignment.UserId,
-                    Summary = new AccessProfileAssignmentSummaryDto
-                    {
-                        Id = profile.Id,
-                        Name = profile.Name,
-                        Type = profile.Type,
-                        IsSystemProtected = profile.IsSystemProtected,
-                    },
-                })
-            .ToListAsync(cancellationToken);
-
-        return rows
-            .GroupBy(row => row.UserId)
-            .ToDictionary(
-                group => group.Key,
-                group => group.Select(row => row.Summary).OrderBy(summary => summary.Name).ToList());
-    }
-
-    private static UserAccessAssignmentDto MapUserAssignment(
-        ApplicationUser user,
-        Guid? employeeId,
-        IReadOnlyCollection<AccessProfileAssignmentSummaryDto> accessProfiles)
-        => new()
-        {
-            UserId = user.Id,
-            EmployeeId = employeeId,
-            Email = user.Email ?? string.Empty,
-            FullName = user.FullName,
-            Department = user.Department,
-            JobTitle = user.JobTitle,
-            IsActive = user.IsActive,
-            LastLoginAt = user.LastLoginAt,
-            AccessProfiles = accessProfiles.ToList(),
-        };
 
     private AccessProfileSummaryDto MapProfile(AccessProfile profile)
         => new()
@@ -1188,60 +969,6 @@ public sealed class AccessProfileService(
         return assignments;
     }
 
-    private async Task<Dictionary<Guid, Guid?>> LoadActiveEmployeeBindingsByUserIdAsync(
-        Guid tenantId,
-        IReadOnlyCollection<Guid> userIds,
-        CancellationToken cancellationToken)
-        => await dbContext.TenantMemberships
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .Where(membership => membership.TenantId == tenantId
-                && membership.Status == TenantMembershipStatus.Active
-                && userIds.Contains(membership.UserId))
-            .ToDictionaryAsync(
-                membership => membership.UserId,
-                membership => membership.EmployeeId,
-                cancellationToken);
-
-    private async Task<bool> TryBackfillUserAssignmentsFromRolesAsync(ApplicationUser user, CancellationToken cancellationToken)
-    {
-        // Best-effort backfill: an account with no Active membership (a Platform
-        // Administrator, or one whose relationship has ended) has no tenant
-        // access to reconstruct.
-        var tenantId = await FindActiveTenantIdAsync(user.Id, cancellationToken);
-        if (tenantId is null)
-        {
-            return false;
-        }
-
-        var seededProfiles = await dbContext.AccessProfiles
-            .IgnoreQueryFilters()
-            .Where(profile => profile.TenantId == tenantId && profile.Type == AccessProfileTypes.SystemSeeded)
-            .ToListAsync(cancellationToken);
-
-        var seededByName = seededProfiles.ToDictionary(profile => profile.Name, StringComparer.Ordinal);
-        var seededByKey = seededProfiles
-            .Where(p => !string.IsNullOrEmpty(p.InternalKey))
-            .ToDictionary(p => p.InternalKey!, StringComparer.Ordinal);
-        var desiredProfiles = await ResolveRoleMappedSeededProfileIdsAsync(user, seededByName, seededByKey);
-        if (desiredProfiles.Count == 0)
-        {
-            return false;
-        }
-
-        var backfillMembershipId = await FindActiveMembershipIdAsync(tenantId.Value, user.Id, cancellationToken);
-        if (backfillMembershipId is null)
-        {
-            return false;
-        }
-
-        dbContext.UserAccessProfiles.AddRange(desiredProfiles.Select(profileId =>
-            UserAccessProfile.Create(tenantId.Value, user.Id, profileId, backfillMembershipId.Value)));
-        await dbContext.SaveChangesAsync(cancellationToken);
-        await SyncCompatibilityRolesAsync(user, cancellationToken);
-        return true;
-    }
-
     private async Task<List<Guid>> ResolveRoleMappedSeededProfileIdsAsync(
         ApplicationUser user,
         IReadOnlyDictionary<string, AccessProfile> seededByName,
@@ -1272,39 +999,4 @@ public sealed class AccessProfileService(
     }
 
 
-    /// <summary>
-    /// Refuses any access-profile path that would reach the canonical Tenant
-    /// Administrator definition.
-    /// <para>
-    /// This replaces the former tenant-safety check, which tried to infer "is
-    /// anyone still an administrator" from a projected permission set. That
-    /// inference was answerable by any sufficiently broad custom profile, so it
-    /// could neither identify an administrator nor protect the last one. The
-    /// invariant now lives in the tenant continuity command boundary, and this
-    /// guard keeps profile assignment from becoming a second route to authority.
-    /// </para>
-    /// </summary>
-    private async Task EnsureNotAdministratorDefinitionAsync(
-        Guid tenantId,
-        IReadOnlyCollection<Guid> profileIds,
-        CancellationToken cancellationToken)
-    {
-        if (profileIds.Count == 0)
-        {
-            return;
-        }
-
-        var targetsAdministrator = await dbContext.AccessProfiles
-            .IgnoreQueryFilters()
-            .AnyAsync(profile => profile.TenantId == tenantId
-                && profileIds.Contains(profile.Id)
-                && profile.InternalKey == TenantAdministratorAuthority.InternalKey, cancellationToken);
-
-        if (targetsAdministrator)
-        {
-            throw new InvalidOperationException(
-                "Tenant Administrator authority is granted and revoked through administrator management, "
-                + "not by assigning or editing access profiles.");
-        }
-    }
 }

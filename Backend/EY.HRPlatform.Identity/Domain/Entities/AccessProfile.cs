@@ -9,6 +9,24 @@ public static class AccessProfileTypes
     public const string Custom = "Custom";
 }
 
+/// <summary>How people come to hold a role, besides the people chosen for it.</summary>
+public static class AccessProfileHolderKinds
+{
+    /// <summary>Only the people chosen for it.</summary>
+    public const string Chosen = "chosen";
+
+    /// <summary>Every person in the company (an active member bound to an employee).</summary>
+    public const string Everyone = "everyone";
+
+    /// <summary>Anyone with at least one direct report.</summary>
+    public const string Team = "team";
+
+    /// <summary>Whoever matches the role's conditions on department, job, place or unit.</summary>
+    public const string Rule = "rule";
+
+    public static bool IsValid(string kind) => kind is Chosen or Everyone or Team or Rule;
+}
+
 public class AccessProfile : BaseEntity, ITenantEntity
 {
     private AccessProfile() { }
@@ -22,9 +40,13 @@ public class AccessProfile : BaseEntity, ITenantEntity
     public bool IsSystemProtected { get; private set; }
     public uint Version { get; private set; }
 
+    /// <summary>How people come to hold this role besides being chosen (<see cref="AccessProfileHolderKinds"/>).</summary>
+    public string HolderKind { get; private set; } = AccessProfileHolderKinds.Chosen;
+
     public List<AccessProfileGrant> Grants { get; private set; } = [];
     public List<UserAccessProfile> UserAssignments { get; private set; } = [];
     public List<InviteAccessProfile> InviteAssignments { get; private set; } = [];
+    public List<AccessProfileRuleCondition> RuleConditions { get; private set; } = [];
 
     public static AccessProfile Create(
         Guid tenantId,
@@ -80,6 +102,24 @@ public class AccessProfile : BaseEntity, ITenantEntity
 
         Type = type;
         IsSystemProtected = isSystemProtected;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>Sets how people come to hold this role. Conditions only belong to a rule.</summary>
+    public void SetHolders(string holderKind, IEnumerable<AccessProfileRuleCondition> conditions)
+    {
+        if (!AccessProfileHolderKinds.IsValid(holderKind))
+            throw new ArgumentException($"Invalid holder kind '{holderKind}'.", nameof(holderKind));
+
+        var list = conditions.ToList();
+        if (holderKind == AccessProfileHolderKinds.Rule && list.Count == 0)
+            throw new InvalidOperationException("A rule needs at least one condition.");
+        if (holderKind != AccessProfileHolderKinds.Rule && list.Count > 0)
+            throw new InvalidOperationException("Only a rule has conditions.");
+
+        HolderKind = holderKind;
+        RuleConditions.Clear();
+        RuleConditions.AddRange(list);
         UpdatedAt = DateTime.UtcNow;
     }
 

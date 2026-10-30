@@ -37,6 +37,11 @@ public class AccessProfileConfiguration : IEntityTypeConfiguration<AccessProfile
         builder.Property(profile => profile.IsSystemProtected)
             .IsRequired();
 
+        builder.Property(profile => profile.HolderKind)
+            .HasMaxLength(16)
+            .HasDefaultValue(AccessProfileHolderKinds.Chosen)
+            .IsRequired();
+
         builder.HasIndex(profile => new { profile.TenantId, profile.NormalizedName })
             .IsUnique()
             .HasDatabaseName("IX_AccessProfiles_TenantId_NormalizedName");
@@ -64,6 +69,13 @@ public class AccessProfileConfiguration : IEntityTypeConfiguration<AccessProfile
                 profile.TenantId,
             })
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Tenant-safe: a rule can only hang off a role of its own tenant.
+        builder.HasMany(profile => profile.RuleConditions)
+            .WithOne()
+            .HasForeignKey(condition => new { condition.AccessProfileId, condition.TenantId })
+            .HasPrincipalKey(profile => new { profile.Id, profile.TenantId })
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(profile => profile.InviteAssignments)
             .WithOne(assignment => assignment.AccessProfile)

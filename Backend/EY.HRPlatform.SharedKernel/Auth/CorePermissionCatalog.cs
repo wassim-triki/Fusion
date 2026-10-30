@@ -78,6 +78,12 @@ public static class CorePermissions
     public const string ProfileSelfUpdate = "core.profile.self.update";
     public const string TeamView = "core.team.view";
 
+    /// <summary>Propose dated changes for one's team (Roles › Approving changes); enforced by the change flow (B-179).</summary>
+    public const string ChangePropose = "core.change.propose";
+
+    /// <summary>Approve proposed changes (Roles › Approving changes); enforced by the change flow (B-179).</summary>
+    public const string ChangeApprove = "core.change.approve";
+
     public static readonly ReadOnlyCollection<string> All =
         Array.AsReadOnly([
             OverviewView,
@@ -114,6 +120,8 @@ public static class CorePermissions
             ProfileSelfView,
             ProfileSelfUpdate,
             TeamView,
+            ChangePropose,
+            ChangeApprove,
         ]);
 }
 
@@ -180,6 +188,8 @@ public static class CorePermissionCatalog
             new(CorePermissions.ProfileSelfView, "View own profile", "Self & Team", [PermissionScopes.Self]),
             new(CorePermissions.ProfileSelfUpdate, "Update own profile", "Self & Team", [PermissionScopes.Self]),
             new(CorePermissions.TeamView, "View direct team", "Self & Team", [PermissionScopes.DirectReports]),
+            new(CorePermissions.ChangePropose, "Propose changes", "Changes", [PermissionScopes.DirectReports]),
+            new(CorePermissions.ChangeApprove, "Approve changes", "Changes", [PermissionScopes.Tenant]),
             new(ModuleSettingsPermissions.LearningView, "View Learning module settings", "Module settings", [PermissionScopes.Module]),
             new(ModuleSettingsPermissions.LearningManage, "Manage Learning module settings", "Module settings", [PermissionScopes.Module]),
             new(ModuleSettingsPermissions.InterviewView, "View Interview module settings", "Module settings", [PermissionScopes.Module]),

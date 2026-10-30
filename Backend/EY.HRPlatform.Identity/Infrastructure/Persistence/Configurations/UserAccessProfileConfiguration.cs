@@ -15,6 +15,10 @@ public class UserAccessProfileConfiguration : IEntityTypeConfiguration<UserAcces
         builder.Property(assignment => assignment.TenantMembershipId)
             .IsRequired();
 
+        // Rows that predate holders were all chosen; the migration backfills that (no model default:
+        // EF would skip writing an explicit false).
+        builder.Ignore(assignment => assignment.IsHeld);
+
         builder.HasIndex(assignment => assignment.TenantId);
         builder.HasIndex(assignment => assignment.AccessProfileId);
 

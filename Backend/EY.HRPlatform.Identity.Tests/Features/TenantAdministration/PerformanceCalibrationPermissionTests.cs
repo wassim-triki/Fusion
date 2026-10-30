@@ -16,13 +16,12 @@ public sealed class PerformanceCalibrationPermissionTests
     }
 
     [Fact]
-    public void Calibration_is_seeded_to_HR_and_organization_admins_only_among_the_standard_templates()
+    public void Calibration_is_seeded_to_HR_only_among_the_standard_roles()
     {
         var profiles = AccessProfileTemplates.ComposeSeeded(performanceEnabled: true)
             .ToDictionary(profile => profile.InternalKey);
 
         AssertCalibrationGrant(profiles["hr-admin"]);
-        AssertCalibrationGrant(profiles["org-admin"]);
         AssertNoCalibrationGrant(profiles["employee"]);
         AssertNoCalibrationGrant(profiles["manager"]);
     }

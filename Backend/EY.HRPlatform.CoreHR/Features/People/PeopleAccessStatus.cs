@@ -52,12 +52,9 @@ public sealed class PeopleAccessStatusQueryHandler(
     private static PeopleAccessStatusDto Project(WorkforceAccountStatusDto? status)
         => status?.ProvisioningState switch
         {
-            "Active" => new PeopleAccessStatusDto(
-                "Active",
-                "Active",
-                string.Equals(status.Role, "Manager", StringComparison.OrdinalIgnoreCase)
-                    ? "Manager access"
-                    : "Employee access"),
+            // What the person can do is their roles, listed with why beside this (B-177); the old token role
+            // ("Manager access") contradicted them.
+            "Active" => new PeopleAccessStatusDto("Active", "Active", null),
             "Inactive" => new PeopleAccessStatusDto(
                 "Suspended",
                 "Suspended",

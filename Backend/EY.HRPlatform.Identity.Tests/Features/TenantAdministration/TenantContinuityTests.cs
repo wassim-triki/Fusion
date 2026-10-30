@@ -288,13 +288,13 @@ public sealed class TenantContinuityTests : IAsyncLifetime
             [(second, [profiles["employee"]], [profiles["employee"], profiles["hr-admin"]])]);
         var granted = Assert.Single(sender.Sent);
         Assert.Equal("second.admin@atlas.example", granted.To);
-        Assert.Equal("Le rôle HR Admin vous a été attribué", granted.Content.Subject);
+        Assert.Equal("Le rôle HR vous a été attribué", granted.Content.Subject);
         Assert.Contains("Ada Admin", granted.Content.Text);
         Assert.Null(granted.UnsubscribeUrl);
 
         sender.Sent.Clear();
-        await mail.SendProfileChangesAsync(world.TenantId, second, [(second, [profiles["org-admin"]], [])]);
-        Assert.Contains("Vous avez retiré votre propre rôle Org Admin", Assert.Single(sender.Sent).Content.Text);
+        await mail.SendProfileChangesAsync(world.TenantId, second, [(second, [profiles["hr-admin"]], [])]);
+        Assert.Contains("Vous avez retiré votre propre rôle HR", Assert.Single(sender.Sent).Content.Text);
     }
 
     private sealed class CapturingRoleMail : IAdministratorRoleMail

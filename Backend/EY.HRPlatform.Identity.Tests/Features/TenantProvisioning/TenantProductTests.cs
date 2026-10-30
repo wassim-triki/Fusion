@@ -166,7 +166,8 @@ public sealed class TenantProductTests : IAsyncLifetime
         world.Db.ChangeTracker.Clear();
 
         Assert.False(await HasPerformanceAsync(world, world.TenantId));
-        Assert.DoesNotContain(await ProfileGrantKeysAsync(world, world.ManagerProfileId), key => key.StartsWith("performance."));
+        // The role keeps its Performance areas (the company's to change since B-177); the paused module is out of the token.
+        Assert.Contains(PerformancePermissions.CycleView, await ProfileGrantKeysAsync(world, world.ManagerProfileId));
         Assert.True(await world.Db.UserAccessProfiles.IgnoreQueryFilters()
             .AnyAsync(item => item.UserId == world.Manager.Id && item.AccessProfileId == world.ManagerProfileId));
         Assert.Equal(["CoreHR"], await TokenModulesAsync(world, world.Manager));

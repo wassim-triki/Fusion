@@ -80,7 +80,7 @@ public sealed class PerformanceSettingsPermissionTests : IAsyncLifetime
     }
 
     [Fact]
-    public void Settings_are_seeded_to_HR_and_organization_admins_only_among_the_standard_templates()
+    public void Settings_are_seeded_to_HR_only_among_the_standard_roles()
     {
         var profiles = AccessProfileTemplates.ComposeSeeded(performanceEnabled: true)
             .ToDictionary(profile => profile.InternalKey);
@@ -88,7 +88,6 @@ public sealed class PerformanceSettingsPermissionTests : IAsyncLifetime
         Assert.All(SettingsKeys, key =>
         {
             Assert.Contains(profiles["hr-admin"].Grants, grant => grant.PermissionKey == key && grant.Scope == PermissionScopes.Tenant);
-            Assert.Contains(profiles["org-admin"].Grants, grant => grant.PermissionKey == key && grant.Scope == PermissionScopes.Tenant);
             Assert.DoesNotContain(profiles["employee"].Grants, grant => grant.PermissionKey == key);
             Assert.DoesNotContain(profiles["manager"].Grants, grant => grant.PermissionKey == key);
         });
@@ -188,12 +187,28 @@ public sealed class PerformanceSettingsPermissionTests : IAsyncLifetime
         var other = Custom(tenantB, "Borealis viewer",
             (PerformancePermissions.CycleView, PermissionScopes.Tenant));
 
-        db.AccessProfiles.AddRange(cycleAdmin, partial, viewer, other);
-        await db.SaveChangesAsync();
+        foreach (var profile in new[] { cycleAdmin, partial, viewer, other })
+            await InsertAsync(db, profile);
 
         await db.Database.MigrateAsync();
         db.ChangeTracker.Clear();
         return (db, new World(tenantA, cycleAdmin.Id, partial.Id, viewer.Id, other.Id));
+    }
+
+    private static async Task InsertAsync(AppIdentityDbContext db, AccessProfile profile)
+    {
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            INSERT INTO identity."AccessProfiles" ("Id","TenantId","Name","NormalizedName","Type","IsSystemProtected","CreatedAt")
+            VALUES ({0},{1},{2},{3},{4},false,now())
+            """,
+            profile.Id, profile.TenantId, profile.Name, profile.NormalizedName, profile.Type);
+        foreach (var grant in profile.Grants)
+        {
+            await db.Database.ExecuteSqlRawAsync(
+                """INSERT INTO identity."AccessProfileGrants" ("TenantId","AccessProfileId","PermissionKey","Scope") VALUES ({0},{1},{2},{3})""",
+                grant.TenantId, grant.AccessProfileId, grant.PermissionKey, grant.Scope);
+        }
     }
 
     private static AccessProfile Custom(Guid tenantId, string name, params (string Key, string Scope)[] grants)

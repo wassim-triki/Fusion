@@ -103,6 +103,13 @@ namespace EY.HRPlatform.Identity.Infrastructure.Persistence.Migrations
                         .HasMaxLength(280)
                         .HasColumnType("character varying(280)");
 
+                    b.Property<string>("HolderKind")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasDefaultValue("chosen");
+
                     b.Property<string>("InternalKey")
                         .HasColumnType("text");
 
@@ -177,6 +184,30 @@ namespace EY.HRPlatform.Identity.Infrastructure.Persistence.Migrations
                     b.HasIndex("TenantId", "PermissionKey");
 
                     b.ToTable("AccessProfileGrants", "identity");
+                });
+
+            modelBuilder.Entity("EY.HRPlatform.Identity.Domain.Entities.AccessProfileRuleCondition", b =>
+                {
+                    b.Property<Guid>("AccessProfileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Kind")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<Guid>("TargetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("AccessProfileId", "Kind", "TargetId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("AccessProfileId", "TenantId");
+
+                    b.ToTable("AccessProfileRuleConditions", "identity");
                 });
 
             modelBuilder.Entity("EY.HRPlatform.Identity.Domain.Entities.ApplicationUser", b =>
@@ -878,8 +909,14 @@ namespace EY.HRPlatform.Identity.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("AccessProfileId")
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("ByRule")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsChosen")
+                        .HasColumnType("boolean");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
@@ -1069,6 +1106,16 @@ namespace EY.HRPlatform.Identity.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("AccessProfile");
+                });
+
+            modelBuilder.Entity("EY.HRPlatform.Identity.Domain.Entities.AccessProfileRuleCondition", b =>
+                {
+                    b.HasOne("EY.HRPlatform.Identity.Domain.Entities.AccessProfile", null)
+                        .WithMany("RuleConditions")
+                        .HasForeignKey("AccessProfileId", "TenantId")
+                        .HasPrincipalKey("Id", "TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("EY.HRPlatform.Identity.Domain.Entities.InvitationDeliveryAttempt", b =>
@@ -1286,6 +1333,8 @@ namespace EY.HRPlatform.Identity.Infrastructure.Persistence.Migrations
                     b.Navigation("Grants");
 
                     b.Navigation("InviteAssignments");
+
+                    b.Navigation("RuleConditions");
 
                     b.Navigation("UserAssignments");
                 });

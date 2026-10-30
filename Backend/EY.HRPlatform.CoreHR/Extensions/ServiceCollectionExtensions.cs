@@ -70,6 +70,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICoreNotificationSender, SmtpCoreNotificationSender>();
         services.AddScoped<CoreNotificationDispatcher>();
         services.AddHostedService<CoreNotificationWorker>();
+
+        // Rule-held roles (B-177): Identity reads role facts here and hears when they change.
+        services.AddScoped<Features.Security.IRoleFactsService, Features.Security.RoleFactsService>();
+        services.AddSingleton<Features.Security.RoleFactsSignals>();
+        services.AddSingleton<Features.Security.RoleFactsChangeInterceptor>();
+        services.AddHttpClient(Features.Security.RoleFactsNotifier.ClientName, client => client.Timeout = TimeSpan.FromSeconds(10));
+        services.AddHostedService<Features.Security.RoleFactsNotifier>();
         services.AddHttpClient<ICoreNotificationAudienceClient, CoreNotificationAudienceClient>(client =>
         {
             var baseUrl = configuration["ServiceUrls:IdentityApiBaseUrl"];
@@ -236,7 +243,10 @@ public static class ServiceCollectionExtensions
                 throw new InvalidOperationException(
                     "TenantSaveChangesInterceptor is not registered. Ensure AddMultitenancy() is called to register multitenancy services.");
             }
-            options.AddInterceptors(tenantInterceptor, sp.GetRequiredService<FeedNudgeInterceptor>());
+            options.AddInterceptors(
+                tenantInterceptor,
+                sp.GetRequiredService<FeedNudgeInterceptor>(),
+                sp.GetRequiredService<Features.Security.RoleFactsChangeInterceptor>());
         });
 
         services.AddHealthChecks()

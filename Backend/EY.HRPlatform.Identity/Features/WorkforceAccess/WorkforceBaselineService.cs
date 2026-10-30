@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 namespace EY.HRPlatform.Identity.Features.WorkforceAccess;
 
 /// <summary>
-/// The single workforce baseline an activated identity carries. Employee and
-/// Manager are mutually exclusive; neither is administrator authority.
+/// The workforce baseline an activated identity carries. While Employees and Managers are chosen roles they
+/// are mutually exclusive; held by their holders (B-177) they add up. Neither is administrator authority.
 /// </summary>
 public enum WorkforceBaseline
 {
@@ -48,7 +48,7 @@ public sealed class WorkforceBaselineService(AppIdentityDbContext dbContext) : I
             .IgnoreQueryFilters()
             .Where(profile => profile.TenantId == membership.TenantId
                 && (profile.InternalKey == EmployeeKey || profile.InternalKey == ManagerKey))
-            .Select(profile => new { profile.Id, profile.InternalKey })
+            .Select(profile => new { profile.Id, profile.InternalKey, profile.HolderKind })
             .ToListAsync(cancellationToken);
 
         var targetKey = baseline == WorkforceBaseline.Manager ? ManagerKey : EmployeeKey;
@@ -63,6 +63,24 @@ public sealed class WorkforceBaselineService(AppIdentityDbContext dbContext) : I
             .IgnoreQueryFilters()
             .Where(assignment => assignment.TenantMembershipId == membership.Id)
             .ToListAsync(cancellationToken);
+
+        // Employees and Managers held by their holders (everyone, anyone with a team; B-177) are additive: the
+        // baseline is a provisional row the next recompute confirms, and a manager keeps Employees.
+        var heldByRule = workforceProfiles
+            .Where(profile => profile.HolderKind != AccessProfileHolderKinds.Chosen
+                && (profile.InternalKey == targetKey || (baseline == WorkforceBaseline.Manager && profile.InternalKey == EmployeeKey
+                    && profile.HolderKind == AccessProfileHolderKinds.Everyone)))
+            .Select(profile => profile.Id)
+            .ToList();
+        if (heldByRule.Contains(targetProfileId))
+        {
+            foreach (var profileId in heldByRule.Where(id => existing.All(assignment => assignment.AccessProfileId != id)))
+            {
+                dbContext.UserAccessProfiles.Add(UserAccessProfile.MatchedByRule(membership.TenantId, membership.UserId, profileId, membership.Id));
+            }
+
+            return;
+        }
 
         // Remove only the opposite workforce baseline. Everything else the account
         // holds (HR Admin, Org Admin, custom, Tenant Administrator) is untouched.

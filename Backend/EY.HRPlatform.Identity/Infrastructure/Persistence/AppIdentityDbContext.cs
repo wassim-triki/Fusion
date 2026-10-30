@@ -21,6 +21,7 @@ public class AppIdentityDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<InviteToken> InviteTokens => Set<InviteToken>();
     public DbSet<AccessProfile> AccessProfiles => Set<AccessProfile>();
     public DbSet<AccessProfileGrant> AccessProfileGrants => Set<AccessProfileGrant>();
+    public DbSet<AccessProfileRuleCondition> AccessProfileRuleConditions => Set<AccessProfileRuleCondition>();
     public DbSet<UserAccessProfile> UserAccessProfiles => Set<UserAccessProfile>();
     public DbSet<UserAccessProfileOrgUnitScope> UserAccessProfileOrgUnitScopes => Set<UserAccessProfileOrgUnitScope>();
     public DbSet<InviteAccessProfile> InviteAccessProfiles => Set<InviteAccessProfile>();
@@ -129,6 +130,7 @@ public class AppIdentityDbContext : IdentityDbContext<ApplicationUser, IdentityR
         builder.ApplyConfiguration(new InviteTokenConfiguration());
         builder.ApplyConfiguration(new AccessProfileConfiguration());
         builder.ApplyConfiguration(new AccessProfileGrantConfiguration());
+        builder.ApplyConfiguration(new AccessProfileRuleConditionConfiguration());
         builder.ApplyConfiguration(new UserAccessProfileConfiguration());
         builder.ApplyConfiguration(new UserAccessProfileOrgUnitScopeConfiguration());
         builder.ApplyConfiguration(new InviteAccessProfileConfiguration());
@@ -159,6 +161,9 @@ public class AppIdentityDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
         builder.Entity<AccessProfileGrant>()
             .HasQueryFilter(grant => CurrentTenantId == Guid.Empty || grant.TenantId == CurrentTenantId);
+
+        builder.Entity<AccessProfileRuleCondition>()
+            .HasQueryFilter(condition => CurrentTenantId == Guid.Empty || condition.TenantId == CurrentTenantId);
 
         builder.Entity<UserAccessProfile>()
             .HasQueryFilter(assignment => CurrentTenantId == Guid.Empty || assignment.TenantId == CurrentTenantId);

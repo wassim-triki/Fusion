@@ -38,8 +38,11 @@ public sealed class SettingsSectionRegistry(
 
     private static readonly IReadOnlyList<Section> All =
     [
-        new(CoreSettingsSectionIds.Company, "Company", SettingsSectionIds.Organization,
+        // Identity stores the brand and checks the same manage permission on save; its changes aren't in Core's history.
+        new(CoreSettingsSectionIds.Brand, "Brand", null,
             (policy, user) => policy.CanViewOrganizationSettings(user), (policy, user) => policy.CanManageOrganizationSettings(user)),
+        new(CoreSettingsSectionIds.Details, "Details", SettingsSectionIds.Organization,
+            (policy, user) => policy.CanViewOrganizationSettings(user), null),
         new(CoreSettingsSectionIds.EmployeeFields, "Employee fields", SettingsSectionIds.PeopleData,
             (policy, user) => policy.CanViewPeopleDataSettings(user), (policy, user) => policy.CanManagePeopleDataSettings(user)),
         new(CoreSettingsSectionIds.Lists, "Lists", SettingsSectionIds.Lists,

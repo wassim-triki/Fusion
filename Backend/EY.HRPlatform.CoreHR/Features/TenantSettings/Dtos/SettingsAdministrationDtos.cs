@@ -3,7 +3,10 @@ namespace EY.HRPlatform.CoreHR.Features.TenantSettings.Dtos;
 /// <summary>Core HR's section ids in Fusion Settings, which are also their page addresses under `/core/settings`.</summary>
 public static class CoreSettingsSectionIds
 {
-    public const string Company = "company";
+    /// <summary>The company's brand: name, logo, colour, default language (B-176); stored in Identity.</summary>
+    public const string Brand = "brand";
+    /// <summary>The company's remaining facts: workspace, industry, time zone, modules.</summary>
+    public const string Details = "details";
     public const string EmployeeFields = "employee-fields";
     public const string Lists = "lists";
     public const string Roles = "roles";

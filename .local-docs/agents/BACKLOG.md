@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-212.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-215.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -29,17 +29,20 @@ Open work only. Agents keep it current from the conversation; closed items leave
   - [ ] **B-110** Tenant configurability as a hero: branding (logo, theme/accent, branded sign-in, own address, email branding) and internal configuration (company defaults and whatever the research puts on the ladder), depth chosen on B-163's scope page · Shell, Platform, Core HR, Identity · 2026-10-24
         User 2026-10-30: "I really wanna establish it as a core wow factor"; EY discussed it a lot but never gave specs or how far to take it. Earlier (2026-10-24) brain dump, ideas not requirements. A tenant's default language meets B-105. Context: B-071 removed the unused brand colour from Core's branding settings; Core's branding settings store a `LogoUrl` that no screen sets or shows; Company settings show name and locale.
   - [ ] **B-167** Rebuild: slices in dependency order, each end to end with screens for the taste check ([decisions](plans/B-164-decisions.md), D-01–D-30; [slices](plans/B-167-rebuild.md)) · 2026-10-30
-        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 next, fresh session at xhigh.
+        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 in review (2026-10-30); B-178 next, fresh session at xhigh.
     - [ ] **B-198** One tab and view-switch pattern across Fusion, matching the target design: every tab strip and view switch today is reused old UI (the Organization lenses are the latest example). Define it once in `@repo/ds` from the accepted grammar (D-01 band tabs, D-17 views), first where a slice draws tabs (B-180's person page or B-183's Organization, whichever comes first), then replace every other use; B-192 checks none is left · All · 2026-10-30
-    - [ ] **B-177** One roles model: areas × level × reach, holders by rule, the roles table and a role page with a live preview (D-25) · Identity, Core HR · 2026-10-30
     - [ ] **B-178** Administrators as a protected role, seeing Fusion as someone, the old token roles retired (D-25) · Identity, Core HR · 2026-10-30
+      - [ ] **B-213** A role change reaches a signed-in person at their next token refresh (up to 60 minutes), as profile edits always did; revoking by rule or by edit should end the old permissions sooner (refresh the holders' tokens, or bump a soft revision the frontend answers with a refresh rather than a sign-out) · Identity, Shell · 2026-10-30
       - [ ] **B-173** Check whether an HR admin can make someone a tenant administrator through Identity's old invitation endpoint (`POST /api/identity/tenants/{id}/invites` with role "OrgAdmin" is not refused), bypassing the administrator invitation flow and its continuity lock · Identity · 2026-10-30
             Found answering the user's A2 note (brief §6b). The operator side holds: both old endpoints require the caller's own membership. Verify with an API journey (create, inspect, revoke) at the start of B-178, which retires the endpoint with the token roles.
     - [ ] **B-179** Changes and approvals: describe a change, the draft is the request, approval per change type from Home (D-15, D-16) · Core HR, Shell · 2026-10-30
+          Roles already store who proposes and who approves (`core.change.propose`@team, `core.change.approve`@everyone; Managers propose, HR approves; B-177): enforce those keys here.
       - [ ] **B-168** A deep link that opens a change on a person's record (`?change=job|end`) leaves the address without `/core`, so a refresh lands outside Core HR · Core HR · 2026-10-30
             Found in the B-165 walk: `features/people/changes/change-sheet.tsx` passes `usePathname()` (basePath-less) to `history.replaceState`. Fixed with the rebuilt change sheet.
+    - [ ] **B-212** Reach "their unit" for roles (D-25 draws it): Core HR's record reads and Performance resolve the viewer's unit and the units under it, then the Jobs, Personal and Plans areas offer it. Not offered in B-177 because nothing enforces it yet (`performance.cycle.view@OrgUnit` is unseeded and treated as a team) · Core HR, Performance, Identity · 2026-10-30
     - [ ] **B-180** One person page across Core HR and Performance: tabs, Personal and Access, documents, on leave, photos (D-01, D-16) · Core HR, Performance · 2026-10-30
       - [ ] **B-195** Show the job's family and level on the person page's Job tab; the profile read already carries `jobFamily`, `jobLevel`, `jobId`, `placeId` (B-175) · Core HR · 2026-10-30
+      - [ ] **B-214** Split Personal details from Jobs in roles: today Core HR's one record carries both, so the two areas share their team and everyone options and move together in the role editor (B-177). With the Personal tab's sections and "who sees each" (B-180, B-181), give Personal its own keys and enforce them; then Leadership-style roles (see everyone's jobs, not their personal details) become possible · Core HR, Identity · 2026-10-30
     - [ ] **B-181** Fields: the company's own fields and sections, a gallery, who sees and changes each; records to complete (D-18) · Core HR · 2026-10-30
       - [ ] **B-196** Where employment type is set: it's a value of the company's list since B-175 and the API takes it on hire, rejoin and the legacy update, but no form sets it (an earlier product call kept it off the hire form, held by tests). Decide with the fields model · Core HR · 2026-10-30
     - [ ] **B-182** People, the directory and invitations: HR table, portrait cards, the invite sheet, Settings › Sign-in, Export everywhere (D-11, D-13, D-28) · Core HR, Shared · 2026-10-30
@@ -53,7 +56,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
     - [ ] **B-187** The import again and when it goes wrong: create or update, resumable, bad files (D-22, D-23, D-29) · Core HR · 2026-10-30
     - [ ] **B-188** Day one and Home: activation, the setup guide (the tour's admin track), Home every day (D-09, D-10, D-12) · Shell, Core HR, Identity · 2026-10-30
           Also: the brand studio's Home preview is a stand-in; once Home is rebuilt the preview draws the real Home (user 2026-10-30 found it lacking). Activation keeps the password strength meter (ReUI) already on invitation acceptance.
-    - [ ] **B-189** Reports: standard and your own, on a date or between two, run as the viewer (D-14) · Core HR · 2026-10-30
+    - [ ] **B-189** Reports: (roles' Reports area offers only "See for everyone" today, the Core HR overview and change history; add Build and team reach here) standard and your own, on a date or between two, run as the viewer (D-14) · Core HR · 2026-10-30
     - [ ] **B-190** Core HR's front page: Growth and People on one time slider, department cards (D-30) · Core HR · 2026-10-30
     - [ ] **B-191** Single sign-on: Microsoft, Google, a company's own provider, required per domain · Identity, Shell · 2026-10-30
     - [ ] **B-192** Seams and finish: colleague modules only when on, one vocabulary, replaced surfaces gone, demo presets for the tour · All · 2026-10-30
@@ -62,6 +65,9 @@ Open work only. Agents keep it current from the conversation; closed items leave
       - [ ] **B-194** Remove the legacy employee write endpoints (`POST /employees`, `PUT /employees/{id}`, rehire, terminate, change-manager) and their commands: no screen calls them; B-175 had to move them onto job and place ids anyway · Core HR · 2026-10-30
 
 ## In review
+
+- [ ] **B-177** One roles model: ten areas × level × reach, holders by rule that update themselves, a person's roles with why; every role as one table and a role page in sentences with a live preview (D-25, slice 3 of B-167) · Identity, Core HR · 2026-10-30
+      Look at: [checklist](plans/B-177-roles.md) and `plans/B-177-screens/` (01 table, 02 HR, 03 rule, 04 Jobs moving with Personal, 05 Administrators, 06 Leila's Access tab). Two deviations from the drawing to judge: "their unit" isn't offered yet (B-212) and Personal details move with Jobs (B-214).
 
 - [ ] **B-104** Final manual verification pass, once the big features are done (Settings, any wow feature): the user verifies B-089 phase 2 and everything since by hand, then the little stuff that's left · Performance · 2026-10-23
       2026-10-29: the fixes are done (B-089 audit, phase 2 committed ba8f58af, which also closed B-088's ask); only the user's hand check is left, so this sits In review.

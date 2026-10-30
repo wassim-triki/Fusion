@@ -304,7 +304,9 @@ public sealed class EmployeeDetailsReadModelService(
                     x.JobTitle,
                     x.WorkLocation,
                     x.EffectiveFrom,
-                    x.EffectiveTo))
+                    x.EffectiveTo,
+                    x.JobId,
+                    x.PlaceId))
                 .FirstOrDefaultAsync(cancellationToken);
 
         var manager = await workforceCanonicalResolver.GetPrimaryManagerAsync(employee.Id, at, cancellationToken);

@@ -97,7 +97,7 @@ public sealed class WorkforceChangeBackfill(CoreHRDbContext dbContext, ITenantCo
             records.Add((at, employment.EmployeeId, WorkforceChangeKind.Join, WorkforceChangeService.JoinDetails(
                 Person(line?.ManagerEmployeeId), work?.OrgUnitId ?? Guid.Empty,
                 work is null ? null : await Unit(work.OrgUnitId, DateOnly.FromDateTime(at)),
-                work?.JobTitle ?? "", work?.WorkLocation, employment.EmploymentType, isHire), effects));
+                work, employment, isHire), effects));
         }
 
         foreach (var end in ends)

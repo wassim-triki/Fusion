@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using System.Security.Claims;
 using EY.HRPlatform.CoreHR.Controllers;
 using EY.HRPlatform.CoreHR.Features.People;
@@ -34,7 +35,7 @@ public sealed class PeopleChangesControllerTests
 
         Assert.IsType<ForbidResult>(await controller.EndEmploymentChange("CDG-1", new EndEmploymentChangeRequest(DateTime.UtcNow), default));
         Assert.IsType<ForbidResult>(await controller.PreviewEndEmploymentChange("CDG-1", DateOnly.FromDateTime(DateTime.UtcNow), default));
-        Assert.IsType<ForbidResult>(await controller.JoinChange("CDG-1", new JoinChangeRequest(DateTime.UtcNow, Guid.NewGuid(), "x"), default));
+        Assert.IsType<ForbidResult>(await controller.JoinChange("CDG-1", new JoinChangeRequest(DateTime.UtcNow, Guid.NewGuid(), Guid.NewGuid()), default));
 
         // B-137: the manager picker answers them too.
         Assert.IsType<OkObjectResult>(await controller.GetManagerOptions(DateTime.UtcNow, null, null, Guid.NewGuid(), 30, default));
@@ -46,7 +47,7 @@ public sealed class PeopleChangesControllerTests
         var (controller, sender) = Controller(Caller(Guid.NewGuid(), ReportingAdmin));
         sender.Setup(s => s.Send(It.IsAny<JobChangeCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure<WorkforceChangeDto>(new Error(WorkforceChangeService.ForbiddenCode, "No.")));
-        var result = Assert.IsType<ObjectResult>(await controller.ChangeJob("CDG-1", Job with { JobTitle = "Lead" }, default));
+        var result = Assert.IsType<ObjectResult>(await controller.ChangeJob("CDG-1", Job with { JobId = Guid.NewGuid() }, default));
         Assert.Equal(StatusCodes.Status403Forbidden, result.StatusCode);
     }
 
@@ -72,7 +73,7 @@ public sealed class PeopleChangesControllerTests
         Assert.IsType<OkObjectResult>(await controller.ChangeJob("CDG-1", Job, default));
         sender.Verify(s => s.Send(It.Is<JobChangeCommand>(c => c.CanManageEmployees), It.IsAny<CancellationToken>()), Times.Once);
         Assert.IsType<OkObjectResult>(await controller.EndEmploymentChange("CDG-1", new EndEmploymentChangeRequest(DateTime.UtcNow), default));
-        Assert.IsType<OkObjectResult>(await controller.JoinChange("CDG-1", new JoinChangeRequest(DateTime.UtcNow, Guid.NewGuid(), "x"), default));
+        Assert.IsType<OkObjectResult>(await controller.JoinChange("CDG-1", new JoinChangeRequest(DateTime.UtcNow, Guid.NewGuid(), Guid.NewGuid()), default));
     }
 
     [Fact]

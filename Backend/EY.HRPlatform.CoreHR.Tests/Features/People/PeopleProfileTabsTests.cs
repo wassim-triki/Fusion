@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using System.Security.Claims;
 using EY.HRPlatform.CoreHR.Controllers;
 using EY.HRPlatform.CoreHR.Domain.Entities;
@@ -54,8 +55,8 @@ public sealed class PeopleProfileTabsTests : IDisposable
         {
             var employee = Employee.Create(tenant, first, "Test", $"{first.ToLowerInvariant()}.{tenant:N}@example.test",
                 employeeNumber: $"E-{Guid.NewGuid():N}"[..12], phone: "+216 20 000 000");
-            var employment = Employment.Start(tenant, employee.Id, Today.AddYears(-3), "FullTime", WorkforceSourceType.Manual);
-            var assignment = WorkAssignment.Create(tenant, employment.Id, employee.Id, unitId, title, "Tunis", true,
+            var employment = Employment.Start(tenant, employee.Id, Today.AddYears(-3), null, WorkforceSourceType.Manual);
+            var assignment = WorkAssignment.Create(tenant, employment.Id, employee.Id, unitId, TestCatalog.Job(tenant, title), TestCatalog.Place(tenant, "Tunis"), true,
                 Today.AddYears(-3), null, WorkforceSourceType.Manual);
             seed.Employees.Add(employee);
             seed.Employments.Add(employment);
@@ -392,8 +393,8 @@ public sealed class PeopleProfileTabsTests : IDisposable
             // A year ago Nour was promoted; three months ago she moved under Karim.
             var assignment = db.WorkAssignments.Single(item => item.EmployeeId == _nour);
             assignment.End(Today.AddYears(-1));
-            var promoted = WorkAssignment.Create(TenantA, assignment.EmploymentId, _nour, assignment.OrgUnitId, "Senior Analyst",
-                "Tunis", true, Today.AddYears(-1), null, WorkforceSourceType.Manual);
+            var promoted = WorkAssignment.Create(TenantA, assignment.EmploymentId, _nour, assignment.OrgUnitId, TestCatalog.Job(TenantA, "Senior Analyst"),
+                TestCatalog.Place(TenantA, "Tunis"), true, Today.AddYears(-1), null, WorkforceSourceType.Manual);
             db.WorkAssignments.Add(promoted);
             var line = db.ManagerRelationships.Single(item => item.SubjectEmployeeId == _nour);
             line.End(Today.AddMonths(-3));

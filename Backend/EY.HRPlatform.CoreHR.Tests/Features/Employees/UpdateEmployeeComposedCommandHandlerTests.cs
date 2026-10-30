@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Features.Employees.Commands.UpdateEmployee;
@@ -28,14 +29,14 @@ public class UpdateEmployeeComposedCommandHandlerTests
             var targetOrgUnit = OrgUnit.Create(TenantId, "OPS", "Operations", "Department", null);
             var seededEmployee = Employee.Create(TenantId, "John", "Doe", "john@example.com", hireDate, jobTitle: "Developer", employeeNumber: "EMP-001", phone: "111", workLocation: "Tunis", employmentType: "FullTime");
             seededEmployee.UpdatePreferredName("Johnny");
-            var seededEmployment = Employment.Start(TenantId, seededEmployee.Id, hireDate, "FullTime", WorkforceSourceType.Manual);
+            var seededEmployment = Employment.Start(TenantId, seededEmployee.Id, hireDate, null, WorkforceSourceType.Manual);
             var seededAssignment = WorkAssignment.Create(
                 TenantId,
                 seededEmployment.Id,
                 seededEmployee.Id,
                 sourceOrgUnit.Id,
-                "Developer",
-                "Tunis",
+                TestCatalog.Job(TenantId, "Developer"),
+                TestCatalog.Place(TenantId, "Tunis"),
                 true,
                 seededEmployment.EffectiveFrom,
                 null,
@@ -62,14 +63,14 @@ public class UpdateEmployeeComposedCommandHandlerTests
             "Smith",
             "Janie",
             "jane@example.com",
-            "Operations Lead",
+            context.JobId(TenantId, "Operations Lead"),
             null,
             targetOrgUnitId,
             null,
             "EMP-002",
             "+21699887766",
-            "Sfax",
-            "Contractor");
+            context.PlaceId(TenantId, "Sfax"),
+            context.EmploymentType(TenantId, "Contractor").Id);
 
         var result = await handler.Handle(command, CancellationToken.None);
 
@@ -116,10 +117,10 @@ public class UpdateEmployeeComposedCommandHandlerTests
             var orgUnit = OrgUnit.Create(TenantId, "ENG", "Engineering", "Department", null);
             var employee = Employee.Create(TenantId, "John", "Doe", "john@example.com", employeeHireDate, jobTitle: "Developer", employeeNumber: TestEmployeeNumbers.Next());
             var manager = Employee.Create(TenantId, "Maya", "Lead", "maya@example.com", managerHireDate, jobTitle: "Manager", employeeNumber: TestEmployeeNumbers.Next());
-            var employeeEmployment = Employment.Start(TenantId, employee.Id, employeeHireDate, "FullTime", WorkforceSourceType.Manual);
-            var managerEmployment = Employment.Start(TenantId, manager.Id, managerHireDate, "FullTime", WorkforceSourceType.Manual);
-            var employeeAssignment = WorkAssignment.Create(TenantId, employeeEmployment.Id, employee.Id, orgUnit.Id, "Developer", "Tunis", true, employeeEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
-            var managerAssignment = WorkAssignment.Create(TenantId, managerEmployment.Id, manager.Id, orgUnit.Id, "Manager", "Tunis", true, managerEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
+            var employeeEmployment = Employment.Start(TenantId, employee.Id, employeeHireDate, null, WorkforceSourceType.Manual);
+            var managerEmployment = Employment.Start(TenantId, manager.Id, managerHireDate, null, WorkforceSourceType.Manual);
+            var employeeAssignment = WorkAssignment.Create(TenantId, employeeEmployment.Id, employee.Id, orgUnit.Id, TestCatalog.Job(TenantId, "Developer"), TestCatalog.Place(TenantId, "Tunis"), true, employeeEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
+            var managerAssignment = WorkAssignment.Create(TenantId, managerEmployment.Id, manager.Id, orgUnit.Id, TestCatalog.Job(TenantId, "Manager"), TestCatalog.Place(TenantId, "Tunis"), true, managerEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
 
             seedContext.OrgUnits.Add(orgUnit);
             seedContext.Employees.AddRange(employee, manager);
@@ -163,8 +164,8 @@ public class UpdateEmployeeComposedCommandHandlerTests
         {
             var orgUnit = OrgUnit.Create(TenantId, "ENG", "Engineering", "Department", null);
             var employee = Employee.Create(TenantId, "John", "Doe", "john@example.com", hireDate, jobTitle: "Developer", employeeNumber: TestEmployeeNumbers.Next());
-            var employment = Employment.Start(TenantId, employee.Id, hireDate, "FullTime", WorkforceSourceType.Manual);
-            var assignment = WorkAssignment.Create(TenantId, employment.Id, employee.Id, orgUnit.Id, "Developer", "Tunis", true, employment.EffectiveFrom, null, WorkforceSourceType.Manual);
+            var employment = Employment.Start(TenantId, employee.Id, hireDate, null, WorkforceSourceType.Manual);
+            var assignment = WorkAssignment.Create(TenantId, employment.Id, employee.Id, orgUnit.Id, TestCatalog.Job(TenantId, "Developer"), TestCatalog.Place(TenantId, "Tunis"), true, employment.EffectiveFrom, null, WorkforceSourceType.Manual);
 
             seedContext.OrgUnits.Add(orgUnit);
             seedContext.Employees.Add(employee);

@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Features.Organization;
@@ -51,8 +52,8 @@ public sealed class PeopleSliceRelationalTests
                 new HireEmployeeCommand(
                     new HireEmployeeRequest(
                         "Maya", "North", null, null, null,
-                        EmployeeNumberMode.Generated, null, today, "Full-time",
-                        peopleUnit.Id, "People Partner", "Tunis", null),
+                        EmployeeNumberMode.Generated, null, today, db.EmploymentType(tenant.TenantId, "Full-time").Id,
+                        peopleUnit.Id, db.JobId(tenant.TenantId, "People Partner"), db.PlaceId(tenant.TenantId, "Tunis"), null),
                     "test|Workforce Administrator"),
                 default);
             Assert.True(hire.IsSuccess);
@@ -68,7 +69,7 @@ public sealed class PeopleSliceRelationalTests
                     new AddExistingEmployeeRequest(
                         "Jon", "Vale", null, "jon.vale@fusion.local", null,
                         EmployeeNumberMode.Manual, "wv-2042", new DateTime(2022, 4, 11), today,
-                        "Full-time", peopleUnit.Id, "People Analyst", null, managerId),
+                        db.EmploymentType(tenant.TenantId, "Full-time").Id, peopleUnit.Id, db.JobId(tenant.TenantId, "People Analyst"), null, managerId),
                     "test|Workforce Administrator"),
                 default);
             Assert.True(establish.IsSuccess);
@@ -112,7 +113,7 @@ public sealed class PeopleSliceRelationalTests
                     new HireEmployeeRequest(
                         "Duplicate", "Number", null, null, null,
                         EmployeeNumberMode.Manual, "wv-2042", today, null,
-                        peopleUnit.Id, "Analyst", null, null),
+                        peopleUnit.Id, db.JobId(tenant.TenantId, "Analyst"), null, null),
                     "test|Workforce Administrator"),
                 default);
             Assert.True(duplicate.IsFailure);
@@ -125,7 +126,7 @@ public sealed class PeopleSliceRelationalTests
                     new AddExistingEmployeeRequest(
                         "Future", "Existing", null, null, null,
                         EmployeeNumberMode.Generated, null, today.AddDays(1), today,
-                        null, peopleUnit.Id, "Analyst", null, null),
+                        null, peopleUnit.Id, db.JobId(tenant.TenantId, "Analyst"), null, null),
                     "test|Workforce Administrator"),
                 default);
             Assert.True(invalidDates.IsFailure);
@@ -137,7 +138,7 @@ public sealed class PeopleSliceRelationalTests
                     new HireEmployeeRequest(
                         "Future", "Hire", null, null, null,
                         EmployeeNumberMode.Generated, null, today.AddDays(30), null,
-                        peopleUnit.Id, "Advisor", null, null),
+                        peopleUnit.Id, db.JobId(tenant.TenantId, "Advisor"), null, null),
                     "test|Workforce Administrator"),
                 default);
             Assert.True(future.IsSuccess);

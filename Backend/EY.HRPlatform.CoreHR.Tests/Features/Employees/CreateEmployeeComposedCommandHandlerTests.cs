@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Exceptions;
@@ -24,14 +25,14 @@ public class CreateEmployeeComposedCommandHandlerTests
         {
             var orgUnit = OrgUnit.Create(TenantId, "ENG", "Engineering", "Department", null);
             var manager = Employee.Create(TenantId, "Maya", "Lead", "maya.lead@example.com", DateTime.UtcNow.AddYears(-3), employeeNumber: TestEmployeeNumbers.Next());
-            var managerEmployment = Employment.Start(TenantId, manager.Id, DateTime.UtcNow.AddYears(-3), "FullTime", WorkforceSourceType.Manual);
+            var managerEmployment = Employment.Start(TenantId, manager.Id, DateTime.UtcNow.AddYears(-3), null, WorkforceSourceType.Manual);
             var managerAssignment = WorkAssignment.Create(
                 TenantId,
                 managerEmployment.Id,
                 manager.Id,
                 orgUnit.Id,
-                "Engineering Manager",
-                "HQ",
+                TestCatalog.Job(TenantId, "Engineering Manager"),
+                TestCatalog.Place(TenantId, "HQ"),
                 isPrimary: true,
                 effectiveFrom: managerEmployment.EffectiveFrom,
                 effectiveTo: null,
@@ -54,13 +55,13 @@ public class CreateEmployeeComposedCommandHandlerTests
             "Doe",
             "john.doe@example.com",
             hireDate,
-            JobTitle: "Software Engineer",
+            JobId: context.JobId(TenantId, "Software Engineer"),
             ManagerId: managerId,
             OrgUnitId: orgUnitId,
             EmployeeNumber: "EMP-001",
             Phone: "+21600112233",
-            WorkLocation: "Tunis",
-            EmploymentType: "FullTime");
+            PlaceId: context.PlaceId(TenantId, "Tunis"),
+            EmploymentTypeId: context.EmploymentType(TenantId, "Full-time").Id);
 
         var result = await handler.Handle(command, CancellationToken.None);
 
@@ -73,7 +74,7 @@ public class CreateEmployeeComposedCommandHandlerTests
 
         Assert.NotNull(employment);
         Assert.Equal(hireDate, employment!.EffectiveFrom);
-        Assert.Equal("FullTime", employment.EmploymentType);
+        Assert.Equal("Full-time", employment.EmploymentType);
 
         Assert.NotNull(assignment);
         Assert.Equal(orgUnitId, assignment!.OrgUnitId);
@@ -98,7 +99,7 @@ public class CreateEmployeeComposedCommandHandlerTests
             "Doe",
             "john.doe@example.com",
             DateTime.UtcNow,
-            JobTitle: "Software Engineer");
+            JobId: context.JobId(TenantId, "Software Engineer"));
 
         var result = await handler.Handle(command, CancellationToken.None);
 

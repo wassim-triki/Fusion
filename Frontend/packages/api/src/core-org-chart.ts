@@ -81,11 +81,15 @@ export interface OrgChartOpenRoleDto {
   /** yyyy-mm-dd; null when not set. */
   targetStartDate: string | null;
   status: OpenRoleStatus;
+  jobId?: string | null;
+  placeId?: string | null;
+  placeName?: string | null;
 }
 
 /** `POST /api/corehr/org-chart/open-roles` and `PUT …/{id}` (people admins). A new role is Open or OnHold. */
 export interface OpenRoleRequest {
-  jobTitle: string;
+  jobId: string;
+  placeId?: string | null;
   managerKey: string;
   orgUnitId: string;
   targetStartDate?: string | null;

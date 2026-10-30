@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Features.OrgChart;
@@ -40,10 +41,10 @@ public sealed class OpenRoleRelationalTests
                     new CreateOrganizationUnitRequest($"{code}-P", "Product", OrganizationalUnitTypeCatalog.DepartmentId, root.Id, today.AddDays(-30)), default);
                 var employee = Employee.Create(tenant, "Fares", "Lachheb", $"fares@{code.ToLowerInvariant()}.test", employeeNumber: $"E-{code}");
                 var start = DateTime.SpecifyKind(DateTime.UtcNow.Date.AddYears(-1), DateTimeKind.Utc);
-                var employment = Employment.Start(tenant, employee.Id, start, "FullTime", WorkforceSourceType.Manual);
+                var employment = Employment.Start(tenant, employee.Id, start, null, WorkforceSourceType.Manual);
                 db.Employees.Add(employee);
                 db.Employments.Add(employment);
-                db.WorkAssignments.Add(WorkAssignment.Create(tenant, employment.Id, employee.Id, unit.Id, "Design Lead", "Tunis", true, start, null, WorkforceSourceType.Manual));
+                db.WorkAssignments.Add(WorkAssignment.Create(tenant, employment.Id, employee.Id, unit.Id, db.Job(tenant, "Design Lead"), db.Place(tenant, "Tunis"), true, start, null, WorkforceSourceType.Manual));
                 await db.SaveChangesAsync();
                 return (unit.Id, employee.StableEmployeeKey);
             }
@@ -55,7 +56,7 @@ public sealed class OpenRoleRelationalTests
             await using (var db = CreateDb(connectionString, tenantA))
             {
                 var result = await new CreateOpenRoleCommandHandler(db, TestTenantContext.WithTenant(tenantA)).Handle(
-                    new CreateOpenRoleCommand(new OpenRoleRequest("Senior Product Designer", a.ManagerKey, a.UnitId, today.AddDays(60)), "hr|Amira"), default);
+                    new CreateOpenRoleCommand(new OpenRoleRequest(db.JobId(tenantA, "Senior Product Designer"), a.ManagerKey, a.UnitId, today.AddDays(60)), "hr|Amira"), default);
                 Assert.True(result.IsSuccess, result.IsFailure ? result.Error.Message : null);
                 created = result.Value;
                 Assert.Equal("Product", created.Unit?.Name);
@@ -67,19 +68,19 @@ public sealed class OpenRoleRelationalTests
                 var role = Assert.Single(chart.OpenRoles);
                 Assert.Equal((created.Id, a.ManagerKey, today.AddDays(60)), (role.Id, role.ManagerKey, role.TargetStartDate));
 
-                var held = await new UpdateOpenRoleCommandHandler(db).Handle(new UpdateOpenRoleCommand(created.Id,
-                    new OpenRoleRequest("Senior Product Designer", a.ManagerKey, a.UnitId, today.AddDays(60), OpenRoleStatus.OnHold), "hr|Amira"), default);
+                var held = await new UpdateOpenRoleCommandHandler(db, TestTenantContext.WithTenant(tenantA)).Handle(new UpdateOpenRoleCommand(created.Id,
+                    new OpenRoleRequest(db.JobId(tenantA, "Senior Product Designer"), a.ManagerKey, a.UnitId, today.AddDays(60), OpenRoleStatus.OnHold), "hr|Amira"), default);
                 Assert.True(held.IsSuccess);
             }
 
             await using (var db = CreateDb(connectionString, tenantB))
             {
                 Assert.Empty((await ChartAsync(db)).OpenRoles);
-                var foreign = await new UpdateOpenRoleCommandHandler(db).Handle(new UpdateOpenRoleCommand(created.Id,
-                    new OpenRoleRequest("Taken", b.ManagerKey, b.UnitId), "hr|Other"), default);
+                var foreign = await new UpdateOpenRoleCommandHandler(db, TestTenantContext.WithTenant(tenantB)).Handle(new UpdateOpenRoleCommand(created.Id,
+                    new OpenRoleRequest(db.JobId(tenantB, "Taken"), b.ManagerKey, b.UnitId), "hr|Other"), default);
                 Assert.Equal(OpenRoleErrors.NotFoundCode, foreign.Error.Code);
                 var crossUnit = await new CreateOpenRoleCommandHandler(db, TestTenantContext.WithTenant(tenantB)).Handle(
-                    new CreateOpenRoleCommand(new OpenRoleRequest("Probe", b.ManagerKey, a.UnitId), "hr|Other"), default);
+                    new CreateOpenRoleCommand(new OpenRoleRequest(db.JobId(tenantB, "Probe"), b.ManagerKey, a.UnitId), "hr|Other"), default);
                 Assert.Equal("OpenRole.Unit", crossUnit.Error.Code);
             }
 

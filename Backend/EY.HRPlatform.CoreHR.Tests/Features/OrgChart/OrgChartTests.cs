@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using System.Security.Claims;
 using System.Text.Json;
 using EY.HRPlatform.CoreHR.Controllers;
@@ -67,8 +68,8 @@ public sealed class OrgChartTests
         Guid Person(Guid tenant, string first, string last, string title, OrgUnit unit, DateTime start)
         {
             var employee = Employee.Create(tenant, first, last, $"{first.ToLowerInvariant()}@example.com", employeeNumber: $"E-{Guid.NewGuid():N}");
-            var employment = Employment.Start(tenant, employee.Id, start, "FullTime", WorkforceSourceType.Manual);
-            var assignment = WorkAssignment.Create(tenant, employment.Id, employee.Id, unit.Id, title, "Tunis", true, start, null, WorkforceSourceType.Manual);
+            var employment = Employment.Start(tenant, employee.Id, start, null, WorkforceSourceType.Manual);
+            var assignment = WorkAssignment.Create(tenant, employment.Id, employee.Id, unit.Id, TestCatalog.Job(tenant, title), TestCatalog.Place(tenant, "Tunis"), true, start, null, WorkforceSourceType.Manual);
             seed.Employees.Add(employee);
             seed.Employments.Add(employment);
             seed.WorkAssignments.Add(assignment);
@@ -296,8 +297,8 @@ public sealed class OrgChartTests
                     id = employee.Id;
                 }
 
-                var employment = Employment.Start(TenantA, id, start, "FullTime", WorkforceSourceType.Manual);
-                var assignment = WorkAssignment.Create(TenantA, employment.Id, id, (random.Next(2) == 0 ? root : team).Id, $"Role {first}", "Tunis", true, start, null, WorkforceSourceType.Manual);
+                var employment = Employment.Start(TenantA, id, start, null, WorkforceSourceType.Manual);
+                var assignment = WorkAssignment.Create(TenantA, employment.Id, id, (random.Next(2) == 0 ? root : team).Id, TestCatalog.Job(TenantA, $"Role {first}"), TestCatalog.Place(TenantA, "Tunis"), true, start, null, WorkforceSourceType.Manual);
                 seed.Employments.Add(employment);
                 seed.WorkAssignments.Add(assignment);
                 var person = (id, assignment.Id, employment);
@@ -484,8 +485,8 @@ public sealed class OrgChartTests
             (Guid Id, Guid Assignment) Hire(int n, (Guid Id, Guid Assignment)? manager)
             {
                 var employee = Employee.Create(TenantA, $"P{n:0000}", "Atlas", $"p{n}@example.com", employeeNumber: $"E-{n}");
-                var employment = Employment.Start(TenantA, employee.Id, start, "FullTime", WorkforceSourceType.Manual);
-                var assignment = WorkAssignment.Create(TenantA, employment.Id, employee.Id, unit.Id, "Engineer", "Tunis", true, start, null, WorkforceSourceType.Manual);
+                var employment = Employment.Start(TenantA, employee.Id, start, null, WorkforceSourceType.Manual);
+                var assignment = WorkAssignment.Create(TenantA, employment.Id, employee.Id, unit.Id, TestCatalog.Job(TenantA, "Engineer"), TestCatalog.Place(TenantA, "Tunis"), true, start, null, WorkforceSourceType.Manual);
                 seed.AddRange(employee, employment, assignment);
                 if (manager is { } m)
                     seed.ManagerRelationships.Add(ManagerRelationship.Create(TenantA, employee.Id, m.Id, assignment.Id, m.Assignment,

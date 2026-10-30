@@ -53,7 +53,7 @@ public sealed class RehireEmployeeCommandHandler(
         // StartEmployment rejects a second active employment, enforcing the "no active employment" precondition.
         var employmentResult = await workforceMutationService.StartEmploymentAsync(
             request.EmployeeId,
-            new StartEmploymentInput(request.EffectiveDate, request.EmploymentType),
+            new StartEmploymentInput(request.EffectiveDate, request.EmploymentTypeId),
             actor: null,
             cancellationToken);
         if (employmentResult.IsFailure)
@@ -65,8 +65,8 @@ public sealed class RehireEmployeeCommandHandler(
             request.EmployeeId,
             new ChangeWorkAssignmentInput(
                 request.OrgUnitId,
-                request.JobTitle,
-                request.WorkLocation,
+                request.JobId,
+                request.PlaceId,
                 request.EffectiveDate),
             actor: null,
             cancellationToken);

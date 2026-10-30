@@ -28,6 +28,11 @@ public class GlobalExceptionHandlerMiddleware(RequestDelegate next, ILogger<Glob
                 ex.EntityType, context.Request.Method, context.Request.Path);
             await WriteErrorResponseAsync(context, HttpStatusCode.Conflict, ex.Message);
         }
+        catch (CatalogConflictException ex)
+        {
+            logger.LogWarning(ex, "Catalogue conflict for {Method} {Path}", context.Request.Method, context.Request.Path);
+            await WriteErrorResponseAsync(context, HttpStatusCode.Conflict, ex.Message);
+        }
         catch (ConcurrencyException ex)
         {
             logger.LogWarning(ex, "Concurrency conflict: {EntityType} {EntityId} for {Method} {Path}",

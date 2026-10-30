@@ -52,6 +52,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITenantSettingsReadService, TenantSettingsReadService>();
         services.AddScoped<ISettingsSectionRegistry, SettingsSectionRegistry>();
         services.AddScoped<ISettingsAuditService, SettingsAuditService>();
+        services.AddScoped<Features.Catalog.CompanyListService>();
+        services.AddScoped<Features.Catalog.JobCatalogService>();
         services.AddScoped<IWorkforceContractService, WorkforceContractService>();
         services.AddScoped<IInternalWorkforceSnapshotService, InternalWorkforceSnapshotService>();
         services.AddScoped<IApplicabilityOptionsService, ApplicabilityOptionsService>();

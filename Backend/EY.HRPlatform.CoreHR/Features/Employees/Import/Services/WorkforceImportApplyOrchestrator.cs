@@ -2,6 +2,7 @@ using EY.HRPlatform.CoreHR.Infrastructure.Imports;
 using System.Data;
 using System.Text.Json;
 using EY.HRPlatform.CoreHR.Domain.Entities;
+using EY.HRPlatform.CoreHR.Features.Catalog;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Features.Workforce.Services;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence;
@@ -143,6 +144,8 @@ public sealed class WorkforceImportApplyOrchestrator(
         // final SaveChanges performs one DetectChanges over the whole batch.
         var autoDetect = context.ChangeTracker.AutoDetectChangesEnabled;
         context.ChangeTracker.AutoDetectChangesEnabled = false;
+        // Until the import learns jobs and places (B-186), titles and locations resolve to the catalogue by name.
+        var catalog = new CatalogReferences(context, tenant);
         var employeeIdByRow = new Dictionary<int, Guid>();
         var keys = new List<string>();
         var processed = 0;
@@ -166,8 +169,10 @@ public sealed class WorkforceImportApplyOrchestrator(
                 if (employment.IsFailure) throw MutationFailure(employment.Error.Code);
 
                 var workEffective = resolvedRowByNumber[row.SourceRowNumber].ResolvedWorkEffectiveDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+                var job = await catalog.JobByTitleAsync(normalized.DisplayTitle!, actorName, cancellationToken);
+                var place = await catalog.PlaceByNameAsync(normalized.Location, actorName, cancellationToken);
                 var assignment = await mutation.ChangeWorkAssignmentAsync(employee.Id,
-                    new ChangeWorkAssignmentInput(row.ResolvedOrgUnitId!.Value, normalized.DisplayTitle!, normalized.Location, workEffective, WorkforceSourceType.Import, sourceRef, session.Id),
+                    new ChangeWorkAssignmentInput(row.ResolvedOrgUnitId!.Value, job.Id, place?.Id, workEffective, WorkforceSourceType.Import, sourceRef, session.Id),
                     actorName, cancellationToken);
                 if (assignment.IsFailure) throw MutationFailure(assignment.Error.Code);
                 onPhase?.Invoke("Saving", ++processed, included.Count);

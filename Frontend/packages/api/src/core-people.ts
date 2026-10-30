@@ -32,6 +32,11 @@ export interface PeopleWorkDto {
   location: string | null;
   effectiveFrom: string;
   isHistorical: boolean;
+  /** The job and place from the company's catalogue; family and level on the profile only. */
+  jobId?: string | null;
+  placeId?: string | null;
+  jobFamily?: string | null;
+  jobLevel?: string | null;
 }
 
 export interface PeopleRowDto {
@@ -157,6 +162,7 @@ export interface PeopleProfileEmploymentDto {
   start: string | null;
   end: string | null;
   employmentType: string | null;
+  employmentTypeId?: string | null;
 }
 
 export interface PeopleProfileReportDto {
@@ -283,6 +289,12 @@ export interface WorkforceChangeDetails {
   lastDay: string | null;
   isHire: boolean;
   employmentType: string | null;
+  /** The picks behind the names, so an edit starts from the same job and place (absent on older records). */
+  jobFromId?: string | null;
+  jobToId?: string | null;
+  placeFromId?: string | null;
+  placeToId?: string | null;
+  employmentTypeId?: string | null;
   isReportingOnly: boolean;
 }
 
@@ -306,15 +318,16 @@ export interface TeamOutcomeRequest {
   managerEmployeeId?: string | null;
 }
 
-/** A null part stays as it is; an empty location clears it. */
+/** A null part stays as it is; `removePlace` leaves the person without a place. */
 export interface JobChangeRequest {
   effectiveDate: string;
   managerEmployeeId?: string | null;
   removeManager?: boolean;
   team?: TeamOutcomeRequest | null;
   orgUnitId?: string | null;
-  jobTitle?: string | null;
-  location?: string | null;
+  jobId?: string | null;
+  placeId?: string | null;
+  removePlace?: boolean;
   note?: string | null;
 }
 
@@ -333,10 +346,10 @@ export interface EndEmploymentChangeRequest {
 export interface JoinChangeRequest {
   startDate: string;
   orgUnitId: string;
-  jobTitle: string;
-  location?: string | null;
+  jobId: string;
+  placeId?: string | null;
   managerEmployeeId?: string | null;
-  employmentType?: string | null;
+  employmentTypeId?: string | null;
   note?: string | null;
 }
 
@@ -402,10 +415,10 @@ export interface EstablishmentRequestBase {
   phone?: string | null;
   employeeNumberMode: EmployeeNumberMode;
   employeeNumber?: string | null;
-  employmentType?: string | null;
+  employmentTypeId?: string | null;
   orgUnitId: string;
-  jobTitle: string;
-  location?: string | null;
+  jobId: string;
+  placeId?: string | null;
   primaryManagerEmployeeId?: string | null;
 }
 

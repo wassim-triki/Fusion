@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using System.Security.Claims;
 using EY.HRPlatform.CoreHR.Controllers;
 using EY.HRPlatform.CoreHR.Domain.Entities;
@@ -36,7 +37,7 @@ public class EmployeesControllerLifecycleAuthorizationTests
 
         var result = await controller.Rehire(
             Guid.NewGuid(),
-            new RehireEmployeeRequest(EffectiveDate, Guid.NewGuid(), "Engineer"),
+            new RehireEmployeeRequest(EffectiveDate, Guid.NewGuid(), Guid.NewGuid()),
             "\"3\"",
             CancellationToken.None);
 
@@ -53,7 +54,7 @@ public class EmployeesControllerLifecycleAuthorizationTests
 
         var result = await controller.Rehire(
             employeeId,
-            new RehireEmployeeRequest(EffectiveDate, Guid.NewGuid(), "Engineer"),
+            new RehireEmployeeRequest(EffectiveDate, Guid.NewGuid(), Guid.NewGuid()),
             "\"3\"",
             CancellationToken.None);
 
@@ -141,7 +142,7 @@ public class EmployeesControllerLifecycleAuthorizationTests
             new EmployeeDetailsReadModelService(context, new WorkforceCanonicalResolver(context), new StubTenantSettingsReader()));
 
         await Assert.ThrowsAsync<EntityNotFoundException>(() => handler.Handle(
-            new RehireEmployeeCommand(employee.Id, version, EffectiveDate, Guid.NewGuid(), "Engineer"),
+            new RehireEmployeeCommand(employee.Id, version, EffectiveDate, Guid.NewGuid(), Guid.NewGuid()),
             CancellationToken.None));
     }
 

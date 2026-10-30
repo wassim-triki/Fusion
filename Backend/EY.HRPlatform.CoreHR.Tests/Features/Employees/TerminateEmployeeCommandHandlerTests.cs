@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Exceptions;
@@ -23,14 +24,14 @@ public class TerminateEmployeeCommandHandlerTests
         await using var seedContext = TestDbContextFactory.CreateWithoutTenant(dbName);
         var orgUnit = OrgUnit.Create(TenantId, "ENG", "Engineering", "Department", null);
         var employee = Employee.Create(TenantId, "John", "Doe", "john@example.com", Hire, employeeNumber: TestEmployeeNumbers.Next());
-        var employment = Employment.Start(TenantId, employee.Id, Hire, "FullTime", WorkforceSourceType.Manual);
+        var employment = Employment.Start(TenantId, employee.Id, Hire, null, WorkforceSourceType.Manual);
         var assignment = WorkAssignment.Create(
             TenantId,
             employment.Id,
             employee.Id,
             orgUnit.Id,
-            "Engineer",
-            "HQ",
+            TestCatalog.Job(TenantId, "Engineer"),
+            TestCatalog.Place(TenantId, "HQ"),
             true,
             Hire,
             null,

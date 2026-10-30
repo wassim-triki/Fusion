@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Features.Workforce.Services;
@@ -38,9 +39,9 @@ public class WorkforceMutationServiceTests
     {
         var effectiveFrom = from ?? Hire;
         var employee = SeedEmployee(first);
-        var employment = Employment.Start(Tenant, employee.Id, effectiveFrom, "FullTime", WorkforceSourceType.Manual);
+        var employment = Employment.Start(Tenant, employee.Id, effectiveFrom, null, WorkforceSourceType.Manual);
         var assignment = WorkAssignment.Create(
-            Tenant, employment.Id, employee.Id, orgUnitId, "Engineer", "HQ",
+            Tenant, employment.Id, employee.Id, orgUnitId, TestCatalog.Job(Tenant, "Engineer"), TestCatalog.Place(Tenant, "HQ"),
             isPrimary: true, effectiveFrom, effectiveTo: null, WorkforceSourceType.Manual);
         context.AddRange(employee, employment, assignment);
         await context.SaveChangesAsync();
@@ -94,7 +95,7 @@ public class WorkforceMutationServiceTests
         var first = SeedEmployee("Grace");
         var second = SeedEmployee("Edsger");
         // Grace actively occupies grace@ey-hr.com; Edsger is actively employed so his email change is subject to occupancy.
-        var secondEmployment = Employment.Start(Tenant, second.Id, Hire, "FullTime", WorkforceSourceType.Manual);
+        var secondEmployment = Employment.Start(Tenant, second.Id, Hire, null, WorkforceSourceType.Manual);
         context.AddRange(first, second, secondEmployment);
         context.WorkEmailOccupancies.Add(WorkEmailOccupancy.Create(Tenant, first.Id, "grace@ey-hr.com"));
         await context.SaveChangesAsync();
@@ -118,7 +119,7 @@ public class WorkforceMutationServiceTests
         await context.SaveChangesAsync();
 
         var result = await service.StartEmploymentAsync(
-            employee.Id, new StartEmploymentInput(Hire, "FullTime"), Actor, CancellationToken.None);
+            employee.Id, new StartEmploymentInput(Hire, null), Actor, CancellationToken.None);
         await context.SaveChangesAsync();
 
         Assert.True(result.IsSuccess);
@@ -140,7 +141,7 @@ public class WorkforceMutationServiceTests
         var (employee, _, _) = await SeedEmployedAsync(context, "Ken", org.Id);
 
         var result = await service.StartEmploymentAsync(
-            employee.Id, new StartEmploymentInput(Hire.AddYears(1), "FullTime"), Actor, CancellationToken.None);
+            employee.Id, new StartEmploymentInput(Hire.AddYears(1), null), Actor, CancellationToken.None);
 
         Assert.True(result.IsFailure);
         Assert.Equal("Employment.AlreadyActive", result.Error.Code);
@@ -367,12 +368,12 @@ public class WorkforceMutationServiceTests
         var (context, service) = NewService();
         var org = SeedOrgUnit();
         var employee = SeedEmployee("Margaret");
-        var employment = Employment.Start(Tenant, employee.Id, Hire, "FullTime", WorkforceSourceType.Manual);
+        var employment = Employment.Start(Tenant, employee.Id, Hire, null, WorkforceSourceType.Manual);
         context.AddRange(org, employee, employment);
         await context.SaveChangesAsync();
 
         var result = await service.ChangeWorkAssignmentAsync(
-            employee.Id, new ChangeWorkAssignmentInput(org.Id, "Engineer", "HQ", Hire),
+            employee.Id, new ChangeWorkAssignmentInput(org.Id, context.JobId(Tenant, "Engineer"), context.PlaceId(Tenant, "HQ"), Hire),
             Actor, CancellationToken.None);
         await context.SaveChangesAsync();
 
@@ -394,7 +395,7 @@ public class WorkforceMutationServiceTests
         var changeDate = Hire.AddMonths(6);
 
         var result = await service.ChangeWorkAssignmentAsync(
-            employee.Id, new ChangeWorkAssignmentInput(newOrg.Id, "Lead Engineer", "Remote", changeDate),
+            employee.Id, new ChangeWorkAssignmentInput(newOrg.Id, context.JobId(Tenant, "Lead Engineer"), context.PlaceId(Tenant, "Remote"), changeDate),
             Actor, CancellationToken.None);
         await context.SaveChangesAsync();
 
@@ -415,12 +416,12 @@ public class WorkforceMutationServiceTests
         var (context, service) = NewService();
         var inactiveOrg = SeedOrgUnit("DEAD", active: false);
         var employee = SeedEmployee("Vint");
-        var employment = Employment.Start(Tenant, employee.Id, Hire, "FullTime", WorkforceSourceType.Manual);
+        var employment = Employment.Start(Tenant, employee.Id, Hire, null, WorkforceSourceType.Manual);
         context.AddRange(inactiveOrg, employee, employment);
         await context.SaveChangesAsync();
 
         var result = await service.ChangeWorkAssignmentAsync(
-            employee.Id, new ChangeWorkAssignmentInput(inactiveOrg.Id, "Engineer", null, Hire),
+            employee.Id, new ChangeWorkAssignmentInput(inactiveOrg.Id, context.JobId(Tenant, "Engineer"), context.PlaceId(Tenant, null), Hire),
             Actor, CancellationToken.None);
 
         Assert.True(result.IsFailure);
@@ -437,7 +438,7 @@ public class WorkforceMutationServiceTests
         await context.SaveChangesAsync();
 
         var result = await service.ChangeWorkAssignmentAsync(
-            employee.Id, new ChangeWorkAssignmentInput(org.Id, "Engineer", null, Hire),
+            employee.Id, new ChangeWorkAssignmentInput(org.Id, context.JobId(Tenant, "Engineer"), context.PlaceId(Tenant, null), Hire),
             Actor, CancellationToken.None);
 
         Assert.True(result.IsFailure);

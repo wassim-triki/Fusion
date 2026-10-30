@@ -1,5 +1,6 @@
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
+using EY.HRPlatform.CoreHR.Features.Catalog;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence;
 using EY.HRPlatform.SharedKernel.Multitenancy;
 using EY.HRPlatform.SharedKernel.Results;
@@ -18,14 +19,14 @@ public sealed record UpdateEmployeeProfileInput(
 /// <summary>Inputs to start a new <see cref="Employment"/>.</summary>
 public sealed record StartEmploymentInput(
     DateTime EffectiveFrom,
-    string? EmploymentType,
+    Guid? EmploymentTypeId,
     WorkforceSourceType Source = WorkforceSourceType.Manual,
     string? SourceReference = null,
     Guid? ImportBatchId = null);
 
 /// <summary>Inputs to correct the active <see cref="Employment"/> details in place.</summary>
 public sealed record UpdateEmploymentDetailsInput(
-    string? EmploymentType,
+    Guid? EmploymentTypeId,
     WorkforceSourceType Source = WorkforceSourceType.Manual,
     string? SourceReference = null,
     Guid? ImportBatchId = null);
@@ -33,8 +34,8 @@ public sealed record UpdateEmploymentDetailsInput(
 /// <summary>Inputs to open or change an employee's primary <see cref="WorkAssignment"/>.</summary>
 public sealed record ChangeWorkAssignmentInput(
     Guid OrgUnitId,
-    string JobTitle,
-    string? WorkLocation,
+    Guid JobId,
+    Guid? PlaceId,
     DateTime EffectiveDate,
     WorkforceSourceType Source = WorkforceSourceType.Manual,
     string? SourceReference = null,
@@ -43,8 +44,8 @@ public sealed record ChangeWorkAssignmentInput(
 /// <summary>Inputs to correct the active primary <see cref="WorkAssignment"/> in place.</summary>
 public sealed record CorrectWorkAssignmentInput(
     Guid OrgUnitId,
-    string JobTitle,
-    string? WorkLocation,
+    Guid JobId,
+    Guid? PlaceId,
     WorkforceSourceType Source = WorkforceSourceType.Manual,
     string? SourceReference = null,
     Guid? ImportBatchId = null);
@@ -175,6 +176,7 @@ public sealed class WorkforceMutationService(
     private readonly WorkforceResolutionScope _resolutionScope = resolutionScope ?? new WorkforceResolutionScope();
     private readonly IWorkEmailOccupancyService _workEmailOccupancyService =
         workEmailOccupancyService ?? new WorkEmailOccupancyService(dbContext, tenantContext);
+    private readonly CatalogReferences _catalog = new(dbContext, tenantContext);
 
     public async Task<Result<Employee>> UpdateEmployeeProfileAsync(
         Guid employeeId, UpdateEmployeeProfileInput input, string? actor, CancellationToken cancellationToken)
@@ -212,8 +214,12 @@ public sealed class WorkforceMutationService(
                 "Employment.AlreadyActive",
                 "Employee already has an active employment; end it before starting a new one."));
 
+        var employmentType = await _catalog.ListValueAsync(CompanyList.EmploymentTypes, input.EmploymentTypeId, null, cancellationToken);
+        if (employmentType.IsFailure)
+            return Result.Failure<Employment>(employmentType.Error);
+
         var employment = Employment.Start(
-            tenantContext.TenantId, employeeId, effectiveFrom, input.EmploymentType,
+            tenantContext.TenantId, employeeId, effectiveFrom, employmentType.Value,
             input.Source, input.SourceReference, input.ImportBatchId);
         dbContext.Employments.Add(employment);
 
@@ -237,7 +243,12 @@ public sealed class WorkforceMutationService(
                 "Employment.NoActive",
                 "Employee has no active employment to update."));
 
-        employment.UpdateEmploymentType(input.EmploymentType);
+        var employmentType = await _catalog.ListValueAsync(
+            CompanyList.EmploymentTypes, input.EmploymentTypeId, employment.EmploymentTypeId, cancellationToken);
+        if (employmentType.IsFailure)
+            return Result.Failure<Employment>(employmentType.Error);
+
+        employment.UpdateEmploymentType(employmentType.Value);
 
         StageAudit("Employment", employment.Id, WorkforceAuditAction.EmploymentUpdated,
             input.Source, actor, effectiveDate: null, input.SourceReference, input.ImportBatchId,
@@ -370,22 +381,25 @@ public sealed class WorkforceMutationService(
             return Result.Failure<WorkAssignment>(Error.Validation(
                 "WorkAssignment.OrgUnitInactive", "Cannot assign an inactive organization unit."));
 
-        if (string.IsNullOrWhiteSpace(input.JobTitle))
-            return Result.Failure<WorkAssignment>(Error.Validation(
-                "WorkAssignment.JobTitleRequired", "Job title is required."));
-
         var current = await ResolveActivePrimaryAssignmentAsync(employeeId, effectiveDate, cancellationToken);
         if (current is not null && effectiveDate <= current.EffectiveFrom)
             return Result.Failure<WorkAssignment>(Error.Validation(
                 "WorkAssignment.EffectiveDateNotAfterCurrent",
                 "Work assignment change date must be after the current assignment's start date."));
 
+        var job = await _catalog.JobAsync(input.JobId, current?.JobId, cancellationToken);
+        if (job.IsFailure)
+            return Result.Failure<WorkAssignment>(job.Error);
+        var place = await _catalog.PlaceAsync(input.PlaceId, current?.PlaceId, cancellationToken);
+        if (place.IsFailure)
+            return Result.Failure<WorkAssignment>(place.Error);
+
         var isFirst = current is null;
         current?.End(effectiveDate);
 
         var assignment = WorkAssignment.Create(
             tenantContext.TenantId, employment.Id, employeeId, input.OrgUnitId,
-            input.JobTitle, input.WorkLocation, isPrimary: true,
+            job.Value, place.Value, isPrimary: true,
             effectiveFrom: effectiveDate, effectiveTo: null,
             input.Source, input.SourceReference, input.ImportBatchId);
         dbContext.WorkAssignments.Add(assignment);
@@ -417,12 +431,14 @@ public sealed class WorkforceMutationService(
                 "WorkAssignment.OrgUnitInactive",
                 "Cannot assign an inactive organization unit."));
 
-        if (string.IsNullOrWhiteSpace(input.JobTitle))
-            return Result.Failure<WorkAssignment>(Error.Validation(
-                "WorkAssignment.JobTitleRequired",
-                "Job title is required."));
+        var job = await _catalog.JobAsync(input.JobId, assignment.JobId, cancellationToken);
+        if (job.IsFailure)
+            return Result.Failure<WorkAssignment>(job.Error);
+        var place = await _catalog.PlaceAsync(input.PlaceId, assignment.PlaceId, cancellationToken);
+        if (place.IsFailure)
+            return Result.Failure<WorkAssignment>(place.Error);
 
-        assignment.UpdateDetails(input.OrgUnitId, input.JobTitle, input.WorkLocation);
+        assignment.UpdateDetails(input.OrgUnitId, job.Value, place.Value);
 
         StageAudit("WorkAssignment", assignment.Id, WorkforceAuditAction.WorkAssignmentChanged,
             input.Source, actor, effectiveDate: null, input.SourceReference, input.ImportBatchId,

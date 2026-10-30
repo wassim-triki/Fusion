@@ -153,6 +153,7 @@
       "filled": "{title} pourvu",
       "closed": "{title} fermé"
     },
-    "failed": "Le poste n'a pas été enregistré."
+    "failed": "Le poste n'a pas été enregistré.",
+    "place": "Lieu"
   }
 }

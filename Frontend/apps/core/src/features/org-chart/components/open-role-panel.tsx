@@ -6,8 +6,9 @@ import { toast } from "sonner";
 import { Briefcase, X } from "lucide-react";
 import type { ChangePersonRef, OpenRoleStatus, OrgChartOpenRoleDto } from "@repo/api";
 import { Segmented } from "@repo/ds/choice";
-import { Button, DatePicker, Input } from "@repo/ds";
+import { Button, DatePicker } from "@repo/ds";
 import { useRefusal } from "@/i18n/words";
+import { JobPicker, PlacePicker } from "@/features/catalog/components/catalog-pickers";
 import { Block, Footer, PersonPicker, UnitEditor } from "@/features/people/changes/change-panel";
 import { useOpenRoleMutations } from "../api/use-org-chart";
 
@@ -46,7 +47,10 @@ export function OpenRolePanel({
   const { create, update } = useOpenRoleMutations();
   const today = iso(new Date());
 
-  const [jobTitle, setJobTitle] = useState(editing?.jobTitle ?? "");
+  const [job, setJob] = useState<{ id: string; title: string } | null>(
+    editing?.jobId ? { id: editing.jobId, title: editing.jobTitle } : null);
+  const [placeId, setPlaceId] = useState<string | null>(editing?.placeId ?? null);
+  const jobTitle = job?.title ?? "";
   const [reportsTo, setReportsTo] = useState<ChangePersonRef | null>(manager);
   const [unit, setUnit] = useState<{ id: string; name: string } | null>(
     editing?.unit ? { id: editing.unit.id, name: editing.unit.name } : managerUnit);
@@ -60,20 +64,20 @@ export function OpenRolePanel({
   useEffect(() => () => onDraft(null), [onDraft]);
 
   const saving = create.isLoading || update.isLoading;
-  const ready = Boolean(reportsTo && unit && jobTitle.trim()) && !saving;
+  const ready = Boolean(reportsTo && unit && job) && !saving;
   const save = async () => {
-    if (!reportsTo || !unit) return;
+    if (!reportsTo || !unit || !job) return;
     setError(null);
-    const request = { jobTitle: jobTitle.trim(), managerKey: reportsTo.employeeKey, orgUnitId: unit.id, targetStartDate: start || null, status };
+    const request = { jobId: job.id, placeId, managerKey: reportsTo.employeeKey, orgUnitId: unit.id, targetStartDate: start || null, status };
     try {
       if (editing) {
         await update.mutateAsync({ id: editing.id, request });
-        toast.success(status === "Filled" ? t("saved.filled", { title: request.jobTitle })
-          : status === "Closed" ? t("saved.closed", { title: request.jobTitle })
+        toast.success(status === "Filled" ? t("saved.filled", { title: job.title })
+          : status === "Closed" ? t("saved.closed", { title: job.title })
           : t("saved.updated"));
       } else {
         await create.mutateAsync(request);
-        toast.success(t("saved.added", { title: request.jobTitle, name: firstName(reportsTo.displayName) }));
+        toast.success(t("saved.added", { title: job.title, name: firstName(reportsTo.displayName) }));
       }
       onClose();
     } catch (caught) {
@@ -99,7 +103,10 @@ export function OpenRolePanel({
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto px-[22px] pb-4 pt-1.5">
         <Block title={t("jobTitle")}>
-          <Input value={jobTitle} maxLength={200} autoFocus={!editing} aria-label={t("jobTitle")} onChange={(event) => setJobTitle(event.target.value)} />
+          <JobPicker value={job?.id ?? null} onChange={(next) => setJob({ id: next.id, title: next.title })} />
+        </Block>
+        <Block title={t("place")} aside={t("optional")}>
+          <PlacePicker value={placeId} onChange={(next) => setPlaceId(next?.id ?? null)} />
         </Block>
         <Block title={t("reportsTo")}>
           <PersonPicker date={today} value={reportsTo} onChange={setReportsTo} />

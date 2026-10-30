@@ -14,7 +14,7 @@ public sealed record RehireEmployeeCommand(
     uint ExpectedVersion,
     DateTime EffectiveDate,
     Guid OrgUnitId,
-    string JobTitle,
-    string? WorkLocation = null,
+    Guid JobId,
+    Guid? PlaceId = null,
     Guid? ManagerId = null,
-    string? EmploymentType = null) : ICommand<Result<EmployeeDetailsDto>>;
+    Guid? EmploymentTypeId = null) : ICommand<Result<EmployeeDetailsDto>>;

@@ -464,13 +464,13 @@ public class EmployeesController(
             request.LastName,
             request.Email,
             request.HireDate,
-            request.JobTitle,
+            request.JobId,
             request.ManagerId,
             request.OrgUnitId,
             request.EmployeeNumber,
             request.Phone,
-            request.WorkLocation,
-            request.EmploymentType);
+            request.PlaceId,
+            request.EmploymentTypeId);
 
         var result = await sender.Send(command, cancellationToken);
         if (result.IsFailure)
@@ -661,14 +661,14 @@ public class EmployeesController(
             request.LastName,
             request.PreferredName,
             request.Email,
-            request.JobTitle,
+            request.JobId,
             request.ManagerId,
             request.OrgUnitId,
             request.HireDate,
             request.EmployeeNumber,
             request.Phone,
-            request.WorkLocation,
-            request.EmploymentType);
+            request.PlaceId,
+            request.EmploymentTypeId);
 
         var result = await sender.Send(command, cancellationToken);
         if (result.IsFailure)
@@ -755,10 +755,10 @@ public class EmployeesController(
                 expectedVersion,
                 request.EffectiveDate,
                 request.OrgUnitId,
-                request.JobTitle,
-                request.WorkLocation,
+                request.JobId,
+                request.PlaceId,
                 request.ManagerId,
-                request.EmploymentType),
+                request.EmploymentTypeId),
             cancellationToken);
         if (result.IsFailure)
         {
@@ -839,9 +839,9 @@ public class EmployeesController(
             && request.PreferredName is null
             && request.Email is null
             && request.Phone is null
-            && request.JobTitle is null
-            && request.WorkLocation is null
-            && request.EmploymentType is null
+            && request.JobId is null
+            && request.PlaceId is null
+            && request.EmploymentTypeId is null
             && request.OrgUnitId is null
             && request.HireDate is null;
 

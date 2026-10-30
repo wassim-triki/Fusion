@@ -5,6 +5,7 @@ public static class CoreSettingsSectionIds
 {
     public const string Company = "company";
     public const string EmployeeFields = "employee-fields";
+    public const string Lists = "lists";
     public const string Roles = "roles";
     public const string Invitations = "invitations";
     public const string ChangeHistory = "change-history";
@@ -22,6 +23,7 @@ public static class SettingsSectionIds
     public const string Provisioning = "provisioning";
     public const string Governance = "governance";
     public const string Notifications = "notifications";
+    public const string Lists = "lists";
 }
 
 public sealed record OrganizationSettingsDto(

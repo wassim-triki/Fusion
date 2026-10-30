@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Features.Employees.Commands.RehireEmployee;
@@ -27,7 +28,7 @@ public class RehireEmployeeCommandHandlerTests
         await using var seed = TestDbContextFactory.CreateWithoutTenant(dbName);
         var orgUnit = OrgUnit.Create(TenantId, "ENG", "Engineering", "Department", null);
         var employee = Employee.Create(TenantId, "John", "Doe", "john@example.com", Hire, employeeNumber: TestEmployeeNumbers.Next());
-        var endedEmployment = Employment.Start(TenantId, employee.Id, Hire, "FullTime", WorkforceSourceType.Manual);
+        var endedEmployment = Employment.Start(TenantId, employee.Id, Hire, null, WorkforceSourceType.Manual);
         endedEmployment.End(Termination);
         seed.AddRange(orgUnit, employee, endedEmployment);
         await seed.SaveChangesAsync();
@@ -38,7 +39,7 @@ public class RehireEmployeeCommandHandlerTests
         var handler = CreateHandler(context, tenantContext);
 
         var result = await handler.Handle(
-            new RehireEmployeeCommand(employee.Id, version, Rehire, orgUnit.Id, "Senior Engineer"),
+            new RehireEmployeeCommand(employee.Id, version, Rehire, orgUnit.Id, context.JobId(TenantId, "Senior Engineer")),
             CancellationToken.None);
 
         Assert.True(result.IsSuccess);
@@ -65,7 +66,7 @@ public class RehireEmployeeCommandHandlerTests
         await using var seed = TestDbContextFactory.CreateWithoutTenant(dbName);
         var orgUnit = OrgUnit.Create(TenantId, "ENG", "Engineering", "Department", null);
         var employee = Employee.Create(TenantId, "John", "Doe", "john@example.com", Hire, employeeNumber: TestEmployeeNumbers.Next());
-        var activeEmployment = Employment.Start(TenantId, employee.Id, Hire, "FullTime", WorkforceSourceType.Manual);
+        var activeEmployment = Employment.Start(TenantId, employee.Id, Hire, null, WorkforceSourceType.Manual);
         seed.AddRange(orgUnit, employee, activeEmployment);
         await seed.SaveChangesAsync();
 
@@ -73,7 +74,7 @@ public class RehireEmployeeCommandHandlerTests
         var handler = CreateHandler(context, tenantContext);
 
         var result = await handler.Handle(
-            new RehireEmployeeCommand(employee.Id, employee.Version, Rehire, orgUnit.Id, "Engineer"),
+            new RehireEmployeeCommand(employee.Id, employee.Version, Rehire, orgUnit.Id, context.JobId(TenantId, "Engineer")),
             CancellationToken.None);
 
         Assert.True(result.IsFailure);

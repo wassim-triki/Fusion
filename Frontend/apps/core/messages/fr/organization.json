@@ -294,5 +294,10 @@
   "accessible": {
     "under": "{name}, {type}, code {code}, sous {path}",
     "root": "{name}, {type}, code {code}, racine de l’organisation"
+  },
+  "lens": {
+    "structure": "Structure",
+    "jobs": "Postes",
+    "places": "Lieux"
   }
 }

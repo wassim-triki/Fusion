@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using EY.HRPlatform.CoreHR.Features.Employees.Services;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
@@ -38,7 +39,7 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
             var before = await RowsAsync(db, ctx.KarimId);
 
             var change = await JobAsync(db, ctx, ctx.KarimKey, new JobChangeRequest(
-                future, ManagerEmployeeId: ctx.YoussefId, OrgUnitId: ctx.CustomerSuccessId, JobTitle: "Senior Consultant"));
+                future, ManagerEmployeeId: ctx.YoussefId, OrgUnitId: ctx.CustomerSuccessId, JobId: db.JobId(ctx.Tenant.TenantId, "Senior Consultant")));
             Assert.Equal(WorkforceChangeKind.JobChange, change.Kind);
             Assert.Equal(WorkforceChangeStatus.Scheduled, change.Status);
             Assert.True(change.CanCancel && change.CanEdit);
@@ -71,7 +72,7 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
         => WithDatabaseAsync(async (db, ctx, _) =>
         {
             var future = Today.AddDays(30);
-            var change = await JobAsync(db, ctx, ctx.KarimKey, new JobChangeRequest(future, JobTitle: "Senior Consultant"));
+            var change = await JobAsync(db, ctx, ctx.KarimKey, new JobChangeRequest(future, JobId: db.JobId(ctx.Tenant.TenantId, "Senior Consultant")));
             async Task<PeopleProfileDto> AsManager(Guid managerId, DateTime? asOf = null)
                 => (await new PeopleProfileQueryHandler(db, ctx.Organization, new WorkforceChangeReader(db))
                     .Handle(new PeopleProfileQuery(ctx.KarimKey, asOf, EmployeeReadAudience.Manager, managerId), default)).Value;
@@ -99,7 +100,7 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
         => WithDatabaseAsync(async (db, ctx, _) =>
         {
             var before = await RowsAsync(db, ctx.KarimId);
-            var change = await JobAsync(db, ctx, ctx.KarimKey, new JobChangeRequest(Today, JobTitle: "Lead Consultant", Location: ""));
+            var change = await JobAsync(db, ctx, ctx.KarimKey, new JobChangeRequest(Today, JobId: db.JobId(ctx.Tenant.TenantId, "Lead Consultant"), RemovePlace: true));
             Assert.Equal(WorkforceChangeStatus.InEffect, change.Status);
             Assert.True(change.CanCancel);
             var now = await ProfileAsync(db, ctx, ctx.KarimKey);
@@ -119,17 +120,17 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
         => WithDatabaseAsync(async (db, ctx, _) =>
         {
             Assert.Equal("Change.NothingChanges", (await TryJobAsync(db, ctx, ctx.KarimKey,
-                new JobChangeRequest(Today.AddDays(5), ManagerEmployeeId: ctx.AminaId, JobTitle: "Consultant Senior"))).Error.Code);
+                new JobChangeRequest(Today.AddDays(5), ManagerEmployeeId: ctx.AminaId, JobId: db.JobId(ctx.Tenant.TenantId, "Consultant Senior")))).Error.Code);
             Assert.Equal("Change.PastDate", (await TryJobAsync(db, ctx, ctx.KarimKey,
-                new JobChangeRequest(Today.AddDays(-1), JobTitle: "Backdated"))).Error.Code);
+                new JobChangeRequest(Today.AddDays(-1), JobId: db.JobId(ctx.Tenant.TenantId, "Backdated")))).Error.Code);
             Assert.Equal("Manager.Cycle", (await TryJobAsync(db, ctx, ctx.AminaKey,
                 new JobChangeRequest(Today.AddDays(5), ManagerEmployeeId: ctx.KarimId))).Error.Code);
 
             // A person's changes apply in order: nothing before the last scheduled one (no overlapping lines).
             var first = await JobAsync(db, ctx, ctx.KarimKey, new JobChangeRequest(Today.AddDays(30), ManagerEmployeeId: ctx.YoussefId));
             Assert.Equal("Change.BeforeScheduled", (await TryJobAsync(db, ctx, ctx.KarimKey,
-                new JobChangeRequest(Today.AddDays(10), JobTitle: "Earlier"))).Error.Code);
-            var second = await JobAsync(db, ctx, ctx.KarimKey, new JobChangeRequest(Today.AddDays(40), JobTitle: "Later"));
+                new JobChangeRequest(Today.AddDays(10), JobId: db.JobId(ctx.Tenant.TenantId, "Earlier")))).Error.Code);
+            var second = await JobAsync(db, ctx, ctx.KarimKey, new JobChangeRequest(Today.AddDays(40), JobId: db.JobId(ctx.Tenant.TenantId, "Later")));
             Assert.Equal(1, await db.ManagerRelationships.CountAsync(item => item.SubjectEmployeeId == ctx.KarimId
                 && item.Type == ReportingRelationshipType.PrimaryManager && item.EffectiveTo == null));
 
@@ -141,7 +142,7 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
             // A reporting admin changes the line, never the job.
             var service = Service(db, ctx);
             var forbidden = await new JobChangeCommandHandler(db, service, new WorkforceChangeReader(db)).Handle(
-                new JobChangeCommand(ctx.KarimKey, new JobChangeRequest(Today.AddDays(5), JobTitle: "Nope"), Actor, CanManageEmployees: false), default);
+                new JobChangeCommand(ctx.KarimKey, new JobChangeRequest(Today.AddDays(5), JobId: db.JobId(ctx.Tenant.TenantId, "Nope")), Actor, CanManageEmployees: false), default);
             Assert.Equal(WorkforceChangeService.ForbiddenCode, forbidden.Error.Code);
             var reportingOnly = await new JobChangeCommandHandler(db, service, new WorkforceChangeReader(db)).Handle(
                 new JobChangeCommand(ctx.KarimKey, new JobChangeRequest(Today.AddDays(5), ManagerEmployeeId: ctx.YoussefId), Actor, CanManageEmployees: false), default);
@@ -172,7 +173,7 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
 
             // The ripple is part of the change: Karim can't get a change before it, and cancel puts his line back.
             Assert.Equal("Change.BeforeScheduled", (await TryJobAsync(db, ctx, ctx.KarimKey,
-                new JobChangeRequest(date.AddDays(-1), JobTitle: "Earlier"))).Error.Code);
+                new JobChangeRequest(date.AddDays(-1), JobId: db.JobId(ctx.Tenant.TenantId, "Earlier")))).Error.Code);
             Assert.True((await CancelAsync(db, ctx, stays.Id)).IsSuccess);
             db.ChangeTracker.Clear();
             Assert.Equal(karimBefore, await RowsAsync(db, ctx.KarimId));
@@ -183,7 +184,7 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
         => WithDatabaseAsync(async (db, ctx, _) =>
         {
             // Amina changes job first, so her current assignment is not the one Karim's line was made against.
-            await JobAsync(db, ctx, ctx.AminaKey, new JobChangeRequest(Today.AddDays(5), JobTitle: "Customer Success VP"));
+            await JobAsync(db, ctx, ctx.AminaKey, new JobChangeRequest(Today.AddDays(5), JobId: db.JobId(ctx.Tenant.TenantId, "Customer Success VP")));
             var lastDay = DateOnly.FromDateTime(Today.AddDays(15));
             var service = Service(db, ctx);
 
@@ -229,7 +230,7 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
         {
             var hire = await new HireEmployeeCommandHandler(db, ctx.Tenant, new EmployeeNumberAllocatorService(db, ctx.Tenant), ctx.Mutation, ctx.Organization).Handle(
                 new HireEmployeeCommand(new HireEmployeeRequest("Skander", "Mejri", null, "skander.mejri@example.test", null, EmployeeNumberMode.Generated, null,
-                    Today.AddDays(10), "Full-time", ctx.AiId, "Product Designer", null, ctx.AminaId), Actor), default);
+                    Today.AddDays(10), db.EmploymentType(ctx.Tenant.TenantId, "Full-time").Id, ctx.AiId, db.JobId(ctx.Tenant.TenantId, "Product Designer"), null, ctx.AminaId), Actor), default);
             Assert.True(hire.IsSuccess, hire.IsFailure ? hire.Error.Message : null);
             var upcoming = (await new UpcomingWorkforceChangesQueryHandler(db, new WorkforceChangeReader(db)).Handle(
                 new UpcomingWorkforceChangesQuery(null), default)).Value;
@@ -262,11 +263,11 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
                 new EndEmploymentChangeCommand(ctx.YoussefKey, new EndEmploymentChangeRequest(Today), Actor), default);
             Assert.True(left.IsSuccess, left.IsFailure ? left.Error.Message : null);
             var rehire = await new JoinChangeCommandHandler(db, service, new WorkforceChangeReader(db)).Handle(
-                new JoinChangeCommand(ctx.YoussefKey, new JoinChangeRequest(Today.AddDays(20), ctx.CustomerSuccessId, "Customer Growth Director", null, ctx.AminaId), Actor), default);
+                new JoinChangeCommand(ctx.YoussefKey, new JoinChangeRequest(Today.AddDays(20), ctx.CustomerSuccessId, db.JobId(ctx.Tenant.TenantId, "Customer Growth Director"), null, ctx.AminaId), Actor), default);
             Assert.True(rehire.IsSuccess, rehire.IsFailure ? rehire.Error.Message : null);
             Assert.Equal(PeopleEmploymentState.Active, (await ProfileAsync(db, ctx, ctx.YoussefKey, Today.AddDays(20))).Employment.State);
             Assert.Equal("Change.BeforeScheduled", (await new JoinChangeCommandHandler(db, service, new WorkforceChangeReader(db)).Handle(
-                new JoinChangeCommand(ctx.YoussefKey, new JoinChangeRequest(Today.AddDays(1), ctx.CustomerSuccessId, "Again"), Actor), default)).Error.Code);
+                new JoinChangeCommand(ctx.YoussefKey, new JoinChangeRequest(Today.AddDays(1), ctx.CustomerSuccessId, db.JobId(ctx.Tenant.TenantId, "Again")), Actor), default)).Error.Code);
         });
 
     [RelationalDatabaseFact]
@@ -277,7 +278,7 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
             var handler = new EditWorkforceChangeCommandHandler(db, Service(db, ctx), new WorkforceChangeReader(db));
 
             var failed = await handler.Handle(new EditWorkforceChangeCommand(
-                original.Id, new EditChangeRequest(Job: new JobChangeRequest(Today.AddDays(-3), JobTitle: "Past")), Actor, true), default);
+                original.Id, new EditChangeRequest(Job: new JobChangeRequest(Today.AddDays(-3), JobId: db.JobId(ctx.Tenant.TenantId, "Past"))), Actor, true), default);
             Assert.Equal("Change.PastDate", failed.Error.Code);
             db.ChangeTracker.Clear();
             Assert.False((await db.WorkforceChanges.SingleAsync(item => item.Id == original.Id)).IsCancelled);
@@ -287,7 +288,7 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
                 original.Id, new EditChangeRequest(End: new EndEmploymentChangeRequest(Today.AddDays(40))), Actor, true), default)).Error.Code);
 
             var edited = await handler.Handle(new EditWorkforceChangeCommand(
-                original.Id, new EditChangeRequest(Job: new JobChangeRequest(Today.AddDays(35), JobTitle: "Principal Consultant")), Actor, true), default);
+                original.Id, new EditChangeRequest(Job: new JobChangeRequest(Today.AddDays(35), JobId: db.JobId(ctx.Tenant.TenantId, "Principal Consultant"))), Actor, true), default);
             Assert.True(edited.IsSuccess, edited.IsFailure ? edited.Error.Message : null);
             db.ChangeTracker.Clear();
             Assert.True((await db.WorkforceChanges.SingleAsync(item => item.Id == original.Id)).IsCancelled);
@@ -300,7 +301,7 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
     public Task History_and_coming_changes_stay_inside_a_managers_branch()
         => WithDatabaseAsync(async (db, ctx, _) =>
         {
-            await JobAsync(db, ctx, ctx.KarimKey, new JobChangeRequest(Today.AddDays(30), JobTitle: "Senior Consultant"));
+            await JobAsync(db, ctx, ctx.KarimKey, new JobChangeRequest(Today.AddDays(30), JobId: db.JobId(ctx.Tenant.TenantId, "Senior Consultant")));
             var reader = new WorkforceChangeReader(db);
             Assert.Single((await new UpcomingWorkforceChangesQueryHandler(db, reader).Handle(new UpcomingWorkforceChangesQuery(ctx.AminaId), default)).Value);
             Assert.Empty((await new UpcomingWorkforceChangesQueryHandler(db, reader).Handle(new UpcomingWorkforceChangesQuery(ctx.YoussefId), default)).Value);
@@ -459,7 +460,7 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
         {
             var result = await new AddExistingEmployeeCommandHandler(db, tenant, new EmployeeNumberAllocatorService(db, tenant), mutation, organization).Handle(
                 new AddExistingEmployeeCommand(new AddExistingEmployeeRequest(
-                    first, last, null, null, null, EmployeeNumberMode.Generated, null, from, from, "Full-time", unit, title, "Tunis", manager), Actor),
+                    first, last, null, null, null, EmployeeNumberMode.Generated, null, from, from, db.EmploymentType(tenant.TenantId, "Full-time").Id, unit, db.JobId(tenant.TenantId, title), db.PlaceId(tenant.TenantId, "Tunis"), manager), Actor),
                 default);
             if (result.IsFailure) throw new InvalidOperationException(result.Error.Message);
             return (await db.Employees.Where(e => e.StableEmployeeKey == result.Value.EmployeeKey).Select(e => e.Id).SingleAsync(), result.Value.EmployeeKey);

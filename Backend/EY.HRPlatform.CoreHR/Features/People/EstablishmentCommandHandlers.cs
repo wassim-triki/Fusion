@@ -65,23 +65,23 @@ internal sealed record EstablishmentInput(
     string? ManualEmployeeNumber,
     DateTime EmploymentStart,
     DateTime WorkEffectiveFrom,
-    string? EmploymentType,
+    Guid? EmploymentTypeId,
     Guid OrgUnitId,
-    string JobTitle,
-    string? Location,
+    Guid JobId,
+    Guid? PlaceId,
     Guid? ManagerEmployeeId,
     WorkforceAuditAction EstablishmentAction)
 {
     public static EstablishmentInput FromHire(HireEmployeeRequest request) => new(
         request.FirstName, request.LastName, request.PreferredName, request.WorkEmail, request.Phone,
         request.EmployeeNumberMode, request.EmployeeNumber, request.StartDate, request.StartDate,
-        request.EmploymentType, request.OrgUnitId, request.JobTitle, request.Location,
+        request.EmploymentTypeId, request.OrgUnitId, request.JobId, request.PlaceId,
         request.PrimaryManagerEmployeeId, WorkforceAuditAction.Hire);
 
     public static EstablishmentInput FromAddExisting(AddExistingEmployeeRequest request) => new(
         request.FirstName, request.LastName, request.PreferredName, request.WorkEmail, request.Phone,
         request.EmployeeNumberMode, request.EmployeeNumber, request.EmploymentStart, request.WorkDetailsEffectiveFrom,
-        request.EmploymentType, request.OrgUnitId, request.JobTitle, request.Location,
+        request.EmploymentTypeId, request.OrgUnitId, request.JobId, request.PlaceId,
         request.PrimaryManagerEmployeeId, WorkforceAuditAction.Establish);
 }
 
@@ -151,7 +151,7 @@ internal static class EstablishmentOrchestrator
 
             var employmentResult = await mutationService.StartEmploymentAsync(
                 employee.Id,
-                new StartEmploymentInput(employmentStart, input.EmploymentType, WorkforceSourceType.Manual),
+                new StartEmploymentInput(employmentStart, input.EmploymentTypeId, WorkforceSourceType.Manual),
                 actor,
                 cancellationToken);
             if (employmentResult.IsFailure)
@@ -161,8 +161,8 @@ internal static class EstablishmentOrchestrator
                 employee.Id,
                 new ChangeWorkAssignmentInput(
                     input.OrgUnitId,
-                    input.JobTitle,
-                    input.Location,
+                    input.JobId,
+                    input.PlaceId,
                     workEffectiveFrom,
                     WorkforceSourceType.Manual),
                 actor,
@@ -213,8 +213,7 @@ internal static class EstablishmentOrchestrator
                     ? Changes.WorkforceChangeService.Ref(await dbContext.Employees.FirstAsync(item => item.Id == managerId, cancellationToken))
                     : null;
                 var details = Changes.WorkforceChangeService.JoinDetails(
-                    manager, input.OrgUnitId, orgUnit.Name, assignmentResult.Value.JobTitle, assignmentResult.Value.WorkLocation,
-                    input.EmploymentType, isHire: true);
+                    manager, input.OrgUnitId, orgUnit.Name, assignmentResult.Value, employmentResult.Value, isHire: true);
                 var change = Changes.WorkforceChangeRecorder.Record(
                     dbContext, tenantContext.TenantId, employee.Id, WorkforceChangeKind.Join, DateOnly.FromDateTime(employmentStart), null,
                     details, actor);
@@ -266,8 +265,8 @@ internal static class EstablishmentOrchestrator
             return Error.Validation("Employee.NameRequired", "First name and last name are required.");
         if (input.OrgUnitId == Guid.Empty)
             return Error.Validation("WorkAssignment.OrgUnitRequired", "Organization is required.");
-        if (string.IsNullOrWhiteSpace(input.JobTitle))
-            return Error.Validation("WorkAssignment.JobTitleRequired", "Job title is required.");
+        if (input.JobId == Guid.Empty)
+            return Error.Validation("WorkAssignment.JobRequired", "Pick a job.");
         if (input.NumberMode == EmployeeNumberMode.Manual && string.IsNullOrWhiteSpace(input.ManualEmployeeNumber))
             return Error.Validation("EmployeeNumber.Required", "Enter an Employee Number or choose Generate automatically.");
         if (input.NumberMode == EmployeeNumberMode.Generated && !string.IsNullOrWhiteSpace(input.ManualEmployeeNumber))

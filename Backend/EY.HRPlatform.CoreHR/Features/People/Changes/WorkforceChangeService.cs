@@ -39,7 +39,7 @@ public sealed class WorkforceChangeService(
     {
         var date = DateOnly.FromDateTime(request.EffectiveDate);
         var at = At(date);
-        var touchesWork = request.OrgUnitId is not null || request.JobTitle is not null || request.Location is not null;
+        var touchesWork = request.OrgUnitId is not null || request.JobId is not null || request.PlaceId is not null || request.RemovePlace;
         if (touchesWork && !canManageEmployees)
             return Forbidden<WorkforceChange>();
 
@@ -53,14 +53,13 @@ public sealed class WorkforceChangeService(
         var currentLine = await ActivePrimaryLineAsync(subject.Id, at, cancellationToken);
 
         var unitTo = request.OrgUnitId ?? assignment.OrgUnitId;
-        var titleTo = request.JobTitle is null ? assignment.JobTitle : request.JobTitle.Trim();
-        if (string.IsNullOrWhiteSpace(titleTo))
-            return Fail<WorkforceChange>("WorkAssignment.JobTitleRequired", "Title is required.");
-        var locationTo = request.Location is null ? assignment.WorkLocation
-            : string.IsNullOrWhiteSpace(request.Location) ? null : request.Location.Trim();
+        var jobTo = request.JobId ?? assignment.JobId;
+        var placeTo = request.RemovePlace ? null : request.PlaceId ?? assignment.PlaceId;
         var unitChanged = unitTo != assignment.OrgUnitId;
-        var titleChanged = !string.Equals(titleTo, assignment.JobTitle, StringComparison.Ordinal);
-        var locationChanged = !string.Equals(locationTo, assignment.WorkLocation, StringComparison.Ordinal);
+        var titleChanged = jobTo != assignment.JobId;
+        var locationChanged = placeTo != assignment.PlaceId;
+        string? titleTo = null;
+        string? locationTo = null;
 
         Guid? managerTo = request.RemoveManager ? null : request.ManagerEmployeeId ?? currentLine?.ManagerEmployeeId;
         var managerChanged = managerTo != currentLine?.ManagerEmployeeId;
@@ -73,9 +72,11 @@ public sealed class WorkforceChangeService(
         if (unitChanged || titleChanged || locationChanged)
         {
             var work = await mutations.ChangeWorkAssignmentAsync(
-                subject.Id, new ChangeWorkAssignmentInput(unitTo, titleTo, locationTo, at, WorkforceSourceType.Manual), actor, cancellationToken);
+                subject.Id, new ChangeWorkAssignmentInput(unitTo, jobTo, placeTo, at, WorkforceSourceType.Manual), actor, cancellationToken);
             if (work.IsFailure)
                 return Result.Failure<WorkforceChange>(work.Error);
+            titleTo = work.Value.JobTitle;
+            locationTo = work.Value.WorkLocation;
         }
 
         var dottedLinesEnded = new List<EndedDottedLine>();
@@ -156,7 +157,11 @@ public sealed class WorkforceChangeService(
             TeamOutcome: teamOutcome,
             TeamCount: team.Count,
             TeamManager: teamManager,
-            DottedLinesEnded: dottedLinesEnded);
+            DottedLinesEnded: dottedLinesEnded,
+            JobFromId: assignment.JobId,
+            JobToId: titleChanged ? jobTo : null,
+            PlaceFromId: assignment.PlaceId,
+            PlaceToId: locationChanged ? placeTo : null);
 
         var change = WorkforceChangeRecorder.Record(
             dbContext, tenantContext.TenantId, subject.Id, WorkforceChangeKind.JobChange, date, request.Note, details, actor);
@@ -295,12 +300,11 @@ public sealed class WorkforceChangeService(
             return Fail<WorkforceChange>("WorkAssignment.OrgUnitRequired", "Unit is required.");
 
         var employment = await mutations.StartEmploymentAsync(
-            subject.Id, new StartEmploymentInput(at, request.EmploymentType, WorkforceSourceType.Manual), actor, cancellationToken);
+            subject.Id, new StartEmploymentInput(at, request.EmploymentTypeId, WorkforceSourceType.Manual), actor, cancellationToken);
         if (employment.IsFailure)
             return Result.Failure<WorkforceChange>(employment.Error);
-        var location = string.IsNullOrWhiteSpace(request.Location) ? null : request.Location.Trim();
         var work = await mutations.ChangeWorkAssignmentAsync(
-            subject.Id, new ChangeWorkAssignmentInput(request.OrgUnitId, request.JobTitle?.Trim() ?? "", location, at, WorkforceSourceType.Manual), actor, cancellationToken);
+            subject.Id, new ChangeWorkAssignmentInput(request.OrgUnitId, request.JobId, request.PlaceId, at, WorkforceSourceType.Manual), actor, cancellationToken);
         if (work.IsFailure)
             return Result.Failure<WorkforceChange>(work.Error);
         if (request.ManagerEmployeeId is { } manager)
@@ -317,7 +321,7 @@ public sealed class WorkforceChangeService(
         var details = JoinDetails(
             request.ManagerEmployeeId is { } to ? await PersonAsync(to, cancellationToken) : null,
             request.OrgUnitId, await UnitNameAsync(request.OrgUnitId, date, cancellationToken),
-            work.Value.JobTitle, location, request.EmploymentType, isHire: false);
+            work.Value, employment.Value, isHire: false);
         var change = WorkforceChangeRecorder.Record(
             dbContext, tenantContext.TenantId, subject.Id, WorkforceChangeKind.Join, date, request.Note, details, actor);
         await notifications.StageAsync(change, details, cancellationToken);
@@ -325,19 +329,22 @@ public sealed class WorkforceChangeService(
     }
 
     internal static WorkforceChangeDetails JoinDetails(
-        ChangePersonRef? manager, Guid unitId, string? unitName, string title, string? location, string? employmentType, bool isHire)
+        ChangePersonRef? manager, Guid unitId, string? unitName, WorkAssignment? work, Employment employment, bool isHire)
         => new(
             ManagerTo: manager,
             ManagerChanged: manager is not null,
             UnitToId: unitId,
             UnitTo: unitName,
-            TitleTo: title,
-            LocationTo: location,
+            TitleTo: work?.JobTitle ?? "",
+            LocationTo: work?.WorkLocation,
             UnitChanged: true,
             TitleChanged: true,
-            LocationChanged: location is not null,
+            LocationChanged: work?.WorkLocation is not null,
             IsHire: isHire,
-            EmploymentType: employmentType);
+            EmploymentType: employment.EmploymentType,
+            JobToId: work?.JobId,
+            PlaceToId: work?.PlaceId,
+            EmploymentTypeId: employment.EmploymentTypeId);
 
     // --- Cancel -----------------------------------------------------------------------------------
 

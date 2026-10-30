@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using System.Security.Claims;
 using EY.HRPlatform.CoreHR.Controllers;
 using EY.HRPlatform.CoreHR.Domain.Entities;
@@ -29,7 +30,8 @@ public sealed class OpenRoleTests
     private static readonly DateTime TodayAt = Today.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
     private const string Actor = "hr-1|Amira Khelifi";
 
-    private sealed record World(string Db, Dictionary<string, Guid> Ids, Dictionary<string, string> Keys, Guid Team, Guid Closed, Guid UnitB);
+    private sealed record World(string Db, Dictionary<string, Guid> Ids, Dictionary<string, string> Keys, Guid Team, Guid Closed, Guid UnitB,
+        Dictionary<string, Guid> Jobs);
 
     /// <summary>
     /// Tenant A: Sami (CEO) → Mariam → Aicha; Sami → Nour. Omar's last day was yesterday. Everyone works in Team;
@@ -64,8 +66,8 @@ public sealed class OpenRoleTests
         Employment Person(Guid tenant, string first, OrgUnit unit)
         {
             var employee = Employee.Create(tenant, first, "Test", $"{first.ToLowerInvariant()}@example.com", employeeNumber: $"E-{Guid.NewGuid():N}");
-            var employment = Employment.Start(tenant, employee.Id, TodayAt.AddYears(-2), "FullTime", WorkforceSourceType.Manual);
-            var assignment = WorkAssignment.Create(tenant, employment.Id, employee.Id, unit.Id, "Role", "Tunis", true, TodayAt.AddYears(-2), null, WorkforceSourceType.Manual);
+            var employment = Employment.Start(tenant, employee.Id, TodayAt.AddYears(-2), null, WorkforceSourceType.Manual);
+            var assignment = WorkAssignment.Create(tenant, employment.Id, employee.Id, unit.Id, TestCatalog.Job(tenant, "Role"), TestCatalog.Place(tenant, "Tunis"), true, TodayAt.AddYears(-2), null, WorkforceSourceType.Manual);
             seed.Employees.Add(employee);
             seed.Employments.Add(employment);
             seed.WorkAssignments.Add(assignment);
@@ -85,8 +87,14 @@ public sealed class OpenRoleTests
         Reports("Mariam", "Sami");
         Reports("Aicha", "Mariam");
         Reports("Nour", "Sami");
+        var jobs = new[] { "Data Engineer", "Recruiter", "Senior Recruiter" }
+            .ToDictionary(title => title, title => seed.JobId(TenantA, title));
+        var retired = seed.Job(TenantA, "Old Title");
+        retired.Retire("test");
+        jobs["Old Title"] = retired.Id;
+        jobs["Taken"] = seed.JobId(TenantB, "Taken");
         await seed.SaveChangesAsync();
-        return new World(db, ids, keys, team.Id, closed.Id, unitB.Id);
+        return new World(db, ids, keys, team.Id, closed.Id, unitB.Id, jobs);
     }
 
     private static Task<Result<OrgChartOpenRoleDto>> CreateAsync(World world, OpenRoleRequest request, Guid? tenant = null)
@@ -97,7 +105,8 @@ public sealed class OpenRoleTests
     }
 
     private static Task<Result<OrgChartOpenRoleDto>> UpdateAsync(World world, Guid id, OpenRoleRequest request, Guid? tenant = null)
-        => new UpdateOpenRoleCommandHandler(TestDbContextFactory.Create(TestTenantContext.WithTenant(tenant ?? TenantA), world.Db))
+        => new UpdateOpenRoleCommandHandler(TestDbContextFactory.Create(TestTenantContext.WithTenant(tenant ?? TenantA), world.Db),
+                TestTenantContext.WithTenant(tenant ?? TenantA))
             .Handle(new UpdateOpenRoleCommand(id, request, Actor), default);
 
     private static async Task<OrgChartDto> ChartAsync(World world, string scope = OrgChartScopes.Tenant, Guid? viewer = null, bool hr = false, DateOnly? asOf = null, Guid? tenant = null)
@@ -111,13 +120,13 @@ public sealed class OpenRoleTests
 
     private static OpenRoleRequest Role(World world, string manager = "Mariam", string title = "Data Engineer", Guid? unit = null,
         DateOnly? start = null, OpenRoleStatus status = OpenRoleStatus.Open)
-        => new(title, world.Keys[manager].ToLowerInvariant(), unit ?? world.Team, start, status);
+        => new(world.Jobs.GetValueOrDefault(title, Guid.NewGuid()), world.Keys[manager].ToLowerInvariant(), unit ?? world.Team, start, status);
 
     [Fact]
     public async Task HR_adds_a_role_under_a_manager_and_everyone_sees_it_in_that_line_from_today_on()
     {
         var world = await SeedAsync();
-        var created = await CreateAsync(world, Role(world, start: Today.AddDays(40)) with { JobTitle = "  Data Engineer " });
+        var created = await CreateAsync(world, Role(world, start: Today.AddDays(40)));
 
         Assert.True(created.IsSuccess);
         Assert.Equal(("Data Engineer", world.Keys["Mariam"], OpenRoleStatus.Open, Today.AddDays(40), "Product A"),
@@ -182,8 +191,8 @@ public sealed class OpenRoleTests
             Assert.Equal(code, result.Error.Code);
         }
 
-        await Refused(Role(world, title: "   "), "OpenRole.JobTitle");
-        await Refused(Role(world, title: new string('x', 201)), "OpenRole.JobTitle");
+        await Refused(Role(world, title: "Unknown"), "Job.NotFound");
+        await Refused(Role(world, title: "Old Title"), "Job.Retired");
         await Refused(Role(world) with { ManagerKey = "NOPE-1" }, "OpenRole.Manager");
         await Refused(Role(world, "Omar"), "OpenRole.Manager");
         await Refused(Role(world, unit: world.Closed), "OpenRole.Unit");
@@ -203,7 +212,9 @@ public sealed class OpenRoleTests
         Assert.Equal("OpenRole.Unit", (await CreateAsync(world, Role(world, unit: world.UnitB))).Error.Code);
 
         var role = (await CreateAsync(world, Role(world))).Value;
-        var fromB = await UpdateAsync(world, role.Id, new OpenRoleRequest("Taken", world.Keys["Zed"], world.UnitB), TenantB);
+        // Another tenant's job is refused as unknown.
+        Assert.Equal("Job.NotFound", (await CreateAsync(world, Role(world, title: "Taken"))).Error.Code);
+        var fromB = await UpdateAsync(world, role.Id, new OpenRoleRequest(world.Jobs["Taken"], world.Keys["Zed"], world.UnitB), TenantB);
         Assert.Equal(OpenRoleErrors.NotFoundCode, fromB.Error.Code);
         Assert.Empty((await ChartAsync(world, hr: true, tenant: TenantB)).OpenRoles);
         Assert.Equal("Data Engineer", Assert.Single((await ChartAsync(world, hr: true)).OpenRoles).JobTitle);
@@ -236,7 +247,7 @@ public sealed class OpenRoleTests
         }, sender);
     }
 
-    private static readonly OpenRoleRequest Body = new("Data Engineer", "EMP-1", Guid.NewGuid());
+    private static readonly OpenRoleRequest Body = new(Guid.NewGuid(), "EMP-1", Guid.NewGuid());
 
     [Fact]
     public async Task Only_people_admins_add_or_edit_open_roles()

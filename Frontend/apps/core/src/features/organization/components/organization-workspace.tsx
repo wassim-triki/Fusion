@@ -46,6 +46,7 @@ import {
 } from "@repo/ds";
 import { Segmented } from "@repo/ds/choice";
 import { PageHeader, PagePermissionNotice } from "@repo/ds/shell";
+import { OrganizationLenses } from "./organization-lenses";
 import {
   AlertTriangle,
   ArrowRight,
@@ -841,16 +842,7 @@ export default function OrganizationWorkspace() {
             ) : undefined
           }
         />
-        <div className="flex items-end justify-between border-b">
-          <nav
-            aria-label={t("lenses")}
-            className="flex items-center gap-6"
-          >
-            <button className="border-b-2 border-primary pb-2.5 text-sm font-semibold">
-              {t("structure")}
-            </button>
-          </nav>
-        </div>
+        <OrganizationLenses active="structure" />
         {readOnly ? (
           <div className="mt-3 flex items-center justify-between gap-3 rounded-control border bg-inlay px-3.5 py-1.5 text-sm">
             <span className="flex items-center gap-1.5">

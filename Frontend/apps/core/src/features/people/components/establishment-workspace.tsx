@@ -38,6 +38,7 @@ import {
   Pencil,
   Plus,
 } from "lucide-react";
+import { JobPicker, PlacePicker } from "@/features/catalog/components/catalog-pickers";
 import { useOrganizationHierarchy } from "@/features/organization/api/use-organization";
 import { OrganizationTree } from "@/features/organization/components/organization-tree";
 import { usePeopleEstablishmentMutations } from "../api/use-people";
@@ -57,8 +58,11 @@ type FormState = {
   startDate: string;
   workDate: string;
   orgUnitId: string;
+  jobId: string;
+  /** The picked job's and place's names, for the summary. */
   jobTitle: string;
-  location: string;
+  placeId: string;
+  placeName: string;
   managerMode: "None" | "Manager";
   managerEmployeeId: string;
 };
@@ -147,7 +151,7 @@ export default function EstablishmentWorkspace({ mode }: { mode: EstablishmentMo
   const [form, setForm] = useState<FormState>({
     firstName: "", lastName: "", preferredName: "", workEmail: "", phone: "",
     numberMode: "Generated", employeeNumber: "", startDate: isHire ? today() : "",
-    workDate: today(), orgUnitId: "", jobTitle: "", location: "",
+    workDate: today(), orgUnitId: "", jobId: "", jobTitle: "", placeId: "", placeName: "",
     managerMode: "None", managerEmployeeId: "",
   });
   const [errors, setErrors] = useState<Errors>({});
@@ -200,7 +204,7 @@ export default function EstablishmentWorkspace({ mode }: { mode: EstablishmentMo
     if (!isHire && form.startDate && form.workDate && form.workDate < form.startDate) next.workDate = t("errors.workBeforeEmployment");
     if (!isHire && form.startDate > today()) next.startDate = t("errors.futureStart");
     if (!form.orgUnitId) next.orgUnitId = t("errors.organization");
-    if (!form.jobTitle.trim()) next.jobTitle = t("errors.jobTitle");
+    if (!form.jobId) next.jobId = t("errors.jobTitle");
     if (form.managerMode === "Manager" && !form.managerEmployeeId) next.managerEmployeeId = t("errors.manager");
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -235,8 +239,8 @@ export default function EstablishmentWorkspace({ mode }: { mode: EstablishmentMo
         firstName: form.firstName.trim(), lastName: form.lastName.trim(), preferredName: form.preferredName.trim() || null,
         workEmail: form.workEmail.trim() || null, phone: form.phone.trim() || null,
         employeeNumberMode: form.numberMode, employeeNumber: form.numberMode === "Manual" ? form.employeeNumber.trim() : null,
-        orgUnitId: form.orgUnitId, jobTitle: form.jobTitle.trim(),
-        location: form.location.trim() || null, primaryManagerEmployeeId: form.managerMode === "Manager" ? form.managerEmployeeId : null,
+        orgUnitId: form.orgUnitId, jobId: form.jobId, placeId: form.placeId || null,
+        primaryManagerEmployeeId: form.managerMode === "Manager" ? form.managerEmployeeId : null,
       };
       const result = isHire
         ? await mutations.hire.mutateAsync({ ...common, startDate: form.startDate } satisfies HireEmployeeRequest)
@@ -287,9 +291,9 @@ export default function EstablishmentWorkspace({ mode }: { mode: EstablishmentMo
       <div className="border-t pt-4">
         <dt className="type-eyebrow text-muted-foreground">{t("summary.work")}</dt>
         <dd className="mt-1.5 space-y-1">
-          <p className="type-body font-medium">{form.jobTitle.trim() || <span className="font-normal text-muted-foreground">{t("summary.displayTitle")}</span>}</p>
+          <p className="type-body font-medium">{form.jobTitle || <span className="font-normal text-muted-foreground">{t("summary.displayTitle")}</span>}</p>
           {selectedOrg ? <OrgPath name={selectedOrg.name} path={selectedOrg.path} /> : <p className="type-meta text-muted-foreground">{t("summary.noOrganization")}</p>}
-          {form.location.trim() ? <p className="type-meta text-muted-foreground">{form.location.trim()}</p> : null}
+          {form.placeName ? <p className="type-meta text-muted-foreground">{form.placeName}</p> : null}
         </dd>
       </div>
       <div className="border-t pt-4">
@@ -392,8 +396,8 @@ export default function EstablishmentWorkspace({ mode }: { mode: EstablishmentMo
             <FormSection title={isHire ? t("section.work") : t("section.currentWork")}>
               <Field data-invalid={Boolean(errors.orgUnitId)}><FieldLabel>{t("fields.organization")}</FieldLabel><OrganizationPicker roots={hierarchy.data?.roots ?? []} value={form.orgUnitId} onChange={(value) => set("orgUnitId", value)} invalid={Boolean(errors.orgUnitId)} /><FieldError>{errors.orgUnitId}</FieldError></Field>
               <div className="grid gap-5 sm:grid-cols-2">
-                <Field data-invalid={Boolean(errors.jobTitle)}><FieldLabel htmlFor="jobTitle">{t("fields.displayTitle")}</FieldLabel><Input id="jobTitle" value={form.jobTitle} onChange={(event) => set("jobTitle", event.target.value)} aria-invalid={Boolean(errors.jobTitle)} placeholder={t("fields.titlePlaceholder")} /><FieldError>{errors.jobTitle}</FieldError></Field>
-                <Field><FieldLabel htmlFor="location">{t("fields.location")} <span className="font-normal text-muted-foreground">{t("fields.optional")}</span></FieldLabel><Input id="location" value={form.location} onChange={(event) => set("location", event.target.value)} placeholder={t("fields.locationPlaceholder")} /></Field>
+                <Field data-invalid={Boolean(errors.jobId)}><FieldLabel htmlFor="jobId">{t("fields.displayTitle")}</FieldLabel><JobPicker id="jobId" value={form.jobId || null} onChange={(job) => setForm((current) => ({ ...current, jobId: job.id, jobTitle: job.title }))} invalid={Boolean(errors.jobId)} /><FieldError>{errors.jobId}</FieldError></Field>
+                <Field><FieldLabel htmlFor="placeId">{t("fields.location")} <span className="font-normal text-muted-foreground">{t("fields.optional")}</span></FieldLabel><PlacePicker id="placeId" value={form.placeId || null} onChange={(place) => setForm((current) => ({ ...current, placeId: place?.id ?? "", placeName: place?.name ?? "" }))} /></Field>
               </div>
             </FormSection>
 

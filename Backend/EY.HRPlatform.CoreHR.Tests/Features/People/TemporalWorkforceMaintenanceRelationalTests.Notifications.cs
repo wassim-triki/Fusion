@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using System.Security.Claims;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Features.Employees.Services;
@@ -120,7 +121,7 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
             Assert.False((await feed.PreferencesAsync(ctx.AminaId, false, default)).Groups[0].Email);
 
             // A person who turned email off keeps the bell; the email is skipped.
-            await JobAsync(db, ctx, ctx.KarimKey, new JobChangeRequest(At(DateOnly.FromDateTime(Today).AddDays(2)), JobTitle: "Principal Consultant"));
+            await JobAsync(db, ctx, ctx.KarimKey, new JobChangeRequest(At(DateOnly.FromDateTime(Today).AddDays(2)), JobId: db.JobId(ctx.Tenant.TenantId, "Principal Consultant")));
             var notification = await db.Notifications.SingleAsync(item => item.RecipientEmployeeId == ctx.KarimId);
             var tenant = new TenantContext();
             tenant.SetTenant(ctx.Tenant.TenantId);
@@ -175,14 +176,14 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
 
             // A refused edit tells nobody anything.
             var refused = await handler.Handle(new EditWorkforceChangeCommand(
-                original.Id, new EditChangeRequest(Job: new JobChangeRequest(Today.AddDays(-3), JobTitle: "Past")), Actor, true), default);
+                original.Id, new EditChangeRequest(Job: new JobChangeRequest(Today.AddDays(-3), JobId: db.JobId(ctx.Tenant.TenantId, "Past"))), Actor, true), default);
             Assert.Equal("Change.PastDate", refused.Error.Code);
             db.ChangeTracker.Clear();
             Assert.Equal(3, await db.Notifications.CountAsync());
 
             // Now only Karim's title changes, under Amina: Karim hears the new change, Youssef and Amina that the move is off.
             var edited = await handler.Handle(new EditWorkforceChangeCommand(
-                original.Id, new EditChangeRequest(Job: new JobChangeRequest(Today.AddDays(12), JobTitle: "Principal Consultant")), Actor, true), default);
+                original.Id, new EditChangeRequest(Job: new JobChangeRequest(Today.AddDays(12), JobId: db.JobId(ctx.Tenant.TenantId, "Principal Consultant"))), Actor, true), default);
             Assert.True(edited.IsSuccess, edited.IsFailure ? edited.Error.Message : null);
             db.ChangeTracker.Clear();
 
@@ -203,7 +204,7 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
             var hire = await new HireEmployeeCommandHandler(db, ctx.Tenant, new EmployeeNumberAllocatorService(db, ctx.Tenant), ctx.Mutation,
                 ctx.Organization, notifications: new CoreChangeNotifications(db)).Handle(
                 new HireEmployeeCommand(new HireEmployeeRequest("Skander", "Mejri", null, null, null, EmployeeNumberMode.Generated, null,
-                    At(start), "Full-time", ctx.AiId, "Product Designer", null, ctx.AminaId), Actor), default);
+                    At(start), db.EmploymentType(ctx.Tenant.TenantId, "Full-time").Id, ctx.AiId, db.JobId(ctx.Tenant.TenantId, "Product Designer"), null, ctx.AminaId), Actor), default);
             Assert.True(hire.IsSuccess, hire.IsFailure ? hire.Error.Message : null);
             var hireChange = await db.WorkforceChanges.AsNoTracking().SingleAsync();
             Assert.True((await CancelAsync(db, ctx, hireChange.Id)).IsSuccess);

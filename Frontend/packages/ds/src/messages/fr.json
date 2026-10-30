@@ -22,6 +22,7 @@
         "notifications": "Notifications",
         "company": "Entreprise",
         "employee-fields": "Champs collaborateur",
+        "lists": "Listes",
         "roles": "Rôles",
         "invitations": "Invitations",
         "change-history": "Historique des modifications",
@@ -31,7 +32,9 @@
         "reviews": "Évaluations",
         "planning": "Planification",
         "conversations": "Échanges",
-        "ai-and-data": "IA et données"
+        "ai-and-data": "IA et données",
+        "jobs": "Postes",
+        "places": "Lieux"
       },
       "changedBy": "Dernière modification par <b>{actor}</b> {when}",
       "setUp": "Configuré {when}",

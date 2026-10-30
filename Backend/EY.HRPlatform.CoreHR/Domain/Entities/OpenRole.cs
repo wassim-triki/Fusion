@@ -12,8 +12,8 @@ public enum OpenRoleStatus
 }
 
 /// <summary>
-/// A role Core HR plans in the structure before anyone holds it: its title, the manager it reports to and its
-/// unit. It shows on the org chart in that manager's line while it is open (or, for HR, on hold). Recruitment owns
+/// A role Core HR plans in the structure before anyone holds it: its job (from the catalogue), the manager it
+/// reports to, its unit and, optionally, its place. It shows on the org chart in that manager's line while it is open (or, for HR, on hold). Recruitment owns
 /// hiring for it and may link its requisitions to it later.
 /// </summary>
 public sealed class OpenRole : BaseEntity, ITenantEntity
@@ -23,7 +23,16 @@ public sealed class OpenRole : BaseEntity, ITenantEntity
     private OpenRole() { }
 
     public Guid TenantId { get; private set; }
+    public Guid JobId { get; private set; }
+
+    /// <summary>The job's title, kept in step by the catalogue like a work assignment's.</summary>
     public string JobTitle { get; private set; } = string.Empty;
+
+    public Guid? PlaceId { get; private set; }
+
+    /// <summary>The place's name, kept in step by the catalogue.</summary>
+    public string? PlaceName { get; private set; }
+
     public Guid ManagerEmployeeId { get; private set; }
     public Guid OrgUnitId { get; private set; }
 
@@ -37,7 +46,8 @@ public sealed class OpenRole : BaseEntity, ITenantEntity
 
     public static OpenRole Create(
         Guid tenantId,
-        string jobTitle,
+        Job job,
+        Place? place,
         Guid managerEmployeeId,
         Guid orgUnitId,
         DateOnly? targetStartDate,
@@ -50,12 +60,13 @@ public sealed class OpenRole : BaseEntity, ITenantEntity
             throw new ArgumentException("A new role is open or on hold.");
 
         var role = new OpenRole { TenantId = tenantId, Status = status, CreatedBy = actor };
-        role.Set(jobTitle, managerEmployeeId, orgUnitId, targetStartDate);
+        role.Set(job, place, managerEmployeeId, orgUnitId, targetStartDate);
         return role;
     }
 
     public void Update(
-        string jobTitle,
+        Job job,
+        Place? place,
         Guid managerEmployeeId,
         Guid orgUnitId,
         DateOnly? targetStartDate,
@@ -65,21 +76,40 @@ public sealed class OpenRole : BaseEntity, ITenantEntity
         if (!Enum.IsDefined(status))
             throw new ArgumentException("Unknown status.");
 
-        Set(jobTitle, managerEmployeeId, orgUnitId, targetStartDate);
+        Set(job, place, managerEmployeeId, orgUnitId, targetStartDate);
         Status = status;
         UpdatedAt = DateTime.UtcNow;
         UpdatedBy = actor;
     }
 
-    private void Set(string jobTitle, Guid managerEmployeeId, Guid orgUnitId, DateOnly? targetStartDate)
+    /// <summary>Points at <paramref name="job"/> with its current title (a rename, or a merge into it).</summary>
+    public void ReflectJob(Job job)
     {
-        var title = jobTitle?.Trim() ?? string.Empty;
-        if (title.Length == 0 || title.Length > MaxJobTitleLength)
-            throw new ArgumentException("Job title is required and at most 200 characters.");
+        if (job.TenantId != TenantId) throw new ArgumentException("The job must be one of the company's jobs.");
+        JobId = job.Id;
+        JobTitle = job.Title;
+    }
+
+    /// <summary>Points at <paramref name="place"/> with its current name.</summary>
+    public void ReflectPlace(Place place)
+    {
+        if (place.TenantId != TenantId) throw new ArgumentException("The place must be one of the company's places.");
+        PlaceId = place.Id;
+        PlaceName = place.Name;
+    }
+
+    private void Set(Job job, Place? place, Guid managerEmployeeId, Guid orgUnitId, DateOnly? targetStartDate)
+    {
+        ArgumentNullException.ThrowIfNull(job);
+        if (job.TenantId != TenantId || (place is not null && place.TenantId != TenantId))
+            throw new ArgumentException("The job and place must be the company's own.");
         if (managerEmployeeId == Guid.Empty || orgUnitId == Guid.Empty)
             throw new ArgumentException("Manager and unit are required.");
 
-        JobTitle = title;
+        JobId = job.Id;
+        JobTitle = job.Title;
+        PlaceId = place?.Id;
+        PlaceName = place?.Name;
         ManagerEmployeeId = managerEmployeeId;
         OrgUnitId = orgUnitId;
         TargetStartDate = targetStartDate;

@@ -6,6 +6,7 @@ import { ChangeHistorySettings } from "@/features/settings/sections/change-histo
 import { CompanySettings } from "@/features/settings/sections/company";
 import { EmployeeFieldsSettings } from "@/features/settings/sections/employee-fields";
 import { InvitationsSettings } from "@/features/settings/sections/invitations";
+import { ListsSettings } from "@/features/settings/sections/lists";
 import { NotificationsSettings } from "@/features/settings/sections/notifications";
 import { RolesSettings } from "@/features/settings/sections/roles";
 
@@ -21,6 +22,8 @@ export default function SettingsSectionPage({ params }: { params: Promise<{ sect
             return <CompanySettings section={section} />;
           case "employee-fields":
             return <EmployeeFieldsSettings section={section} />;
+          case "lists":
+            return <ListsSettings section={section} />;
           case "roles":
             return <RolesSettings section={section} />;
           case "invitations":

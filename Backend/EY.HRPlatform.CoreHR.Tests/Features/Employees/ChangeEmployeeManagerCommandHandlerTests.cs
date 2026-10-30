@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Features.Employees.Commands.ChangeEmployeeManager;
@@ -73,9 +74,9 @@ public class ChangeEmployeeManagerCommandHandlerTests
         CoreHRDbContext seed, OrgUnit orgUnit, string first, string last, string email)
     {
         var employee = Employee.Create(TenantId, first, last, email, Hire, employeeNumber: TestEmployeeNumbers.Next());
-        var employment = Employment.Start(TenantId, employee.Id, Hire, "FullTime", WorkforceSourceType.Manual);
+        var employment = Employment.Start(TenantId, employee.Id, Hire, null, WorkforceSourceType.Manual);
         var assignment = WorkAssignment.Create(
-            TenantId, employment.Id, employee.Id, orgUnit.Id, "Engineer", "HQ", true, Hire, null, WorkforceSourceType.Manual);
+            TenantId, employment.Id, employee.Id, orgUnit.Id, TestCatalog.Job(TenantId, "Engineer"), TestCatalog.Place(TenantId, "HQ"), true, Hire, null, WorkforceSourceType.Manual);
         seed.AddRange(employee, employment, assignment);
         return (employee, employment, assignment);
     }

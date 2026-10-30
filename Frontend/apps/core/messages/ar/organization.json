@@ -294,5 +294,10 @@
   "accessible": {
     "under": "{name}، {type}، الرمز {code}، تحت {path}",
     "root": "{name}، {type}، الرمز {code}، جذر الهيكل التنظيمي"
+  },
+  "lens": {
+    "structure": "الهيكل",
+    "jobs": "الوظائف",
+    "places": "أماكن العمل"
   }
 }

@@ -12,10 +12,10 @@ public sealed record CreateEmployeeCommand(
     string LastName,
     string? Email,
     DateTime HireDate,
-    string? JobTitle = null,
+    Guid? JobId = null,
     Guid? ManagerId = null,
     Guid? OrgUnitId = null,
     string? EmployeeNumber = null,
     string? Phone = null,
-    string? WorkLocation = null,
-    string? EmploymentType = null) : ICommand<Result<EmployeeDetailsDto>>;
+    Guid? PlaceId = null,
+    Guid? EmploymentTypeId = null) : ICommand<Result<EmployeeDetailsDto>>;

@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Features.Employees.Queries.GetEmployeeReportingLines;
@@ -35,17 +36,17 @@ public class GetEmployeeReportingLinesQueryHandlerTests
             var reportTwo = Employee.Create(TenantId, "Jordan", "Ray", "jordan.ray@example.com", employeeNumber: "TEST-REPORT-2");
             var indirectReport = Employee.Create(TenantId, "Priya", "Singh", "priya.singh@example.com", employeeNumber: "TEST-INDIRECT");
 
-            var executiveEmployment = Employment.Start(TenantId, executive.Id, effectiveFrom.AddMonths(-3), "FullTime", WorkforceSourceType.Manual);
-            var managerEmployment = Employment.Start(TenantId, manager.Id, effectiveFrom.AddMonths(-2), "FullTime", WorkforceSourceType.Manual);
-            var reportOneEmployment = Employment.Start(TenantId, reportOne.Id, effectiveFrom.AddMonths(-1), "FullTime", WorkforceSourceType.Manual);
-            var reportTwoEmployment = Employment.Start(TenantId, reportTwo.Id, effectiveFrom.AddMonths(-1), "FullTime", WorkforceSourceType.Manual);
-            var indirectEmployment = Employment.Start(TenantId, indirectReport.Id, effectiveFrom, "FullTime", WorkforceSourceType.Manual);
+            var executiveEmployment = Employment.Start(TenantId, executive.Id, effectiveFrom.AddMonths(-3), null, WorkforceSourceType.Manual);
+            var managerEmployment = Employment.Start(TenantId, manager.Id, effectiveFrom.AddMonths(-2), null, WorkforceSourceType.Manual);
+            var reportOneEmployment = Employment.Start(TenantId, reportOne.Id, effectiveFrom.AddMonths(-1), null, WorkforceSourceType.Manual);
+            var reportTwoEmployment = Employment.Start(TenantId, reportTwo.Id, effectiveFrom.AddMonths(-1), null, WorkforceSourceType.Manual);
+            var indirectEmployment = Employment.Start(TenantId, indirectReport.Id, effectiveFrom, null, WorkforceSourceType.Manual);
 
-            var executiveAssignment = WorkAssignment.Create(TenantId, executiveEmployment.Id, executive.Id, orgUnit.Id, "Executive", null, true, executiveEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
-            var managerAssignment = WorkAssignment.Create(TenantId, managerEmployment.Id, manager.Id, orgUnit.Id, "Manager", null, true, managerEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
-            var reportOneAssignment = WorkAssignment.Create(TenantId, reportOneEmployment.Id, reportOne.Id, orgUnit.Id, "Engineer", null, true, reportOneEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
-            var reportTwoAssignment = WorkAssignment.Create(TenantId, reportTwoEmployment.Id, reportTwo.Id, orgUnit.Id, "Engineer", null, true, reportTwoEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
-            var indirectAssignment = WorkAssignment.Create(TenantId, indirectEmployment.Id, indirectReport.Id, orgUnit.Id, "Analyst", null, true, indirectEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
+            var executiveAssignment = WorkAssignment.Create(TenantId, executiveEmployment.Id, executive.Id, orgUnit.Id, TestCatalog.Job(TenantId, "Executive"), TestCatalog.Place(TenantId, null), true, executiveEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
+            var managerAssignment = WorkAssignment.Create(TenantId, managerEmployment.Id, manager.Id, orgUnit.Id, TestCatalog.Job(TenantId, "Manager"), TestCatalog.Place(TenantId, null), true, managerEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
+            var reportOneAssignment = WorkAssignment.Create(TenantId, reportOneEmployment.Id, reportOne.Id, orgUnit.Id, TestCatalog.Job(TenantId, "Engineer"), TestCatalog.Place(TenantId, null), true, reportOneEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
+            var reportTwoAssignment = WorkAssignment.Create(TenantId, reportTwoEmployment.Id, reportTwo.Id, orgUnit.Id, TestCatalog.Job(TenantId, "Engineer"), TestCatalog.Place(TenantId, null), true, reportTwoEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
+            var indirectAssignment = WorkAssignment.Create(TenantId, indirectEmployment.Id, indirectReport.Id, orgUnit.Id, TestCatalog.Job(TenantId, "Analyst"), TestCatalog.Place(TenantId, null), true, indirectEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
 
             var managerToExecutive = ManagerRelationship.Create(TenantId, manager.Id, executive.Id, managerAssignment.Id, executiveAssignment.Id, ReportingRelationshipType.PrimaryManager, managerEmployment.EffectiveFrom, WorkforceSourceType.Manual);
             var reportOneToManager = ManagerRelationship.Create(TenantId, reportOne.Id, manager.Id, reportOneAssignment.Id, managerAssignment.Id, ReportingRelationshipType.PrimaryManager, reportOneEmployment.EffectiveFrom, WorkforceSourceType.Manual);

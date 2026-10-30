@@ -1,5 +1,5 @@
-using System.ComponentModel.DataAnnotations;
 using EY.HRPlatform.CoreHR.Domain.Entities;
+using EY.HRPlatform.CoreHR.Features.Catalog;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence;
 using EY.HRPlatform.SharedKernel.CQRS;
 using EY.HRPlatform.SharedKernel.Multitenancy;
@@ -11,15 +11,17 @@ namespace EY.HRPlatform.CoreHR.Features.OrgChart;
 // --- Contracts ------------------------------------------------------------------------------------
 
 /// <summary>
-/// An open role in a manager's line. A new role starts Open or On hold; Filled and Closed take it off the chart.
-/// <paramref name="TargetStartDate"/> may be left empty; when set on a new role it can't be in the past.
+/// An open role in a manager's line: a job from the catalogue and, optionally, a place. A new role starts Open or
+/// On hold; Filled and Closed take it off the chart. <paramref name="TargetStartDate"/> may be left empty; when set
+/// on a new role it can't be in the past.
 /// </summary>
 public sealed record OpenRoleRequest(
-    [MaxLength(OpenRole.MaxJobTitleLength)] string JobTitle,
+    Guid JobId,
     string ManagerKey,
     Guid OrgUnitId,
     DateOnly? TargetStartDate = null,
-    OpenRoleStatus Status = OpenRoleStatus.Open);
+    OpenRoleStatus Status = OpenRoleStatus.Open,
+    Guid? PlaceId = null);
 
 /// <summary>An open role as the chart draws it: a dashed Hiring card under <paramref name="ManagerKey"/>.</summary>
 public sealed record OrgChartOpenRoleDto(
@@ -28,7 +30,14 @@ public sealed record OrgChartOpenRoleDto(
     string ManagerKey,
     OrgChartUnitDto? Unit,
     DateOnly? TargetStartDate,
-    OpenRoleStatus Status);
+    OpenRoleStatus Status,
+    Guid? JobId = null,
+    Guid? PlaceId = null,
+    string? PlaceName = null)
+{
+    public static OrgChartOpenRoleDto From(OpenRole role, string managerKey, OrgChartUnitDto? unit)
+        => new(role.Id, role.JobTitle, managerKey, unit, role.TargetStartDate, role.Status, role.JobId, role.PlaceId, role.PlaceName);
+}
 
 public sealed record CreateOpenRoleCommand(OpenRoleRequest Request, string Actor) : ICommand<Result<OrgChartOpenRoleDto>>;
 
@@ -56,8 +65,15 @@ public sealed class CreateOpenRoleCommandHandler(CoreHRDbContext dbContext, ITen
         var placement = await OpenRoleSupport.ResolveAsync(dbContext, request, today, cancellationToken);
         if (placement.IsFailure)
             return Result.Failure<OrgChartOpenRoleDto>(placement.Error);
+        var catalog = new CatalogReferences(dbContext, tenantContext);
+        var job = await catalog.JobAsync(request.JobId, null, cancellationToken);
+        if (job.IsFailure)
+            return Result.Failure<OrgChartOpenRoleDto>(job.Error);
+        var place = await catalog.PlaceAsync(request.PlaceId, null, cancellationToken);
+        if (place.IsFailure)
+            return Result.Failure<OrgChartOpenRoleDto>(place.Error);
 
-        var role = OpenRole.Create(tenantContext.TenantId, request.JobTitle, placement.Value.ManagerId, request.OrgUnitId,
+        var role = OpenRole.Create(tenantContext.TenantId, job.Value, place.Value, placement.Value.ManagerId, request.OrgUnitId,
             request.TargetStartDate, request.Status, command.Actor);
         dbContext.OpenRoles.Add(role);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -65,7 +81,7 @@ public sealed class CreateOpenRoleCommandHandler(CoreHRDbContext dbContext, ITen
     }
 }
 
-public sealed class UpdateOpenRoleCommandHandler(CoreHRDbContext dbContext)
+public sealed class UpdateOpenRoleCommandHandler(CoreHRDbContext dbContext, ITenantContext tenantContext)
     : ICommandHandler<UpdateOpenRoleCommand, Result<OrgChartOpenRoleDto>>
 {
     public async Task<Result<OrgChartOpenRoleDto>> Handle(UpdateOpenRoleCommand command, CancellationToken cancellationToken)
@@ -85,8 +101,15 @@ public sealed class UpdateOpenRoleCommandHandler(CoreHRDbContext dbContext)
         var placement = await OpenRoleSupport.ResolveAsync(dbContext, request, today, cancellationToken);
         if (placement.IsFailure)
             return Result.Failure<OrgChartOpenRoleDto>(placement.Error);
+        var catalog = new CatalogReferences(dbContext, tenantContext);
+        var job = await catalog.JobAsync(request.JobId, role.JobId, cancellationToken);
+        if (job.IsFailure)
+            return Result.Failure<OrgChartOpenRoleDto>(job.Error);
+        var place = await catalog.PlaceAsync(request.PlaceId, role.PlaceId, cancellationToken);
+        if (place.IsFailure)
+            return Result.Failure<OrgChartOpenRoleDto>(place.Error);
 
-        role.Update(request.JobTitle, placement.Value.ManagerId, request.OrgUnitId, request.TargetStartDate, request.Status, command.Actor);
+        role.Update(job.Value, place.Value, placement.Value.ManagerId, request.OrgUnitId, request.TargetStartDate, request.Status, command.Actor);
         await dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success(await OpenRoleSupport.ProjectAsync(dbContext, role, placement.Value.ManagerKey, today, cancellationToken));
     }
@@ -104,10 +127,6 @@ internal static class OpenRoleSupport
     public static async Task<Result<(Guid ManagerId, string ManagerKey)>> ResolveAsync(
         CoreHRDbContext dbContext, OpenRoleRequest request, DateOnly today, CancellationToken cancellationToken)
     {
-        var title = request.JobTitle?.Trim() ?? string.Empty;
-        if (title.Length == 0 || title.Length > OpenRole.MaxJobTitleLength)
-            return Fail("OpenRole.JobTitle", "Give the role a job title of up to 200 characters.");
-
         var key = (request.ManagerKey ?? string.Empty).Trim().ToUpperInvariant();
         var at = today.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
         var manager = await dbContext.Employees.AsNoTracking()
@@ -134,6 +153,6 @@ internal static class OpenRoleSupport
         CoreHRDbContext dbContext, OpenRole role, string managerKey, DateOnly today, CancellationToken cancellationToken)
     {
         var units = await OrgChartQueryHandler.LoadUnitsAsync(dbContext, today, cancellationToken);
-        return new OrgChartOpenRoleDto(role.Id, role.JobTitle, managerKey, units.GetValueOrDefault(role.OrgUnitId), role.TargetStartDate, role.Status);
+        return OrgChartOpenRoleDto.From(role, managerKey, units.GetValueOrDefault(role.OrgUnitId));
     }
 }

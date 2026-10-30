@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { QuickPicks } from "@repo/ds/choice";
-import { Button, DatePicker, Input, Skeleton, Textarea, cn } from "@repo/ds";
+import { Button, DatePicker, Skeleton, Textarea, cn } from "@repo/ds";
 import { StatusBadge } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
 import type {
@@ -15,6 +15,7 @@ import type {
 } from "@repo/api";
 import { MessageSquare, Target, X } from "lucide-react";
 import { useRefusal } from "@/i18n/words";
+import { JobPicker, PlacePicker } from "@/features/catalog/components/catalog-pickers";
 import { useOrganizationHierarchy } from "@/features/organization/api/use-organization";
 import { usePeopleProfile } from "../api/use-people";
 import { ManagerPicker, OrganizationPicker, flattenOrg } from "../components/workforce-pickers";
@@ -98,6 +99,7 @@ export function ChangePanel({
 // --- Job change -----------------------------------------------------------------------------------
 
 type Fact = "unit" | "title" | "location";
+type Picked = { id: string; name: string };
 
 function JobForm({
   person, editing, initialManagerKey, onClose, onDraft, reportingOnly,
@@ -124,8 +126,10 @@ function JobForm({
   const [teamStays, setTeamStays] = useState(d?.teamOutcome === "Stays");
   const [teamManager, setTeamManager] = useState<ChangePersonRef | null>(d?.teamOutcome === "Stays" ? d.teamManager : null);
   const [unit, setUnit] = useState<{ id: string; name: string } | null>(d?.unitChanged && d.unitToId ? { id: d.unitToId, name: d.unitTo ?? "" } : null);
-  const [jobTitle, setJobTitle] = useState<string | null>(d?.titleChanged ? d.titleTo : null);
-  const [location, setLocation] = useState<string | null>(d?.locationChanged ? (d.locationTo ?? "") : null);
+  // An edit starts from the change's picks; undefined is "unchanged", a null place is "no place".
+  const [job, setJob] = useState<Picked | null>(d?.titleChanged && d.jobToId ? { id: d.jobToId, name: d.titleTo ?? "" } : null);
+  const [place, setPlace] = useState<Picked | null | undefined>(
+    d?.locationChanged ? (d.placeToId ? { id: d.placeToId, name: d.locationTo ?? "" } : null) : undefined);
   const [open, setOpen] = useState<Fact | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -141,8 +145,8 @@ function JobForm({
   const work = person.work;
   const managerChanged = noManager ? Boolean(current) : Boolean(chosen && chosen.employeeKey !== current?.employeeKey);
   const unitChanged = Boolean(unit && unit.id !== work?.orgUnitId);
-  const titleChanged = jobTitle !== null && jobTitle.trim() !== "" && jobTitle.trim() !== work?.jobTitle;
-  const locationChanged = location !== null && (location.trim() || null) !== (work?.location ?? null);
+  const titleChanged = job !== null && job.id !== work?.jobId;
+  const locationChanged = place !== undefined && (place?.id ?? null) !== (work?.placeId ?? null);
   const anything = managerChanged || unitChanged || titleChanged || locationChanged;
   const teamShown = person.directReportCount > 0 && (managerChanged || unitChanged);
   const isToday = date === todayIso();
@@ -165,8 +169,9 @@ function JobForm({
       removeManager: managerChanged && noManager,
       team: teamShown ? { stays: teamStays, managerEmployeeId: teamStays ? teamManager?.employeeId ?? null : null } : null,
       orgUnitId: unitChanged ? unit!.id : null,
-      jobTitle: titleChanged ? jobTitle!.trim() : null,
-      location: locationChanged ? location!.trim() : null,
+      jobId: titleChanged ? job!.id : null,
+      placeId: locationChanged ? place?.id ?? null : null,
+      removePlace: locationChanged && place === null,
     };
     try {
       const saved = editing
@@ -258,13 +263,14 @@ function JobForm({
                 open={open === "unit"} onOpen={() => setOpen("unit")} onUndo={() => { setUnit(null); setOpen(null); }}>
                 <UnitEditor date={date} value={unit?.id ?? work?.orgUnitId ?? ""} onChange={(next) => { setUnit(next); setOpen(null); }} />
               </FactRow>
-              <FactRow label={t("facts.jobTitle")} current={work?.jobTitle ?? t("facts.none")} next={titleChanged ? jobTitle!.trim() : null}
-                open={open === "title"} onOpen={() => { setJobTitle(jobTitle ?? work?.jobTitle ?? ""); setOpen("title"); }} onUndo={() => { setJobTitle(null); setOpen(null); }} onDone={() => setOpen(null)}>
-                <Input autoFocus value={jobTitle ?? ""} onChange={(event) => setJobTitle(event.target.value)} aria-label={t("facts.jobTitle")} />
+              <FactRow label={t("facts.jobTitle")} current={work?.jobTitle ?? t("facts.none")} next={titleChanged ? job!.name : null}
+                open={open === "title"} onOpen={() => setOpen("title")} onUndo={() => { setJob(null); setOpen(null); }} onDone={() => setOpen(null)}>
+                <JobPicker value={job?.id ?? work?.jobId ?? null} onChange={(next) => { setJob({ id: next.id, name: next.title }); setOpen(null); }} />
               </FactRow>
-              <FactRow label={t("facts.location")} current={work?.location ?? t("facts.none")} next={locationChanged ? (location!.trim() || t("facts.none")) : null}
-                open={open === "location"} onOpen={() => { setLocation(location ?? work?.location ?? ""); setOpen("location"); }} onUndo={() => { setLocation(null); setOpen(null); }} onDone={() => setOpen(null)}>
-                <Input autoFocus value={location ?? ""} onChange={(event) => setLocation(event.target.value)} aria-label={t("facts.location")} />
+              <FactRow label={t("facts.location")} current={work?.location ?? t("facts.none")} next={locationChanged ? (place?.name ?? t("facts.none")) : null}
+                open={open === "location"} onOpen={() => setOpen("location")} onUndo={() => { setPlace(undefined); setOpen(null); }} onDone={() => setOpen(null)}>
+                <PlacePicker value={place === undefined ? work?.placeId ?? null : place?.id ?? null}
+                  onChange={(next) => { setPlace(next ? { id: next.id, name: next.name } : null); setOpen(null); }} />
               </FactRow>
             </div>
           </Block>
@@ -446,14 +452,14 @@ function StartForm({ person, editing, onClose }: { person: PeopleProfileDto; edi
   const [manager, setManager] = useState<ChangePersonRef | null>(d?.managerTo ?? null);
   const [unit, setUnit] = useState<{ id: string; name: string } | null>(
     d?.unitToId ? { id: d.unitToId, name: d.unitTo ?? "" } : person.work?.orgUnitId ? { id: person.work.orgUnitId, name: person.work.organizationName } : null);
-  const [jobTitle, setJobTitle] = useState(d?.titleTo ?? person.work?.jobTitle ?? "");
-  const [location, setLocation] = useState(d?.locationTo ?? person.work?.location ?? "");
+  const [jobId, setJobId] = useState<string | null>(d?.jobToId ?? person.work?.jobId ?? null);
+  const [placeId, setPlaceId] = useState<string | null>(d ? d.placeToId ?? null : person.work?.placeId ?? null);
   const [error, setError] = useState<string | null>(null);
   const isToday = date === todayIso();
 
   const save = async () => {
     setError(null);
-    const request = { startDate: date, orgUnitId: unit!.id, jobTitle: jobTitle.trim(), location: location.trim() || null, managerEmployeeId: manager?.employeeId ?? null };
+    const request = { startDate: date, orgUnitId: unit!.id, jobId: jobId!, placeId, managerEmployeeId: manager?.employeeId ?? null };
     try {
       if (editing) await editChange.mutateAsync({ id: editing.id, request: { join: request } });
       else await startEmployment.mutateAsync(request);
@@ -474,10 +480,10 @@ function StartForm({ person, editing, onClose }: { person: PeopleProfileDto; edi
           <div className="grid gap-3">
             <label className="grid gap-1"><span className="type-meta text-muted-foreground">{t("facts.unit")}</span>
               <UnitEditor date={date} value={unit?.id ?? ""} onChange={setUnit} /></label>
-            <label className="grid gap-1"><span className="type-meta text-muted-foreground">{t("facts.jobTitle")}</span>
-              <Input value={jobTitle} onChange={(event) => setJobTitle(event.target.value)} /></label>
-            <label className="grid gap-1"><span className="type-meta text-muted-foreground">{t("facts.location")}</span>
-              <Input value={location} onChange={(event) => setLocation(event.target.value)} /></label>
+            <div className="grid gap-1"><span className="type-meta text-muted-foreground">{t("facts.jobTitle")}</span>
+              <JobPicker value={jobId} onChange={(next) => setJobId(next.id)} /></div>
+            <div className="grid gap-1"><span className="type-meta text-muted-foreground">{t("facts.location")}</span>
+              <PlacePicker value={placeId} onChange={(next) => setPlaceId(next?.id ?? null)} /></div>
           </div>
         </Block>
         <WhenBlock label={t("when.starts")} value={date} onChange={setDate} options={[todayIso()]} />
@@ -494,7 +500,7 @@ function StartForm({ person, editing, onClose }: { person: PeopleProfileDto; edi
         ? t.rich("summary.joins", { manager: manager.displayName, date: format.date(date), b })
         : t.rich("summary.joinsNoManager", { date: format.date(date), b })}>
         <Button type="button" variant="ghost" onClick={onClose}>{t("action.cancel")}</Button>
-        <Button type="button" disabled={!unit || !jobTitle.trim() || startEmployment.isLoading || editChange.isLoading} onClick={() => void save()}>
+        <Button type="button" disabled={!unit || !jobId || startEmployment.isLoading || editChange.isLoading} onClick={() => void save()}>
           {isToday ? t("action.save") : t("action.schedule", { date: format.date(date) })}
         </Button>
       </Footer>

@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Features.Workforce.Services;
@@ -66,16 +67,16 @@ public sealed class ApplicabilityOptionsServiceTests
         db.AddRange(orgUnit, emp1, emp2, emp3);
         await db.SaveChangesAsync();
 
-        var empl1 = Employment.Start(tenantId, emp1.Id, Start, "Full-Time", WorkforceSourceType.Manual);
-        var empl2 = Employment.Start(tenantId, emp2.Id, Start, "Full-Time", WorkforceSourceType.Manual);
-        var empl3 = Employment.Start(tenantId, emp3.Id, Start, "Part-Time", WorkforceSourceType.Manual);
+        var empl1 = Employment.Start(tenantId, emp1.Id, Start, TestCatalog.EmploymentType(tenantId, "Full-Time"), WorkforceSourceType.Manual);
+        var empl2 = Employment.Start(tenantId, emp2.Id, Start, TestCatalog.EmploymentType(tenantId, "Full-Time"), WorkforceSourceType.Manual);
+        var empl3 = Employment.Start(tenantId, emp3.Id, Start, TestCatalog.EmploymentType(tenantId, "Part-Time"), WorkforceSourceType.Manual);
         db.AddRange(empl1, empl2, empl3);
         await db.SaveChangesAsync();
 
         // emp1 + emp2 share "Engineer" title; emp3 has "Designer"
-        var wa1 = WorkAssignment.Create(tenantId, empl1.Id, emp1.Id, orgUnit.Id, "Engineer", null, true, Start, null, WorkforceSourceType.Manual);
-        var wa2 = WorkAssignment.Create(tenantId, empl2.Id, emp2.Id, orgUnit.Id, "Engineer", null, true, Start, null, WorkforceSourceType.Manual);
-        var wa3 = WorkAssignment.Create(tenantId, empl3.Id, emp3.Id, orgUnit.Id, "Designer", null, true, Start, null, WorkforceSourceType.Manual);
+        var wa1 = WorkAssignment.Create(tenantId, empl1.Id, emp1.Id, orgUnit.Id, TestCatalog.Job(tenantId, "Engineer"), TestCatalog.Place(tenantId, null), true, Start, null, WorkforceSourceType.Manual);
+        var wa2 = WorkAssignment.Create(tenantId, empl2.Id, emp2.Id, orgUnit.Id, TestCatalog.Job(tenantId, "Engineer"), TestCatalog.Place(tenantId, null), true, Start, null, WorkforceSourceType.Manual);
+        var wa3 = WorkAssignment.Create(tenantId, empl3.Id, emp3.Id, orgUnit.Id, TestCatalog.Job(tenantId, "Designer"), TestCatalog.Place(tenantId, null), true, Start, null, WorkforceSourceType.Manual);
         db.AddRange(wa1, wa2, wa3);
         await db.SaveChangesAsync();
 
@@ -103,8 +104,8 @@ public sealed class ApplicabilityOptionsServiceTests
         await db.SaveChangesAsync();
 
         var yesterday = DateTime.UtcNow.Date.AddDays(-1);
-        var expired = WorkAssignment.Create(tenantId, empl.Id, emp.Id, orgUnit.Id, "OldRole", null, true, Start, yesterday, WorkforceSourceType.Manual);
-        var active = WorkAssignment.Create(tenantId, empl.Id, emp.Id, orgUnit.Id, "CurrentRole", null, true, DateTime.UtcNow.Date, null, WorkforceSourceType.Manual);
+        var expired = WorkAssignment.Create(tenantId, empl.Id, emp.Id, orgUnit.Id, TestCatalog.Job(tenantId, "OldRole"), TestCatalog.Place(tenantId, null), true, Start, yesterday, WorkforceSourceType.Manual);
+        var active = WorkAssignment.Create(tenantId, empl.Id, emp.Id, orgUnit.Id, TestCatalog.Job(tenantId, "CurrentRole"), TestCatalog.Place(tenantId, null), true, DateTime.UtcNow.Date, null, WorkforceSourceType.Manual);
         db.AddRange(expired, active);
         await db.SaveChangesAsync();
 
@@ -132,8 +133,8 @@ public sealed class ApplicabilityOptionsServiceTests
         db.AddRange(empl1, empl2);
         await db.SaveChangesAsync();
 
-        var wa1 = WorkAssignment.Create(tenantId, empl1.Id, emp1.Id, orgUnit.Id, "Engineer", "Tunis", true, Start, null, WorkforceSourceType.Manual);
-        var wa2 = WorkAssignment.Create(tenantId, empl2.Id, emp2.Id, orgUnit.Id, "Manager", "Tunis", true, Start, null, WorkforceSourceType.Manual);
+        var wa1 = WorkAssignment.Create(tenantId, empl1.Id, emp1.Id, orgUnit.Id, TestCatalog.Job(tenantId, "Engineer"), TestCatalog.Place(tenantId, "Tunis"), true, Start, null, WorkforceSourceType.Manual);
+        var wa2 = WorkAssignment.Create(tenantId, empl2.Id, emp2.Id, orgUnit.Id, TestCatalog.Job(tenantId, "Manager"), TestCatalog.Place(tenantId, "Tunis"), true, Start, null, WorkforceSourceType.Manual);
         db.AddRange(wa1, wa2);
         await db.SaveChangesAsync();
 
@@ -157,9 +158,9 @@ public sealed class ApplicabilityOptionsServiceTests
         db.AddRange(orgUnit, emp1, emp2, emp3);
         await db.SaveChangesAsync();
 
-        var empl1 = Employment.Start(tenantId, emp1.Id, Start, "Full-Time", WorkforceSourceType.Manual);
-        var empl2 = Employment.Start(tenantId, emp2.Id, Start, "Full-Time", WorkforceSourceType.Manual);
-        var empl3 = Employment.Start(tenantId, emp3.Id, Start, "Contractor", WorkforceSourceType.Manual);
+        var empl1 = Employment.Start(tenantId, emp1.Id, Start, TestCatalog.EmploymentType(tenantId, "Full-Time"), WorkforceSourceType.Manual);
+        var empl2 = Employment.Start(tenantId, emp2.Id, Start, TestCatalog.EmploymentType(tenantId, "Full-Time"), WorkforceSourceType.Manual);
+        var empl3 = Employment.Start(tenantId, emp3.Id, Start, TestCatalog.EmploymentType(tenantId, "Contractor"), WorkforceSourceType.Manual);
         db.AddRange(empl1, empl2, empl3);
         await db.SaveChangesAsync();
 

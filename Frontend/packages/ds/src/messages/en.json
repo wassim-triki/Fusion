@@ -22,6 +22,7 @@
         "notifications": "Notifications",
         "company": "Company",
         "employee-fields": "Employee fields",
+        "lists": "Lists",
         "roles": "Roles",
         "invitations": "Invitations",
         "change-history": "Change history",
@@ -31,7 +32,9 @@
         "reviews": "Reviews",
         "planning": "Planning",
         "conversations": "Conversations",
-        "ai-and-data": "AI and data"
+        "ai-and-data": "AI and data",
+        "jobs": "Jobs",
+        "places": "Places"
       },
       "changedBy": "<b>{actor}</b> changed it {when}",
       "setUp": "Set up {when}",

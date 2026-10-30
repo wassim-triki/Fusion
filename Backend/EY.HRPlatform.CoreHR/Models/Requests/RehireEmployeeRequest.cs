@@ -6,7 +6,7 @@ namespace EY.HRPlatform.CoreHR.Models.Requests;
 public sealed record RehireEmployeeRequest(
     [Required] DateTime EffectiveDate,
     [Required] Guid OrgUnitId,
-    [Required, StringLength(100)] string JobTitle,
-    [StringLength(100)] string? WorkLocation = null,
+    [Required] Guid JobId,
+    Guid? PlaceId = null,
     Guid? ManagerId = null,
-    [StringLength(50)] string? EmploymentType = null);
+    Guid? EmploymentTypeId = null);

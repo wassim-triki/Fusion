@@ -18,10 +18,10 @@ public sealed record HireEmployeeRequest(
     EmployeeNumberMode EmployeeNumberMode,
     string? EmployeeNumber,
     DateTime StartDate,
-    string? EmploymentType,
+    Guid? EmploymentTypeId,
     Guid OrgUnitId,
-    string JobTitle,
-    string? Location,
+    Guid JobId,
+    Guid? PlaceId,
     Guid? PrimaryManagerEmployeeId);
 
 public sealed record AddExistingEmployeeRequest(
@@ -34,10 +34,10 @@ public sealed record AddExistingEmployeeRequest(
     string? EmployeeNumber,
     DateTime EmploymentStart,
     DateTime WorkDetailsEffectiveFrom,
-    string? EmploymentType,
+    Guid? EmploymentTypeId,
     Guid OrgUnitId,
-    string JobTitle,
-    string? Location,
+    Guid JobId,
+    Guid? PlaceId,
     Guid? PrimaryManagerEmployeeId);
 
 public sealed record EstablishmentSuggestionDto(

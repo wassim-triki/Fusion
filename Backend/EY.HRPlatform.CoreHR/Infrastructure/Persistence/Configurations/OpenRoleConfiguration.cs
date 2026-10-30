@@ -12,6 +12,7 @@ public sealed class OpenRoleConfiguration : IEntityTypeConfiguration<OpenRole>
         builder.HasKey(role => role.Id);
         builder.Property(role => role.TenantId).IsRequired();
         builder.Property(role => role.JobTitle).HasMaxLength(OpenRole.MaxJobTitleLength).IsRequired();
+        builder.Property(role => role.PlaceName).HasMaxLength(Place.MaxNameLength);
         builder.Property(role => role.ManagerEmployeeId).IsRequired();
         builder.Property(role => role.OrgUnitId).IsRequired();
         builder.Property(role => role.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
@@ -30,5 +31,7 @@ public sealed class OpenRoleConfiguration : IEntityTypeConfiguration<OpenRole>
             .WithMany()
             .HasForeignKey(role => role.OrgUnitId)
             .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Job>().WithMany().HasForeignKey(role => role.JobId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Place>().WithMany().HasForeignKey(role => role.PlaceId).OnDelete(DeleteBehavior.Restrict);
     }
 }

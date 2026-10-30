@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Exceptions;
@@ -27,7 +28,7 @@ public class ResponsibleManagerServiceTests
     private static Employee SeedEmployedManager(CoreHRDbContext context, Guid tenant)
     {
         var employee = Employee.Create(tenant, "Manager", "Doe", $"mgr-{Guid.NewGuid():N}@ey-hr.com", Hire, employeeNumber: TestEmployeeNumbers.Next());
-        var employment = Employment.Start(tenant, employee.Id, Hire, "FullTime", WorkforceSourceType.Manual);
+        var employment = Employment.Start(tenant, employee.Id, Hire, null, WorkforceSourceType.Manual);
         context.AddRange(employee, employment);
         return employee;
     }

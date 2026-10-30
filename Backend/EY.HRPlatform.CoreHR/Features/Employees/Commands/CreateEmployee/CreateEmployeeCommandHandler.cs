@@ -48,9 +48,9 @@ public sealed class CreateEmployeeCommandHandler(
         ValidateConfiguredRequiredField(request.LastName, "lastName", "Last name", settings, true);
         ValidateConfiguredRequiredField(request.Email, "email", "Email", settings, false);
         ValidateConfiguredRequiredField(request.Phone, "phone", "Phone", settings, false);
-        ValidateConfiguredRequiredField(request.JobTitle, "jobTitle", "Job title", settings, false);
-        ValidateConfiguredRequiredField(request.WorkLocation, "workLocation", "Work location", settings, false);
-        ValidateConfiguredRequiredField(request.EmploymentType, "employmentType", "Employment type", settings, false);
+        ValidateConfiguredRequiredField(request.JobId?.ToString(), "jobTitle", "Job title", settings, false);
+        ValidateConfiguredRequiredField(request.PlaceId?.ToString(), "workLocation", "Work location", settings, false);
+        ValidateConfiguredRequiredField(request.EmploymentTypeId?.ToString(), "employmentType", "Employment type", settings, false);
 
         if (!request.OrgUnitId.HasValue || request.OrgUnitId.Value == Guid.Empty)
         {
@@ -96,7 +96,7 @@ public sealed class CreateEmployeeCommandHandler(
 
         var employmentResult = await workforceMutationService.StartEmploymentAsync(
             employee.Id,
-            new StartEmploymentInput(request.HireDate, request.EmploymentType),
+            new StartEmploymentInput(request.HireDate, request.EmploymentTypeId),
             actor: null,
             cancellationToken);
         if (employmentResult.IsFailure)
@@ -108,8 +108,8 @@ public sealed class CreateEmployeeCommandHandler(
             employee.Id,
             new ChangeWorkAssignmentInput(
                 request.OrgUnitId.Value,
-                request.JobTitle!,
-                request.WorkLocation,
+                request.JobId ?? Guid.Empty,
+                request.PlaceId,
                 request.HireDate),
             actor: null,
             cancellationToken);

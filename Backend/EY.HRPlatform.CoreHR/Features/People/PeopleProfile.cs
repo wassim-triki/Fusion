@@ -42,7 +42,8 @@ public sealed record PeopleProfileEmploymentDto(
     PeopleEmploymentState State,
     DateTime? Start,
     DateTime? End,
-    string? EmploymentType);
+    string? EmploymentType,
+    Guid? EmploymentTypeId = null);
 
 public sealed record PeopleProfileReportDto(
     string EmployeeKey,
@@ -147,7 +148,19 @@ public sealed class PeopleProfileQueryHandler(
                 organization.Path,
                 assignment.WorkLocation,
                 assignment.EffectiveFrom,
-                state == PeopleEmploymentState.Former);
+                state == PeopleEmploymentState.Former,
+                assignment.JobId,
+                assignment.PlaceId);
+            var classification = await (
+                    from job in dbContext.Jobs.AsNoTracking()
+                    where job.Id == assignment.JobId
+                    select new
+                    {
+                        Family = dbContext.CompanyListValues.Where(value => value.Id == job.FamilyId).Select(value => value.Label).FirstOrDefault(),
+                        Level = dbContext.CompanyListValues.Where(value => value.Id == job.LevelId).Select(value => value.Label).FirstOrDefault(),
+                    })
+                .FirstOrDefaultAsync(cancellationToken);
+            work = work with { JobFamily = classification?.Family, JobLevel = classification?.Level };
         }
 
         PeopleManagerDto? manager = null;
@@ -241,7 +254,8 @@ public sealed class PeopleProfileQueryHandler(
                 state,
                 employment?.EffectiveFrom,
                 employment?.EffectiveTo,
-                employment?.EmploymentType),
+                employment?.EmploymentType,
+                employment?.EmploymentTypeId),
             work,
             manager,
             directReportCount,

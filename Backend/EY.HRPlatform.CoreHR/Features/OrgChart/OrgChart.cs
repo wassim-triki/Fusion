@@ -184,8 +184,7 @@ public sealed class OrgChartQueryHandler(
                 .OrderBy(role => role.CreatedAt)
                 .ToListAsync(cancellationToken);
             openRoles = roles.Where(role => chart.KeyOf.ContainsKey(role.ManagerEmployeeId))
-                .Select(role => new OrgChartOpenRoleDto(role.Id, role.JobTitle, chart.KeyOf[role.ManagerEmployeeId],
-                    chart.Units.GetValueOrDefault(role.OrgUnitId), role.TargetStartDate, role.Status))
+                .Select(role => OrgChartOpenRoleDto.From(role, chart.KeyOf[role.ManagerEmployeeId], chart.Units.GetValueOrDefault(role.OrgUnitId)))
                 .ToList();
         }
 

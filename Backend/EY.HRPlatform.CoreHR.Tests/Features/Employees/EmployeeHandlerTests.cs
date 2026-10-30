@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Exceptions;
@@ -40,7 +41,7 @@ public class EmployeeHandlerTests
             "Doe",
             "john.doe@example.com",
             hireDate,
-            JobTitle: "Developer",
+            JobId: context.JobId(TenantId, "Developer"),
             OrgUnitId: orgUnitId);
 
         var result = await handler.Handle(command, CancellationToken.None);
@@ -84,7 +85,7 @@ public class EmployeeHandlerTests
             "Doe",
             "john.doe@example.com",
             DateTime.UtcNow,
-            JobTitle: "Developer",
+            JobId: context.JobId(TenantId, "Developer"),
             OrgUnitId: orgUnit.Id);
 
         var result = await handler.Handle(command, CancellationToken.None);
@@ -102,14 +103,14 @@ public class EmployeeHandlerTests
         await using var seedContext = TestDbContextFactory.CreateWithoutTenant(dbName);
         var orgUnit = OrgUnit.Create(TenantId, "ENG", "Engineering", "Department", null);
         var manager = Employee.Create(TenantId, "Manager", "Person", "manager@example.com", DateTime.UtcNow, employeeNumber: TestEmployeeNumbers.Next());
-        var managerEmployment = Employment.Start(TenantId, manager.Id, DateTime.UtcNow.AddDays(-10), "FullTime", WorkforceSourceType.Manual);
+        var managerEmployment = Employment.Start(TenantId, manager.Id, DateTime.UtcNow.AddDays(-10), null, WorkforceSourceType.Manual);
         var managerAssignment = WorkAssignment.Create(
             TenantId,
             managerEmployment.Id,
             manager.Id,
             orgUnit.Id,
-            "Engineering Manager",
-            "HQ",
+            TestCatalog.Job(TenantId, "Engineering Manager"),
+            TestCatalog.Place(TenantId, "HQ"),
             true,
             managerEmployment.EffectiveFrom,
             null,
@@ -127,7 +128,7 @@ public class EmployeeHandlerTests
             "Doe",
             "john.doe@example.com",
             DateTime.UtcNow,
-            JobTitle: "Developer",
+            JobId: context.JobId(TenantId, "Developer"),
             ManagerId: manager.Id,
             OrgUnitId: orgUnit.Id);
 
@@ -148,7 +149,7 @@ public class EmployeeHandlerTests
         await using var seedContext = TestDbContextFactory.CreateWithoutTenant(dbName);
         var orgUnit = OrgUnit.Create(TenantId, "ENG", "Engineering", "Department", null);
         var manager = Employee.Create(TenantId, "Manager", "Person", "manager@example.com", DateTime.UtcNow, employeeNumber: TestEmployeeNumbers.Next());
-        var managerEmployment = Employment.Start(TenantId, manager.Id, DateTime.UtcNow.AddDays(-10), "FullTime", WorkforceSourceType.Manual);
+        var managerEmployment = Employment.Start(TenantId, manager.Id, DateTime.UtcNow.AddDays(-10), null, WorkforceSourceType.Manual);
         managerEmployment.End(DateTime.UtcNow.AddDays(-1));
         seedContext.OrgUnits.Add(orgUnit);
         seedContext.Employees.Add(manager);
@@ -162,7 +163,7 @@ public class EmployeeHandlerTests
             "Doe",
             "john.doe@example.com",
             DateTime.UtcNow,
-            JobTitle: "Developer",
+            JobId: context.JobId(TenantId, "Developer"),
             ManagerId: manager.Id,
             OrgUnitId: orgUnit.Id);
 
@@ -182,15 +183,15 @@ public class EmployeeHandlerTests
         await using var seedContext = TestDbContextFactory.CreateWithoutTenant(dbName);
         var orgUnit = OrgUnit.Create(TenantId, "ENG", "Engineering", "Department", null);
         var manager = Employee.Create(otherTenantId, "Manager", "Person", "manager@example.com", DateTime.UtcNow, employeeNumber: TestEmployeeNumbers.Next());
-        var managerEmployment = Employment.Start(otherTenantId, manager.Id, DateTime.UtcNow.AddDays(-10), "FullTime", WorkforceSourceType.Manual);
+        var managerEmployment = Employment.Start(otherTenantId, manager.Id, DateTime.UtcNow.AddDays(-10), null, WorkforceSourceType.Manual);
         var foreignOrgUnit = OrgUnit.Create(otherTenantId, "FIN", "Finance", "Department", null);
         var managerAssignment = WorkAssignment.Create(
             otherTenantId,
             managerEmployment.Id,
             manager.Id,
             foreignOrgUnit.Id,
-            "Finance Manager",
-            "HQ",
+            TestCatalog.Job(otherTenantId, "Finance Manager"),
+            TestCatalog.Place(otherTenantId, "HQ"),
             true,
             managerEmployment.EffectiveFrom,
             null,
@@ -208,7 +209,7 @@ public class EmployeeHandlerTests
             "Doe",
             "john.doe@example.com",
             DateTime.UtcNow,
-            JobTitle: "Developer",
+            JobId: context.JobId(TenantId, "Developer"),
             ManagerId: manager.Id,
             OrgUnitId: orgUnit.Id);
 
@@ -236,7 +237,7 @@ public class EmployeeHandlerTests
             "Doe",
             "john.doe@example.com",
             DateTime.UtcNow,
-            JobTitle: "Developer",
+            JobId: context.JobId(TenantId, "Developer"),
             OrgUnitId: orgUnit.Id);
 
         var result = await handler.Handle(command, CancellationToken.None);
@@ -269,7 +270,7 @@ public class EmployeeHandlerTests
             "Doe",
             "john.doe@example.com",
             DateTime.UtcNow,
-            JobTitle: "Developer",
+            JobId: context.JobId(TenantId, "Developer"),
             OrgUnitId: orgUnit.Id);
 
         var result = await handler.Handle(command, CancellationToken.None);
@@ -297,7 +298,7 @@ public class EmployeeHandlerTests
             "Doe",
             "john.doe@example.com",
             DateTime.UtcNow,
-            JobTitle: "Developer",
+            JobId: context.JobId(TenantId, "Developer"),
             OrgUnitId: orgUnit.Id);
 
         var result = await handler.Handle(command, CancellationToken.None);
@@ -326,7 +327,7 @@ public class EmployeeHandlerTests
             "Doe",
             "john.doe@example.com",
             DateTime.UtcNow,
-            JobTitle: "Developer",
+            JobId: context.JobId(TenantId, "Developer"),
             ManagerId: Guid.NewGuid(),
             OrgUnitId: orgUnitId);
 
@@ -377,8 +378,8 @@ public class EmployeeHandlerTests
         seedContext.OrgUnits.Add(orgUnit);
 
         var employee = Employee.Create(TenantId, "John", "Doe", "john@example.com", DateTime.UtcNow, employeeNumber: TestEmployeeNumbers.Next());
-        var employment = Employment.Start(TenantId, employee.Id, DateTime.UtcNow.AddMonths(-1), "FullTime", WorkforceSourceType.Manual);
-        var assignment = WorkAssignment.Create(TenantId, employment.Id, employee.Id, orgUnit.Id, "Engineer", null, true, employment.EffectiveFrom, null, WorkforceSourceType.Manual);
+        var employment = Employment.Start(TenantId, employee.Id, DateTime.UtcNow.AddMonths(-1), null, WorkforceSourceType.Manual);
+        var assignment = WorkAssignment.Create(TenantId, employment.Id, employee.Id, orgUnit.Id, TestCatalog.Job(TenantId, "Engineer"), TestCatalog.Place(TenantId, null), true, employment.EffectiveFrom, null, WorkforceSourceType.Manual);
         seedContext.Employees.Add(employee);
         seedContext.Employments.Add(employment);
         seedContext.WorkAssignments.Add(assignment);
@@ -421,27 +422,27 @@ public class EmployeeHandlerTests
             workLocation: "Legacy Site",
             employmentType: "LegacyType");
 
-        var managerEmployment = Employment.Start(TenantId, manager.Id, DateTime.UtcNow.AddYears(-3), "FullTime", WorkforceSourceType.Manual);
+        var managerEmployment = Employment.Start(TenantId, manager.Id, DateTime.UtcNow.AddYears(-3), null, WorkforceSourceType.Manual);
         var managerAssignment = WorkAssignment.Create(
             TenantId,
             managerEmployment.Id,
             manager.Id,
             canonicalOrgUnit.Id,
-            "Engineering Manager",
-            "HQ",
+            TestCatalog.Job(TenantId, "Engineering Manager"),
+            TestCatalog.Place(TenantId, "HQ"),
             true,
             managerEmployment.EffectiveFrom,
             null,
             WorkforceSourceType.Manual);
 
-        var employment = Employment.Start(TenantId, employee.Id, DateTime.UtcNow.AddYears(-1), "FullTime", WorkforceSourceType.Manual);
+        var employment = Employment.Start(TenantId, employee.Id, DateTime.UtcNow.AddYears(-1), TestCatalog.EmploymentType(TenantId, "FullTime"), WorkforceSourceType.Manual);
         var assignment = WorkAssignment.Create(
             TenantId,
             employment.Id,
             employee.Id,
             canonicalOrgUnit.Id,
-            "Software Engineer",
-            "Tunis",
+            TestCatalog.Job(TenantId, "Software Engineer"),
+            TestCatalog.Place(TenantId, "Tunis"),
             true,
             employment.EffectiveFrom,
             null,
@@ -575,44 +576,6 @@ public class EmployeeHandlerTests
     }
 
     [Fact]
-    public async Task UpdateEmployee_WithBlankJobTitleWhenRequired_ThrowsArgumentException()
-    {
-        var dbName = Guid.NewGuid().ToString();
-        var tenantContext = TestTenantContext.WithTenant(TenantId);
-
-        await SeedTenantSettingsAsync(
-            dbName,
-            """
-            {
-                "employeeFieldConfig": {
-                    "jobTitle": { "required": true }
-                }
-            }
-            """);
-
-        await using var seedContext = TestDbContextFactory.CreateWithoutTenant(dbName);
-        var employee = Employee.Create(TenantId, "John", "Doe", "john@example.com", DateTime.UtcNow, null, "Developer", employeeNumber: TestEmployeeNumbers.Next());
-        seedContext.Employees.Add(employee);
-        await seedContext.SaveChangesAsync();
-
-        await using var context = TestDbContextFactory.Create(tenantContext, dbName);
-        var handler = new UpdateEmployeeCommandHandler(context, tenantContext);
-        var command = new UpdateEmployeeCommand(
-            employee.Id,
-            employee.Version,
-            null,
-            null,
-            null,
-            "   ",
-            null);
-
-        var exception = await Assert.ThrowsAsync<ArgumentException>(
-            () => handler.Handle(command, CancellationToken.None));
-
-        Assert.Contains("Job title is required", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
     public async Task UpdateEmployee_WithManagerChange_ReturnsDedicatedActionFailure()
     {
         var dbName = Guid.NewGuid().ToString();
@@ -632,8 +595,7 @@ public class EmployeeHandlerTests
             null,
             null,
             null,
-            employee.Id,
-            null);
+            managerId: employee.Id);
 
         var result = await handler.Handle(command, CancellationToken.None);
 

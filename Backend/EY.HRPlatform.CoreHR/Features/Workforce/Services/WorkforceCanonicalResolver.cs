@@ -13,7 +13,9 @@ public sealed record PrimaryWorkAssignmentSnapshot(
     string JobTitle,
     string? WorkLocation,
     DateTime EffectiveFrom,
-    DateTime? EffectiveTo);
+    DateTime? EffectiveTo,
+    Guid? JobId = null,
+    Guid? PlaceId = null);
 
 /// <summary>Core-owned primary manager fact resolved for an employee as of a date.</summary>
 public sealed record PrimaryManagerSnapshot(
@@ -75,7 +77,7 @@ public sealed class WorkforceCanonicalResolver(
                 && (w.EffectiveTo == null || at < w.EffectiveTo))
             .OrderByDescending(w => w.EffectiveFrom)
             .Select(w => new PrimaryWorkAssignmentSnapshot(
-                w.Id, w.EmploymentId, w.OrgUnitId, w.JobTitle, w.WorkLocation, w.EffectiveFrom, w.EffectiveTo))
+                w.Id, w.EmploymentId, w.OrgUnitId, w.JobTitle, w.WorkLocation, w.EffectiveFrom, w.EffectiveTo, w.JobId, w.PlaceId))
             .FirstOrDefaultAsync(cancellationToken);
     }
 

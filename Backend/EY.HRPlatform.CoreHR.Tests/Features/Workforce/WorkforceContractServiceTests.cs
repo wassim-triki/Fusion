@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using System.Security.Claims;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
@@ -801,8 +802,8 @@ public class WorkforceContractServiceTests
             employment.Id,
             employeeId,
             orgUnitId,
-            jobTitle,
-            null,
+            TestCatalog.Job(TenantId, jobTitle),
+            TestCatalog.Place(TenantId, null),
             true,
             effectiveFrom,
             null,

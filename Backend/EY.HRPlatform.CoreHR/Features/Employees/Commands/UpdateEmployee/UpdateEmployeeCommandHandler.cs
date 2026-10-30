@@ -58,9 +58,9 @@ public sealed class UpdateEmployeeCommandHandler(
         ValidateConfiguredRequiredField(request.LastName, "lastName", "Last name", settings, true);
         ValidateConfiguredRequiredField(request.Email, "email", "Email", settings, false);
         ValidateConfiguredRequiredField(request.Phone, "phone", "Phone", settings, false);
-        ValidateConfiguredRequiredField(request.JobTitle, "jobTitle", "Job title", settings, false);
-        ValidateConfiguredRequiredField(request.WorkLocation, "workLocation", "Work location", settings, false);
-        ValidateConfiguredRequiredField(request.EmploymentType, "employmentType", "Employment type", settings, false);
+        ValidateConfiguredRequiredField(request.JobId?.ToString(), "jobTitle", "Job title", settings, false);
+        ValidateConfiguredRequiredField(request.PlaceId?.ToString(), "workLocation", "Work location", settings, false);
+        ValidateConfiguredRequiredField(request.EmploymentTypeId?.ToString(), "employmentType", "Employment type", settings, false);
 
         if (request.ManagerId.HasValue)
         {
@@ -121,12 +121,11 @@ public sealed class UpdateEmployeeCommandHandler(
             employee.UpdateEmployeeNumber(normalizedEmployeeNumber);
         }
 
-        if (request.EmploymentType is not null
-            && !string.Equals(request.EmploymentType, currentEmployment?.EmploymentType, StringComparison.Ordinal))
+        if (request.EmploymentTypeId is not null && request.EmploymentTypeId != currentEmployment?.EmploymentTypeId)
         {
             var employmentResult = await workforceMutationService.UpdateEmploymentDetailsAsync(
                 employee.Id,
-                new UpdateEmploymentDetailsInput(request.EmploymentType),
+                new UpdateEmploymentDetailsInput(request.EmploymentTypeId),
                 actor: null,
                 cancellationToken);
             if (employmentResult.IsFailure)
@@ -137,26 +136,26 @@ public sealed class UpdateEmployeeCommandHandler(
 
         var currentAssignment = await workforceCanonicalResolver.GetPrimaryWorkAssignmentAsync(employee.Id, DateTime.UtcNow, cancellationToken);
         var targetOrgUnitId = request.OrgUnitId ?? currentAssignment?.OrgUnitId;
-        var targetJobTitle = request.JobTitle ?? currentAssignment?.JobTitle;
-        var targetWorkLocation = request.WorkLocation ?? currentAssignment?.WorkLocation;
+        var targetJobId = request.JobId ?? currentAssignment?.JobId;
+        var targetPlaceId = request.PlaceId ?? currentAssignment?.PlaceId;
 
         var assignmentChanged =
             request.OrgUnitId.HasValue
-            || request.JobTitle is not null
-            || request.WorkLocation is not null;
+            || request.JobId is not null
+            || request.PlaceId is not null;
 
         if (assignmentChanged)
         {
-            if (!targetOrgUnitId.HasValue || string.IsNullOrWhiteSpace(targetJobTitle))
+            if (!targetOrgUnitId.HasValue || targetJobId is null)
             {
                 return Result.Failure<EmployeeDetailsDto>(Error.Validation(
                     "WorkAssignment.IncompleteUpdate",
-                    "Updating the primary work assignment requires an active assignment with organization and job title."));
+                    "Updating the primary work assignment requires an active assignment with organization and job."));
             }
 
             var assignmentResult = await workforceMutationService.CorrectPrimaryWorkAssignmentAsync(
                 employee.Id,
-                new CorrectWorkAssignmentInput(targetOrgUnitId.Value, targetJobTitle, targetWorkLocation),
+                new CorrectWorkAssignmentInput(targetOrgUnitId.Value, targetJobId.Value, targetPlaceId),
                 actor: null,
                 cancellationToken);
             if (assignmentResult.IsFailure)

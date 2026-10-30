@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Features.Employees.Dtos;
@@ -28,10 +29,10 @@ public class GetEmployeesCanonicalQueryHandlerTests
             var manager = Employee.Create(TenantId, "Alex", "Manager", "alex.manager@example.com", employeeNumber: TestEmployeeNumbers.Next());
             var report = Employee.Create(TenantId, "Sam", "Report", "sam.report@example.com", employeeNumber: TestEmployeeNumbers.Next());
 
-            var managerEmployment = Employment.Start(TenantId, manager.Id, effectiveFrom.AddMonths(-3), "FullTime", WorkforceSourceType.Manual);
-            var reportEmployment = Employment.Start(TenantId, report.Id, effectiveFrom, "FullTime", WorkforceSourceType.Manual);
-            var managerAssignment = WorkAssignment.Create(TenantId, managerEmployment.Id, manager.Id, orgUnit.Id, "Engineering Manager", "HQ", true, managerEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
-            var reportAssignment = WorkAssignment.Create(TenantId, reportEmployment.Id, report.Id, orgUnit.Id, "Engineer", "Tunis", true, reportEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
+            var managerEmployment = Employment.Start(TenantId, manager.Id, effectiveFrom.AddMonths(-3), null, WorkforceSourceType.Manual);
+            var reportEmployment = Employment.Start(TenantId, report.Id, effectiveFrom, null, WorkforceSourceType.Manual);
+            var managerAssignment = WorkAssignment.Create(TenantId, managerEmployment.Id, manager.Id, orgUnit.Id, TestCatalog.Job(TenantId, "Engineering Manager"), TestCatalog.Place(TenantId, "HQ"), true, managerEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
+            var reportAssignment = WorkAssignment.Create(TenantId, reportEmployment.Id, report.Id, orgUnit.Id, TestCatalog.Job(TenantId, "Engineer"), TestCatalog.Place(TenantId, "Tunis"), true, reportEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
             var relationship = ManagerRelationship.Create(TenantId, report.Id, manager.Id, reportAssignment.Id, managerAssignment.Id, ReportingRelationshipType.PrimaryManager, effectiveFrom, WorkforceSourceType.Manual);
 
             seedContext.OrgUnits.Add(orgUnit);
@@ -77,12 +78,12 @@ public class GetEmployeesCanonicalQueryHandlerTests
             var report = Employee.Create(TenantId, "Sam", "Report", "sam.report@example.com", employeeNumber: TestEmployeeNumbers.Next());
             var outsider = Employee.Create(TenantId, "Riley", "Peer", "riley.peer@example.com", employeeNumber: TestEmployeeNumbers.Next());
 
-            var managerEmployment = Employment.Start(TenantId, manager.Id, effectiveFrom.AddMonths(-3), "FullTime", WorkforceSourceType.Manual);
-            var reportEmployment = Employment.Start(TenantId, report.Id, effectiveFrom, "FullTime", WorkforceSourceType.Manual);
-            var outsiderEmployment = Employment.Start(TenantId, outsider.Id, effectiveFrom, "FullTime", WorkforceSourceType.Manual);
-            var managerAssignment = WorkAssignment.Create(TenantId, managerEmployment.Id, manager.Id, orgUnit.Id, "Engineering Manager", null, true, managerEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
-            var reportAssignment = WorkAssignment.Create(TenantId, reportEmployment.Id, report.Id, orgUnit.Id, "Engineer", null, true, reportEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
-            var outsiderAssignment = WorkAssignment.Create(TenantId, outsiderEmployment.Id, outsider.Id, orgUnit.Id, "Analyst", null, true, outsiderEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
+            var managerEmployment = Employment.Start(TenantId, manager.Id, effectiveFrom.AddMonths(-3), null, WorkforceSourceType.Manual);
+            var reportEmployment = Employment.Start(TenantId, report.Id, effectiveFrom, null, WorkforceSourceType.Manual);
+            var outsiderEmployment = Employment.Start(TenantId, outsider.Id, effectiveFrom, null, WorkforceSourceType.Manual);
+            var managerAssignment = WorkAssignment.Create(TenantId, managerEmployment.Id, manager.Id, orgUnit.Id, TestCatalog.Job(TenantId, "Engineering Manager"), TestCatalog.Place(TenantId, null), true, managerEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
+            var reportAssignment = WorkAssignment.Create(TenantId, reportEmployment.Id, report.Id, orgUnit.Id, TestCatalog.Job(TenantId, "Engineer"), TestCatalog.Place(TenantId, null), true, reportEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
+            var outsiderAssignment = WorkAssignment.Create(TenantId, outsiderEmployment.Id, outsider.Id, orgUnit.Id, TestCatalog.Job(TenantId, "Analyst"), TestCatalog.Place(TenantId, null), true, outsiderEmployment.EffectiveFrom, null, WorkforceSourceType.Manual);
             var relationship = ManagerRelationship.Create(TenantId, report.Id, manager.Id, reportAssignment.Id, managerAssignment.Id, ReportingRelationshipType.PrimaryManager, effectiveFrom, WorkforceSourceType.Manual);
 
             seedContext.OrgUnits.Add(orgUnit);
@@ -117,7 +118,7 @@ public class GetEmployeesCanonicalQueryHandlerTests
         await using (var seedContext = TestDbContextFactory.CreateWithoutTenant(dbName))
         {
             var employee = Employee.Create(TenantId, "Inactive", "User", "inactive@example.com", employeeNumber: TestEmployeeNumbers.Next());
-            var employment = Employment.Start(TenantId, employee.Id, hireDate, "FullTime", WorkforceSourceType.Manual);
+            var employment = Employment.Start(TenantId, employee.Id, hireDate, null, WorkforceSourceType.Manual);
             employment.End(DateTime.UtcNow.AddDays(-1));
 
             seedContext.Employees.Add(employee);

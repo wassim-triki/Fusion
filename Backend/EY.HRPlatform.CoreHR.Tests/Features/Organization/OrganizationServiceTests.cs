@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Exceptions;
 using EY.HRPlatform.CoreHR.Features.Organization;
@@ -107,7 +108,7 @@ public sealed class OrganizationServiceTests
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var root = await service.CreateRootAsync(new CreateOrganizationRootRequest("ORG", "Fusion", today), default);
         var unit = await service.CreateUnitAsync(new CreateOrganizationUnitRequest("TECH", "Technology", OrganizationalUnitTypeCatalog.DepartmentId, root.Id, today), default);
-        var assignment = WorkAssignment.Create(tenantId, Guid.NewGuid(), Guid.NewGuid(), unit.Id, "Engineer", null, true,
+        var assignment = WorkAssignment.Create(tenantId, Guid.NewGuid(), Guid.NewGuid(), unit.Id, TestCatalog.Job(tenantId, "Engineer"), TestCatalog.Place(tenantId, null), true,
             DateTime.UtcNow, null, EY.HRPlatform.CoreHR.Domain.Enums.WorkforceSourceType.Manual);
         db.WorkAssignments.Add(assignment);
         await db.SaveChangesAsync();

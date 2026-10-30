@@ -22,6 +22,10 @@ public sealed class Employment : AggregateRoot, ITenantEntity
     public DateTime EffectiveFrom { get; private set; }
     public DateTime? EffectiveTo { get; private set; }
     public EmploymentStatus Status { get; private set; }
+    /// <summary>The employment type, a value of the company's "Employment types" list.</summary>
+    public Guid? EmploymentTypeId { get; private set; }
+
+    /// <summary>The employment type's label, kept in step by the list (Performance and the readers filter on it).</summary>
     public string? EmploymentType { get; private set; }
 
     public WorkforceSourceType Source { get; private set; }
@@ -40,7 +44,7 @@ public sealed class Employment : AggregateRoot, ITenantEntity
         Guid tenantId,
         Guid employeeId,
         DateTime effectiveFrom,
-        string? employmentType,
+        CompanyListValue? employmentType,
         WorkforceSourceType source,
         string? sourceReference = null,
         Guid? importBatchId = null)
@@ -49,6 +53,7 @@ public sealed class Employment : AggregateRoot, ITenantEntity
             throw new ArgumentException("Tenant id is required.", nameof(tenantId));
         if (employeeId == Guid.Empty)
             throw new ArgumentException("Employee id is required.", nameof(employeeId));
+        RequireEmploymentType(tenantId, employmentType);
 
         var interval = EffectiveDateRange.Create(effectiveFrom);
 
@@ -60,7 +65,8 @@ public sealed class Employment : AggregateRoot, ITenantEntity
             EffectiveFrom = interval.EffectiveFrom,
             EffectiveTo = null,
             Status = EmploymentStatus.Active,
-            EmploymentType = NormalizeEmploymentType(employmentType),
+            EmploymentTypeId = employmentType?.Id,
+            EmploymentType = employmentType?.Label,
             Source = source,
             SourceReference = sourceReference?.Trim(),
             ImportBatchId = importBatchId,
@@ -87,21 +93,23 @@ public sealed class Employment : AggregateRoot, ITenantEntity
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void UpdateEmploymentType(string? employmentType)
+    public void UpdateEmploymentType(CompanyListValue? employmentType)
     {
-        EmploymentType = NormalizeEmploymentType(employmentType);
+        RequireEmploymentType(TenantId, employmentType);
+        EmploymentTypeId = employmentType?.Id;
+        EmploymentType = employmentType?.Label;
         UpdatedAt = DateTime.UtcNow;
     }
 
-    private static string? NormalizeEmploymentType(string? employmentType)
+    /// <summary>Takes the list value's current label (after a rename) without counting as a change.</summary>
+    public void ReflectEmploymentType(CompanyListValue employmentType)
     {
-        if (string.IsNullOrWhiteSpace(employmentType))
-            return null;
+        if (employmentType.Id == EmploymentTypeId) EmploymentType = employmentType.Label;
+    }
 
-        var normalized = employmentType.Trim();
-        if (normalized.Length > 50)
-            throw new ArgumentException("EmploymentType cannot exceed 50 characters.", nameof(employmentType));
-
-        return normalized;
+    private static void RequireEmploymentType(Guid tenantId, CompanyListValue? employmentType)
+    {
+        if (employmentType is not null && (employmentType.TenantId != tenantId || employmentType.List != CompanyList.EmploymentTypes))
+            throw new ArgumentException("The employment type must be one of the company's employment types.", nameof(employmentType));
     }
 }

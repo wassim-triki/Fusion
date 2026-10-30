@@ -60,6 +60,16 @@ public sealed class WorkAssignmentConfiguration : IEntityTypeConfiguration<WorkA
             .HasForeignKey(x => x.OrgUnitId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne<Job>()
+            .WithMany()
+            .HasForeignKey(x => x.JobId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne<Place>()
+            .WithMany()
+            .HasForeignKey(x => x.PlaceId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.Ignore(x => x.Interval);
         builder.Ignore(x => x.DomainEvents);
     }

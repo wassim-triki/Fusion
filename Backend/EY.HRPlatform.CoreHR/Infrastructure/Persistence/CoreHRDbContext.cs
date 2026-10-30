@@ -58,6 +58,10 @@ public class CoreHRDbContext : DbContext
     public DbSet<CoreNotificationPreference> NotificationPreferences => Set<CoreNotificationPreference>();
     public DbSet<CoreNotificationDefaults> NotificationDefaults => Set<CoreNotificationDefaults>();
     public DbSet<OpenRole> OpenRoles => Set<OpenRole>();
+    public DbSet<Job> Jobs => Set<Job>();
+    public DbSet<Place> Places => Set<Place>();
+    public DbSet<CompanyListValue> CompanyListValues => Set<CompanyListValue>();
+    public DbSet<CompanyListSeed> CompanyListSeeds => Set<CompanyListSeed>();
     public DbSet<OrganizationalUnitType> OrganizationalUnitTypes => Set<OrganizationalUnitType>();
     public DbSet<OrgUnitCodeReservation> OrgUnitCodeReservations => Set<OrgUnitCodeReservation>();
     public DbSet<SettingsAuditEvent> SettingsAuditEvents => Set<SettingsAuditEvent>();
@@ -141,6 +145,18 @@ public class CoreHRDbContext : DbContext
 
         modelBuilder.Entity<OpenRole>()
             .HasQueryFilter(role => CurrentTenantId != Guid.Empty && role.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<Job>()
+            .HasQueryFilter(job => CurrentTenantId != Guid.Empty && job.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<Place>()
+            .HasQueryFilter(place => CurrentTenantId != Guid.Empty && place.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<CompanyListValue>()
+            .HasQueryFilter(value => CurrentTenantId != Guid.Empty && value.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<CompanyListSeed>()
+            .HasQueryFilter(seed => CurrentTenantId != Guid.Empty && seed.TenantId == CurrentTenantId);
 
         modelBuilder.Entity<OrgUnitCodeReservation>()
             .HasQueryFilter(reservation => CurrentTenantId != Guid.Empty && reservation.TenantId == CurrentTenantId);

@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using System.Security.Claims;
 using EY.HRPlatform.CoreHR.Controllers;
 using EY.HRPlatform.CoreHR.Domain.Entities;
@@ -39,10 +40,10 @@ public sealed class MyCardTests
             seed.Employees.Add(employee);
             if (title is null) return employee.Id;
             var unit = OrgUnit.Create(tenant, $"U-{Guid.NewGuid():N}"[..10], unitName, "Department", null);
-            var employment = Employment.Start(tenant, employee.Id, Today.AddYears(-2), "FullTime", WorkforceSourceType.Manual);
+            var employment = Employment.Start(tenant, employee.Id, Today.AddYears(-2), null, WorkforceSourceType.Manual);
             seed.OrgUnits.Add(unit);
             seed.Employments.Add(employment);
-            seed.WorkAssignments.Add(WorkAssignment.Create(tenant, employment.Id, employee.Id, unit.Id, title, null, true,
+            seed.WorkAssignments.Add(WorkAssignment.Create(tenant, employment.Id, employee.Id, unit.Id, seed.Job(tenant, title), seed.Place(tenant, null), true,
                 Today.AddYears(-2), null, WorkforceSourceType.Manual));
             return employee.Id;
         }

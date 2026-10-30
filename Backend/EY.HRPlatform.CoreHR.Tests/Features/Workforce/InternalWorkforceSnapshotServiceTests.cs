@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Features.Workforce.Services;
@@ -36,10 +37,10 @@ public sealed class InternalWorkforceSnapshotServiceTests
         db.AddRange(managerAEmployment, managerBEmployment, employeeEmployment);
         await db.SaveChangesAsync();
 
-        var managerAAssignment = WorkAssignment.Create(tenantId, managerAEmployment.Id, managerA.Id, engineering.Id, "Manager", null, true, start, null, WorkforceSourceType.Manual);
-        var managerBAssignment = WorkAssignment.Create(tenantId, managerBEmployment.Id, managerB.Id, operations.Id, "Director", null, true, start, null, WorkforceSourceType.Manual);
-        var employeeOriginalAssignment = WorkAssignment.Create(tenantId, employeeEmployment.Id, employee.Id, engineering.Id, "Engineer", null, true, start, changeDate, WorkforceSourceType.Manual);
-        var employeeFutureAssignment = WorkAssignment.Create(tenantId, employeeEmployment.Id, employee.Id, operations.Id, "Senior Engineer", null, true, changeDate, null, WorkforceSourceType.Manual);
+        var managerAAssignment = WorkAssignment.Create(tenantId, managerAEmployment.Id, managerA.Id, engineering.Id, TestCatalog.Job(tenantId, "Manager"), TestCatalog.Place(tenantId, null), true, start, null, WorkforceSourceType.Manual);
+        var managerBAssignment = WorkAssignment.Create(tenantId, managerBEmployment.Id, managerB.Id, operations.Id, TestCatalog.Job(tenantId, "Director"), TestCatalog.Place(tenantId, null), true, start, null, WorkforceSourceType.Manual);
+        var employeeOriginalAssignment = WorkAssignment.Create(tenantId, employeeEmployment.Id, employee.Id, engineering.Id, TestCatalog.Job(tenantId, "Engineer"), TestCatalog.Place(tenantId, null), true, start, changeDate, WorkforceSourceType.Manual);
+        var employeeFutureAssignment = WorkAssignment.Create(tenantId, employeeEmployment.Id, employee.Id, operations.Id, TestCatalog.Job(tenantId, "Senior Engineer"), TestCatalog.Place(tenantId, null), true, changeDate, null, WorkforceSourceType.Manual);
         db.AddRange(managerAAssignment, managerBAssignment, employeeOriginalAssignment, employeeFutureAssignment);
         await db.SaveChangesAsync();
 
@@ -97,7 +98,7 @@ public sealed class InternalWorkforceSnapshotServiceTests
         await db.SaveChangesAsync();
 
         // Only the first employee has a primary assignment; the second has active employment but none.
-        var assignment = WorkAssignment.Create(tenantId, assignedEmployment.Id, assigned.Id, engineering.Id, "Engineer", null, true, start, null, WorkforceSourceType.Manual);
+        var assignment = WorkAssignment.Create(tenantId, assignedEmployment.Id, assigned.Id, engineering.Id, TestCatalog.Job(tenantId, "Engineer"), TestCatalog.Place(tenantId, null), true, start, null, WorkforceSourceType.Manual);
         db.Add(assignment);
         await db.SaveChangesAsync();
 
@@ -130,7 +131,7 @@ public sealed class InternalWorkforceSnapshotServiceTests
         var employment = Employment.Start(tenantId, employee.Id, Start, null, WorkforceSourceType.Manual);
         db.Add(employment);
         await db.SaveChangesAsync();
-        var assignment = WorkAssignment.Create(tenantId, employment.Id, employee.Id, unit.Id, "Engineer", null, true, Start, null, WorkforceSourceType.Manual);
+        var assignment = WorkAssignment.Create(tenantId, employment.Id, employee.Id, unit.Id, TestCatalog.Job(tenantId, "Engineer"), TestCatalog.Place(tenantId, null), true, Start, null, WorkforceSourceType.Manual);
         db.Add(assignment);
         await db.SaveChangesAsync();
         if (endedAt is DateTime end)

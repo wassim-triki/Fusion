@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Features.Employees.Dtos;
@@ -25,18 +26,18 @@ public class GetWorkforceReadinessSummaryQueryHandlerTests
 
             // leader: has Employment + primary WorkAssignment, no manager, has 1 direct report
             var leader = Employee.Create(TenantId, "Emma", "Executive", "emma.executive@example.com", now, employeeNumber: TestEmployeeNumbers.Next());
-            var leaderEmployment = Employment.Start(TenantId, leader.Id, now.AddMonths(-6), "FullTime", WorkforceSourceType.Manual);
+            var leaderEmployment = Employment.Start(TenantId, leader.Id, now.AddMonths(-6), null, WorkforceSourceType.Manual);
             var leaderAssignment = WorkAssignment.Create(
                 TenantId, leaderEmployment.Id, leader.Id, orgUnit.Id,
-                "Chief People Officer", null, true,
+                TestCatalog.Job(TenantId, "Chief People Officer"), TestCatalog.Place(TenantId, null), true,
                 now.AddMonths(-6), null, WorkforceSourceType.Manual);
 
             // report: has Employment + primary WorkAssignment + ManagerRelationship → leader
             var report = Employee.Create(TenantId, "Casey", "Report", "casey.report@example.com", now, employeeNumber: TestEmployeeNumbers.Next());
-            var reportEmployment = Employment.Start(TenantId, report.Id, now.AddMonths(-3), "FullTime", WorkforceSourceType.Manual);
+            var reportEmployment = Employment.Start(TenantId, report.Id, now.AddMonths(-3), null, WorkforceSourceType.Manual);
             var reportAssignment = WorkAssignment.Create(
                 TenantId, reportEmployment.Id, report.Id, orgUnit.Id,
-                "People Partner", null, true,
+                TestCatalog.Job(TenantId, "People Partner"), TestCatalog.Place(TenantId, null), true,
                 now.AddMonths(-3), null, WorkforceSourceType.Manual);
             var reportManagerLink = ManagerRelationship.Create(
                 TenantId, report.Id, leader.Id,

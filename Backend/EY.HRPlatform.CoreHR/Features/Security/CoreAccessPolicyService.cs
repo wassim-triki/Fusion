@@ -14,6 +14,15 @@ public interface ICoreAccessPolicyService
     bool CanManageStructure(ClaimsPrincipal user);
     bool CanViewOrganization(ClaimsPrincipal user) => false;
     bool CanManageOrganization(ClaimsPrincipal user) => false;
+
+    /// <summary>Reads the company's jobs, places and lists: whoever works with people or the organization picks from them.</summary>
+    bool CanViewCatalog(ClaimsPrincipal user) => false;
+
+    /// <summary>Adds, changes, retires, merges and deletes jobs and places (the structure's owners).</summary>
+    bool CanManageJobsAndPlaces(ClaimsPrincipal user) => false;
+
+    /// <summary>Changes the company's lists (Settings › Lists).</summary>
+    bool CanManageLists(ClaimsPrincipal user) => false;
     bool CanViewSettings(ClaimsPrincipal user);
     bool CanManageSettings(ClaimsPrincipal user);
     bool CanViewOrganizationSettings(ClaimsPrincipal user);
@@ -72,6 +81,16 @@ public sealed class CoreAccessPolicyService : ICoreAccessPolicyService
 
     public bool CanManageOrganization(ClaimsPrincipal user)
         => user.HasCorePermission(CorePermissions.OrganizationManage, PermissionScopes.Tenant);
+
+    public bool CanViewCatalog(ClaimsPrincipal user)
+        => CanViewOrganization(user)
+            || CanViewTenantEmployees(user)
+            || CanManageEmployees(user)
+            || CanViewPeopleDataSettings(user);
+
+    public bool CanManageJobsAndPlaces(ClaimsPrincipal user) => CanManageOrganization(user);
+
+    public bool CanManageLists(ClaimsPrincipal user) => CanManagePeopleDataSettings(user);
 
     public bool CanViewSettings(ClaimsPrincipal user)
         => CanViewOrganizationSettings(user)

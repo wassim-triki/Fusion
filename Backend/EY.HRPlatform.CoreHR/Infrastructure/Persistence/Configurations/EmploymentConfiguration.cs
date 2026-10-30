@@ -22,7 +22,11 @@ public sealed class EmploymentConfiguration : IEntityTypeConfiguration<Employmen
             .HasMaxLength(20)
             .IsRequired();
 
-        builder.Property(x => x.EmploymentType).HasMaxLength(50);
+        builder.Property(x => x.EmploymentType).HasMaxLength(CompanyListValue.MaxLabelLength);
+        builder.HasOne<CompanyListValue>()
+            .WithMany()
+            .HasForeignKey(x => x.EmploymentTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Property(x => x.Source)
             .HasConversion<string>()

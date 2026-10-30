@@ -46,6 +46,12 @@ vi.mock("../changes/use-changes", () => ({
   useManagerOptions: () => mockUseManagers(),
 }));
 
+// The catalogue pickers read the company's jobs and places; here they only need to render.
+vi.mock("@/features/catalog/components/catalog-pickers", () => ({
+  JobPicker: ({ id }: { id?: string }) => <button type="button" id={id}>Pick a job</button>,
+  PlacePicker: ({ id }: { id?: string }) => <button type="button" id={id}>Pick a place</button>,
+}));
+
 import EstablishmentWorkspace from "./establishment-workspace";
 
 beforeEach(() => {
@@ -58,9 +64,8 @@ describe("EstablishmentWorkspace — Add existing", () => {
 
     expect(screen.getByRole("heading", { level: 1, name: "Add existing employee" })).toBeInTheDocument();
 
-    // Display title, not Job title
-    expect(screen.getAllByText("Display title").length).toBeGreaterThan(0);
-    expect(screen.queryByText(/Job title/i)).not.toBeInTheDocument();
+    // A job picked from the company's catalogue, not a typed title.
+    expect(screen.getAllByText("Job").length).toBeGreaterThan(0);
 
     // Manager terminology, not PrimaryManager jargon
     expect(screen.getByText("Assign a manager")).toBeInTheDocument();

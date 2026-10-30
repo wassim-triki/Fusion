@@ -22,6 +22,7 @@
         "notifications": "الإشعارات",
         "company": "الشركة",
         "employee-fields": "حقول الموظفين",
+        "lists": "القوائم",
         "roles": "الأدوار",
         "invitations": "الدعوات",
         "change-history": "سجل التغييرات",
@@ -31,7 +32,9 @@
         "reviews": "التقييمات",
         "planning": "التخطيط",
         "conversations": "المحادثات",
-        "ai-and-data": "الذكاء الاصطناعي والبيانات"
+        "ai-and-data": "الذكاء الاصطناعي والبيانات",
+        "jobs": "الوظائف",
+        "places": "أماكن العمل"
       },
       "changedBy": "عدّله <b>{actor}</b> {when}",
       "setUp": "أُعدّ {when}",

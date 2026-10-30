@@ -153,6 +153,7 @@
       "filled": "{title} marked filled",
       "closed": "{title} closed"
     },
-    "failed": "The open role wasn't saved."
+    "failed": "The open role wasn't saved.",
+    "place": "Place"
   }
 }

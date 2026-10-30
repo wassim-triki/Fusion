@@ -4,6 +4,7 @@ import { useSettingsSectionName } from "@repo/ds/shell";
 export const CORE_SETTINGS_SECTIONS = [
   { id: "company", label: "Company" },
   { id: "employee-fields", label: "Employee fields" },
+  { id: "lists", label: "Lists" },
   { id: "roles", label: "Roles" },
   { id: "invitations", label: "Invitations" },
   { id: "notifications", label: "Notifications" },
@@ -26,6 +27,7 @@ export function useCoreSettingsLabel(): (id: string) => string {
 export const AUDIT_SECTION_IDS: Record<string, CoreSettingsSectionId> = {
   organization: "company",
   "people-data": "employee-fields",
+  lists: "lists",
   provisioning: "invitations",
   "access-permissions": "roles",
   roles: "roles",

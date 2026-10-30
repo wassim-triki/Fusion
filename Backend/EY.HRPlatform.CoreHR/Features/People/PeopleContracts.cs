@@ -56,7 +56,12 @@ public sealed record PeopleWorkDto(
     string OrganizationPath,
     string? Location,
     DateTime EffectiveFrom,
-    bool IsHistorical);
+    bool IsHistorical,
+    /// <summary>The job and place from the catalogue, with the job's family and level (profile only).</summary>
+    Guid? JobId = null,
+    Guid? PlaceId = null,
+    string? JobFamily = null,
+    string? JobLevel = null);
 
 public sealed record PeopleRowDto(
     string EmployeeKey,

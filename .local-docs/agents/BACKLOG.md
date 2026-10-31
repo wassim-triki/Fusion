@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-229.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-233.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -29,14 +29,12 @@ Open work only. Agents keep it current from the conversation; closed items leave
   - [ ] **B-110** Tenant configurability as a hero: branding (logo, theme/accent, branded sign-in, own address, email branding) and internal configuration (company defaults and whatever the research puts on the ladder), depth chosen on B-163's scope page · Shell, Platform, Core HR, Identity · 2026-10-24
         User 2026-10-30: "I really wanna establish it as a core wow factor"; EY discussed it a lot but never gave specs or how far to take it. Earlier (2026-10-24) brain dump, ideas not requirements. A tenant's default language meets B-105. Context: B-071 removed the unused brand colour from Core's branding settings; Core's branding settings store a `LogoUrl` that no screen sets or shows; Company settings show name and locale.
   - [ ] **B-167** Rebuild: slices in dependency order, each end to end with screens for the taste check ([decisions](plans/B-164-decisions.md), D-01–D-30; [slices](plans/B-167-rebuild.md)) · 2026-10-30
-        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 done (✓ 2026-10-31); B-178 done (✓ 2026-10-31); B-179 done (✓ 2026-10-31); B-180 next, fresh session at high.
+        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 done (✓ 2026-10-31); B-178 done (✓ 2026-10-31); B-179 done (✓ 2026-10-31); B-180 in review (2026-10-31); B-181 next.
     - [ ] **B-198** One tab and view-switch pattern across Fusion, matching the target design: every tab strip and view switch today is reused old UI (the Organization lenses are the latest example). Define it once in `@repo/ds` from the accepted grammar (D-01 band tabs, D-17 views), first where a slice draws tabs (B-180's person page or B-183's Organization, whichever comes first), then replace every other use; B-192 checks none is left · All · 2026-10-30
+          2026-10-31: defined as `LinkTabs` in `@repo/ds/shell` (active = company color, outline + subtle fill) and used on the person page (B-180); every other tab strip and view switch still to move.
     - [ ] **B-212** Reach "their unit" for roles (D-25 draws it): Core HR's record reads and Performance resolve the viewer's unit and the units under it, then the Jobs, Personal and Plans areas offer it. Not offered in B-177 because nothing enforces it yet (`performance.cycle.view@OrgUnit` is unseeded and treated as a team) · Core HR, Performance, Identity · 2026-10-30
-    - [ ] **B-180** One person page across Core HR and Performance: tabs, Personal and Access, documents, on leave, photos (D-01, D-16) · Core HR, Performance · 2026-10-30
-          User 2026-10-31 (B-179 screen 11 vs the drawing): the band's glance row gets manager, team, time with the company and location even though the left rail repeats them (keep the rail); a ⋯ menu at the band's top right like the drawing (empty if nothing fits); sections stacked one under another as drawn, not the newspaper grid, titles inside their sections (B-225); "do as the reference, we agreed on it for a reason". Tabs and filters: active state in the tenant's theme, outline with a subtle fill (as configured before); date pickers per B-227.
-      - [ ] **B-195** Show the job's family and level on the person page's Job tab; the profile read already carries `jobFamily`, `jobLevel`, `jobId`, `placeId` (B-175) · Core HR · 2026-10-30
-      - [ ] **B-214** Split Personal details from Jobs in roles: today Core HR's one record carries both, so the two areas share their team and everyone options and move together in the role editor (B-177). With the Personal tab's sections and "who sees each" (B-180, B-181), give Personal its own keys and enforce them; then Leadership-style roles (see everyone's jobs, not their personal details) become possible · Core HR, Identity · 2026-10-30
     - [ ] **B-181** Fields: the company's own fields and sections, a gallery, who sees and changes each; records to complete (D-18) · Core HR · 2026-10-30
+      - [ ] **B-232** About on the person page's Overview (person-written, gallery fields as chips; D-01): needs the fields model, so it lands with B-181 · Core HR · 2026-10-31
       - [ ] **B-196** Where employment type is set: it's a value of the company's list since B-175 and the API takes it on hire, rejoin and the legacy update, but no form sets it (an earlier product call kept it off the hire form, held by tests). Decide with the fields model · Core HR · 2026-10-30
     - [ ] **B-182** People, the directory and invitations: HR table, portrait cards, the invite sheet, Settings › Sign-in, Export everywhere (D-11, D-13, D-28) · Core HR, Shared · 2026-10-30
       - [ ] **B-199** Redesign the hire / add-one-person form ("Add people", D-13): the current page is old UI the explorer never drew (user 2026-10-30: very bad). Design it in the accepted grammar, keep the job and place pickers from B-175 · Core HR · 2026-10-30
@@ -58,6 +56,13 @@ Open work only. Agents keep it current from the conversation; closed items leave
       - [ ] **B-194** Remove the legacy employee write endpoints (`POST /employees`, `PUT /employees/{id}`, rehire, terminate, change-manager) and their commands: no screen calls them; B-175 had to move them onto job and place ids anyway · Core HR · 2026-10-30
 
 ## In review
+
+- [ ] **B-180** One person page across Core HR and Performance: tabs, Personal and Access, documents, on leave, photos (D-01, D-16) · Core HR, Performance · 2026-10-30
+      → In review 2026-10-31 (child of B-167): [what to look at](plans/B-180-person-page.md), screens `plans/B-180-screens/` beside `ref-*`.
+      User 2026-10-31 (B-179 screen 11 vs the drawing): the band's glance row gets manager, team, time with the company and location even though the left rail repeats them (keep the rail); a ⋯ menu at the band's top right like the drawing (empty if nothing fits); sections stacked one under another as drawn, not the newspaper grid, titles inside their sections (B-225); "do as the reference, we agreed on it for a reason". Tabs and filters: active state in the tenant's theme, outline with a subtle fill (as configured before); date pickers per B-227.
+  - [ ] **B-229** On leave: dates and a type on a person, shown wherever the person appears (Performance included); slice 6's row, not in this session's ask · Core HR, Performance · 2026-10-31
+  - [ ] **B-230** Demo photos for Carthage's people (slice 6's row); every page draws initials today · Core HR · 2026-10-31
+  - [ ] **B-231** Access tab › History (the drawn account story: invited by, accepted, signed in); Identity has no per-person account history read yet · Identity, Core HR · 2026-10-31
 
 
 - [ ] **B-104** Final manual verification pass, once the big features are done (Settings, any wow feature): the user verifies B-089 phase 2 and everything since by hand, then the little stuff that's left · Performance · 2026-10-23

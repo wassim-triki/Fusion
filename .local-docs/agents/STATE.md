@@ -2,7 +2,7 @@
 
 Lets any agent resume mid-task. Update after each step. When done: log to `LOG.md`, close the item (○) or send it to In review per the review gate in `AGENTS.md`, reset these sections to None, and update `Last finished`. Accounts and seed scripts: `data/`.
 
-**Last finished:** 2026-10-31: ✓ B-179 changes and approvals (with its review round). Earlier: ✓ B-178; ✓ B-177. The B-104 hand pass still waits on the user.
+**Last finished:** 2026-10-31: → B-180 one person page (in review), ○ B-195, ○ B-214. Earlier: ✓ B-179; ✓ B-178. The B-104 hand pass still waits on the user.
 
 ## Active work
 
@@ -18,11 +18,11 @@ None.
 
 ## Decisions & reasoning
 
-None (the round's calls are in its LOG entry and the round-2 section of `plans/B-179-changes-and-approvals.md`).
+None (B-180's calls are in `plans/B-180-person-page.md`).
 
 ## Where it stands
 
-None. Next slice: B-180 (one person page) at high, fresh session; prompt in the last handover.
+None. B-180 is in review; next slice B-181 (fields).
 
 ## Open questions & blockers
 

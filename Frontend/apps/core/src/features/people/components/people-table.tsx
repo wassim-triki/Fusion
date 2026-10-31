@@ -180,7 +180,7 @@ function RowMenu({
               <ArrowLeftRight className="size-4" /> {canAll ? t("changeJob") : t("changeManager")}
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/org-chart?focus=${encodeURIComponent(person.employeeKey)}`}>
+              <Link href={`/organization?view=people&focus=${encodeURIComponent(person.employeeKey)}`}>
                 <Workflow className="size-4" /> {t("showInChart")}
               </Link>
             </DropdownMenuItem>

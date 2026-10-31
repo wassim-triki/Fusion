@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { cn } from "@repo/ds";
+import { LinkTabs } from "@repo/ds/shell";
 
 export type OrganizationLens = "structure" | "jobs" | "places";
 
@@ -12,26 +11,14 @@ const LENSES: { id: OrganizationLens; href: string }[] = [
   { id: "places", href: "/organization/places" },
 ];
 
-/** The Organization area's sibling views: its structure, the company's jobs, and the places people work. */
+/** The Organization area's sibling pages: the organization itself, the company's jobs, and the places people work. */
 export function OrganizationLenses({ active }: { active: OrganizationLens }) {
   const t = useTranslations("organization");
   return (
-    <nav aria-label={t("lenses")} className="flex items-center gap-6 border-b">
-      {LENSES.map((lens) => (
-        <Link
-          key={lens.id}
-          href={lens.href}
-          aria-current={lens.id === active ? "page" : undefined}
-          className={cn(
-            "-mb-px border-b-2 pb-2.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-            lens.id === active
-              ? "border-primary font-semibold text-foreground"
-              : "border-transparent text-muted-foreground hover:text-foreground",
-          )}
-        >
-          {t(`lens.${lens.id}`)}
-        </Link>
-      ))}
-    </nav>
+    <LinkTabs
+      label={t("lenses")}
+      current={active}
+      tabs={LENSES.map((lens) => ({ key: lens.id, href: lens.href, label: t(`lens.${lens.id}`) }))}
+    />
   );
 }

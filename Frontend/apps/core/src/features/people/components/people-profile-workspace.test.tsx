@@ -269,7 +269,7 @@ describe("PeopleProfileWorkspace", () => {
     expect(screen.getByRole("heading", { name: "Job and history" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Personal" })).toHaveAttribute("href", "/people/E-KEY-1?tab=personal");
     expect(screen.getAllByText("E000123").length).toBeGreaterThan(0);
-    expect(screen.getByRole("link", { name: /Show on the org chart/i })).toHaveAttribute("href", "/org-chart?focus=E-KEY-1");
+    expect(screen.getByRole("link", { name: /Show on the org chart/i })).toHaveAttribute("href", "/organization?view=people&focus=E-KEY-1");
     const rail = screen.getByRole("complementary", { name: "About Ada Lovelace" });
     expect(within(rail).getByRole("link", { name: /Grace Hopper/ })).toHaveAttribute("href", "/people/E-KEY-9");
     expect(screen.getByRole("link", { name: /Alan Turing/ })).toHaveAttribute("href", "/people/E-KEY-3");

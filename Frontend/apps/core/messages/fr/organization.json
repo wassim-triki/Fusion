@@ -1,6 +1,5 @@
 {
   "title": "Organisation",
-  "description": "Définissez la structure de votre organisation.",
   "layingOut": "Mise en page de la hiérarchie…",
   "events": {
     "Created": "Création",
@@ -80,18 +79,18 @@
     "clearSearch": "Effacer la recherche"
   },
   "views": {
-    "label": "Représentation de la structure",
-    "chartLabel": "Vue organigramme",
-    "chart": "Schéma",
-    "outlineLabel": "Vue liste",
-    "outline": "Liste"
+    "label": "Vues de l'organisation",
+    "people": "Personnes",
+    "structure": "Structure",
+    "list": "Liste"
   },
   "toolbar": {
     "addUnit": "Ajouter une unité",
     "import": "Importer une structure",
     "more": "Autres actions sur l’organisation",
     "export": "Exporter la structure",
-    "manageTypes": "Gérer les types d’unité"
+    "manageTypes": "Gérer les types d’unité",
+    "plannedUnits": "Changements d'unités prévus ({count})"
   },
   "workspaceLabel": "Espace de structure de l’organisation",
   "noUnitsForDate": "Aucune unité n’est en vigueur à cette date.",
@@ -274,12 +273,13 @@
     "unit": "Unité",
     "type": "Type",
     "code": "Code",
-    "effective": "En vigueur",
     "collapse": "Replier {name}",
     "expand": "Déplier {name}",
     "addChild": "Ajouter une sous-unité à {name}",
     "drag": "Faire glisser pour déplacer {name}",
-    "dragHint": "Faire glisser pour déplacer"
+    "dragHint": "Faire glisser pour déplacer",
+    "head": "Responsable",
+    "people": "Personnes"
   },
   "chart": {
     "expand": "{count, plural, one {Déplier {name}, # unité masquée} other {Déplier {name}, # unités masquées}}",
@@ -289,15 +289,60 @@
     "dropToReview": "Relâchez pour vérifier",
     "cantDrop": "Impossible de déposer ici",
     "dropOnto": "Déposez sur une nouvelle unité parente",
-    "overview": "Aperçu de l’organigramme"
+    "overview": "Aperçu de l’organigramme",
+    "nobody": "Personne pour l'instant",
+    "people": "{count, plural, one {# personne} other {# personnes}}"
   },
   "accessible": {
     "under": "{name}, {type}, code {code}, sous {path}",
     "root": "{name}, {type}, code {code}, racine de l’organisation"
   },
   "lens": {
-    "structure": "Structure",
+    "structure": "Organisation",
     "jobs": "Postes",
     "places": "Lieux"
+  },
+  "place": {
+    "meta": "{people, plural, one {# personne} other {# personnes}} · {units, plural, one {# unité} other {# unités}}"
+  },
+  "openPage": "Ouvrir sa page",
+  "time": {
+    "today": "Aujourd'hui",
+    "past": "Dans le passé",
+    "planned": "Prévu",
+    "todayButton": "Aujourd'hui",
+    "replay": "Rejouer",
+    "stop": "Arrêter",
+    "asOf": "Date",
+    "people": "{count, plural, one {# personne} other {# personnes}}"
+  },
+  "planned": {
+    "title": "Prévu",
+    "hint": "Ouvrez-en un pour voir l'organigramme à sa date",
+    "none": "Rien de prévu."
+  },
+  "unitPage": {
+    "back": "Organisation",
+    "typeIn": "{type} dans {parent}",
+    "onChart": "Voir sur l'organigramme",
+    "head": "Responsable",
+    "people": "Personnes",
+    "units": "Unités rattachées",
+    "openRoles": "Postes ouverts",
+    "today": "Aujourd'hui",
+    "asOf": "Au",
+    "nobody": "Personne ne travaille ici à cette date.",
+    "nobodyYet": "Personne pour l'instant",
+    "reportsTo": "Rattaché à {name}",
+    "onHold": "En attente",
+    "startsBy": "Début au plus tard le {date}",
+    "open": "Ouvert",
+    "noRoles": "Aucun poste ouvert.",
+    "error": "Impossible de charger cette unité.",
+    "retry": "Réessayer",
+    "access": {
+      "title": "Les pages d'unité ne vous sont pas ouvertes",
+      "description": "Elles montrent toutes les personnes d'une unité. Demandez à un administrateur l'organigramme de toute l'entreprise."
+    }
   }
 }

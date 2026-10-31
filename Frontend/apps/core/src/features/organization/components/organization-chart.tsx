@@ -21,16 +21,20 @@ import {
 import { ChevronDown, ChevronRight, GripVertical, Plus } from "lucide-react";
 import { Button, cn } from "@repo/ds";
 import { AnchorViewport, layoutTree, useAnchoredToggle } from "@repo/ds/flow";
+import type { UnitStaffingDto } from "@repo/api";
+import { Monogram } from "@/features/people/components/workforce-ui";
 import type { OrganizationHierarchyModel } from "../model/hierarchy";
 import { isInvalidMoveTarget, organizationAccessibleName } from "../model/hierarchy";
 
 const NODE_WIDTH = 244;
-const NODE_HEIGHT = 78;
+const NODE_HEIGHT = 104;
 
 const MAX_ZOOM = 1.5;
 // Default framing zoom = "level 9": max zoom followed by 8 zoom-out clicks.
 // React Flow's zoom control steps by a factor of 1.2 per click, so 1.5 / 1.2^8.
 const DEFAULT_ZOOM = MAX_ZOOM / 1.2 ** 8;
+// The entry framing never goes below this: smaller and the unit cards can't be read.
+const ENTRY_MIN_ZOOM = 0.55;
 
 type OrganizationNodeData = Record<string, unknown> & {
   id: string;
@@ -51,6 +55,9 @@ type OrganizationNodeData = Record<string, unknown> & {
   validDrop: boolean;
   invalidDrop: boolean;
   revealed: boolean;
+  /** People in the unit and below on the chart's date; null while unknown (no counts for this viewer or date). */
+  people: number | null;
+  head: { name: string; photoUrl: string | null } | null;
   onSelect: (id: string) => void;
   onToggle: (id: string) => void;
   onAddChild: (id: string) => void;
@@ -69,7 +76,8 @@ const OrganizationNode = memo(function OrganizationNode({ data }: NodeProps<Orga
         // React Flow sets pointer-events:none on non-draggable nodes (root, and
         // every node in read-only as-of views); re-enable so the card stays
         // selectable/inspectable and its disclosure stays operable.
-        "group pointer-events-auto relative h-[78px] w-[244px] rounded-surface bg-card shadow-raised transition-[border-color,box-shadow,opacity,background-color,transform] duration-500 motion-reduce:transition-none",
+        "group pointer-events-auto relative h-[104px] w-[244px] rounded-surface bg-card shadow-raised transition-[border-color,box-shadow,opacity,background-color,transform] duration-500 motion-reduce:transition-none",
+        data.people === 0 && "border border-dashed border-input bg-transparent shadow-none",
         data.root && "border-primary/40 bg-[color-mix(in_oklab,var(--primary)_4%,var(--card))]",
         !data.selected && !data.validDrop && !data.invalidDrop && "hover:border-foreground/25",
         // A descendant of the selected node: part of the highlighted branch, but clearly
@@ -93,15 +101,18 @@ const OrganizationNode = memo(function OrganizationNode({ data }: NodeProps<Orga
         // eslint-disable-next-line no-restricted-syntax -- a chart node toggles its own selection; not a choice among options
         aria-pressed={data.selected}
         onClick={() => data.onSelect(data.id)}
-        className="flex h-full w-full flex-col justify-center gap-1 rounded-control px-3.5 text-start outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+        className="grid h-full w-full grid-rows-[1fr_auto] rounded-surface text-start outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
       >
-        <span className="truncate pe-14 text-sm font-semibold leading-tight text-foreground">
-          {data.name}
+        <span className={cn("grid content-center gap-0.5 px-3.5", data.people === 0 && "opacity-60")}>
+          <span className="truncate pe-14 text-sm font-semibold leading-tight text-foreground">{data.name}</span>
+          <span className="truncate text-xs text-muted-foreground">{data.typeName}</span>
         </span>
-        <span className="flex min-w-0 items-center gap-1.5 pe-2 text-xs text-muted-foreground">
-          <span className="truncate">{data.typeName}</span>
-          <span aria-hidden className="text-muted-foreground/50">·</span>
-          <span className="shrink-0 font-mono text-[11px] uppercase tracking-wide">{data.code}</span>
+        <span className={cn("flex min-w-0 items-center gap-2 border-t px-3.5 py-2 text-xs text-muted-foreground", data.people === 0 && "border-dashed border-input opacity-60")}>
+          {data.head ? <Monogram name={data.head.name} photoUrl={data.head.photoUrl} size="sm" className="size-5 text-[9px]" /> : null}
+          <span className="min-w-0 flex-1 truncate">{data.head?.name ?? (data.people === 0 ? t("chart.nobody") : "")}</span>
+          {data.people !== null ? (
+            <span className="shrink-0 font-semibold tabular-nums text-foreground" title={t("chart.people", { count: data.people })}>{data.people}</span>
+          ) : null}
         </span>
       </button>
       {data.hasChildren ? (
@@ -224,6 +235,8 @@ export interface OrganizationChartProps {
   collapsed: ReadonlySet<string>;
   selectedId: string | null;
   revealedIds?: ReadonlySet<string>;
+  /** Each unit's people and head on the chart's date, when the viewer may read them. */
+  staffing?: ReadonlyMap<string, UnitStaffingDto>;
   canManage: boolean;
   readOnly: boolean;
   onSelect: (id: string) => void;
@@ -234,11 +247,15 @@ export interface OrganizationChartProps {
 
 const EMPTY_IDS: ReadonlySet<string> = new Set();
 
+const headOf = (unit: UnitStaffingDto | undefined) =>
+  unit?.head ? { name: unit.head.displayName, photoUrl: unit.head.photoUrl } : null;
+
 export default function OrganizationChart({
   model,
   collapsed,
   selectedId,
   revealedIds = EMPTY_IDS,
+  staffing,
   canManage,
   readOnly,
   onSelect,
@@ -307,7 +324,7 @@ export default function OrganizationChart({
       nodeWidth: NODE_WIDTH,
       nodeHeight: NODE_HEIGHT,
       nodesep: 8,
-      ranksep: 260,
+      ranksep: 72,
       margin: 40,
     });
 
@@ -348,6 +365,8 @@ export default function OrganizationChart({
             validDrop: isCandidate && !isInvalidMoveTarget(model, dragSource!, id),
             invalidDrop: isCandidate && isInvalidMoveTarget(model, dragSource!, id),
             revealed: revealedIds.has(id),
+            people: staffing?.get(id)?.people ?? null,
+            head: headOf(staffing?.get(id)),
             onSelect,
             onToggle: handleToggle,
             onAddChild,
@@ -372,7 +391,7 @@ export default function OrganizationChart({
         };
       }),
     };
-  }, [canManage, collapsed, dragSource, dropTarget, handleToggle, model, onAddChild, onSelect, readOnly, revealedIds, say, selectedId]);
+  }, [canManage, collapsed, dragSource, dropTarget, handleToggle, model, onAddChild, onSelect, readOnly, revealedIds, say, selectedId, staffing]);
 
   nodesRef.current = nodes;
 
@@ -396,10 +415,8 @@ export default function OrganizationChart({
       const root = current.find((node) => model.roots.includes(node.id)) ?? current[0];
       if (!root) return;
       framedRef.current = dataKey;
-      void instance.setCenter(root.position.x + NODE_WIDTH * 2.5, root.position.y + NODE_HEIGHT / 2, {
-        zoom: DEFAULT_ZOOM,
-        duration: reduceMotion() ? 0 : 240,
-      });
+      // The whole visible tree at a readable size; a wide one keeps its top centred and scrolls sideways.
+      void instance.fitView({ padding: 0.12, minZoom: ENTRY_MIN_ZOOM, maxZoom: 1, duration: reduceMotion() ? 0 : 240 });
     },
     [autoFrame, dataKey, model.roots]
   );

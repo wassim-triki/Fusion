@@ -109,10 +109,39 @@ export interface OrgChartChangeDto {
   person: OrgChartPersonDto | null;
 }
 
+/** One unit as of a date: people in it and below, those placed in it, its head (whole-chart viewers only), open roles below it. */
+export interface UnitStaffingDto {
+  unitId: string;
+  people: number;
+  direct: number;
+  head: OrgChartPersonDto | null;
+  openRoles: number;
+}
+
+/** `GET /api/corehr/org-chart/staffing`: every unit as of a date (another date than today is for HR). */
+export interface OrganizationStaffingDto {
+  asOf: string;
+  /** The company's first day in Fusion (yyyy-mm-dd): where the time slider starts. */
+  firstDate: string | null;
+  units: UnitStaffingDto[];
+}
+
+/** `GET /api/corehr/org-chart/units/{id}`: a unit's page (whole-chart viewers with Organization view). */
+export interface OrganizationUnitPeopleDto {
+  unitId: string;
+  asOf: string;
+  head: OrgChartPersonDto | null;
+  /** Everyone in the unit and the units under it; each card carries its unit. */
+  people: OrgChartPersonDto[];
+  openRoles: OrgChartOpenRoleDto[];
+}
+
 export const coreOrgChartPaths = {
   chart: () => "/corehr/org-chart",
   search: () => "/corehr/org-chart/search",
   changes: () => "/corehr/org-chart/changes",
+  staffing: () => "/corehr/org-chart/staffing",
+  unit: (id: string) => `/corehr/org-chart/units/${encodeURIComponent(id)}`,
   openRoles: () => "/corehr/org-chart/open-roles",
   openRole: (id: string) => `/corehr/org-chart/open-roles/${encodeURIComponent(id)}`,
 } as const;
@@ -123,6 +152,8 @@ export const coreOrgChartQueryKeys = {
   branch: (asOf: string | null, root: string) => [...coreOrgChartQueryKeys.all(), asOf ?? "today", "branch", root] as const,
   search: (asOf: string | null, query: string) => [...coreOrgChartQueryKeys.all(), asOf ?? "today", "search", query] as const,
   changes: (from: string, to: string) => [...coreOrgChartQueryKeys.all(), "changes", from, to] as const,
+  staffing: (asOf: string) => [...coreOrgChartQueryKeys.all(), asOf, "staffing"] as const,
+  unit: (id: string, asOf: string) => [...coreOrgChartQueryKeys.all(), asOf, "unit", id] as const,
 };
 
 export function createCoreOrgChartApi(client: ApiClient) {
@@ -138,6 +169,10 @@ export function createCoreOrgChartApi(client: ApiClient) {
     /** `GET /api/corehr/org-chart/changes`: HR only, both days included, two years at most. */
     changes: (from: string, to: string, signal?: AbortSignal) =>
       client.get<OrgChartChangeDto[]>(coreOrgChartPaths.changes(), { params: { from, to }, signal }),
+    staffing: (asOf: string, signal?: AbortSignal) =>
+      client.get<OrganizationStaffingDto>(coreOrgChartPaths.staffing(), { params: { asOf }, signal }),
+    unit: (id: string, asOf: string, signal?: AbortSignal) =>
+      client.get<OrganizationUnitPeopleDto>(coreOrgChartPaths.unit(id), { params: { asOf }, signal }),
     createOpenRole: (request: OpenRoleRequest) => client.post<OrgChartOpenRoleDto>(coreOrgChartPaths.openRoles(), request),
     updateOpenRole: (id: string, request: OpenRoleRequest) => client.put<OrgChartOpenRoleDto>(coreOrgChartPaths.openRole(id), request),
   };

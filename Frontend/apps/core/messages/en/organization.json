@@ -1,6 +1,5 @@
 {
   "title": "Organization",
-  "description": "Define how your organization is structured.",
   "layingOut": "Laying out the hierarchy…",
   "events": {
     "Created": "Created",
@@ -80,18 +79,18 @@
     "clearSearch": "Clear search"
   },
   "views": {
-    "label": "Structure representation",
-    "chartLabel": "Chart view",
-    "chart": "Chart",
-    "outlineLabel": "Outline view",
-    "outline": "Outline"
+    "label": "Organization views",
+    "people": "People",
+    "structure": "Structure",
+    "list": "List"
   },
   "toolbar": {
     "addUnit": "Add unit",
     "import": "Import structure",
     "more": "More Organization actions",
     "export": "Export structure",
-    "manageTypes": "Manage Unit Types"
+    "manageTypes": "Manage Unit Types",
+    "plannedUnits": "Planned unit changes ({count})"
   },
   "workspaceLabel": "Organization Structure workspace",
   "noUnitsForDate": "No Organizational Units resolve for this date.",
@@ -274,12 +273,13 @@
     "unit": "Organizational unit",
     "type": "Type",
     "code": "Business code",
-    "effective": "Effective",
     "collapse": "Collapse {name}",
     "expand": "Expand {name}",
     "addChild": "Add child to {name}",
     "drag": "Drag to move {name}",
-    "dragHint": "Drag to move"
+    "dragHint": "Drag to move",
+    "head": "Head",
+    "people": "People"
   },
   "chart": {
     "expand": "{count, plural, one {Expand {name}, # hidden unit} other {Expand {name}, # hidden units}}",
@@ -289,15 +289,60 @@
     "dropToReview": "Drop to review",
     "cantDrop": "Can’t drop here",
     "dropOnto": "Drop onto a new parent",
-    "overview": "Organization chart overview"
+    "overview": "Organization chart overview",
+    "nobody": "Nobody yet",
+    "people": "{count, plural, one {# person} other {# people}}"
   },
   "accessible": {
     "under": "{name}, {type}, code {code}, under {path}",
     "root": "{name}, {type}, code {code}, organization root"
   },
   "lens": {
-    "structure": "Structure",
+    "structure": "Organization",
     "jobs": "Jobs",
     "places": "Places"
+  },
+  "place": {
+    "meta": "{people, plural, one {# person} other {# people}} · {units, plural, one {# unit} other {# units}}"
+  },
+  "openPage": "Open its page",
+  "time": {
+    "today": "Today",
+    "past": "In the past",
+    "planned": "Planned",
+    "todayButton": "Today",
+    "replay": "Replay",
+    "stop": "Stop",
+    "asOf": "Date",
+    "people": "{count, plural, one {# person} other {# people}}"
+  },
+  "planned": {
+    "title": "Planned",
+    "hint": "Open one to see the chart on its date",
+    "none": "Nothing planned."
+  },
+  "unitPage": {
+    "back": "Organization",
+    "typeIn": "{type} in {parent}",
+    "onChart": "See on the chart",
+    "head": "Head",
+    "people": "People",
+    "units": "Units under it",
+    "openRoles": "Open roles",
+    "today": "Today",
+    "asOf": "As of",
+    "nobody": "Nobody works here on this date.",
+    "nobodyYet": "Nobody yet",
+    "reportsTo": "Reports to {name}",
+    "onHold": "On hold",
+    "startsBy": "Starts by {date}",
+    "open": "Open",
+    "noRoles": "No open roles.",
+    "error": "This unit couldn't load.",
+    "retry": "Try again",
+    "access": {
+      "title": "Unit pages aren't open to you",
+      "description": "They show everyone in a unit. Ask an administrator for the whole company's org chart."
+    }
   }
 }

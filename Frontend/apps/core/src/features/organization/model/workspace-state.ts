@@ -63,7 +63,7 @@ export function todayCalendarDate(now = new Date()) {
 
 export function readOrganizationUrlState(params: URLSearchParams, today = todayCalendarDate()): OrganizationUrlState {
   return {
-    representation: params.get("view") === "outline" ? "outline" : "chart",
+    representation: params.get("view") === "list" ? "outline" : "chart",
     asOf: params.get("asOf") || today,
     selectedId: params.get("unit"),
     search: params.get("q") ?? "",
@@ -72,7 +72,7 @@ export function readOrganizationUrlState(params: URLSearchParams, today = todayC
 
 export function writeOrganizationUrlState(state: OrganizationUrlState, today = todayCalendarDate()) {
   const params = new URLSearchParams();
-  if (state.representation === "outline") params.set("view", "outline");
+  if (state.representation === "outline") params.set("view", "list");
   if (state.asOf !== today) params.set("asOf", state.asOf);
   if (state.selectedId) params.set("unit", state.selectedId);
   if (state.search) params.set("q", state.search);

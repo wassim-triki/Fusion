@@ -268,7 +268,7 @@ export default function PeopleProfileWorkspace({
   // changes describes one for their direct reports (B-179).
   const proposesHere = rights.propose && !canManage && managesThisPerson;
   const showActions = (rights.lines || proposesHere) && !isAsOf && (!isFormer || canManage);
-  const orgChartHref = orgChart.canSee ? `/org-chart?focus=${encodeURIComponent(employeeKey)}` : undefined;
+  const orgChartHref = orgChart.canSee ? `/organization?view=people&focus=${encodeURIComponent(employeeKey)}` : undefined;
   const goAsOf = (date: string) => router.push(`${pathname}?asOf=${date}${tab === "overview" ? "" : `&tab=${tab}`}`);
   const returnToToday = () => router.push(tab === "overview" ? pathname : `${pathname}?tab=${tab}`);
 

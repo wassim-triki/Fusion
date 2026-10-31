@@ -47,8 +47,8 @@ export function CoreSidebar() {
     if (item.href === "/team") return canSeeMyTeam;
     // Everyone has People: HR's table, the directory for everyone else (D-28).
     if (item.href === "/people") return canSeeEmployeeRoster || canAccessEmployeeProfile(user);
-    if (item.href === "/org-chart") return canSeeOrgChart;
-    if (item.href === "/organization") return canSeeOrganization;
+    // One place for the organization: its people chart, structure and list (D-17).
+    if (item.href === "/organization") return canSeeOrganization || canSeeOrgChart;
     if (item.href === "/changes") return canApproveCoreChanges(user) || canProposeCoreChanges(user) || canManageCoreEmployees(user);
     return true;
   });

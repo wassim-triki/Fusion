@@ -47,11 +47,11 @@ describe("Organization hierarchy model", () => {
 describe("Organization workspace state", () => {
   it("round-trips representation, date, selection, and search", () => {
     const state = readOrganizationUrlState(
-      new URLSearchParams("view=outline&asOf=2026-09-01&unit=technology&q=tech"),
+      new URLSearchParams("view=list&asOf=2026-09-01&unit=technology&q=tech"),
       "2026-08-09"
     );
     expect(writeOrganizationUrlState(state, "2026-08-09").toString()).toBe(
-      "view=outline&asOf=2026-09-01&unit=technology&q=tech"
+      "view=list&asOf=2026-09-01&unit=technology&q=tech"
     );
   });
 

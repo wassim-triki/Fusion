@@ -136,7 +136,7 @@ export default function TeamWorkspace() {
         actions={
           orgChart.canSee ? (
             <Button asChild variant="outline" size="sm">
-              <Link href="/org-chart">{t("showInChart")}</Link>
+              <Link href="/organization?view=people">{t("showInChart")}</Link>
             </Button>
           ) : undefined
         }

@@ -1,5 +1,4 @@
 {
-  "title": "Org chart",
   "meta": "{people, plural, one {# person} other {# people}} · {divisions, plural, =0 {no divisions} one {# division} other {# divisions}}{open, plural, =0 {} one { · # open role} other { · # open roles}}",
   "views": {
     "label": "View",
@@ -105,14 +104,6 @@
     }
   },
   "showInChart": "Show in org chart",
-  "time": {
-    "asOf": "Org chart as of",
-    "today": "Today",
-    "todayDate": "Today, {date}",
-    "summary": "{people, plural, one {# person} other {# people}}{coming, plural, =0 {} one { · # change coming} other { · # changes coming}}",
-    "replay": "Replay",
-    "stop": "Stop"
-  },
   "role": {
     "hiring": "Hiring",
     "hiringFrom": "Hiring · from {date}",

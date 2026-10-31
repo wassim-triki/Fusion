@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { AlertTriangle, ArrowLeftRight, Briefcase, Maximize, Minus, Play, Plus, Search, Square, X } from "lucide-react";
+import { AlertTriangle, ArrowLeftRight, Briefcase, Maximize, Minus, Plus, Search, X } from "lucide-react";
 import type { ChangePersonRef, OrgChartDto, OrgChartOpenRoleDto, OrgChartPersonDto, WorkforceChangeDto } from "@repo/api";
 import {
   canAccessCorePeople,
@@ -31,10 +31,10 @@ import {
   cn,
 } from "@repo/ds";
 import { FilterChips, Segmented } from "@repo/ds/choice";
-import { PageHeader, PagePermissionNotice } from "@repo/ds/shell";
+import { PagePermissionNotice } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { canAccessEmployeeRoster } from "@/lib/employee-roster-access";
-import { useOrgChart, useOrgChartBranches, useOrgChartChanges, useOrgChartSearch, usePrefetchOrgChart, useReviewProgress } from "../api/use-org-chart";
+import { useOrgChart, useOrgChartBranches, useOrgChartChanges, useOrgChartSearch, useReviewProgress } from "../api/use-org-chart";
 import { useOrgChartAccess } from "../api/use-org-chart-access";
 import {
   HR_LENSES,
@@ -45,8 +45,6 @@ import {
   buildTree,
   centerOn,
   createLens,
-  dayAt,
-  dayIndex,
   dottedPath,
   edgePath,
   fitTo,
@@ -60,9 +58,7 @@ import {
   layoutChart,
   litLine,
   mergeWindows,
-  monthTicks,
   parentOf,
-  replaySteps,
   roleId,
   searchPeople,
   stepFrom,
@@ -90,28 +86,27 @@ type OpenRoleEdit = { editing: OrgChartOpenRoleDto | null; manager: ChangePerson
 /** The dashed card a new role previews as, until it is saved. */
 const DRAFT_ROLE = "draft";
 const SETTLE_MS = 470;
-/** Replay holds each quarter long enough for the cards to settle. */
-const REPLAY_STEP_MS = 650;
 /** A windowed chart asks Core HR once typing pauses. */
 const SEARCH_PAUSE_MS = 200;
 const NO_ROOTS: string[] = [];
 
 type FitRequest = { mode: "fit" | "top" } | { mode: "centre"; id: string; s: number } | null;
 
-export default function OrgChartWorkspace() {
+/**
+ * Organization's People view: the people org chart on the Organization's date (null is today; another date is for
+ * HR). The previous chart stays on screen while the next date loads; during Replay the camera fits each step.
+ */
+export default function OrgChartWorkspace({ asOf, replaying }: { asOf: string | null; replaying: boolean }) {
   const t = useTranslations("orgChart");
   const { user } = useAuth();
   const access = useOrgChartAccess();
   const canView = access.canSee;
-  // HR's time bar: null is today. The previous chart stays on screen while the next date loads.
-  const [asOf, setAsOf] = useState<string | null>(null);
   const chart = useOrgChart(asOf);
 
-  if (access.isLoading) return <Frame title={t("title")}><StageSkeleton /></Frame>;
+  if (access.isLoading) return <Frame><StageSkeleton /></Frame>;
   if (!canView) {
     return (
       <div className="p-6">
-        <PageHeader title={t("title")} />
         <PagePermissionNotice
           title={t(access.narrowed ? "access.narrowed.title" : "access.title")}
           description={t(access.narrowed ? "access.narrowed.description" : "access.description")}
@@ -119,10 +114,10 @@ export default function OrgChartWorkspace() {
       </div>
     );
   }
-  if (chart.isLoading || (!chart.data && !chart.error)) return <Frame title={t("title")}><StageSkeleton /></Frame>;
+  if (chart.isLoading || (!chart.data && !chart.error)) return <Frame><StageSkeleton /></Frame>;
   if (chart.error || !chart.data) {
     return (
-      <Frame title={t("title")}>
+      <Frame>
         <div className="grid flex-1 place-items-center bg-section px-6">
           <Alert variant="destructive" className="max-w-xl">
             <AlertTriangle className="size-4" />
@@ -140,7 +135,7 @@ export default function OrgChartWorkspace() {
   }
   if (!chart.data.people.length) {
     return (
-      <Frame title={t("title")}>
+      <Frame>
         <div className="grid flex-1 place-items-center bg-section px-6">
           <div className="grid justify-items-center gap-3">
             <p className="type-body-secondary">{t("states.empty")}</p>
@@ -152,24 +147,17 @@ export default function OrgChartWorkspace() {
       </Frame>
     );
   }
-  return <OrgChart data={chart.data} asOf={asOf} onAsOf={setAsOf} />;
+  return <OrgChart data={chart.data} asOf={asOf} replaying={replaying} />;
 }
 
-function Frame({ title, description, actions, children }: { title: string; description?: string; actions?: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <div className="flex h-[calc(100dvh-4rem)] min-h-[680px] flex-col overflow-hidden">
-      <header className="shrink-0 px-6 pt-5">
-        <PageHeader title={title} description={description} actions={actions} className="mb-4" />
-      </header>
-      {children}
-    </div>
-  );
+function Frame({ children }: { children: React.ReactNode }) {
+  return <div className="flex h-full flex-col overflow-hidden">{children}</div>;
 }
 
 function StageSkeleton() {
   return (
     <>
-      <div className="flex shrink-0 items-center gap-3 border-y px-6 py-3">
+      <div className="flex shrink-0 items-center gap-3 border-b px-4 py-3">
         <Skeleton className="h-9 w-72 rounded-control" />
         <Skeleton className="h-9 w-40 rounded-control" />
       </div>
@@ -186,7 +174,7 @@ function StageSkeleton() {
   );
 }
 
-function OrgChart({ data, asOf, onAsOf }: { data: OrgChartDto; asOf: string | null; onAsOf: (date: string | null) => void }) {
+function OrgChart({ data, asOf, replaying }: { data: OrgChartDto; asOf: string | null; replaying: boolean }) {
   const t = useTranslations("orgChart");
   const tc = useTranslations("changes");
   const { user } = useAuth();
@@ -197,7 +185,6 @@ function OrgChart({ data, asOf, onAsOf }: { data: OrgChartDto; asOf: string | nu
   const today = useMemo(() => isoDay(Date.now()), []);
   const date = asOf ?? today;
   const range = useMemo(() => timeWindow(today), [today]);
-  const [replaying, setReplaying] = useState(false);
   const showsChanges = hr && !replaying && date >= range.lo && date < range.hi;
   // Review progress is today's, from Performance: offered to anyone who can enter it, on today's chart only.
   const reviewLens = canEnterPerformance(user) && date === today;
@@ -263,7 +250,7 @@ function OrgChart({ data, asOf, onAsOf }: { data: OrgChartDto; asOf: string | nu
 
   const requested = params.get("focus");
   const initialFocus = requested && tree.people.has(requested) ? requested : tree.viewerKey;
-  const [view, setView] = useState<OrgView>(params.get("view") === "company" || !initialFocus ? "company" : "focus");
+  const [view, setView] = useState<OrgView>(params.get("chart") === "company" || !initialFocus ? "company" : "focus");
   const [focus, setFocus] = useState<string | null>(initialFocus);
   const [folded, setFolded] = useState<Set<string>>(() => new Set());
   const [unfolded, setUnfolded] = useState<Set<string>>(() => new Set());
@@ -534,44 +521,23 @@ function OrgChart({ data, asOf, onAsOf }: { data: OrgChartDto; asOf: string | nu
     setLit(null);
     relayout({ mode: next === "focus" ? "top" : "fit" });
   };
-  const replayRun = useRef(0);
-  const prefetch = usePrefetchOrgChart();
-  const stopReplay = () => {
-    replayRun.current += 1;
-    setReplaying(false);
-  };
-  const changeDate = (next: string) => {
-    stopReplay();
-    setAnimate(true);
-    onAsOf(next === today ? null : next);
-  };
-  /** Replay: the company from its first day to today, a quarter at a time, the camera fitting it as it grows. */
-  const replay = async () => {
-    if (replaying) {
-      stopReplay();
-      return;
-    }
-    const starts = data.people.map((p) => p.startDate).filter((d): d is string => Boolean(d)).sort();
-    const first = data.window?.firstStartDate ?? starts[0] ?? today;
-    const run = ++replayRun.current;
-    setReplaying(true);
+  // Replay (Organization's time bar): the whole company, the camera fitting it as it grows at each step.
+  useEffect(() => {
+    if (!replaying) return;
     setView("company");
     setSelected(null);
     setLit(null);
-    for (const step of replaySteps(first, today)) {
-      await prefetch(step).catch(() => undefined);
-      if (replayRun.current !== run) return;
-      onAsOf(step === today ? null : step);
-      relayout({ mode: "fit" });
-      await new Promise((resolve) => window.setTimeout(resolve, REPLAY_STEP_MS));
-      if (replayRun.current !== run) return;
-    }
-    setReplaying(false);
-  };
+  }, [replaying]);
+  const stepKey = `${data.asOf}|${replaying}`;
+  const lastStep = useRef(stepKey);
   useEffect(() => {
-    const run = replayRun;
-    return () => { run.current += 1; };
-  }, []);
+    if (lastStep.current === stepKey) return;
+    lastStep.current = stepKey;
+    setAnimate(true);
+    if (replaying) relayout({ mode: "fit" });
+    // relayout is recreated each render; the step is what matters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stepKey]);
 
   const copyEmail = (person: OrgChartPersonDto) => {
     if (!person.workEmail) return;
@@ -683,10 +649,8 @@ function OrgChart({ data, asOf, onAsOf }: { data: OrgChartDto; asOf: string | nu
   };
 
   return (
-    <Frame
-      title={t("title")}
-      description={t("meta", { people: headcount, divisions, open: openCount })}
-      actions={
+    <Frame>
+      <div className="flex shrink-0 items-center gap-3 border-b bg-card px-4 py-3">
         <Segmented
           label={t("views.label")}
           value={view}
@@ -696,9 +660,6 @@ function OrgChart({ data, asOf, onAsOf }: { data: OrgChartDto; asOf: string | nu
             { value: "company" as const, label: t("views.company") },
           ]}
         />
-      }
-    >
-      <div className="flex shrink-0 items-center gap-3 border-y px-6 py-3">
         <div className="relative w-80 max-w-full">
           <Search className="pointer-events-none absolute inset-s-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -750,19 +711,7 @@ function OrgChart({ data, asOf, onAsOf }: { data: OrgChartDto; asOf: string | nu
             <SelectItem value="none">{t("lens.none")}</SelectItem>
           </SelectContent>
         </Select>
-        {hr ? (
-          <TimeBar
-            date={date}
-            today={today}
-            lo={range.lo}
-            hi={range.hi}
-            people={headcount}
-            coming={new Set((upcoming ?? []).map((item) => item.employeeKey)).size}
-            replaying={replaying}
-            onDate={changeDate}
-            onReplay={() => void replay()}
-          />
-        ) : null}
+        <p className="ms-auto type-meta text-muted-foreground">{t("meta", { people: headcount, divisions, open: openCount })}</p>
       </div>
 
       <div
@@ -952,64 +901,6 @@ function OrgChart({ data, asOf, onAsOf }: { data: OrgChartDto; asOf: string | nu
         ) : null}
       </div>
     </Frame>
-  );
-}
-
-/** HR's date control: the canvas's slider over the year with month ticks and Today, plus Replay. */
-function TimeBar({
-  date, today, lo, hi, people, coming, replaying, onDate, onReplay,
-}: {
-  date: string;
-  today: string;
-  lo: string;
-  hi: string;
-  people: number;
-  coming: number;
-  replaying: boolean;
-  onDate: (date: string) => void;
-  onReplay: () => void;
-}) {
-  const t = useTranslations("orgChart.time");
-  const format = useFormat();
-  const span = dayIndex(hi) - dayIndex(lo);
-  const at = (day: string) => `${((dayIndex(day) - dayIndex(lo)) / span) * 100}%`;
-  const value = Math.min(dayIndex(hi), Math.max(dayIndex(lo), dayIndex(date)));
-  const shown = format.date(date, { year: "always" });
-  return (
-    <div className="oc-timebar ms-auto">
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={onReplay}
-        // eslint-disable-next-line no-restricted-syntax -- the replay button toggles one thing on and off
-        aria-pressed={replaying}
-      >
-        {replaying ? <Square /> : <Play />}
-        {replaying ? t("stop") : t("replay")}
-      </Button>
-      <div className="oc-track">
-        <input
-          type="range"
-          min={dayIndex(lo)}
-          max={dayIndex(hi)}
-          value={value}
-          aria-label={t("asOf")}
-          aria-valuetext={shown}
-          onChange={(event) => onDate(dayAt(Number(event.target.value)))}
-        />
-        <div className="oc-ticks">
-          {monthTicks(lo, hi, today).map((month) => (
-            <span key={month} aria-hidden style={{ insetInlineStart: at(month) }}>{format.parts(month, { month: "short" })}</span>
-          ))}
-          <button type="button" className="oc-today" style={{ insetInlineStart: at(today) }} onClick={() => onDate(today)}>{t("today")}</button>
-        </div>
-      </div>
-      <p className="oc-timeinfo" aria-live="polite">
-        <b>{date === today ? t("todayDate", { date: shown }) : shown}</b>
-        {t("summary", { people, coming })}
-      </p>
-    </div>
   );
 }
 

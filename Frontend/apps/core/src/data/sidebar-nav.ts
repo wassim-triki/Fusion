@@ -6,7 +6,6 @@ import {
   Stamp,
   User,
   Users,
-  Workflow,
 } from "lucide-react";
 import { type ShellNavSection } from "@repo/ds/shell";
 
@@ -18,7 +17,6 @@ export const PEOPLE_NAV: ShellNavSection = {
     { label: "myProfile", href: "/profile", icon: User },
     { label: "myTeam", href: "/team", icon: Users },
     { label: "peopleDirectory", href: "/people", icon: Users },
-    { label: "orgChart", href: "/org-chart", icon: Workflow },
     { label: "organization", href: "/organization", icon: Network },
     { label: "changes", href: "/changes", icon: Stamp },
   ],

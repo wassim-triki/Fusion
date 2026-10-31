@@ -13,7 +13,7 @@ describe("Organization workspace state", () => {
   const today = "2026-08-10";
 
   it("round-trips representation, temporal context, selection, and search", () => {
-    const input = new URLSearchParams("view=outline&asOf=2027-01-15&unit=technology&q=tech");
+    const input = new URLSearchParams("view=list&asOf=2027-01-15&unit=technology&q=tech");
     const state = readOrganizationUrlState(input, today);
 
     expect(state).toEqual({

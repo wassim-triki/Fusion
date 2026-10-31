@@ -58,6 +58,43 @@ public sealed class OrgChartController(
     }
 
     /// <summary>
+    /// Every unit's people, head and open roles as of a date (today by default): the Organization's Structure and List
+    /// views. Needs Organization view; another date than today is for HR only, like the chart. Heads come back only to
+    /// those who see the whole company's chart.
+    /// </summary>
+    [HttpGet("staffing")]
+    [ProducesResponseType(typeof(ApiResponse<OrganizationStaffingDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetStaffing([FromQuery] DateOnly? asOf, CancellationToken cancellationToken)
+    {
+        if (!accessPolicy.CanViewOrganization(User)) return Forbid();
+        var hr = accessPolicy.CanViewTenantEmployees(User);
+        var date = asOf ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        if (date != DateOnly.FromDateTime(DateTime.UtcNow) && !hr) return Forbid();
+
+        var withHeads = await Chart(date, cancellationToken) is { Scope: OrgChartScopes.Tenant };
+        var result = await sender.Send(new OrganizationStaffingQuery(date, withHeads, hr), cancellationToken);
+        return Ok(ApiResponse<OrganizationStaffingDto>.Success(result.Value));
+    }
+
+    /// <summary>
+    /// A unit's page as of a date: its head, everyone in it and under it, its open roles. Needs Organization view and
+    /// the whole company's chart; another date than today is for HR only.
+    /// </summary>
+    [HttpGet("units/{id:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<OrganizationUnitPeopleDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetUnit(Guid id, [FromQuery] DateOnly? asOf, CancellationToken cancellationToken)
+    {
+        if (!accessPolicy.CanViewOrganization(User)) return Forbid();
+        if (await Chart(asOf, cancellationToken) is not { Scope: OrgChartScopes.Tenant } chart) return Forbid();
+
+        var result = await sender.Send(new OrganizationUnitPeopleQuery(id, chart.AsOf, chart.Hr), cancellationToken);
+        return result.IsFailure ? NotFound(ApiResponse.Failure(result.Error.Message)) : Ok(ApiResponse<OrganizationUnitPeopleDto>.Success(result.Value));
+    }
+
+    /// <summary>
     /// The caller's chart scope and date, or null when they may not read the chart on that date. When the tenant shows
     /// the chart to managers and HR only, people who read the whole workforce keep their scope, managers see their own
     /// chain and branch, and nobody else sees it.

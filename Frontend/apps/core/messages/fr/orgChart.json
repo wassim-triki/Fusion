@@ -1,5 +1,4 @@
 {
-  "title": "Organigramme",
   "meta": "{people, plural, one {# personne} other {# personnes}} · {divisions, plural, =0 {aucune division} one {# division} other {# divisions}}{open, plural, =0 {} one { · # poste ouvert} other { · # postes ouverts}}",
   "views": {
     "label": "Vue",
@@ -105,14 +104,6 @@
     }
   },
   "showInChart": "Voir dans l'organigramme",
-  "time": {
-    "asOf": "Organigramme au",
-    "today": "Aujourd'hui",
-    "todayDate": "Aujourd'hui, {date}",
-    "summary": "{people, plural, one {# personne} other {# personnes}}{coming, plural, =0 {} one { · # changement à venir} other { · # changements à venir}}",
-    "replay": "Rejouer",
-    "stop": "Arrêter"
-  },
   "role": {
     "hiring": "Recrutement",
     "hiringFrom": "Recrutement · dès {date}",

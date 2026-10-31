@@ -12,6 +12,8 @@ import {
 } from "react";
 import { ChevronDown, ChevronRight, GripVertical, Plus } from "lucide-react";
 import { Button, cn } from "@repo/ds";
+import type { UnitStaffingDto } from "@repo/api";
+import { Monogram } from "@/features/people/components/workforce-ui";
 import {
   flattenOrganizationHierarchy,
   isInvalidMoveTarget,
@@ -23,6 +25,8 @@ export interface OrganizationOutlineProps {
   model: OrganizationHierarchyModel;
   collapsed: ReadonlySet<string>;
   selectedId: string | null;
+  /** Each unit's people and head on the list's date, when the viewer may read them. */
+  staffing?: ReadonlyMap<string, UnitStaffingDto>;
   canManage: boolean;
   readOnly: boolean;
   onSelect: (id: string) => void;
@@ -35,6 +39,7 @@ export function OrganizationOutline({
   model,
   collapsed,
   selectedId,
+  staffing,
   canManage,
   readOnly,
   onSelect,
@@ -110,11 +115,12 @@ export function OrganizationOutline({
 
   return (
     <div role="treegrid" aria-label={t("outline.label")} aria-rowcount={rows.length} className="h-full min-h-[520px] overflow-auto bg-section">
-      <div role="row" className="sticky top-0 z-10 grid grid-cols-[minmax(280px,1fr)_180px_150px_110px] border-b bg-card px-4 py-2 text-xs font-medium text-muted-foreground backdrop-blur-sm">
+      <div role="row" className="sticky top-0 z-10 grid grid-cols-[minmax(260px,1fr)_160px_220px_90px_120px] border-b bg-card px-4 py-2 text-xs font-medium text-muted-foreground backdrop-blur-sm">
         <span role="columnheader">{t("outline.unit")}</span>
         <span role="columnheader">{t("outline.type")}</span>
-        <span role="columnheader">{t("outline.code")}</span>
-        <span role="columnheader" className="text-end">{t("outline.effective")}</span>
+        <span role="columnheader">{t("outline.head")}</span>
+        <span role="columnheader" className="text-end">{t("outline.people")}</span>
+        <span role="columnheader" className="text-end">{t("outline.code")}</span>
       </div>
       {rows.map((row, index) => {
         const selected = row.unit.id === selectedId;
@@ -138,7 +144,7 @@ export function OrganizationOutline({
             onDragLeave={() => setOverId((current) => (current === row.unit.id ? null : current))}
             onDrop={dragMovable ? (event) => handleDrop(event, row.unit.id) : undefined}
             className={cn(
-              "group grid min-h-12 grid-cols-[minmax(280px,1fr)_180px_150px_110px] items-center border-b border-border/70 px-4 text-sm outline-none [content-visibility:auto] [contain-intrinsic-size:48px] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+              "group grid min-h-12 grid-cols-[minmax(260px,1fr)_160px_220px_90px_120px] items-center border-b border-border/70 px-4 text-sm outline-none [content-visibility:auto] [contain-intrinsic-size:48px] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
               selected ? "bg-primary/[0.07]" : "hover:bg-muted/45",
               dragId === row.unit.id && "opacity-50",
               isOver && !overInvalid && "ring-2 ring-inset ring-primary/45 bg-primary/[0.06]",
@@ -179,8 +185,16 @@ export function OrganizationOutline({
               ) : null}
             </div>
             <span role="gridcell" className="text-muted-foreground">{row.unit.typeName}</span>
-            <span role="gridcell" className="font-mono text-xs text-muted-foreground">{row.unit.code}</span>
-            <span role="gridcell" className="text-end text-xs text-muted-foreground">{row.unit.effectiveFrom}</span>
+            <span role="gridcell" className="flex min-w-0 items-center gap-2 text-muted-foreground">
+              {staffing?.get(row.unit.id)?.head ? (
+                <>
+                  <Monogram name={staffing.get(row.unit.id)!.head!.displayName} photoUrl={staffing.get(row.unit.id)!.head!.photoUrl} size="sm" className="size-6 text-[10px]" />
+                  <span className="truncate text-foreground">{staffing.get(row.unit.id)!.head!.displayName}</span>
+                </>
+              ) : null}
+            </span>
+            <span role="gridcell" className="text-end font-semibold tabular-nums">{staffing?.get(row.unit.id)?.people ?? ""}</span>
+            <span role="gridcell" className="text-end font-mono text-xs text-muted-foreground">{row.unit.code}</span>
           </div>
         );
       })}

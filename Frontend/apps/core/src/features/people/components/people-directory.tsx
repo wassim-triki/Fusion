@@ -74,7 +74,7 @@ function PersonCard({ person, tag, mine }: { person: PeopleDirectoryPersonDto; t
           </Button>
         ) : null}
         <Button asChild size="icon-sm" variant="ghost" className="relative z-10">
-          <Link href={`/org-chart?focus=${encodeURIComponent(person.employeeKey)}`} aria-label={t("onChart", { name: person.displayName })}>
+          <Link href={`/organization?view=people&focus=${encodeURIComponent(person.employeeKey)}`} aria-label={t("onChart", { name: person.displayName })}>
             <Workflow aria-hidden />
           </Link>
         </Button>

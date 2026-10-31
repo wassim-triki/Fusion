@@ -1,5 +1,4 @@
 {
-  "title": "الهيكل التنظيمي",
   "meta": "{people, plural, one {شخص واحد} other {# أشخاص}} · {divisions, plural, =0 {بلا أقسام} one {قسم واحد} other {# أقسام}}{open, plural, =0 {} one { · وظيفة شاغرة واحدة} other { · # وظائف شاغرة}}",
   "views": {
     "label": "العرض",
@@ -105,14 +104,6 @@
     }
   },
   "showInChart": "عرض في الهيكل التنظيمي",
-  "time": {
-    "asOf": "الهيكل التنظيمي بتاريخ",
-    "today": "اليوم",
-    "todayDate": "اليوم، {date}",
-    "summary": "{people, plural, one {شخص واحد} two {شخصان} few {# أشخاص} many {# شخصًا} other {# شخص}}{coming, plural, =0 {} one { · تغيير قادم} other { · # تغييرات قادمة}}",
-    "replay": "إعادة العرض",
-    "stop": "إيقاف"
-  },
   "role": {
     "hiring": "توظيف",
     "hiringFrom": "توظيف · من {date}",

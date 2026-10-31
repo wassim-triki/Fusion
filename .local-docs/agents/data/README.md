@@ -63,6 +63,8 @@ Retired tenants: Fusion has no tenant deletion, so a reset renames the previous 
 
 ## Scripts
 
+- [journey-b183-organization-in-time.cjs](journey-b183-organization-in-time.cjs): B-183 API journey in Carthage: every unit's people and head today, on the company's first day and on 1 January; plans Delivery's move under Consulting on 1 January once (the demo's planned unit change); a unit's page; Mariam reads today only, Leila neither, another company can't open a Carthage unit. Re-runnable. Ran 2026-10-31: 16/16.
+- [screens-b183-organization.cjs](screens-b183-organization.cjs): B-183 screens (dark, 1440×900) into `plans/B-183-screens/` (`01`–`08`, pass prefixes to retake some); changes no data.
 - [journey-b182-people-invitations.cjs](journey-b182-people-invitations.cjs): B-182 API journey in Carthage (People views and sign-in, export, the directory as Aicha, invitations planned and cancelled, another company refused, one invitation sent now). Withdrawing the sent invitation doesn't take yet (B-235), so each run leaves one pending invitation.
 - [screens-b182-people.cjs](screens-b182-people.cjs): B-182 screens (dark, 1440×900) into `plans/B-182-screens/`; changes no data.
 - [demo-preset.mjs](demo-preset.mjs): B-095 demo presets (`list | build <preset> | reset <preset>`), each its own Carthage tenant built through the gateway's API with the Development-only demo clock; its modules live in `demo-presets/` (`client`, `foundation`, `accounts`, `year`, `presets`). See "Demo presets" above.

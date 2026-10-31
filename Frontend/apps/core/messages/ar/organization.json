@@ -1,6 +1,5 @@
 {
   "title": "التنظيم",
-  "description": "حدّد طريقة هيكلة مؤسستك.",
   "layingOut": "جارٍ رسم التسلسل الهرمي…",
   "events": {
     "Created": "أُنشئت",
@@ -80,18 +79,18 @@
     "clearSearch": "مسح البحث"
   },
   "views": {
-    "label": "طريقة عرض الهيكل",
-    "chartLabel": "عرض المخطط",
-    "chart": "المخطط",
-    "outlineLabel": "عرض القائمة",
-    "outline": "القائمة"
+    "label": "عروض المؤسسة",
+    "people": "الأشخاص",
+    "structure": "الهيكل",
+    "list": "القائمة"
   },
   "toolbar": {
     "addUnit": "إضافة وحدة",
     "import": "استيراد الهيكل",
     "more": "إجراءات أخرى للهيكل التنظيمي",
     "export": "تصدير الهيكل",
-    "manageTypes": "إدارة أنواع الوحدات"
+    "manageTypes": "إدارة أنواع الوحدات",
+    "plannedUnits": "تغييرات الوحدات المخططة ({count})"
   },
   "workspaceLabel": "مساحة عمل الهيكل التنظيمي",
   "noUnitsForDate": "لا وحدات تنظيمية في هذا التاريخ.",
@@ -274,12 +273,13 @@
     "unit": "الوحدة التنظيمية",
     "type": "النوع",
     "code": "الرمز",
-    "effective": "السريان",
     "collapse": "طي {name}",
     "expand": "توسيع {name}",
     "addChild": "إضافة وحدة فرعية إلى {name}",
     "drag": "اسحب لنقل {name}",
-    "dragHint": "اسحب للنقل"
+    "dragHint": "اسحب للنقل",
+    "head": "المسؤول",
+    "people": "الأشخاص"
   },
   "chart": {
     "expand": "{count, plural, one {توسيع {name}، وحدة مخفية واحدة} other {توسيع {name}، # وحدات مخفية}}",
@@ -289,15 +289,60 @@
     "dropToReview": "أفلت للمراجعة",
     "cantDrop": "لا يمكن الإفلات هنا",
     "dropOnto": "أفلت على وحدة أم جديدة",
-    "overview": "نظرة عامة على المخطط التنظيمي"
+    "overview": "نظرة عامة على المخطط التنظيمي",
+    "nobody": "لا أحد بعد",
+    "people": "{count, plural, one {شخص واحد} other {# أشخاص}}"
   },
   "accessible": {
     "under": "{name}، {type}، الرمز {code}، تحت {path}",
     "root": "{name}، {type}، الرمز {code}، جذر الهيكل التنظيمي"
   },
   "lens": {
-    "structure": "الهيكل",
+    "structure": "المؤسسة",
     "jobs": "الوظائف",
     "places": "أماكن العمل"
+  },
+  "place": {
+    "meta": "{people, plural, one {شخص واحد} other {# أشخاص}} · {units, plural, one {وحدة واحدة} other {# وحدات}}"
+  },
+  "openPage": "فتح صفحتها",
+  "time": {
+    "today": "اليوم",
+    "past": "في الماضي",
+    "planned": "مخطط",
+    "todayButton": "اليوم",
+    "replay": "إعادة التشغيل",
+    "stop": "إيقاف",
+    "asOf": "التاريخ",
+    "people": "{count, plural, one {شخص واحد} other {# أشخاص}}"
+  },
+  "planned": {
+    "title": "المخطط",
+    "hint": "افتح أحدها لرؤية المخطط في تاريخه",
+    "none": "لا شيء مخطط."
+  },
+  "unitPage": {
+    "back": "المؤسسة",
+    "typeIn": "{type} ضمن {parent}",
+    "onChart": "عرض على المخطط",
+    "head": "المسؤول",
+    "people": "الأشخاص",
+    "units": "الوحدات التابعة",
+    "openRoles": "الوظائف الشاغرة",
+    "today": "اليوم",
+    "asOf": "بتاريخ",
+    "nobody": "لا أحد يعمل هنا في هذا التاريخ.",
+    "nobodyYet": "لا أحد بعد",
+    "reportsTo": "يتبع {name}",
+    "onHold": "معلّقة",
+    "startsBy": "تبدأ قبل {date}",
+    "open": "مفتوحة",
+    "noRoles": "لا وظائف شاغرة.",
+    "error": "تعذّر تحميل هذه الوحدة.",
+    "retry": "إعادة المحاولة",
+    "access": {
+      "title": "صفحات الوحدات غير متاحة لك",
+      "description": "تعرض كل من في الوحدة. اطلب من المسؤول مخطط الشركة كاملًا."
+    }
   }
 }

@@ -59,7 +59,7 @@ export function ChangeBadge({ change }: { change: WorkforceChangeDto }) {
   return <StatusBadge tone="warning" dot>{change.details.managerChanged ? t("moves", { date }) : t("changes", { date })}</StatusBadge>;
 }
 
-function CalendarTile({ date }: { date: string }) {
+export function CalendarTile({ date }: { date: string }) {
   const format = useFormat();
   return (
     <div className="grid w-14 shrink-0 justify-items-center rounded-control bg-inlay py-1.5">

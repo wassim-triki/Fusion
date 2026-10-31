@@ -1,7 +1,6 @@
 "use client";
 
 import { useOrganizationEvents } from "./organization-words";
-import { useFormat } from "@repo/ds/lib/use-format";
 import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -12,6 +11,7 @@ import {
   useEffect,
   useMemo,
   useReducer,
+  useRef,
   useState,
 } from "react";
 import { toast } from "sonner";
@@ -21,7 +21,6 @@ import {
   AlertTitle,
   Badge,
   Button,
-  Calendar,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -33,9 +32,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   Input,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
   Separator,
   Skeleton,
   Tabs,
@@ -44,9 +40,9 @@ import {
   TabsTrigger,
   cn,
 } from "@repo/ds";
-import { Segmented } from "@repo/ds/choice";
-import { PageHeader, PagePermissionNotice } from "@repo/ds/shell";
-import { OrganizationLenses } from "./organization-lenses";
+import { PagePermissionNotice } from "@repo/ds/shell";
+import type { UnitStaffingDto } from "@repo/api";
+import { useStaffingAccess } from "../api/use-staffing";
 import {
   AlertTriangle,
   ArrowRight,
@@ -57,12 +53,10 @@ import {
   Clock3,
   FileOutput,
   History,
-  ListTree,
   MoreHorizontal,
   Network,
   Pencil,
   Plus,
-  RotateCcw,
   Search,
   Settings2,
   Upload,
@@ -156,69 +150,6 @@ function StructureSkeleton() {
   );
 }
 
-// Parse/format an ISO calendar date (YYYY-MM-DD) as a local date, avoiding the UTC
-// drift `new Date("YYYY-MM-DD")` introduces.
-function parseCalendarDate(value: string): Date | undefined {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return undefined;
-  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
-}
-
-function toCalendarDate(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-const AS_OF_OPTIONS: Intl.DateTimeFormatOptions = {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-};
-
-function AsOfDatePicker({
-  value,
-  today,
-  onChange,
-}: {
-  value: string;
-  today: string;
-  onChange: (value: string) => void;
-}) {
-  const t = useTranslations("organization");
-  const format = useFormat();
-  const [open, setOpen] = useState(false);
-  const selected = parseCalendarDate(value);
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" className="h-9 gap-2 font-normal">
-          <CalendarDays className="h-4 w-4 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">{t("asOf")}</span>
-          <span className="font-medium">
-            {selected ? format.parts(selected, AS_OF_OPTIONS) : value}
-          </span>
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-auto p-0">
-        <Calendar
-          mode="single"
-          autoFocus
-          defaultMonth={selected}
-          selected={selected}
-          onSelect={(date) => {
-            if (!date) return;
-            onChange(toCalendarDate(date));
-            setOpen(false);
-          }}
-          today={parseCalendarDate(today)}
-        />
-      </PopoverContent>
-    </Popover>
-  );
-}
-
 function InspectorContent({
   selectedId,
   asOf,
@@ -249,6 +180,7 @@ function InspectorContent({
   const t = useTranslations("organization");
   const events = useOrganizationEvents();
   const [tab, setTab] = useState("details");
+  const unitPages = useStaffingAccess(asOf, today).unitPages;
   const detail = useOrganizationUnit(selectedId, asOf);
   const history = useOrganizationHistory(selectedId, Boolean(selectedId));
   const unit = detail.data;
@@ -270,6 +202,15 @@ function InspectorContent({
             <p className="mt-1 truncate text-xs text-muted-foreground">
               {unit ? `${unit.typeName} · ${unit.code}` : t("loadingDetails")}
             </p>
+            {unitPages ? (
+              <Link
+                href={`/organization/units/${encodeURIComponent(selectedId)}${asOf === today ? "" : `?asOf=${asOf}`}`}
+                className="mt-2 inline-flex items-center gap-1 type-meta font-medium text-primary-ink hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {t("openPage")}
+                <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
+              </Link>
+            ) : null}
           </div>
           <Button
             variant="ghost"
@@ -564,7 +505,11 @@ function InspectorContent({
   );
 }
 
-export default function OrganizationWorkspace() {
+/**
+ * Organization's Structure and List views: the unit hierarchy on the Organization's date (`?asOf=`), as a chart or
+ * as a list, with each unit's people and head when the viewer may read them. Editing units happens here, on today.
+ */
+export default function OrganizationWorkspace({ staffing }: { staffing?: ReadonlyMap<string, UnitStaffingDto> }) {
   const { user, isLoading: authLoading } = useAuth();
   const t = useTranslations("organization");
   const events = useOrganizationEvents();
@@ -607,7 +552,11 @@ export default function OrganizationWorkspace() {
   const deferredSearch = useDeferredValue(urlState.search);
 
   const readiness = useOrganizationReadiness(canView);
-  const hierarchy = useOrganizationHierarchy(urlState.asOf, canView);
+  // Before the structure's first day in Fusion, it reads as that first day (as the chart reads units), while the
+  // counts stay on the date: the company's units fill from people's real start dates.
+  const rootFirst = readiness.data?.isPermanentRootEffective ? readiness.data.permanentRootFirstEffectiveDate : null;
+  const structureDate = rootFirst && urlState.asOf < rootFirst ? rootFirst : urlState.asOf;
+  const hierarchy = useOrganizationHierarchy(structureDate, canView);
   const moveHierarchy = useOrganizationHierarchy(
     moveProposal?.effectiveDate ?? urlState.asOf,
     canView &&
@@ -617,7 +566,7 @@ export default function OrganizationWorkspace() {
   const upcoming = useOrganizationUpcomingChanges(
     canView && readiness.data?.hasPermanentRoot === true
   );
-  const search = useOrganizationSearch(deferredSearch, urlState.asOf, canView);
+  const search = useOrganizationSearch(deferredSearch, structureDate, canView);
   const tenantSummary = useTenantAccessSummary(
     canView && canReadTenantName && readiness.data?.hasPermanentRoot === false
   );
@@ -663,14 +612,16 @@ export default function OrganizationWorkspace() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model, hierarchy.isFetching, urlState.selectedId]);
 
-  // With nothing selected, default to the organization root so the surface opens
-  // on the top of the hierarchy rather than an empty inspector.
+  // The structure opens on its top three levels (the company, its business units and what's under them); deeper
+  // levels fold under their unit until someone opens them. Once per visit, so a person's own folding stays.
+  const folded = useRef(false);
   useEffect(() => {
-    if (!model || hierarchy.isFetching || urlState.selectedId) return;
-    const rootId = model.roots[0];
-    if (rootId) select(rootId);
+    if (!model || folded.current) return;
+    folded.current = true;
+    const deep = model.units.filter((unit) => model.depthById.get(unit.id) === 2 && (model.childrenByParent.get(unit.id)?.length ?? 0) > 0);
+    if (deep.length && !urlState.selectedId) patchLocal({ collapsed: new Set(deep.map((unit) => unit.id)) });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, hierarchy.isFetching, urlState.selectedId]);
+  }, [model]);
 
   // The root opens by default, so only units the person moved to count as opened.
   const openedUnit =
@@ -779,14 +730,12 @@ export default function OrganizationWorkspace() {
   if (authLoading)
     return (
       <div className="p-6">
-        <PageHeader title={t("title")} />
         <StructureSkeleton />
       </div>
     );
   if (!canView)
     return (
       <div className="p-6">
-        <PageHeader title={t("title")} />
         <PagePermissionNotice
           title={t("access.title")}
           description={t("access.description")}
@@ -814,54 +763,7 @@ export default function OrganizationWorkspace() {
   }
 
   return (
-    <div className="flex h-[calc(100dvh-4rem)] min-h-[680px] flex-col overflow-hidden">
-      <header className="shrink-0 px-6 pt-5">
-        <PageHeader
-          title={t("title")}
-          description={t("description")}
-          className="mb-3"
-          actions={
-            readiness.data?.hasPermanentRoot ? (
-              <>
-                {futureChanges.length ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => patchLocal({ upcomingOpen: true })}
-                  >
-                    <Clock3 className="h-4 w-4" />
-                    Upcoming changes · {futureChanges.length}
-                  </Button>
-                ) : null}
-                <AsOfDatePicker
-                  value={urlState.asOf}
-                  today={today}
-                  onChange={(asOf) => navigate({ asOf })}
-                />
-              </>
-            ) : undefined
-          }
-        />
-        <OrganizationLenses active="structure" />
-        {readOnly ? (
-          <div className="mt-3 flex items-center justify-between gap-3 rounded-control border bg-inlay px-3.5 py-1.5 text-sm">
-            <span className="flex items-center gap-1.5">
-              <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="font-medium">Viewing {urlState.asOf}</span>
-              <span className="text-muted-foreground">· Read only</span>
-            </span>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-7"
-              onClick={() => navigate({ asOf: today })}
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              {t("returnToToday")}
-            </Button>
-          </div>
-        ) : null}
-      </header>
+    <div className="flex h-full flex-col overflow-hidden">
 
       {readiness.isLoading ? (
         <div className="flex-1 p-6">
@@ -923,7 +825,7 @@ export default function OrganizationWorkspace() {
         </div>
       ) : (
         <>
-          <div className="flex shrink-0 items-center gap-3 border-b px-6 py-3">
+          <div className="flex shrink-0 items-center gap-3 border-b bg-card px-4 py-3">
             <div className="relative min-w-[280px] max-w-lg flex-1">
               <Search className="pointer-events-none absolute inset-s-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -991,15 +893,6 @@ export default function OrganizationWorkspace() {
                 </div>
               ) : null}
             </div>
-            <Segmented
-              label={t("views.label")}
-              value={urlState.representation}
-              onChange={(value) => navigate({ representation: value })}
-              options={[
-                { value: "chart", label: t("views.chart"), hint: t("views.chartLabel"), icon: <Network aria-hidden /> },
-                { value: "outline", label: t("views.outline"), hint: t("views.outlineLabel"), icon: <ListTree aria-hidden /> },
-              ]}
-            />
             {canManage && !readOnly ? (
               <Button
                 onClick={() =>
@@ -1037,6 +930,12 @@ export default function OrganizationWorkspace() {
                     <FileOutput className="h-4 w-4" />
                     {t("toolbar.export")}
                   </DropdownMenuItem>
+                  {futureChanges.length ? (
+                    <DropdownMenuItem onClick={() => patchLocal({ upcomingOpen: true })}>
+                      <Clock3 className="h-4 w-4" />
+                      {t("toolbar.plannedUnits", { count: futureChanges.length })}
+                    </DropdownMenuItem>
+                  ) : null}
                   {canManage && !readOnly ? (
                     <DropdownMenuItem onClick={() => patchLocal({ editor: { kind: "manage-types" } })}>
                       <Settings2 className="h-4 w-4" />
@@ -1088,6 +987,7 @@ export default function OrganizationWorkspace() {
                 urlState.representation === "chart" ? (
                   <OrganizationChart
                     model={model}
+                    staffing={staffing}
                     collapsed={collapsed}
                     selectedId={urlState.selectedId}
                     revealedIds={revealedIds}
@@ -1103,6 +1003,7 @@ export default function OrganizationWorkspace() {
                 ) : (
                   <OrganizationOutline
                     model={model}
+                    staffing={staffing}
                     collapsed={collapsed}
                     selectedId={urlState.selectedId}
                     canManage={canManage}
@@ -1165,7 +1066,7 @@ export default function OrganizationWorkspace() {
                 ) : urlState.selectedId && inspectorOpen ? (
                   <InspectorContent
                     selectedId={urlState.selectedId}
-                    asOf={urlState.asOf}
+                    asOf={structureDate}
                     today={today}
                     canManage={canManage}
                     readOnly={readOnly}

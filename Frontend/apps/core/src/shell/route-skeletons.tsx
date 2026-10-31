@@ -216,54 +216,20 @@ export function ActivityLogPageSkeleton() {
   );
 }
 
-/** Organization: the units chart's header, its Structure tab and the canvas. */
+/** Organization: its header and views, the time slider, and the chart. */
 export function OrganizationPageSkeleton() {
   const t = useTranslations("frame.skeletons");
   return (
-    <div className="flex h-[calc(100dvh-4rem)] min-h-[680px] flex-col overflow-hidden">
-      <header className="shrink-0 px-6 pt-5">
-        <PageHeader
-          title={t("organization")}
-          description={t("organizationDescription")}
-          className="mb-3"
-          actions={<Skeleton className="h-9 w-40 shrink-0 rounded-control" />}
-        />
-        <div className="flex border-b">
-          <Skeleton className="mb-2.5 h-5 w-20" />
-        </div>
-      </header>
-      <div className="grid flex-1 place-items-center">
+    <div className="grid gap-4 px-6 pt-5">
+      <PageHeader title={t("organization")} className="mb-0" actions={<Skeleton className="h-9 w-64 shrink-0 rounded-control" />} />
+      <Skeleton className="h-20 w-full rounded-surface" />
+      <div className="grid h-[clamp(520px,calc(100dvh-21rem),880px)] place-items-center rounded-surface bg-section">
         <div className="grid justify-items-center gap-10">
-          <Skeleton className="h-16 w-56 rounded-surface" />
+          <Skeleton className="h-24 w-60 rounded-surface" />
           <div className="flex gap-8">
-            <Skeleton className="h-16 w-52 rounded-surface" />
-            <Skeleton className="h-16 w-52 rounded-surface" />
-            <Skeleton className="h-16 w-52 rounded-surface" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** The people org chart: its header, the search and lens bar, and the stage with a leader and their team. */
-export function OrgChartPageSkeleton() {
-  const t = useTranslations("frame.skeletons");
-  return (
-    <div className="flex h-[calc(100dvh-4rem)] min-h-[680px] flex-col overflow-hidden">
-      <header className="shrink-0 px-6 pt-5">
-        <PageHeader title={t("orgChart")} className="mb-4" actions={<Skeleton className="h-9 w-56 shrink-0 rounded-control" />} />
-      </header>
-      <div className="flex shrink-0 items-center gap-3 border-y px-6 py-3">
-        <Skeleton className="h-9 w-72 rounded-control" />
-        <Skeleton className="h-9 w-40 rounded-control" />
-      </div>
-      <div className="grid flex-1 place-items-center bg-section">
-        <div className="grid justify-items-center gap-10">
-          <Skeleton className="h-52 w-64 rounded-surface" />
-          <div className="flex gap-12">
-            <Skeleton className="h-20 w-64 rounded-surface" />
-            <Skeleton className="h-20 w-64 rounded-surface" />
+            <Skeleton className="h-24 w-60 rounded-surface" />
+            <Skeleton className="h-24 w-60 rounded-surface" />
+            <Skeleton className="h-24 w-60 rounded-surface" />
           </div>
         </div>
       </div>
@@ -386,7 +352,8 @@ export function getRoutePageSkeleton(corePath: string): ReactNode {
     return <ImportAttemptSkeleton stage={step === "match" || step === "review" ? step : null} />;
   }
   if (corePath === "/organization") return <OrganizationPageSkeleton />;
-  if (corePath === "/org-chart") return <OrgChartPageSkeleton />;
+  if (corePath.startsWith("/organization/units/")) return <PageFallbackSkeleton />;
+  if (corePath === "/org-chart") return <OrganizationPageSkeleton />;
   if (corePath === "/settings" || corePath.startsWith("/settings/")) return <SettingsPageSkeleton />;
   if (corePath === "/access/profiles") return <AccessProfilesPageSkeleton />;
   if (corePath === "/access/activity") return <ActivityLogPageSkeleton />;

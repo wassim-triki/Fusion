@@ -287,6 +287,14 @@ export function canSeeCoreOrgChart(user: AuthUser | null, audience: OrgChartAudi
   return canAccessCoreOrgChart(user) && (audience === "Everyone" || canAccessCoreTeam(user));
 }
 
+/**
+ * Whether the user sees the whole company's chart (not only their own branch): unit heads and unit pages need it.
+ * People who read the whole workforce keep it; anyone else only while the tenant shows the chart to everyone.
+ */
+export function canSeeWholeCoreOrgChart(user: AuthUser | null, audience: OrgChartAudience | null | undefined): boolean {
+  return hasCorePermission(user, CORE_PERMISSION.orgChartView, "Tenant") && (canAccessCorePeople(user) || audience === "Everyone");
+}
+
 /** Canonical tenant Organization access; intentionally excludes legacy Structure/setup grants. */
 export function canViewCoreOrganization(user: AuthUser | null): boolean {
   return (

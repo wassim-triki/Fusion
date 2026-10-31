@@ -1,7 +1,7 @@
-import OrganizationWorkspace from "@/features/organization/components/organization-workspace";
+import OrganizationPlace from "@/features/organization/components/organization-place";
 
 export const dynamic = "force-dynamic";
 
 export default function OrganizationPage() {
-  return <OrganizationWorkspace />;
+  return <OrganizationPlace />;
 }

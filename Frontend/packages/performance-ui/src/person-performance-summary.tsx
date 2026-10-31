@@ -66,7 +66,7 @@ export function PersonPerformanceSummary({ state, renderLink, reactionIcons, onR
   }
 
   return (
-    <div className="space-y-8">
+    <div className={compact ? "space-y-3" : "space-y-8"}>
       {cycle || reviews ? <SummaryGlance cycle={cycle} reviews={reviews} /> : null}
       {summary.oneOnOne ? <SummaryOneOnOne oneOnOne={summary.oneOnOne} renderLink={renderLink} /> : null}
       {cycle ? <SummaryObjectives cycle={cycle} renderLink={renderLink} /> : null}

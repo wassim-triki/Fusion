@@ -111,8 +111,6 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## Needs discussion
 
-- [ ] **B-223** Seeing Fusion as someone shows what they see, private things included (a manager's 1:1 notes, feedback they received): recorded in Change history and read-only, but should some surfaces stay closed during a view (as Workday and BambooHR limit proxy access)? Product call · Performance, Identity · 2026-10-31
-      From B-178's security review. Only administrators can start a view; it lasts 30 minutes.
 
 - [ ] **B-169** Core HR after the rebuild: the rungs chosen at checkpoint 2 to keep for later, so they aren't lost · Core HR, Shell · 2026-10-30
       From B-164's scope page (brief §6b). Each is the next rung above what B-167 builds.

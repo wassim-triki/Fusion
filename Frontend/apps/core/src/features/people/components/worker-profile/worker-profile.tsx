@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import type { ReactNode, Ref } from "react";
-import { PersonAvatar, cn } from "@repo/ds";
+import { PersonAvatar } from "@repo/ds";
 import { LinkTabs, PageContainer, StatusBadge } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { usePhoto, useTenantSummary } from "@repo/api/query";

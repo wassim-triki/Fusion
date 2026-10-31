@@ -3,7 +3,6 @@ import type {
   PeopleAccessStatusDto,
   PeopleProfileDto,
   PeopleProfileEmploymentDto,
-  PeopleTimelineDto,
   PeopleTimelineEventDto,
 } from "@repo/api";
 import { englishSay, type Say } from "@repo/ds/lib/say";

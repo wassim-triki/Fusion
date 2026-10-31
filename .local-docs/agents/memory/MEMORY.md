@@ -9,6 +9,7 @@
 - [Next dev/build output split](next-dev-build-output-split.md) — dev → `.next-dev`, build → `.next`; fixes "CSS bugged" dev corruption.
 - [Machine memory & checks](machine-memory-checks.md) — 13.9 GB RAM; checks one package at a time, vitest --maxWorkers=2; free memory yourself (stop the frontend for backend stretches).
 - [Rendered verification via Playwright](rendered-verification-playwright.md) — only when the user asks; repo Playwright, hydration-tolerant sign-in.
+- [No screens for small changes](no-screens-for-small-changes.md) — trivial/minor fixes: tests + commit, no screenshots.
 - [Dark, 1440×900 only](ds-dark-only-verification.md) — rendered QA and live screenshots: dark mode, one laptop size; no narrow/mobile/huge passes.
 - [Presentation diagrams](presentation-diagrams.md) — `.local-docs/diagrams/`, Mermaid + PlantUML use-case, `-v0` versioning.
 - [Audit/history deferred](audit-history-deferred.md) — change-history UI deferred to a unified Perf+Core audit integration.

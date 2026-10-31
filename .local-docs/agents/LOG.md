@@ -11,6 +11,8 @@ When LOG passes ~150 lines, move the oldest days to `archive/LOG-YYYY-MM*.md`.
 
 ## 2026-10-31
 
+- **B-180** review round (user): someone's own words (About, praise, feedback, answers, notes, comments, reasons, review assessments) always in quotes and the editorial serif, through one DS `Said`; DESIGN.md §3 rule updated (cards included). Evidence: type-check ds, performance-ui, core, performance clean; tests performance-ui 15/15, ds shell 46/46, core 9/9, performance 80/80, shell home 15/15 · Claude
+
 - **B-180** review round (user: the Overview has no bio unlike the drawing; "wire all that is necessary"): About as drawn (`Employee.About` ≤ 1000, migration `AddEmployeeAbout`, `PUT people/{key}/about` for the person or Personal change, read by everyone who opens the page, edited in place); Coming up as the drawn list, merging Core HR's changes and work anniversary with Performance's next 1:1, open update requests (new `openRequest` on the person summary's objectives) and the review step due; the compact Performance section no longer repeats the 1:1. Skills/languages chips stay with B-181 (B-232 retitled). Evidence: CoreHR 631/0/5, Performance PersonSummary 11/0/0 (relational on); core type-check clean; people tests 33/33 (+ `performanceUpcoming`); journey 28/28; screens `09-overview-self`, `11-overview-manager` · Claude
 
 - **B-180** review: the Overview's Performance section had too much room between the glance and Objectives (user, screenshot); compact summary now spaces its parts at 12px instead of 32px · Claude

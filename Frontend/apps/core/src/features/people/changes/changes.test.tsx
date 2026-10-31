@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { PeopleProfileDto, WorkforceChangeDetails, WorkforceChangeDto } from "@repo/api";
 
-const { rights } = vi.hoisted(() => ({ rights: { people: true, lines: true, seeComing: true } }));
+const { rights, draft } = vi.hoisted(() => ({
+  rights: { people: true, lines: true, seeComing: true, propose: false, approve: false, employeeId: "me" },
+  draft: vi.fn(),
+}));
 
 vi.mock("./use-changes", () => ({
   useChangeRights: () => rights,
@@ -19,6 +22,14 @@ vi.mock("./use-changes", () => ({
   useLineEffects: () => ({ data: undefined }),
   useManagerOptions: () => ({ data: [], isLoading: false }),
   useEndEmploymentPreview: () => ({ data: undefined, isLoading: false }),
+  useApprovalSettings: () => ({ data: { types: [{ type: "job", required: true }], approvers: [{ employeeId: "amira-id", displayName: "Amira Khelifi" }], canManage: false } }),
+  useChangeDraft: () => ({ isLoading: false, mutateAsync: draft }),
+  useProposeChange: () => ({ isLoading: false, mutateAsync: vi.fn() }),
+}));
+vi.mock("@/features/catalog/api/use-catalog", () => ({
+  useJobs: () => ({ data: [] }),
+  usePlaces: () => ({ data: [] }),
+  useCompanyLists: () => ({ data: [{ id: "change-reasons", values: [{ id: "promo", key: "promotion", label: "Promotion", sortOrder: 0, isRetired: false, usageCount: 0, inUse: false }] }] }),
 }));
 vi.mock("../api/use-people", () => ({ usePeopleProfile: () => ({ data: person() }) }));
 vi.mock("@/features/organization/api/use-organization", () => ({ useOrganizationHierarchy: () => ({ data: { roots: [] }, isLoading: false }) }));
@@ -82,10 +93,28 @@ describe("people changes", () => {
   it("opens a job change with the line, the team and the job, and nothing to save yet", () => {
     rights.people = true;
     render(<ChangePanel employeeKey="HELA" kind="job" onClose={vi.fn()} />);
-    expect(screen.getByText("Change job")).toBeInTheDocument();
+    expect(screen.getByText("Make a change")).toBeInTheDocument();
+    expect(screen.getByLabelText("Describe it")).toBeInTheDocument();
     expect(screen.getByText("Reports to")).toBeInTheDocument();
-    expect(screen.getByText("Job")).toBeInTheDocument();
+    expect(screen.getByText("The change")).toBeInTheDocument();
+    expect(screen.getByText("Reason")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Save change" })).toBeDisabled();
+  });
+
+  it("drafts a manager's sentence into the change and sends it for approval when the company asks", async () => {
+    Object.assign(rights, { people: false, propose: true });
+    draft.mockResolvedValue({ kind: "job", date: "2027-01-01", jobId: "senior", jobTitle: "Senior Cybersecurity Manager", jobLevel: "Level 4",
+      orgUnitId: null, orgUnitName: null, placeId: null, placeName: null, reasonId: "promo", reason: "Promotion", understood: true, usedAi: true });
+    render(<ChangePanel employeeKey="HELA" kind="job" onClose={vi.fn()} />);
+    fireEvent.change(screen.getByLabelText("Describe it"), { target: { value: "Promote Hela to Senior Cybersecurity Manager from 1 January" } });
+    fireEvent.click(screen.getByRole("button", { name: "Draft it" }));
+    expect(await screen.findByText("Senior Cybersecurity Manager")).toBeInTheDocument();
+    expect(draft).toHaveBeenCalledWith("Promote Hela to Senior Cybersecurity Manager from 1 January");
+    expect(screen.getByText("Amira Khelifi approves")).toBeInTheDocument();
+    expect(screen.getByText("Level 4")).toBeInTheDocument();
+    expect(screen.getByText("Promotion")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Send for approval" })).toBeEnabled();
+    Object.assign(rights, { people: true, propose: false });
   });
 
   it("shows a reporting admin only the line: job facts are absent, not greyed", () => {

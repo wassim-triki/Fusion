@@ -30,6 +30,7 @@ import {
   Target,
   TriangleAlert,
   type LucideIcon,
+  Stamp,
 } from "lucide-react";
 import { useCompanyColor } from "../brand/use-company-color";
 import { cn } from "../lib/utils";
@@ -82,6 +83,7 @@ const SETTINGS_SECTION_ICONS: Record<string, LucideIcon> = {
   "employee-fields": ListChecks,
   lists: List,
   roles: ShieldCheck,
+  approvals: Stamp,
   invitations: Mail,
   "change-history": History,
   "rating-scale": BarChart3,

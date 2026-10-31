@@ -3,7 +3,8 @@
     "job": "تغيير الوظيفة",
     "manager": "تغيير المدير",
     "end": "إنهاء العمل",
-    "start": "استئناف العمل"
+    "start": "استئناف العمل",
+    "change": "إجراء تغيير"
   },
   "close": "إغلاق",
   "reportsTo": "يتبع",
@@ -27,7 +28,9 @@
     "none": "لا شيء",
     "change": "تغيير",
     "undo": "تراجع",
-    "done": "تم"
+    "done": "تم",
+    "level": "المستوى",
+    "reason": "السبب"
   },
   "when": {
     "from": "ابتداءً من",
@@ -69,7 +72,8 @@
     "reportsMove": "{count, plural, one {ينتقل # مرؤوس} other {ينتقل # مرؤوسين}} في <b>{date}</b>",
     "lastDay": "آخر يوم <b>{date}</b>",
     "joins": "ينضم إلى فريق {manager} في <b>{date}</b>",
-    "joinsNoManager": "يبدأ في <b>{date}</b>"
+    "joinsNoManager": "يبدأ في <b>{date}</b>",
+    "onceApproved": "يسري في <b>{date}</b> بعد الموافقة"
   },
   "action": {
     "save": "حفظ التغيير",
@@ -135,7 +139,9 @@
     "endEmployment": "إنهاء العمل",
     "startEmployment": "استئناف العمل",
     "showInChart": "عرض في الهيكل التنظيمي",
-    "more": "مزيد من الإجراءات"
+    "more": "مزيد من الإجراءات",
+    "propose": "اقتراح تغيير",
+    "makeChange": "إجراء تغيير"
   },
   "dotted": {
     "since": "خط منقط · منذ {date}",
@@ -152,5 +158,113 @@
   "refused": {
     "inBranch": "{target} يتبع {name}",
     "already": "يتبع {name} بالفعل"
+  },
+  "describe": {
+    "label": "صِفه",
+    "placeholder": "مثلاً: ترقية {name} إلى مستشار أول ابتداءً من 1 يناير",
+    "draft": "صياغة",
+    "drafting": "جارٍ الصياغة…",
+    "theChange": "التغيير",
+    "failed": "تعذّرت الصياغة. أكمل التغيير أدناه.",
+    "read": {
+      "ai": "صيغ من وظائف شركتك وأسبابها. راجع كل جزء.",
+      "words": "صيغ من كلماتك. راجع كل جزء.",
+      "nothing": "لم يُعثر على وظيفة أو مكان أو سبب أو تاريخ. أكمل التغيير أدناه.",
+      "leaving": "يبدو هذا آخر يوم عمل: استخدم إنهاء التوظيف."
+    }
+  },
+  "types": {
+    "job": "تغييرات الوظيفة",
+    "manager": "تغييرات المدير",
+    "place": "تغييرات المكان",
+    "leaving": "آخر أيام العمل",
+    "homeAddress": "عناوين السكن"
+  },
+  "request": {
+    "sent": "أُرسل للموافقة. تغيير {name} بانتظار الرد.",
+    "noteFor": "ملاحظة إلى {name}",
+    "note": "ملاحظة",
+    "optional": "(اختياري)",
+    "approver": "{name} يوافق",
+    "approvers": "{name} أو {count, plural, one {شخص آخر} other {# آخرون}} يوافقون",
+    "approverUnknown": "يرد عليه من يوافق على التغييرات",
+    "why": "شركتك توافق على {types}",
+    "send": "إرسال للموافقة"
+  },
+  "requests": {
+    "title": "التغييرات والموافقات",
+    "waiting": "بالانتظار",
+    "answered": "تم الرد",
+    "emptyWaiting": "لا شيء بانتظار رد.",
+    "emptyAnswered": "لا ردود خلال 90 يوماً الأخيرة.",
+    "failed": "تعذّر تحميل الطلبات.",
+    "retry": "أعد المحاولة",
+    "headline": {
+      "job": "{name} يصبح {summary}",
+      "manager": "{name} يتبع {manager}",
+      "noManager": "{name} بلا مدير",
+      "place": "{name} يعمل في {summary}",
+      "leaving": "آخر يوم لـ{name} في {date}",
+      "address": "عنوان {name} الجديد"
+    },
+    "meta": "طلب من {actor} · ابتداءً من {date}",
+    "metaReason": "{reason} · طلب من {actor} · ابتداءً من {date}",
+    "metaAddress": "طلب من {actor} · {date}",
+    "status": {
+      "Pending": "بالانتظار",
+      "Approved": "تمت الموافقة",
+      "Declined": "مرفوض",
+      "Withdrawn": "مسحوب"
+    },
+    "decided": {
+      "Approved": "وافق {name} · {date}",
+      "Declined": "رفض {name} · {date}",
+      "Withdrawn": "سُحب · {date}"
+    },
+    "askedBy": "طلب من {name} · {date}",
+    "said": "بكلماتهم",
+    "note": "ملاحظة",
+    "from": "ابتداءً من",
+    "lastDay": "آخر يوم",
+    "address": "عنوان السكن",
+    "reason": "السبب",
+    "why": "السبب",
+    "approve": "موافقة",
+    "decline": "رفض",
+    "withdraw": "سحب",
+    "open": "فتح",
+    "declineTitle": "لماذا؟",
+    "declinePlaceholder": "قل ما الذي قد يغيّر ردك",
+    "confirmDecline": "رفض",
+    "back": "رجوع",
+    "approved": "تمت الموافقة. يسري في {date}.",
+    "approvedAddress": "تمت الموافقة. حُفظ العنوان.",
+    "declined": "سيعرف {name} السبب.",
+    "withdrawn": "سُحب.",
+    "notFound": "هذا الطلب لم يعد موجوداً.",
+    "actionFailed": "لم ينجح ذلك. أعد المحاولة."
+  },
+  "approvals": {
+    "who": "من يوافق",
+    "nobody": "لا أحد يملك صلاحية الموافقة بعد.",
+    "roles": "الأدوار",
+    "waits": "ينتظر الموافقة",
+    "applies": "يسري في تاريخه",
+    "saved": "تم الحفظ",
+    "failed": "تعذّر الحفظ. أعد المحاولة.",
+    "type": {
+      "job": "الوظيفة والوحدة",
+      "manager": "المدير",
+      "place": "المكان",
+      "leaving": "آخر يوم",
+      "homeAddress": "عنوان السكن من صاحبه"
+    }
+  },
+  "pending": {
+    "title": "بانتظار الموارد البشرية",
+    "sent": "أُرسل في {date}",
+    "withdraw": "سحب",
+    "withdrawn": "سُحب",
+    "open": "فتح"
   }
 }

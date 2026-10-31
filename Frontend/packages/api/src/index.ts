@@ -37,6 +37,7 @@ export * from "./core-org-chart";
 export * from "./core-catalog";
 export * from "./core-workforce-import";
 export * from "./core-people";
+export * from "./core-changes";
 export * from "./performance";
 export * from "./performance-conversations";
 export * from "./performance-reviews";

@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Network,
   Settings2,
+  Stamp,
   User,
   Users,
   Workflow,
@@ -20,6 +21,7 @@ export const PEOPLE_NAV: ShellNavSection = {
     { label: "peopleDirectory", href: "/people", icon: Users },
     { label: "orgChart", href: "/org-chart", icon: Workflow },
     { label: "organization", href: "/organization", icon: Network },
+    { label: "changes", href: "/changes", icon: Stamp },
   ],
 };
 

@@ -31,6 +31,13 @@ export interface FusionWorkItem {
   actionLabel?: string | null;
   /** ISO UTC instant since which another person has been blocked until the viewer acts; null when nobody waits. */
   waitingSince?: string | null;
+  /** A yes or no the home gives in place: paths below the module's `apiBase`; declining posts `{ reason }`. */
+  decision?: FusionWorkDecision | null;
+}
+
+export interface FusionWorkDecision {
+  approvePath: string;
+  declinePath: string;
 }
 
 export interface FusionWorkStep {

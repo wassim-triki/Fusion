@@ -2,6 +2,8 @@
 
 import { useCallback, useMemo } from "react";
 import {
+  coreChangesQueryKeys,
+  createCoreChangesApi,
   coreOrgChartQueryKeys,
   corePeopleQueryKeys,
   createCorePeopleApi,
@@ -11,10 +13,14 @@ import {
   type EndEmploymentChangeRequest,
   type JobChangeRequest,
   type JoinChangeRequest,
+  type ChangeApprovalType,
+  type ProposeChangeRequest,
 } from "@repo/api";
 import { keepPreviousData, useApiMutation, useApiQuery } from "@repo/api/query";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  canApproveCoreChanges,
+  canProposeCoreChanges,
   canAccessCorePeople,
   canAccessCoreTeam,
   canManageCoreEmployees,
@@ -40,6 +46,11 @@ export function useChangeRights() {
     lines: people || reporting,
     /** Coming changes: the tenant for People viewers, the branch for managers. */
     seeComing: ready && (canAccessCorePeople(user) || canAccessCoreTeam(user)),
+    /** Describes changes for their direct reports; the company's settings say whether they wait for approval. */
+    propose: ready && canProposeCoreChanges(user),
+    /** Answers requests, for everyone. */
+    approve: ready && canApproveCoreChanges(user),
+    employeeId: user?.employeeId ?? null,
   };
 }
 
@@ -71,6 +82,81 @@ export function useCancelChange() {
   const api = usePeopleApi();
   const onSuccess = useRefresh();
   return useApiMutation((changeId: string) => api.cancelChange(changeId), { onSuccess });
+}
+
+// --- Changes and approvals (B-179) ---------------------------------------------------------------
+
+export function useChangesApi() {
+  return useMemo(() => createCoreChangesApi(createPlatformApiClient()), []);
+}
+
+/** Which change types wait for approval, and who approves. */
+export function useApprovalSettings(enabled = true) {
+  const api = useChangesApi();
+  const { isAuthenticated, isLoading } = useAuth();
+  return useApiQuery(coreChangesQueryKeys.approvals(), useCallback((signal) => api.approvals(signal), [api]), {
+    enabled: enabled && isAuthenticated && !isLoading,
+    staleTime: 60_000,
+  });
+}
+
+export function useUpdateApprovals() {
+  const api = useChangesApi();
+  const queryClient = useQueryClient();
+  return useApiMutation((required: ChangeApprovalType[]) => api.updateApprovals(required), {
+    onSuccess: (settings) => { queryClient.setQueryData(coreChangesQueryKeys.approvals(), settings); },
+  });
+}
+
+export function useChangeDraft(employeeKey: string) {
+  const api = useChangesApi();
+  return useApiMutation((text: string) => api.draft(employeeKey, text));
+}
+
+/** Requests and changes both show on profiles, lists, the chart and Home's work. */
+function useRefreshRequests() {
+  const queryClient = useQueryClient();
+  const refresh = useRefresh();
+  return useCallback(() => {
+    refresh();
+    void queryClient.invalidateQueries({ queryKey: coreChangesQueryKeys.all() });
+    void queryClient.invalidateQueries({ queryKey: ["fusion-attention"] });
+  }, [queryClient, refresh]);
+}
+
+export function useProposeChange(employeeKey: string) {
+  const api = useChangesApi();
+  const onSuccess = useRefreshRequests();
+  return useApiMutation((request: ProposeChangeRequest) => api.propose(employeeKey, request), { onSuccess });
+}
+
+export function useChangeRequests(status: "pending" | "decided", employeeKey?: string | null, enabled = true) {
+  const api = useChangesApi();
+  const { isAuthenticated, isLoading } = useAuth();
+  return useApiQuery(
+    coreChangesQueryKeys.requests(status, employeeKey),
+    useCallback((signal) => api.requests(status, employeeKey, signal), [api, status, employeeKey]),
+    { enabled: enabled && isAuthenticated && !isLoading },
+  );
+}
+
+export function useChangeRequest(id: string | null) {
+  const api = useChangesApi();
+  return useApiQuery(
+    coreChangesQueryKeys.request(id ?? ""),
+    useCallback((signal) => api.request(id ?? "", signal), [api, id]),
+    { enabled: Boolean(id), retry: false },
+  );
+}
+
+export function useRequestDecisions() {
+  const api = useChangesApi();
+  const onSuccess = useRefreshRequests();
+  return {
+    approve: useApiMutation((id: string) => api.approve(id), { onSuccess }),
+    decline: useApiMutation(({ id, reason }: { id: string; reason: string }) => api.decline(id, reason), { onSuccess }),
+    withdraw: useApiMutation((id: string) => api.withdraw(id), { onSuccess }),
+  };
 }
 
 export function useUpcomingChanges(enabled = true) {

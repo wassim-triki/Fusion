@@ -4,26 +4,31 @@ import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { QuickPicks } from "@repo/ds/choice";
-import { Button, DatePicker, Skeleton, Textarea, cn } from "@repo/ds";
+import { Button, DatePicker, Skeleton, Spinner, Textarea, cn } from "@repo/ds";
 import { StatusBadge } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
 import type {
+  ChangeApprovalType,
   ChangePersonRef,
   ManagerOptionDto,
   PeopleProfileDto,
   WorkforceChangeDto,
 } from "@repo/api";
-import { MessageSquare, Target, X } from "lucide-react";
+import { Check, MessageSquare, PenLine, Sparkles, Stamp, Target, X } from "lucide-react";
 import { useRefusal } from "@/i18n/words";
 import { JobPicker, PlacePicker } from "@/features/catalog/components/catalog-pickers";
+import { useCompanyLists, useJobs } from "@/features/catalog/api/use-catalog";
 import { useOrganizationHierarchy } from "@/features/organization/api/use-organization";
 import { usePeopleProfile } from "../api/use-people";
 import { ManagerPicker, OrganizationPicker, flattenOrg } from "../components/workforce-pickers";
 import { Monogram } from "../components/workforce-ui";
 import {
+  useApprovalSettings,
   useCancelChange,
+  useChangeDraft,
   useChangeMutations,
   useChangeRights,
+  useProposeChange,
   useEndEmploymentPreview,
   useLineEffects,
   useManagerOptions,
@@ -64,7 +69,8 @@ export function ChangePanel({
   const t = useTranslations("changes");
   const rights = useChangeRights();
   const person = profile.data;
-  const title = kind === "end" ? t("kind.end") : kind === "start" ? t("kind.start") : rights.people ? t("kind.job") : t("kind.manager");
+  const title = kind === "end" ? t("kind.end") : kind === "start" ? t("kind.start")
+    : rights.people || rights.propose ? t("kind.change") : t("kind.manager");
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -90,7 +96,7 @@ export function ChangePanel({
       ) : kind === "start" ? (
         <StartForm person={person} editing={editing ?? null} onClose={onClose} />
       ) : (
-        <JobForm person={person} editing={editing ?? null} initialManagerKey={initialManagerKey ?? null} onClose={onClose} onDraft={onDraft} reportingOnly={!rights.people} />
+        <JobForm person={person} editing={editing ?? null} initialManagerKey={initialManagerKey ?? null} onClose={onClose} onDraft={onDraft} reportingOnly={!rights.people && !rights.propose} />
       )}
     </div>
   );
@@ -98,9 +104,14 @@ export function ChangePanel({
 
 // --- Job change -----------------------------------------------------------------------------------
 
-type Fact = "unit" | "title" | "location";
+type Fact = "unit" | "title" | "location" | "reason";
 type Picked = { id: string; name: string };
 
+/**
+ * A change of job, described in a sentence and drafted from the company's own jobs and reasons (D-15): the draft is
+ * the request, each part editable. HR's changes apply on their date; a manager's waits for approval when the company
+ * asks for it on that type of change.
+ */
 function JobForm({
   person, editing, initialManagerKey, onClose, onDraft, reportingOnly,
 }: {
@@ -114,11 +125,16 @@ function JobForm({
   const t = useTranslations("changes");
   const format = useFormat();
   const refusal = useRefusal();
+  const rights = useChangeRights();
   const key = person.identity.employeeKey;
   const employeeId = person.identity.employeeId;
   const { changeJob, editChange } = useChangeMutations(key);
+  const propose = useProposeChange(key);
+  const draft = useChangeDraft(key);
   const cancel = useCancelChange();
   const d = editing?.details;
+  // HR and proposers go through the one door that decides whether it waits; edits and reporting admins keep theirs.
+  const describes = !editing && (rights.people || rights.propose);
 
   const [date, setDate] = useState(editing?.effectiveDate ?? todayIso());
   const [chosen, setChosen] = useState<ChangePersonRef | null>(d?.managerChanged ? d.managerTo : null);
@@ -127,11 +143,20 @@ function JobForm({
   const [teamManager, setTeamManager] = useState<ChangePersonRef | null>(d?.teamOutcome === "Stays" ? d.teamManager : null);
   const [unit, setUnit] = useState<{ id: string; name: string } | null>(d?.unitChanged && d.unitToId ? { id: d.unitToId, name: d.unitTo ?? "" } : null);
   // An edit starts from the change's picks; undefined is "unchanged", a null place is "no place".
-  const [job, setJob] = useState<Picked | null>(d?.titleChanged && d.jobToId ? { id: d.jobToId, name: d.titleTo ?? "" } : null);
+  const [job, setJob] = useState<(Picked & { level?: string | null }) | null>(d?.titleChanged && d.jobToId ? { id: d.jobToId, name: d.titleTo ?? "" } : null);
   const [place, setPlace] = useState<Picked | null | undefined>(
     d?.locationChanged ? (d.placeToId ? { id: d.placeToId, name: d.locationTo ?? "" } : null) : undefined);
+  const [reasonId, setReasonId] = useState<string | null>(d?.reasonId ?? null);
+  const [note, setNote] = useState(editing?.note ?? "");
+  const [said, setSaid] = useState("");
+  const [read, setRead] = useState<"ai" | "words" | "nothing" | "leaving" | null>(null);
   const [open, setOpen] = useState<Fact | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const approvals = useApprovalSettings(describes);
+  const lists = useCompanyLists(describes);
+  const jobs = useJobs(describes);
+  const reasons = (lists.data?.find((list) => list.id === "change-reasons")?.values ?? []).filter((value) => !value.isRetired || value.id === reasonId);
 
   // A chart drop names the new manager by key; look them up once.
   const dropped = useManagerOptions(date, initialManagerKey ?? "", employeeId);
@@ -151,6 +176,21 @@ function JobForm({
   const teamShown = person.directReportCount > 0 && (managerChanged || unitChanged);
   const isToday = date === todayIso();
 
+  const levelOf = (jobId: string | null | undefined) => jobs.data?.find((item) => item.id === jobId)?.level?.label ?? null;
+  const levelFrom = levelOf(work?.jobId);
+  const levelTo = titleChanged ? (job?.level ?? levelOf(job?.id)) : null;
+
+  // The parts of this change the company wants approved; HR's own never wait.
+  const touched: ChangeApprovalType[] = [
+    ...(unitChanged || titleChanged ? (["job"] as const) : []),
+    ...(managerChanged || (teamShown && teamStays) ? (["manager"] as const) : []),
+    ...(locationChanged ? (["place"] as const) : []),
+  ];
+  const required = new Set(approvals.data?.types.filter((type) => type.required).map((type) => type.type) ?? []);
+  const waiting = touched.filter((type) => required.has(type));
+  const waits = describes && !rights.people && waiting.length > 0;
+  const approvers = (approvals.data?.approvers ?? []).filter((approver) => approver.employeeId !== rights.employeeId);
+
   useEffect(() => {
     onDraft?.({
       managerKey: managerChanged ? (noManager ? null : chosen?.employeeKey ?? null) : current?.employeeKey ?? null,
@@ -160,6 +200,23 @@ function JobForm({
 
   const effects = useLineEffects(employeeId, noManager ? null : chosen?.employeeId ?? null, managerChanged);
   const dottedEnds = chosen && person.dottedLineManagers.some((line) => line.employeeKey === chosen.employeeKey) ? chosen : null;
+
+  const readIt = async () => {
+    setError(null);
+    try {
+      const result = await draft.mutateAsync(said.trim());
+      if (result.kind === "end") { setRead("leaving"); return; }
+      if (!result.understood) { setRead("nothing"); return; }
+      if (result.date) setDate(result.date);
+      if (result.jobId && result.jobId !== work?.jobId) setJob({ id: result.jobId, name: result.jobTitle ?? "", level: result.jobLevel });
+      if (result.orgUnitId && result.orgUnitId !== work?.orgUnitId) setUnit({ id: result.orgUnitId, name: result.orgUnitName ?? "" });
+      if (result.placeId && result.placeId !== work?.placeId) setPlace({ id: result.placeId, name: result.placeName ?? "" });
+      if (result.reasonId) setReasonId(result.reasonId);
+      setRead(result.usedAi ? "ai" : "words");
+    } catch (caught) {
+      setError(refusal(caught, t("describe.failed")));
+    }
+  };
 
   const save = async () => {
     setError(null);
@@ -172,12 +229,19 @@ function JobForm({
       jobId: titleChanged ? job!.id : null,
       placeId: locationChanged ? place?.id ?? null : null,
       removePlace: locationChanged && place === null,
+      reasonId,
+      note: note.trim() || null,
     };
     try {
-      const saved = editing
-        ? await editChange.mutateAsync({ id: editing.id, request: { job: request } })
-        : await changeJob.mutateAsync(request);
-      announce(saved);
+      if (describes) {
+        const result = await propose.mutateAsync({ job: request, description: said.trim() || null });
+        if (result.request) toast.success(t("request.sent", { name: firstName(person.identity.displayName) }));
+        else if (result.change) announce(result.change);
+      } else {
+        announce(editing
+          ? await editChange.mutateAsync({ id: editing.id, request: { job: request } })
+          : await changeJob.mutateAsync(request));
+      }
       onClose();
     } catch (caught) {
       setError(refusal(caught, t("failed")));
@@ -192,13 +256,90 @@ function JobForm({
     toast.success(message, { action: { label: t("saved.undo"), onClick: () => void cancel.mutateAsync(saved.id).then(() => toast.success(t("saved.undone"))) } });
   };
 
-  const summary = teamShown && teamStays
-    ? t.rich("summary.withTeam", { name: firstName(person.identity.displayName), count: person.directReportCount, date: format.date(date), b })
-    : isToday ? t.rich("summary.today", { b }) : t.rich("summary.scheduled", { date: format.date(date), b });
+  const summary = waits
+    ? t.rich("summary.onceApproved", { date: format.date(date), b })
+    : teamShown && teamStays
+      ? t.rich("summary.withTeam", { name: firstName(person.identity.displayName), count: person.directReportCount, date: format.date(date), b })
+      : isToday ? t.rich("summary.today", { b }) : t.rich("summary.scheduled", { date: format.date(date), b });
+  const busy = changeJob.isLoading || editChange.isLoading || propose.isLoading;
 
   return (
     <>
       <div className="min-h-0 flex-1 overflow-y-auto px-[22px] pb-4 pt-1.5">
+        {describes ? (
+          <section className="py-3.5">
+            <div className="grid gap-2 rounded-inset border bg-inlay p-3.5 focus-within:ring-2 focus-within:ring-ring">
+              <label htmlFor="change-say" className="type-meta text-muted-foreground">{t("describe.label")}</label>
+              <Textarea
+                id="change-say"
+                value={said}
+                onChange={(event) => { setSaid(event.target.value); setRead(null); }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && (event.metaKey || event.ctrlKey) && said.trim()) { event.preventDefault(); void readIt(); }
+                }}
+                placeholder={t("describe.placeholder", { name: firstName(person.identity.displayName) })}
+                rows={2}
+                maxLength={400}
+                className="min-h-[44px] resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 dark:bg-transparent"
+              />
+              <div className="flex items-center justify-end gap-2.5">
+                {read ? (
+                  <span role="status" className={cn("me-auto type-meta", read === "nothing" || read === "leaving" ? "text-warning" : "text-muted-foreground")}>
+                    {read === "ai" ? <Sparkles aria-hidden className="me-1 inline size-3.5 align-[-2px] text-primary" /> : null}
+                    {t(`describe.read.${read}`)}
+                  </span>
+                ) : null}
+                <Button type="button" size="sm" variant="outline" disabled={!said.trim() || draft.isLoading} onClick={() => void readIt()}>
+                  {draft.isLoading ? <Spinner className="size-3.5" /> : <PenLine className="size-3.5" />}
+                  {draft.isLoading ? t("describe.drafting") : t("describe.draft")}
+                </Button>
+              </div>
+            </div>
+          </section>
+        ) : null}
+
+        {reportingOnly ? null : (
+          <Block title={describes ? t("describe.theChange") : t("facts.title")}>
+            <div key={read ?? "none"} className={cn("grid", (read === "ai" || read === "words") && "animate-in fade-in-0 slide-in-from-top-1 duration-300")}>
+              <FactRow label={describes ? t("facts.title") : t("facts.jobTitle")} current={work?.jobTitle ?? t("facts.none")} next={titleChanged ? job!.name : null}
+                open={open === "title"} onOpen={() => setOpen("title")} onUndo={() => { setJob(null); setOpen(null); }} onDone={() => setOpen(null)}>
+                <JobPicker value={job?.id ?? work?.jobId ?? null} onChange={(next) => { setJob({ id: next.id, name: next.title, level: next.level?.label ?? null }); setOpen(null); }} />
+              </FactRow>
+              {titleChanged && levelTo && levelFrom !== levelTo ? (
+                <FactRow fixed label={t("facts.level")} current={levelFrom ?? t("facts.none")} next={levelTo} open={false} onOpen={() => undefined} onUndo={() => undefined}>
+                  {null}
+                </FactRow>
+              ) : null}
+              <FactRow label={t("facts.unit")} current={work?.organizationName ?? t("facts.none")} next={unitChanged ? unit!.name : null}
+                open={open === "unit"} onOpen={() => setOpen("unit")} onUndo={() => { setUnit(null); setOpen(null); }}>
+                <UnitEditor date={date} value={unit?.id ?? work?.orgUnitId ?? ""} onChange={(next) => { setUnit(next); setOpen(null); }} />
+              </FactRow>
+              <FactRow label={t("facts.location")} current={work?.location ?? t("facts.none")} next={locationChanged ? (place?.name ?? t("facts.none")) : null}
+                open={open === "location"} onOpen={() => setOpen("location")} onUndo={() => { setPlace(undefined); setOpen(null); }} onDone={() => setOpen(null)}>
+                <PlacePicker value={place === undefined ? work?.placeId ?? null : place?.id ?? null}
+                  onChange={(next) => { setPlace(next ? { id: next.id, name: next.name } : null); setOpen(null); }} />
+              </FactRow>
+              {describes && reasons.length > 0 ? (
+                <FactRow label={t("facts.reason")} current={reasons.find((value) => value.id === reasonId)?.label ?? t("facts.none")} next={null}
+                  open={open === "reason"} onOpen={() => setOpen("reason")} onUndo={() => undefined} onDone={() => setOpen(null)}>
+                  <QuickPicks
+                    label={t("facts.reason")}
+                    value={reasonId ?? ""}
+                    onPick={(value) => { setReasonId(value === reasonId ? null : value); setOpen(null); }}
+                    options={reasons.map((value) => ({ value: value.id, label: value.label }))}
+                  />
+                </FactRow>
+              ) : null}
+              {describes ? (
+                <div className="grid min-h-[34px] grid-cols-[84px_minmax(0,1fr)] items-center gap-2.5 py-1">
+                  <span className="type-meta text-muted-foreground">{t("when.from")}</span>
+                  <DateChoice label={t("when.from")} value={date} onChange={setDate} options={[todayIso(), firstOfNextMonth()]} />
+                </div>
+              ) : null}
+            </div>
+          </Block>
+        )}
+
         <Block title={t("reportsTo")}>
           <div className={cn(current && "grid grid-cols-[18px_minmax(0,1fr)] gap-x-2.5")}>
             {current ? <Rail /> : null}
@@ -256,27 +397,9 @@ function JobForm({
           </Block>
         ) : null}
 
-        {reportingOnly ? null : (
-          <Block title={t("facts.title")}>
-            <div className="grid">
-              <FactRow label={t("facts.unit")} current={work?.organizationName ?? t("facts.none")} next={unitChanged ? unit!.name : null}
-                open={open === "unit"} onOpen={() => setOpen("unit")} onUndo={() => { setUnit(null); setOpen(null); }}>
-                <UnitEditor date={date} value={unit?.id ?? work?.orgUnitId ?? ""} onChange={(next) => { setUnit(next); setOpen(null); }} />
-              </FactRow>
-              <FactRow label={t("facts.jobTitle")} current={work?.jobTitle ?? t("facts.none")} next={titleChanged ? job!.name : null}
-                open={open === "title"} onOpen={() => setOpen("title")} onUndo={() => { setJob(null); setOpen(null); }} onDone={() => setOpen(null)}>
-                <JobPicker value={job?.id ?? work?.jobId ?? null} onChange={(next) => { setJob({ id: next.id, name: next.title }); setOpen(null); }} />
-              </FactRow>
-              <FactRow label={t("facts.location")} current={work?.location ?? t("facts.none")} next={locationChanged ? (place?.name ?? t("facts.none")) : null}
-                open={open === "location"} onOpen={() => setOpen("location")} onUndo={() => { setPlace(undefined); setOpen(null); }} onDone={() => setOpen(null)}>
-                <PlacePicker value={place === undefined ? work?.placeId ?? null : place?.id ?? null}
-                  onChange={(next) => { setPlace(next ? { id: next.id, name: next.name } : null); setOpen(null); }} />
-              </FactRow>
-            </div>
-          </Block>
+        {describes && !reportingOnly ? null : (
+          <WhenBlock label={t("when.from")} value={date} onChange={setDate} options={[todayIso(), firstOfNextMonth()]} />
         )}
-
-        <WhenBlock label={t("when.from")} value={date} onChange={setDate} options={[todayIso(), firstOfNextMonth()]} />
 
         {managerChanged && (effects.data?.reviewersStay.length || effects.data?.oneOnOnesEnd.length || dottedEnds) ? (
           <Block title={t("effects.title")} aside={effects.data?.reviewersStay.length || effects.data?.oneOnOnesEnd.length ? t("effects.performance") : undefined}>
@@ -296,12 +419,45 @@ function JobForm({
           </Block>
         ) : null}
 
+        {describes ? (
+          <Block>
+            <label htmlFor="change-note" className="type-label font-semibold">
+              {waits && approvers[0] ? t("request.noteFor", { name: firstName(approvers[0].displayName) }) : t("request.note")}{" "}
+              <span className="font-normal text-muted-foreground">{t("request.optional")}</span>
+            </label>
+            <Textarea id="change-note" value={note} onChange={(event) => setNote(event.target.value)} rows={2} maxLength={1000} className="resize-none" />
+          </Block>
+        ) : null}
+
+        {waits ? (
+          <div className="mt-1 flex items-center gap-3 rounded-inset border bg-inlay px-3.5 py-3 animate-in fade-in-0 duration-300">
+            {approvers.length ? (
+              <span className="flex shrink-0">
+                {approvers.slice(0, 3).map((approver, index) => (
+                  <Monogram key={`${approver.displayName}-${index}`} name={approver.displayName} size="md" className={cn("ring-2 ring-inlay", index > 0 && "-ms-2")} />
+                ))}
+              </span>
+            ) : (
+              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-muted"><Stamp className="size-4 text-muted-foreground" /></span>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="type-label font-semibold">
+                {approvers.length === 0 ? t("request.approverUnknown")
+                  : approvers.length === 1 ? t("request.approver", { name: approvers[0]!.displayName })
+                  : t("request.approvers", { name: approvers[0]!.displayName, count: approvers.length - 1 })}
+              </p>
+              <p className="type-meta text-muted-foreground">{t("request.why", { types: waiting.map((type) => t(`types.${type}`)).join(", ") })}</p>
+            </div>
+            <Check aria-hidden className="size-4 shrink-0 text-muted-foreground" />
+          </div>
+        ) : null}
+
         {error ? <p role="alert" className="pt-2 type-body text-destructive">{error}</p> : null}
       </div>
       <Footer summary={summary}>
         <Button type="button" variant="ghost" onClick={onClose}>{t("action.cancel")}</Button>
-        <Button type="button" disabled={!anything || (noManager === false && managerChanged && !chosen) || changeJob.isLoading || editChange.isLoading} onClick={() => void save()}>
-          {isToday ? t("action.save") : t("action.schedule", { date: format.date(date) })}
+        <Button type="button" disabled={!anything || (noManager === false && managerChanged && !chosen) || busy} onClick={() => void save()}>
+          {waits ? t("request.send") : isToday ? t("action.save") : t("action.schedule", { date: format.date(date) })}
         </Button>
       </Footer>
     </>
@@ -573,7 +729,7 @@ function Stack({ names }: { names: string[] }) {
 
 /** One job fact: as it is, or struck through with the new value in bold; Change opens its editor in place. */
 function FactRow({
-  label, current, next, open, onOpen, onUndo, onDone, children,
+  label, current, next, open, onOpen, onUndo, onDone, fixed = false, children,
 }: {
   label: string;
   current: string;
@@ -582,6 +738,8 @@ function FactRow({
   onOpen: () => void;
   onUndo: () => void;
   onDone?: () => void;
+  /** Follows from another part (a job's level): shown, not changed here. */
+  fixed?: boolean;
   children: ReactNode;
 }) {
   const t = useTranslations("changes.facts");
@@ -593,7 +751,7 @@ function FactRow({
           {next ? <><s className="me-1.5 text-muted-foreground">{current}</s><span className="font-semibold">{next}</span></> : current}
         </span>
       )}
-      {open && onDone ? (
+      {fixed ? <span /> : open && onDone ? (
         <Button type="button" size="sm" variant="ghost" onClick={onDone}>{t("done")}</Button>
       ) : next ? (
         <Button type="button" size="sm" variant="ghost" onClick={onUndo}>{t("undo")}</Button>
@@ -619,23 +777,29 @@ export function UnitEditor({ date, value, onChange }: { date: string; value: str
 
 /** Today, a second common date, or any date from today on (no back-dating here). */
 function WhenBlock({ label, value, onChange, options }: { label: string; value: string; onChange: (date: string) => void; options: string[] }) {
+  return (
+    <Block title={label}>
+      <DateChoice label={label} value={value} onChange={onChange} options={options} />
+    </Block>
+  );
+}
+
+function DateChoice({ label, value, onChange, options }: { label: string; value: string; onChange: (date: string) => void; options: string[] }) {
   const t = useTranslations("changes.when");
   const format = useFormat();
   const today = todayIso();
   return (
-    <Block title={label}>
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="w-44">
-          <DatePicker value={value} min={today} onChange={(next) => { if (next) onChange(next); }} placeholder={t("otherDate")} />
-        </div>
-        <QuickPicks
-          label={label}
-          value={value}
-          onPick={onChange}
-          options={options.map((option) => ({ value: option, label: option === today ? t("today") : format.date(option) }))}
-        />
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="w-44">
+        <DatePicker value={value} min={today} onChange={(next) => { if (next) onChange(next); }} placeholder={t("otherDate")} />
       </div>
-    </Block>
+      <QuickPicks
+        label={label}
+        value={value}
+        onPick={onChange}
+        options={options.map((option) => ({ value: option, label: option === today ? t("today") : format.date(option) }))}
+      />
+    </div>
   );
 }
 

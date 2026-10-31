@@ -78,6 +78,7 @@ import { PhotoDialog } from "./worker-profile/photo-dialog";
 import { useProfileTabs } from "./worker-profile/profile-tabs";
 import { useRecentRecord } from "@repo/api/react";
 import { useChangeSheet } from "../changes/change-sheet";
+import { usePendingRequestCards } from "@/features/changes/pending-requests";
 import { ComingUpCard } from "../changes/coming-up";
 import { DottedLines } from "../changes/dotted-lines";
 import { useChangeRights } from "../changes/use-changes";
@@ -185,6 +186,11 @@ export default function PeopleProfileWorkspace({ employeeKey }: { employeeKey: s
     );
   }, [canManage, pathname, profile.data, requestedAction, searchParams]);
 
+  // Requests about this person that wait for an answer, for whoever approves, asked or can change (B-179).
+  const managesThisPerson = Boolean(rights.employeeId) && profile.data?.primaryManager?.employeeId === rights.employeeId;
+  const pendingRequests = usePendingRequestCards(employeeKey,
+    Boolean(profile.data) && !profile.data?.isAsOf && (rights.approve || canManage || (rights.propose && managesThisPerson)));
+
   if (profile.isLoading || authLoading) return <WorkerProfileSkeleton showBackLink />;
 
   if (profile.error || !profile.data) {
@@ -223,8 +229,10 @@ export default function PeopleProfileWorkspace({ employeeKey }: { employeeKey: s
   );
 
   const isFormer = employee.employment.state === "Former";
-  // Reporting admins change the line too; the panel shows them only the line and the team.
-  const showActions = rights.lines && !isAsOf && (!isFormer || canManage);
+  // Reporting admins change the line too; the panel shows them only the line and the team. A manager who may propose
+  // changes describes one for their direct reports (B-179).
+  const proposesHere = rights.propose && !canManage && managesThisPerson;
+  const showActions = (rights.lines || proposesHere) && !isAsOf && (!isFormer || canManage);
   const orgChartHref = orgChart.canSee ? `/org-chart?focus=${encodeURIComponent(employeeKey)}` : undefined;
   const goAsOf = (date: string) => router.push(`${pathname}?asOf=${date}`);
   const returnToToday = () => router.push(tab === "job" ? pathname : `${pathname}?tab=${tab}`);
@@ -295,10 +303,13 @@ export default function PeopleProfileWorkspace({ employeeKey }: { employeeKey: s
       timeline={timelineForbidden ? undefined : { events: view.timeline, isLoading: timeline.isLoading }}
       dottedLines={!isAsOf && hasDottedLines ? <DottedLines person={employee} canEdit={rights.lines && !isFormer} /> : undefined}
       comingUp={
-        !isAsOf && (employee.comingUp.length > 0 || showActions)
-          ? employee.comingUp.map((change) => (
-              <ComingUpCard key={change.id} change={change} canChange={change.details.isReportingOnly ? rights.lines : rights.people} onEdit={changeSheet.edit} />
-            ))
+        !isAsOf && (employee.comingUp.length > 0 || pendingRequests.cards.length > 0 || showActions)
+          ? [
+              ...pendingRequests.cards,
+              ...employee.comingUp.map((change) => (
+                <ComingUpCard key={change.id} change={change} canChange={change.details.isReportingOnly ? rights.lines : rights.people} onEdit={changeSheet.edit} />
+              )),
+            ]
           : undefined
       }
       onSchedule={showActions && !isFormer ? () => changeSheet.start(employeeKey, "job") : undefined}
@@ -375,7 +386,7 @@ export default function PeopleProfileWorkspace({ employeeKey }: { employeeKey: s
                     </Button>
                   ) : (
                     <Button size="sm" variant="outline" onClick={() => changeSheet.start(employeeKey, "job")}>
-                      <ArrowLeftRight className="size-4" /> {canManage ? tc("changeJob") : tc("changeManager")}
+                      <ArrowLeftRight className="size-4" /> {canManage ? tc("makeChange") : proposesHere ? tc("propose") : tc("changeManager")}
                     </Button>
                   )}
                   {canManage && !isFormer ? (
@@ -409,6 +420,7 @@ export default function PeopleProfileWorkspace({ employeeKey }: { employeeKey: s
         {body}
       </WorkerProfile>
       {changeSheet.element}
+      {pendingRequests.sheet}
       {canChangePhoto ? (
         <PhotoDialog
           open={photoOpen}

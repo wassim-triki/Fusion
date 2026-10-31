@@ -50,6 +50,8 @@ export {
   canManageCoreEmployees,
   canImportCoreEmployees,
   canManageCoreReporting,
+  canProposeCoreChanges,
+  canApproveCoreChanges,
   canAccessCoreTeam,
   canAccessOwnCoreProfile,
   canSeeCorePeopleNavigation,

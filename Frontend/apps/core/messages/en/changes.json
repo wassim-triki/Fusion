@@ -3,7 +3,8 @@
     "job": "Change job",
     "manager": "Change manager",
     "end": "End employment",
-    "start": "Start employment"
+    "start": "Start employment",
+    "change": "Make a change"
   },
   "close": "Close",
   "reportsTo": "Reports to",
@@ -27,7 +28,9 @@
     "none": "None",
     "change": "Change",
     "undo": "Undo",
-    "done": "Done"
+    "done": "Done",
+    "level": "Level",
+    "reason": "Reason"
   },
   "when": {
     "from": "From",
@@ -69,7 +72,8 @@
     "reportsMove": "{count, plural, one {# report moves} other {# reports move}} on <b>{date}</b>",
     "lastDay": "Last day <b>{date}</b>",
     "joins": "Joins {manager}'s team on <b>{date}</b>",
-    "joinsNoManager": "Starts on <b>{date}</b>"
+    "joinsNoManager": "Starts on <b>{date}</b>",
+    "onceApproved": "Applies <b>{date}</b>, once approved"
   },
   "action": {
     "save": "Save change",
@@ -135,7 +139,9 @@
     "endEmployment": "End employment",
     "startEmployment": "Start employment",
     "showInChart": "Show in org chart",
-    "more": "More actions"
+    "more": "More actions",
+    "propose": "Propose a change",
+    "makeChange": "Make a change"
   },
   "dotted": {
     "since": "Dotted line · since {date}",
@@ -152,5 +158,113 @@
   "refused": {
     "inBranch": "{target} reports to {name}",
     "already": "Already reports to {name}"
+  },
+  "describe": {
+    "label": "Describe it",
+    "placeholder": "For example: promote {name} to Senior Consultant from 1 January",
+    "draft": "Draft it",
+    "drafting": "Drafting…",
+    "theChange": "The change",
+    "failed": "Fusion couldn't draft that. Fill in the change below.",
+    "read": {
+      "ai": "Drafted from your company's jobs and reasons. Check each part.",
+      "words": "Drafted from your words. Check each part.",
+      "nothing": "No job, place, reason or date found. Fill in the change below.",
+      "leaving": "That reads as a last day: use End employment instead."
+    }
+  },
+  "types": {
+    "job": "job changes",
+    "manager": "manager changes",
+    "place": "place changes",
+    "leaving": "last days",
+    "homeAddress": "home addresses"
+  },
+  "request": {
+    "sent": "Sent for approval. {name}'s change waits for an answer.",
+    "noteFor": "Note for {name}",
+    "note": "Note",
+    "optional": "(optional)",
+    "approver": "{name} approves",
+    "approvers": "{name} or {count, plural, one {# other} other {# others}} approve",
+    "approverUnknown": "Whoever approves changes answers it",
+    "why": "Your company approves {types}",
+    "send": "Send for approval"
+  },
+  "requests": {
+    "title": "Changes and approvals",
+    "waiting": "Waiting",
+    "answered": "Answered",
+    "emptyWaiting": "Nothing waits for an answer.",
+    "emptyAnswered": "No answers in the last 90 days.",
+    "failed": "Requests didn't load.",
+    "retry": "Try again",
+    "headline": {
+      "job": "{name} becomes {summary}",
+      "manager": "{name} reports to {manager}",
+      "noManager": "{name} stops reporting to a manager",
+      "place": "{name} works from {summary}",
+      "leaving": "{name}'s last day on {date}",
+      "address": "{name}'s new home address"
+    },
+    "meta": "{actor} asks · from {date}",
+    "metaReason": "{reason} · {actor} asks · from {date}",
+    "metaAddress": "{actor} asks · {date}",
+    "status": {
+      "Pending": "Waiting",
+      "Approved": "Approved",
+      "Declined": "Declined",
+      "Withdrawn": "Withdrawn"
+    },
+    "decided": {
+      "Approved": "Approved by {name} · {date}",
+      "Declined": "Declined by {name} · {date}",
+      "Withdrawn": "Withdrawn · {date}"
+    },
+    "askedBy": "Asked by {name} · {date}",
+    "said": "In their words",
+    "note": "Note",
+    "from": "From",
+    "lastDay": "Last day",
+    "address": "Home address",
+    "reason": "Reason",
+    "why": "Why not",
+    "approve": "Approve",
+    "decline": "Decline",
+    "withdraw": "Withdraw",
+    "open": "Open",
+    "declineTitle": "Why not?",
+    "declinePlaceholder": "Say what would change your answer",
+    "confirmDecline": "Decline",
+    "back": "Back",
+    "approved": "Approved. It applies on {date}.",
+    "approvedAddress": "Approved. The address is saved.",
+    "declined": "Declined. {name} is told why.",
+    "withdrawn": "Withdrawn.",
+    "notFound": "This request isn't there any more.",
+    "actionFailed": "That didn't work. Try again."
+  },
+  "approvals": {
+    "who": "Who approves",
+    "nobody": "Nobody holds Approve changes yet.",
+    "roles": "Roles",
+    "waits": "Waits for approval",
+    "applies": "Applies on its date",
+    "saved": "Saved",
+    "failed": "Couldn't save. Try again.",
+    "type": {
+      "job": "Job and unit",
+      "manager": "Manager",
+      "place": "Place",
+      "leaving": "Last day",
+      "homeAddress": "A person's own home address"
+    }
+  },
+  "pending": {
+    "title": "Waiting for HR",
+    "sent": "Sent {date}",
+    "withdraw": "Withdraw",
+    "withdrawn": "Withdrawn",
+    "open": "Open"
   }
 }

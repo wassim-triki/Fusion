@@ -18,6 +18,8 @@ export interface WorkListItem {
   steps?: { label: string; detail?: string | null; state: "done" | "current" | "upcoming" }[] | null;
   /** What the item's button does; "Open" when the module doesn't say. */
   actionLabel?: string | null;
+  /** A yes or no the person gives in place (an approval); rendered by `renderDecision`. */
+  decision?: { approvePath: string; declinePath: string } | null;
 }
 
 export interface WorkListModule {
@@ -94,6 +96,8 @@ export interface WorkListProps {
   renderLink?: RenderWorkLink;
   /** Shown when nothing needs the person and nothing is loading or failed. */
   emptyLabel?: string;
+  /** The in-place answer for an item with a `decision` (Approve, Decline); the row still opens its path. */
+  renderDecision?: (item: WorkListItem) => ReactNode;
   className?: string;
 }
 
@@ -107,6 +111,7 @@ export function WorkList({
   today,
   renderLink = defaultLink,
   emptyLabel,
+  renderDecision,
   className,
 }: WorkListProps) {
   const t = useTranslations("ds.work");
@@ -128,11 +133,13 @@ export function WorkList({
             const days = item.dueOn ? daysUntil(item.dueOn, reference) : null;
             const moduleLabel = labels.get(item.module) ?? item.module;
             return (
-              <li key={item.id}>
+              <li key={item.id} className={cn(item.decision && renderDecision && "flex items-center pe-4")}>
                 {renderLink({
                   href: item.href,
-                  className:
+                  className: cn(
                     "group flex min-h-14 items-center gap-3 px-4 py-2.5 transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none",
+                    item.decision && renderDecision && "min-w-0 flex-1"
+                  ),
                   children: (
                     <>
                       <Avatar className="size-8 shrink-0">
@@ -144,15 +151,20 @@ export function WorkList({
                         <span className="block truncate type-body font-medium text-foreground">{item.title}</span>
                         <span className="block truncate type-meta text-muted-foreground">{item.context ?? moduleLabel}</span>
                       </span>
-                      {item.dueOn && days !== null ? (
-                        <span className={cn("shrink-0 type-meta", days < 0 ? "text-warning" : "text-muted-foreground")}>
-                          {dueLabel(item.dueOn, reference, dueWords)}
-                        </span>
-                      ) : null}
-                      <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" aria-hidden />
+                      {item.decision && renderDecision ? null : (
+                        <>
+                          {item.dueOn && days !== null ? (
+                            <span className={cn("shrink-0 type-meta", days < 0 ? "text-warning" : "text-muted-foreground")}>
+                              {dueLabel(item.dueOn, reference, dueWords)}
+                            </span>
+                          ) : null}
+                          <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" aria-hidden />
+                        </>
+                      )}
                     </>
                   ),
                 })}
+                {item.decision && renderDecision ? renderDecision(item) : null}
               </li>
             );
           })}

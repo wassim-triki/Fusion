@@ -2,6 +2,7 @@
 
 import { use } from "react";
 import { CoreSettingsSectionHost } from "@/features/settings/section-host";
+import { ApprovalsSettings } from "@/features/settings/sections/approvals";
 import { ChangeHistorySettings } from "@/features/settings/sections/change-history";
 import { BrandSettings } from "@/features/settings/sections/brand";
 import { DetailsSettings } from "@/features/settings/sections/details";
@@ -29,6 +30,8 @@ export default function SettingsSectionPage({ params }: { params: Promise<{ sect
             return <ListsSettings section={section} />;
           case "roles":
             return <RolesSettings section={section} />;
+          case "approvals":
+            return <ApprovalsSettings section={section} />;
           case "invitations":
             return <InvitationsSettings section={section} />;
           case "notifications":

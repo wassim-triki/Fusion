@@ -88,6 +88,9 @@ vi.mock("../changes/use-changes", () => ({
   useChangeRights: () => ({ people: true, lines: true, seeComing: true }),
   useChangeMutations: () => ({ dottedLine: { isLoading: false, mutateAsync: vi.fn() } }),
   useCancelChange: () => ({ isLoading: false, mutateAsync: vi.fn() }),
+  useChangeRequests: () => ({ data: [] }),
+  useChangeRequest: () => ({ data: undefined }),
+  useRequestDecisions: () => ({ approve: { isLoading: false }, decline: { isLoading: false }, withdraw: { isLoading: false, mutateAsync: vi.fn() } }),
 }));
 
 vi.mock("../api/use-people", () => ({
@@ -260,7 +263,7 @@ describe("PeopleProfileWorkspace", () => {
     const rail = screen.getByRole("complementary", { name: "About Ada Lovelace" });
     expect(within(rail).getByRole("link", { name: /Grace Hopper/ })).toHaveAttribute("href", "/people/E-KEY-9");
     expect(screen.getByRole("link", { name: /Alan Turing/ })).toHaveAttribute("href", "/people/E-KEY-3");
-    expect(screen.getByRole("button", { name: /Change job/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Make a change/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /More actions/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Change photo" })).toBeInTheDocument();
   });
@@ -469,7 +472,7 @@ describe("PeopleProfileWorkspace", () => {
     render(<PeopleProfileWorkspace employeeKey="E-KEY-1" />);
     expect(screen.getByText(/As of/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Today/i })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Change job/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Make a change/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Change photo" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Personal" })).toHaveAttribute("href", "/people/E-KEY-1?asOf=2099-09-01&tab=personal");
   });

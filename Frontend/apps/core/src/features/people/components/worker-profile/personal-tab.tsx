@@ -6,13 +6,17 @@ import {
   ApiError,
   type PeopleEmergencyContactDto,
   type PeopleHomeAddressDto,
+  type PeoplePendingAddressDto,
   type PeoplePersonalDto,
   type UpdatePersonalRequest,
 } from "@repo/api";
 import { Button, Input, Label, Skeleton, cn } from "@repo/ds";
-import { Lock, Plus, RotateCcw, X } from "lucide-react";
+import { Clock3, Lock, Plus, RotateCcw, X } from "lucide-react";
 import { toast } from "sonner";
 import { useRefusal } from "@/i18n/words";
+import { useFormat } from "@repo/ds/lib/use-format";
+import { RequestSheet } from "@/features/changes/request-sheet";
+import { useChangeRights, useRequestDecisions } from "../../changes/use-changes";
 import { usePeoplePersonal, useUpdatePeoplePersonal } from "../../api/use-people";
 import { Monogram, useWorkforceDate } from "../workforce-ui";
 
@@ -384,7 +388,38 @@ function AddressSection(props: SectionProps) {
       ) : (
         <p className="type-body text-muted-foreground">{t("noAddress")}</p>
       )}
+      {props.data.pendingHomeAddress ? <PendingAddress pending={props.data.pendingHomeAddress} /> : null}
     </SectionFrame>
+  );
+}
+
+/** A new address waiting for HR (D-16): the person can withdraw it; HR opens it to answer. */
+function PendingAddress({ pending }: { pending: PeoplePendingAddressDto }) {
+  const t = useTranslations("changes.pending");
+  const format = useFormat();
+  const refusal = useRefusal();
+  const rights = useChangeRights();
+  const { withdraw } = useRequestDecisions();
+  const [opened, setOpened] = useState(false);
+  return (
+    <div className="mt-3 flex items-start gap-3 rounded-inset bg-inlay px-3.5 py-3 animate-in fade-in-0 duration-300">
+      <Clock3 aria-hidden className="mt-0.5 size-4 shrink-0 text-primary-ink" />
+      <div className="grid min-w-0 flex-1 gap-0.5">
+        <p className="type-label font-semibold">{t("title")}</p>
+        <p className="truncate type-meta text-muted-foreground">
+          {[addressLines(pending.address).join(", "), t("sent", { date: format.date(pending.requestedAt) })].filter(Boolean).join(" · ")}
+        </p>
+      </div>
+      {rights.approve ? (
+        <Button type="button" size="sm" variant="outline" onClick={() => setOpened(true)}>{t("open")}</Button>
+      ) : (
+        <Button type="button" size="sm" variant="ghost" disabled={withdraw.isLoading}
+          onClick={() => void withdraw.mutateAsync(pending.requestId).then(() => toast.success(t("withdrawn")), (caught) => toast.error(refusal(caught, t("withdraw"))))}>
+          {t("withdraw")}
+        </Button>
+      )}
+      {rights.approve ? <RequestSheet id={opened ? pending.requestId : null} onClose={() => setOpened(false)} /> : null}
+    </div>
   );
 }
 

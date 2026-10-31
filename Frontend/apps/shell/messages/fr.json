@@ -249,6 +249,13 @@
       "loading": "Chargement des reconnaissances",
       "empty": "Aucune reconnaissance pour l’instant",
       "all": "Toutes les reconnaissances"
+    },
+    "decision": {
+      "approve": "Approuver",
+      "decline": "Refuser",
+      "why": "Pourquoi ?",
+      "whyPlaceholder": "Dites ce qui changerait votre réponse",
+      "failed": "Cela n'a pas marché. Réessayez."
     }
   },
   "app": {

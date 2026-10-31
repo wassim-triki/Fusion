@@ -3,7 +3,8 @@
     "job": "Changer de poste",
     "manager": "Changer de manager",
     "end": "Fin d'emploi",
-    "start": "Reprise d'emploi"
+    "start": "Reprise d'emploi",
+    "change": "Faire un changement"
   },
   "close": "Fermer",
   "reportsTo": "Rattaché à",
@@ -27,7 +28,9 @@
     "none": "Aucun",
     "change": "Modifier",
     "undo": "Annuler",
-    "done": "OK"
+    "done": "OK",
+    "level": "Niveau",
+    "reason": "Motif"
   },
   "when": {
     "from": "À partir du",
@@ -69,7 +72,8 @@
     "reportsMove": "{count, plural, one {# collaborateur change} other {# collaborateurs changent}} le <b>{date}</b>",
     "lastDay": "Dernier jour le <b>{date}</b>",
     "joins": "Rejoint l'équipe de {manager} le <b>{date}</b>",
-    "joinsNoManager": "Commence le <b>{date}</b>"
+    "joinsNoManager": "Commence le <b>{date}</b>",
+    "onceApproved": "S'applique le <b>{date}</b>, une fois approuvé"
   },
   "action": {
     "save": "Enregistrer",
@@ -135,7 +139,9 @@
     "endEmployment": "Fin d'emploi",
     "startEmployment": "Reprise d'emploi",
     "showInChart": "Voir dans l'organigramme",
-    "more": "Plus d'actions"
+    "more": "Plus d'actions",
+    "propose": "Proposer un changement",
+    "makeChange": "Faire un changement"
   },
   "dotted": {
     "since": "Lien en pointillé · depuis le {date}",
@@ -152,5 +158,113 @@
   "refused": {
     "inBranch": "{target} est rattaché·e à {name}",
     "already": "Déjà rattaché·e à {name}"
+  },
+  "describe": {
+    "label": "Décrivez-le",
+    "placeholder": "Par exemple : promouvoir {name} Consultant senior au 1er janvier",
+    "draft": "Rédiger",
+    "drafting": "Rédaction…",
+    "theChange": "Le changement",
+    "failed": "Fusion n'a pas pu le rédiger. Remplissez le changement ci-dessous.",
+    "read": {
+      "ai": "Rédigé à partir des postes et motifs de votre entreprise. Vérifiez chaque élément.",
+      "words": "Rédigé à partir de vos mots. Vérifiez chaque élément.",
+      "nothing": "Aucun poste, lieu, motif ni date trouvé. Remplissez le changement ci-dessous.",
+      "leaving": "Cela ressemble à un dernier jour : utilisez Fin d'emploi."
+    }
+  },
+  "types": {
+    "job": "les changements de poste",
+    "manager": "les changements de manager",
+    "place": "les changements de lieu",
+    "leaving": "les derniers jours",
+    "homeAddress": "les adresses personnelles"
+  },
+  "request": {
+    "sent": "Envoyé pour approbation. Le changement de {name} attend une réponse.",
+    "noteFor": "Note pour {name}",
+    "note": "Note",
+    "optional": "(facultatif)",
+    "approver": "{name} approuve",
+    "approvers": "{name} ou {count, plural, one {# autre personne} other {# autres personnes}} approuvent",
+    "approverUnknown": "La personne qui approuve les changements répondra",
+    "why": "Votre entreprise approuve {types}",
+    "send": "Envoyer pour approbation"
+  },
+  "requests": {
+    "title": "Changements et validations",
+    "waiting": "En attente",
+    "answered": "Répondus",
+    "emptyWaiting": "Rien n'attend de réponse.",
+    "emptyAnswered": "Aucune réponse ces 90 derniers jours.",
+    "failed": "Les demandes n'ont pas pu être chargées.",
+    "retry": "Réessayer",
+    "headline": {
+      "job": "{name} devient {summary}",
+      "manager": "{name} rend compte à {manager}",
+      "noManager": "{name} n'a plus de manager",
+      "place": "{name} travaille à {summary}",
+      "leaving": "Dernier jour de {name} le {date}",
+      "address": "Nouvelle adresse de {name}"
+    },
+    "meta": "Demandé par {actor} · à partir du {date}",
+    "metaReason": "{reason} · demandé par {actor} · à partir du {date}",
+    "metaAddress": "Demandé par {actor} · {date}",
+    "status": {
+      "Pending": "En attente",
+      "Approved": "Approuvé",
+      "Declined": "Refusé",
+      "Withdrawn": "Retiré"
+    },
+    "decided": {
+      "Approved": "Approuvé par {name} · {date}",
+      "Declined": "Refusé par {name} · {date}",
+      "Withdrawn": "Retiré · {date}"
+    },
+    "askedBy": "Demandé par {name} · {date}",
+    "said": "Dans leurs mots",
+    "note": "Note",
+    "from": "À partir du",
+    "lastDay": "Dernier jour",
+    "address": "Adresse personnelle",
+    "reason": "Motif",
+    "why": "Pourquoi",
+    "approve": "Approuver",
+    "decline": "Refuser",
+    "withdraw": "Retirer",
+    "open": "Ouvrir",
+    "declineTitle": "Pourquoi ?",
+    "declinePlaceholder": "Dites ce qui changerait votre réponse",
+    "confirmDecline": "Refuser",
+    "back": "Retour",
+    "approved": "Approuvé. Il s'applique le {date}.",
+    "approvedAddress": "Approuvé. L'adresse est enregistrée.",
+    "declined": "{name} saura pourquoi.",
+    "withdrawn": "Retiré.",
+    "notFound": "Cette demande n'existe plus.",
+    "actionFailed": "Cela n'a pas marché. Réessayez."
+  },
+  "approvals": {
+    "who": "Qui approuve",
+    "nobody": "Personne n'a encore le droit d'approuver.",
+    "roles": "Rôles",
+    "waits": "Attend une approbation",
+    "applies": "S'applique à sa date",
+    "saved": "Enregistré",
+    "failed": "Échec de l'enregistrement. Réessayez.",
+    "type": {
+      "job": "Poste et unité",
+      "manager": "Manager",
+      "place": "Lieu",
+      "leaving": "Dernier jour",
+      "homeAddress": "L'adresse personnelle, par la personne"
+    }
+  },
+  "pending": {
+    "title": "En attente des RH",
+    "sent": "Envoyé le {date}",
+    "withdraw": "Retirer",
+    "withdrawn": "Retiré",
+    "open": "Ouvrir"
   }
 }

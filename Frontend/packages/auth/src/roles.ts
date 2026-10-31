@@ -48,6 +48,8 @@ const CORE_PERMISSION = {
   profileSelfView: "core.profile.self.view",
   profileSelfUpdate: "core.profile.self.update",
   teamView: "core.team.view",
+  changePropose: "core.change.propose",
+  changeApprove: "core.change.approve",
 } as const;
 
 
@@ -212,6 +214,16 @@ export function canAccessCorePeople(user: AuthUser | null): boolean {
 
 export function canManageCoreEmployees(user: AuthUser | null): boolean {
   return hasCorePermission(user, CORE_PERMISSION.employeeManage, "Tenant");
+}
+
+/** Proposes dated changes for their direct reports (Roles › Approving changes: Propose); the server checks the person. */
+export function canProposeCoreChanges(user: AuthUser | null): boolean {
+  return hasCorePermission(user, CORE_PERMISSION.changePropose, "DirectReports");
+}
+
+/** Approves or declines proposed changes, for everyone (Roles › Approving changes: Approve). */
+export function canApproveCoreChanges(user: AuthUser | null): boolean {
+  return hasCorePermission(user, CORE_PERMISSION.changeApprove, "Tenant");
 }
 
 export function canImportCoreEmployees(user: AuthUser | null): boolean {

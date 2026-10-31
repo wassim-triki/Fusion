@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetTitle } from "@repo/ds";
 import type { WorkforceChangeDto } from "@repo/api";
@@ -18,7 +18,6 @@ const KINDS: Record<string, ChangeKind> = { job: "job", end: "end", start: "star
 export function useChangeSheet(deepLinkKey?: string) {
   const t = useTranslations("changes.kind");
   const params = useSearchParams();
-  const pathname = usePathname();
   const [open, setOpen] = useState<Open | null>(null);
 
   const requested = params.get("change");
@@ -27,8 +26,11 @@ export function useChangeSheet(deepLinkKey?: string) {
     setOpen({ employeeKey: deepLinkKey, kind: KINDS[requested], editing: null });
     const next = new URLSearchParams(params.toString());
     next.delete("change");
-    window.history.replaceState(window.history.state, "", next.size ? `${pathname}?${next}` : pathname);
-  }, [deepLinkKey, requested, params, pathname]);
+    // The browser's path keeps the app's base path (/core); Next's pathname leaves it out, so a refresh would land
+    // outside Core HR (B-168).
+    const path = window.location.pathname;
+    window.history.replaceState(window.history.state, "", next.size ? `${path}?${next}` : path);
+  }, [deepLinkKey, requested, params]);
 
   const start = useCallback((employeeKey: string, kind: ChangeKind) => setOpen({ employeeKey, kind, editing: null }), []);
   /** Edit reopens the change's own kind, filled in. */

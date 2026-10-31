@@ -11,6 +11,9 @@ import {
   canViewCoreOrganization,
   canSeeCoreSettingsNavigation,
   canViewTenantAdministration,
+  canApproveCoreChanges,
+  canProposeCoreChanges,
+  canManageCoreEmployees,
 } from "@repo/auth";
 import { useCoreNav } from "@/shell/navigation/use-core-nav";
 import { useOrgChartAccess } from "@/features/org-chart/api/use-org-chart-access";
@@ -46,6 +49,7 @@ export function CoreSidebar() {
     if (item.href === "/people") return canSeeEmployeeRoster;
     if (item.href === "/org-chart") return canSeeOrgChart;
     if (item.href === "/organization") return canSeeOrganization;
+    if (item.href === "/changes") return canApproveCoreChanges(user) || canProposeCoreChanges(user) || canManageCoreEmployees(user);
     return true;
   });
   const adminItems = nav.admin.items.filter((item) => {

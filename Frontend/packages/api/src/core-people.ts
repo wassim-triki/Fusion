@@ -16,6 +16,8 @@ export interface PeopleManagerDto {
   employeeNumber: string;
   /** API-relative photo address with a cache version, or null without a photo. */
   photoUrl?: string | null;
+  /** Set on a profile's primary manager (B-179). */
+  employeeId?: string | null;
 }
 
 /** A dotted-line manager on the profile; the id is what ending the dotted line takes. */
@@ -125,6 +127,15 @@ export interface PeoplePersonalDto {
   /** At most three. */
   emergencyContacts: PeopleEmergencyContactDto[] | null;
   version: number;
+  /** A new home address waiting for HR (B-179); shown to the person and HR. */
+  pendingHomeAddress?: PeoplePendingAddressDto | null;
+}
+
+export interface PeoplePendingAddressDto {
+  requestId: string;
+  address: PeopleHomeAddressDto;
+  requestedAt: string;
+  requestedBy: string;
 }
 
 /** Replaces the whole Personal tab: send back what you read with your change applied. */
@@ -295,6 +306,9 @@ export interface WorkforceChangeDetails {
   placeFromId?: string | null;
   placeToId?: string | null;
   employmentTypeId?: string | null;
+  /** Why, from the company's change reasons; the label as it was then. */
+  reasonId?: string | null;
+  reason?: string | null;
   isReportingOnly: boolean;
 }
 
@@ -329,6 +343,8 @@ export interface JobChangeRequest {
   placeId?: string | null;
   removePlace?: boolean;
   note?: string | null;
+  /** A value of the company's change reasons. */
+  reasonId?: string | null;
 }
 
 export interface ReportReassignmentRequest {
@@ -341,6 +357,7 @@ export interface EndEmploymentChangeRequest {
   lastDay: string;
   reports?: ReportReassignmentRequest[];
   note?: string | null;
+  reasonId?: string | null;
 }
 
 export interface JoinChangeRequest {

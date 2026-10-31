@@ -16,6 +16,7 @@ import {
   selectLead,
 } from "@repo/ds/shell";
 import { FusionSidebar } from "./fusion-sidebar";
+import { HomeDecision } from "./home-decision";
 import { HomePraise } from "./home-praise";
 import { ShellNotificationBell } from "./shell-notification-bell";
 import { YourYear } from "./your-year";
@@ -67,7 +68,8 @@ export function HomeWork() {
   const work = useFusionWork(modules, { enabled });
   const upcoming = useFusionUpcoming(modules, { enabled });
   const today = new Date();
-  const lead = selectLead(work.items, upcoming.items, today);
+  // A yes or no is answered in its row, never as the one big thing on top.
+  const lead = selectLead(work.items.filter((item) => !item.decision), upcoming.items, today);
   const rest = lead?.kind === "work" ? work.items.filter((item) => item.id !== lead.item.id) : work.items;
   const workBusy = work.modules.some((module) => module.status === "loading");
   const datesBusy = upcoming.modules.some((module) => module.status === "loading");
@@ -85,7 +87,7 @@ export function HomeWork() {
           <h2 id="home-work-heading" className="type-section-title text-foreground">
             {t("alsoNeedsYou")}
           </h2>
-          <WorkList items={rest} modules={work.modules} today={today} />
+          <WorkList items={rest} modules={work.modules} today={today} renderDecision={(item) => <HomeDecision item={item} />} />
         </section>
       ) : null}
 

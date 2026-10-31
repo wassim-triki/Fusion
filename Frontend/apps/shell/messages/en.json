@@ -249,6 +249,13 @@
       "loading": "Loading praise",
       "empty": "No praise yet",
       "all": "All praise"
+    },
+    "decision": {
+      "approve": "Approve",
+      "decline": "Decline",
+      "why": "Why not?",
+      "whyPlaceholder": "Say what would change your answer",
+      "failed": "That didn't work. Try again."
     }
   },
   "app": {

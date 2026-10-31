@@ -82,8 +82,8 @@ function RoleHeader({ role, names, say }: { role: RoleSummaryDto; names: Map<str
       href={`/settings/roles/${role.id}`}
       className="-m-3 grid gap-2 rounded-menu border border-transparent p-3 text-start outline-none transition-colors hover:bg-inlay focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <span className="flex items-center gap-1.5 type-panel-title text-foreground">
-        {role.isAdministrators ? say("roles.administrators.name") : role.name}
+      <span className="flex min-w-0 items-center gap-1.5 type-panel-title text-foreground" title={role.isAdministrators ? undefined : role.name}>
+        <span className="truncate">{role.isAdministrators ? say("roles.administrators.name") : role.name}</span>
         {role.isAdministrators ? <Lock aria-hidden className="size-3.5 text-muted-foreground" /> : null}
       </span>
       <span className="truncate type-meta text-muted-foreground">{holderSummary(role, names, say)}</span>
@@ -172,7 +172,7 @@ function Matrix({ areas, roles, say, names }: { areas: RoleAreaDto[]; roles: Rol
         <tbody>
           {groups.flatMap(({ group, rows }, groupIndex) => [
             <tr key={group} className="border-b border-border">
-              <th scope="colgroup" colSpan={roles.length + 1} className="sticky start-0 h-[52px] bg-card px-3 pt-4 ps-5 text-start align-middle font-normal">
+              <th scope="colgroup" colSpan={roles.length + 1} className="sticky start-0 h-[52px] bg-card px-3 ps-5 text-start align-middle font-normal">
                 <AreaGroupTitle group={group} say={say} />
               </th>
             </tr>,

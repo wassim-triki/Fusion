@@ -11,6 +11,8 @@ When LOG passes ~150 lines, move the oldest days to `archive/LOG-YYYY-MM*.md`.
 
 ## 2026-10-31
 
+- `02:30` ○ **B-219** Light mode separates frames by tone, no borders, as dark does: canvas oklch 0.955, section 0.977, cards white, inlay 0.967 (`tokens.css`); DESIGN.md §5 rule 9 says so. Checked on `light-01-every-role` / `light-02-hr-role` · Claude
+- `02:30` **B-177** Round 2 notes (user): role page good; table group rows now vertically centred, role names one line with the full name on hover · Claude
 - `01:30` → **B-177** Review round 1 fixed and back in review: roles table and role page ported to explorer 3b (B-215, B-216), people's initials in identity hues from the name across Core HR, Performance, Platform and the shell (B-218: `PersonAvatar`, `AvatarFallback hue`), borderless card and section frames in `@repo/ds` and 117 frames in our apps (B-217, DESIGN.md §5 rule 9), new 13px type roles `type-control[-label|-strong]` and `animate-pick-flash`. Behaviour unchanged. Type-check core, performance, platform, ds clean; tests ds 95/95, core 307/307, performance 247/247, platform 106/106; screens beside the drawing in `plans/B-177-roles.md`. Light-mode edge boarded (B-219) · Claude
 - **B-177** review round 1 (user, side by side with the drawing, republished for the new account as [explorer 3b](https://claude.ai/artifact/V2bfDx2cEZ8s37XQjVgekM)): the model stands; the surfaces drift in spacing and consistency. Boarded **B-215** (table as drawn), **B-216** (role page as drawn, "Who has it" above all), the Administrators page note on **B-178**, and two DS changes: **B-217** (borderless cards) and **B-218** (initials in identity hues, D-05). Explained: the level marks show how much a role can do (one = look, two = act); they aren't switches · Claude
 

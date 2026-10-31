@@ -6,6 +6,7 @@
  * Personal details to Change for everyone (Jobs moves with it, unsaved), the Administrators role, and Leila's Access
  * tab with her roles and why. Changes no data (the edit is discarded).
  *
+ * Then the table and HR's page again in light mode (light-*).
  * Also frames the accepted drawing (explorer 3b, Roles: every role, HR, Administrators) at the same size, as
  * ref-*.png, for the side-by-side review (round 1).
  *
@@ -90,6 +91,18 @@ async function open(page, route, ready) {
     await shot(page, "06-access-tab-why");
 
     await context.close();
+
+    // Light mode, same frames: frames separate by tone alone (B-219).
+    const light = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: "light" });
+    await light.addInitScript(() => { try { window.localStorage.setItem("theme", "light"); } catch {} });
+    const lightPage = await light.newPage();
+    await signIn(lightPage, "amira.khelifi@example.test");
+    await open(lightPage, "/core/settings/roles", lightPage.getByRole("table"));
+    await shot(lightPage, "light-01-every-role");
+    await open(lightPage, `/core/settings/roles/${hr.id}`, lightPage.getByRole("heading", { name: /What HR can do/ }));
+    await lightPage.waitForTimeout(2500);
+    await shot(lightPage, "light-02-hr-role");
+    await light.close();
 
     // The drawing, framed the same way: each 1440×900 frame at actual size, pins off.
     const ref = await browser.newContext({ viewport: { width: 1600, height: 1000 }, colorScheme: "dark" });

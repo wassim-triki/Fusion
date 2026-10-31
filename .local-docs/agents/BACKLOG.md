@@ -70,6 +70,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 - [ ] **B-177** One roles model: ten areas × level × reach, holders by rule that update themselves, a person's roles with why; every role as one table and a role page in sentences with a live preview (D-25, slice 3 of B-167) · Identity, Core HR · 2026-10-30
       Look at: [checklist](plans/B-177-roles.md) and `plans/B-177-screens/` (01 table, 02 HR, 03 rule, 04 Jobs moving with Personal, 05 Administrators, 06 Leila's Access tab). Two deviations from the drawing to judge: "their unit" isn't offered yet (B-212) and Personal details move with Jobs (B-214).
       Review round 1 (user, 2026-10-31): the surfaces drift from the accepted drawing in spacing and consistency; port it closely. Specs in the [checklist](plans/B-177-roles.md#review-round-1-user-2026-10-31-side-by-side-with-the-accepted-drawing).
+      Round 2 (user, 2026-10-31): role page "a lot more what I was talking about", good; table group rows (Core HR, Performance, Company) aren't vertically centred; a long role name leaves empty space above the other titles. Fixed the same day (rows centred, names on one line with the full name on hover); light mode now separates frames by tone (B-219, ○).
       Round 1 fixed 2026-10-31 (B-215 table, B-216 role page, B-217 borderless cards, B-218 identity hues): look at [side by side](plans/B-177-roles.md#round-1-fixes-side-by-side-2026-10-31).
 
 - [ ] **B-104** Final manual verification pass, once the big features are done (Settings, any wow feature): the user verifies B-089 phase 2 and everything since by hand, then the little stuff that's left · Performance · 2026-10-23
@@ -115,7 +116,6 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## Needs discussion
 
-- [ ] **B-219** Borderless cards in light mode: B-217 dropped the card hairline everywhere, as the drawings have it, but in light `--card` (white) sits on `--background` (0.985) and `--section` equals `--card`, so frames nearly vanish. Pick a light edge (a step darker canvas, a faint shadow, or the hairline back in light only) · DS · 2026-10-31
 - [ ] **B-169** Core HR after the rebuild: the rungs chosen at checkpoint 2 to keep for later, so they aren't lost · Core HR, Shell · 2026-10-30
       From B-164's scope page (brief §6b). Each is the next rung above what B-167 builds.
   - [ ] **B-170** Companies arrange the person page's sections from their own fields (P1 rung 3) · Core HR · 2026-10-30

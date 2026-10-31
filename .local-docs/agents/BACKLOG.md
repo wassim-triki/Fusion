@@ -29,7 +29,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
   - [ ] **B-110** Tenant configurability as a hero: branding (logo, theme/accent, branded sign-in, own address, email branding) and internal configuration (company defaults and whatever the research puts on the ladder), depth chosen on B-163's scope page · Shell, Platform, Core HR, Identity · 2026-10-24
         User 2026-10-30: "I really wanna establish it as a core wow factor"; EY discussed it a lot but never gave specs or how far to take it. Earlier (2026-10-24) brain dump, ideas not requirements. A tenant's default language meets B-105. Context: B-071 removed the unused brand colour from Core's branding settings; Core's branding settings store a `LogoUrl` that no screen sets or shows; Company settings show name and locale.
   - [ ] **B-167** Rebuild: slices in dependency order, each end to end with screens for the taste check ([decisions](plans/B-164-decisions.md), D-01–D-30; [slices](plans/B-167-rebuild.md)) · 2026-10-30
-        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 done (✓ 2026-10-31); B-178 done (✓ 2026-10-31); B-179 in review (2026-10-31); B-180 next, fresh session at high.
+        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 done (✓ 2026-10-31); B-178 done (✓ 2026-10-31); B-179 done (✓ 2026-10-31); B-180 next, fresh session at high.
     - [ ] **B-198** One tab and view-switch pattern across Fusion, matching the target design: every tab strip and view switch today is reused old UI (the Organization lenses are the latest example). Define it once in `@repo/ds` from the accepted grammar (D-01 band tabs, D-17 views), first where a slice draws tabs (B-180's person page or B-183's Organization, whichever comes first), then replace every other use; B-192 checks none is left · All · 2026-10-30
     - [ ] **B-212** Reach "their unit" for roles (D-25 draws it): Core HR's record reads and Performance resolve the viewer's unit and the units under it, then the Jobs, Personal and Plans areas offer it. Not offered in B-177 because nothing enforces it yet (`performance.cycle.view@OrgUnit` is unseeded and treated as a team) · Core HR, Performance, Identity · 2026-10-30
     - [ ] **B-180** One person page across Core HR and Performance: tabs, Personal and Access, documents, on leave, photos (D-01, D-16) · Core HR, Performance · 2026-10-30
@@ -59,11 +59,6 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In review
 
-- [ ] **B-179** Changes and approvals: describe a change, the draft is the request, approval per change type from Home (D-15, D-16) · Core HR, Shell · 2026-10-30
-      Look at: `plans/B-179-screens/` beside `ref-*` and the calls in [plan](plans/B-179-changes-and-approvals.md) (types are what changes; off = a manager's change applies, except a last day; requests private between asker and approver).
-      User 2026-10-31 brain dump on the screens: the items below; the person-page notes went to B-180. Answered: the draft is AI (Groq, the import's model and transport, the company's lists as strict choices, no RAG), From's chips are shortcuts.
-      Round 2 (B-224–B-227 done 2026-10-31): look at `plans/B-179-screens/r2-*` beside `ref-02` and `ref-04`, and the round-2 table in the [plan](plans/B-179-changes-and-approvals.md).
-  - [ ] **B-228** Performance's object lists keep their headings on the canvas (My Plan's sections, the review record's sections, Feedback's request lists, the person summary's Performance parts): each is a list of standalone rich cards, so putting the title inside means the objects become rows or inlays in one frame. Recommendation: rows with the rich detail in the drawer, as Needs you does. Left out of B-225's sweep for that reason · Performance · 2026-10-31
 
 - [ ] **B-104** Final manual verification pass, once the big features are done (Settings, any wow feature): the user verifies B-089 phase 2 and everything since by hand, then the little stuff that's left · Performance · 2026-10-23
       2026-10-29: the fixes are done (B-089 audit, phase 2 committed ba8f58af, which also closed B-088's ask); only the user's hand check is left, so this sits In review.
@@ -74,6 +69,8 @@ Open work only. Agents keep it current from the conversation; closed items leave
           User, locking B-087 in: "generally its not bad, although idk if its gonna be the final polish, in terms of specific ui ux and routing and layout and design". Folded into B-089.
 
 ## Ready
+
+- [ ] **B-228** Performance's object lists keep their headings on the canvas (My Plan's sections, the review record's sections, Feedback's request lists, the person summary's Performance parts): each is a list of standalone rich cards, so putting the title inside means the objects become rows or inlays in one frame. Recommendation: rows with the rich detail in the drawer, as Needs you does. Left out of B-225's sweep for that reason · Performance · 2026-10-31
 
 - [ ] **B-220** While seeing Fusion as someone, show changes as inert (the drawing's "Propose a change" greyed) instead of letting the server refuse them: today every write is refused server-side (403 "Nothing can be changed while seeing Fusion as someone") and forms show that error · Shell, Core HR, Performance · 2026-10-31
       Found building B-178. A shared "is viewing" flag from `@repo/auth` (`useViewAs`) that action buttons read.

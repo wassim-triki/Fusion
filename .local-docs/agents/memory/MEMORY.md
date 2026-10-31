@@ -59,6 +59,7 @@
 - [Workforce Import experience audit](workforce-import-experience-audit.md) — 10 ranked findings (2026-08-27).
 - [People org chart](people-org-chart-proposal.md) — B-094 card design C; sessions A–C committed by 2026-10-28 (C = open roles B-128), In review (own transform stage, not React Flow).
 - [Record validation attributes](aspnet-record-validation-attributes.md) — `[property: MaxLength]` on a request record 500s every call; use parameter targets; prove endpoints with a journey.
+- [Change requests dry run](change-requests-dry-run.md) — B-179 requests stage in a rolled-back tx (clears the tracker); profile hooks above early returns.
 - [People changes redesign](people-changes-redesign.md) — B-139 accepted 2026-10-27 (change records + one panel); manager lookups key on employee, not assignment.
 - [Workforce import platform reconciliation](workforce-import-platform-reconciliation.md) — approved: workforce onto the org import platform.
 

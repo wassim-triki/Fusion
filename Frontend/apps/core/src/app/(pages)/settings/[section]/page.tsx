@@ -11,6 +11,8 @@ import { SignInSettings } from "@/features/settings/sections/sign-in";
 import { ListsSettings } from "@/features/settings/sections/lists";
 import { NotificationsSettings } from "@/features/settings/sections/notifications";
 import { RolesSettings } from "@/features/settings/roles/roles-table";
+import { JobsWorkspace } from "@/features/catalog/components/jobs-workspace";
+import { PlacesWorkspace } from "@/features/catalog/components/places-workspace";
 
 /** One Core HR settings section, shown once the server says the person may see it. */
 export default function SettingsSectionPage({ params }: { params: Promise<{ section: string }> }) {
@@ -28,6 +30,10 @@ export default function SettingsSectionPage({ params }: { params: Promise<{ sect
             return <EmployeeFieldsSettings section={section} />;
           case "lists":
             return <ListsSettings section={section} />;
+          case "jobs":
+            return <JobsWorkspace section={section} />;
+          case "places":
+            return <PlacesWorkspace section={section} />;
           case "roles":
             return <RolesSettings section={section} />;
           case "approvals":

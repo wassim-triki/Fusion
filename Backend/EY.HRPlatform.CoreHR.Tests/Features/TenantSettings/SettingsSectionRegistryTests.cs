@@ -55,13 +55,26 @@ public class SettingsSectionRegistryTests
             (CorePermissions.SettingsManage, PermissionScopes.Tenant),
             (CorePermissions.AccessProfilesManageV2, PermissionScopes.Tenant)));
 
-        Assert.Equal(["brand", "details", "employee-fields", "lists", "roles", "approvals", "sign-in", "notifications", "change-history"], sections.Select(section => section.Id));
-        Assert.Equal(["Brand", "Details", "Fields", "Lists", "Roles", "Changes and approvals", "Sign-in", "Notifications", "Change history"], sections.Select(section => section.Label));
-        Assert.Equal([1, 2, 3, 4, 5, 6, 7, 8, 9], sections.Select(section => section.Order));
+        Assert.Equal(["brand", "details", "employee-fields", "lists", "jobs", "places", "roles", "approvals", "sign-in", "notifications", "change-history"], sections.Select(section => section.Id));
+        Assert.Equal(["Brand", "Details", "Fields", "Lists", "Jobs", "Places", "Roles", "Changes and approvals", "Sign-in", "Notifications", "Change history"], sections.Select(section => section.Label));
+        Assert.Equal([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], sections.Select(section => section.Order));
         Assert.Equal(FusionSettingsSectionDto.Manage, sections[0].Access);
         Assert.Equal(FusionSettingsSectionDto.View, sections[1].Access);
-        Assert.All(sections.Skip(2).Take(6), section => Assert.Equal(FusionSettingsSectionDto.Manage, section.Access));
-        Assert.Equal(FusionSettingsSectionDto.View, sections[8].Access);
+        Assert.All(sections.Skip(2).Take(2), section => Assert.Equal(FusionSettingsSectionDto.Manage, section.Access));
+        // Jobs and Places are managed by whoever manages the organization, not by settings grants.
+        Assert.All(sections.Skip(4).Take(2), section => Assert.Equal(FusionSettingsSectionDto.View, section.Access));
+        Assert.All(sections.Skip(6).Take(4), section => Assert.Equal(FusionSettingsSectionDto.Manage, section.Access));
+        Assert.Equal(FusionSettingsSectionDto.View, sections[10].Access);
+    }
+
+    [Fact]
+    public void Whoever_manages_the_organization_manages_Jobs_and_Places_and_nothing_else()
+    {
+        var sections = Registry(TenantA).GetVisibleSections(Principal((CorePermissions.OrganizationManage, PermissionScopes.Tenant)));
+
+        Assert.Equal(["jobs", "places"], sections.Select(section => section.Id));
+        Assert.All(sections, section => Assert.Equal(FusionSettingsSectionDto.Manage, section.Access));
+        Assert.Empty(Registry(TenantA).GetVisibleSections(Principal((CorePermissions.OrganizationView, PermissionScopes.Tenant))));
     }
 
     [Fact]
@@ -119,7 +132,7 @@ public class SettingsSectionRegistryTests
             Principal((CorePermissions.SettingsManage, PermissionScopes.Tenant), (CorePermissions.AccessProfilesManageV2, PermissionScopes.Tenant)),
             CancellationToken.None);
 
-        Assert.Equal(9, sections.Count);
+        Assert.Equal(11, sections.Count);
         Assert.Null(sections.Single(section => section.Id == "roles").LastChange);
     }
 

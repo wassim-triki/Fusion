@@ -24,6 +24,8 @@
         "details": "Détails",
         "employee-fields": "Champs",
         "lists": "Listes",
+        "jobs": "Postes",
+        "places": "Lieux",
         "roles": "Rôles",
         "approvals": "Changements et validations",
         "sign-in": "Connexion",
@@ -34,9 +36,7 @@
         "reviews": "Évaluations",
         "planning": "Planification",
         "conversations": "Échanges",
-        "ai-and-data": "IA et données",
-        "jobs": "Postes",
-        "places": "Lieux"
+        "ai-and-data": "IA et données"
       },
       "changedBy": "Dernière modification par <b>{actor}</b> {when}",
       "setUp": "Configuré {when}",

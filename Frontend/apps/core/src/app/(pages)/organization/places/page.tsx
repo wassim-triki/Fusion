@@ -1,7 +1,6 @@
-import { PlacesWorkspace } from "@/features/catalog/components/places-workspace";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
+/** The company's places live in Settings since B-183. */
 export default function OrganizationPlacesPage() {
-  return <PlacesWorkspace />;
+  redirect("/settings/places");
 }

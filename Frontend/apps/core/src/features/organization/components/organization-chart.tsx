@@ -2,233 +2,22 @@
 
 import { useSay } from "@repo/ds/lib/say";
 import { useTranslations } from "next-intl";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  Background,
-  BackgroundVariant,
-  Controls,
-  Handle,
-  MiniMap,
-  Position,
-  ReactFlow,
-  useReactFlow,
-  type Edge,
-  type Node,
-  type NodeProps,
-  type OnNodeDrag,
-  type ReactFlowInstance,
-} from "@xyflow/react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { ChevronDown, ChevronRight, GripVertical, Plus } from "lucide-react";
-import { Button, cn } from "@repo/ds";
-import { AnchorViewport, layoutTree, useAnchoredToggle } from "@repo/ds/flow";
 import type { UnitStaffingDto } from "@repo/api";
+import { Button, cn } from "@repo/ds";
+import { layoutTree } from "@repo/ds/flow";
 import { Monogram } from "@/features/people/components/workforce-ui";
+import { ChartZoomControls, useChartCamera } from "@/features/org-chart/components/chart-stage";
+import { fitTo, type Bounds, type Camera, type Viewport } from "@/features/org-chart/model/org-chart-model";
 import type { OrganizationHierarchyModel } from "../model/hierarchy";
 import { isInvalidMoveTarget, organizationAccessibleName } from "../model/hierarchy";
 
 const NODE_WIDTH = 244;
 const NODE_HEIGHT = 104;
-
-const MAX_ZOOM = 1.5;
-// Default framing zoom = "level 9": max zoom followed by 8 zoom-out clicks.
-// React Flow's zoom control steps by a factor of 1.2 per click, so 1.5 / 1.2^8.
-const DEFAULT_ZOOM = MAX_ZOOM / 1.2 ** 8;
-// The entry framing never goes below this: smaller and the unit cards can't be read.
+const RANK_GAP = 64;
+// The entry framing never goes below this: smaller and the unit cards can't be read; a wider tree pans sideways.
 const ENTRY_MIN_ZOOM = 0.55;
-
-type OrganizationNodeData = Record<string, unknown> & {
-  id: string;
-  name: string;
-  typeName: string;
-  code: string;
-  accessibleName: string;
-  root: boolean;
-  selected: boolean;
-  collapsed: boolean;
-  hasChildren: boolean;
-  hiddenCount: number;
-  canManage: boolean;
-  readOnly: boolean;
-  inBranch: boolean;
-  lifted: boolean;
-  dimmed: boolean;
-  validDrop: boolean;
-  invalidDrop: boolean;
-  revealed: boolean;
-  /** People in the unit and below on the chart's date; null while unknown (no counts for this viewer or date). */
-  people: number | null;
-  head: { name: string; photoUrl: string | null } | null;
-  onSelect: (id: string) => void;
-  onToggle: (id: string) => void;
-  onAddChild: (id: string) => void;
-};
-
-type OrganizationFlowNode = Node<OrganizationNodeData, "organizationUnit">;
-
-const hiddenHandle =
-  "!pointer-events-none !h-1.5 !w-1.5 !min-h-0 !min-w-0 !border-0 !bg-transparent !opacity-0";
-
-const OrganizationNode = memo(function OrganizationNode({ data }: NodeProps<OrganizationFlowNode>) {
-  const t = useTranslations("organization");
-  return (
-    <div
-      className={cn(
-        // React Flow sets pointer-events:none on non-draggable nodes (root, and
-        // every node in read-only as-of views); re-enable so the card stays
-        // selectable/inspectable and its disclosure stays operable.
-        "group pointer-events-auto relative h-[104px] w-[244px] rounded-surface bg-card shadow-raised transition-[border-color,box-shadow,opacity,background-color,transform] duration-500 motion-reduce:transition-none",
-        data.people === 0 && "border border-dashed border-input bg-transparent shadow-none",
-        data.root && "border-primary/40 bg-[color-mix(in_oklab,var(--primary)_4%,var(--card))]",
-        !data.selected && !data.validDrop && !data.invalidDrop && "hover:border-foreground/25",
-        // A descendant of the selected node: part of the highlighted branch, but clearly
-        // subordinate to the selection — a tinted border only, no ring/shadow.
-        data.inBranch && "border-primary/45 bg-[color-mix(in_oklab,var(--primary)_4%,var(--card))]",
-        // The selected node itself owns the branch: full primary border + ring + shadow.
-        data.selected && "border-primary ring-2 ring-primary/30",
-        data.revealed && "org-reveal-highlight z-10",
-        // The card being dragged lifts off the canvas and moves with the cursor in real time.
-        data.lifted && "z-20 scale-[1.03] cursor-grabbing border-primary opacity-100 shadow-overlay ring-2 ring-primary !duration-100",
-        // Descendants that will travel with it are ghosted at their origin.
-        data.dimmed && "opacity-40",
-        data.validDrop && "border-primary bg-[color-mix(in_oklab,var(--primary)_7%,var(--card))] ring-2 ring-primary/35",
-        data.invalidDrop && "border-destructive bg-[color-mix(in_oklab,var(--destructive)_6%,var(--card))] ring-2 ring-destructive/25"
-      )}
-    >
-      <Handle type="target" position={Position.Top} className={hiddenHandle} />
-      <button
-        type="button"
-        aria-label={data.accessibleName}
-        // eslint-disable-next-line no-restricted-syntax -- a chart node toggles its own selection; not a choice among options
-        aria-pressed={data.selected}
-        onClick={() => data.onSelect(data.id)}
-        className="grid h-full w-full grid-rows-[1fr_auto] rounded-surface text-start outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
-      >
-        <span className={cn("grid content-center gap-0.5 px-3.5", data.people === 0 && "opacity-60")}>
-          <span className="truncate pe-14 text-sm font-semibold leading-tight text-foreground">{data.name}</span>
-          <span className="truncate text-xs text-muted-foreground">{data.typeName}</span>
-        </span>
-        <span className={cn("flex min-w-0 items-center gap-2 border-t px-3.5 py-2 text-xs text-muted-foreground", data.people === 0 && "border-dashed border-input opacity-60")}>
-          {data.head ? <Monogram name={data.head.name} photoUrl={data.head.photoUrl} size="sm" className="size-5 text-[9px]" /> : null}
-          <span className="min-w-0 flex-1 truncate">{data.head?.name ?? (data.people === 0 ? t("chart.nobody") : "")}</span>
-          {data.people !== null ? (
-            <span className="shrink-0 font-semibold tabular-nums text-foreground" title={t("chart.people", { count: data.people })}>{data.people}</span>
-          ) : null}
-        </span>
-      </button>
-      {data.hasChildren ? (
-        <button
-          type="button"
-          aria-label={data.collapsed ? t("chart.expand", { name: data.name, count: data.hiddenCount }) : t("chart.collapse", { name: data.name })}
-          aria-expanded={!data.collapsed}
-          onClick={(event) => { event.stopPropagation(); data.onToggle(data.id); }}
-          className={cn(
-            "absolute -bottom-3 left-1/2 flex h-6 -translate-x-1/2 cursor-pointer items-center justify-center rounded-full border bg-background text-muted-foreground shadow-raised outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
-            data.collapsed ? "gap-0.5 px-1.5" : "w-6"
-          )}
-        >
-          {data.collapsed ? (
-            <>
-              <ChevronRight className="h-3.5 w-3.5" />
-              <span className="text-[11px] font-semibold tabular-nums">{data.hiddenCount}</span>
-            </>
-          ) : (
-            <ChevronDown className="h-3.5 w-3.5" />
-          )}
-        </button>
-      ) : null}
-      {data.canManage && !data.readOnly ? (
-        <div className="absolute inset-e-1.5 top-1.5 flex items-center gap-0.5 rounded-control border bg-popover p-0.5 opacity-0 shadow-raised transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
-          <Button type="button" variant="ghost" size="icon-sm" className="h-6 w-6" aria-label={t("outline.addChild", { name: data.name })} onClick={(event) => { event.stopPropagation(); data.onAddChild(data.id); }}>
-            <Plus className="h-3.5 w-3.5" />
-          </Button>
-          {!data.root ? (
-            <span
-              className="org-drag-handle grid h-6 w-6 cursor-grab place-items-center rounded-detail text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground active:cursor-grabbing"
-              role="button"
-              aria-label={t("outline.drag", { name: data.name })}
-              title={t("outline.dragHint")}
-            >
-              <GripVertical className="h-3.5 w-3.5" />
-            </span>
-          ) : null}
-        </div>
-      ) : null}
-      <Handle type="source" position={Position.Bottom} className={hiddenHandle} />
-    </div>
-  );
-});
-
-const nodeTypes = { organizationUnit: OrganizationNode };
-
-function reduceMotion() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
-function FocusSelected({
-  selectedId,
-  isRoot,
-  nodes,
-}: {
-  selectedId: string | null;
-  isRoot: boolean;
-  nodes: OrganizationFlowNode[];
-}) {
-  const flow = useReactFlow<OrganizationFlowNode, Edge>();
-  const focusedRef = useRef<string | null>(null);
-  useEffect(() => {
-    // The initial root framing is owned by the parent's onInit/frameEntry; only a
-    // deliberate non-root selection centers here, so a load that defaults its selection
-    // to the root does not fight the entry framing.
-    if (!selectedId || isRoot) return;
-    if (focusedRef.current === selectedId) return;
-    const node = nodes.find((candidate) => candidate.id === selectedId);
-    if (!node) return;
-    focusedRef.current = selectedId;
-    void flow.setCenter(node.position.x + NODE_WIDTH / 2, node.position.y + NODE_HEIGHT / 2, {
-      zoom: flow.getZoom(),
-      duration: reduceMotion() ? 0 : 180,
-    });
-  }, [flow, selectedId, isRoot, nodes]);
-  return null;
-}
-
-// A genuine reveal is allowed to move the viewport: bring the just-changed unit(s)
-// into view — center a single node, or fit a created set — without disturbing
-// pan/zoom on ordinary interactions.
-function RevealViewport({
-  revealedIds,
-  nodes,
-}: {
-  revealedIds: ReadonlySet<string>;
-  nodes: OrganizationFlowNode[];
-}) {
-  const flow = useReactFlow<OrganizationFlowNode, Edge>();
-  const revealKey = useMemo(() => [...revealedIds].sort().join(","), [revealedIds]);
-  useEffect(() => {
-    if (revealKey === "") return;
-    const ids = revealKey.split(",");
-    const present = ids.filter((id) => nodes.some((node) => node.id === id));
-    if (present.length === 0) return;
-    const duration = reduceMotion() ? 0 : 420;
-    if (present.length === 1) {
-      const node = nodes.find((candidate) => candidate.id === present[0])!;
-      void flow.setCenter(node.position.x + NODE_WIDTH / 2, node.position.y + NODE_HEIGHT / 2, {
-        zoom: Math.min(flow.getZoom(), 1),
-        duration,
-      });
-    } else {
-      void flow.fitView({
-        nodes: present.map((id) => ({ id })),
-        padding: 0.25,
-        maxZoom: 1,
-        duration,
-      });
-    }
-    // Center once per revealed set; the highlight fade is owned by the caller.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [flow, revealKey]);
-  return null;
-}
 
 export interface OrganizationChartProps {
   model: OrganizationHierarchyModel;
@@ -247,9 +36,35 @@ export interface OrganizationChartProps {
 
 const EMPTY_IDS: ReadonlySet<string> = new Set();
 
-const headOf = (unit: UnitStaffingDto | undefined) =>
-  unit?.head ? { name: unit.head.displayName, photoUrl: unit.head.photoUrl } : null;
+type Point = { x: number; y: number };
+type UnitDrag = { id: string; dx: number; dy: number; over: string | null };
 
+function boundsOf(positions: Map<string, Point>, ids?: Iterable<string>): Bounds {
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const id of ids ?? positions.keys()) {
+    const p = positions.get(id);
+    if (!p) continue;
+    x0 = Math.min(x0, p.x);
+    y0 = Math.min(y0, p.y);
+    x1 = Math.max(x1, p.x + NODE_WIDTH);
+    y1 = Math.max(y1, p.y + NODE_HEIGHT + 14);
+  }
+  return x0 === Infinity ? { x0: 0, y0: 0, x1: 1, y1: 1 } : { x0, y0, x1, y1 };
+}
+
+/** The whole visible tree at a readable size: fitted when it fits, otherwise its top centred at the smallest readable zoom. */
+function entryCamera(b: Bounds, v: Viewport): Camera {
+  const fit = fitTo(b, v);
+  if (fit.s >= ENTRY_MIN_ZOOM) return fit;
+  const s = ENTRY_MIN_ZOOM;
+  return { s, x: (v.width - (b.x1 - b.x0) * s) / 2 - b.x0 * s, y: 36 - b.y0 * s };
+}
+
+/**
+ * Organization's Structure view: the unit hierarchy on the Organization's chart canvas (the people chart's camera,
+ * zoom corner and edges), each card with its type, head and headcount. Folding, adding a unit under another and
+ * dragging one onto a new parent (which opens the move review) work as before; the canvas reads left to right.
+ */
 export default function OrganizationChart({
   model,
   collapsed,
@@ -265,279 +80,260 @@ export default function OrganizationChart({
 }: OrganizationChartProps) {
   const t = useTranslations("organization");
   const say = useSay("organization");
-  const [dragSource, setDragSource] = useState<string | null>(null);
-  const [dropTarget, setDropTarget] = useState<string | null>(null);
-  // Live position of the card being dragged. Because `nodes` is recomputed mid-drag
-  // (dropTarget changes as the cursor sweeps over targets), the memo would otherwise feed
-  // React Flow the dragged node's *original* dagre position every frame and snap it back —
-  // so only the cursor would appear to move. Pinning this live position keeps the card
-  // itself travelling under the cursor.
-  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
-  // Keep the node the user toggled visually anchored: capture its pre-relayout
-  // position, and after the layout repositions everything, compensate the viewport so
-  // it does not jump across the screen. See AnchorViewport.
-  const nodesRef = useRef<OrganizationFlowNode[]>([]);
-  const { pendingAnchorRef, handleToggle } = useAnchoredToggle(nodesRef, onToggle);
+  const { stageRef, worldRef, cam, zoomLabel, panning, dragged, flyTo, jumpTo, zoomBy, viewport, startPan } = useChartCamera(0);
 
-  const dropValid =
-    dragSource !== null &&
-    dropTarget !== null &&
-    !isInvalidMoveTarget(model, dragSource, dropTarget);
-
-  const selectedIsRoot = selectedId !== null && model.roots.includes(selectedId);
-  // Identity of the underlying dataset: changes on load, effective-date change, or
-  // import; stable across expand/collapse. The chart frames its entry once per dataset.
-  const dataKey = useMemo(() => `${[...model.roots].join(",")}|${model.byId.size}`, [model]);
-  // A post-action reveal, or a deliberate non-root selection, owns the viewport;
-  // otherwise the entry framing (root head) runs.
-  const autoFrame = revealedIds.size === 0 && (selectedId === null || selectedIsRoot);
-  const flowRef = useRef<ReactFlowInstance<OrganizationFlowNode, Edge> | null>(null);
-  const framedRef = useRef<string | null>(null);
-
-  const { nodes, edges } = useMemo(() => {
-    const movingSet = dragSource
-      ? new Set<string>([dragSource, ...(model.descendantsById.get(dragSource) ?? [])])
-      : null;
-    // The selected node plus its whole sub-tree: highlighted as one branch, with the
-    // selected node styled distinctly from its descendants.
-    const branchSet = selectedId
-      ? new Set<string>([selectedId, ...(model.descendantsById.get(selectedId) ?? [])])
-      : null;
-    const visibleIds: string[] = [];
-    const visibleEdges: Array<{ source: string; target: string }> = [];
+  const { ids, edges, positions } = useMemo(() => {
+    const visible: string[] = [];
+    const links: Array<{ source: string; target: string }> = [];
     const visit = (id: string) => {
-      visibleIds.push(id);
+      visible.push(id);
       if (collapsed.has(id)) return;
       for (const child of model.childrenByParent.get(id) ?? []) {
-        visibleEdges.push({ source: id, target: child });
+        links.push({ source: id, target: child });
         visit(child);
       }
     };
     for (const root of model.roots) visit(root);
+    const laid = layoutTree(visible, links, { nodeWidth: NODE_WIDTH, nodeHeight: NODE_HEIGHT, nodesep: 24, ranksep: RANK_GAP, margin: 40 });
+    return { ids: visible, edges: links, positions: laid };
+  }, [collapsed, model]);
 
-    // Top-to-bottom layout: the root sits on top and depth flows downward across ranks,
-    // while sibling units at each level spread sideways. `nodesep` is the horizontal gap
-    // between siblings; `ranksep` is the vertical gap between depth levels. The wide, short
-    // nodes spread far horizontally, so a generous `ranksep` gives the tree comparable
-    // vertical extent rather than a short, very wide band.
-    const positions = layoutTree(visibleIds, visibleEdges, {
-      nodeWidth: NODE_WIDTH,
-      nodeHeight: NODE_HEIGHT,
-      nodesep: 8,
-      ranksep: 72,
-      margin: 40,
-    });
-
-    return {
-      nodes: visibleIds.map<OrganizationFlowNode>((id) => {
-        const unit = model.byId.get(id)!;
-        const position = positions.get(id) ?? { x: 0, y: 0 };
-        const isCandidate = dropTarget === id && dragSource !== null && dragSource !== id;
-        return {
-          id,
-          type: "organizationUnit",
-          position,
-          // Top-to-bottom flow: parents connect from their bottom edge to a child's top.
-          sourcePosition: Position.Bottom,
-          targetPosition: Position.Top,
-          // Explicit dimensions so the MiniMap can draw every node without waiting for
-          // each to be measured from the DOM.
-          width: NODE_WIDTH,
-          height: NODE_HEIGHT,
-          draggable: canManage && !readOnly && unit.parentId !== null,
-          dragHandle: ".org-drag-handle",
-          data: {
-            id,
-            name: unit.name,
-            typeName: unit.typeName,
-            code: unit.code,
-            accessibleName: organizationAccessibleName(model, id, say),
-            root: unit.parentId === null,
-            selected: selectedId === id,
-            collapsed: collapsed.has(id),
-            hasChildren: (model.childrenByParent.get(id)?.length ?? 0) > 0,
-            hiddenCount: collapsed.has(id) ? (model.descendantsById.get(id)?.size ?? 0) : 0,
-            canManage,
-            readOnly,
-            inBranch: branchSet?.has(id) === true && id !== selectedId,
-            lifted: id === dragSource,
-            dimmed: movingSet?.has(id) === true && id !== dragSource && dropTarget !== id,
-            validDrop: isCandidate && !isInvalidMoveTarget(model, dragSource!, id),
-            invalidDrop: isCandidate && isInvalidMoveTarget(model, dragSource!, id),
-            revealed: revealedIds.has(id),
-            people: staffing?.get(id)?.people ?? null,
-            head: headOf(staffing?.get(id)),
-            onSelect,
-            onToggle: handleToggle,
-            onAddChild,
-          },
-        };
-      }),
-      edges: visibleEdges.map<Edge>((edge) => {
-        // A link inside the selected branch: both ends are in the sub-tree, so the whole
-        // branch — nodes and the connecting ropes — reads as one highlighted lineage.
-        const inBranch = branchSet !== null && branchSet.has(edge.source) && branchSet.has(edge.target);
-        return {
-          id: `${edge.source}-${edge.target}`,
-          source: edge.source,
-          target: edge.target,
-          type: "smoothstep",
-          animated: inBranch && dragSource === null,
-          style: {
-            stroke: inBranch ? "var(--primary)" : "var(--border)",
-            strokeWidth: inBranch ? 2.25 : 1.25,
-            opacity: dragSource && movingSet?.has(edge.target) ? 0.4 : 1,
-          },
-        };
-      }),
-    };
-  }, [canManage, collapsed, dragSource, dropTarget, handleToggle, model, onAddChild, onSelect, readOnly, revealedIds, say, selectedId, staffing]);
-
-  nodesRef.current = nodes;
-
-  // Pin the live drag position onto the dragged card so mid-drag relayouts don't snap it
-  // back to its dagre slot; every other node keeps its computed position.
-  const displayNodes = useMemo(() => {
-    if (!dragSource || !dragPos) return nodes;
-    return nodes.map((node) => (node.id === dragSource ? { ...node, position: dragPos } : node));
-  }, [nodes, dragSource, dragPos]);
-
-  // Frame the head of the organization: the root at a readable zoom, biased rightward so
-  // its immediate children (which flow to the right in this left-to-right layout) come
-  // into view and the rest is a scroll/zoom away. The built-in `fitView` frames a large
-  // org too small, so this replaces it with a legible entry, framed once per dataset.
-  // Called from `onInit` for the first mount (which runs after ReactFlow's own viewport
-  // init, so it is not clobbered) and from the effect below for later dataset changes.
-  const frameEntry = useCallback(
-    (instance: ReactFlowInstance<OrganizationFlowNode, Edge>) => {
-      if (!autoFrame) return;
-      const current = nodesRef.current;
-      const root = current.find((node) => model.roots.includes(node.id)) ?? current[0];
-      if (!root) return;
-      framedRef.current = dataKey;
-      // The whole visible tree at a readable size; a wide one keeps its top centred and scrolls sideways.
-      void instance.fitView({ padding: 0.12, minZoom: ENTRY_MIN_ZOOM, maxZoom: 1, duration: reduceMotion() ? 0 : 240 });
-    },
-    [autoFrame, dataKey, model.roots]
+  const branch = useMemo(
+    () => (selectedId ? new Set<string>([selectedId, ...(model.descendantsById.get(selectedId) ?? [])]) : null),
+    [model, selectedId]
   );
 
-  useEffect(() => {
-    // Re-frame on a genuine dataset change after mount (effective-date, import); the
-    // first mount is handled by onInit. Skips expand/collapse (same dataKey).
-    if (!flowRef.current || framedRef.current === null || framedRef.current === dataKey) return;
-    frameEntry(flowRef.current);
-  }, [dataKey, frameEntry]);
-
-  const findDropTarget: OnNodeDrag<OrganizationFlowNode> = (_event, dragged) => {
-    // Trigger as soon as the dragged card overlaps a target card (not only when
-    // its center reaches the target); pick the most-overlapped node.
-    const ax1 = dragged.position.x;
-    const ay1 = dragged.position.y;
-    const ax2 = ax1 + NODE_WIDTH;
-    const ay2 = ay1 + NODE_HEIGHT;
-    let candidate: string | null = null;
-    let bestOverlap = 0;
-    for (const node of nodes) {
-      if (node.id === dragged.id) continue;
-      const overlapX = Math.max(0, Math.min(ax2, node.position.x + NODE_WIDTH) - Math.max(ax1, node.position.x));
-      const overlapY = Math.max(0, Math.min(ay2, node.position.y + NODE_HEIGHT) - Math.max(ay1, node.position.y));
-      const overlap = overlapX * overlapY;
-      if (overlap > bestOverlap) {
-        bestOverlap = overlap;
-        candidate = node.id;
+  // ── Camera: enter on the whole tree once per dataset; a fold keeps its unit where it was on screen ──
+  const dataKey = `${model.roots.join(",")}|${model.byId.size}`;
+  const framed = useRef<string | null>(null);
+  const anchor = useRef<{ id: string; x: number; y: number } | null>(null);
+  useLayoutEffect(() => {
+    if (anchor.current) {
+      const { id, x, y } = anchor.current;
+      anchor.current = null;
+      const p = positions.get(id);
+      if (p) {
+        const s = cam.current.s;
+        flyTo({ s, x: x - p.x * s, y: y - p.y * s }, 240);
+        return;
       }
     }
-    setDropTarget(candidate);
-    setDragPos(dragged.position);
+    if (framed.current === dataKey) return;
+    framed.current = dataKey;
+    jumpTo(entryCamera(boundsOf(positions), viewport()));
+  }, [positions, dataKey, flyTo, jumpTo, viewport, cam]);
+
+  const toggle = (id: string) => {
+    const p = positions.get(id);
+    if (p) anchor.current = { id, x: p.x * cam.current.s + cam.current.x, y: p.y * cam.current.s + cam.current.y };
+    onToggle(id);
   };
 
-  const handleDragStop: OnNodeDrag<OrganizationFlowNode> = (_event, dragged) => {
-    if (dropTarget && dropTarget !== dragged.id && !isInvalidMoveTarget(model, dragged.id, dropTarget)) {
-      onStageDragMove(dragged.id, dropTarget);
-    }
-    setDragSource(null);
-    setDropTarget(null);
-    setDragPos(null);
-  };
+  // A deliberate selection below the top comes into view at the current zoom.
+  const centred = useRef<string | null>(null);
+  useEffect(() => {
+    if (!selectedId || model.roots.includes(selectedId) || centred.current === selectedId) return;
+    const p = positions.get(selectedId);
+    if (!p) return;
+    centred.current = selectedId;
+    const v = viewport();
+    const s = cam.current.s;
+    const inView = p.x * s + cam.current.x > 0 && (p.x + NODE_WIDTH) * s + cam.current.x < v.width
+      && p.y * s + cam.current.y > 0 && (p.y + NODE_HEIGHT) * s + cam.current.y < v.height;
+    if (!inView) flyTo({ s, x: v.width / 2 - (p.x + NODE_WIDTH / 2) * s, y: v.height / 2 - (p.y + NODE_HEIGHT / 2) * s }, 360);
+  }, [selectedId, positions, model.roots, flyTo, viewport, cam]);
 
-  const draggedUnit = dragSource ? model.byId.get(dragSource) : null;
-  const draggedCount = dragSource ? (model.descendantsById.get(dragSource)?.size ?? 0) : 0;
+  // A just-added or imported set of units comes into view.
+  const revealKey = [...revealedIds].sort().join(",");
+  useEffect(() => {
+    if (!revealKey) return;
+    const present = revealKey.split(",").filter((id) => positions.has(id));
+    if (present.length === 0) return;
+    flyTo(fitTo(boundsOf(positions, present), viewport(), Math.min(1, cam.current.s * 1.5)), 420);
+    // Once per revealed set; the highlight fades on its own.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revealKey]);
+
+  // ── Drag a unit onto a new parent: the move review opens on drop ──
+  const [drag, setDrag] = useState<UnitDrag | null>(null);
+  const movable = canManage && !readOnly;
+  const moving = useMemo(
+    () => (drag ? new Set<string>([drag.id, ...(model.descendantsById.get(drag.id) ?? [])]) : null),
+    [drag, model]
+  );
+  const valid = drag?.over ? !isInvalidMoveTarget(model, drag.id, drag.over) : false;
+
+  function startUnitDrag(event: ReactPointerEvent, id: string) {
+    event.stopPropagation();
+    const start = { x: event.clientX, y: event.clientY };
+    let current: UnitDrag | null = null;
+    dragged.current = false;
+    const move = (e: PointerEvent) => {
+      if (!dragged.current && Math.hypot(e.clientX - start.x, e.clientY - start.y) <= 5) return;
+      dragged.current = true;
+      const s = cam.current.s;
+      const hit = document.elementFromPoint(e.clientX, e.clientY)?.closest<HTMLElement>("[data-unit-id]")?.dataset.unitId ?? null;
+      current = { id, dx: (e.clientX - start.x) / s, dy: (e.clientY - start.y) / s, over: hit && hit !== id ? hit : null };
+      setDrag(current);
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      setDrag(null);
+      if (current?.over && !isInvalidMoveTarget(model, id, current.over)) onStageDragMove(id, current.over);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  }
+
+  const points = [...positions.values()];
+  const width = Math.max(1, ...points.map((p) => p.x + NODE_WIDTH + 80));
+  const height = Math.max(1, ...points.map((p) => p.y + NODE_HEIGHT + 80));
+  const draggedUnit = drag ? model.byId.get(drag.id) : null;
+  const draggedCount = drag ? (model.descendantsById.get(drag.id)?.size ?? 0) : 0;
 
   return (
-    <div className="relative h-full min-h-[520px] overflow-hidden bg-section">
+    <div
+      ref={stageRef}
+      dir="ltr"
+      className={cn("oc-stage h-full min-h-[520px] bg-section", panning && "oc-panning")}
+      onPointerDown={(event) => {
+        if (event.button !== 0 || (event.target as HTMLElement).closest("[data-oc-overlay], [data-unit-id]")) return;
+        startPan(event);
+      }}
+      onClickCapture={(event) => {
+        if (dragged.current) {
+          event.stopPropagation();
+          event.preventDefault();
+          dragged.current = false;
+        }
+      }}
+    >
       {draggedUnit ? (
         <div className="pointer-events-none absolute left-1/2 top-3 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full border bg-popover px-3.5 py-1.5 text-xs shadow-raised">
-          <span
-            className={cn(
-              "inline-block h-1.5 w-1.5 rounded-full",
-              dropTarget ? (dropValid ? "bg-primary" : "bg-destructive") : "bg-muted-foreground"
-            )}
-          />
+          <span className={cn("inline-block size-1.5 rounded-full", drag?.over ? (valid ? "bg-primary" : "bg-destructive") : "bg-muted-foreground")} />
           <span className="font-medium">
-            {draggedCount > 0
-              ? t("chart.movingWith", { name: draggedUnit.name, count: draggedCount })
-              : t("chart.moving", { name: draggedUnit.name })}
+            {draggedCount > 0 ? t("chart.movingWith", { name: draggedUnit.name, count: draggedCount }) : t("chart.moving", { name: draggedUnit.name })}
           </span>
-          <span className="text-muted-foreground">
-            {dropTarget
-              ? dropValid
-                ? t("chart.dropToReview")
-                : t("chart.cantDrop")
-              : t("chart.dropOnto")}
-          </span>
+          <span className="text-muted-foreground">{drag?.over ? (valid ? t("chart.dropToReview") : t("chart.cantDrop")) : t("chart.dropOnto")}</span>
         </div>
       ) : null}
-      <ReactFlow<OrganizationFlowNode, Edge>
-        // React Flow positions in physical pixels and breaks right to left; the chart reads left to right in every language.
-        dir="ltr"
-        nodes={displayNodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        defaultViewport={{ x: 0, y: 0, zoom: DEFAULT_ZOOM }}
-        minZoom={0.08}
-        maxZoom={MAX_ZOOM}
-        nodesConnectable={false}
-        elementsSelectable={false}
-        nodeDragThreshold={8}
-        onInit={(instance) => {
-          flowRef.current = instance;
-          frameEntry(instance);
-        }}
-        onNodeDragStart={(_event, node) => { setDragSource(node.id); setDragPos(node.position); }}
-        onNodeDrag={findDropTarget}
-        onNodeDragStop={handleDragStop}
-        proOptions={{ hideAttribution: true }}
-        className="bg-transparent"
-      >
-        <FocusSelected selectedId={selectedId} isRoot={selectedIsRoot} nodes={nodes} />
-        <AnchorViewport nodes={nodes} pendingAnchorRef={pendingAnchorRef} />
-        <RevealViewport revealedIds={revealedIds} nodes={nodes} />
-        {/* Fine single grid that rides the viewport transform, so panning and
-            zooming read as movement through space. */}
-        <Background
-          variant={BackgroundVariant.Lines}
-          gap={16}
-          lineWidth={1}
-          color="color-mix(in oklab, var(--border) 50%, transparent)"
-        />
-        <Controls position="bottom-right" showInteractive={false} />
-        {nodes.length > 30 ? (
-          <MiniMap
-            ariaLabel={t("chart.overview")}
-            pannable
-            zoomable
-            className="!bottom-3 ltr:!right-14 !rounded-control !border !border-border !bg-popover !shadow-raised"
-            maskColor="color-mix(in oklab, var(--muted) 66%, transparent)"
-            nodeColor={(node) =>
-              node.data?.root === true || node.data?.selected === true
-                ? "var(--primary)"
-                : "var(--muted-foreground)"
-            }
-            nodeStrokeColor="transparent"
-            nodeBorderRadius={2}
-          />
-        ) : null}
-      </ReactFlow>
+
+      <div ref={worldRef} className="oc-world">
+        <svg className="oc-edges" width={width} height={height} aria-hidden>
+          {edges.map((edge) => {
+            const from = positions.get(edge.source);
+            const to = positions.get(edge.target);
+            if (!from || !to) return null;
+            const x1 = from.x + NODE_WIDTH / 2;
+            const y1 = from.y + NODE_HEIGHT;
+            const x2 = to.x + NODE_WIDTH / 2;
+            const my = y1 + RANK_GAP / 2;
+            const lit = branch?.has(edge.source) && branch.has(edge.target);
+            return (
+              <path
+                key={`${edge.source}-${edge.target}`}
+                className={cn(lit && "oc-lit")}
+                d={`M${x1} ${y1}V${my}H${x2}V${to.y}`}
+                opacity={moving?.has(edge.target) ? 0.35 : 1}
+              />
+            );
+          })}
+        </svg>
+        {ids.map((id) => {
+          const unit = model.byId.get(id)!;
+          const p = positions.get(id)!;
+          const lifted = drag?.id === id;
+          const staff = staffing?.get(id);
+          const people = staff?.people ?? null;
+          const hasChildren = (model.childrenByParent.get(id)?.length ?? 0) > 0;
+          const folded = collapsed.has(id);
+          const root = unit.parentId === null;
+          const over = drag?.over === id;
+          const hidden = model.descendantsById.get(id)?.size ?? 0;
+          return (
+            <div
+              key={id}
+              data-unit-id={id}
+              className={cn(
+                "oc-node group h-[104px] w-[244px] rounded-surface border bg-card shadow-raised",
+                people === 0 && "border-dashed border-input bg-transparent shadow-none",
+                branch?.has(id) && id !== selectedId && "border-primary/45",
+                id === selectedId && "border-primary ring-2 ring-primary/30",
+                revealedIds.has(id) && "org-reveal-highlight z-10",
+                lifted && "z-20 shadow-overlay ring-2 ring-primary",
+                moving?.has(id) && !lifted && "oc-dim",
+                over && (valid ? "border-primary ring-2 ring-primary/35" : "border-destructive ring-2 ring-destructive/25")
+              )}
+              style={{
+                transform: `translate(${p.x + (lifted ? drag.dx : 0)}px, ${p.y + (lifted ? drag.dy : 0)}px)`,
+                transition: lifted ? "none" : undefined,
+              }}
+            >
+              <button
+                type="button"
+                aria-label={organizationAccessibleName(model, id, say)}
+                // eslint-disable-next-line no-restricted-syntax -- a chart card toggles its own selection; not a choice among options
+                aria-pressed={id === selectedId}
+                onClick={() => onSelect(id)}
+                className="grid h-full w-full grid-rows-[1fr_auto] rounded-surface text-start outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <span className={cn("grid content-center gap-0.5 px-3.5", people === 0 && "opacity-60")}>
+                  <span className="truncate pe-14 text-sm font-semibold leading-tight text-foreground">{unit.name}</span>
+                  <span className="truncate text-xs text-muted-foreground">{unit.typeName}</span>
+                </span>
+                <span className={cn("flex min-w-0 items-center gap-2 border-t px-3.5 py-2 text-xs text-muted-foreground", people === 0 && "border-dashed border-input opacity-60")}>
+                  {staff?.head ? <Monogram name={staff.head.displayName} photoUrl={staff.head.photoUrl} size="sm" className="size-5 text-[9px]" /> : null}
+                  <span className="min-w-0 flex-1 truncate">{staff?.head?.displayName ?? (people === 0 ? t("chart.nobody") : "")}</span>
+                  {people !== null ? (
+                    <span className="shrink-0 font-semibold tabular-nums text-foreground" title={t("chart.people", { count: people })}>{people}</span>
+                  ) : null}
+                </span>
+              </button>
+              {hasChildren ? (
+                <button
+                  type="button"
+                  aria-label={folded ? t("chart.expand", { name: unit.name, count: hidden }) : t("chart.collapse", { name: unit.name })}
+                  aria-expanded={!folded}
+                  onClick={() => toggle(id)}
+                  className={cn(
+                    "absolute -bottom-3 left-1/2 flex h-6 -translate-x-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground shadow-raised outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
+                    folded ? "gap-0.5 px-1.5" : "w-6"
+                  )}
+                >
+                  {folded ? (
+                    <>
+                      <ChevronRight className="size-3.5" />
+                      <span className="text-[11px] font-semibold tabular-nums">{hidden}</span>
+                    </>
+                  ) : <ChevronDown className="size-3.5" />}
+                </button>
+              ) : null}
+              {movable ? (
+                <div className="absolute end-1.5 top-1.5 flex items-center gap-0.5 rounded-control border bg-popover p-0.5 opacity-0 shadow-raised transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                  <Button type="button" variant="ghost" size="icon-sm" className="size-6" aria-label={t("outline.addChild", { name: unit.name })} onClick={() => onAddChild(id)}>
+                    <Plus className="size-3.5" />
+                  </Button>
+                  {!root ? (
+                    <span
+                      role="button"
+                      tabIndex={-1}
+                      aria-label={t("outline.drag", { name: unit.name })}
+                      title={t("outline.dragHint")}
+                      onPointerDown={(event) => startUnitDrag(event, id)}
+                      className="grid size-6 cursor-grab place-items-center rounded-detail text-muted-foreground hover:bg-muted hover:text-foreground active:cursor-grabbing"
+                    >
+                      <GripVertical className="size-3.5" />
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+
+      <ChartZoomControls label={zoomLabel} onZoom={(factor) => zoomBy(factor)} onFit={() => flyTo(fitTo(boundsOf(positions), viewport()))} />
     </div>
   );
 }

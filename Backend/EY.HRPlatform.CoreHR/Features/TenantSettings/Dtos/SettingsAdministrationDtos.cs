@@ -9,6 +9,10 @@ public static class CoreSettingsSectionIds
     public const string Details = "details";
     public const string EmployeeFields = "employee-fields";
     public const string Lists = "lists";
+    /// <summary>The company's jobs, by family and level (B-175); moved here from Organization (B-183).</summary>
+    public const string Jobs = "jobs";
+    /// <summary>Where people work (B-175); moved here from Organization (B-183).</summary>
+    public const string Places = "places";
     public const string Roles = "roles";
     /// <summary>Which change types wait for approval (B-179).</summary>
     public const string Approvals = "approvals";

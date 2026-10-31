@@ -1,6 +1,5 @@
 {
   "title": "Organisation",
-  "layingOut": "Mise en page de la hiérarchie…",
   "events": {
     "Created": "Création",
     "Renamed": "Renommage",
@@ -60,7 +59,6 @@
     "failed": "La structure n’a pas pu être exportée",
     "failedDescription": "Réessayez dans un instant."
   },
-  "lenses": "Vues de l’organisation",
   "structure": "Structure",
   "returnToToday": "Revenir à aujourd’hui",
   "unresolved": "L’organisation n’a pas pu être chargée",
@@ -269,12 +267,9 @@
     "expand": "Déplier"
   },
   "outline": {
-    "label": "Liste de la structure",
     "unit": "Unité",
     "type": "Type",
     "code": "Code",
-    "collapse": "Replier {name}",
-    "expand": "Déplier {name}",
     "addChild": "Ajouter une sous-unité à {name}",
     "drag": "Faire glisser pour déplacer {name}",
     "dragHint": "Faire glisser pour déplacer",
@@ -289,18 +284,12 @@
     "dropToReview": "Relâchez pour vérifier",
     "cantDrop": "Impossible de déposer ici",
     "dropOnto": "Déposez sur une nouvelle unité parente",
-    "overview": "Aperçu de l’organigramme",
     "nobody": "Personne pour l'instant",
     "people": "{count, plural, one {# personne} other {# personnes}}"
   },
   "accessible": {
     "under": "{name}, {type}, code {code}, sous {path}",
     "root": "{name}, {type}, code {code}, racine de l’organisation"
-  },
-  "lens": {
-    "structure": "Organisation",
-    "jobs": "Postes",
-    "places": "Lieux"
   },
   "place": {
     "meta": "{people, plural, one {# personne} other {# personnes}} · {units, plural, one {# unité} other {# unités}}"
@@ -344,5 +333,9 @@
       "title": "Les pages d'unité ne vous sont pas ouvertes",
       "description": "Elles montrent toutes les personnes d'une unité. Demandez à un administrateur l'organigramme de toute l'entreprise."
     }
+  },
+  "list": {
+    "nounOne": "unité",
+    "nounOther": "unités"
   }
 }

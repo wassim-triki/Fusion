@@ -31,6 +31,8 @@ import {
   TriangleAlert,
   type LucideIcon,
   Stamp,
+  Briefcase,
+  MapPin,
 } from "lucide-react";
 import { useCompanyColor } from "../brand/use-company-color";
 import { cn } from "../lib/utils";
@@ -82,6 +84,8 @@ const SETTINGS_SECTION_ICONS: Record<string, LucideIcon> = {
   company: Building2,
   "employee-fields": ListChecks,
   lists: List,
+  jobs: Briefcase,
+  places: MapPin,
   roles: ShieldCheck,
   approvals: Stamp,
   invitations: Mail,

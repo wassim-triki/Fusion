@@ -1,7 +1,6 @@
-import { JobsWorkspace } from "@/features/catalog/components/jobs-workspace";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
+/** The company's jobs live in Settings since B-183. */
 export default function OrganizationJobsPage() {
-  return <JobsWorkspace />;
+  redirect("/settings/jobs");
 }

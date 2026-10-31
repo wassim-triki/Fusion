@@ -1,13 +1,6 @@
-/* Organization Chart: the restrained post-action reveal highlight. The React Flow controls
-   are themed by @repo/ds/flow.css, imported before this file. */
-
-/* Post-action reveal: a restrained Fusion-primary halo that draws the eye to
-   what just changed. It is a *state*, not a one-shot animation — the node keeps
-   the class for the reveal window, then the workspace drops it and the node's own
-   box-shadow transition fades the halo out. Using a toggled state (not a keyframe)
-   keeps it robust to the node remounts that React Flow performs while the reveal
-   viewport move culls and re-adds elements: a remounted node simply re-shows the
-   static halo instead of losing a mid-flight animation. */
+/* Structure view: the post-action reveal, a restrained Fusion-primary halo on what just changed (an added or
+   imported unit). A state the workspace sets for the reveal window and then drops; the card's own transition
+   fades it out. The canvas itself is the org chart's (org-chart.css). */
 .org-reveal-highlight {
   border-color: var(--primary) !important;
   box-shadow:

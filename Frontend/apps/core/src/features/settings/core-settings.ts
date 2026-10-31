@@ -6,6 +6,8 @@ export const CORE_SETTINGS_SECTIONS = [
   { id: "details", label: "Details" },
   { id: "employee-fields", label: "Fields" },
   { id: "lists", label: "Lists" },
+  { id: "jobs", label: "Jobs" },
+  { id: "places", label: "Places" },
   { id: "roles", label: "Roles" },
   { id: "approvals", label: "Changes and approvals" },
   { id: "sign-in", label: "Sign-in" },

@@ -32,8 +32,10 @@ async function signIn(page, email) {
 
 async function shot(page, name) {
   await page.waitForTimeout(1500);
-  await page.screenshot({ path: path.join(OUT, `${name}.png`) });
-  console.log(`  ${name}.png`);
+  // B183_ROUND names a review round's retakes (r1-01-….png) beside the first set.
+  const file = `${process.env.B183_ROUND ? `${process.env.B183_ROUND}-` : ""}${name}.png`;
+  await page.screenshot({ path: path.join(OUT, file) });
+  console.log(`  ${file}`);
 }
 
 async function session(browser, email) {
@@ -73,7 +75,7 @@ async function open(page, url, waitFor) {
       await shot(hr.page, "03-structure-2021");
     }
     if (want("04")) {
-      await open(hr.page, "/core/organization?view=list", (p) => p.getByRole("treegrid"));
+      await open(hr.page, "/core/organization?view=list", (p) => p.getByRole("table").first());
       await hr.page.getByText("Sami Ben Youssef").first().waitFor({ timeout: 240_000 });
       await shot(hr.page, "04-list-today");
     }
@@ -97,6 +99,12 @@ async function open(page, url, waitFor) {
         await hr.page.getByText("Ines Chaabane").first().waitFor({ timeout: 240_000 });
         await shot(hr.page, "07-unit-page");
       }
+    }
+    if (want("09")) {
+      await open(hr.page, "/core/settings/jobs", (p) => p.getByRole("heading", { level: 1, name: "Jobs" }));
+      await hr.page.getByRole("cell").first().waitFor({ timeout: 240_000 });
+      await hr.page.waitForTimeout(1500);
+      await shot(hr.page, "09-settings-jobs");
     }
     await hr.context.close();
     if (want("08")) {

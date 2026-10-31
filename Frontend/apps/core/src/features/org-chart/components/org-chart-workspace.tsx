@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { AlertTriangle, ArrowLeftRight, Briefcase, Maximize, Minus, Plus, Search, X } from "lucide-react";
+import { AlertTriangle, ArrowLeftRight, Briefcase, Search, X } from "lucide-react";
 import type { ChangePersonRef, OrgChartDto, OrgChartOpenRoleDto, OrgChartPersonDto, WorkforceChangeDto } from "@repo/api";
 import {
   canAccessCorePeople,
@@ -38,8 +38,6 @@ import { useOrgChart, useOrgChartBranches, useOrgChartChanges, useOrgChartSearch
 import { useOrgChartAccess } from "../api/use-org-chart-access";
 import {
   HR_LENSES,
-  MAX_ZOOM,
-  MIN_ZOOM,
   addDays,
   boundsOf,
   buildTree,
@@ -63,8 +61,6 @@ import {
   searchPeople,
   stepFrom,
   timeWindow,
-  zoomTier,
-  type Camera,
   type LensKey,
   type LensWords,
   type OrgTree,
@@ -72,6 +68,7 @@ import {
 } from "../model/org-chart-model";
 import { ChainPill, LeadCard, MoreCard, OrgAvatar, PersonCard, RoleCard, type CardContext } from "./org-chart-cards";
 import { OpenRolePanel, type OpenRoleDraft } from "./open-role-panel";
+import { ChartZoomControls, useChartCamera } from "./chart-stage";
 import { ChangePanel, type ChangeDraft, type ChangeKind } from "@/features/people/changes/change-panel";
 import { ComingUpCard } from "@/features/people/changes/coming-up";
 import { useChangeRights, useUpcomingChanges } from "@/features/people/changes/use-changes";
@@ -277,51 +274,9 @@ function OrgChart({ data, asOf, replaying }: { data: OrgChartDto; asOf: string |
     [tree, lensKey, lensWords, data.asOf, reviewByKey, data.window]);
   const litIds = useMemo(() => litLine(tree, lit), [tree, lit]);
 
-  // ── Camera: transform applied straight to the world element, not through React ──
-  const stageRef = useRef<HTMLDivElement>(null);
-  const worldRef = useRef<HTMLDivElement>(null);
-  const cam = useRef<Camera>({ x: 0, y: 0, s: 1 });
-  const flight = useRef(0);
-  const [tier, setTier] = useState<"near" | "mid" | "far">("near");
-  const [zoomLabel, setZoomLabel] = useState("100%");
-
-  const applyCam = useCallback(() => {
-    const world = worldRef.current;
-    if (!world) return;
-    world.style.transform = `translate(${cam.current.x}px, ${cam.current.y}px) scale(${cam.current.s})`;
-    setTier(zoomTier(cam.current.s));
-    setZoomLabel(`${Math.round(cam.current.s * 100)}%`);
-  }, []);
-
-  const flyTo = useCallback((target: Camera, ms = 560) => {
-    cancelAnimationFrame(flight.current);
-    const from = { ...cam.current };
-    const start = performance.now();
-    const step = (now: number) => {
-      const k = Math.min(1, (now - start) / ms);
-      const e = 1 - Math.pow(1 - k, 3);
-      cam.current = { x: from.x + (target.x - from.x) * e, y: from.y + (target.y - from.y) * e, s: from.s + (target.s - from.s) * e };
-      applyCam();
-      if (k < 1) flight.current = requestAnimationFrame(step);
-    };
-    flight.current = requestAnimationFrame(step);
-  }, [applyCam]);
-
-  const viewport = useCallback(() => {
-    const rect = stageRef.current?.getBoundingClientRect();
-    return { width: rect?.width ?? 1200, height: rect?.height ?? 700, panel: change || roleEdit ? CHANGE_PANEL_WIDTH : selected ? PANEL_WIDTH : 0 };
-  }, [selected, change, roleEdit]);
-
-  const zoomBy = useCallback((factor: number, cx?: number, cy?: number) => {
-    const v = viewport();
-    const px = cx ?? v.width / 2;
-    const py = cy ?? v.height / 2;
-    const s = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, cam.current.s * factor));
-    const k = s / cam.current.s;
-    cancelAnimationFrame(flight.current);
-    cam.current = { s, x: px - (px - cam.current.x) * k, y: py - (py - cam.current.y) * k };
-    applyCam();
-  }, [applyCam, viewport]);
+  // ── Camera: the Organization's shared chart canvas ──
+  const { stageRef, worldRef, cam, tier, zoomLabel, panning, dragged, flyTo, zoomBy, viewport, startPan } =
+    useChartCamera(change || roleEdit ? CHANGE_PANEL_WIDTH : selected ? PANEL_WIDTH : 0);
 
   useLayoutEffect(() => {
     if (!fitRequest) return;
@@ -343,24 +298,6 @@ function OrgChart({ data, asOf, replaying }: { data: OrgChartDto; asOf: string |
     const timer = window.setTimeout(() => setEdgesShown(true), animate ? SETTLE_MS : 0);
     return () => window.clearTimeout(timer);
   }, [layout, animate]);
-
-  // Wheel zooms around the pointer.
-  useEffect(() => {
-    const stage = stageRef.current;
-    if (!stage) return;
-    const onWheel = (event: WheelEvent) => {
-      if ((event.target as HTMLElement).closest("[data-oc-overlay]")) return;
-      event.preventDefault();
-      const rect = stage.getBoundingClientRect();
-      zoomBy(event.deltaY < 0 ? 1.12 : 0.89, event.clientX - rect.left, event.clientY - rect.top);
-    };
-    stage.addEventListener("wheel", onWheel, { passive: false });
-    return () => stage.removeEventListener("wheel", onWheel);
-  }, [zoomBy]);
-
-  // Drag pans; a drag never counts as a click on what it started on.
-  const dragged = useRef(false);
-  const [panning, setPanning] = useState(false);
 
   // ── Drag to change manager (HR who manage people, today or later) ──
   const movable = (canManageCoreEmployees(user) || canManageCoreReporting(user)) && date >= today && !replaying;
@@ -414,25 +351,7 @@ function OrgChart({ data, asOf, replaying }: { data: OrgChartDto; asOf: string |
       startCardDrag(event, card.dataset.ocId!);
       return;
     }
-    cancelAnimationFrame(flight.current);
-    const start = { x: event.clientX, y: event.clientY, cx: cam.current.x, cy: cam.current.y };
-    dragged.current = false;
-    const move = (e: PointerEvent) => {
-      const dx = e.clientX - start.x;
-      const dy = e.clientY - start.y;
-      if (!dragged.current && Math.hypot(dx, dy) <= 5) return;
-      if (!dragged.current) setPanning(true);
-      dragged.current = true;
-      cam.current = { ...cam.current, x: start.cx + dx, y: start.cy + dy };
-      applyCam();
-    };
-    const up = () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
-      setPanning(false);
-    };
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up);
+    startPan(event);
   }
 
   // ── Actions ──
@@ -831,12 +750,7 @@ function OrgChart({ data, asOf, replaying }: { data: OrgChartDto; asOf: string |
           </span>
         ) : null}
 
-        <span className="pointer-events-none absolute bottom-[18px] end-[58px] text-xs text-muted-foreground tabular-nums">{zoomLabel}</span>
-        <div data-oc-overlay className="absolute bottom-3.5 end-3.5 grid overflow-hidden rounded-control border bg-popover shadow-overlay">
-          <button type="button" aria-label={t("zoom.in")} onClick={() => zoomBy(1.25)} className="grid h-8 w-[34px] place-items-center text-muted-foreground hover:bg-inlay hover:text-foreground"><Plus className="size-4" /></button>
-          <button type="button" aria-label={t("zoom.out")} onClick={() => zoomBy(0.8)} className="grid h-8 w-[34px] place-items-center border-t text-muted-foreground hover:bg-inlay hover:text-foreground"><Minus className="size-4" /></button>
-          <button type="button" aria-label={t("zoom.fit")} onClick={() => flyTo(fitTo(boundsOf(layout.nodes), viewport()))} className="grid h-8 w-[34px] place-items-center border-t text-muted-foreground hover:bg-inlay hover:text-foreground"><Maximize className="size-4" /></button>
-        </div>
+        <ChartZoomControls label={zoomLabel} onZoom={(factor) => zoomBy(factor)} onFit={() => flyTo(fitTo(boundsOf(layout.nodes), viewport()))} />
 
         {roleEdit ? (
           <aside

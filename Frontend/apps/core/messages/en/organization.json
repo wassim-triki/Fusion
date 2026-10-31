@@ -1,6 +1,5 @@
 {
   "title": "Organization",
-  "layingOut": "Laying out the hierarchy…",
   "events": {
     "Created": "Created",
     "Renamed": "Renamed",
@@ -60,7 +59,6 @@
     "failed": "Structure could not be exported",
     "failedDescription": "Try again in a moment."
   },
-  "lenses": "Organization lenses",
   "structure": "Structure",
   "returnToToday": "Return to Today",
   "unresolved": "Organization could not be resolved",
@@ -269,12 +267,9 @@
     "expand": "Expand"
   },
   "outline": {
-    "label": "Organization structure outline",
     "unit": "Organizational unit",
     "type": "Type",
     "code": "Business code",
-    "collapse": "Collapse {name}",
-    "expand": "Expand {name}",
     "addChild": "Add child to {name}",
     "drag": "Drag to move {name}",
     "dragHint": "Drag to move",
@@ -289,18 +284,12 @@
     "dropToReview": "Drop to review",
     "cantDrop": "Can’t drop here",
     "dropOnto": "Drop onto a new parent",
-    "overview": "Organization chart overview",
     "nobody": "Nobody yet",
     "people": "{count, plural, one {# person} other {# people}}"
   },
   "accessible": {
     "under": "{name}, {type}, code {code}, under {path}",
     "root": "{name}, {type}, code {code}, organization root"
-  },
-  "lens": {
-    "structure": "Organization",
-    "jobs": "Jobs",
-    "places": "Places"
   },
   "place": {
     "meta": "{people, plural, one {# person} other {# people}} · {units, plural, one {# unit} other {# units}}"
@@ -344,5 +333,9 @@
       "title": "Unit pages aren't open to you",
       "description": "They show everyone in a unit. Ask an administrator for the whole company's org chart."
     }
+  },
+  "list": {
+    "nounOne": "unit",
+    "nounOther": "units"
   }
 }

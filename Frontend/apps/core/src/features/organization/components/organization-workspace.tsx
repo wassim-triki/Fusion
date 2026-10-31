@@ -2,7 +2,7 @@
 
 import { useOrganizationEvents } from "./organization-words";
 import { useTranslations } from "next-intl";
-import dynamic from "next/dynamic";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -11,7 +11,6 @@ import {
   useEffect,
   useMemo,
   useReducer,
-  useRef,
   useState,
 } from "react";
 import { toast } from "sonner";
@@ -32,7 +31,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   Input,
-  Separator,
   Skeleton,
   Tabs,
   TabsContent,
@@ -97,7 +95,7 @@ import {
 } from "../model/workspace-state";
 import { useOrganizationImportApi } from "@/features/organization-import/api/use-organization-import";
 import { downloadBlob } from "@/features/organization-import/model/format";
-import { OrganizationOutline } from "./organization-outline";
+import { OrganizationList } from "./organization-list";
 import {
   CorrectionPanel,
   CreateTypeDialog,
@@ -109,31 +107,9 @@ import {
   UpcomingChangesSheet,
 } from "./organization-surfaces";
 import { useRecentRecord } from "@repo/api/react";
+import OrganizationChart from "./organization-chart";
 
 const EMPTY_REVEAL: ReadonlySet<string> = new Set();
-
-const OrganizationChart = dynamic(() => import("./organization-chart"), {
-  ssr: false,
-  loading: () => <ChartLoading />,
-});
-
-function ChartLoading() {
-  const t = useTranslations("organization");
-  return (
-    <div className="grid h-full min-h-[520px] place-items-center bg-section">
-      <div className="space-y-4 text-center">
-        <Skeleton className="mx-auto h-24 w-56 rounded-surface" />
-        <div className="flex gap-12">
-          <Skeleton className="h-24 w-56 rounded-surface" />
-          <Skeleton className="h-24 w-56 rounded-surface" />
-        </div>
-        <p className="text-xs text-muted-foreground">
-          {t("layingOut")}
-        </p>
-      </div>
-    </div>
-  );
-}
 
 function StructureSkeleton() {
   return (
@@ -509,7 +485,14 @@ function InspectorContent({
  * Organization's Structure and List views: the unit hierarchy on the Organization's date (`?asOf=`), as a chart or
  * as a list, with each unit's people and head when the viewer may read them. Editing units happens here, on today.
  */
-export default function OrganizationWorkspace({ staffing }: { staffing?: ReadonlyMap<string, UnitStaffingDto> }) {
+export default function OrganizationWorkspace({
+  staffing,
+  actionsTarget,
+}: {
+  staffing?: ReadonlyMap<string, UnitStaffingDto>;
+  /** The page header's actions slot: Add unit and the ⋯ menu sit there, beside the view switch. */
+  actionsTarget?: HTMLElement | null;
+}) {
   const { user, isLoading: authLoading } = useAuth();
   const t = useTranslations("organization");
   const events = useOrganizationEvents();
@@ -614,10 +597,11 @@ export default function OrganizationWorkspace({ staffing }: { staffing?: Readonl
 
   // The structure opens on its top three levels (the company, its business units and what's under them); deeper
   // levels fold under their unit until someone opens them. Once per visit, so a person's own folding stays.
-  const folded = useRef(false);
+  // The chart waits for this first fold, so it frames the folded tree rather than the whole one.
+  const [folded, setFolded] = useState(false);
   useEffect(() => {
-    if (!model || folded.current) return;
-    folded.current = true;
+    if (!model || folded) return;
+    setFolded(true);
     const deep = model.units.filter((unit) => model.depthById.get(unit.id) === 2 && (model.childrenByParent.get(unit.id)?.length ?? 0) > 0);
     if (deep.length && !urlState.selectedId) patchLocal({ collapsed: new Set(deep.map((unit) => unit.id)) });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -825,7 +809,7 @@ export default function OrganizationWorkspace({ staffing }: { staffing?: Readonl
         </div>
       ) : (
         <>
-          <div className="flex shrink-0 items-center gap-3 border-b bg-card px-4 py-3">
+          <div className={cn("flex shrink-0 items-center gap-3 border-b bg-card px-4 py-3", urlState.representation === "outline" && "hidden")}>
             <div className="relative min-w-[280px] max-w-lg flex-1">
               <Search className="pointer-events-none absolute inset-s-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -893,58 +877,50 @@ export default function OrganizationWorkspace({ staffing }: { staffing?: Readonl
                 </div>
               ) : null}
             </div>
-            {canManage && !readOnly ? (
-              <Button
-                onClick={() =>
-                  patchLocal({
-                    editor: { kind: "unit-form", mode: { kind: "add", parentId: null } },
-                  })
-                }
-              >
-                <Plus className="h-4 w-4" />
-                {t("toolbar.addUnit")}
-              </Button>
-            ) : null}
-            <div className="ms-auto flex items-center gap-3">
-              {canManage && !readOnly ? (
-                <Button asChild variant="outline">
-                  <Link href="/organization/import">
-                    <Upload className="h-4 w-4" />
-                    {t("toolbar.import")}
-                  </Link>
-                </Button>
-              ) : null}
-              <Separator orientation="vertical" className="h-6" />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={t("toolbar.more")}
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
+            {actionsTarget ? createPortal(
+              <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" aria-label={t("toolbar.more")}>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {canManage && !readOnly ? (
+                      <DropdownMenuItem asChild>
+                        <Link href="/organization/import">
+                          <Upload className="h-4 w-4" />
+                          {t("toolbar.import")}
+                        </Link>
+                      </DropdownMenuItem>
+                    ) : null}
+                    <DropdownMenuItem onClick={() => void exportStructure()}>
+                      <FileOutput className="h-4 w-4" />
+                      {t("toolbar.export")}
+                    </DropdownMenuItem>
+                    {futureChanges.length ? (
+                      <DropdownMenuItem onClick={() => patchLocal({ upcomingOpen: true })}>
+                        <Clock3 className="h-4 w-4" />
+                        {t("toolbar.plannedUnits", { count: futureChanges.length })}
+                      </DropdownMenuItem>
+                    ) : null}
+                    {canManage && !readOnly ? (
+                      <DropdownMenuItem onClick={() => patchLocal({ editor: { kind: "manage-types" } })}>
+                        <Settings2 className="h-4 w-4" />
+                        {t("toolbar.manageTypes")}
+                      </DropdownMenuItem>
+                    ) : null}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {canManage && !readOnly ? (
+                  <Button variant="outline" onClick={() => patchLocal({ editor: { kind: "unit-form", mode: { kind: "add", parentId: null } } })}>
+                    <Plus className="h-4 w-4" />
+                    {t("toolbar.addUnit")}
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => void exportStructure()}>
-                    <FileOutput className="h-4 w-4" />
-                    {t("toolbar.export")}
-                  </DropdownMenuItem>
-                  {futureChanges.length ? (
-                    <DropdownMenuItem onClick={() => patchLocal({ upcomingOpen: true })}>
-                      <Clock3 className="h-4 w-4" />
-                      {t("toolbar.plannedUnits", { count: futureChanges.length })}
-                    </DropdownMenuItem>
-                  ) : null}
-                  {canManage && !readOnly ? (
-                    <DropdownMenuItem onClick={() => patchLocal({ editor: { kind: "manage-types" } })}>
-                      <Settings2 className="h-4 w-4" />
-                      {t("toolbar.manageTypes")}
-                    </DropdownMenuItem>
-                  ) : null}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                ) : null}
+              </>,
+              actionsTarget
+            ) : null}
           </div>
           <div className="relative flex min-h-0 flex-1">
             <main
@@ -985,7 +961,7 @@ export default function OrganizationWorkspace({ staffing }: { staffing?: Readonl
                 </div>
               ) : model && model.units.length ? (
                 urlState.representation === "chart" ? (
-                  <OrganizationChart
+                  !folded ? <StructureSkeleton /> : <OrganizationChart
                     model={model}
                     staffing={staffing}
                     collapsed={collapsed}
@@ -1001,20 +977,7 @@ export default function OrganizationWorkspace({ staffing }: { staffing?: Readonl
                     }
                   />
                 ) : (
-                  <OrganizationOutline
-                    model={model}
-                    staffing={staffing}
-                    collapsed={collapsed}
-                    selectedId={urlState.selectedId}
-                    canManage={canManage}
-                    readOnly={readOnly}
-                    onSelect={select}
-                    onToggle={toggle}
-                    onAddChild={addChild}
-                    onStageDragMove={(source, target) =>
-                      stageMove(source, target, "drag")
-                    }
-                  />
+                  <OrganizationList model={model} staffing={staffing} selectedId={urlState.selectedId} onSelect={select} />
                 )
               ) : (
                 <div className="grid h-full place-items-center">

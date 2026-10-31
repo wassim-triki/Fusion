@@ -24,6 +24,8 @@
         "details": "Details",
         "employee-fields": "Fields",
         "lists": "Lists",
+        "jobs": "Jobs",
+        "places": "Places",
         "roles": "Roles",
         "approvals": "Changes and approvals",
         "sign-in": "Sign-in",
@@ -34,9 +36,7 @@
         "reviews": "Reviews",
         "planning": "Planning",
         "conversations": "Conversations",
-        "ai-and-data": "AI and data",
-        "jobs": "Jobs",
-        "places": "Places"
+        "ai-and-data": "AI and data"
       },
       "changedBy": "<b>{actor}</b> changed it {when}",
       "setUp": "Set up {when}",

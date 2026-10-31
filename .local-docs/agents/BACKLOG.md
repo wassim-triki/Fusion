@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-241.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-243.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -57,10 +57,12 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ## In review
 
 - [ ] **B-183** Organization in time: one place, three views, one time slider, unit pages, open roles (D-17) · Core HR · 2026-10-30
-      Look at (Amira, `/core/organization`): Structure today, then drag the slider to 2021 and to 1 Jan (Delivery under Consulting), Replay; List; People; the Planned list under the chart; "Open its page" in a unit's panel (Consulting). Screens `plans/B-183-screens/`. Calls made: Jobs and Places stay as tabs over Organization; the structure opens on three levels; clicking a unit opens its panel (editing), the panel links to the page. Cold build not run (stopped for low memory): run `pnpm --filter core build` before the commit is trusted for routes.
+      Round 1 (user 2026-11-01: two header tab strips, surface not designed as one, import buttons) refitted: one header (People · Structure · List, ⋯ with Import / Export / unit types / planned unit changes, Add unit); Jobs and Places moved to Settings; Structure on the people chart's canvas (same pan, zoom corner, edges); List on the table kit. Look at (Amira, `/core/organization`): Structure, List and People back to back; ⋯ and Add unit; Settings › Jobs and Places. Screens `plans/B-183-screens/r1-*.png` (first round's without prefix).
+  - [ ] **B-241** Clicking a unit opens its page, as drawn (D-17); the panel stays for now (user 2026-11-01: keep clicking as it is, board the note) · Core HR · 2026-11-01
 
 ## Ready
 
+- [ ] **B-242** Tidy after the Organization refit: drop core's unused `@xyflow/react` dependency (lockfile update) and the now-unused `flattenOrganizationHierarchy` · Core HR · 2026-11-01
 - [ ] **B-240** Directory card as drawn (D-28): initials in Fusion's serif on every face, and the card footer's org chart icon matching the drawing's (Hugeicons Hierarchy; Core's chrome is still Lucide, so pick the match or move this icon). Long names already end in an ellipsis · Core HR · 2026-10-31
       User 2026-10-31 (B-182 review, card compared with `plans/B-182-screens/ref-directory-card.png`).
 

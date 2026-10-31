@@ -3,8 +3,7 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import type { CompanyListValueDto, JobDto } from "@repo/api";
-import { canManageCoreOrganization, useAuth } from "@repo/auth";
+import type { CompanyListValueDto, FusionSettingsSection, JobDto } from "@repo/api";
 import {
   Button,
   DropdownMenu,
@@ -40,13 +39,12 @@ function ordered(jobs: JobDto[], families: CompanyListValueDto[]): JobDto[] {
 }
 
 /**
- * The company's jobs (Organization › Jobs): grouped by family, each with its level and who holds it today. People who
+ * The company's jobs (Settings › Jobs): grouped by family, each with its level and who holds it today. People who
  * manage the structure add, edit, merge duplicates, retire and delete; everyone else who works with the structure reads.
  */
-export function JobsWorkspace() {
+export function JobsWorkspace({ section }: { section: FusionSettingsSection }) {
   const t = useTranslations("catalog");
-  const { user } = useAuth();
-  const canManage = canManageCoreOrganization(user);
+  const canManage = section.access === "manage";
   const jobs = useJobs();
   const lists = useCompanyLists();
   const { retire } = useJobMutations();
@@ -189,7 +187,7 @@ export function JobsWorkspace() {
 
   return (
     <CatalogFrame
-      lens="jobs"
+      section={section}
       actions={
         canManage ? (
           <Button onClick={() => edit(null)}>

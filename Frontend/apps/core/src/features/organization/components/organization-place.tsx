@@ -18,7 +18,6 @@ import { useStaffing, useStaffingAccess } from "../api/use-staffing";
 import { replayDays, timeSpan } from "../model/time";
 import { todayCalendarDate } from "../model/workspace-state";
 import OrganizationWorkspace from "./organization-workspace";
-import { OrganizationLenses } from "./organization-lenses";
 import { PlannedChanges, usePlannedItems } from "./planned-changes";
 import { TimeBar } from "./time-bar";
 
@@ -89,6 +88,7 @@ export default function OrganizationPlace() {
 
   // ── Replay: the company from its first day to today, a step at a time, each step loaded before it shows ──
   const [replaying, setReplaying] = useState(false);
+  const [actionsTarget, setActionsTarget] = useState<HTMLDivElement | null>(null);
   const run = useRef(0);
   const prefetch = useCallback(
     async (day: string) => {
@@ -155,11 +155,15 @@ export default function OrganizationPlace() {
         title={t("title")}
         description={people !== null ? t("place.meta", { people, units: staffing.data?.units.length ?? 0 }) : undefined}
         className="mb-0"
-        actions={views.length > 1 ? (
-          <Segmented label={t("views.label")} value={view} onChange={(next) => { stop(); navigate({ view: next }); }} options={views} />
-        ) : undefined}
+        actions={
+          <>
+            {views.length > 1 ? (
+              <Segmented label={t("views.label")} value={view} onChange={(next) => { stop(); navigate({ view: next }); }} options={views} />
+            ) : null}
+            <div ref={setActionsTarget} className="contents" />
+          </>
+        }
       />
-      {canStructure ? <OrganizationLenses active="structure" /> : null}
       {canMoveTime && established && timeLoading ? <Skeleton className="h-[78px] w-full rounded-surface" /> : null}
       {canMoveTime && established && !timeLoading ? (
         <TimeBar
@@ -176,7 +180,7 @@ export default function OrganizationPlace() {
         {view === "people" ? (
           <OrgChartWorkspace asOf={date === today ? null : date} replaying={replaying} />
         ) : (
-          <OrganizationWorkspace staffing={staffingAccess.counts ? staffing.byUnit : undefined} />
+          <OrganizationWorkspace staffing={staffingAccess.counts ? staffing.byUnit : undefined} actionsTarget={actionsTarget} />
         )}
       </div>
       {canMoveTime && established ? (

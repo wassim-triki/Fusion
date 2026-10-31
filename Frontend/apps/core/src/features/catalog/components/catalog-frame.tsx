@@ -1,32 +1,24 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useTranslations } from "next-intl";
-import { canViewCoreOrganization, useAuth } from "@repo/auth";
-import { PageHeader, PagePermissionNotice } from "@repo/ds/shell";
-import { OrganizationLenses, type OrganizationLens } from "@/features/organization/components/organization-lenses";
+import type { FusionSettingsSection } from "@repo/api";
+import { SettingsPage, useSettingsSectionName } from "@repo/ds/shell";
 
-/** The Organization area's frame around Jobs and Places: the area's title, its lenses, then the view. */
+/** Settings › Jobs and Settings › Places: the company's catalogues, read by whoever works with the structure. */
 export function CatalogFrame({
-  lens,
+  section,
   actions,
   children,
 }: {
-  lens: Exclude<OrganizationLens, "structure">;
+  section: FusionSettingsSection;
   actions?: ReactNode;
   children: ReactNode;
 }) {
-  const t = useTranslations("organization");
-  const { user, isLoading } = useAuth();
-  const canView = isLoading || canViewCoreOrganization(user);
+  const title = useSettingsSectionName()(section);
   return (
-    <div className="mx-auto w-full max-w-6xl px-6 pt-5 pb-10">
-      <PageHeader title={t("title")} className="mb-3" actions={canView ? actions : undefined} />
-      <OrganizationLenses active={lens} />
-      <div className="mt-6">
-        {canView ? children : <PagePermissionNotice title={t("access.title")} description={t("access.description")} />}
-      </div>
-    </div>
+    <SettingsPage title={title} lastChange={section.lastChange} setUpAt={section.setUpAt} viewOnly={section.access !== "manage"} aside={actions} wide>
+      {children}
+    </SettingsPage>
   );
 }
 

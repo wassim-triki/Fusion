@@ -3,8 +3,7 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import type { PlaceDto } from "@repo/api";
-import { canManageCoreOrganization, useAuth } from "@repo/auth";
+import type { FusionSettingsSection, PlaceDto } from "@repo/api";
 import {
   Button,
   DropdownMenu,
@@ -29,11 +28,10 @@ import { placeContext } from "./catalog-pickers";
 
 const column = createDataTableColumnHelper<PlaceDto>();
 
-/** Where people work (Organization › Places): each place with its city and country and who works there today. */
-export function PlacesWorkspace() {
+/** Where people work (Settings › Places): each place with its city and country and who works there today. */
+export function PlacesWorkspace({ section }: { section: FusionSettingsSection }) {
   const t = useTranslations("catalog");
-  const { user } = useAuth();
-  const canManage = canManageCoreOrganization(user);
+  const canManage = section.access === "manage";
   const places = usePlaces();
   const { retire } = usePlaceMutations();
   const [editing, setEditing] = useState<PlaceDto | null>(null);
@@ -145,7 +143,7 @@ export function PlacesWorkspace() {
 
   return (
     <CatalogFrame
-      lens="places"
+      section={section}
       actions={
         canManage ? (
           <Button onClick={() => edit(null)}>

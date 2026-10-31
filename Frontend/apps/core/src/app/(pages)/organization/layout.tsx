@@ -1,5 +1,3 @@
-import "@xyflow/react/dist/style.css";
-import "@repo/ds/flow.css";
 import "./organization-chart.css";
 import "./org-chart.css";
 

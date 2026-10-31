@@ -47,6 +47,11 @@ public sealed class SettingsSectionRegistry(
             (policy, user) => policy.CanViewPeopleDataSettings(user), (policy, user) => policy.CanManagePeopleDataSettings(user)),
         new(CoreSettingsSectionIds.Lists, "Lists", SettingsSectionIds.Lists,
             (policy, user) => policy.CanViewPeopleDataSettings(user), (policy, user) => policy.CanManageLists(user)),
+        // The catalogues keep their own history (who added, merged, retired); no settings audit.
+        new(CoreSettingsSectionIds.Jobs, "Jobs", null,
+            (policy, user) => policy.CanViewOrganizationSettings(user) || policy.CanManageJobsAndPlaces(user), (policy, user) => policy.CanManageJobsAndPlaces(user)),
+        new(CoreSettingsSectionIds.Places, "Places", null,
+            (policy, user) => policy.CanViewOrganizationSettings(user) || policy.CanManageJobsAndPlaces(user), (policy, user) => policy.CanManageJobsAndPlaces(user)),
         new(CoreSettingsSectionIds.Roles, "Roles", SettingsSectionIds.AccessPermissions,
             (policy, user) => policy.CanViewAccessProfiles(user), (policy, user) => policy.CanManageAccessProfiles(user)),
         new(CoreSettingsSectionIds.Approvals, "Changes and approvals", SettingsSectionIds.Approvals,

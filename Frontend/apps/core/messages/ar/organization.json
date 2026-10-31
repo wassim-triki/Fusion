@@ -1,6 +1,5 @@
 {
   "title": "التنظيم",
-  "layingOut": "جارٍ رسم التسلسل الهرمي…",
   "events": {
     "Created": "أُنشئت",
     "Renamed": "أُعيدت تسميتها",
@@ -60,7 +59,6 @@
     "failed": "تعذّر تصدير الهيكل",
     "failedDescription": "أعد المحاولة بعد قليل."
   },
-  "lenses": "عروض الهيكل التنظيمي",
   "structure": "الهيكل",
   "returnToToday": "العودة إلى اليوم",
   "unresolved": "تعذّر تحديد الهيكل التنظيمي",
@@ -269,12 +267,9 @@
     "expand": "توسيع"
   },
   "outline": {
-    "label": "قائمة الهيكل التنظيمي",
     "unit": "الوحدة التنظيمية",
     "type": "النوع",
     "code": "الرمز",
-    "collapse": "طي {name}",
-    "expand": "توسيع {name}",
     "addChild": "إضافة وحدة فرعية إلى {name}",
     "drag": "اسحب لنقل {name}",
     "dragHint": "اسحب للنقل",
@@ -289,18 +284,12 @@
     "dropToReview": "أفلت للمراجعة",
     "cantDrop": "لا يمكن الإفلات هنا",
     "dropOnto": "أفلت على وحدة أم جديدة",
-    "overview": "نظرة عامة على المخطط التنظيمي",
     "nobody": "لا أحد بعد",
     "people": "{count, plural, one {شخص واحد} other {# أشخاص}}"
   },
   "accessible": {
     "under": "{name}، {type}، الرمز {code}، تحت {path}",
     "root": "{name}، {type}، الرمز {code}، جذر الهيكل التنظيمي"
-  },
-  "lens": {
-    "structure": "المؤسسة",
-    "jobs": "الوظائف",
-    "places": "أماكن العمل"
   },
   "place": {
     "meta": "{people, plural, one {شخص واحد} other {# أشخاص}} · {units, plural, one {وحدة واحدة} other {# وحدات}}"
@@ -344,5 +333,9 @@
       "title": "صفحات الوحدات غير متاحة لك",
       "description": "تعرض كل من في الوحدة. اطلب من المسؤول مخطط الشركة كاملًا."
     }
+  },
+  "list": {
+    "nounOne": "وحدة",
+    "nounOther": "وحدات"
   }
 }

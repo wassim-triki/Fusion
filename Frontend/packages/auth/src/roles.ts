@@ -204,7 +204,9 @@ export function canManageCoreAccessProfiles(user: AuthUser | null): boolean {
 export function canSeeCoreSettingsNavigation(user: AuthUser | null): boolean {
   return (
     canAccessCoreSettings(user) ||
-    canViewCoreAccessProfiles(user)
+    canViewCoreAccessProfiles(user) ||
+    // Settings › Jobs and Places are theirs to manage (B-183).
+    canManageCoreOrganization(user)
   );
 }
 

@@ -4,7 +4,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { PeopleProfileDto, PeopleTimelineEventDto } from "@repo/api";
 import { ProfileTimeline } from "./job-tab";
-import { nextAnniversary } from "./overview-tab";
+import { nextAnniversary, performanceUpcoming } from "./overview-tab";
 import { WorkerProfile } from "./worker-profile";
 import { fromPeopleProfile, tenure } from "./worker-profile-view";
 
@@ -110,6 +110,45 @@ describe("WorkerProfile", () => {
     expect(screen.getByText("Their team")).toBeInTheDocument();
     expect(screen.getByText("7 people")).toBeInTheDocument();
     expect(screen.getByText("Former")).toBeInTheDocument();
+  });
+});
+
+describe("performanceUpcoming", () => {
+  const words = {
+    oneOnOne: "Your 1:1 with Aicha",
+    asked: (by: string, title: string) => `${by} asked for an update on "${title}"`,
+    askedOn: (date: string) => `Asked ${date}`,
+    review: (round: string) => round,
+    reviewDue: (date: string) => `Due ${date}`,
+    open: "Open",
+    today: "Today",
+    month: (iso: string) => iso.slice(5, 7),
+    day: (iso: string) => iso.slice(8, 10),
+    time: () => "11:00",
+    date: (iso: string) => iso.slice(0, 10),
+  };
+
+  it("lists the next 1:1, open asks and the review step due, from the person's summary", () => {
+    const summary = {
+      oneOnOne: { seriesId: "s", nextMeetingAt: "2026-10-31T11:00:00Z", href: "/performance/one-on-ones/s" },
+      currentCycle: {
+        objectives: [
+          { objectiveId: "o1", title: "Automate the regression suite", href: "/performance/o1", openRequest: { requestedByName: "Mariam Gharbi", requestedAt: "2026-10-28T09:00:00Z" } },
+          { objectiveId: "o2", title: "Ship the dashboard", href: "/performance/o2", openRequest: null },
+        ],
+      },
+      reviews: { current: { reviewRoundName: "Year-end", dueDate: "2026-12-10", href: "/performance/reviews/r" }, history: [] },
+    } as unknown as Parameters<typeof performanceUpcoming>[0];
+    const items = performanceUpcoming(summary, words, new Date("2026-10-31T08:00:00Z"));
+
+    expect(items.map((item) => item.title)).toEqual([
+      "Your 1:1 with Aicha",
+      'Mariam Gharbi asked for an update on "Automate the regression suite"',
+      "Year-end",
+    ]);
+    expect(items[0]!.when).toMatchObject({ top: "Today", main: "11:00", today: true });
+    expect(items.every((item) => item.source === "performance")).toBe(true);
+    expect(performanceUpcoming(undefined, words)).toEqual([]);
   });
 });
 

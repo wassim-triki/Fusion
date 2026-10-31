@@ -39,6 +39,7 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
         builder.Property(e => e.HomePostalCode).HasMaxLength(20);
         builder.Property(e => e.HomeCountry).HasMaxLength(100);
         builder.Property(e => e.PhotoKey).HasMaxLength(200);
+        builder.Property(e => e.About).HasMaxLength(Employee.MaxAboutLength);
         builder.HasMany(e => e.EmergencyContacts)
             .WithOne()
             .HasForeignKey(contact => contact.EmployeeId)

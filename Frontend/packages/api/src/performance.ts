@@ -2082,6 +2082,8 @@ export interface PersonSummaryObjectiveDto {
   href: string;
   /** The owner's latest status; null until reported, never assumed on track. */
   status: ObjectiveStatus | null;
+  /** An update asked for and not yet given (the person page's Coming up). */
+  openRequest?: { requestedByName: string; requestedAt: string } | null;
 }
 
 export interface PersonSummaryCycleDto {

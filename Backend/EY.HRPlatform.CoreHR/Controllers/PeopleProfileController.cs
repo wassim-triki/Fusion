@@ -68,6 +68,20 @@ public sealed class PeopleProfileController(
         return Ok(ApiResponse<PeoplePersonalDto>.Success(result.Value));
     }
 
+    /// <summary>What the person writes about themselves: the person, or whoever changes personal details.</summary>
+    [HttpPut("about")]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> UpdateAbout(string employeeKey, [FromBody] UpdateAboutRequest request, CancellationToken cancellationToken)
+    {
+        if (!CanOpenProfiles())
+            return Forbid();
+
+        var result = await sender.Send(new UpdatePeopleAboutCommand(employeeKey, Viewer(), request.About, Actor()), cancellationToken);
+        return result.IsFailure ? Failure(result.Error) : Ok(ApiResponse<string?>.Success(result.Value));
+    }
+
     /// <summary>The Job information table: HR and the person's branch manager.</summary>
     [HttpGet("job-history")]
     [ProducesResponseType(typeof(ApiResponse<PeopleJobHistoryDto>), StatusCodes.Status200OK)]

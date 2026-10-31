@@ -65,6 +65,8 @@ export interface WorkerProfileView {
 
   workEmail: string | null;
   phone: string | null;
+  /** What the person wrote about themselves. */
+  about: string | null;
 
   manager: WorkerProfileManager | null;
   directReports: WorkerProfileReport[];
@@ -170,6 +172,7 @@ export function fromPeopleProfile(
 
     workEmail: identity.workEmail,
     phone: identity.phone,
+    about: identity.about ?? null,
 
     manager: primaryManager
       ? {

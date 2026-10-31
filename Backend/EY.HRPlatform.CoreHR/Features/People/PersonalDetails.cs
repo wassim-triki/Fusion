@@ -176,6 +176,12 @@ public sealed record UpdatePersonalRequest(
 
 public sealed record PeoplePersonalQuery(string EmployeeKey, PeopleViewer Viewer) : IQuery<Result<PeoplePersonalDto>>;
 
+/// <summary>The person's About, written by them or by whoever changes personal details (B-180).</summary>
+public sealed record UpdateAboutRequest(string? About);
+
+public sealed record UpdatePeopleAboutCommand(string EmployeeKey, PeopleViewer Viewer, string? About, string Actor)
+    : ICommand<Result<string?>>;
+
 public sealed record UpdatePeoplePersonalCommand(
     string EmployeeKey,
     PeopleViewer Viewer,
@@ -281,6 +287,37 @@ public sealed class UpdatePeoplePersonalCommandHandler(
     }
 
     private static string? Blank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+}
+
+public sealed class UpdatePeopleAboutCommandHandler(CoreHRDbContext dbContext, ITenantContext tenantContext)
+    : ICommandHandler<UpdatePeopleAboutCommand, Result<string?>>
+{
+    public async Task<Result<string?>> Handle(UpdatePeopleAboutCommand command, CancellationToken cancellationToken)
+    {
+        var employee = await PersonalSupport.FindAsync(dbContext, command.EmployeeKey, tracked: true, cancellationToken);
+        if (employee is null)
+            return Result.Failure<string?>(new Error("Employee.NotFound", "Employee was not found."));
+        if (!(await PeopleAccess.DecideAsync(dbContext, command.Viewer, employee.Id, cancellationToken)).CanEdit)
+            return Result.Failure<string?>(PeopleAccess.Forbidden("You can't change what this person says about themselves."));
+
+        bool changed;
+        try
+        {
+            changed = employee.SetAbout(command.About);
+        }
+        catch (ArgumentException ex)
+        {
+            return Result.Failure<string?>(new Error("Employee.Validation", ex.Message));
+        }
+        if (changed)
+        {
+            dbContext.WorkforceAuditEntries.Add(WorkforceAuditEntry.Record(
+                tenantContext.TenantId, "Employee", employee.Id, WorkforceAuditAction.PersonalDetailsUpdated,
+                WorkforceSourceType.Manual, command.Actor, changeDetails: "About"));
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        return Result.Success(employee.About);
+    }
 }
 
 internal static class PersonalSupport

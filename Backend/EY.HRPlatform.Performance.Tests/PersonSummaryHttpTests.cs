@@ -58,6 +58,7 @@ public sealed class PersonSummaryHttpTests
         plan.Submit(nour.EmployeeId, Ready);
         plan.Approve(reviewer);
         aligned.ApplyManualPercentage(50m);
+        var asked = UpdateRequest.Create(plan, standalone, reviewer, "Reviewer", null, DateTime.UtcNow.AddDays(-3));
 
         var scale = RatingScale.CreateDefault(tenant);
         var version = scale.CreateNextVersion(RatingScaleDefaults.Levels);
@@ -80,6 +81,7 @@ public sealed class PersonSummaryHttpTests
             db.Participants.AddRange(lastYear, participant);
             db.Objectives.AddRange(company, aligned, standalone);
             db.EmployeePlans.Add(plan);
+            db.UpdateRequests.Add(asked);
             db.RatingScales.Add(scale); db.RatingScaleVersions.Add(version);
             db.ReviewRounds.AddRange(pastRound, round);
             db.ReviewRoundSubjects.AddRange(pastSubject, subject);
@@ -135,6 +137,9 @@ public sealed class PersonSummaryHttpTests
         Assert.Equal(60m, objectives[0].GetProperty("weight").GetDecimal());
         Assert.Equal(50m, objectives[0].GetProperty("progress").GetDecimal());
         Assert.Equal(JsonValueKind.Null, objectives[1].GetProperty("alignedTo").ValueKind);
+        // An update asked for and not yet given, for the person page's Coming up.
+        Assert.Equal(JsonValueKind.Null, objectives[0].GetProperty("openRequest").ValueKind);
+        Assert.Equal("Reviewer", objectives[1].GetProperty("openRequest").GetProperty("requestedByName").GetString());
 
         var reviews = summary.GetProperty("reviews");
         Assert.Equal("Calibration", reviews.GetProperty("current").GetProperty("state").GetString());

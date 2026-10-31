@@ -36,9 +36,10 @@ public sealed record PeopleProfileIdentityDto(
     string? WorkEmail,
     string? Phone,
     /// <summary>The worker's id, which other modules (Performance) key their records by.</summary>
-    Guid EmployeeId,
-    /// <summary>API-relative photo address with a cache version, or null without a photo.</summary>
-    string? PhotoUrl = null);
+    Guid EmployeeId,    /// <summary>API-relative photo address with a cache version, or null without a photo.</summary>
+    string? PhotoUrl = null,
+    /// <summary>What the person wrote about themselves; everyone who opens the page reads it.</summary>
+    string? About = null);
 
 public sealed record PeopleProfileEmploymentDto(
     PeopleEmploymentState State,
@@ -257,7 +258,8 @@ public sealed class PeopleProfileQueryHandler(
                 employee.Email,
                 seesMobile ? employee.Phone : null,
                 employee.Id,
-                EmployeePhotos.UrlFor(employee.StableEmployeeKey, employee.PhotoKey)),
+                EmployeePhotos.UrlFor(employee.StableEmployeeKey, employee.PhotoKey),
+                employee.About),
             new PeopleProfileEmploymentDto(
                 state,
                 employment?.EffectiveFrom,

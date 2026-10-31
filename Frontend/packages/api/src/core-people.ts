@@ -93,6 +93,8 @@ export interface PeopleProfileIdentityDto {
   employeeId: string;
   /** API-relative photo address with a cache version; null without a photo. */
   photoUrl: string | null;
+  /** What the person wrote about themselves (B-180); everyone who opens the page reads it. */
+  about?: string | null;
 }
 
 /** How much of the Personal tab the viewer may read: Directory = preferred name, Contact = + mobile, Full = all. */
@@ -558,6 +560,8 @@ export const corePeoplePaths = {
     `/corehr/employees/people/${encodeURIComponent(employeeKey)}/photo`,
   documents: (employeeKey: string) =>
     `/corehr/employees/people/${encodeURIComponent(employeeKey)}/documents`,
+  about: (employeeKey: string) =>
+    `/corehr/employees/people/${encodeURIComponent(employeeKey)}/about`,
   document: (employeeKey: string, documentId: string) =>
     `/corehr/employees/people/${encodeURIComponent(employeeKey)}/documents/${encodeURIComponent(documentId)}`,
   hire: () => "/corehr/employees/hire",
@@ -671,6 +675,9 @@ export function createCorePeopleApi(client: ApiClient) {
     },
     removePhoto: (employeeKey: string) =>
       client.delete<EmployeePhotoDto>(corePeoplePaths.photo(employeeKey)),
+    /** The person or whoever changes personal details; blank clears it. At most 1000 characters. */
+    updateAbout: (employeeKey: string, about: string | null) =>
+      client.put<string | null>(corePeoplePaths.about(employeeKey), { about }),
     documents: (employeeKey: string, signal?: AbortSignal) =>
       client.get<EmployeeDocumentsDto>(corePeoplePaths.documents(employeeKey), { signal }),
     /** The file itself; the API needs the bearer token, so a plain link can't download it. */

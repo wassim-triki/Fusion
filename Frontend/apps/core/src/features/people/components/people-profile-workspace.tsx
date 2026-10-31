@@ -70,14 +70,15 @@ import {
 } from "../api/use-people";
 import { useWorkforceDate } from "./workforce-ui";
 import { WorkerProfile } from "./worker-profile/worker-profile";
-import { PerformanceRecordView } from "./record-views";
+import { PerformanceRecordView, usePerformanceSummary } from "./record-views";
 import { WorkerProfileSkeleton } from "./worker-profile/worker-profile-skeleton";
 import { fromPeopleProfile } from "./worker-profile/worker-profile-view";
 import { PersonRoles } from "@/features/settings/roles/person-roles";
 import { AccessTab } from "./worker-profile/access-tab";
 import { JobTab } from "./worker-profile/job-tab";
 import { PersonalTab, useSeenBy } from "./worker-profile/personal-tab";
-import { OverviewTab } from "./worker-profile/overview-tab";
+import { OverviewTab, performanceUpcoming, useDayParts } from "./worker-profile/overview-tab";
+import { useFormat } from "@repo/ds/lib/use-format";
 import { DocumentsTab } from "./worker-profile/documents-tab";
 import { PhotoDialog } from "./worker-profile/photo-dialog";
 import { useProfileTabs } from "./worker-profile/profile-tabs";
@@ -147,6 +148,11 @@ export default function PeopleProfileWorkspace({
   });
   const seenBy = useSeenBy(personal.data?.audience, isSelf, profile.data?.identity.displayName ?? "");
   const [asOfOpen, setAsOfOpen] = useState(false);
+  const tUp = useTranslations("profile.overview");
+  const format = useFormat();
+  const dayParts = useDayParts();
+  // Performance's part of Coming up, from the same summary the Performance section reads.
+  const summary = usePerformanceSummary(profile.data?.identity.employeeId ?? "", showPerformance);
   const timeline = usePeopleTimeline(employeeKey, Boolean(profile.data) && explores && (tab === "job" || tab === "overview"));
   const jobHistory = usePeopleJobHistory(employeeKey, Boolean(profile.data) && explores && tab === "job");
   const access = usePeopleAccessStatus(employeeKey, Boolean(profile.data) && canSeeAccess && tab === "access");
@@ -344,7 +350,22 @@ export default function PeopleProfileWorkspace({
   ) : (
     <OverviewTab
       view={view}
-      comingUp={comingUpCards}
+      canEditAbout={!isAsOf && personal.data?.canEdit === true}
+      isSelf={isSelf}
+      changes={comingUpCards}
+      upcoming={showPerformance ? performanceUpcoming(summary.data, {
+        oneOnOne: tUp("oneOnOne", { name: view.displayName }),
+        asked: (by, title) => tUp("asked", { by, title }),
+        askedOn: (date) => tUp("askedOn", { date: format.date(date) }),
+        review: (round) => tUp("review", { round }),
+        reviewDue: (date) => tUp("reviewDue", { date: format.date(date) }),
+        open: tUp("open"),
+        today: tUp("today"),
+        month: dayParts.month,
+        day: dayParts.day,
+        time: (iso) => format.time(iso),
+        date: (iso) => format.date(iso, { weekday: true }),
+      }) : []}
       performance={showPerformance ? <PerformanceRecordView employeeId={employee.identity.employeeId} compact /> : undefined}
       performanceHref={showPerformance ? tabHref("performance") : undefined}
       timeline={explores && !timelineForbidden ? { isLoading: timeline.isLoading } : undefined}

@@ -35,6 +35,11 @@ public class Employee : AggregateRoot, ITenantEntity
 
     /// <summary>Storage key of the current profile photo; null when the person has none.</summary>
     public string? PhotoKey { get; private set; }
+
+    public const int MaxAboutLength = 1000;
+
+    /// <summary>A few lines the person writes about themselves, shown first on their page (D-01).</summary>
+    public string? About { get; private set; }
     public string FullName => $"{FirstName} {LastName}";
     public string DisplayName => !string.IsNullOrWhiteSpace(PreferredName)
         ? $"{PreferredName} {LastName}"
@@ -222,6 +227,18 @@ public class Employee : AggregateRoot, ITenantEntity
         PhotoKey = photoKey;
         UpdatedAt = DateTime.UtcNow;
         return previous;
+    }
+
+    /// <summary>Sets the person's About; blank clears it. False when nothing changed.</summary>
+    public bool SetAbout(string? about)
+    {
+        var text = string.IsNullOrWhiteSpace(about) ? null : about.Trim().Replace("\r\n", "\n");
+        if (text is { Length: > MaxAboutLength })
+            throw new ArgumentException($"About is at most {MaxAboutLength} characters.", nameof(about));
+        if (text == About) return false;
+        About = text;
+        UpdatedAt = DateTime.UtcNow;
+        return true;
     }
 
     /// <summary>Clears the photo and returns the key of the one removed, if any.</summary>

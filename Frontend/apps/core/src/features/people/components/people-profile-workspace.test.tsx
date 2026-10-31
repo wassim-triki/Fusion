@@ -104,6 +104,7 @@ vi.mock("../api/use-people", () => ({
   usePeopleJobHistory: () => mockJobHistory(),
   useUpdatePeopleWorkEmail: () => mockUpdateWorkEmail(),
   useUpdatePeoplePersonal: () => mockUpdatePersonal(),
+  useUpdatePeopleAbout: () => ({ isLoading: false, mutateAsync: vi.fn() }),
   usePeopleDocuments: () => ({ data: { documents: [], canAdd: true }, isLoading: false, error: null, refetch: vi.fn() }),
   useDocumentMutations: () => ({ add: { isLoading: false, mutateAsync: vi.fn() }, remove: { isLoading: false, mutateAsync: vi.fn() }, open: vi.fn() }),
   usePhotoMutations: () => ({

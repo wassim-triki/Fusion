@@ -464,6 +464,33 @@ public sealed class PeopleProfileTabsTests : IDisposable
             Assert.Equal(PeopleAccess.ForbiddenCode, (await HistoryAsync(_nourKey, viewer)).Error.Code);
     }
 
+    // --- About: the person writes it, everyone reads it (B-180) ------------------------------------------
+
+    private Task<EY.HRPlatform.SharedKernel.Results.Result<string?>> AboutAsync(string key, PeopleViewer viewer, string? about, Guid? tenant = null)
+    {
+        var t = tenant ?? TenantA;
+        return new UpdatePeopleAboutCommandHandler(Db(t), TestTenantContext.WithTenant(t))
+            .Handle(new UpdatePeopleAboutCommand(key, viewer, about, "test|Tester"), default);
+    }
+
+    [Fact]
+    public async Task The_person_or_hr_writes_about_them_and_nobody_else()
+    {
+        await SeedAsync();
+        Assert.Equal("I keep releases boring.", (await AboutAsync(_nourKey, Colleague(_nour), "  I keep releases boring. ")).Value);
+        foreach (var viewer in new[] { Manager(_mariam), JobsOnly(_karim), TenantReader(_sami), Colleague(_sami) })
+            Assert.Equal(PeopleAccess.ForbiddenCode, (await AboutAsync(_nourKey, viewer, "Not mine to say")).Error.Code);
+        Assert.Equal("Employee.Validation", (await AboutAsync(_nourKey, Colleague(_nour), new string('x', 1001))).Error.Code);
+        Assert.True((await AboutAsync(_nourKey, PeopleAdmin(_bob), "Elsewhere", TenantB)).IsFailure);
+        Assert.True((await AboutAsync(_nourKey, PersonalOnly(_sami), "Ask me about Playwright.")).IsSuccess);
+
+        await using var db = Db(TenantA);
+        Assert.Equal("Ask me about Playwright.", db.Employees.Single(e => e.Id == _nour).About);
+        Assert.Equal(2, db.WorkforceAuditEntries.Count(e => e.EntityId == _nour && e.ChangeDetails == "About"));
+        // Clearing it is allowed.
+        Assert.Null((await AboutAsync(_nourKey, Colleague(_nour), "   ")).Value);
+    }
+
     // --- Documents: the person and HR (B-180) ----------------------------------------------------------
 
     private static byte[] Pdf() => "%PDF-1.7 fusion test"u8.ToArray();

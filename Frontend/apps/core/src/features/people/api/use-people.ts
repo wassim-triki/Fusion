@@ -208,6 +208,15 @@ export function usePhotoMutations(employeeKey: string) {
   };
 }
 
+/** Saves what the person says about themselves; the page's profile read picks it up. */
+export function useUpdatePeopleAbout(employeeKey: string) {
+  const api = usePeopleApi();
+  const queryClient = useQueryClient();
+  return useApiMutation((about: string | null) => api.updateAbout(employeeKey, about), {
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: corePeopleQueryKeys.profiles() }),
+  });
+}
+
 /** The person's documents: the person and HR only (the server answers 403 to anyone else). */
 export function usePeopleDocuments(employeeKey: string, enabled = true) {
   const api = usePeopleApi();

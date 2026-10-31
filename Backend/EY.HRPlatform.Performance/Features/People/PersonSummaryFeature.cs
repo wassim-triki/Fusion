@@ -28,7 +28,12 @@ public sealed record PersonSummaryObjectiveDto(Guid ObjectiveId, int Number, str
 {
     /// <summary>The owner's latest reported status; null until reported, never assumed On track.</summary>
     public ObjectiveStatus? Status { get; init; }
+
+    /// <summary>An update asked for and not yet given (the person page's Coming up, B-180).</summary>
+    public PersonSummaryUpdateRequestDto? OpenRequest { get; init; }
 }
+
+public sealed record PersonSummaryUpdateRequestDto(string RequestedByName, DateTime RequestedAt);
 public sealed record PersonSummaryCycleDto(Guid CycleId, string CycleName, CycleLifecycleState CycleState, CyclePhase? Phase,
     bool IsParticipant, Guid? PlanId, RosterPlanStatus? PlanStatus, decimal? OverallProgress, string? PlanHref,
     IReadOnlyList<PersonSummaryObjectiveDto> Objectives)
@@ -248,6 +253,14 @@ public sealed class GetPersonSummaryHandler(PerformanceDbContext db, ICoreWorkfo
 
         var ordered = objectives.OrderBy(o => o.IsAligned ? 0 : 1).ThenBy(o => o.Title).ToList();
         var approved = standing.Status == RosterPlanStatus.Approved;
+        var objectiveIds = objectives.Select(o => o.Id).ToList();
+        var openRequests = approved && plan is not null
+            ? (await db.UpdateRequests.AsNoTracking()
+                .Where(u => u.PlanId == plan.Id && u.State == UpdateRequestState.Open && u.ObjectiveId != null && objectiveIds.Contains(u.ObjectiveId.Value))
+                .ToListAsync(token))
+                .GroupBy(u => u.ObjectiveId!.Value)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(u => u.RequestedAt).First())
+            : [];
         return new(cycle.Id, cycle.Name, cycle.State, phase, true, privateDraft ? null : plan?.Id, standing.Status,
             // Missing is not 0%: no figure until some objective has recorded progress.
             approved && objectives.Any(o => o.HasProgress) ? ProgressCalc.PlanProgress(objectives) : null,
@@ -256,7 +269,11 @@ public sealed class GetPersonSummaryHandler(PerformanceDbContext db, ICoreWorkfo
                 o.ParentObjectiveId is Guid parent && parents.TryGetValue(parent, out var title) ? title : null,
                 o.PlanWeight,
                 approved && o.HasProgress ? Math.Min(o.DerivedProgress, 100m) : null,
-                PerformanceNotificationTemplates.ObjectivePath(cycle.Id, o.Id)) { Status = approved ? o.CurrentStatus : null }).ToList())
+                PerformanceNotificationTemplates.ObjectivePath(cycle.Id, o.Id))
+                {
+                    Status = approved ? o.CurrentStatus : null,
+                    OpenRequest = openRequests.TryGetValue(o.Id, out var asked) ? new(asked.RequestedByName, asked.RequestedAt) : null,
+                }).ToList())
         {
             ReviewerName = plan?.ResponsibleManagerName ?? participant!.ManagerDisplayName,
             WeightTotal = plan is null || privateDraft ? null : objectives.Sum(o => o.PlanWeight ?? 0m),

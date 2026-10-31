@@ -21,7 +21,7 @@ export interface PersonPerformanceSummaryProps {
   reactionIcons: PraiseReactionIcons;
   onReact?: (praise: PraiseDto, kind: PraiseReactionKind, add: boolean) => void;
   onOpenPraise?: (praise: PraiseDto) => void;
-  /** The person page's Overview (B-180): the glance, the next 1:1 and the plan only. */
+  /** The person page's Overview (B-180): the glance and the plan only; the next 1:1 is in its Coming up. */
   compact?: boolean;
 }
 
@@ -68,7 +68,7 @@ export function PersonPerformanceSummary({ state, renderLink, reactionIcons, onR
   return (
     <div className={compact ? "space-y-3" : "space-y-8"}>
       {cycle || reviews ? <SummaryGlance cycle={cycle} reviews={reviews} /> : null}
-      {summary.oneOnOne ? <SummaryOneOnOne oneOnOne={summary.oneOnOne} renderLink={renderLink} /> : null}
+      {!compact && summary.oneOnOne ? <SummaryOneOnOne oneOnOne={summary.oneOnOne} renderLink={renderLink} /> : null}
       {cycle ? <SummaryObjectives cycle={cycle} renderLink={renderLink} /> : null}
       {compact ? null : reviews ? <SummaryReviews reviews={reviews} renderLink={renderLink} /> : null}
       {!compact && development ? <SummaryDevelopment development={development} renderLink={renderLink} /> : null}

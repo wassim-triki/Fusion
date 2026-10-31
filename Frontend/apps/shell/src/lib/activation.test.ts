@@ -280,7 +280,7 @@ describe("bootstrap handoff", () => {
   });
 
   it("uses the purpose-specific administrator and recovery destinations", () => {
-    expect(ADMINISTRATOR_JOURNEY.destination).toBe("/core/access");
+    expect(ADMINISTRATOR_JOURNEY.destination).toBe("/core/settings/roles/administrators");
     expect(RECOVERY_JOURNEY.destination).toBe("/getting-started");
   });
 });

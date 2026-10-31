@@ -1,5 +1,6 @@
 "use client";
 
+import { ADMINISTRATORS_PATH } from "@/features/settings/roles/paths";
 import { useStatusWord } from "@/i18n/words";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { useLocale, useTranslations } from "next-intl";
@@ -507,7 +508,7 @@ function InspectorActions({
             {t("inspector.adminSeparate")}
           </p>
           <Button asChild variant="outline" className="w-full">
-            <Link href="/access">
+            <Link href={ADMINISTRATORS_PATH}>
               {t("inspector.openAdmins")}
               <ArrowUpRight className="size-4" aria-hidden="true" />
             </Link>

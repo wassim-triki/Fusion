@@ -2,13 +2,9 @@ import { describe, expect, it } from "vitest";
 import { ADMIN_NAV } from "./sidebar-nav";
 
 describe("tenant administration navigation", () => {
-  it("routes Getting Started through the canonical shell URL without gating Administrators", () => {
+  it("routes Getting Started through the canonical shell URL", () => {
     const gettingStarted = ADMIN_NAV.items.find(
       (item) => item.label === "gettingStarted"
-    );
-    // Feature 02 keeps the /core/access route; the customer-facing name is "administrators".
-    const administrators = ADMIN_NAV.items.find(
-      (item) => item.label === "administrators"
     );
 
     expect(gettingStarted).toMatchObject({
@@ -17,18 +13,13 @@ describe("tenant administration navigation", () => {
       shellRoute: true,
     });
     expect(gettingStarted?.disabled).not.toBe(true);
-    expect(administrators).toMatchObject({ href: "/access" });
-    expect(administrators?.disabled).not.toBe(true);
   });
 
-  it("exposes Workforce access ahead of Administrators", () => {
+  it("reaches Administrators through Settings › Roles, not a sidebar entry of its own (B-178)", () => {
     const labels = ADMIN_NAV.items.map((item) => item.label);
-    expect(labels).toContain("workforceAccess");
-    const workforce = ADMIN_NAV.items.find((i) => i.label === "workforceAccess");
-    expect(workforce).toMatchObject({ href: "/workforce-access" });
-    expect(labels.indexOf("workforceAccess")).toBeLessThan(
-      labels.indexOf("administrators")
-    );
+    expect(labels).not.toContain("administrators");
+    expect(ADMIN_NAV.items.find((i) => i.label === "workforceAccess")).toMatchObject({ href: "/workforce-access" });
+    expect(labels).toContain("settings");
   });
 
   it("exposes no retired setup-era navigation", () => {

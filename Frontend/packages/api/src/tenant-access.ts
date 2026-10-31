@@ -49,9 +49,43 @@ export interface TenantAdministratorDto {
   /**
    * Who established this authority — a person's name where an account acted, or a
    * stable system phrase ("System (tenant activation)", "Platform recovery") where
-   * none did. Shown as provenance in the maintenance panel.
+   * none did. English; screens use `addedByKind` and `addedByName`.
    */
   addedBy: string;
+  /** How the authority came: the company's activation, an invitation, Platform recovery, or an administrator. */
+  addedByKind: AdministratorOrigin;
+  /** The administrator who added them, when one did. */
+  addedByName: string | null;
+  employeeId: string | null;
+}
+
+export type AdministratorOrigin = "activation" | "invitation" | "recovery" | "administrator";
+
+/** A company keeps at least this many administrators once it has them; the server refuses going below. */
+export const MINIMUM_ADMINISTRATORS = 2;
+
+/** One grant or removal of administrator authority, newest first; every one is kept. */
+export interface AdministratorHistoryItemDto {
+  at: string;
+  kind: AdministratorOrigin | "removed" | "stepped-down";
+  personName: string;
+  actorName: string | null;
+}
+
+/** Someone who could be made an administrator; only people who already sign in can be (`signsIn`). */
+export interface AdministratorCandidateDto {
+  /** Empty for someone invited who hasn't signed in yet. */
+  userId: string;
+  employeeId: string | null;
+  name: string;
+  jobTitle: string | null;
+  signsIn: boolean;
+}
+
+export interface AddAdministratorRequest {
+  userId: string;
+  /** The caller's own password, asked for every administrator they add. */
+  password: string;
 }
 
 /** An administrator whose authority was revoked and not re-granted. */
@@ -95,26 +129,8 @@ export interface AccessActivityPageDto {
   nextCursorId: string | null;
 }
 
-export interface InviteAdministratorRequest {
-  email: string;
-}
-
-export interface ReplaceInvitationEmailRequest {
-  email: string;
-}
-
 export interface AdministratorActionRequest {
   reason?: string;
-}
-
-export interface InvitationCommandResponse {
-  invitationId: string;
-  /**
-   * The command succeeded and the invitation exists; only the email failed.
-   * Carried alongside success so the workspace can say that truthfully instead
-   * of reporting a failed invitation.
-   */
-  deliveryFailed: boolean;
 }
 
 /**
@@ -128,7 +144,10 @@ export type TenantAccessProblemType =
   | "existing-account"
   | "duplicate-pending-invitation"
   | "invitation-not-pending"
-  | "final-administrator"
+  | "too-few-administrators"
+  | "password-incorrect"
+  | "password-locked"
+  | "not-eligible"
   | "stale-state"
   | "recovery-not-eligible"
   | "recovery-already-pending"
@@ -186,21 +205,15 @@ export const tenantAccessPaths = {
   summary: () => "/identity/tenant-access/summary",
   administrators: () => "/identity/tenant-access/administrators",
   removedAdministrators: () => "/identity/tenant-access/administrators/removed",
+  administratorHistory: () => "/identity/tenant-access/administrators/history",
+  administratorCandidates: () => "/identity/tenant-access/administrators/candidates",
   suspend: (membershipId: string) =>
     `/identity/tenant-access/administrators/${membershipId}/suspend`,
   reactivate: (membershipId: string) =>
     `/identity/tenant-access/administrators/${membershipId}/reactivate`,
-  grantAuthority: (membershipId: string) =>
-    `/identity/tenant-access/administrators/${membershipId}/authority:grant`,
   revokeAuthority: (membershipId: string) =>
     `/identity/tenant-access/administrators/${membershipId}/authority:revoke`,
   invitations: () => "/identity/tenant-access/invitations",
-  resendInvitation: (invitationId: string) =>
-    `/identity/tenant-access/invitations/${invitationId}/resend`,
-  replaceInvitationEmail: (invitationId: string) =>
-    `/identity/tenant-access/invitations/${invitationId}/replace-email`,
-  revokeInvitation: (invitationId: string) =>
-    `/identity/tenant-access/invitations/${invitationId}/revoke`,
   activity: () => "/identity/tenant-access/activity",
   recentActivity: () => "/identity/tenant-access/activity/recent",
   inspectInvitation: () => "/identity/tenant-access/invitations/inspect",
@@ -213,6 +226,9 @@ export const tenantAccessQueryKeys = {
   administrators: () => [...tenantAccessQueryKeys.all(), "administrators"] as const,
   removedAdministrators: () =>
     [...tenantAccessQueryKeys.all(), "administrators", "removed"] as const,
+  administratorHistory: () => [...tenantAccessQueryKeys.all(), "administrators", "history"] as const,
+  administratorCandidates: (search: string) =>
+    [...tenantAccessQueryKeys.all(), "administrators", "candidates", search] as const,
   invitations: (includeHistorical = false) =>
     [...tenantAccessQueryKeys.all(), "invitations", includeHistorical] as const,
   recentActivity: () => [...tenantAccessQueryKeys.all(), "activity", "recent"] as const,

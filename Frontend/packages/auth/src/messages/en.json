@@ -26,6 +26,12 @@
       "home": "Home",
       "settings": "Settings",
       "nothing": "Nothing matches"
+    },
+    "viewAs": {
+      "seeing": "Seeing Fusion as {name}",
+      "administrators": "Administrators",
+      "readOnly": "Nothing can be changed",
+      "back": "Back to Roles"
     }
   }
 }

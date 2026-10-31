@@ -269,6 +269,14 @@ function holderLines(role: string, before: RoleRecord | null, after: RoleRecord 
   }];
 }
 
+/** Identity's administrator and seen-as actions, by the sentence each reads as. */
+const ADMINISTRATOR_ACTIONS: Record<string, string | undefined> = {
+  AdministratorAuthorityGranted: "madeAdmin",
+  AdministratorAuthorityRevoked: "removedAdmin",
+  AdministratorAuthoritySelfRemoved: "steppedDown",
+  FusionSeenAs: "seenAs",
+};
+
 /**
  * A role change as a headline and lines, from the before and after Identity records. Null when the action or its
  * records aren't ones it knows, so the entry keeps the plain fallback.
@@ -282,6 +290,13 @@ export function roleChange(
   const said = (key: string, values?: Record<string, string | number>) => say(`changeHistory.roles.${key}`, values);
   const before = parse(beforeJson);
   const after = parse(afterJson);
+  // Who administers the company, and seeing Fusion as someone (B-178): the records name the person.
+  const person = ((after ?? before) as { person?: unknown } | null)?.person;
+  if (Object.hasOwn(ADMINISTRATOR_ACTIONS, action)) {
+    return typeof person === "string" && person
+      ? { headline: said(ADMINISTRATOR_ACTIONS[action]!, { person }), lines: [] }
+      : { headline: said("adminChange"), lines: [] };
+  }
   if (action === "access.assignment.updated" || action === "access.assignment.bulkUpdated") {
     const lines = assignmentLines(before, after, say);
     return lines.length ? { headline: headlineOf(lines, say), lines } : null;
@@ -319,9 +334,9 @@ function fromAccess(entry: AccessAuditEventDto, say: Say, english: boolean): His
   };
 }
 
-/** The access log also records invitations and administrators; Roles shows role definitions and who holds them. */
+/** The access log also records invitations and blocked attempts; Roles shows roles, who holds them and administrators. */
 export function isRoleChange(entry: Pick<AccessAuditEventDto, "action">): boolean {
-  return /^access\.(profile|assignment)\./.test(entry.action);
+  return /^access\.(profile|assignment)\./.test(entry.action) || Object.hasOwn(ADMINISTRATOR_ACTIONS, entry.action);
 }
 
 /** The week's period key; every other period is named by its month. */

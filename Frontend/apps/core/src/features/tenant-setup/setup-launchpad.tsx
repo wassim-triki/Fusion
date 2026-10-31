@@ -24,10 +24,16 @@ import {
   type AuthUser,
 } from "@repo/auth";
 import type { ContinuityState } from "@repo/api";
+
+const CONTINUITY_TONE: Record<ContinuityState, StatusTone> = {
+  Healthy: "success",
+  AtRisk: "warning",
+  RecoveryRequired: "danger",
+};
 import { Button, cn } from "@repo/ds";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
-import { PageContainer, PagePermissionNotice, StatusBadge } from "@repo/ds/shell";
-import { CONTINUITY_TONE } from "@/features/tenant-access/components/access-language";
+import { PageContainer, PagePermissionNotice, StatusBadge, type StatusTone } from "@repo/ds/shell";
+import { ADMINISTRATORS_PATH } from "@/features/settings/roles/paths";
 import { useEmployeeRoster } from "@/features/people/api/use-employees";
 import { useTenantAccessSummary } from "@/features/tenant-access/api/use-tenant-access";
 import { useAccessRosterSummary } from "@/features/workforce-access/api/use-workforce-access";
@@ -458,7 +464,7 @@ function ContinuityCard({
         ) : null}
       </div>
       <Link
-        href="/access"
+        href={ADMINISTRATORS_PATH}
         className="type-label group/action inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-control text-foreground underline-offset-4 transition-colors hover:text-primary-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {t("manage")}

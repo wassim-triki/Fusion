@@ -26,6 +26,12 @@
       "home": "Accueil",
       "settings": "Paramètres",
       "nothing": "Aucun résultat"
+    },
+    "viewAs": {
+      "seeing": "Vous voyez Fusion comme {name}",
+      "administrators": "Administrateurs",
+      "readOnly": "Rien ne peut être modifié",
+      "back": "Retour aux rôles"
     }
   }
 }

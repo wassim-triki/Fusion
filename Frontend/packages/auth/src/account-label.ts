@@ -22,5 +22,5 @@ export function getSidebarAccountLabel(user: AuthUser): string {
     ? `${user.accessProfiles[0]?.name ?? "Access profile"} +${
         user.accessProfiles.length - 1
       }`
-    : user.accessProfiles[0]?.name ?? user.roles?.[0] ?? "Employee";
+    : user.accessProfiles[0]?.name ?? "Employee";
 }

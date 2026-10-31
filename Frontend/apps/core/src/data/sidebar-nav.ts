@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   Network,
   Settings2,
-  ShieldCheck,
   User,
   Users,
   Workflow,
@@ -38,9 +37,6 @@ export const ADMIN_NAV: ShellNavSection = {
       icon: ClipboardList,
     },
     { label: "workforceAccess", href: "/workforce-access", icon: KeyRound },
-    // Feature 02 keeps the `/core/access` route; the customer-facing name is
-    // "Administrators" — who administers this tenant, distinct from workforce access.
-    { label: "administrators", href: "/access", icon: ShieldCheck },
     { label: "settings", href: "/settings", icon: Settings2 },
   ],
 };

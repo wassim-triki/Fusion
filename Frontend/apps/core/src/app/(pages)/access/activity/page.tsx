@@ -1,3 +1,6 @@
-export const dynamic = "force-dynamic";
+import { redirect } from "next/navigation";
 
-export { default } from "@/features/tenant-access/components/activity-log-workspace";
+/** The access activity joined Settings › Change history (B-178). */
+export default function AccessActivityCompatibilityPage() {
+  redirect("/settings/change-history");
+}

@@ -8,7 +8,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { ApiError, type FusionNavigationViewer } from "@repo/api";
+import { ApiError, finishViewAs, type FusionNavigationViewer } from "@repo/api";
 import { FusionViewerProvider, type FusionViewerState } from "@repo/api/react";
 import { getSidebarAccountLabel } from "./account-label";
 import { resolveFusionAttentionModules } from "./customer-workspace-access";
@@ -202,9 +202,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const logout = useCallback(async () => {
-    if (accessToken) {
+    // Signing out while seeing Fusion as someone signs the administrator out, with their own session.
+    const token = finishViewAs() !== null ? loadAuth()?.accessToken ?? null : accessToken;
+    if (token) {
       try {
-        await apiLogout(accessToken);
+        await apiLogout(token);
       } catch {
         // best-effort server logout
       }

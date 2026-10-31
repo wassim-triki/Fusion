@@ -153,12 +153,17 @@ export function RolePreview({
   cells,
   holders,
   canSearch,
+  viewerId,
+  onViewerId,
 }: {
   roleName: string;
   areas: RoleAreaDto[];
   cells: Cells;
   holders: RoleHolderDto[];
   canSearch: boolean;
+  /** Who looks, by employee id; the role page keeps it so "See Fusion as" names the same person. */
+  viewerId: string | null;
+  onViewerId: (employeeId: string) => void;
 }) {
   const say = useSettingsSay();
   const defaults = useRoleCandidates("", canSearch);
@@ -167,7 +172,6 @@ export function RolePreview({
     const holding = holders.filter((holder) => holder.employeeId).map((holder) => ({ employeeId: holder.employeeId!, name: holder.name }));
     return holding.length ? holding : (defaults.data ?? []).map((candidate) => ({ employeeId: candidate.employeeId, name: candidate.name }));
   }, [holders, defaults.data]);
-  const [viewerId, setViewerId] = useState<string | null>(null);
   const viewer = people.find((person) => person.employeeId === viewerId) ?? people[0] ?? null;
   const [picked, setPicked] = useState<Person | null>(null);
   const fallback = canSearch
@@ -231,7 +235,7 @@ export function RolePreview({
             subject={subject}
             holders={people}
             canSearch={canSearch}
-            onViewer={(person) => setViewerId(person.employeeId)}
+            onViewer={(person) => onViewerId(person.employeeId)}
             onSubject={setPicked}
             say={say}
           />

@@ -307,7 +307,7 @@ export const ADMINISTRATOR_JOURNEY: ActivationJourney = {
   key: "administrator",
   inspectPath: "/api/identity/tenant-access/invitations/inspect",
   acceptPath: "/api/identity/tenant-access/invitations/accept",
-  destination: "/core/access",
+  destination: "/core/settings/roles/administrators",
   terminalOverrides: ["expired", "revoked", "existing_account"],
 };
 

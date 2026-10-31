@@ -3,13 +3,13 @@
 import { useCallback, useMemo } from "react";
 import {
   ApiError,
+  coreAccessQueryKeys,
   createPlatformApiClient,
   tenantAccessPaths,
   tenantAccessQueryKeys,
-  type AccessActivityItemDto,
-  type AdministratorInvitationDto,
-  type InvitationCommandResponse,
-  type RemovedAdministratorDto,
+  type AddAdministratorRequest,
+  type AdministratorCandidateDto,
+  type AdministratorHistoryItemDto,
   type TenantAccessProblemType,
   type TenantAccessSummaryDto,
   type TenantAdministratorDto,
@@ -19,30 +19,12 @@ import { useAuth } from "@repo/auth";
 
 type ApiQueryClient = ReturnType<typeof useApiQueryClient>;
 
-/**
- * Every sensitive mutation refreshes the summary, the affected list, and
- * activity together, so the workspace never shows a count that disagrees with
- * the rows beneath it.
- */
-async function refreshAccessWorkspace(queryClient: ApiQueryClient) {
+/** A change to who administers the company refreshes the page, the summary and the roles table together. */
+async function refreshAdministrators(queryClient: ApiQueryClient) {
   await Promise.all([
-    queryClient.invalidateQueries({ queryKey: tenantAccessQueryKeys.summary() }),
-    queryClient.invalidateQueries({ queryKey: tenantAccessQueryKeys.administrators() }),
     queryClient.invalidateQueries({ queryKey: tenantAccessQueryKeys.all() }),
+    queryClient.invalidateQueries({ queryKey: coreAccessQueryKeys.roles() }),
   ]);
-}
-
-/**
- * Reloads the workspace from the server outside the success path.
- *
- * A refused command can still mean the screen is wrong — a stale-state conflict
- * says so explicitly — and mutation success hooks never run for those. Without
- * this, a stale panel keeps the version it was rendered from and every retry
- * fails the same way.
- */
-export function useRefreshAccessWorkspace() {
-  const queryClient = useApiQueryClient();
-  return useCallback(() => refreshAccessWorkspace(queryClient), [queryClient]);
 }
 
 /**
@@ -56,10 +38,7 @@ export function problemTypeOf(error: unknown): TenantAccessProblemType {
   }
 
   // The envelope carries the machine-readable type under `details.code`; the
-  // client only lifts a root-level `code` into ApiError.code. Reading both is
-  // what makes the difference between showing the specific, actionable message
-  // the experience requires and falling back to a generic failure — which is
-  // the same thing as having no problem types at all.
+  // client only lifts a root-level `code` into ApiError.code.
   const details = error.details as { code?: unknown } | null;
   const code = typeof details?.code === "string" ? details.code : error.code;
 
@@ -98,156 +77,60 @@ export function useTenantAdministrators(enabled = true) {
   });
 }
 
-export function useRemovedAdministrators(enabled = true) {
+export function useAdministratorHistory(enabled = true) {
   const { isAuthenticated } = useAuth();
   const client = useMemo(() => createPlatformApiClient(), []);
 
   const queryFn = useCallback(
     (signal: AbortSignal) =>
-      client.get<RemovedAdministratorDto[]>(tenantAccessPaths.removedAdministrators(), { signal }),
+      client.get<AdministratorHistoryItemDto[]>(tenantAccessPaths.administratorHistory(), { signal }),
     [client]
   );
 
-  return useApiQuery(tenantAccessQueryKeys.removedAdministrators(), queryFn, {
+  return useApiQuery(tenantAccessQueryKeys.administratorHistory(), queryFn, {
     enabled: isAuthenticated && enabled,
   });
 }
 
-export function useAdministratorInvitations(includeHistorical = false, enabled = true) {
+/** People who could be added, for the add sheet; only administrators may ask. */
+export function useAdministratorCandidates(search: string, enabled = true) {
   const { isAuthenticated } = useAuth();
   const client = useMemo(() => createPlatformApiClient(), []);
 
   const queryFn = useCallback(
     (signal: AbortSignal) =>
-      client.get<AdministratorInvitationDto[]>(tenantAccessPaths.invitations(), {
+      client.get<AdministratorCandidateDto[]>(tenantAccessPaths.administratorCandidates(), {
         signal,
-        params: { includeHistorical },
+        params: { search },
       }),
-    [client, includeHistorical]
+    [client, search]
   );
 
-  return useApiQuery(tenantAccessQueryKeys.invitations(includeHistorical), queryFn, {
+  return useApiQuery(tenantAccessQueryKeys.administratorCandidates(search), queryFn, {
     enabled: isAuthenticated && enabled,
   });
 }
 
-export function useRecentAccessActivity(enabled = true) {
-  const { isAuthenticated } = useAuth();
-  const client = useMemo(() => createPlatformApiClient(), []);
+// ── Changes ────────────────────────────────────────────
 
-  const queryFn = useCallback(
-    (signal: AbortSignal) =>
-      client.get<AccessActivityItemDto[]>(tenantAccessPaths.recentActivity(), { signal }),
-    [client]
-  );
-
-  return useApiQuery(tenantAccessQueryKeys.recentActivity(), queryFn, {
-    enabled: isAuthenticated && enabled,
-  });
-}
-
-// ── Invitations ────────────────────────────────────────
-
-export interface InviteAdministratorInput {
-  email: string;
-  firstName: string;
-  lastName: string;
-}
-
-export function useInviteAdministrator() {
+export function useAddAdministrator() {
   const client = useMemo(() => createPlatformApiClient(), []);
   const queryClient = useApiQueryClient();
 
-  return useApiMutation<InvitationCommandResponse, InviteAdministratorInput>(
-    ({ email, firstName, lastName }) =>
-      client.post<InvitationCommandResponse>(tenantAccessPaths.invitations(), {
-        email,
-        firstName,
-        lastName,
-      }),
-    { onSuccess: () => refreshAccessWorkspace(queryClient) }
+  return useApiMutation<unknown, AddAdministratorRequest>(
+    (request) => client.post(tenantAccessPaths.administrators(), request),
+    { onSuccess: () => refreshAdministrators(queryClient) }
   );
 }
 
-export function useResendInvitation() {
+/** Covers stepping down: the actor names their own membership. */
+export function useRemoveAdministrator() {
   const client = useMemo(() => createPlatformApiClient(), []);
   const queryClient = useApiQueryClient();
 
-  return useApiMutation<InvitationCommandResponse, string>(
-    (invitationId) =>
-      client.post<InvitationCommandResponse>(tenantAccessPaths.resendInvitation(invitationId)),
-    { onSuccess: () => refreshAccessWorkspace(queryClient) }
-  );
-}
-
-export function useReplaceInvitationEmail() {
-  const client = useMemo(() => createPlatformApiClient(), []);
-  const queryClient = useApiQueryClient();
-
-  return useApiMutation<InvitationCommandResponse, { invitationId: string; email: string }>(
-    ({ invitationId, email }) =>
-      client.post<InvitationCommandResponse>(
-        tenantAccessPaths.replaceInvitationEmail(invitationId),
-        { email }
-      ),
-    { onSuccess: () => refreshAccessWorkspace(queryClient) }
-  );
-}
-
-export function useRevokeInvitation() {
-  const client = useMemo(() => createPlatformApiClient(), []);
-  const queryClient = useApiQueryClient();
-
-  return useApiMutation<InvitationCommandResponse, string>(
-    (invitationId) =>
-      client.post<InvitationCommandResponse>(tenantAccessPaths.revokeInvitation(invitationId)),
-    { onSuccess: () => refreshAccessWorkspace(queryClient) }
-  );
-}
-
-// ── Administrator lifecycle ────────────────────────────
-
-interface AdministratorMutationArgs {
-  membershipId: string;
-  /** The state the drawer was rendered from, so a stale click is refused. */
-  version: number;
-  reason?: string;
-}
-
-function ifMatch(version: number) {
-  return { headers: { "If-Match": `"${version}"` } };
-}
-
-export function useSuspendAdministrator() {
-  const client = useMemo(() => createPlatformApiClient(), []);
-  const queryClient = useApiQueryClient();
-
-  return useApiMutation<unknown, AdministratorMutationArgs>(
-    ({ membershipId, version, reason }) =>
-      client.post(tenantAccessPaths.suspend(membershipId), { reason }, ifMatch(version)),
-    { onSuccess: () => refreshAccessWorkspace(queryClient) }
-  );
-}
-
-export function useReactivateAdministrator() {
-  const client = useMemo(() => createPlatformApiClient(), []);
-  const queryClient = useApiQueryClient();
-
-  return useApiMutation<unknown, AdministratorMutationArgs>(
+  return useApiMutation<unknown, { membershipId: string; version: number }>(
     ({ membershipId, version }) =>
-      client.post(tenantAccessPaths.reactivate(membershipId), undefined, ifMatch(version)),
-    { onSuccess: () => refreshAccessWorkspace(queryClient) }
-  );
-}
-
-/** Covers self-removal: the actor names their own membership. */
-export function useRevokeAdministratorAuthority() {
-  const client = useMemo(() => createPlatformApiClient(), []);
-  const queryClient = useApiQueryClient();
-
-  return useApiMutation<unknown, AdministratorMutationArgs>(
-    ({ membershipId, version, reason }) =>
-      client.post(tenantAccessPaths.revokeAuthority(membershipId), { reason }, ifMatch(version)),
-    { onSuccess: () => refreshAccessWorkspace(queryClient) }
+      client.post(tenantAccessPaths.revokeAuthority(membershipId), {}, { headers: { "If-Match": `"${version}"` } }),
+    { onSuccess: () => refreshAdministrators(queryClient) }
   );
 }

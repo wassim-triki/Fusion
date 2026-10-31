@@ -97,7 +97,6 @@ export interface WorkforceCurrentUserContextDto {
   userId: string;
   tenantId: string;
   employeeId: string | null;
-  roles: string[];
   employee: WorkforceEmployeeSummaryDto | null;
   managerScope: WorkforceManagerScopeDto | null;
   isWorkforceLinked: boolean;

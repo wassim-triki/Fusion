@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Building2, ChartNoAxesColumn, Lock, Plus, Users } from "lucide-react";
-import type { FusionSettingsSection, RoleAreaDto, RoleCellDto, RoleSummaryDto } from "@repo/api";
+import { MINIMUM_ADMINISTRATORS, type FusionSettingsSection, type RoleAreaDto, type RoleCellDto, type RoleSummaryDto } from "@repo/api";
 import {
   Button,
   cn,
@@ -21,6 +21,7 @@ import { PageError, SettingsPage, useSettingsSectionName } from "@repo/ds/shell"
 import { useCreateRole, useRoles } from "@/features/settings/api/use-core-access";
 import { useSaveFailure, useSettingsSay, type Say } from "@/features/settings/say";
 import { cellOf, toCells, weightOf } from "./role-model";
+import { ADMINISTRATORS_PATH } from "./paths";
 import { holderSummary, useRuleValues } from "./role-words";
 
 const GROUPS = ["core", "performance", "company"] as const;
@@ -61,7 +62,8 @@ function Cell({ cell, say }: { cell: RoleCellDto; say: Say }) {
   );
 }
 
-function Faces({ role }: { role: RoleSummaryDto }) {
+function Faces({ role, say }: { role: RoleSummaryDto; say: Say }) {
+  const short = role.isAdministrators && role.holderCount < MINIMUM_ADMINISTRATORS;
   return (
     <span className="flex items-center gap-2">
       {role.faces.length ? (
@@ -71,7 +73,11 @@ function Faces({ role }: { role: RoleSummaryDto }) {
           ))}
         </span>
       ) : null}
-      <span className="type-meta text-muted-foreground tabular-nums">{role.holderCount}</span>
+      <span className={cn("type-meta tabular-nums", short ? "text-warning" : "text-muted-foreground")}>
+        {short
+          ? say("roles.administrators.progressShort", { count: role.holderCount, minimum: MINIMUM_ADMINISTRATORS })
+          : role.holderCount}
+      </span>
     </span>
   );
 }
@@ -79,7 +85,7 @@ function Faces({ role }: { role: RoleSummaryDto }) {
 function RoleHeader({ role, names, say }: { role: RoleSummaryDto; names: Map<string, string>; say: Say }) {
   return (
     <Link
-      href={`/settings/roles/${role.id}`}
+      href={role.isAdministrators ? ADMINISTRATORS_PATH : `/settings/roles/${role.id}`}
       className="-m-3 grid gap-2 rounded-menu border border-transparent p-3 text-start outline-none transition-colors hover:bg-inlay focus-visible:ring-2 focus-visible:ring-ring"
     >
       <span className="flex min-w-0 items-center gap-1.5 type-panel-title text-foreground" title={role.isAdministrators ? undefined : role.name}>
@@ -87,7 +93,7 @@ function RoleHeader({ role, names, say }: { role: RoleSummaryDto; names: Map<str
         {role.isAdministrators ? <Lock aria-hidden className="size-3.5 text-muted-foreground" /> : null}
       </span>
       <span className="truncate type-meta text-muted-foreground">{holderSummary(role, names, say)}</span>
-      <Faces role={role} />
+      <Faces role={role} say={say} />
     </Link>
   );
 }

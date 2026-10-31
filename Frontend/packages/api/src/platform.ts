@@ -20,14 +20,30 @@ export function isBrowser(): boolean {
 }
 
 const AUTH_STORAGE_KEY = "ey_hr_auth";
+/** The administrator's own session, kept aside while they see Fusion as someone. */
+const HOME_STORAGE_KEY = "ey_hr_auth_home";
 const AUTH_COOKIE_NAME = "ey_hr_authenticated";
 const AUTH_STORAGE_EVENT = "ey_hr_auth:changed";
 const ACCESS_TOKEN_REFRESH_BUFFER_MS = 60_000;
+
+/** What the browser knows about a view of Fusion as someone: who, their roles, and where to go back to. */
+export interface ViewAsMarker {
+  sessionId: string;
+  viewerName: string;
+  personName: string;
+  /** The person's role names, as the bar shows them. */
+  roles: string[];
+  /** Where "Back" returns (the role page the view started from). */
+  returnTo: string;
+  expiresAt: string;
+}
 
 interface BrowserStoredAuth {
   accessToken: string;
   refreshToken: string;
   accessTokenExpiration: string;
+  /** Present while seeing Fusion as someone: this session is theirs, read-only, with no refresh token. */
+  viewAs?: ViewAsMarker;
   user: {
     userId: string;
     tenantId: string | null;
@@ -55,7 +71,7 @@ interface BrowserStoredAuth {
   };
 }
 
-interface RefreshResponse {
+export interface RefreshResponse {
   userId: string;
   tenantId: string | null;
   tenantMembershipId: string | null;
@@ -100,7 +116,7 @@ function dispatchAuthStorageChanged(): void {
   window.dispatchEvent(new CustomEvent(AUTH_STORAGE_EVENT));
 }
 
-function persistBrowserAuth(auth: RefreshResponse): void {
+function persistBrowserAuth(auth: RefreshResponse, viewAs?: ViewAsMarker): void {
   if (!isBrowser()) {
     return;
   }
@@ -109,6 +125,7 @@ function persistBrowserAuth(auth: RefreshResponse): void {
     accessToken: auth.accessToken,
     refreshToken: auth.refreshToken,
     accessTokenExpiration: auth.accessTokenExpiration,
+    ...(viewAs ? { viewAs } : {}),
     user: {
       userId: auth.userId,
       tenantId: auth.tenantId ?? null,
@@ -212,6 +229,56 @@ function loadBrowserAuth(): BrowserStoredAuth | null {
   }
 }
 
+/** The view of Fusion as someone this browser is in, or null. */
+export function readViewAs(): ViewAsMarker | null {
+  return loadBrowserAuth()?.viewAs ?? null;
+}
+
+/**
+ * Starts seeing Fusion as someone: the administrator's session goes aside and the person's read-only session (from
+ * `POST /identity/view-as`) becomes this browser's. The caller then navigates, so every app loads as them.
+ */
+export function beginViewAs(session: RefreshResponse, marker: ViewAsMarker): void {
+  if (!isBrowser()) {
+    return;
+  }
+
+  const home = localStorage.getItem(AUTH_STORAGE_KEY);
+  // Never nest: a view started from a view would put the person's session aside as "home".
+  if (!home || (JSON.parse(home) as BrowserStoredAuth).viewAs) {
+    return;
+  }
+
+  localStorage.setItem(HOME_STORAGE_KEY, home);
+  persistBrowserAuth(session, marker);
+}
+
+/**
+ * Brings the administrator's own session back and returns where to go (the view's starting page), or null when this
+ * browser wasn't seeing anyone. Used by "Back", and on its own when the view ends or expires.
+ */
+export function finishViewAs(): string | null {
+  if (!isBrowser()) {
+    return null;
+  }
+
+  const viewing = loadBrowserAuth()?.viewAs ?? null;
+  const home = localStorage.getItem(HOME_STORAGE_KEY);
+  localStorage.removeItem(HOME_STORAGE_KEY);
+  if (!viewing) {
+    return null;
+  }
+
+  if (home) {
+    localStorage.setItem(AUTH_STORAGE_KEY, home);
+    dispatchAuthStorageChanged();
+  } else {
+    clearBrowserAuth();
+  }
+
+  return viewing.returnTo;
+}
+
 function isAccessTokenUsable(accessTokenExpiration: string): boolean {
   return (
     new Date(accessTokenExpiration).getTime() >
@@ -221,6 +288,16 @@ function isAccessTokenUsable(accessTokenExpiration: string): boolean {
 
 async function requestSessionRefresh(baseUrl: string): Promise<string | null> {
   const stored = loadBrowserAuth();
+
+  // A view has no refresh token: when it ends or expires the administrator comes back where they started, rather
+  // than being signed out.
+  if (stored?.viewAs) {
+    const returnTo = finishViewAs();
+    if (returnTo && isBrowser()) {
+      window.location.assign(returnTo);
+    }
+    return null;
+  }
 
   if (!stored?.refreshToken) {
     clearBrowserAuth();

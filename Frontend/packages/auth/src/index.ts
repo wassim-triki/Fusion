@@ -24,6 +24,8 @@ export {
 export { useLanguage } from "./language";
 export { TopBarPreferences } from "./components/top-bar-preferences";
 export { TopBarSearch } from "./components/top-bar-search";
+export { ViewingAsBar } from "./components/viewing-as-bar";
+export { ADMINISTRATORS_ROLE, endViewAs, startViewAs, useViewAs } from "./view-as";
 export { useNotificationAlerts } from "./notification-alerts";
 export type { NotificationAlerts } from "./auth-service";
 
@@ -33,8 +35,6 @@ export type { AuthContextValue } from "./auth-context";
 export {
   PLATFORM_ADMIN_ROLE,
   HR_ADMIN_ROLE,
-  MANAGER_ROLE,
-  EMPLOYEE_ROLE,
   hasAnyRole,
   canAccessPlatform,
   hasCorePermission,

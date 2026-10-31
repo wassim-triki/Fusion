@@ -1,10 +1,10 @@
 import type { OrgChartAudience, PermissionScope } from "@repo/api";
 import type { AuthUser } from "./types";
 
+/** The operator marker: Fusion's own staff. The only role claim our apps read; tenant roles retired (B-178). */
 export const PLATFORM_ADMIN_ROLE = "PlatformAdmin";
+/** Learning's copy of the old HR Admin token role, which its service still authorizes on. Nothing of ours reads it. */
 export const HR_ADMIN_ROLE = "HRAdmin";
-export const MANAGER_ROLE = "Manager";
-export const EMPLOYEE_ROLE = "Employee";
 
 const SELF_SCOPE_RANK = 1;
 const DIRECT_REPORTS_SCOPE_RANK = 2;

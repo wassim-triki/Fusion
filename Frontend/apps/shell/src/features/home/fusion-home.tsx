@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { FUSION_ATTENTION_MODULES } from "@repo/api";
 import { useFusionUpcoming, useFusionWork, useMyCard } from "@repo/api/query";
-import { resolveFusionAttentionModules, TopBarPreferences, TopBarSearch, useAuth } from "@repo/auth";
+import { resolveFusionAttentionModules, TopBarPreferences, TopBarSearch, useAuth, ViewingAsBar } from "@repo/auth";
 import { Skeleton } from "@repo/ds";
 import {
   AppShell,
@@ -118,6 +118,7 @@ export function FusionHome() {
     <ThemeProvider>
       <AppShell
         sidebar={<FusionSidebar />}
+        notice={<ViewingAsBar />}
         header={
           <TopBar>
             <TopBarSearch />

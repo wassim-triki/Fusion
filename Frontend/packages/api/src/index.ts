@@ -1,10 +1,13 @@
 export { createApiClient } from "./client";
 export {
+  beginViewAs,
   createPlatformApiClient,
+  finishViewAs,
   isBrowser,
   openPlatformEventStream,
   persistLanguageCookie,
   readLanguageCookie,
+  readViewAs,
 } from "./platform";
 export { ApiError } from "./types";
 export type {
@@ -20,7 +23,8 @@ export {
   UPSTREAM_UNAVAILABLE_STATUS,
   type ApiErrorKind,
 } from "./error-classification";
-export type { PlatformApiClientConfig } from "./platform";
+export type { PlatformApiClientConfig, RefreshResponse as PlatformSessionDto, ViewAsMarker } from "./platform";
+export * from "./view-as";
 export * from "./tenant-settings";
 export * from "./invites";
 export * from "./core-access";

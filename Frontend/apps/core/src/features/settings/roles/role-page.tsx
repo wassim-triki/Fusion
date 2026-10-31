@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Check, ChevronDown, Crown, Lock, MoreHorizontal, Plus, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ChevronDown, Eye, Lock, MoreHorizontal, Plus, X } from "lucide-react";
 import {
   ApiError,
   type FusionSettingsSection,
@@ -16,7 +16,6 @@ import {
   type RoleLevel,
   type RoleReach,
 } from "@repo/api";
-import { useTenantSummary } from "@repo/api/query";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,6 +51,7 @@ import {
   PopoverTrigger,
   Skeleton,
 } from "@repo/ds";
+import { canManageTenantAdministration, startViewAs, useAuth } from "@repo/auth";
 import { LastChange, PageError, ViewOnlyBadge } from "@repo/ds/shell";
 import { useDeleteRole, useRole, useRoleCandidates, useSaveRole } from "@/features/settings/api/use-core-access";
 import { useSaveFailure, useSettingsSay, type Say } from "@/features/settings/say";
@@ -67,6 +67,7 @@ import {
   type Cells,
 } from "./role-model";
 import { AreaGroupTitle } from "./roles-table";
+import { ADMINISTRATORS_PATH } from "./paths";
 import { RolePreview } from "./role-preview";
 import { useRuleValues, type RuleValue, type RuleValues } from "./role-words";
 
@@ -635,45 +636,6 @@ function Frame({ back, title, meta, aside, children }: { back: string; title: Re
   );
 }
 
-function AdministratorsRole({ detail, say, editable }: { detail: RoleDetailDto; say: Say; editable: boolean }) {
-  const company = useTenantSummary().data?.name;
-  return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-      <section aria-labelledby="admins-who" className="flex flex-col gap-3">
-        <h2 id="admins-who" className="type-section-title">{say("roles.whoHasIt")}</h2>
-        <ul className="flex flex-col divide-y divide-border rounded-surface bg-card">
-          {detail.holders.map((holder) => (
-            <li key={holder.userId} className="flex items-center gap-3 px-5 py-3.5">
-              <PersonAvatar name={holder.name} size="md" />
-              <span className="type-label text-foreground">{holder.name}</span>
-            </li>
-          ))}
-        </ul>
-        {editable ? (
-          <a href="/core/access" className="self-start type-label text-primary underline-offset-4 hover:underline">
-            {say("roles.administrators.manage")}
-          </a>
-        ) : null}
-      </section>
-      <section aria-labelledby="admins-what" className="flex flex-col gap-3">
-        <h2 id="admins-what" className="type-section-title">{say("roles.whatItCanDo", { role: say("roles.administrators.name") })}</h2>
-        <div className="flex items-center gap-4 rounded-surface bg-card px-5 py-4">
-          <span className="grid size-10 place-items-center rounded-control bg-inlay text-foreground">
-            <Crown aria-hidden className="size-5" />
-          </span>
-          <div className="flex min-w-0 flex-1 flex-col">
-            <span className="type-label text-foreground">
-              {company ? say("roles.administrators.everythingAt", { company }) : say("roles.administrators.everything")}
-            </span>
-            <span className="type-meta text-muted-foreground">{say("roles.administrators.line")}</span>
-          </div>
-          <Lock aria-hidden className="size-4 text-muted-foreground" />
-        </div>
-      </section>
-    </div>
-  );
-}
-
 function RoleEditor({ roleId, section }: { roleId: string; section: FusionSettingsSection }) {
   const say = useSettingsSay();
   const failure = useSaveFailure();
@@ -691,11 +653,18 @@ function RoleEditor({ roleId, section }: { roleId: string; section: FusionSettin
   const [flash, setFlash] = useState<Set<string>>(new Set());
   const [renaming, setRenaming] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [previewViewer, setPreviewViewer] = useState<string | null>(null);
+  const { user } = useAuth();
+  const [opening, setOpening] = useState(false);
+  const [seeAsFailed, setSeeAsFailed] = useState(false);
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setDraft(saved);
   }, [saved]);
+  useEffect(() => {
+    if (detail?.role.isAdministrators) router.replace(ADMINISTRATORS_PATH);
+  }, [detail?.role.isAdministrators, router]);
   useEffect(() => () => {
     if (flashTimer.current) clearTimeout(flashTimer.current);
   }, []);
@@ -755,8 +724,33 @@ function RoleEditor({ roleId, section }: { roleId: string; section: FusionSettin
       },
     });
 
+  // See Fusion as the person the preview looks through: one of the role's holders, never yourself. Administrators
+  // only; the server decides and records it.
+  const lookingAs = detail.holders.filter((holder) => holder.employeeId);
+  const looking = previewViewer ?? lookingAs.find((holder) => holder.userId !== user?.userId)?.employeeId ?? null;
+  const seeAs = lookingAs.find((holder) => holder.employeeId === looking) ?? null;
+  const seeAsButton =
+    seeAs && seeAs.userId !== user?.userId && canManageTenantAdministration(user) ? (
+      <Button
+        variant="outline"
+        disabled={opening}
+        onClick={() => {
+          setOpening(true);
+          setSeeAsFailed(false);
+          startViewAs(seeAs.userId, `/core/settings/roles/${roleId}`).catch(() => {
+            setOpening(false);
+            setSeeAsFailed(true);
+          });
+        }}
+      >
+        <Eye aria-hidden className="size-4" />
+        {say("roles.seeAs", { name: seeAs.name })}
+      </Button>
+    ) : null;
+
   const actions = editable ? (
     <>
+      {seeAsButton}
       {dirty ? <span className="type-meta text-muted-foreground">{say("roles.unsaved")}</span> : null}
       {dirty ? (
         <Button variant="ghost" disabled={save.isLoading} onClick={() => { save.reset(); setDraft(saved); }}>
@@ -782,7 +776,9 @@ function RoleEditor({ roleId, section }: { roleId: string; section: FusionSettin
     </>
   ) : section.access !== "manage" ? (
     <ViewOnlyBadge />
-  ) : null;
+  ) : (
+    seeAsButton
+  );
 
   return (
     <Frame
@@ -791,6 +787,9 @@ function RoleEditor({ roleId, section }: { roleId: string; section: FusionSettin
       meta={section.lastChange ? <LastChange change={section.lastChange} /> : null}
       aside={actions}
     >
+      {seeAsFailed ? (
+        <p role="alert" className="-mt-4 mb-6 type-body text-destructive">{say("roles.seeAsFailed")}</p>
+      ) : null}
       {save.error ? (
         <div role="alert" className="-mt-4 mb-6 flex flex-wrap items-center gap-3 type-body text-destructive">
           {stale ? say("roles.stale") : failure(save.error, say("roles.notSaved"))}
@@ -802,9 +801,7 @@ function RoleEditor({ roleId, section }: { roleId: string; section: FusionSettin
         </div>
       ) : null}
 
-      {detail.role.isAdministrators ? (
-        <AdministratorsRole detail={detail} say={say} editable={section.access === "manage"} />
-      ) : (
+      {detail.role.isAdministrators ? null : (
         <div className="grid items-start gap-[30px] lg:grid-cols-[minmax(0,1fr)_440px]">
           <div className="grid min-w-0 gap-7">
             <WhoHasIt
@@ -848,7 +845,15 @@ function RoleEditor({ roleId, section }: { roleId: string; section: FusionSettin
               </div>
             </section>
           </div>
-          <RolePreview roleName={roleName} areas={areas} cells={draft.cells} holders={detail.holders} canSearch={section.access === "manage"} />
+          <RolePreview
+            roleName={roleName}
+            areas={areas}
+            cells={draft.cells}
+            holders={detail.holders}
+            canSearch={section.access === "manage"}
+            viewerId={looking}
+            onViewerId={setPreviewViewer}
+          />
         </div>
       )}
 

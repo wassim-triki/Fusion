@@ -155,7 +155,7 @@ describe("Tenant Setup launchpad presentation", () => {
       within(continuityCard as HTMLElement).getByRole("link", {
         name: /Manage access/i,
       })
-    ).toHaveAttribute("href", "/access");
+    ).toHaveAttribute("href", "/settings/roles/administrators");
 
     // Administrator access stays a rung, but only as a marker: management is not
     // duplicated onto the ladder.

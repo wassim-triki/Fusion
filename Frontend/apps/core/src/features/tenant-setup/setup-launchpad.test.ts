@@ -144,7 +144,7 @@ describe("composed capability state", () => {
     expect(entry.state).toBe("ready");
     expect(entry.detail).toBe("2 administrators");
     expect(entry.isActionable).toBe(true);
-    expect(entry.capability.route).toBe("/access");
+    expect(entry.capability.route).toBe("/settings/roles/administrators");
   });
 
   it("stays ready without a count, since a visible reader is an administrator", () => {

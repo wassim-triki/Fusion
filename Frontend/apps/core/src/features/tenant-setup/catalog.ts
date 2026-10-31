@@ -48,7 +48,7 @@ export const SETUP_CAPABILITIES: SetupCapability[] = [
     purpose: "Manage who can administer this tenant.",
     group: "foundation",
     availability: "implemented",
-    route: "/access",
+    route: "/settings/roles/administrators",
     actionLabel: "Manage access",
     prerequisites: [],
     order: 10,

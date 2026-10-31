@@ -26,6 +26,12 @@
       "home": "الرئيسية",
       "settings": "الإعدادات",
       "nothing": "لا نتائج"
+    },
+    "viewAs": {
+      "seeing": "ترى Fusion كما يراه {name}",
+      "administrators": "المسؤولون",
+      "readOnly": "لا يمكن تغيير أي شيء",
+      "back": "العودة إلى الأدوار"
     }
   }
 }

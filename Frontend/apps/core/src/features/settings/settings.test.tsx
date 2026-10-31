@@ -23,7 +23,7 @@ import { IntlTestProvider } from "@repo/ds/testing";
 import dsFr from "@repo/ds/messages/fr.json";
 import { loadCoreMessages } from "@/i18n/messages";
 import type { Say } from "./say";
-import { describeChange, periodOf, roleChange } from "./sections/change-history";
+import { describeChange, isRoleChange, periodOf, roleChange } from "./sections/change-history";
 import { invitationsConsequence } from "./sections/invitations";
 import { CoreSettingsSectionHost } from "./section-host";
 import { EmployeeFieldsSettings, employeeFieldsConsequence, toDraft } from "./sections/employee-fields";
@@ -175,6 +175,19 @@ const cells = (name: string, set: Record<string, [string, string | null]>, holde
 const json = (value: unknown) => JSON.stringify(value);
 
 describe("Role changes in change history", () => {
+  it("says who was made or stopped being an administrator, and who saw Fusion as someone (B-178)", () => {
+    const person = (name: string) => json({ state: "Tenant Administrator", person: name });
+    expect(roleChange("AdministratorAuthorityGranted", json({ state: "None", person: "Nour Ben Ali" }), person("Nour Ben Ali"))?.headline)
+      .toBe("Made Nour Ben Ali an administrator");
+    expect(roleChange("AdministratorAuthorityRevoked", person("Nour Ben Ali"), json({ state: "None", person: "Nour Ben Ali" }))?.headline)
+      .toBe("Removed Nour Ben Ali as an administrator");
+    expect(roleChange("AdministratorAuthoritySelfRemoved", null, null)?.headline).toBe("Changed who administers the company");
+    expect(roleChange("FusionSeenAs", null, json({ person: "Mariam Gharbi" }))?.headline).toBe("Saw Fusion as Mariam Gharbi");
+    expect(isRoleChange({ action: "FusionSeenAs" })).toBe(true);
+    expect(isRoleChange({ action: "AdministratorInvitationIssued" })).toBe(false);
+    expect(isRoleChange({ action: "toString" })).toBe(false);
+  });
+
   it("says who gained or lost which role", () => {
     const gained = roleChange("access.assignment.updated", json(holder(["Employee"])), json(holder(["Employee", "Performance lead"])));
     expect(gained).toEqual({

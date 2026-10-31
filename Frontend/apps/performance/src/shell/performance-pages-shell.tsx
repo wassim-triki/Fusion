@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { TopBarPreferences, TopBarSearch } from "@repo/auth";
+import { TopBarPreferences, TopBarSearch, ViewingAsBar } from "@repo/auth";
 import { AppShell, SettingsBreadcrumb, TopBar } from "@repo/ds/shell";
 import { usePerformanceSettingsLabel } from "@/features/settings/performance-settings";
 import { PerformanceSidebar } from "@/shell/navigation/performance-sidebar";
@@ -25,7 +25,7 @@ export function PerformancePagesShell({ children }: { children: ReactNode }) {
   );
   return (
     <RecordCycleScopeProvider>
-      <AppShell sidebar={<PerformanceSidebar />} header={
+      <AppShell sidebar={<PerformanceSidebar />} notice={<ViewingAsBar />} header={
           <TopBar left={left}>
             <TopBarSearch />
             <FusionNotificationBell />

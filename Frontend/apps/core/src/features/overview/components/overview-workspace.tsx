@@ -1,5 +1,6 @@
 "use client";
 
+import { ADMINISTRATORS_PATH } from "@/features/settings/roles/paths";
 import Link from "next/link";
 import { useEffect, useMemo, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
@@ -487,7 +488,7 @@ function WorkforceDashboard({
               <QuickLink href={toHref("/people/hire")} icon={Plus}>
                 {t("admin.addEmployee")}
               </QuickLink>
-              <QuickLink href={toHref("/access")} icon={ShieldCheck}>
+              <QuickLink href={toHref(ADMINISTRATORS_PATH)} icon={ShieldCheck}>
                 {t("admin.manageAccess")}
               </QuickLink>
               <QuickLink href={toHref("/organization")} icon={Network}>
@@ -753,7 +754,7 @@ function CoreOperationsDashboard() {
 
   const workspaces = [
     canAccessCoreAccess(user)
-      ? { href: moduleHref("/access"), title: t("workspace.access"), icon: ShieldCheck }
+      ? { href: moduleHref(ADMINISTRATORS_PATH), title: t("workspace.access"), icon: ShieldCheck }
       : canManageCoreAccessProfiles(user)
         ? { href: moduleHref("/settings?tab=access-permissions"), title: t("workspace.settings"), icon: ShieldCheck }
         : null,
@@ -805,7 +806,7 @@ function CoreWorkspaceRedirect({ href, label }: { href: string; label: string })
 type WorkspaceKey = "access" | "settings" | "gettingStarted" | "people" | "myTeam" | "myProfile";
 
 function getFallbackWorkspace(user: AuthUser | null): { href: string; label: WorkspaceKey } | null {
-  if (canAccessCoreAccess(user)) return { href: "/access", label: "access" };
+  if (canAccessCoreAccess(user)) return { href: ADMINISTRATORS_PATH, label: "access" };
   if (canManageCoreAccessProfiles(user))
     return { href: "/settings?tab=access-permissions", label: "settings" };
   if (canViewTenantAdministration(user)) return { href: "/getting-started", label: "gettingStarted" };

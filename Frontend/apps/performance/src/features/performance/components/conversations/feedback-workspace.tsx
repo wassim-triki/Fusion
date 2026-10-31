@@ -10,7 +10,7 @@ import { Button } from "@repo/ds/components/ui/button";
 import { FilterChips } from "@repo/ds/choice";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@repo/ds/components/ui/tabs";
-import { PageContainer, PageHeader, StatusBadge } from "@repo/ds/shell";
+import { PageContainer, PageHeader, StatusBadge, Said } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { AvatarStack, PersonInitials, PraiseList, VALUE_TONE, ValueChip, useValueTones } from "@repo/performance-ui";
 import { ChevronRight, MessageSquare, Send, Star, Target } from "@/lib/icons";
@@ -390,7 +390,7 @@ export function FeedbackCard({
           {feedback.visibility === "ManagerOnly" ? <StatusBadge tone="neutral">{t("managerOnly")}</StatusBadge> : null}
           {subject ? <SubjectChip subject={subject} className="hidden max-w-60 sm:inline-flex" /> : null}
         </span>
-        <span className="block type-narrative line-clamp-4 text-foreground">{feedback.message}</span>
+        <Said as="span" className="line-clamp-4">{feedback.message}</Said>
         {subject ? <SubjectChip subject={subject} className="sm:hidden" /> : null}
         {feedback.requestQuestion ? (
           <span className="block truncate type-meta text-muted-foreground">{t("answerTo", { requestQuestion: feedback.requestQuestion })}</span>
@@ -482,7 +482,7 @@ function AskedOfYou({ row }: { row: FeedbackRequestRowDto }) {
           <PersonInitials name={row.requester.name} size="xs" />
           <span><span className="type-label text-foreground">{row.requester.name}</span> {t("askedYou", { requestedAt: formatDay(row.requestedAt, format.locale) })}</span>
         </p>
-        <p className="type-narrative text-foreground">{row.question}</p>
+        <Said>{row.question}</Said>
         {row.subject ? <SubjectChip subject={row.subject} /> : null}
       </div>
       <Button asChild>
@@ -698,7 +698,6 @@ function PraisePage({
     <>
       <PraiseList
         wall
-        reading
         items={page.data.items}
         reactionIcons={REACTION_ICONS}
         onReact={(praise, kind, add) => react.mutate({ praiseId: praise.id, kind, add })}

@@ -14,6 +14,7 @@ import type {
 } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
 import { cn } from "@repo/ds/lib/utils";
+import { Said } from "@repo/ds/shell";
 import { PersonInitials } from "@repo/performance-ui";
 import { ArrowRight, ChevronDown, Flag, Users } from "@/lib/icons";
 import { dayLabel } from "../reviews/review-parts";
@@ -350,7 +351,7 @@ export function ChangesView({ view, top }: { view: CalibrationChangesViewDto; to
                   <RatingChange original={change.originalRating} current={change.finalRating} top={top} />
                   {change.originalPotential !== change.finalPotential ? <PotentialBadge value={change.finalPotential} was={change.originalPotential} /> : null}
                 </div>
-                <p className="type-body-secondary text-foreground">{change.reason}</p>
+                <Said>{change.reason}</Said>
                 <p className="whitespace-nowrap type-meta text-muted-foreground">
                   {[change.changedBy, change.changedAt ? dayLabel(change.changedAt.slice(0, 10), format.locale) : null].filter(Boolean).join(" · ")}
                 </p>

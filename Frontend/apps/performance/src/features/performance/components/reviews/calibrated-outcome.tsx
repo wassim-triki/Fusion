@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import type { PerformanceReviewDto } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
 import { Textarea } from "@repo/ds/components/ui/textarea";
-import { AsyncButton } from "@repo/ds/shell";
+import { AsyncButton, Said } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { ArrowRight, Check, Eye, Lock } from "@/lib/icons";
 import { useSummaryRevision } from "../../api/use-review-work";
@@ -50,7 +50,7 @@ export function CalibratedOutcome({ record }: { record: PerformanceReviewDto }) 
       </div>
       {calibration.rationale ? (
         <figure className="mt-5 rounded-control bg-inlay px-4 py-3">
-          <blockquote className="type-narrative text-foreground">{calibration.rationale}</blockquote>
+          <Said as="blockquote">{calibration.rationale}</Said>
           <figcaption className="mt-1.5 type-meta text-muted-foreground">
             {[calibration.changedBy, calibration.changedAt ? dayLabel(calibration.changedAt.slice(0, 10), format.locale) : null].filter(Boolean).join(" · ")}
           </figcaption>

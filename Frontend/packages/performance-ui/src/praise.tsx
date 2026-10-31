@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { PRAISE_REACTIONS, PRAISE_REACTION_LABEL, type PraiseDto, type PraiseReactionKind } from "@repo/api";
 import { cn } from "@repo/ds";
+import { Said } from "@repo/ds/shell";
 import { AvatarStack } from "./people";
 import { ValueChip } from "./values";
 import { useTranslations } from "next-intl";
@@ -20,8 +21,6 @@ export interface PraiseCardProps {
   onOpen?: () => void;
   /** Reactions waiting on the server, so a quick second tap doesn't fire twice. */
   pendingReaction?: PraiseReactionKind | null;
-  /** The praise wall reads the message in the human voice; compact lists keep the system voice. */
-  reading?: boolean;
   /** The viewer's employee id: praise naming them is marked as addressed to them. */
   viewerEmployeeId?: string | null;
   /**
@@ -36,19 +35,19 @@ export interface PraiseCardProps {
  * One praise, led by the people praised: their faces and names, then who gave it and when, the message, the value
  * in its own hue, and the reactions. In a list the message clamps and opens the drawer for the rest.
  */
-export function PraiseCard({ praise, reactionIcons, onReact, onOpen, pendingReaction, reading = false, viewerEmployeeId, quote = false }: PraiseCardProps) {
+export function PraiseCard({ praise, reactionIcons, onReact, onOpen, pendingReaction, viewerEmployeeId, quote = false }: PraiseCardProps) {
   const t = useTranslations("performanceUi.PraiseCard");
   const words = usePerformanceWords();
   const toViewer = Boolean(viewerEmployeeId) && praise.recipients.some((r) => r.id === viewerEmployeeId);
   const recipients = words.joinNames(praise.recipients.map((r) => r.name));
   const author = praise.author.name ?? t("aColleague");
   const message = (
-    // Written in whatever language its author used, so it takes its direction from its own text.
-    <p dir="auto" className={cn(reading ? "type-narrative" : "type-body", "text-foreground", onOpen && "line-clamp-4")}>{praise.message}</p>
+    // Someone's own words: in quotes and the editorial face wherever praise shows (Said takes its direction from its text).
+    <Said className={cn(onOpen && "line-clamp-4")}>{praise.message}</Said>
   );
   if (quote) {
     const said = (
-      <p dir="auto" className={cn("type-narrative text-foreground", onOpen && "line-clamp-4")}>“{praise.message}”</p>
+      <Said className={cn(onOpen && "line-clamp-4")}>{praise.message}</Said>
     );
     return (
       <article id={`praise-${praise.id}`} className="flex flex-col gap-3 rounded-control bg-inlay p-4" aria-label={t("praised", { author, recipients })}>

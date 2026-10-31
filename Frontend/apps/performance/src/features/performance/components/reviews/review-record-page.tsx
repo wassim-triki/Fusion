@@ -20,7 +20,7 @@ import { Input } from "@repo/ds/components/ui/input";
 import { DatePicker } from "@repo/ds/components/ui/date-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ds/components/ui/popover";
 import { Textarea } from "@repo/ds/components/ui/textarea";
-import { AsyncButton, PageContainer, PageHeader, PagePermissionNotice, PageSkeleton, StatusBadge } from "@repo/ds/shell";
+import { AsyncButton, PageContainer, PageHeader, PagePermissionNotice, PageSkeleton, StatusBadge, Said } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { AvatarStack, ObjectiveStatusBadge, PersonInitials, ValueChip } from "@repo/performance-ui";
 import { Ban, CalendarDays, Check, ChevronDown, Download, FeedbackIcon, FileText, Lock, OneOnOnes, Send, Star, Target, UserRoundCheck } from "@/lib/icons";
@@ -438,7 +438,7 @@ function ObjectiveCard({ record, item, children }: { record: PerformanceReviewDt
       </div>
       {quote ? (
         <blockquote className="mt-4 flex flex-wrap items-start justify-between gap-3 rounded-control bg-inlay px-4 py-3">
-          <p className="max-w-[60ch] type-narrative text-foreground">“{quote.message}”</p>
+          <Said className="max-w-[60ch]">{quote.message}</Said>
           <footer className="type-meta text-muted-foreground">{t("feedback", { authorName: first(quote.authorName), dayLabel: dayLabel(quote.sentAt.slice(0, 10), format.locale) })}</footer>
         </blockquote>
       ) : null}
@@ -490,13 +490,13 @@ function SubmittedView({ record }: { record: PerformanceReviewDto }) {
             ) : null}
             {questions.length ? (
               <Disclosure id="q" open={open} setOpen={setOpen} title={t("questions")} summary={t("answered", { length: questions.length })}>
-                {questions.map((q) => <div key={q.questionId}><p className="type-label text-foreground">{q.text}</p><p className="type-narrative text-foreground">{q.selfAnswer}</p></div>)}
+                {questions.map((q) => <div key={q.questionId}><p className="type-label text-foreground">{q.text}</p><Said>{q.selfAnswer}</Said></div>)}
               </Disclosure>
             ) : null}
             <Disclosure id="o" open={open} setOpen={setOpen}
               title={t("overall", { value: record.selfAssessment.overallRating ? ` · ${levelLabel(record.ratingScale, record.selfAssessment.overallRating)}` : "" })}
               summary={`“${record.selfAssessment.summary}”`}>
-              <p className="type-narrative text-foreground">{record.selfAssessment.summary}</p>
+              <Said>{record.selfAssessment.summary}</Said>
             </Disclosure>
           </ul>
         </section>
@@ -557,7 +557,7 @@ function ReleasedView({ record }: { record: PerformanceReviewDto }) {
             <PersonInitials name={record.reviewerDisplayName} size="lg" />
             <div>
               <p className="type-meta text-muted-foreground">{record.reviewerDisplayName}</p>
-              <p className="mt-1 max-w-[65ch] type-narrative text-foreground">{record.managerAssessment.summary}</p>
+              <Said className="mt-1 max-w-[65ch]">{record.managerAssessment.summary}</Said>
             </div>
           </div>
         ) : null}
@@ -604,7 +604,7 @@ function ReleasedView({ record }: { record: PerformanceReviewDto }) {
           <SectionHeading id="r-answers" title={t("sAnswers", { reviewer })} />
           <ul className="divide-y divide-border rounded-surface bg-card">
             {managerAnswers.map((q) => (
-              <li key={q.questionId} className="p-5"><p className="type-label text-foreground">{q.text}</p><p className="mt-1 type-narrative text-foreground">{q.managerAnswer}</p></li>
+              <li key={q.questionId} className="p-5"><p className="type-label text-foreground">{q.text}</p><Said className="mt-1">{q.managerAnswer}</Said></li>
             ))}
           </ul>
         </section>
@@ -619,7 +619,7 @@ function ReleasedView({ record }: { record: PerformanceReviewDto }) {
           </div>
         </div>
         {record.acknowledgement ? (
-          record.acknowledgement.comment ? <p className="mt-3 type-narrative text-foreground">“{record.acknowledgement.comment}”</p> : null
+          record.acknowledgement.comment ? <Said className="mt-3">{record.acknowledgement.comment}</Said> : null
         ) : record.canAcknowledge ? (
           <>
             <Textarea className="mt-4" aria-label={t("commentForYourReviewerAnd")} maxLength={1000} value={comment} onChange={(e) => setComment(e.target.value)} />
@@ -708,7 +708,7 @@ function ReviewerView({ record }: { record: PerformanceReviewDto }) {
                           <span className="inline-flex items-center gap-2"><PersonInitials name={record.subjectDisplayName} size="xs" />{subject}</span>
                           {item.selfRating ? <span className="rounded-control-sm px-1.5 type-label tabular-nums text-info ring-1 ring-info">{item.selfRating}</span> : null}
                         </p>
-                        <p className="type-narrative text-foreground">{item.selfReflection ?? <span className="text-muted-foreground">{t("noReflection")}</span>}</p>
+                        {item.selfReflection ? <Said>{item.selfReflection}</Said> : <p className="type-body text-muted-foreground">{t("noReflection")}</p>}
                       </div>
                       <div className="border-border py-4 md:border-s md:ps-5">
                         <div className="mb-2 flex items-center justify-between gap-2">
@@ -722,7 +722,7 @@ function ReviewerView({ record }: { record: PerformanceReviewDto }) {
                           <Textarea aria-label={t("yourViewOf", { title: item.title })} className="min-h-24 type-narrative" placeholder={t("yourViewOfThisObjective")} maxLength={4000}
                             aria-invalid={missingItems.includes(keyOf(item)) || undefined}
                             value={draft.items[keyOf(item)]!.assessment} onChange={(e) => draft.updateItem(item, { assessment: e.target.value })} />
-                        ) : <p className="type-narrative text-foreground">{item.managerAssessment ?? <span className="text-muted-foreground">{t("noAssessment")}</span>}</p>}
+                        ) : item.managerAssessment ? <Said>{item.managerAssessment}</Said> : <p className="type-body text-muted-foreground">{t("noAssessment")}</p>}
                       </div>
                     </div>
                   </ObjectiveCard>
@@ -767,7 +767,7 @@ function ReviewerView({ record }: { record: PerformanceReviewDto }) {
             <section className="mt-10" aria-labelledby="m-person-answers">
               <SectionHeading id="m-person-answers" title={t("sAnswers", { subject })} />
               <ul className="divide-y divide-border rounded-surface bg-card">
-                {personQuestions.map((q) => <li key={q.questionId} className="p-5"><p className="type-label text-foreground">{q.text}</p><p className="mt-1 type-narrative text-foreground">{q.selfAnswer}</p></li>)}
+                {personQuestions.map((q) => <li key={q.questionId} className="p-5"><p className="type-label text-foreground">{q.text}</p><Said className="mt-1">{q.selfAnswer}</Said></li>)}
               </ul>
             </section>
           ) : null}
@@ -787,7 +787,7 @@ function ReviewerView({ record }: { record: PerformanceReviewDto }) {
                       <Textarea id={`m-${q.questionId}`} className="mt-2 min-h-20 type-narrative" maxLength={4000}
                         aria-invalid={draft.missing?.questions.includes(q.questionId) || undefined}
                         value={draft.answers[q.questionId] ?? ""} onChange={(e) => draft.setAnswer(q.questionId, e.target.value)} />
-                    ) : <p className="mt-1 type-narrative text-foreground">{q.managerAnswer}</p>}
+                    ) : <Said className="mt-1">{q.managerAnswer}</Said>}
                   </li>
                 ))}
               </ul>
@@ -803,7 +803,7 @@ function ReviewerView({ record }: { record: PerformanceReviewDto }) {
               {editable ? (
                 <Textarea aria-label={t("yourSummary")} className="min-h-24 type-narrative" placeholder={t("whatShouldReadFirst", { subject })} maxLength={4000}
                   aria-invalid={draft.missing?.summary || undefined} value={draft.summary} onChange={(e) => draft.setSummary(e.target.value)} />
-              ) : <p className="type-narrative text-foreground">{record.managerAssessment?.summary}</p>}
+              ) : <Said>{record.managerAssessment?.summary}</Said>}
             </div>
           </section>
 
@@ -853,7 +853,7 @@ function PeerAnswers({ record }: { record: PerformanceReviewDto }) {
                 <ul className="mt-2 space-y-2">
                   {answered.map((peer) => {
                     const answer = peer.answers?.find((a) => a.question === question);
-                    return answer ? <li key={peer.employeeId} className="flex items-start gap-2.5"><PersonInitials name={peer.displayName} size="xs" className="mt-1" /><span className="type-narrative text-foreground">{answer.text}</span></li> : null;
+                    return answer ? <li key={peer.employeeId} className="flex items-start gap-2.5"><PersonInitials name={peer.displayName} size="xs" className="mt-1" /><Said as="span">{answer.text}</Said></li> : null;
                   })}
                 </ul>
               </div>

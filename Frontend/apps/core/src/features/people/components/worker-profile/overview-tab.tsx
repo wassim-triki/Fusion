@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import type { PersonPerformanceSummaryDto } from "@repo/api";
 import { Button, Skeleton, Textarea, cn } from "@repo/ds";
-import { Section } from "@repo/ds/shell";
+import { Section, Said } from "@repo/ds/shell";
 import { ArrowRight, BarChart3, Inbox, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useRefusal } from "@/i18n/words";
@@ -278,7 +278,7 @@ function AboutSection({ view, canEdit, isSelf }: { view: WorkerProfileView; canE
           </div>
         </form>
       ) : view.about ? (
-        <p className="type-narrative whitespace-pre-line text-foreground">{view.about}</p>
+        <Said>{view.about}</Said>
       ) : (
         <p className="type-body text-muted-foreground">{isSelf ? t("aboutEmptySelf") : t("aboutEmpty")}</p>
       )}

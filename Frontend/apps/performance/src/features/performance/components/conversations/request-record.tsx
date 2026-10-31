@@ -7,7 +7,7 @@ import { Input } from "@repo/ds/components/ui/input";
 import { Label } from "@repo/ds/components/ui/label";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { Textarea } from "@repo/ds/components/ui/textarea";
-import { AsyncButton, PageContainer, PageHeader, StatusBadge } from "@repo/ds/shell";
+import { AsyncButton, PageContainer, PageHeader, StatusBadge, Said } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { PersonInitials } from "@repo/performance-ui";
 import { Check, Eye, Send } from "@/lib/icons";
@@ -131,7 +131,7 @@ function FullView({ request }: { request: FeedbackRequestDto }) {
         <ul className="space-y-3">
           {answers.map((answer) => (
             <li key={answer.id} className="rounded-control bg-inlay p-5">
-              <p className="type-narrative whitespace-pre-wrap text-foreground">{answer.message}</p>
+              <Said>{answer.message}</Said>
               <div className="mt-5 flex items-center gap-3">
                 <PersonInitials name={answer.author.name} />
                 <span className="min-w-0 flex-1">
@@ -183,7 +183,7 @@ function InviteeView({ request }: { request: FeedbackRequestDto }) {
         <p className="mb-4 flex items-center gap-2 type-label text-success">
           <Check className="size-4" aria-hidden /> {t("answered", { sentAt: formatDay(request.myAnswer.sentAt, format.locale) })}
         </p>
-        <p className="type-narrative whitespace-pre-wrap text-foreground">{request.myAnswer.message}</p>
+        <Said>{request.myAnswer.message}</Said>
       </section>
     );
   }

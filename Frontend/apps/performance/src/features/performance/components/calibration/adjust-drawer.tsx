@@ -10,7 +10,7 @@ import { Checkbox } from "@repo/ds/components/ui/checkbox";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@repo/ds/components/ui/sheet";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { Textarea } from "@repo/ds/components/ui/textarea";
-import { AsyncButton } from "@repo/ds/shell";
+import { AsyncButton, Said } from "@repo/ds/shell";
 import { ObjectiveStatusBadge, PersonInitials } from "@repo/performance-ui";
 import { ArrowRight, Check, RotateCcw } from "@/lib/icons";
 import { reviewHref } from "@/lib/performance-routes";
@@ -177,7 +177,7 @@ function DrawerBody({ detail, readOnly, potentialEnabled, mutations, onClose }: 
         {detail.managerSummary ? (
           <section aria-label={t("sSummary", { reviewerFirst: reviewerFirst ?? "" })}>
             <p className="type-label text-foreground">{t("sSummary", { reviewerFirst: reviewerFirst ?? "" })}</p>
-            <p className="mt-2 type-narrative text-foreground">{detail.managerSummary}</p>
+            <Said className="mt-2">{detail.managerSummary}</Said>
           </section>
         ) : null}
 

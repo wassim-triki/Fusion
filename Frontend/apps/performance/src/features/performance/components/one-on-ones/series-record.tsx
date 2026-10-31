@@ -21,7 +21,7 @@ import { Input } from "@repo/ds/components/ui/input";
 import { Label } from "@repo/ds/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@repo/ds/components/ui/select";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
-import { AsyncButton, PageContainer, PageHeader, StatusBadge } from "@repo/ds/shell";
+import { AsyncButton, PageContainer, PageHeader, StatusBadge, Said } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { AvatarStack, ObjectiveStatusBadge, PersonInitials, PlanDial } from "@repo/performance-ui";
 import { CalendarDays, Check, ChevronDown, Flag, Plus, X } from "@/lib/icons";
@@ -632,7 +632,7 @@ function MeetingDetail({ series, meeting, names, bare = false }: { series: OneOn
             <div>
               <p className="type-meta text-muted-foreground">{t("notes")}</p>
               {meeting.sharedNotes ? (
-                <p className="mt-2.5 type-narrative whitespace-pre-wrap text-foreground">{meeting.sharedNotes}</p>
+                <Said className="mt-2.5">{meeting.sharedNotes}</Said>
               ) : (
                 <p className="mt-2 type-body-secondary text-muted-foreground">{t("none")}</p>
               )}

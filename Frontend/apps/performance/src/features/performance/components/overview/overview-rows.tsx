@@ -1,5 +1,6 @@
 "use client";
 
+import { Said } from "@repo/ds/shell";
 import type { GoalNodeDto, OverviewRow as Row, UnitShareDto } from "@repo/api";
 import Link from "next/link";
 import { cn } from "@repo/ds/lib/utils";
@@ -533,7 +534,7 @@ export function OwnPlanRow({ row }: { row: Row<"ownPlan"> }) {
         <Headline tone="attention" action={<RowAction href={row.href} primary>{t("reviseYourPlan")}</RowAction>}>
           {row.returnedBy ? t("askedForChanges", { returnedBy: row.returnedBy }) : t("yourPlanCameBackWith")}
         </Headline>
-        {row.returnFeedback ? <p className="mt-2 max-w-2xl type-narrative text-foreground/90">&ldquo;{row.returnFeedback}&rdquo;</p> : null}
+        {row.returnFeedback ? <Said className="mt-2 max-w-2xl text-foreground/90">{row.returnFeedback}</Said> : null}
       </OverviewRow>
     );
   }

@@ -10,7 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from "@repo/ds/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@repo/ds/components/ui/sheet";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
-import { AsyncButton } from "@repo/ds/shell";
+import { AsyncButton, Said } from "@repo/ds/shell";
 import { AvatarStack, PersonInitials, PraiseReactions, ValueChip, usePerformanceWords } from "@repo/performance-ui";
 import { ArrowRight, Check, Eye, Lock, OneOnOnes } from "@/lib/icons";
 import { useDeletePraise, useFeedbackItem, useOneOnOne, useOneOnOneCommands, useOneOnOnes, usePraiseItem } from "../../api/use-conversations";
@@ -92,7 +92,7 @@ export function FeedbackDrawer({ feedbackId, initial, onClose }: { feedbackId: s
             <ArrowRight className="size-4" />
             <PersonInitials name={feedback.receiver.name} size="lg" />
           </div>
-          <p className="mt-6 type-narrative whitespace-pre-wrap text-foreground">{feedback.message}</p>
+          <Said className="mt-6">{feedback.message}</Said>
           <div className="mt-8">
             <Fact label={t("from")}><span className="type-label text-foreground">{feedback.author.name ?? t("aColleague")}</span></Fact>
             <Fact label={t("to")}><span className="type-label text-foreground">{feedback.receiver.name ?? t("aColleague")}</span></Fact>
@@ -199,7 +199,7 @@ export function PraiseDrawer({ praiseId, onClose }: { praiseId: string | null; o
               </p>
             </div>
           </div>
-          <p className="mt-6 type-narrative whitespace-pre-wrap text-foreground">{praise.message}</p>
+          <Said className="mt-6">{praise.message}</Said>
           <ValueChip value={praise.value} className="mt-5" />
           <div className="mt-6">
             <PraiseReactions

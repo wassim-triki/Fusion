@@ -17,6 +17,7 @@ vi.mock("@repo/ds/shell", async () => {
   return {
     AsyncButton: ({ children, onClick, disabled }: React.ButtonHTMLAttributes<HTMLButtonElement>) => React.createElement("button", { onClick, disabled }, children),
     PageContainer: ({ children }: React.PropsWithChildren) => React.createElement("main", null, children),
+    Said: ({ children }: React.PropsWithChildren) => React.createElement("p", null, children),
     PagePermissionNotice: ({ title }: { title: string }) => React.createElement("div", null, title),
     PageSkeleton: () => React.createElement("div", null, "Loading"),
     StatusBadge: ({ children }: React.PropsWithChildren) => React.createElement("span", null, children),

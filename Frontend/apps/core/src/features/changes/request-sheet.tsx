@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { ArrowRight, Clock3, Quote, TriangleAlert, X } from "lucide-react";
 import type { ChangeRequestDto, PeopleHomeAddressDto } from "@repo/api";
 import { Button, PersonAvatar, Sheet, SheetContent, SheetTitle, Skeleton, Textarea, cn } from "@repo/ds";
-import { StatusBadge } from "@repo/ds/shell";
+import { Said, StatusBadge } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { useRefusal } from "@/i18n/words";
 import { useChangeRequest, useRequestDecisions } from "@/features/people/changes/use-changes";
@@ -120,7 +120,7 @@ export function RequestDetail({ request, onClose }: { request: ChangeRequestDto;
         {request.note ? (
           <section className="grid gap-1.5 border-b py-3.5">
             <h3 className="type-meta text-muted-foreground">{tr("note")}</h3>
-            <p className="whitespace-pre-line type-body">{request.note}</p>
+            <Said>{request.note}</Said>
           </section>
         ) : null}
 

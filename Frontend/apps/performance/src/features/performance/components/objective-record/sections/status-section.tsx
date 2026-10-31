@@ -2,7 +2,7 @@
 
 import { reportPerformanceFailure } from "@/features/performance/api/performance-failure";
 import { Check } from "@/lib/icons";
-import { AsyncButton } from "@repo/ds/shell";
+import { AsyncButton, Said } from "@repo/ds/shell";
 import { ObjectiveStatusBadge } from "@repo/performance-ui";
 import { useAcknowledgeStatus } from "../../../api/use-performance";
 import type { ObjectiveRecord } from "../objective-record-model";
@@ -36,7 +36,7 @@ export function StatusSection({ record }: { record: ObjectiveRecord }) {
         {status.reason ? (
           <div className="mt-3">
             {risky ? <p className="type-meta-strong text-muted-foreground">{t("whatsInTheWay")}</p> : null}
-            <p className="mt-1 whitespace-pre-line type-body leading-relaxed text-foreground">{status.reason}</p>
+            <Said className="mt-1">{status.reason}</Said>
           </div>
         ) : null}
         {risky && status.acknowledgedAt ? (

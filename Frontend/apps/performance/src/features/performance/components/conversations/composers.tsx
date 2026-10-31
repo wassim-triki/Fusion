@@ -438,7 +438,7 @@ export function PraiseComposer({ initialValue, onClose }: { initialValue?: strin
         <div className="flex flex-col gap-4 border-t border-border p-6 md:border-t-0 md:border-s">
           <p className="type-meta text-muted-foreground">{t("everyoneWillSee")}</p>
           <div aria-hidden className={cn(!ready && "opacity-80")}>
-            <PraiseCard praise={preview} reactionIcons={REACTION_ICONS} reading />
+            <PraiseCard praise={preview} reactionIcons={REACTION_ICONS} />
           </div>
           <div className="mt-auto flex justify-end gap-2 pt-2">
             <Button variant="ghost" onClick={onClose} disabled={give.isLoading}>{t("cancel")}</Button>

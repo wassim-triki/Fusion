@@ -60,7 +60,7 @@ Families load centrally from `@repo/ds` (self-hosted, no CDN, no module font imp
 - **Lora**, the human voice: page titles, rare display moments, and people-authored prose being read (reflections, feedback, review commentary).
 - **Geist Mono**, the identifier voice: codes, IDs, audit values, technical strings only.
 
-Rule: **sans for the system, serif for the human,** visible but scarce. If unsure, use Geist. User-authored text shown in a table, picker, form or compact card stays Geist; it becomes Lora only in a focused reading view.
+Rule: **sans for the system, serif for the human,** visible but scarce. If unsure, use Geist. What a person wrote for others to read (a bio, praise, feedback, a note, a comment, an answer) always shows through `Said` (`@repo/ds/shell`): Lora, in quotes that follow the language, wherever it appears, cards included (user, 2026-10-31). Names, titles and values people typed into fields (a job title, an objective's title) are data, not words said, and stay Geist; so do fields being edited.
 
 **Use semantic roles only** (utilities in `tokens.css`; metrics are owned there):
 

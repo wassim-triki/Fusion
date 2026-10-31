@@ -12,6 +12,7 @@ import {
   Field,
   FieldError,
   FieldLabel,
+  DatePicker,
   Input,
   Popover,
   PopoverContent,
@@ -378,13 +379,13 @@ export default function EstablishmentWorkspace({ mode }: { mode: EstablishmentMo
               <div className="grid gap-5 sm:grid-cols-2">
                 <Field data-invalid={Boolean(errors.startDate)}>
                   <FieldLabel htmlFor="startDate">{isHire ? t("fields.startDate") : t("fields.employmentStart")}</FieldLabel>
-                  <Input id="startDate" type="date" min={isHire ? today() : undefined} max={!isHire ? today() : undefined} value={form.startDate} onChange={(event) => set("startDate", event.target.value)} aria-invalid={Boolean(errors.startDate)} className="w-full" />
+                  <DatePicker id="startDate" min={isHire ? today() : undefined} max={!isHire ? today() : undefined} value={form.startDate} onChange={(value) => set("startDate", value)} aria-invalid={Boolean(errors.startDate)} />
                   <FieldError>{errors.startDate}</FieldError>
                 </Field>
                 {!isHire ? (
                   <Field data-invalid={Boolean(errors.workDate)}>
                     <FieldLabel htmlFor="workDate">{t("fields.workFrom")}</FieldLabel>
-                    <Input id="workDate" type="date" min={form.startDate || undefined} max={today()} value={form.workDate} onChange={(event) => set("workDate", event.target.value)} aria-invalid={Boolean(errors.workDate)} className="w-full" />
+                    <DatePicker id="workDate" min={form.startDate || undefined} max={today()} value={form.workDate} onChange={(value) => set("workDate", value)} aria-invalid={Boolean(errors.workDate)} />
                     <FieldError>{errors.workDate}</FieldError>
                   </Field>
                 ) : isFutureStart ? (

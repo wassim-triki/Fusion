@@ -17,6 +17,7 @@ import { ApiError, REVIEW_POTENTIALS } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
 import { OptionCards } from "@repo/ds/choice";
 import { Input } from "@repo/ds/components/ui/input";
+import { DatePicker } from "@repo/ds/components/ui/date-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ds/components/ui/popover";
 import { Textarea } from "@repo/ds/components/ui/textarea";
 import { AsyncButton, PageContainer, PageHeader, PagePermissionNotice, PageSkeleton, StatusBadge } from "@repo/ds/shell";
@@ -960,7 +961,7 @@ function MoveReviewDueDate({ record }: { record: PerformanceReviewDto }) {
         <div className="mt-4 flex items-center gap-3">
           <span className="flex-1 type-label text-foreground">{record.state === "SelfAssessment" ? t("selfAssessment") : t("managerAssessment")}</span>
           {date && date !== current ? <span className="type-meta text-muted-foreground line-through">{dayLabel(current, format.locale)}</span> : null}
-          <Input type="date" aria-label={t("newDueDate")} className="w-40" value={date} onChange={(e) => setDate(e.target.value)} />
+          <DatePicker aria-label={t("newDueDate")} className="w-40" value={date} onChange={setDate} />
         </div>
         <Textarea className="mt-4" aria-label={t("reason")} placeholder={t("whyItMoves")} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} />
         <div className="mt-4 flex justify-end gap-2">

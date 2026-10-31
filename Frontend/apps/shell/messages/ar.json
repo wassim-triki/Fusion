@@ -210,8 +210,8 @@
       "evening": "مساء الخير"
     },
     "greetingNamed": "{greeting}، {name}",
-    "loadingWork": "جارٍ تحميل مهامك",
-    "alsoNeedsYou": "يحتاجك أيضًا",
+    "needsYou": "بانتظارك",
+    "comingUp": "القادم",
     "nextTwoWeeks": "الأسبوعان القادمان",
     "loadingNextTwoWeeks": "جارٍ تحميل الأسبوعين القادمين",
     "sideColumn": "عامك والإشادات",
@@ -220,7 +220,6 @@
       "loading": "جارٍ تحميل عامك",
       "failed": "تعذّر التحميل",
       "myPlan": "خطتي",
-      "ring": "الخطة عند {percent}",
       "objectives": "{count, plural, one {هدف واحد} two {هدفان} other {# أهداف}}",
       "onTrack": "{count} على المسار",
       "atRisk": "{count} في خطر",
@@ -235,12 +234,14 @@
       "weights": " · الأوزان عند {percent}",
       "approves": "يعتمدها {name}",
       "plan": {
-        "NotStarted": "لم تبدأ خطتك بعد",
+        "NotStarted": "لا توجد خطة بعد",
         "Draft": "خطتك مسودة",
         "ReturnedForChanges": "أُعيدت خطتك مع تعديلات",
         "Submitted": "أُرسلت خطتك",
         "Approved": "اعتُمدت خطتك"
-      }
+      },
+      "start": "اكتب خطتك",
+      "continue": "أكمل خطتك"
     },
     "praise": {
       "title": "الإشادات",

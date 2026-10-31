@@ -101,13 +101,15 @@ Rule: **sans for the system, serif for the human,** visible but scarce. If unsur
 
 **Page anatomy:** context or breadcrumb when meaningful → header (title; a description only when it adds what the title can't) → primary action plus limited secondary actions → status or context → filters or local navigation → main content → pagination or supporting detail. Don't invent a new page structure per feature, and don't narrate under the title.
 
+**A section's title lives inside its section.** The title and its actions (a count, "Give praise", "My plan") sit on the first line inside the section's frame, never as a heading on the canvas with the frame starting below it (B-225). Use `Section` from `@repo/ds/shell` (padded body, or `flush` for rows edge to edge under a hairline); `SettingsBlock` is built on it. A list of rows is one section with its rows inside; objects set into a section step up to `bg-inlay`.
+
 **Document + sidebar** (a page about one entity: a plan, a record, a review):
-- Frame objects, never columns. The main column is a section heading over a list of objects on the canvas; it ends where its content ends.
+- Frame objects, never columns. Each section of the main column is one frame with its title inside; it ends where its content ends.
 - The sidebar is unframed: property groups separated by hairlines, sticky (`lg:sticky lg:top-6`), never height-matched.
 - Never stretch to fill: no `flex-1` last child, no stretched grid cells, no `mt-auto` footers to meet another column.
-- Primary actions live in the page header; a section's action sits on that section's heading.
+- Primary actions live in the page header; a section's action sits on that section's title line, inside the section.
 - The sidebar carries only what the main column doesn't. A block that only balances height is deleted.
-- Pages about scanning or comparing collections (roster, queue) are one full-width column of unframed sections; context sits beside the section where it's acted on.
+- Pages about scanning or comparing collections (roster, queue) are one full-width column of sections; context sits beside the section where it's acted on.
 
 **Navigation represents jobs, not entities.** Feature ≠ page, entity ≠ nav item, permission ≠ persona. A sidebar item must be a distinct, recurring job people would name ("I need to go to X"); entities, scopes and states live inside an existing job. Sparse navigation is not a defect; never add entries to fill a sidebar. Users must always see the current module, location and selected item, and a way back; active state is unmistakable; breadcrumbs only when hierarchy is meaningful; tabs switch sibling views only; no hover-only critical navigation.
 - **Overview** answers only: what state is this in, what needs me, where do I go next. Every section ends in a workspace or record; no roster tables, full trees, forms or dashboards. Sections compose from capabilities and state, never a persona switch.
@@ -175,6 +177,8 @@ Rule: **sans for the system, serif for the human,** visible but scarce. If unsur
 **Actions.** One primary per decision area, visually dominant. Secondary is visibly secondary; quiet actions don't compete; destructive is reserved for real risk and separated from safe actions. Never a row of equal buttons where wording alone sets priority. Icon-only only for conventional actions, always with an accessible name.
 
 **Forms.** Guided, not bureaucratic: meaningful groups, visible labels (placeholders aren't labels), consistent required/optional, validation next to the field. Helper text only for a real constraint, consequence or ambiguity, never to restate the label; a field that keeps needing help needs a better label or control. Long forms use sections, disclosure and steps only for genuine sequential commitment; don't wizard a short form. Make clear whether a change is saved immediately, staged, submitted for approval, destructive or reversible. Reach for conditional fields, inline options, summaries and live previews before stacked `label | input` rows.
+- **Fields are carved in:** an input, textarea or select sits darker than the surface it's on (`Input`, `Textarea` and the DS pickers carry it; never repaint them lighter). (B-227)
+- **DS controls only:** dates through `DatePicker` and `Calendar` from `@repo/ds`, never a native `type="date"` input or the browser's calendar (lint-guarded); the same for any primitive the DS has (select, combobox, switch, checkbox).
 
 **Tables.** First-class, built on `<DataTable>` from `@repo/ds/data-table` (TanStack Table v9), never hand-rolled. Use a table when comparison matters; not when hierarchy, sequence or direct manipulation is the point.
 - **One frame:** toolbar, `bg-inlay` header, rows and footer in one `bg-card` object; loading, empty and no-match states render inside it, so the table never changes shape.

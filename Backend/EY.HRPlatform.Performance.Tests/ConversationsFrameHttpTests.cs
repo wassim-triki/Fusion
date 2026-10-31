@@ -146,7 +146,7 @@ public sealed class ConversationsFrameHttpTests
             Assert.Equal(DateOnly.FromDateTime(missedAt), DateOnly.Parse(owed.GetProperty("dueOn").GetString()!));
             Assert.Equal($"/performance/one-on-ones/{seriesId}", owed.GetProperty("href").GetString());
             Assert.Equal("/performance/one-on-ones", owed.GetProperty("section").GetString());
-            Assert.Equal("Complete or reschedule", owed.GetProperty("actionLabel").GetString());
+            Assert.Equal("Open the 1:1", owed.GetProperty("actionLabel").GetString());
         }
         Assert.Equal("1:1 with Karim Haddad", Assert.Single(await WorkAsync(w, w.Nour),
             i => i.GetProperty("kind").GetString() == "one-on-one-meeting").GetProperty("title").GetString());

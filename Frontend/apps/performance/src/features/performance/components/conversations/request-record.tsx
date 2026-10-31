@@ -98,8 +98,8 @@ function FullView({ request }: { request: FeedbackRequestDto }) {
   };
   return (
     <>
-      <section aria-labelledby="asked">
-        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
+      <section aria-labelledby="asked" className="rounded-surface bg-card px-5 pt-4 pb-5">
+        <div className="mb-4 flex min-h-9 flex-wrap items-center justify-between gap-3">
           <h2 id="asked" className="type-section-title text-foreground">{t("asked")}</h2>
           <span className="type-meta tabular-nums text-muted-foreground">
             {t("answered", { answered: counts.answered })}{counts.declined > 0 ? " " + t("declined", { declined: counts.declined }) : ""}{waiting.length > 0 ? " " + t("waiting", { length: waiting.length }) : ""}
@@ -109,10 +109,10 @@ function FullView({ request }: { request: FeedbackRequestDto }) {
           {invitees.map((invitee) => {
             const status = statusLine(invitee, (key, values) => t(key as "statusWaiting", values as never), format.locale);
             return (
-              <li key={invitee.person.id} className={cn("flex items-center gap-3 rounded-surface bg-card px-4 py-3", invitee.status === "Declined" && "opacity-60")}>
+              <li key={invitee.person.id} className={cn("flex items-center gap-3 rounded-control bg-inlay px-4 py-3", invitee.status === "Declined" && "opacity-60")}>
                 <PersonInitials
                   name={invitee.person.name}
-                  className={cn("ring-2 ring-offset-2 ring-offset-card", invitee.status === "Answered" ? "ring-success" : invitee.status === "Waiting" ? "ring-border" : "ring-transparent")}
+                  className={cn("ring-2 ring-offset-2 ring-offset-inlay", invitee.status === "Answered" ? "ring-success" : invitee.status === "Waiting" ? "ring-border" : "ring-transparent")}
                 />
                 <span className="min-w-0">
                   <span className="block truncate type-label text-foreground">{invitee.person.name}</span>
@@ -124,13 +124,13 @@ function FullView({ request }: { request: FeedbackRequestDto }) {
         </ul>
       </section>
 
-      <section aria-labelledby="answers">
-        <h2 id="answers" className="mb-4 flex items-baseline gap-2 type-section-title text-foreground">
+      <section aria-labelledby="answers" className="rounded-surface bg-card px-5 pt-4 pb-5">
+        <h2 id="answers" className="mb-4 flex min-h-9 items-center justify-between gap-2 type-section-title text-foreground">
           {t("answers")} <span className="type-meta tabular-nums text-muted-foreground">{answers.length}</span>
         </h2>
         <ul className="space-y-3">
           {answers.map((answer) => (
-            <li key={answer.id} className="rounded-surface bg-card p-6">
+            <li key={answer.id} className="rounded-control bg-inlay p-5">
               <p className="type-narrative whitespace-pre-wrap text-foreground">{answer.message}</p>
               <div className="mt-5 flex items-center gap-3">
                 <PersonInitials name={answer.author.name} />
@@ -143,7 +143,7 @@ function FullView({ request }: { request: FeedbackRequestDto }) {
           ))}
           {request.state === "Open"
             ? waiting.map((invitee) => (
-                <li key={invitee.person.id} className="flex items-center gap-3 rounded-surface border border-dashed border-border px-5 py-3.5">
+                <li key={invitee.person.id} className="flex items-center gap-3 rounded-control border border-dashed border-border px-5 py-3.5">
                   <PersonInitials name={invitee.person.name} size="xs" />
                   <span className="flex-1 type-body-secondary text-muted-foreground">{t("hasntAnsweredYet", { name: firstName(invitee.person.name) })}</span>
                 </li>

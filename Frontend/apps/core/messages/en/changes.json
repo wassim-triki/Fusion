@@ -30,7 +30,8 @@
     "undo": "Undo",
     "done": "Done",
     "level": "Level",
-    "reason": "Reason"
+    "reason": "Reason",
+    "drafted": "Filled by Fusion from your sentence"
   },
   "when": {
     "from": "From",
@@ -162,13 +163,10 @@
   "describe": {
     "label": "Describe it",
     "placeholder": "For example: promote {name} to Senior Consultant from 1 January",
-    "draft": "Draft it",
     "drafting": "Drafting…",
     "theChange": "The change",
     "failed": "Fusion couldn't draft that. Fill in the change below.",
     "read": {
-      "ai": "Drafted from your company's jobs and reasons. Check each part.",
-      "words": "Drafted from your words. Check each part.",
       "nothing": "No job, place, reason or date found. Fill in the change below.",
       "leaving": "That reads as a last day: use End employment instead."
     }

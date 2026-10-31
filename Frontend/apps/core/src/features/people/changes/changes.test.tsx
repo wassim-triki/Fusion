@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { PeopleProfileDto, WorkforceChangeDetails, WorkforceChangeDto } from "@repo/api";
 
 const { rights, draft } = vi.hoisted(() => ({
@@ -107,14 +107,38 @@ describe("people changes", () => {
       orgUnitId: null, orgUnitName: null, placeId: null, placeName: null, reasonId: "promo", reason: "Promotion", understood: true, usedAi: true });
     render(<ChangePanel employeeKey="HELA" kind="job" onClose={vi.fn()} />);
     fireEvent.change(screen.getByLabelText("Describe it"), { target: { value: "Promote Hela to Senior Cybersecurity Manager from 1 January" } });
-    fireEvent.click(screen.getByRole("button", { name: "Draft it" }));
+    expect(screen.queryByRole("button", { name: "Draft it" })).not.toBeInTheDocument();
+    fireEvent.keyDown(screen.getByLabelText("Describe it"), { key: "Enter" });
     expect(await screen.findByText("Senior Cybersecurity Manager")).toBeInTheDocument();
     expect(draft).toHaveBeenCalledWith("Promote Hela to Senior Cybersecurity Manager from 1 January");
+    expect(screen.getAllByRole("img", { name: "Filled by Fusion from your sentence" }).length).toBeGreaterThan(0);
     expect(screen.getByText("Amira Khelifi approves")).toBeInTheDocument();
     expect(screen.getByText("Level 4")).toBeInTheDocument();
     expect(screen.getByText("Promotion")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Send for approval" })).toBeEnabled();
     Object.assign(rights, { people: true, propose: false });
+  });
+
+  it("drafts once typing pauses and never redrafts a part set by hand", async () => {
+    vi.useFakeTimers();
+    draft.mockReset();
+    draft.mockResolvedValueOnce({ kind: "job", date: null, jobId: "senior", jobTitle: "Senior Cybersecurity Manager", jobLevel: null,
+      orgUnitId: null, orgUnitName: null, placeId: null, placeName: null, reasonId: null, reason: null, understood: true, usedAi: true });
+    render(<ChangePanel employeeKey="HELA" kind="job" onClose={vi.fn()} />);
+    fireEvent.change(screen.getByLabelText("Describe it"), { target: { value: "Promote Hela to Senior" } });
+    expect(draft).not.toHaveBeenCalled();
+    await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+    expect(draft).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
+    expect(await screen.findByText("Senior Cybersecurity Manager")).toBeInTheDocument();
+    // Undo marks the job as set by hand; the next draft leaves it alone.
+    fireEvent.click(screen.getByRole("button", { name: /^Undo/ }));
+    draft.mockResolvedValueOnce({ kind: "job", date: null, jobId: "senior", jobTitle: "Senior Cybersecurity Manager", jobLevel: null,
+      orgUnitId: null, orgUnitName: null, placeId: null, placeName: null, reasonId: null, reason: null, understood: true, usedAi: true });
+    fireEvent.change(screen.getByLabelText("Describe it"), { target: { value: "Promote Hela to Senior from today" } });
+    fireEvent.keyDown(screen.getByLabelText("Describe it"), { key: "Enter" });
+    await waitFor(() => expect(draft).toHaveBeenCalledTimes(2));
+    expect(screen.queryByText("Senior Cybersecurity Manager")).not.toBeInTheDocument();
   });
 
   it("shows a reporting admin only the line: job facts are absent, not greyed", () => {

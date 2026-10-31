@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 
 // Radix Collapsible measures its content with ResizeObserver, which jsdom lacks.
 vi.stubGlobal(
@@ -109,7 +109,11 @@ describe("EstablishmentWorkspace — Hire", () => {
 
   it("treats a future start as Scheduled, not an error", () => {
     render(<EstablishmentWorkspace mode="hire" />);
-    fireEvent.change(screen.getByLabelText("Start date"), { target: { value: "2099-01-01" } });
+    // The DS date picker: open it, go to next month, pick its 15th.
+    fireEvent.click(screen.getByLabelText("Start date"));
+    fireEvent.click(screen.getByRole("button", { name: /next month/i }));
+    const grid = screen.getByRole("grid");
+    fireEvent.click(within(grid).getAllByRole("button").find((day) => day.textContent === "15")!);
     expect(screen.getAllByText(/Scheduled/).length).toBeGreaterThan(0);
   });
 });

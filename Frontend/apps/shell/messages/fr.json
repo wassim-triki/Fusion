@@ -210,8 +210,8 @@
       "evening": "Bonsoir"
     },
     "greetingNamed": "{greeting}, {name}",
-    "loadingWork": "Chargement de vos tâches",
-    "alsoNeedsYou": "Vous attend aussi",
+    "needsYou": "Pour vous",
+    "comingUp": "À venir",
     "nextTwoWeeks": "Les deux prochaines semaines",
     "loadingNextTwoWeeks": "Chargement de vos deux prochaines semaines",
     "sideColumn": "Votre année et reconnaissances",
@@ -220,7 +220,6 @@
       "loading": "Chargement de votre année",
       "failed": "Chargement impossible",
       "myPlan": "Mon plan",
-      "ring": "Plan à {percent}",
       "objectives": "{count, plural, one {# objectif} other {# objectifs}}",
       "onTrack": "{count, plural, one {# en bonne voie} other {# en bonne voie}}",
       "atRisk": "{count, plural, one {# à risque} other {# à risque}}",
@@ -235,12 +234,14 @@
       "weights": " · pondération à {percent}",
       "approves": "{name} l’approuve",
       "plan": {
-        "NotStarted": "Votre plan n’est pas commencé",
+        "NotStarted": "Pas encore de plan",
         "Draft": "Votre plan est un brouillon",
         "ReturnedForChanges": "Votre plan vous a été renvoyé pour modifications",
         "Submitted": "Votre plan est soumis",
         "Approved": "Votre plan est approuvé"
-      }
+      },
+      "start": "Rédiger votre plan",
+      "continue": "Continuer votre plan"
     },
     "praise": {
       "title": "Reconnaissances",

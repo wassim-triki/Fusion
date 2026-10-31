@@ -125,21 +125,24 @@ describe("FusionHome", () => {
   });
   afterEach(() => cleanup());
 
-  it("renders the frame, the greeting and the most important item first for an employee", () => {
+  it("renders the frame, the greeting, and every piece of work in Needs you in the order it's due", () => {
     mocks.work = {
       modules: ready,
       items: [
-        { id: "a", module: "performance", kind: "self-assessment", title: "Complete your self-assessment", dueOn: "2099-01-02", href: "/performance/reviews/1" },
         { id: "b", module: "performance", kind: "update-request", title: "Update progress on Ship the playbook", href: "/performance/plan" },
+        { id: "a", module: "performance", kind: "self-assessment", title: "Complete your self-assessment", dueOn: "2099-01-02", href: "/performance/reviews/1",
+          actionLabel: "Write your self-assessment" },
       ],
     };
     render(<FusionHome />);
     expect(screen.getByRole("heading", { level: 1 }).textContent).toMatch(/, Nour$/);
     expect(screen.getByText("Fusion")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Notifications" })).toBeTruthy();
-    expect(screen.getByRole("heading", { level: 2, name: "Complete your self-assessment" })).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "Also needs you" })).toBeTruthy();
-    expect(screen.getByRole("link", { name: /Update progress on Ship the playbook/ }).getAttribute("href")).toBe("/performance/plan");
+    const needs = screen.getByRole("region", { name: "Needs you" });
+    expect(needs.textContent).toContain("2");
+    const links = Array.from(needs.querySelectorAll("a")).map((link) => link.getAttribute("href"));
+    expect(links).toEqual(["/performance/reviews/1", "/performance/plan"]);
+    expect(screen.getByRole("link", { name: /Complete your self-assessment.*Write your self-assessment/ })).toBeTruthy();
     expect(mocks.requested).toEqual(["core", "performance"]);
   });
 
@@ -151,35 +154,23 @@ describe("FusionHome", () => {
     render(<FusionHome />, "fr");
     expect(screen.getByRole("heading", { level: 1 }).textContent).toMatch(/^(Bonjour|Bon après-midi|Bonsoir), Nour$/);
     expect(screen.getByRole("link", { name: /^Accueil/ })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Pour vous" })).toBeTruthy();
     expect(screen.getByText("Les deux prochaines semaines")).toBeTruthy();
     expect(screen.getByText(/jours restants/)).toBeTruthy();
-    expect(screen.getByRole("heading", { level: 2, name: "12 people don't have Fusion access yet" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /12 people don't have Fusion access yet/ })).toBeTruthy();
     expect(screen.getByText(/^[A-Z][a-zé]+ \d{1,2} [a-zéû]+ · QA Automation Engineer, Consulting A$/)).toBeTruthy();
   });
 
   it("says nothing needs the person and nothing is scheduled when there is neither", () => {
     mocks.work = { modules: ready, items: [] };
     render(<FusionHome />);
+    expect(screen.getByRole("heading", { name: "Needs you" })).toBeTruthy();
     expect(screen.getByText("Nothing needs you right now")).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "No work and nothing scheduled in the next two weeks" })).toBeTruthy();
-    expect(screen.getByText("Nothing is scheduled in the next two weeks")).toBeTruthy();
-    expect(screen.queryByRole("heading", { name: "Also needs you" })).toBeNull();
-  });
-
-  it("with no work, leads with the next moment", () => {
-    mocks.work = { modules: ready, items: [] };
-    const at = new Date(Date.now() + 2 * 86_400_000);
-    const date = `${at.getFullYear()}-${String(at.getMonth() + 1).padStart(2, "0")}-${String(at.getDate()).padStart(2, "0")}`;
-    mocks.upcoming.items = [{ id: "m1", module: "performance", kind: "one-on-one", title: "1:1 with Mariam Gharbi", context: "2 on the agenda",
-      date, at: at.toISOString(), href: "/performance/one-on-ones/s1" }];
-    render(<FusionHome />);
-    expect(screen.getByText(/Nothing needs you today/)).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "1:1 with Mariam Gharbi" })).toBeTruthy();
-    // The featured moment isn't repeated in the next two weeks.
+    expect(screen.getByRole("heading", { name: "Coming up" })).toBeTruthy();
     expect(screen.getByText("Nothing is scheduled in the next two weeks")).toBeTruthy();
   });
 
-  it("leads with overdue work, reads it late, and lists dated work and moments for two weeks", () => {
+  it("reads late work as late and lists the next two weeks' moments in Coming up, without repeating work", () => {
     const day = (offset: number) => {
       const d = new Date(Date.now() + offset * 86_400_000);
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -187,19 +178,18 @@ describe("FusionHome", () => {
     mocks.work = {
       modules: ready,
       items: [
-        { id: "late", module: "performance", kind: "manager-assessment", title: "Assess Omar", dueOn: day(-1), href: "/performance/reviews/3" },
         { id: "feedback", module: "performance", kind: "feedback-request", title: "Feedback for Rim", dueOn: day(5), href: "/performance/feedback/requests/r" },
+        { id: "late", module: "performance", kind: "manager-assessment", title: "Assess Omar", dueOn: day(-1), href: "/performance/reviews/3" },
       ],
     };
     mocks.upcoming.items = [{ id: "plans", module: "performance", kind: "plans-due", title: "Plans due", date: day(10), href: "/performance/plan" }];
     render(<FusionHome />);
-    expect(screen.getByRole("heading", { level: 2, name: "Assess Omar" })).toBeTruthy();
-    expect(screen.getByText("day late")).toBeTruthy();
-    const agenda = screen.getByRole("heading", { name: "Next two weeks" }).parentElement!;
-    const entries = Array.from(agenda.querySelectorAll("a")).map((a) => a.textContent ?? "");
-    expect(entries).toHaveLength(2);
-    expect(entries[0]).toContain("Feedback for Rim due");
-    expect(entries[1]).toContain("Plans due");
+    const needs = Array.from(screen.getByRole("region", { name: "Needs you" }).querySelectorAll("a")).map((a) => a.textContent ?? "");
+    expect(needs[0]).toContain("Assess Omar");
+    expect(screen.getByText("1 day late")).toBeTruthy();
+    const coming = Array.from(screen.getByRole("region", { name: "Coming up" }).querySelectorAll("a")).map((a) => a.textContent ?? "");
+    expect(coming).toHaveLength(1);
+    expect(coming[0]).toContain("Plans due");
   });
 
   it("names the day and the person's job and unit under the greeting", () => {
@@ -225,8 +215,43 @@ describe("FusionHome", () => {
     } as PersonPerformanceSummaryDto;
     render(<FusionHome />);
     expect(await screen.findByText("Your plan is a draft")).toBeTruthy();
-    expect(screen.getByText("2 objectives · weights at 70%")).toBeTruthy();
-    expect(screen.getByText("Mariam Gharbi approves it")).toBeTruthy();
+    expect(screen.getByText(/2 objectives · weights at 70% · Mariam Gharbi approves it/)).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Continue your plan" }).getAttribute("href")).toBe("/performance/plan");
+  });
+
+  it("shows a year with no plan yet as the cycle, who approves, and the way to write it", async () => {
+    mocks.work = { modules: ready, items: [] };
+    mocks.summary = {
+      employeeId: "e", displayName: "Nour Ben Ali", jobTitle: null, orgUnitName: null, stableEmployeeKey: null, relation: "Self",
+      currentCycle: { cycleId: "c", cycleName: "FY2027 Cycle", cycleState: "Active", phase: "Review", isParticipant: true,
+        planId: null, planStatus: "NotStarted", overallProgress: null, planHref: null, objectives: [], reviewerName: "Sami Ben Youssef",
+        weightTotal: null, lastUpdateAt: null },
+      reviews: null, development: null, praise: null, feedback: null, oneOnOne: null,
+    } as PersonPerformanceSummaryDto;
+    render(<FusionHome />);
+    expect(await screen.findByText("No plan yet")).toBeTruthy();
+    expect(screen.getByText("FY2027 Cycle · Review")).toBeTruthy();
+    expect(screen.getByText("Sami Ben Youssef approves it")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Write your plan" }).getAttribute("href")).toBe("/performance/plan");
+  });
+
+  it("shows an approved year as the plan's figure, its bar and its objectives' status", async () => {
+    mocks.work = { modules: ready, items: [] };
+    mocks.summary = {
+      employeeId: "e", displayName: "Nour Ben Ali", jobTitle: null, orgUnitName: null, stableEmployeeKey: null, relation: "Self",
+      currentCycle: { cycleId: "c", cycleName: "FY2027 Cycle", cycleState: "Active", phase: "Execution", isParticipant: true,
+        planId: "p", planStatus: "Approved", overallProgress: 39, planHref: "/performance/plan",
+        objectives: [
+          { objectiveId: "o1", number: 1, title: "A", alignedTo: null, weight: 50, progress: 40, href: "#", status: "OnTrack" },
+          { objectiveId: "o2", number: 2, title: "B", alignedTo: null, weight: 50, progress: 38, href: "#", status: "AtRisk" },
+        ],
+        reviewerName: null, weightTotal: 100, lastUpdateAt: null },
+      reviews: null, development: null, praise: null, feedback: null, oneOnOne: null,
+    } as PersonPerformanceSummaryDto;
+    render(<FusionHome />);
+    expect(await screen.findByText("39%")).toBeTruthy();
+    expect(screen.getByText("1 on track")).toBeTruthy();
+    expect(screen.getByText("1 at risk")).toBeTruthy();
   });
 
   it("shows no year for someone outside the current cycle", async () => {
@@ -249,7 +274,7 @@ describe("FusionHome", () => {
       items: [{ id: "a", module: "performance", kind: "plan-write", title: "Write your plan", dueOn: "2099-01-02", href: "/performance/plan" }],
     };
     render(<FusionHome />);
-    expect(screen.getByRole("heading", { name: "Write your plan" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Write your plan/ })).toBeTruthy();
     expect(screen.getByText("Core HR work couldn't be loaded")).toBeTruthy();
   });
 
@@ -288,7 +313,7 @@ describe("FusionHome", () => {
     mocks.work = { modules: ready, items: [{ id: "a", module: "performance", kind: "plan-write", title: "Write your plan", dueOn: "2099-01-02", href: "/performance/plan" }] };
     mocks.praise = { data: undefined, error: new Error("down") };
     render(<FusionHome />);
-    expect(screen.getByRole("heading", { name: "Write your plan" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Write your plan/ })).toBeTruthy();
     expect(screen.getByText("Praise couldn't be loaded")).toBeTruthy();
   });
 

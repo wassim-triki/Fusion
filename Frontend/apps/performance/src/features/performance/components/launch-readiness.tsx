@@ -34,15 +34,15 @@ export function LaunchReadiness({
   const completeCount = areas.filter((area) => area.complete).length;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-baseline justify-between gap-4">
+    <section className="overflow-hidden rounded-surface bg-card">
+      <div className="flex min-h-14 items-center justify-between gap-4 border-b border-border px-4 py-3">
         <h2 className="type-section-title text-foreground">{t("launchReadiness")}</h2>
         <p className="type-body text-muted-foreground tabular-nums">
           {t("ofReady", { completeCount, length: areas.length })}
         </p>
       </div>
 
-      <ul className="divide-y divide-border/70 overflow-hidden rounded-surface bg-card">
+      <ul className="divide-y divide-border/70">
         {areas.map((area) => {
           const interactive = Boolean(onOpenArea) && !area.complete;
           const RowTag = interactive ? "button" : "div";
@@ -102,6 +102,6 @@ export function LaunchReadiness({
           </AsyncButton>
         </div>
       ) : null}
-    </div>
+    </section>
   );
 }

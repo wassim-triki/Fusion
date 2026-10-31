@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@repo/ds/components/ui/button";
 import { Input } from "@repo/ds/components/ui/input";
+import { DatePicker } from "@repo/ds/components/ui/date-picker";
 import { Label } from "@repo/ds/components/ui/label";
 import { PageContainer, PageHeader, PagePermissionNotice, PageSkeleton } from "@repo/ds/shell";
 import { useReviewRoundMutations } from "@/features/performance/api/use-reviews";
@@ -59,11 +60,11 @@ export default function NewReviewRoundPage() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="period-start">{t("reviewPeriodStarts")}</Label>
-            <Input id="period-start" type="date" required min={cycle.startDate} max={cycle.endDate} value={formStart} onChange={(event) => setPeriodStart(event.target.value)} />
+            <DatePicker id="period-start" min={cycle.startDate} max={cycle.endDate} value={formStart} onChange={setPeriodStart} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="period-end">{t("reviewPeriodEnds")}</Label>
-            <Input id="period-end" type="date" required min={formStart || cycle.startDate} max={cycle.endDate} value={formEnd} onChange={(event) => setPeriodEnd(event.target.value)} />
+            <DatePicker id="period-end" min={formStart || cycle.startDate} max={cycle.endDate} value={formEnd} onChange={setPeriodEnd} />
           </div>
         </div>
         <div className="mt-7 flex flex-wrap justify-end gap-2 border-t border-border pt-5">

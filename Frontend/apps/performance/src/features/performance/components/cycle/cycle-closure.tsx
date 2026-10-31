@@ -156,8 +156,8 @@ export function ClosureSection({ closure, loading }: { closure: CycleClosureDto 
   const rows = closed ? closure.unresolved.filter((row) => row.exceptionReason) : closure.unresolved;
 
   return (
-    <section className="space-y-4">
-      <header className="flex items-baseline justify-between gap-4">
+    <section className="space-y-4 rounded-surface bg-card px-5 pt-4 pb-5">
+      <header className="flex min-h-9 items-center justify-between gap-4">
         <h2 className="type-section-title text-foreground">
           {closed ? (rows.length > 0 ? t("closedWithExceptions") : t("closedWithEveryPlanApproved")) : t("withoutAnApprovedPlan")}
         </h2>
@@ -176,7 +176,7 @@ export function ClosureSection({ closure, loading }: { closure: CycleClosureDto 
       {rows.length === 0 ? (
         closed ? null : <p className="type-body-secondary text-muted-foreground">{t("everyParticipantHasAnApproved")}</p>
       ) : (
-        <ul className="divide-y divide-border rounded-surface bg-card">
+        <ul className="-mx-5 -mb-5 divide-y divide-border border-t border-border">
           {rows.map((row) => (
             <li
               key={row.employeeId}

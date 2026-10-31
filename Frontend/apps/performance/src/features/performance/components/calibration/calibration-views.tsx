@@ -114,17 +114,17 @@ export function DistributionView({ view, onManager }: { view: CalibrationDistrib
         </div>
       </section>
 
-      <section aria-labelledby="by-manager-title">
-        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-3">
+      <section aria-labelledby="by-manager-title" className="overflow-hidden rounded-surface bg-card">
+        <div className="flex min-h-14 flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
           <h2 id="by-manager-title" className="type-section-title text-foreground">
             {t("byManager")}<span className="ms-1.5 type-meta tabular-nums text-muted-foreground">{view.managers.length}</span>
           </h2>
           <p className="type-meta text-muted-foreground">{t("furthestFromTheSessionAverage")}</p>
         </div>
         {view.managers.length === 0 ? (
-          <p className="rounded-surface bg-card px-6 py-10 text-center type-body text-muted-foreground">{t("noOneMatchesTheseFilters")}</p>
+          <p className="px-6 py-10 text-center type-body text-muted-foreground">{t("noOneMatchesTheseFilters")}</p>
         ) : (
-          <div className="overflow-x-auto rounded-surface bg-card">
+          <div className="overflow-x-auto">
             <table className="w-full min-w-[44rem] text-start">
               <thead>
                 <tr className="border-b border-border type-meta text-muted-foreground">
@@ -329,14 +329,14 @@ export function ChangesView({ view, top }: { view: CalibrationChangesViewDto; to
           {view.levels.map((level) => <LevelBar key={level.value} level={level} max={max} top={top} />)}
         </div>
       </section>
-      <section aria-labelledby="changes-title">
-        <h2 id="changes-title" className="mb-3 type-section-title text-foreground">
+      <section aria-labelledby="changes-title" className="overflow-hidden rounded-surface bg-card">
+        <h2 id="changes-title" className="flex min-h-14 items-center border-b border-border px-5 type-section-title text-foreground">
           {t("changes")}<span className="ms-1.5 type-meta tabular-nums text-muted-foreground">{view.changes.length}</span>
         </h2>
         {view.changes.length === 0 ? (
-          <p className="rounded-surface bg-card px-6 py-10 text-center type-body text-muted-foreground">{t("everyRatingStayedAsManagers")}</p>
+          <p className="px-6 py-10 text-center type-body text-muted-foreground">{t("everyRatingStayedAsManagers")}</p>
         ) : (
-          <ul className="divide-y divide-border rounded-surface bg-card">
+          <ul className="divide-y divide-border">
             {view.changes.map((change) => (
               <li key={change.reviewId} className="grid gap-3 px-5 py-4 md:grid-cols-[minmax(0,14rem)_auto_minmax(0,1fr)_auto] md:items-start">
                 <div className="flex items-center gap-3">

@@ -15,6 +15,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DatePicker,
   Input,
   Label,
   Popover,
@@ -96,12 +97,11 @@ function EffectiveDateField({
   return (
     <div className="space-y-1.5">
       <Label htmlFor="organization-effective-date">{t("effectiveDate.label")}</Label>
-      <Input
+      <DatePicker
         id="organization-effective-date"
-        type="date"
         value={value}
         min={allowPast ? undefined : today}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={onChange}
       />
       <p className="text-xs text-muted-foreground">
         {value === today
@@ -1018,13 +1018,13 @@ export function MoveReviewDialog({
               </>
             )}
             <span className="text-muted-foreground">{t("move.effectiveDate")}</span>
-            <Input
-              type="date"
+            <DatePicker
+              aria-label={t("move.effectiveDate")}
               value={proposal.effectiveDate}
-              onChange={(event) =>
+              onChange={(effectiveDate) =>
                 onChange({
                   ...proposal,
-                  effectiveDate: event.target.value,
+                  effectiveDate,
                   // Explicit entry re-picks on a date change; drag entry keeps
                   // its destination and re-validates against the new date.
                   toParentId:

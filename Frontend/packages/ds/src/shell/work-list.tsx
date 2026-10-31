@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
-import { ChevronRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "../lib/utils";
 import { Avatar, AvatarFallback } from "../components/ui/avatar";
 import { Skeleton } from "../components/ui/skeleton";
+import { buttonVariants } from "../components/ui/button";
+import { FUSION_MODULE_ICONS } from "./modules";
 
 export interface WorkListItem {
   id: string;
@@ -123,54 +124,64 @@ export function WorkList({
   const failed = modules.filter((module) => module.status === "error");
 
   return (
-    <div lang={locale} className={cn("space-y-2", className)}>
+    <div lang={locale} className={className}>
       {items.length === 0 && loading.length === 0 && failed.length === 0 ? (
-        <p className="py-2 type-body-secondary text-muted-foreground">{emptyLabel ?? t("empty")}</p>
+        <p className="px-5 py-4 type-body-secondary text-muted-foreground in-data-padded:p-0">{emptyLabel ?? t("empty")}</p>
       ) : null}
       {items.length > 0 || loading.length > 0 ? (
-        <ul className="divide-y divide-border overflow-hidden rounded-surface bg-card">
+        // Its own card on the canvas; inside a section the rows run edge to edge.
+        <ul className="divide-y divide-border overflow-hidden rounded-surface bg-card in-data-[slot=section]:rounded-none in-data-[slot=section]:bg-transparent">
           {items.map((item) => {
             const days = item.dueOn ? daysUntil(item.dueOn, reference) : null;
             const moduleLabel = labels.get(item.module) ?? item.module;
+            const decides = Boolean(item.decision && renderDecision);
+            const Icon = FUSION_MODULE_ICONS[item.module];
             return (
-              <li key={item.id} className={cn(item.decision && renderDecision && "flex items-center pe-4")}>
+              <li key={item.id} className={cn(decides && "flex items-center pe-5")}>
                 {renderLink({
                   href: item.href,
                   className: cn(
-                    "group flex min-h-14 items-center gap-3 px-4 py-2.5 transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none",
-                    item.decision && renderDecision && "min-w-0 flex-1"
+                    "group flex min-h-[68px] items-center gap-3.5 px-5 py-3 transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none",
+                    decides && "min-w-0 flex-1 pe-3"
                   ),
                   children: (
                     <>
-                      <Avatar className="size-8 shrink-0">
-                        <AvatarFallback hue={item.subject?.displayName} className="text-xs">
-                          {item.subject ? initials(item.subject.displayName) : moduleLabel.slice(0, 1)}
-                        </AvatarFallback>
-                      </Avatar>
+                      {item.subject ? (
+                        <Avatar className="size-10 shrink-0">
+                          <AvatarFallback hue={item.subject.displayName} className="text-sm">{initials(item.subject.displayName)}</AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-inlay text-muted-foreground">
+                          {Icon ? <Icon aria-hidden className="size-4" /> : moduleLabel.slice(0, 1)}
+                        </span>
+                      )}
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate type-body font-medium text-foreground">{item.title}</span>
-                        <span className="block truncate type-meta text-muted-foreground">{item.context ?? moduleLabel}</span>
-                      </span>
-                      {item.decision && renderDecision ? null : (
-                        <>
+                        <span className="block truncate type-label font-semibold text-foreground">{item.title}</span>
+                        <span className="block truncate type-meta text-muted-foreground">
+                          {[moduleLabel, item.context].filter(Boolean).join(" · ")}
                           {item.dueOn && days !== null ? (
-                            <span className={cn("shrink-0 type-meta", days < 0 ? "text-warning" : "text-muted-foreground")}>
-                              {dueLabel(item.dueOn, reference, dueWords)}
-                            </span>
+                            <>
+                              {" · "}
+                              <span className={cn(days < 0 && "text-warning")}>{dueLabel(item.dueOn, reference, dueWords)}</span>
+                            </>
                           ) : null}
-                          <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" aria-hidden />
-                        </>
+                        </span>
+                      </span>
+                      {decides ? null : (
+                        <span className={cn(buttonVariants({ variant: "outline", size: "sm" }), "pointer-events-none shrink-0")}>
+                          {item.actionLabel ?? t("open")}
+                        </span>
                       )}
                     </>
                   ),
                 })}
-                {item.decision && renderDecision ? renderDecision(item) : null}
+                {decides ? renderDecision!(item) : null}
               </li>
             );
           })}
           {loading.map((module) => (
-            <li key={`loading-${module.key}`} aria-busy aria-label={t("loadingModule", { module: module.label })} className="flex min-h-14 items-center gap-3 px-4 py-2.5">
-              <Skeleton className="size-8 rounded-full" />
+            <li key={`loading-${module.key}`} aria-busy aria-label={t("loadingModule", { module: module.label })} className="flex min-h-[68px] items-center gap-3.5 px-5 py-3">
+              <Skeleton className="size-10 rounded-full" />
               <div className="flex-1 space-y-1.5">
                 <Skeleton className="h-3.5 w-1/2" />
                 <Skeleton className="h-3 w-1/4" />
@@ -180,7 +191,7 @@ export function WorkList({
         </ul>
       ) : null}
       {failed.map((module) => (
-        <p key={module.key} role="status" className="type-meta text-muted-foreground">
+        <p key={module.key} role="status" className="px-5 py-3 type-meta text-muted-foreground">
           {t("moduleFailed", { module: module.label })}
         </p>
       ))}

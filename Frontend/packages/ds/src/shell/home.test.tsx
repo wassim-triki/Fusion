@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { HomeAgenda, LeadFocus, agendaEntries, selectLead, type HomeMoment, type HomeWorkItem } from "./home";
+import { HomeAgenda, agendaEntries, orderWork, type HomeMoment, type HomeWorkItem } from "./home";
 
 const today = new Date(2026, 9, 20); // Tuesday 20 October 2026
 
@@ -73,108 +73,49 @@ const selfDue: HomeMoment = {
   covers: ["self-assessment", "nominate-peers"],
 };
 
-const label = (key: string) => (key === "core" ? "Core HR" : "Performance");
+const first = (work: HomeWorkItem[]) => orderWork(work, today)[0];
 
-describe("selectLead", () => {
-  it("leads with an overdue item, then the earliest due, then the first undated", () => {
-    expect(selectLead([updateRequest, selfAssessment, lateReviews], [oneOnOne], today)).toEqual({ kind: "work", item: lateReviews });
-    expect(selectLead([updateRequest, selfAssessment], [oneOnOne], today)).toEqual({ kind: "work", item: selfAssessment });
-    expect(selectLead([access, updateRequest], [oneOnOne], today)).toEqual({ kind: "work", item: access });
+describe("orderWork", () => {
+  it("puts overdue work first, then the earliest due, then undated work as given", () => {
+    expect(orderWork([updateRequest, selfAssessment, lateReviews], today)).toEqual([lateReviews, selfAssessment, updateRequest]);
+    expect(orderWork([access, updateRequest], today)).toEqual([access, updateRequest]);
   });
 
   it("puts work someone is waiting on ahead of the person's own work that isn't late, longest wait first", () => {
-    expect(selectLead([selfAssessment, peerInput, aichaPlan], [oneOnOne], today)).toEqual({ kind: "work", item: aichaPlan });
-    expect(selectLead([selfAssessment, peerInput], [], today)).toEqual({ kind: "work", item: peerInput });
-    expect(selectLead([access, aichaPlan], [], today)).toEqual({ kind: "work", item: aichaPlan });
+    expect(orderWork([selfAssessment, peerInput, aichaPlan], today)).toEqual([aichaPlan, peerInput, selfAssessment]);
+    expect(first([access, aichaPlan])).toEqual(aichaPlan);
   });
 
-  it("still leads with the person's own late work over work someone is waiting on", () => {
-    expect(selectLead([aichaPlan, lateReviews, peerInput], [], today)).toEqual({ kind: "work", item: lateReviews });
+  it("still puts the person's own late work over work someone is waiting on", () => {
+    expect(first([aichaPlan, lateReviews, peerInput])).toEqual(lateReviews);
     const latePeerInput = { ...peerInput, dueOn: "2026-10-18" };
-    expect(selectLead([aichaPlan, latePeerInput], [], today)).toEqual({ kind: "work", item: latePeerInput });
-  });
-
-  it("leads with the next moment when there is no work, and nothing when there is nothing", () => {
-    expect(selectLead([], [selfDue, oneOnOne], today)).toEqual({ kind: "moment", moment: oneOnOne });
-    expect(selectLead([], [], today)).toBeNull();
+    expect(first([aichaPlan, latePeerInput])).toEqual(latePeerInput);
   });
 });
 
-describe("LeadFocus", () => {
-  it("shows the module, title, steps, time left and one action", () => {
-    render(<LeadFocus lead={{ kind: "work", item: selfAssessment }} moduleLabel={label} today={today} />);
-    expect(screen.getByText("Performance")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Complete your self-assessment" })).toBeInTheDocument();
-    expect(screen.getByText("days left")).toBeInTheDocument();
-    expect(screen.getAllByText("Due Fri 23 Oct")).toHaveLength(2);
-    expect(screen.getByRole("list", { name: "Where this stands" }).children).toHaveLength(4);
-    expect(screen.getByRole("link", { name: "Open" })).toHaveAttribute("href", "/performance/reviews/1");
+describe("Coming up", () => {
+  it("lists the moments of the next two weeks, earliest first", () => {
+    const later = { ...oneOnOne, id: "later", title: "1:1 with Omar Mansour", date: "2026-10-29", at: "2026-10-29T09:00:00Z" };
+    expect(agendaEntries({ moments: [later, selfDue, oneOnOne], today }).map((e) => e.title))
+      .toEqual(["1:1 with Mariam Gharbi", "Your self-assessment due", "1:1 with Omar Mansour"]);
   });
 
-  it("reads work someone is waiting on as how long they've waited", () => {
-    render(<LeadFocus lead={{ kind: "work", item: aichaPlan }} moduleLabel={label} today={today} />);
-    expect(screen.getByText("3")).toBeInTheDocument();
-    expect(screen.getByText("days waiting")).toBeInTheDocument();
-    expect(screen.getByText("Waiting since Sat 17 Oct")).toBeInTheDocument();
-    expect(screen.queryByText(/days left/)).not.toBeInTheDocument();
+  it("leaves out what is past or beyond two weeks", () => {
+    const past = { ...selfDue, id: "past", date: "2026-10-10" };
+    const far = { ...selfDue, id: "far", date: "2026-11-30" };
+    expect(agendaEntries({ moments: [past, far], today })).toEqual([]);
   });
 
-  it("keeps a waiting item's due date and says when the wait started today", () => {
-    render(<LeadFocus lead={{ kind: "work", item: { ...peerInput, waitingSince: "2026-10-20T08:00:00" } }} moduleLabel={label} today={today} />);
-    expect(screen.getByText("waiting since today")).toBeInTheDocument();
-    expect(screen.getByText("Due Fri 30 Oct")).toBeInTheDocument();
-  });
-
-  it("reads an overdue item as late", () => {
-    render(<LeadFocus lead={{ kind: "work", item: lateReviews }} moduleLabel={label} today={today} />);
-    expect(screen.getByText("day late")).toBeInTheDocument();
-  });
-
-  it("features the next moment when nothing needs the person", () => {
-    render(<LeadFocus lead={{ kind: "moment", moment: oneOnOne }} moduleLabel={label} today={today} />);
-    expect(screen.getByText(/Nothing needs you today/)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "1:1 with Mariam Gharbi" })).toBeInTheDocument();
-    expect(screen.getByText(/In 2 days · 2 on the agenda/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Open the 1:1" })).toHaveAttribute("href", "/performance/one-on-ones/s1");
-  });
-
-  it("names the lead's action when the module says what it does", () => {
-    render(<LeadFocus lead={{ kind: "work", item: { ...lateReviews, actionLabel: "Write the review" } }} moduleLabel={label} today={today} />);
-    expect(screen.getByRole("link", { name: "Write the review" })).toHaveAttribute("href", lateReviews.href);
-  });
-
-  it("states that nothing needs the person and nothing is scheduled", () => {
-    render(<LeadFocus lead={null} moduleLabel={label} today={today} />);
-    expect(screen.getByRole("heading", { name: "No work and nothing scheduled in the next two weeks" })).toBeInTheDocument();
-  });
-});
-
-describe("Next two weeks", () => {
-  it("lists dated work and moments by day without the lead or work a moment covers", () => {
-    const entries = agendaEntries({
-      work: [selfAssessment, { ...lateReviews, id: "x", dueOn: "2026-10-28", title: "Feedback for Rim" }],
-      moments: [oneOnOne, selfDue],
-      lead: { kind: "work", item: { ...updateRequest } },
-      today,
-    });
-    expect(entries.map((e) => e.title)).toEqual(["1:1 with Mariam Gharbi", "Your self-assessment due", "Feedback for Rim due"]);
-  });
-
-  it("doesn't repeat a featured moment and leaves out what is past or beyond two weeks", () => {
-    const entries = agendaEntries({
-      work: [{ ...updateRequest, dueOn: "2026-11-30", id: "far" }, { ...updateRequest, dueOn: "2026-10-10", id: "past" }],
-      moments: [oneOnOne],
-      lead: { kind: "moment", moment: oneOnOne },
-      today,
-    });
-    expect(entries).toEqual([]);
+  it("shows each moment's day, what happens and its module, opening its path", () => {
+    render(<HomeAgenda moments={[oneOnOne]} today={today} modules={[{ key: "performance", label: "Performance", status: "ready" }]} />);
+    const link = screen.getByRole("link", { name: /1:1 with Mariam Gharbi/ });
+    expect(link).toHaveAttribute("href", "/performance/one-on-ones/s1");
+    expect(link).toHaveTextContent("22");
+    expect(link).toHaveTextContent("Performance");
   });
 
   it("says nothing is scheduled and names a module that couldn't answer", () => {
-    render(
-      <HomeAgenda work={[]} moments={[]} lead={null} today={today}
-        modules={[{ key: "performance", label: "Performance", status: "error" }]} />,
-    );
+    render(<HomeAgenda moments={[]} today={today} modules={[{ key: "performance", label: "Performance", status: "error" }]} />);
     expect(screen.getByText("Nothing is scheduled in the next two weeks")).toBeInTheDocument();
     expect(screen.getByText("Performance's dates couldn't be loaded")).toBeInTheDocument();
   });

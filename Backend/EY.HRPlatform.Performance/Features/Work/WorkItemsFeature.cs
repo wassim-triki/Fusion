@@ -74,7 +74,7 @@ public sealed class GetWorkItemsHandler(PerformanceDbContext db)
         ["update-request"] = "Record progress",
         ["feedback-request"] = "Answer",
         ["one-on-one-action"] = "Open the 1:1",
-        ["one-on-one-meeting"] = "Complete or reschedule",
+        ["one-on-one-meeting"] = "Open the 1:1",
         ["self-assessment"] = "Write your self-assessment",
         ["manager-assessment"] = "Write the review",
         ["nominate-peers"] = "Choose peers",

@@ -26,6 +26,7 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
+  DatePicker,
   Input,
   Label,
 } from "@repo/ds";
@@ -496,23 +497,14 @@ function AsOfControl({
 }) {
   const t = useTranslations("profile.record");
   return (
-    <label className="inline-flex items-center gap-2 rounded-control border bg-card px-3 py-1.5 type-body text-muted-foreground focus-within:ring-2 focus-within:ring-ring">
+    <div className="inline-flex items-center gap-2 type-body text-muted-foreground">
       <CalendarDays className="size-4" aria-hidden />
       <span className="type-label">{t("asOfToday")}</span>
       <span aria-hidden className="text-muted-foreground/40">
         ·
       </span>
-      <span className="sr-only">{t("viewAsOf")}</span>
-      <input
-        type="date"
-        defaultValue={today}
-        onChange={(event) => {
-          if (event.target.value) onPick(event.target.value);
-        }}
-        className="bg-transparent text-foreground outline-none [color-scheme:light] dark:[color-scheme:dark]"
-        aria-label={t("viewAsOfDate")}
-      />
-    </label>
+      <DatePicker value={today} onChange={onPick} aria-label={t("viewAsOfDate")} className="h-8 w-auto" />
+    </div>
   );
 }
 

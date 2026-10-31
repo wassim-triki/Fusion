@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
 import { createPlatformApiClient, fusionAttentionQueryKeys, getFusionAttentionModule, type FusionAttentionModuleKey } from "@repo/api";
+import { Check, X } from "lucide-react";
 import { Button, Textarea } from "@repo/ds";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ds/components/ui/popover";
 import type { WorkListItem } from "@repo/ds/shell";
@@ -43,7 +44,10 @@ export function HomeDecision({ item }: { item: WorkListItem }) {
       {error ? <span role="alert" className="max-w-56 truncate type-meta text-destructive" title={error}>{error}</span> : null}
       <Popover open={asking} onOpenChange={setAsking}>
         <PopoverTrigger asChild>
-          <Button type="button" size="sm" variant="ghost" disabled={busy}>{t("decline")}</Button>
+          <Button type="button" size="icon-sm" variant="ghost" disabled={busy} aria-label={t("decline")} title={t("decline")}
+            className="text-muted-foreground hover:text-foreground">
+            <X className="size-4" />
+          </Button>
         </PopoverTrigger>
         <PopoverContent align="end" className="grid w-80 gap-2.5">
           <label htmlFor={`why-${item.id}`} className="type-label font-semibold">{t("why")}</label>
@@ -55,8 +59,11 @@ export function HomeDecision({ item }: { item: WorkListItem }) {
           </Button>
         </PopoverContent>
       </Popover>
+      {/* Approve in the company's color: an outline with a subtle fill. */}
       <Button type="button" size="sm" variant="outline" disabled={busy}
+        className="border-primary-ring bg-primary-tint text-primary-ink hover:bg-primary/20 hover:text-primary-ink dark:border-primary-ring dark:bg-primary-tint dark:hover:bg-primary/20"
         onClick={() => void send(item.decision!.approvePath, {})}>
+        <Check className="size-4" />
         {t("approve")}
       </Button>
     </div>

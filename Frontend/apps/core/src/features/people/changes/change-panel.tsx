@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { QuickPicks } from "@repo/ds/choice";
 import { Button, DatePicker, Skeleton, Spinner, Textarea, cn } from "@repo/ds";
@@ -14,7 +14,7 @@ import type {
   PeopleProfileDto,
   WorkforceChangeDto,
 } from "@repo/api";
-import { Check, MessageSquare, PenLine, Sparkles, Stamp, Target, X } from "lucide-react";
+import { Check, MessageSquare, Pencil, Sparkles, Stamp, Target, Undo2, X } from "lucide-react";
 import { useRefusal } from "@/i18n/words";
 import { JobPicker, PlacePicker } from "@/features/catalog/components/catalog-pickers";
 import { useCompanyLists, useJobs } from "@/features/catalog/api/use-catalog";
@@ -106,6 +106,11 @@ export function ChangePanel({
 
 type Fact = "unit" | "title" | "location" | "reason";
 type Picked = { id: string; name: string };
+/** A part of the change the sentence can fill. */
+type Part = "job" | "unit" | "place" | "reason" | "date";
+
+/** How long typing pauses before Fusion drafts the sentence. */
+const DRAFT_PAUSE_MS = 900;
 
 /**
  * A change of job, described in a sentence and drafted from the company's own jobs and reasons (D-15): the draft is
@@ -149,7 +154,12 @@ function JobForm({
   const [reasonId, setReasonId] = useState<string | null>(d?.reasonId ?? null);
   const [note, setNote] = useState(editing?.note ?? "");
   const [said, setSaid] = useState("");
-  const [read, setRead] = useState<"ai" | "words" | "nothing" | "leaving" | null>(null);
+  const [read, setRead] = useState<"nothing" | "leaving" | null>(null);
+  // Parts the person set themselves are never redrafted; the ones AI filled carry a sparkle.
+  const byHand = useRef(new Set<Part>());
+  const [byAi, setByAi] = useState<ReadonlySet<Part>>(new Set());
+  const lastRead = useRef("");
+  const readSeq = useRef(0);
   const [open, setOpen] = useState<Fact | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -201,22 +211,53 @@ function JobForm({
   const effects = useLineEffects(employeeId, noManager ? null : chosen?.employeeId ?? null, managerChanged);
   const dottedEnds = chosen && person.dottedLineManagers.some((line) => line.employeeKey === chosen.employeeKey) ? chosen : null;
 
-  const readIt = async () => {
+  const setByHand = (part: Part) => {
+    byHand.current.add(part);
+    setByAi((parts) => { const next = new Set(parts); next.delete(part); return next; });
+  };
+
+  // Drafts the sentence into every part the person hasn't set by hand; an answer to an older sentence is dropped.
+  const readIt = async (text: string) => {
+    const sentence = text.trim();
+    if (!sentence || sentence === lastRead.current) return;
+    lastRead.current = sentence;
+    const seq = ++readSeq.current;
     setError(null);
     try {
-      const result = await draft.mutateAsync(said.trim());
+      const result = await draft.mutateAsync(sentence);
+      if (seq !== readSeq.current) return;
       if (result.kind === "end") { setRead("leaving"); return; }
       if (!result.understood) { setRead("nothing"); return; }
-      if (result.date) setDate(result.date);
-      if (result.jobId && result.jobId !== work?.jobId) setJob({ id: result.jobId, name: result.jobTitle ?? "", level: result.jobLevel });
-      if (result.orgUnitId && result.orgUnitId !== work?.orgUnitId) setUnit({ id: result.orgUnitId, name: result.orgUnitName ?? "" });
-      if (result.placeId && result.placeId !== work?.placeId) setPlace({ id: result.placeId, name: result.placeName ?? "" });
-      if (result.reasonId) setReasonId(result.reasonId);
-      setRead(result.usedAi ? "ai" : "words");
+      setRead(null);
+      const hand = byHand.current;
+      const ai = new Set<Part>();
+      const fill = (part: Part, found: boolean, apply: () => void) => {
+        if (hand.has(part)) return;
+        apply();
+        if (found && result.usedAi) ai.add(part);
+      };
+      const newJob = Boolean(result.jobId && result.jobId !== work?.jobId);
+      const newUnit = Boolean(result.orgUnitId && result.orgUnitId !== work?.orgUnitId);
+      const newPlace = Boolean(result.placeId && result.placeId !== work?.placeId);
+      fill("date", Boolean(result.date), () => setDate(result.date ?? todayIso()));
+      fill("job", newJob, () => setJob(newJob ? { id: result.jobId!, name: result.jobTitle ?? "", level: result.jobLevel } : null));
+      fill("unit", newUnit, () => setUnit(newUnit ? { id: result.orgUnitId!, name: result.orgUnitName ?? "" } : null));
+      fill("place", newPlace, () => setPlace(newPlace ? { id: result.placeId!, name: result.placeName ?? "" } : undefined));
+      fill("reason", Boolean(result.reasonId), () => setReasonId(result.reasonId ?? null));
+      setByAi(ai);
     } catch (caught) {
-      setError(refusal(caught, t("describe.failed")));
+      if (seq === readSeq.current) setError(refusal(caught, t("describe.failed")));
     }
   };
+  const readLatest = useRef(readIt);
+  readLatest.current = readIt;
+
+  // Fusion drafts once typing pauses; Enter drafts at once.
+  useEffect(() => {
+    if (!describes || said.trim().length < 6) return;
+    const timer = window.setTimeout(() => void readLatest.current(said), DRAFT_PAUSE_MS);
+    return () => window.clearTimeout(timer);
+  }, [describes, said]);
 
   const save = async () => {
     setError(null);
@@ -268,72 +309,68 @@ function JobForm({
       <div className="min-h-0 flex-1 overflow-y-auto px-[22px] pb-4 pt-1.5">
         {describes ? (
           <section className="py-3.5">
-            <div className="grid gap-2 rounded-inset border bg-inlay p-3.5 focus-within:ring-2 focus-within:ring-ring">
-              <label htmlFor="change-say" className="type-meta text-muted-foreground">{t("describe.label")}</label>
+            <div className="grid gap-2 rounded-inset border border-input bg-field p-3.5 focus-within:ring-2 focus-within:ring-ring">
+              <div className="flex items-center justify-between gap-2">
+                <label htmlFor="change-say" className="type-meta text-muted-foreground">{t("describe.label")}</label>
+                {draft.isLoading ? <Spinner aria-label={t("describe.drafting")} className="size-3.5 text-muted-foreground" /> : null}
+              </div>
               <Textarea
                 id="change-say"
                 value={said}
                 onChange={(event) => { setSaid(event.target.value); setRead(null); }}
                 onKeyDown={(event) => {
-                  if (event.key === "Enter" && (event.metaKey || event.ctrlKey) && said.trim()) { event.preventDefault(); void readIt(); }
+                  if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void readIt(said); }
                 }}
                 placeholder={t("describe.placeholder", { name: firstName(person.identity.displayName) })}
                 rows={2}
                 maxLength={400}
                 className="min-h-[44px] resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 dark:bg-transparent"
               />
-              <div className="flex items-center justify-end gap-2.5">
-                {read ? (
-                  <span role="status" className={cn("me-auto type-meta", read === "nothing" || read === "leaving" ? "text-warning" : "text-muted-foreground")}>
-                    {read === "ai" ? <Sparkles aria-hidden className="me-1 inline size-3.5 align-[-2px] text-primary" /> : null}
-                    {t(`describe.read.${read}`)}
-                  </span>
-                ) : null}
-                <Button type="button" size="sm" variant="outline" disabled={!said.trim() || draft.isLoading} onClick={() => void readIt()}>
-                  {draft.isLoading ? <Spinner className="size-3.5" /> : <PenLine className="size-3.5" />}
-                  {draft.isLoading ? t("describe.drafting") : t("describe.draft")}
-                </Button>
-              </div>
+              {read ? <p role="status" className="type-meta text-warning">{t(`describe.read.${read}`)}</p> : null}
             </div>
           </section>
         ) : null}
 
         {reportingOnly ? null : (
           <Block title={describes ? t("describe.theChange") : t("facts.title")}>
-            <div key={read ?? "none"} className={cn("grid", (read === "ai" || read === "words") && "animate-in fade-in-0 slide-in-from-top-1 duration-300")}>
+            <div className="grid">
               <FactRow label={describes ? t("facts.title") : t("facts.jobTitle")} current={work?.jobTitle ?? t("facts.none")} next={titleChanged ? job!.name : null}
-                open={open === "title"} onOpen={() => setOpen("title")} onUndo={() => { setJob(null); setOpen(null); }} onDone={() => setOpen(null)}>
-                <JobPicker value={job?.id ?? work?.jobId ?? null} onChange={(next) => { setJob({ id: next.id, name: next.title, level: next.level?.label ?? null }); setOpen(null); }} />
+                drafted={byAi.has("job")}
+                open={open === "title"} onOpen={() => setOpen("title")} onUndo={() => { setByHand("job"); setJob(null); setOpen(null); }} onDone={() => setOpen(null)}>
+                <JobPicker value={job?.id ?? work?.jobId ?? null} onChange={(next) => { setByHand("job"); setJob({ id: next.id, name: next.title, level: next.level?.label ?? null }); setOpen(null); }} />
               </FactRow>
               {titleChanged && levelTo && levelFrom !== levelTo ? (
-                <FactRow fixed label={t("facts.level")} current={levelFrom ?? t("facts.none")} next={levelTo} open={false} onOpen={() => undefined} onUndo={() => undefined}>
+                <FactRow fixed label={t("facts.level")} current={levelFrom ?? t("facts.none")} next={levelTo} drafted={byAi.has("job")} open={false} onOpen={() => undefined} onUndo={() => undefined}>
                   {null}
                 </FactRow>
               ) : null}
               <FactRow label={t("facts.unit")} current={work?.organizationName ?? t("facts.none")} next={unitChanged ? unit!.name : null}
-                open={open === "unit"} onOpen={() => setOpen("unit")} onUndo={() => { setUnit(null); setOpen(null); }}>
-                <UnitEditor date={date} value={unit?.id ?? work?.orgUnitId ?? ""} onChange={(next) => { setUnit(next); setOpen(null); }} />
+                drafted={byAi.has("unit")}
+                open={open === "unit"} onOpen={() => setOpen("unit")} onUndo={() => { setByHand("unit"); setUnit(null); setOpen(null); }}>
+                <UnitEditor date={date} value={unit?.id ?? work?.orgUnitId ?? ""} onChange={(next) => { setByHand("unit"); setUnit(next); setOpen(null); }} />
               </FactRow>
               <FactRow label={t("facts.location")} current={work?.location ?? t("facts.none")} next={locationChanged ? (place?.name ?? t("facts.none")) : null}
-                open={open === "location"} onOpen={() => setOpen("location")} onUndo={() => { setPlace(undefined); setOpen(null); }} onDone={() => setOpen(null)}>
+                drafted={byAi.has("place")}
+                open={open === "location"} onOpen={() => setOpen("location")} onUndo={() => { setByHand("place"); setPlace(undefined); setOpen(null); }} onDone={() => setOpen(null)}>
                 <PlacePicker value={place === undefined ? work?.placeId ?? null : place?.id ?? null}
-                  onChange={(next) => { setPlace(next ? { id: next.id, name: next.name } : null); setOpen(null); }} />
+                  onChange={(next) => { setByHand("place"); setPlace(next ? { id: next.id, name: next.name } : null); setOpen(null); }} />
               </FactRow>
               {describes && reasons.length > 0 ? (
                 <FactRow label={t("facts.reason")} current={reasons.find((value) => value.id === reasonId)?.label ?? t("facts.none")} next={null}
+                  drafted={byAi.has("reason")}
                   open={open === "reason"} onOpen={() => setOpen("reason")} onUndo={() => undefined} onDone={() => setOpen(null)}>
                   <QuickPicks
                     label={t("facts.reason")}
                     value={reasonId ?? ""}
-                    onPick={(value) => { setReasonId(value === reasonId ? null : value); setOpen(null); }}
+                    onPick={(value) => { setByHand("reason"); setReasonId(value === reasonId ? null : value); setOpen(null); }}
                     options={reasons.map((value) => ({ value: value.id, label: value.label }))}
                   />
                 </FactRow>
               ) : null}
               {describes ? (
                 <div className="grid min-h-[34px] grid-cols-[84px_minmax(0,1fr)] items-center gap-2.5 py-1">
-                  <span className="type-meta text-muted-foreground">{t("when.from")}</span>
-                  <DateChoice label={t("when.from")} value={date} onChange={setDate} options={[todayIso(), firstOfNextMonth()]} />
+                  <FactLabel label={t("when.from")} drafted={byAi.has("date")} />
+                  <DateChoice label={t("when.from")} value={date} onChange={(next) => { setByHand("date"); setDate(next); }} options={[todayIso(), firstOfNextMonth()]} />
                 </div>
               ) : null}
             </div>
@@ -352,7 +389,7 @@ function JobForm({
             {noManager ? (
               <div className="flex min-h-[46px] items-center justify-between gap-3 rounded-control border px-3">
                 <span className="type-label">{t("noManager")}</span>
-                <Button type="button" size="sm" variant="ghost" onClick={() => setNoManager(false)}>{t("facts.undo")}</Button>
+                <Button type="button" size="icon-sm" variant="ghost" aria-label={t("facts.undo")} title={t("facts.undo")} onClick={() => setNoManager(false)}><Undo2 className="size-4" /></Button>
               </div>
             ) : (
               <PersonPicker date={date} forEmployee={employeeId} value={chosen} onChange={(next) => { setChosen(next); setNoManager(false); }} />
@@ -535,8 +572,8 @@ function EndForm({ person, editing, onClose }: { person: PeopleProfileDto; editi
                     targetOf(report.person.employeeId) === "none" ? (
                       <div className="flex min-h-[34px] items-center justify-between gap-2 rounded-control border px-2.5 text-[13px]">
                         <span className="text-muted-foreground">{t("noManager")}</span>
-                        <Button type="button" size="sm" variant="ghost" className="h-6 px-1.5"
-                          onClick={() => setOverrides(({ [report.person.employeeId]: _dropped, ...rest }) => rest)}>{t("facts.undo")}</Button>
+                        <Button type="button" size="icon-xs" variant="ghost" aria-label={t("facts.undo")} title={t("facts.undo")}
+                          onClick={() => setOverrides(({ [report.person.employeeId]: _dropped, ...rest }) => rest)}><Undo2 className="size-3.5" /></Button>
                       </div>
                     ) : (
                       <PersonPicker
@@ -727,9 +764,20 @@ function Stack({ names }: { names: string[] }) {
   );
 }
 
-/** One job fact: as it is, or struck through with the new value in bold; Change opens its editor in place. */
+/** A fact's label; a sparkle when AI filled it from the sentence. */
+function FactLabel({ label, changed = false, drafted = false }: { label: string; changed?: boolean; drafted?: boolean }) {
+  const t = useTranslations("changes.facts");
+  return (
+    <span className={cn("inline-flex min-w-0 items-center gap-1 type-meta text-muted-foreground", changed && "text-primary-ink")}>
+      <span className="truncate">{label}</span>
+      {drafted ? <Sparkles role="img" aria-label={t("drafted")} className="size-3 shrink-0 text-primary animate-in fade-in-0 zoom-in-50 duration-300" /> : null}
+    </span>
+  );
+}
+
+/** One job fact: as it is, or struck through with the new value in bold; the pencil opens its editor in place. */
 function FactRow({
-  label, current, next, open, onOpen, onUndo, onDone, fixed = false, children,
+  label, current, next, open, onOpen, onUndo, onDone, fixed = false, drafted = false, children,
 }: {
   label: string;
   current: string;
@@ -740,23 +788,28 @@ function FactRow({
   onDone?: () => void;
   /** Follows from another part (a job's level): shown, not changed here. */
   fixed?: boolean;
+  /** AI filled it from the sentence. */
+  drafted?: boolean;
   children: ReactNode;
 }) {
   const t = useTranslations("changes.facts");
+  const icon = (name: string, glyph: ReactNode, onClick: () => void) => (
+    <Button type="button" size="icon-sm" variant="ghost" aria-label={`${name}: ${label}`} title={name} onClick={onClick}>{glyph}</Button>
+  );
   return (
     <div className="grid min-h-[34px] grid-cols-[84px_minmax(0,1fr)_auto] items-center gap-2.5 py-0.5">
-      <span className={cn("type-meta text-muted-foreground", next && "text-primary-ink")}>{label}</span>
+      <FactLabel label={label} changed={Boolean(next)} drafted={drafted} />
       {open ? <div className="min-w-0">{children}</div> : (
         <span className="min-w-0 truncate text-[13.5px]">
           {next ? <><s className="me-1.5 text-muted-foreground">{current}</s><span className="font-semibold">{next}</span></> : current}
         </span>
       )}
       {fixed ? <span /> : open && onDone ? (
-        <Button type="button" size="sm" variant="ghost" onClick={onDone}>{t("done")}</Button>
+        icon(t("done"), <Check className="size-4" />, onDone)
       ) : next ? (
-        <Button type="button" size="sm" variant="ghost" onClick={onUndo}>{t("undo")}</Button>
+        icon(t("undo"), <Undo2 className="size-4" />, onUndo)
       ) : open ? <span /> : (
-        <Button type="button" size="sm" variant="ghost" onClick={onOpen}>{t("change")}</Button>
+        icon(t("change"), <Pencil className="size-3.5" />, onOpen)
       )}
     </div>
   );

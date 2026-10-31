@@ -60,6 +60,8 @@ export {
   DashboardPanel,
 } from "./dashboard";
 export type { KpiStatProps, DashboardSectionProps } from "./dashboard";
+export { Section } from "./section";
+export type { SectionProps } from "./section";
 export {
   DonutChart,
   AllocationGauge,
@@ -95,8 +97,8 @@ export type {
 } from "./notification-bell";
 export { WorkList, daysUntil, dueLabel, useDueWords } from "./work-list";
 export type { DueWords, RenderWorkLink, WorkListItem, WorkListModule, WorkListProps } from "./work-list";
-export { HomeAgenda, LeadFocus, agendaEntries, momentDay, selectLead, shortDay } from "./home";
-export type { HomeAgendaProps, HomeLead, HomeMoment, HomeWorkItem, LeadFocusProps } from "./home";
+export { HomeAgenda, agendaEntries, momentDay, orderWork, shortDay } from "./home";
+export type { HomeAgendaProps, HomeMoment, HomeWorkItem } from "./home";
 export {
   LastChange,
   SettingsBlock,

@@ -10,7 +10,7 @@ import {
   type PeoplePersonalDto,
   type UpdatePersonalRequest,
 } from "@repo/api";
-import { Button, Input, Label, Skeleton, cn } from "@repo/ds";
+import { Button, DatePicker, Input, Label, Skeleton, cn } from "@repo/ds";
 import { Clock3, Lock, Plus, RotateCcw, X } from "lucide-react";
 import { toast } from "sonner";
 import { useRefusal } from "@/i18n/words";
@@ -291,15 +291,7 @@ function NameForm(props: SectionProps & { locked: boolean }) {
       </Field>
       <Field label={t("dateOfBirth")}>
         {(id) => (
-          <Input
-            id={id}
-            type="date"
-            min="1900-01-01"
-            max={today}
-            value={dateOfBirth}
-            onChange={(event) => setDateOfBirth(event.target.value)}
-            className="[color-scheme:light] dark:[color-scheme:dark]"
-          />
+          <DatePicker id={id} min="1900-01-01" max={today} value={dateOfBirth} onChange={setDateOfBirth} captionLayout="dropdown" />
         )}
       </Field>
       <FormActions saving={saving} error={error} onCancel={() => props.setEditing(null)} />

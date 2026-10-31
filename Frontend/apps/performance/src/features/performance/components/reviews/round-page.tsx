@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import type { ReviewRoundDto, ReviewStage, ReviewStageProgressDto } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
 import { Input } from "@repo/ds/components/ui/input";
+import { DatePicker } from "@repo/ds/components/ui/date-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ds/components/ui/popover";
 import { Textarea } from "@repo/ds/components/ui/textarea";
 import { AsyncButton, PageContainer, PageHeader, PagePermissionNotice, PageSkeleton, StatusBadge } from "@repo/ds/shell";
@@ -157,8 +158,8 @@ function MoveDueDates({ round }: { round: ReviewRoundDto }) {
             <div key={stage.key} className="flex items-center gap-3">
               <span className="flex-1 type-label text-foreground">{t(`stage.${stage.key}`)}</span>
               {dates[stage.key] && dates[stage.key] !== current(stage.key) ? <span className="type-meta text-muted-foreground line-through">{dayLabel(current(stage.key), format.locale)}</span> : null}
-              <Input type="date" aria-label={t("due", { label: t(`stage.${stage.key}`) })} className="w-40" min={round.schedule.launchDay} max={round.cycleEnd}
-                value={dates[stage.key] ?? current(stage.key)} onChange={(event) => setDates({ ...dates, [stage.key]: event.target.value })} />
+              <DatePicker aria-label={t("due", { label: t(`stage.${stage.key}`) })} className="w-40" min={round.schedule.launchDay} max={round.cycleEnd}
+                value={dates[stage.key] ?? current(stage.key)} onChange={(value) => setDates({ ...dates, [stage.key]: value })} />
             </div>
           ))}
         </div>

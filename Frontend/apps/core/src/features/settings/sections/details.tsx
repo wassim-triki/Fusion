@@ -101,7 +101,7 @@ export function DetailsSettings({ section }: { section: FusionSettingsSection })
               {modules.map((module) => {
                 const Icon = FUSION_MODULE_ICONS[module.key];
                 return (
-                  <li key={module.key} className="flex items-center gap-3 rounded-surface bg-card px-4 py-3.5">
+                  <li key={module.key} className="flex items-center gap-3 rounded-control bg-inlay px-4 py-3.5">
                     <span className="grid size-9 shrink-0 place-items-center rounded-control bg-primary-tint text-primary-ink">
                       {Icon ? <Icon aria-hidden className="size-4" /> : null}
                     </span>

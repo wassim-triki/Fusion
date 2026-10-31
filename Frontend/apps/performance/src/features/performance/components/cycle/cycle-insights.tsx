@@ -208,12 +208,12 @@ const TD = "h-12 px-4 align-middle type-body";
 
 function Frame({ title, aside, children }: { title: string; aside?: ReactNode; children: ReactNode }) {
   return (
-    <section aria-label={title} className="space-y-3">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+    <section aria-label={title} className="overflow-hidden rounded-surface bg-card">
+      <div className="flex min-h-14 flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
         <h2 className="type-section-title text-foreground">{title}</h2>
         {aside}
       </div>
-      <div className="overflow-x-auto rounded-surface bg-card ring-1 ring-inset ring-border">{children}</div>
+      <div className="overflow-x-auto">{children}</div>
     </section>
   );
 }

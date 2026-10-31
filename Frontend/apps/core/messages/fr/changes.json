@@ -30,7 +30,8 @@
     "undo": "Annuler",
     "done": "OK",
     "level": "Niveau",
-    "reason": "Motif"
+    "reason": "Motif",
+    "drafted": "Rempli par Fusion à partir de votre phrase"
   },
   "when": {
     "from": "À partir du",
@@ -162,13 +163,10 @@
   "describe": {
     "label": "Décrivez-le",
     "placeholder": "Par exemple : promouvoir {name} Consultant senior au 1er janvier",
-    "draft": "Rédiger",
     "drafting": "Rédaction…",
     "theChange": "Le changement",
     "failed": "Fusion n'a pas pu le rédiger. Remplissez le changement ci-dessous.",
     "read": {
-      "ai": "Rédigé à partir des postes et motifs de votre entreprise. Vérifiez chaque élément.",
-      "words": "Rédigé à partir de vos mots. Vérifiez chaque élément.",
       "nothing": "Aucun poste, lieu, motif ni date trouvé. Remplissez le changement ci-dessous.",
       "leaving": "Cela ressemble à un dernier jour : utilisez Fin d'emploi."
     }

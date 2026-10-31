@@ -9,6 +9,7 @@ import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { Spinner } from "../components/ui/spinner";
 import { useSettingsSectionName } from "./fusion-sidebar";
+import { Section } from "./section";
 
 // ── Fusion Settings page parts (B-071 D4) ──
 //
@@ -221,32 +222,26 @@ export interface SettingsBlockProps {
   className?: string;
 }
 
-/** A group of related settings under one heading. */
+/** A group of related settings: one frame with its heading inside (B-225). */
 export function SettingsBlock({ title, meta, action, children, className }: SettingsBlockProps) {
   return (
-    <section className={cn("flex flex-col gap-3", className)}>
-      {title || action ? (
-        <div className="flex items-baseline justify-between gap-3">
-          {title ? (
-            <h2 className="flex items-baseline gap-2.5 type-subsection-title">
-              {title}
-              {meta ? <span className="type-meta font-normal text-muted-foreground">{meta}</span> : null}
-            </h2>
-          ) : (
-            <span />
-          )}
-          {action}
-        </div>
-      ) : null}
+    <Section title={title} meta={meta} action={action} className={className}>
       {children}
-    </section>
+    </Section>
   );
 }
 
 /** The rows of a block: one object, rows separated by hairlines. */
 export function SettingsRows({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn("overflow-hidden rounded-surface bg-card", className)}>
+    // Inside a padded section the rows run edge to edge under a hairline; on their own they're a card.
+    <div
+      data-slot="settings-rows"
+      className={cn(
+        "overflow-hidden rounded-surface bg-card in-data-padded:-mx-5 in-data-padded:-mb-5 in-data-padded:rounded-none in-data-padded:border-t in-data-padded:border-border in-data-padded:bg-transparent",
+        className
+      )}
+    >
       <div className="divide-y divide-border">{children}</div>
     </div>
   );

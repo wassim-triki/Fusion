@@ -130,3 +130,10 @@ test("the choice controls themselves and other roles pass", () => {
     assert.deepEqual(warnings(code), [], code);
   }
 });
+
+test("a native date input warns and points to the DS date picker", () => {
+  const found = warnings(`const a = <Input type="date" value={v} />;`);
+  assert.equal(found.length, 1);
+  assert.match(found[0], /DatePicker/);
+  assert.equal(warnings(`const a = <Input type="text" />;`).length, 0);
+});

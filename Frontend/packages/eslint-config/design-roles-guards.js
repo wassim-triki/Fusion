@@ -18,6 +18,7 @@
  * Choices: "pick one of a few" and "narrow this list" use @repo/ds/choice (Segmented, ChoiceMatrix, FilterChips,
  * QuickPicks, OptionCards), never a hand-made group of pressed buttons or radios, nor the raw toggle or radio group. A
  * real one-off toggle (a chart node, a single on/off filter) keeps aria-pressed with a disable line that says why.
+ * Dates: the DS DatePicker and Calendar, never a native date input (B-227).
  * See the radius, surface and type blocks in packages/ds/src/styles/tokens.css and DESIGN.md.
  */
 const RAW_RADIUS =
@@ -127,7 +128,11 @@ const choiceGuards = [
 const toneMessage =
   "Use a surface tone: bg-section / bg-card / bg-inlay (bg-popover in overlays). Translucent neutrals are for state variants only.";
 
+const nativeDateMessage =
+  "Use DatePicker from @repo/ds (and Calendar), never the browser's date input or calendar (B-227).";
+
 const guards = [
+  { selector: "JSXAttribute[name.name='type'][value.value=/^(date|datetime-local|month|week|time)$/]", message: nativeDateMessage },
   { selector: `Literal[value=${RAW_RADIUS}]`, message: radiusMessage },
   { selector: `TemplateElement[value.raw=${RAW_RADIUS}]`, message: radiusMessage },
   { selector: `Literal[value=${TRANSLUCENT_TONE}]`, message: toneMessage },

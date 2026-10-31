@@ -55,6 +55,8 @@
     --info-subtle: color-mix(in oklab, var(--info) 14%, transparent);
     --border: oklch(0.92 0.004 286.32);
     --input: oklch(0.92 0.004 286.32);
+    /* Fields are carved in: a shade darker than whatever surface they sit on (B-227). */
+    --field: oklch(0 0 0 / 3%);
     --ring: oklch(0.705 0.015 286.067);
     --chart-1: oklch(0.879 0.169 91.605);
     --chart-2: oklch(0.769 0.188 70.08);
@@ -123,6 +125,7 @@
     --info: oklch(0.75 0.12 264);
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
+    --field: oklch(0 0 0 / 24%);
     --ring: oklch(0.552 0.016 285.938);
     --chart-1: oklch(0.879 0.169 91.605);
     --chart-2: oklch(0.769 0.188 70.08);
@@ -171,6 +174,7 @@
     --color-identity-5: var(--identity-5);
     --color-ring: var(--ring);
     --color-input: var(--input);
+    --color-field: var(--field);
     --color-border: var(--border);
     --color-destructive: var(--destructive);
     --color-success: var(--success);
@@ -431,6 +435,14 @@
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
+}
+/* The one big figure of a card ("39%" on Home's Your year). */
+@utility type-figure {
+    font-size: 2.25rem;
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
 }
 @utility type-metric {
     font-size: 1.5rem;

@@ -130,7 +130,7 @@ function Slot({
   return (
     <li
       className={cn(
-        "flex min-h-[100px] items-center gap-3.5 rounded-surface bg-card px-[22px] py-5",
+        "flex min-h-[100px] items-center gap-3.5 rounded-control bg-inlay px-5 py-5",
         fresh && "animate-in fade-in-0 zoom-in-95 duration-300"
       )}
     >
@@ -162,7 +162,7 @@ function Slot({
 
 function EmptySlot({ second, canManage, onAdd, say }: { second: boolean; canManage: boolean; onAdd: () => void; say: Say }) {
   return (
-    <li className="flex min-h-[100px] items-center gap-3.5 rounded-surface border-[1.5px] border-dashed border-input px-[22px] py-5">
+    <li className="flex min-h-[100px] items-center gap-3.5 rounded-control border-[1.5px] border-dashed border-input px-5 py-5">
       <span className="grid size-12 shrink-0 place-items-center rounded-full border-[1.5px] border-dashed border-input text-muted-foreground">
         <UserPlus aria-hidden className="size-4" />
       </span>
@@ -204,7 +204,7 @@ function historyLine(item: AdministratorHistoryItemDto, company: string, say: Sa
 function History({ items, company, say }: { items: AdministratorHistoryItemDto[]; company: string; say: Say }) {
   const day = useDay();
   return (
-    <ol className="grid rounded-surface bg-card px-[26px] py-[22px]">
+    <ol className="grid px-1">
       {items.map((item, index) => {
         const face = item.kind === "activation" || item.kind === "recovery" || item.kind === "stepped-down" ? null : item.actorName;
         return (
@@ -406,8 +406,8 @@ function AddSheet({ open, onOpenChange, onAdded, say }: {
 
 function Section({ id, title, aside, children }: { id: string; title: string; aside?: ReactNode; children: ReactNode }) {
   return (
-    <section aria-labelledby={id} className="grid gap-3.5">
-      <div className="flex items-baseline justify-between gap-3">
+    <section aria-labelledby={id} className="grid gap-4 rounded-surface bg-card px-[22px] pt-4 pb-[22px]">
+      <div className="flex min-h-9 items-center justify-between gap-3">
         <h2 id={id} className="type-section-title">{title}</h2>
         {aside}
       </div>
@@ -491,7 +491,7 @@ export function AdministratorsPage({ section }: { section: FusionSettingsSection
         </Section>
 
         <Section id="admins-what" title={say("roles.administrators.whatTheyCanDo")}>
-          <div className="flex items-center gap-3.5 rounded-surface bg-card px-[22px] py-[18px]">
+          <div className="flex items-center gap-3.5">
             {/* eslint-disable-next-line no-restricted-syntax -- the drawing's icon tile radius */}
             <span className="grid size-10 shrink-0 place-items-center rounded-[13px] bg-inlay text-muted-foreground">
               <Crown aria-hidden className="size-[18px]" />

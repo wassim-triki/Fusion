@@ -9,6 +9,7 @@ import { Button } from "@repo/ds/components/ui/button";
 import { FilterChips } from "@repo/ds/choice";
 import { Checkbox } from "@repo/ds/components/ui/checkbox";
 import { Input } from "@repo/ds/components/ui/input";
+import { DatePicker } from "@repo/ds/components/ui/date-picker";
 import { NativeSelect, NativeSelectOption } from "@repo/ds/components/ui/native-select";
 import { Switch } from "@repo/ds/components/ui/switch";
 import { AsyncButton, StatusBadge } from "@repo/ds/shell";
@@ -307,8 +308,8 @@ function ComponentToggle({ icon, title, detail, checked, disabled, onChange }: {
 
 function DateField({ label, value, min, max, onCommit }: { label: string; value: string; min?: string; max?: string; onCommit: (value: string) => void }) {
   return (
-    <Input type="date" aria-label={label} className="w-44" defaultValue={value} key={value} min={min} max={max}
-      onBlur={(event) => { if (event.target.value && event.target.value !== value) onCommit(event.target.value); }} />
+    <DatePicker aria-label={label} className="w-44" value={value} min={min} max={max}
+      onChange={(next) => { if (next && next !== value) onCommit(next); }} />
   );
 }
 

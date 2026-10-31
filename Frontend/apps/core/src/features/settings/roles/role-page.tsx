@@ -446,9 +446,9 @@ function WhoHasIt({
   );
 
   return (
-    <section aria-labelledby="role-holders" className="grid gap-3.5">
+    <section aria-labelledby="role-holders" className="grid gap-4 rounded-surface bg-card px-[22px] py-5">
       <h2 id="role-holders" className="type-section-title">{say("roles.whoHasIt")}</h2>
-      <div className="grid gap-4 rounded-surface bg-card px-[22px] py-5">
+      <div className="grid gap-4">
         <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-4">
         <Line label={kindPick}>
           {draft.holderKind === "rule" ? (
@@ -814,9 +814,9 @@ function RoleEditor({ roleId, section }: { roleId: string; section: FusionSettin
               onChange={update}
               say={say}
             />
-            <section aria-labelledby="role-areas" className="grid gap-3.5">
-              <h2 id="role-areas" className="type-section-title">{say("roles.whatItCanDo", { role: roleName })}</h2>
-              <div className="rounded-surface bg-card py-1.5">
+            <section aria-labelledby="role-areas" className="rounded-surface bg-card pt-5 pb-1.5">
+              <h2 id="role-areas" className="px-[22px] type-section-title">{say("roles.whatItCanDo", { role: roleName })}</h2>
+              <div>
                 {GROUPS.map((group) => {
                   const rows = areas.filter((area) => area.group === group);
                   if (!rows.length) return null;

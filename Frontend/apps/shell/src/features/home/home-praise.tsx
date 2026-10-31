@@ -6,6 +6,7 @@ import { usePraiseFeed, useReactToPraise } from "@repo/api/query";
 import { resolveFusionAttentionModules, useAuth } from "@repo/auth";
 import { Skeleton } from "@repo/ds";
 import { Button } from "@repo/ds/components/ui/button";
+import { Section } from "@repo/ds/shell";
 import { PraiseList, type PraiseReactionIcons } from "@repo/performance-ui";
 
 /** The shell's own glyphs for praise reactions; the shared parts carry none. */
@@ -19,8 +20,8 @@ const REACTION_ICONS: PraiseReactionIcons = {
 const PRAISE_TAB = "/performance/feedback?tab=praise";
 
 /**
- * The company's latest praise in the home's side column (D-14, D-31): the two newest, praise to the viewer marked, and
- * the way to all of it. It's Performance's, so it shows only to people who can enter Performance, and a failure there
+ * The company's latest praise in the home's side column (D-14, D-31): the two newest as quoted boxes, praise to the
+ * viewer marked, and the way to all of it. It's Performance's, so it shows only to people who can enter Performance, and a failure there
  * never touches the home.
  */
 export function HomePraise() {
@@ -32,25 +33,23 @@ export function HomePraise() {
   if (!entitled) return null;
 
   return (
-    <section aria-labelledby="home-praise-heading" className="space-y-3">
-      <div className="flex min-h-9 items-center justify-between gap-4">
-        <h2 id="home-praise-heading" className="type-section-title text-foreground">{t("title")}</h2>
-        <Button asChild variant="outline" size="sm">
-          <a href={`${PRAISE_TAB}&compose=praise`}>{t("give")}</a>
-        </Button>
-      </div>
+    <Section
+      id="home-praise"
+      title={t("title")}
+      action={<Button asChild variant="ghost" size="sm"><a href={`${PRAISE_TAB}&compose=praise`}>{t("give")}</a></Button>}
+    >
       {feed.error ? (
         <p className="type-body-secondary text-muted-foreground">{t("failed")}</p>
       ) : !feed.data ? (
         <div aria-label={t("loading")} className="space-y-3">
-          <Skeleton className="h-28 w-full rounded-surface" />
-          <Skeleton className="h-28 w-full rounded-surface" />
+          <Skeleton className="h-28 w-full rounded-control" />
+          <Skeleton className="h-28 w-full rounded-control" />
         </div>
       ) : (
         <PraiseList
           items={feed.data.items.slice(0, 2)}
           reactionIcons={REACTION_ICONS}
-          reading
+          quote
           viewerEmployeeId={user?.employeeId}
           onReact={(praise, kind, add) => react.mutate({ praiseId: praise.id, kind, add })}
           // Praise opens in Performance's drawer; it's another app, so this is a full navigation.
@@ -58,9 +57,9 @@ export function HomePraise() {
           empty={<p className="type-body-secondary text-muted-foreground">{t("empty")}</p>}
         />
       )}
-      <a href={PRAISE_TAB} className="inline-flex items-center gap-1 type-label text-foreground hover:text-primary">
-        {t("all")} <ChevronRight className="size-4 text-muted-foreground" aria-hidden />
+      <a href={PRAISE_TAB} className="mt-3 inline-flex items-center gap-0.5 type-label font-semibold text-foreground hover:text-primary">
+        {t("all")} <ChevronRight className="size-4 text-muted-foreground rtl:rotate-180" aria-hidden />
       </a>
-    </section>
+    </Section>
   );
 }

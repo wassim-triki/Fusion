@@ -12,7 +12,8 @@
       "aColleague": "Un collègue",
       "from": "de {author} ·",
       "toYou": "Pour vous",
-      "praised": "{author} a reconnu {recipients}"
+      "praised": "{author} a reconnu {recipients}",
+      "byTo": "{author} à {recipients}"
     },
     "PraiseReactions": {
       "reactions": "Réactions"

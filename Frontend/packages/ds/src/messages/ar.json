@@ -171,29 +171,7 @@
       "open": "فتح"
     },
     "home": {
-      "whereThisStands": "أين وصلنا",
-      "stepDone": " (منجزة)",
-      "stepNow": " (الآن)",
-      "mostImportant": "الأهم",
-      "next": "التالي",
-      "leadUnit": {
-        "late": "{count, plural, one {يوم تأخير} other {أيام تأخير}}",
-        "today": "مستحق اليوم",
-        "left": "{count, plural, one {يوم متبقٍ} other {أيام متبقية}}",
-        "waiting": "{count, plural, =0 {بانتظارك منذ اليوم} one {يوم انتظار} other {أيام انتظار}}"
-      },
-      "dueOn": "مستحق في {date}",
-      "waitingSince": "بانتظارك منذ {date}",
-      "nothingToday": "لا شيء يتطلب تدخلك اليوم",
-      "today": "اليوم",
-      "tomorrow": "غدًا",
-      "inDays": "{count, plural, one {بعد يوم} two {بعد يومين} other {بعد # أيام}}",
-      "openOneOnOne": "فتح اللقاء الفردي",
-      "view": "عرض",
-      "nothingNow": "لا شيء يتطلب تدخلك الآن",
-      "nothingScheduledLead": "لا مهام ولا مواعيد في الأسبوعين القادمين",
       "nothingScheduled": "لا مواعيد في الأسبوعين القادمين",
-      "agendaDue": "استحقاق {title}",
       "datesFailed": "تعذّر تحميل تواريخ {module}"
     },
     "states": {
@@ -252,6 +230,9 @@
       "light": "فاتح",
       "system": "النظام",
       "dark": "داكن"
+    },
+    "datePicker": {
+      "pick": "اختر تاريخًا"
     }
   }
 }

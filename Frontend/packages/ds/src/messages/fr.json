@@ -171,29 +171,7 @@
       "open": "Ouvrir"
     },
     "home": {
-      "whereThisStands": "Avancement",
-      "stepDone": " (terminé)",
-      "stepNow": " (en cours)",
-      "mostImportant": "Le plus important",
-      "next": "Ensuite",
-      "leadUnit": {
-        "late": "{count, plural, one {jour de retard} other {jours de retard}}",
-        "today": "échéance aujourd’hui",
-        "left": "{count, plural, one {jour restant} other {jours restants}}",
-        "waiting": "{count, plural, =0 {en attente depuis aujourd’hui} one {jour d’attente} other {jours d’attente}}"
-      },
-      "dueOn": "Échéance le {date}",
-      "waitingSince": "En attente depuis le {date}",
-      "nothingToday": "Rien ne vous attend aujourd’hui",
-      "today": "Aujourd’hui",
-      "tomorrow": "Demain",
-      "inDays": "{count, plural, one {Dans # jour} other {Dans # jours}}",
-      "openOneOnOne": "Ouvrir l’entretien",
-      "view": "Voir",
-      "nothingNow": "Rien ne vous attend pour l’instant",
-      "nothingScheduledLead": "Aucune tâche ni rendez-vous dans les deux prochaines semaines",
       "nothingScheduled": "Rien de prévu dans les deux prochaines semaines",
-      "agendaDue": "Échéance : {title}",
       "datesFailed": "Impossible de charger les dates {module}"
     },
     "states": {
@@ -252,6 +230,9 @@
       "light": "Clair",
       "system": "Système",
       "dark": "Sombre"
+    },
+    "datePicker": {
+      "pick": "Choisir une date"
     }
   }
 }

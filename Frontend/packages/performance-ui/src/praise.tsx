@@ -24,6 +24,11 @@ export interface PraiseCardProps {
   reading?: boolean;
   /** The viewer's employee id: praise naming them is marked as addressed to them. */
   viewerEmployeeId?: string | null;
+  /**
+   * Home's box (B-226): the words first, in quotes in the editorial voice, then who gave it to whom and when, the
+   * value and the reactions, on a box one tone lighter than its section.
+   */
+  quote?: boolean;
 }
 
 
@@ -31,7 +36,7 @@ export interface PraiseCardProps {
  * One praise, led by the people praised: their faces and names, then who gave it and when, the message, the value
  * in its own hue, and the reactions. In a list the message clamps and opens the drawer for the rest.
  */
-export function PraiseCard({ praise, reactionIcons, onReact, onOpen, pendingReaction, reading = false, viewerEmployeeId }: PraiseCardProps) {
+export function PraiseCard({ praise, reactionIcons, onReact, onOpen, pendingReaction, reading = false, viewerEmployeeId, quote = false }: PraiseCardProps) {
   const t = useTranslations("performanceUi.PraiseCard");
   const words = usePerformanceWords();
   const toViewer = Boolean(viewerEmployeeId) && praise.recipients.some((r) => r.id === viewerEmployeeId);
@@ -41,6 +46,31 @@ export function PraiseCard({ praise, reactionIcons, onReact, onOpen, pendingReac
     // Written in whatever language its author used, so it takes its direction from its own text.
     <p dir="auto" className={cn(reading ? "type-narrative" : "type-body", "text-foreground", onOpen && "line-clamp-4")}>{praise.message}</p>
   );
+  if (quote) {
+    const said = (
+      <p dir="auto" className={cn("type-narrative text-foreground", onOpen && "line-clamp-4")}>“{praise.message}”</p>
+    );
+    return (
+      <article id={`praise-${praise.id}`} className="flex flex-col gap-3 rounded-control bg-inlay p-4" aria-label={t("praised", { author, recipients })}>
+        {onOpen ? (
+          <button type="button" onClick={onOpen} className="block w-full rounded-control text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            {said}
+          </button>
+        ) : said}
+        <div className="flex items-center gap-2">
+          <AvatarStack names={[author]} size="sm" max={1} />
+          <p className="min-w-0 type-meta text-muted-foreground">
+            {t("byTo", { author, recipients })} · <time dateTime={praise.givenAt}>{words.praiseTime(praise.givenAt)}</time>
+          </p>
+        </div>
+        {toViewer ? (
+          <span className="self-start rounded-detail bg-primary/15 px-2 py-0.5 type-meta font-semibold text-primary">{t("toYou")}</span>
+        ) : null}
+        <ValueChip value={praise.value} className="self-start" />
+        <PraiseReactions praise={praise} icons={reactionIcons} onReact={onReact} pending={pendingReaction} />
+      </article>
+    );
+  }
   return (
     <article
       id={`praise-${praise.id}`}

@@ -171,29 +171,7 @@
       "open": "Open"
     },
     "home": {
-      "whereThisStands": "Where this stands",
-      "stepDone": " (done)",
-      "stepNow": " (now)",
-      "mostImportant": "Most important",
-      "next": "Next",
-      "leadUnit": {
-        "late": "{count, plural, one {day late} other {days late}}",
-        "today": "due today",
-        "left": "{count, plural, one {day left} other {days left}}",
-        "waiting": "{count, plural, =0 {waiting since today} one {day waiting} other {days waiting}}"
-      },
-      "dueOn": "Due {date}",
-      "waitingSince": "Waiting since {date}",
-      "nothingToday": "Nothing needs you today",
-      "today": "Today",
-      "tomorrow": "Tomorrow",
-      "inDays": "{count, plural, one {In # day} other {In # days}}",
-      "openOneOnOne": "Open the 1:1",
-      "view": "View",
-      "nothingNow": "Nothing needs you right now",
-      "nothingScheduledLead": "No work and nothing scheduled in the next two weeks",
       "nothingScheduled": "Nothing is scheduled in the next two weeks",
-      "agendaDue": "{title} due",
       "datesFailed": "{module}'s dates couldn't be loaded"
     },
     "states": {
@@ -252,6 +230,9 @@
       "light": "Light",
       "system": "System",
       "dark": "Dark"
+    },
+    "datePicker": {
+      "pick": "Pick a date"
     }
   }
 }

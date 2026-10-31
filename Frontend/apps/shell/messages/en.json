@@ -210,8 +210,8 @@
       "evening": "Good evening"
     },
     "greetingNamed": "{greeting}, {name}",
-    "loadingWork": "Loading your work",
-    "alsoNeedsYou": "Also needs you",
+    "needsYou": "Needs you",
+    "comingUp": "Coming up",
     "nextTwoWeeks": "Next two weeks",
     "loadingNextTwoWeeks": "Loading your next two weeks",
     "sideColumn": "Your year and praise",
@@ -220,7 +220,6 @@
       "loading": "Loading your year",
       "failed": "Couldn't be loaded",
       "myPlan": "My Plan",
-      "ring": "Plan at {percent}",
       "objectives": "{count, plural, one {# objective} other {# objectives}}",
       "onTrack": "{count} on track",
       "atRisk": "{count} at risk",
@@ -235,12 +234,14 @@
       "weights": " · weights at {percent}",
       "approves": "{name} approves it",
       "plan": {
-        "NotStarted": "Your plan isn't started",
+        "NotStarted": "No plan yet",
         "Draft": "Your plan is a draft",
         "ReturnedForChanges": "Your plan came back with changes",
         "Submitted": "Your plan is submitted",
         "Approved": "Your plan is approved"
-      }
+      },
+      "start": "Write your plan",
+      "continue": "Continue your plan"
     },
     "praise": {
       "title": "Praise",

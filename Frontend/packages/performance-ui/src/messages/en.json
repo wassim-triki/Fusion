@@ -12,7 +12,8 @@
       "aColleague": "A colleague",
       "from": "from {author} ·",
       "toYou": "To you",
-      "praised": "{author} praised {recipients}"
+      "praised": "{author} praised {recipients}",
+      "byTo": "{author} to {recipients}"
     },
     "PraiseReactions": {
       "reactions": "Reactions"

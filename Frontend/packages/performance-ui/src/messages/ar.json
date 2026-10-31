@@ -12,7 +12,8 @@
       "aColleague": "زميل",
       "from": "من {author} ·",
       "toYou": "إليك",
-      "praised": "أشاد {author} بـ{recipients}"
+      "praised": "أشاد {author} بـ{recipients}",
+      "byTo": "{author} إلى {recipients}"
     },
     "PraiseReactions": {
       "reactions": "التفاعلات"

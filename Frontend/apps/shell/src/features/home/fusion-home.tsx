@@ -1,19 +1,18 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { FUSION_ATTENTION_MODULES } from "@repo/api";
 import { useFusionUpcoming, useFusionWork, useMyCard } from "@repo/api/query";
 import { resolveFusionAttentionModules, TopBarPreferences, TopBarSearch, useAuth, ViewingAsBar } from "@repo/auth";
 import { Skeleton } from "@repo/ds";
 import {
   AppShell,
   HomeAgenda,
-  LeadFocus,
   PageContainer,
+  Section,
   ThemeProvider,
   TopBar,
   WorkList,
-  selectLead,
+  orderWork,
 } from "@repo/ds/shell";
 import { FusionSidebar } from "./fusion-sidebar";
 import { HomeDecision } from "./home-decision";
@@ -54,11 +53,9 @@ function DayLine({ now }: { now: Date }) {
   );
 }
 
-const labelOf = (key: string) => FUSION_ATTENTION_MODULES.find((module) => module.key === key)?.label ?? key;
-
 /**
- * The work column: the one thing that matters most (or, with no work, what's next), everything else that needs the
- * person, and their next two weeks across modules.
+ * The work column, as drawn: Needs you (every module's work in the order things are due, yes-or-no answered in the row)
+ * and Coming up (the next two weeks across modules), each one section with its title inside.
  */
 export function HomeWork() {
   const t = useTranslations("home");
@@ -68,39 +65,24 @@ export function HomeWork() {
   const work = useFusionWork(modules, { enabled });
   const upcoming = useFusionUpcoming(modules, { enabled });
   const today = new Date();
-  // A yes or no is answered in its row, never as the one big thing on top.
-  const lead = selectLead(work.items.filter((item) => !item.decision), upcoming.items, today);
-  const rest = lead?.kind === "work" ? work.items.filter((item) => item.id !== lead.item.id) : work.items;
   const workBusy = work.modules.some((module) => module.status === "loading");
   const datesBusy = upcoming.modules.some((module) => module.status === "loading");
 
   return (
-    <div className="space-y-10">
-      {(workBusy || (!lead && datesBusy)) && lead?.kind !== "work" ? (
-        <Skeleton aria-label={t("loadingWork")} className="h-36 w-full rounded-surface" />
-      ) : (
-        <LeadFocus lead={lead} moduleLabel={labelOf} today={today} />
-      )}
-
-      {rest.length > 0 || work.failedModules.length > 0 || (workBusy && lead?.kind === "work") ? (
-        <section aria-labelledby="home-work-heading" className="space-y-3">
-          <h2 id="home-work-heading" className="type-section-title text-foreground">
-            {t("alsoNeedsYou")}
-          </h2>
-          <WorkList items={rest} modules={work.modules} today={today} renderDecision={(item) => <HomeDecision item={item} />} />
-        </section>
-      ) : null}
-
-      <section aria-labelledby="home-agenda-heading" className="space-y-3">
-        <h2 id="home-agenda-heading" className="type-section-title text-foreground">
-          {t("nextTwoWeeks")}
-        </h2>
+    <div className="space-y-6">
+      <Section id="home-needs" title={t("needsYou")} meta={workBusy ? undefined : work.items.length} flush>
+        <WorkList items={orderWork(work.items, today)} modules={work.modules} today={today} renderDecision={(item) => <HomeDecision item={item} />} />
+      </Section>
+      <Section id="home-coming" title={t("comingUp")} meta={t("nextTwoWeeks")} flush>
         {datesBusy && upcoming.items.length === 0 ? (
-          <Skeleton aria-label={t("loadingNextTwoWeeks")} className="h-24 w-full rounded-surface" />
+          <div aria-label={t("loadingNextTwoWeeks")} className="space-y-3 px-5 py-4">
+            <Skeleton className="h-12 w-full rounded-control" />
+            <Skeleton className="h-12 w-full rounded-control" />
+          </div>
         ) : (
-          <HomeAgenda work={work.items} moments={upcoming.items} lead={lead} modules={upcoming.modules} today={today} />
+          <HomeAgenda moments={upcoming.items} modules={upcoming.modules} today={today} />
         )}
-      </section>
+      </Section>
     </div>
   );
 }
@@ -125,7 +107,7 @@ export function FusionHome() {
           <TopBar>
             <TopBarSearch />
             <ShellNotificationBell />
-          <TopBarPreferences />
+            <TopBarPreferences />
           </TopBar>
         }
       >
@@ -139,9 +121,9 @@ export function FusionHome() {
             <DayLine now={now} />
           </div>
           {performance ? (
-            <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_352px]">
+            <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
               <HomeWork />
-              <aside aria-label={t("sideColumn")} className="space-y-10">
+              <aside aria-label={t("sideColumn")} className="space-y-6">
                 <YourYear employeeId={user?.employeeId} enabled={performance} />
                 <HomePraise />
               </aside>

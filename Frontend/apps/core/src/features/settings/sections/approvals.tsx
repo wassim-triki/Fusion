@@ -40,22 +40,20 @@ export function ApprovalsSettings({ section }: { section: FusionSettingsSection 
 
   return (
     <SettingsPage title={title} lastChange={section.lastChange} setUpAt={section.setUpAt} viewOnly={!editable}>
-      <SettingsBlock>
-        <SettingsRows>
-          {CHANGE_APPROVAL_TYPES.map((type) => (
-            <SettingsRow key={type} htmlFor={`approve-${type}`} label={t(`type.${type}`)} description={required.has(type) ? t("waits") : t("applies")}>
-              <Switch id={`approve-${type}`} checked={required.has(type)} disabled={!editable || update.isLoading}
-                onCheckedChange={(on) => void toggle(type, on)} />
-            </SettingsRow>
-          ))}
-        </SettingsRows>
-      </SettingsBlock>
+      <SettingsRows>
+        {CHANGE_APPROVAL_TYPES.map((type) => (
+          <SettingsRow key={type} htmlFor={`approve-${type}`} label={t(`type.${type}`)} description={required.has(type) ? t("waits") : t("applies")}>
+            <Switch id={`approve-${type}`} checked={required.has(type)} disabled={!editable || update.isLoading}
+              onCheckedChange={(on) => void toggle(type, on)} />
+          </SettingsRow>
+        ))}
+      </SettingsRows>
 
       <SettingsBlock title={t("who")} action={<Link href="/settings/roles" className="type-meta font-semibold text-muted-foreground hover:text-foreground">{t("roles")}</Link>}>
         {query.data.approvers.length ? (
           <ul className="flex flex-wrap gap-2">
             {query.data.approvers.map((approver, index) => (
-              <li key={`${approver.displayName}-${index}`} className="flex h-10 items-center gap-2 rounded-full bg-card ps-1 pe-3.5">
+              <li key={`${approver.displayName}-${index}`} className="flex h-10 items-center gap-2 rounded-full bg-inlay ps-1 pe-3.5">
                 <PersonAvatar name={approver.displayName} className="size-8 text-xs" />
                 <span className="type-label">{approver.displayName}</span>
               </li>

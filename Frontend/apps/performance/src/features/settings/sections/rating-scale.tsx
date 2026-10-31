@@ -20,7 +20,7 @@ function ScalePreview({ levels }: { levels: Levels }) {
   const t = useTranslations("settings.ratingScale");
   const middle = levels[Math.floor((levels.length - 1) / 2)]?.value;
   return (
-    <div className="flex flex-col gap-3 rounded-surface bg-card p-5">
+    <div className="flex flex-col gap-3">
       <span className="flex flex-col gap-0.5">
         <span className="type-subsection-title text-foreground">{t("previewTitle")}</span>
         <span className="type-meta text-muted-foreground">{t("previewDetail")}</span>
@@ -94,7 +94,7 @@ export function RatingScaleSettings({ section }: { section: FusionSettingsSectio
       {levels ? (
         <>
           <SettingsBlock title={t("levels")} meta={levels.length}>
-            <ol className="divide-y divide-border overflow-hidden rounded-surface bg-card">
+            <ol className="divide-y divide-border -mx-5 -mb-5 overflow-hidden border-t border-border">
               {levels.map((level) => (
                 <li key={level.value} className="flex items-center gap-3 px-5 py-3">
                   <span className="grid size-8 shrink-0 place-items-center rounded-control border border-border bg-inlay type-subsection-title tabular-nums">
@@ -132,7 +132,7 @@ export function RatingScaleSettings({ section }: { section: FusionSettingsSectio
           </SettingsBlock>
 
           <SettingsBlock title={t("versions")} meta={versions.length || undefined}>
-            <ul className="divide-y divide-border overflow-hidden rounded-surface bg-card">
+            <ul className="divide-y divide-border -mx-5 -mb-5 overflow-hidden border-t border-border">
               {versions.map((item) => (
                 <li key={item.number} className="flex flex-col gap-0.5 px-5 py-4">
                   <span className="flex items-center gap-2 type-subsection-title text-foreground">

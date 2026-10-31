@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { CalendarIcon } from "lucide-react"
-import { useLocale } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import type { Matcher } from "react-day-picker"
 
 import { cn } from "../../lib/utils"
@@ -25,9 +25,11 @@ function DatePicker({
   min,
   max,
   id,
-  placeholder = "Pick a date",
+  placeholder,
   disabled,
   className,
+  captionLayout,
+  ...aria
 }: {
   /** Selected date as `YYYY-MM-DD`, or empty for none. */
   value?: string
@@ -40,8 +42,13 @@ function DatePicker({
   placeholder?: string
   disabled?: boolean
   className?: string
+  /** "dropdown" for dates far away, such as a birthday: month and year as menus. */
+  captionLayout?: "label" | "dropdown"
+  "aria-label"?: string
+  "aria-invalid"?: boolean
 }) {
   const locale = useLocale()
+  const t = useTranslations("ds.datePicker")
   const [open, setOpen] = React.useState(false)
 
   const selected = parseISODate(value)
@@ -61,18 +68,21 @@ function DatePicker({
           variant="outline"
           disabled={disabled}
           data-empty={!selected}
+          {...aria}
           className={cn(
-            "w-full justify-start text-start font-normal data-[empty=true]:text-muted-foreground",
+            // A field, carved in like the others (B-227).
+            "w-full justify-start border-input bg-field text-start font-normal hover:bg-field dark:bg-field dark:hover:bg-field aria-invalid:border-destructive data-[empty=true]:text-muted-foreground",
             className
           )}
         >
           <CalendarIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-          {selected ? formatDisplay(selected, locale) : placeholder}
+          {selected ? formatDisplay(selected, locale) : (placeholder ?? t("pick"))}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
+          captionLayout={captionLayout}
           autoFocus
           selected={selected}
           defaultMonth={selected ?? minDate ?? undefined}

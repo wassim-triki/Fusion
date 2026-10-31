@@ -230,12 +230,12 @@ const ROW_GRID = "grid grid-cols-[minmax(0,1fr)_auto_1rem] items-center gap-4 md
 function RhythmTable({ title, count, children }: { title: string; count?: number; children: ReactNode }) {
   const t = useTranslations("oneOnOnes.RhythmTable");
   return (
-    <section aria-labelledby={`rhythm-${title}`}>
-      <h2 id={`rhythm-${title}`} className="mb-4 flex items-baseline gap-2 type-section-title text-foreground">
+    <section aria-labelledby={`rhythm-${title}`} className="overflow-hidden rounded-surface bg-card">
+      <h2 id={`rhythm-${title}`} className="flex min-h-14 items-center justify-between gap-2 px-5 type-section-title text-foreground">
         {title}
         {count !== undefined ? <span className="type-meta tabular-nums text-muted-foreground">{count}</span> : null}
       </h2>
-      <div className="overflow-hidden rounded-surface bg-card">
+      <div>
         <div className={cn(ROW_GRID, "h-10 bg-inlay px-5")}>
           <span className="type-meta text-muted-foreground">{t("person")}</span>
           <RhythmScale className="hidden md:block" />

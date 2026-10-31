@@ -10,6 +10,7 @@ Newest first, grouped by day. Every closed board item ends here. Long detail goe
 When LOG passes ~150 lines, move the oldest days to `archive/LOG-YYYY-MM*.md`.
 
 ## 2026-10-31
+- → **B-181** The company's own fields (with B-232 Skills and Languages chips, B-196 employment type) sent to review. Codex's draft verified and fixed: one-commit catalogue save, visibility checked on writes, own fields kept out of Job and approval, legacy PATCH refuses field policy, Personal fields now shown on the Personal tab, real chip editor, Job as one locked row, no made-up preview values. CoreHR suite 637 passed / 0 failed / 5 skipped (migration Up/Down relational test included); core tests 84/84 (settings + people); core type-check clean; journey-b181-fields 15/15 (negatives, cross-tenant). Carthage gets Skills and Languages switched on, Aicha's filled · Claude
 
 - ✓ **B-180** One person page accepted by the user ("let's close this") with its rounds (spacing, About and Coming up, quoted words); on leave B-229, demo photos B-230 and Access history B-231 stay on the board under B-167 · Claude
 

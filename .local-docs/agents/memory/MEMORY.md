@@ -97,6 +97,7 @@
 
 ## User preferences
 - [Engineering-first agent workflow](engineering-first-agent-workflow.md) — features over process; rendered QA on request; `.local-docs/agents/` STATE/BACKLOG/LOG; stock skills untouched.
+- [Review notes: board, fix later](review-notes-board-later.md) — review-round notes become Ready items; fix only when told to include them in the round.
 - [Review gate](finished-is-not-accepted.md) — only taste work goes In review; evidence-settled work closes ○; verdict read from conversation; no Done lane.
 - [Agent-run board](agent-run-board.md) — agents run `.local-docs/agents` autonomously ("Jarvis"); user rarely touches it; AGENTS.md ~70 lines.
 - [STATE for every task](state-for-every-task.md) — set Active work before the first edit of any task, audits included; update as you go.

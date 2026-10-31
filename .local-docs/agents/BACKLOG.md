@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-237.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-240.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -58,6 +58,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ## In review
 
 - [ ] **B-182** People, the directory and invitations: HR table, portrait cards, the invite sheet, Settings › Sign-in, Export everywhere (D-11, D-13, D-28) · Core HR, Shared · 2026-10-30
+      2026-10-31 review round 1: the invite sheet looks great; filters (B-237), Later's picker (B-238) and Add a person's restyle (B-239) go to a later pass; the directory card comparison still open (the 3b link now shows 3c).
       Built 2026-10-31. Look at (screens in `plans/B-182-screens/`, live in Carthage as Amira and Aicha): `/core/people` (views with counts, Sign-in column, Filter › Unit/Place/Job/Manager/Skills, Export › CSV or Excel), `?view=not-signed-in`, Invite people (the sheet: who, now or later, first day and reminder switches, the email), the cards switch and Aicha's directory (Your team, A–Z rail), Settings › Sign-in (two new rows). Workforce access is gone: its per-person part opens from a person's Access tab ("Review access").
   - [ ] **B-199** Redesign the hire / add-one-person form ("Add people", D-13) · Core HR · 2026-10-30
         Built 2026-10-31 as one `/core/people/add` (hire and add-existing merged; a past first day adds someone already here): the person band fills in as you type, two sections under it. Look at: `08-add-person-typing.png`, then add someone for real.
@@ -71,6 +72,13 @@ Open work only. Agents keep it current from the conversation; closed items leave
           User, locking B-087 in: "generally its not bad, although idk if its gonna be the final polish, in terms of specific ui ux and routing and layout and design". Folded into B-089.
 
 ## Ready
+
+- [ ] **B-237** People's filters as drawn (D-13): one "+ Unit", "+ Place", "+ Job", "+ Manager" chip per field in the toolbar, instead of the kit's single Filter button. A table-kit change (`DataTableFilters`), so the directory and every other table follow · Shared, Core HR · 2026-10-31
+      User 2026-10-31 (B-182 review): "the filter button of our implementation should instead match the ref's design".
+- [ ] **B-238** Invite sheet › When › Later on one line, with one date-and-time picker (a shadcn or ReUI component that combines both) instead of a date picker beside a time select · Core HR, Shared · 2026-10-31
+      User 2026-10-31 (B-182 review): the sheet "looks great"; only this note.
+- [ ] **B-239** Restyle the Add a person page (B-199's `/core/people/add`) · Core HR · 2026-10-31
+      User 2026-10-31 (B-182 review): "mark add person screen for restyling later".
 
 - [ ] **B-235** Withdrawing a workforce invitation answers "Invitation withdrawn" but leaves it pending (Identity's withdraw doesn't revoke; seen on Ala Bouzgarrou in Carthage, 2026-10-31, whose invitation from the B-182 journey is still out). Pre-existing, not from B-182 · Identity · 2026-10-31
 - [ ] **B-236** Platform's tenant list keeps its own CSV export; move it onto the table kit's `DataTableExport` (B-182's one Export) · Platform · 2026-10-31

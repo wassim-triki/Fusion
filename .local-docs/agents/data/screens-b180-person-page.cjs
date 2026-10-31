@@ -4,7 +4,8 @@
  *
  * Amira Khelifi (administrator, HR) on Aicha Bouazizi's page: Overview, Job (family and level, B-195), Documents,
  * Access, the ⋯ menu. Aicha on her own page (/core/profile): Personal with who sees each part, then Identity below.
- * Omar Mansour (a manager outside her branch) on her page: Overview and Performance only. The Performance tab.
+ * Mariam Gharbi (her manager) on her Overview: Coming up with their 1:1 and open asks. Omar Mansour (a manager outside
+ * her branch): Overview and Performance only. Sets her About for the shots and puts it back.
  *
  * Adds one document for Aicha and removes it again. Also frames the accepted drawing ("Aicha's page" and "Aicha's
  * page, other tabs": Personal and Access) at the same size, as ref-*.png, for the side-by-side review.
@@ -71,6 +72,10 @@ async function session(browser, email) {
     method: "POST", headers: { Authorization: `Bearer ${aichaToken}` }, body: form,
   })).json();
   const docId = added?.data?.id;
+  // Her About, in the drawing's words; put back afterwards.
+  const aboutBefore = data(await call("GET", `/api/corehr/employees/people/${aicha.employeeKey}`, null, amira))?.identity?.about ?? null;
+  await call("PUT", `/api/corehr/employees/people/${aicha.employeeKey}/about`,
+    { about: "I keep Consulting's releases boring: the regression suite runs on every merge, and every estimate starts with a test plan. Ask me about Playwright or flaky tests." }, aichaToken);
 
   const browser = await chromium.launch();
   try {
@@ -98,6 +103,11 @@ async function session(browser, email) {
     await open(self.page, "/core/profile", self.page.getByRole("heading", { name: "Job and history" }));
     await shot(self.page, "09-overview-self");
     await self.context.close();
+
+    const manager = await session(browser, "mariam.gharbi@example.test");
+    await open(manager.page, page, manager.page.getByRole("heading", { name: "Job and history" }));
+    await shot(manager.page, "11-overview-manager");
+    await manager.context.close();
 
     const colleague = await session(browser, "omar.mansour@example.test");
     await open(colleague.page, page, colleague.page.getByRole("heading", { name: "Job and history" }));
@@ -138,6 +148,7 @@ async function session(browser, email) {
     await ref.close();
   } finally {
     await browser.close();
+    await call("PUT", `/api/corehr/employees/people/${aicha.employeeKey}/about`, { about: aboutBefore }, aichaToken);
     if (docId) await call("DELETE", `/api/corehr/employees/people/${aicha.employeeKey}/documents/${docId}`, null, amira);
   }
 })().catch((error) => {

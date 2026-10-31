@@ -14,6 +14,7 @@ Slice 6 of B-167 (D-01, D-16), with B-195 (job family and level) and B-214 (Pers
 | `06-performance.png` | — | Performance's person page is this tab now; `/performance/people/{id}` opens it. |
 | `07-personal-self.png`, `08-personal-self-below.png` | `ref-07-personal.png` | Aicha's own page (`/core/profile`): Contact, Home address, Emergency contacts, Identity, each saying who sees it from the company's roles; locks on what only HR changes (work email, legal name, date of birth). |
 | `09-overview-self.png` | — | Her own page opens on Overview with the same band. |
+| `11-overview-manager.png` | `ref-01-overview.png` | Round 2: About in Aicha's words first, then Coming up as the drawn list (Mariam's 1:1 with her, open asks, review step due, work anniversary; Core HR changes above it), then Performance. |
 | `10-overview-colleague.png` | — | Omar (a manager elsewhere): Overview and Performance only; no team or tenure in the glance (not his to see). |
 
 ## Calls made (say if any is wrong)
@@ -22,4 +23,6 @@ Slice 6 of B-167 (D-01, D-16), with B-195 (job family and level) and B-214 (Pers
 - **Date of birth** is HR's now (the drawing locks it): the person can't change it; the server refuses it.
 - **Documents** are personal details: the person and HR, not managers. The person removes what they added; HR removes any. PDF and images, 10 MB.
 - **Personal keys** (B-214): `core.personal.view` (team, everyone) and `core.personal.manage`. Every existing role kept exactly what it had (grants copied one for one), so nothing changes until someone edits a role; the role editor no longer moves Jobs and Personal together.
-- **Not drawn yet, boarded:** About (B-232, with B-181's fields), on leave (B-229), demo photos (B-230), Access › History (B-231). Coming up on Overview shows Core HR's items and the work anniversary; Performance's 1:1s and asks there are not wired yet.
+- **About** is the person's own words (or HR's), read by everyone who opens the page; skills and languages chips come with B-181 (B-232).
+- **Coming up** names the viewer's own 1:1 with the person (Performance shares a 1:1 only with its two people).
+- **Not drawn yet, boarded:** on leave (B-229), demo photos (B-230), Access › History (B-231).

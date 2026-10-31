@@ -22,7 +22,7 @@ None (B-180's calls are in `plans/B-180-person-page.md`).
 
 ## Where it stands
 
-None. B-180 is in review; next slice B-181 (fields).
+None. B-180 is back in review after its About and Coming up round; next slice B-181 (fields).
 
 ## Open questions & blockers
 

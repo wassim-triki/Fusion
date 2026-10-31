@@ -98,6 +98,16 @@ async function raw(token, url) {
   const file = await raw(aicha, `${people}/documents/${docId}`);
   check("she downloads it back, byte for byte", file.status === 200 && file.bytes.equals(pdf), file.disposition ?? "");
 
+  // --- About: hers to write, everyone's to read -----------------------------------------------------
+  const before = own?.identity?.about ?? null;
+  const about = (token, text) => call("PUT", `${people}/about`, { about: text }, token);
+  check("she writes her About", (await about(aicha, "I keep Consulting's releases boring.")).status === 200);
+  check("Omar reads it on her page", data(await call("GET", people, null, omar))?.identity?.about === "I keep Consulting's releases boring.");
+  check("Omar and Mariam can't write it", (await about(omar, "x")).status === 403 && (await about(mariam, "x")).status === 403);
+  check("more than 1000 characters is refused", (await about(aicha, "x".repeat(1001))).status === 400);
+  check("another company's administrator can't", (await about(elsewhere, "x")).status === 404);
+  await about(aicha, before);
+
   // --- Her manager, a colleague, HR -------------------------------------------------------------------
   const asManager = data(await call("GET", `${people}/personal`, null, mariam));
   check("Mariam (her manager) sees her mobile and nothing private", asManager?.access === "Contact" && asManager.homeAddress === null);

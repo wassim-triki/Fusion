@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-220.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-224.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -29,13 +29,8 @@ Open work only. Agents keep it current from the conversation; closed items leave
   - [ ] **B-110** Tenant configurability as a hero: branding (logo, theme/accent, branded sign-in, own address, email branding) and internal configuration (company defaults and whatever the research puts on the ladder), depth chosen on B-163's scope page · Shell, Platform, Core HR, Identity · 2026-10-24
         User 2026-10-30: "I really wanna establish it as a core wow factor"; EY discussed it a lot but never gave specs or how far to take it. Earlier (2026-10-24) brain dump, ideas not requirements. A tenant's default language meets B-105. Context: B-071 removed the unused brand colour from Core's branding settings; Core's branding settings store a `LogoUrl` that no screen sets or shows; Company settings show name and locale.
   - [ ] **B-167** Rebuild: slices in dependency order, each end to end with screens for the taste check ([decisions](plans/B-164-decisions.md), D-01–D-30; [slices](plans/B-167-rebuild.md)) · 2026-10-30
-        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 done (✓ 2026-10-31); B-178 next, fresh session at xhigh.
+        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 done (✓ 2026-10-31); B-178 in review (2026-10-31); B-179 next, fresh session at xhigh.
     - [ ] **B-198** One tab and view-switch pattern across Fusion, matching the target design: every tab strip and view switch today is reused old UI (the Organization lenses are the latest example). Define it once in `@repo/ds` from the accepted grammar (D-01 band tabs, D-17 views), first where a slice draws tabs (B-180's person page or B-183's Organization, whichever comes first), then replace every other use; B-192 checks none is left · All · 2026-10-30
-    - [ ] **B-178** Administrators as a protected role, seeing Fusion as someone, the old token roles retired (D-25) · Identity, Core HR · 2026-10-30
-          User 2026-10-31 (B-177 review): the drawn Administrators page is "way cooler and way cleaner"; port it as drawn (two slots, Everything card, History).
-      - [ ] **B-213** A role change reaches a signed-in person at their next token refresh (up to 60 minutes), as profile edits always did; revoking by rule or by edit should end the old permissions sooner (refresh the holders' tokens, or bump a soft revision the frontend answers with a refresh rather than a sign-out) · Identity, Shell · 2026-10-30
-      - [ ] **B-173** Check whether an HR admin can make someone a tenant administrator through Identity's old invitation endpoint (`POST /api/identity/tenants/{id}/invites` with role "OrgAdmin" is not refused), bypassing the administrator invitation flow and its continuity lock · Identity · 2026-10-30
-            Found answering the user's A2 note (brief §6b). The operator side holds: both old endpoints require the caller's own membership. Verify with an API journey (create, inspect, revoke) at the start of B-178, which retires the endpoint with the token roles.
     - [ ] **B-179** Changes and approvals: describe a change, the draft is the request, approval per change type from Home (D-15, D-16) · Core HR, Shell · 2026-10-30
           Roles already store who proposes and who approves (`core.change.propose`@team, `core.change.approve`@everyone; Managers propose, HR approves; B-177): enforce those keys here.
       - [ ] **B-168** A deep link that opens a change on a person's record (`?change=job|end`) leaves the address without `/core`, so a refresh lands outside Core HR · Core HR · 2026-10-30
@@ -67,6 +62,8 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In review
 
+- [ ] **B-178** Administrators as a protected role, seeing Fusion as someone, the old token roles retired (D-25; slice 4 of B-167) · Identity, Core HR · 2026-10-30
+      Built 2026-10-31, in review: look at [plans/B-178-administrators.md](plans/B-178-administrators.md) (Administrators page, the add sheet, the bar while seeing Fusion as someone; ours beside the drawing). Children closed on evidence: B-173, B-213.
 
 - [ ] **B-104** Final manual verification pass, once the big features are done (Settings, any wow feature): the user verifies B-089 phase 2 and everything since by hand, then the little stuff that's left · Performance · 2026-10-23
       2026-10-29: the fixes are done (B-089 audit, phase 2 committed ba8f58af, which also closed B-088's ask); only the user's hand check is left, so this sits In review.
@@ -77,6 +74,11 @@ Open work only. Agents keep it current from the conversation; closed items leave
           User, locking B-087 in: "generally its not bad, although idk if its gonna be the final polish, in terms of specific ui ux and routing and layout and design". Folded into B-089.
 
 ## Ready
+
+- [ ] **B-220** While seeing Fusion as someone, show changes as inert (the drawing's "Propose a change" greyed) instead of letting the server refuse them: today every write is refused server-side (403 "Nothing can be changed while seeing Fusion as someone") and forms show that error · Shell, Core HR, Performance · 2026-10-31
+      Found building B-178. A shared "is viewing" flag from `@repo/auth` (`useViewAs`) that action buttons read.
+- [ ] **B-221** Administrator invitations issued before B-178 can still be accepted, but nothing lists or revokes them now (the customer-side email invitation retired: only people who already sign in can be made administrators). List them on the Administrators page with Revoke, or expire them · Identity, Core HR · 2026-10-31
+- [ ] **B-222** Clean up what the old Administrators workspace left: Core HR's `admins` message namespace, the `/access` route skeletons, suspend/reactivate (still enforced by the two-administrator rule, no screen offers them), and the invite acceptance's Employee/Manager label from `InviteToken.Role` · Core HR, Identity · 2026-10-31
 
 - [ ] **B-211** Search in the top bar, made real: people first, then records and settings, as one place to find anything; a candidate small wow · Shell, Core HR, Performance · 2026-10-30
       User 2026-10-30: "we should even have that search bar like we exactly have it in the artifacts … even if the functionality is not there yet … could be part of a small wow factor … just wire it in." Wired 2026-10-30 under B-176: the field (Ctrl/⌘ K) opens a palette of the places the person can open.
@@ -110,6 +112,9 @@ Open work only. Agents keep it current from the conversation; closed items leave
       User 2026-10-30 on the Arabic sign-in: "looks clean, still lacking … especially the empty column holding the title of the organization". Revisit later, not urgent (user, same day).
 
 ## Needs discussion
+
+- [ ] **B-223** Seeing Fusion as someone shows what they see, private things included (a manager's 1:1 notes, feedback they received): recorded in Change history and read-only, but should some surfaces stay closed during a view (as Workday and BambooHR limit proxy access)? Product call · Performance, Identity · 2026-10-31
+      From B-178's security review. Only administrators can start a view; it lasts 30 minutes.
 
 - [ ] **B-169** Core HR after the rebuild: the rungs chosen at checkpoint 2 to keep for later, so they aren't lost · Core HR, Shell · 2026-10-30
       From B-164's scope page (brief §6b). Each is the next rung above what B-167 builds.

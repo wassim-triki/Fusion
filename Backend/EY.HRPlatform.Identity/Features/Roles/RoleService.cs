@@ -174,6 +174,7 @@ public sealed class RoleService(
         var rows = await dbContext.UserAccessProfiles.IgnoreQueryFilters()
             .Where(assignment => assignment.TenantId == tenantId && assignment.AccessProfileId == profile.Id)
             .ToListAsync(cancellationToken);
+        var heldBefore = rows.Select(row => row.UserId).ToList();
         var chosenUsers = chosen.ToDictionary(member => member.UserId, member => member.Id);
         foreach (var row in rows)
         {
@@ -190,7 +191,7 @@ public sealed class RoleService(
         dbContext.ChangeTracker.Clear();
 
         await RecomputeOrQueueAsync(tenantId, cancellationToken);
-        await SyncHoldersAsync(tenantId, profile.Id, cancellationToken);
+        await RefreshHoldersAsync(tenantId, profile.Id, heldBefore, cancellationToken);
         return await GetRoleAsync(tenantId, profile.Id, cancellationToken);
     }
 
@@ -210,8 +211,7 @@ public sealed class RoleService(
         dbContext.AccessProfiles.Remove(profile);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        foreach (var user in await dbContext.Users.IgnoreQueryFilters().Where(user => affected.Contains(user.Id)).ToListAsync(cancellationToken))
-            await accessProfiles.SyncCompatibilityRolesAsync(user, cancellationToken);
+        await accessProfiles.RefreshAccessAsync(tenantId, affected, cancellationToken);
     }
 
     public async Task<IReadOnlyList<PersonRoleDto>?> GetPersonRolesAsync(Guid tenantId, Guid employeeId, CancellationToken cancellationToken)
@@ -321,14 +321,14 @@ public sealed class RoleService(
         }
     }
 
-    /// <summary>The old token roles follow effective permissions until they retire (B-178).</summary>
-    private async Task SyncHoldersAsync(Guid tenantId, Guid roleId, CancellationToken cancellationToken)
+    /// <summary>Everyone who held the role before the save or holds it now gets a fresh token (B-213).</summary>
+    private async Task RefreshHoldersAsync(Guid tenantId, Guid roleId, IReadOnlyCollection<Guid> heldBefore, CancellationToken cancellationToken)
     {
-        var userIds = dbContext.UserAccessProfiles.IgnoreQueryFilters()
+        var holdingNow = await dbContext.UserAccessProfiles.IgnoreQueryFilters()
             .Where(assignment => assignment.TenantId == tenantId && assignment.AccessProfileId == roleId)
-            .Select(assignment => assignment.UserId);
-        foreach (var user in await dbContext.Users.IgnoreQueryFilters().Where(user => userIds.Contains(user.Id)).ToListAsync(cancellationToken))
-            await accessProfiles.SyncCompatibilityRolesAsync(user, cancellationToken);
+            .Select(assignment => assignment.UserId)
+            .ToListAsync(cancellationToken);
+        await accessProfiles.RefreshAccessAsync(tenantId, heldBefore.Union(holdingNow).ToList(), cancellationToken);
     }
 
     private async Task<IReadOnlyList<RoleConditionDto>> ValidateConditionsAsync(

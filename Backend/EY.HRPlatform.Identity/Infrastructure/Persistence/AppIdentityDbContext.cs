@@ -32,6 +32,7 @@ public class AppIdentityDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<TenantProvisioningReceipt> TenantProvisioningReceipts => Set<TenantProvisioningReceipt>();
     public DbSet<InvitationDeliveryAttempt> InvitationDeliveryAttempts => Set<InvitationDeliveryAttempt>();
     public DbSet<TenantBootstrapAuditEvent> TenantBootstrapAuditEvents => Set<TenantBootstrapAuditEvent>();
+    public DbSet<ViewAsSession> ViewAsSessions => Set<ViewAsSession>();
 
     /// <summary>
     /// Runtime constructor with tenant context for production use.
@@ -140,6 +141,7 @@ public class AppIdentityDbContext : IdentityDbContext<ApplicationUser, IdentityR
         builder.ApplyConfiguration(new TenantProvisioningReceiptConfiguration());
         builder.ApplyConfiguration(new InvitationDeliveryAttemptConfiguration());
         builder.ApplyConfiguration(new TenantBootstrapAuditEventConfiguration());
+        builder.ApplyConfiguration(new ViewAsSessionConfiguration());
 
         // Global tenant query filters: automatically scope queries to the current tenant.
         // When CurrentTenantId is Empty (design-time/startup/no context), filters are disabled (fail-open).
@@ -188,5 +190,8 @@ public class AppIdentityDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
         builder.Entity<TenantBootstrapAuditEvent>()
             .HasQueryFilter(auditEvent => CurrentTenantId == Guid.Empty || auditEvent.TenantId == CurrentTenantId);
+
+        builder.Entity<ViewAsSession>()
+            .HasQueryFilter(session => CurrentTenantId == Guid.Empty || session.TenantId == CurrentTenantId);
     }
 }

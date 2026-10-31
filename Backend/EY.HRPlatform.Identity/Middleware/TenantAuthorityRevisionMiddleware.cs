@@ -1,3 +1,4 @@
+using EY.HRPlatform.Identity.Features.ViewAs;
 using EY.HRPlatform.Identity.Domain.Enums;
 using EY.HRPlatform.Identity.Infrastructure.Persistence;
 using EY.HRPlatform.SharedKernel.Auth;
@@ -69,6 +70,11 @@ public sealed class TenantAuthorityRevisionMiddleware(RequestDelegate next)
                     TenantAuthorityDenialReasons.RevisionStale,
                 _ => null,
             };
+
+            if (reason is null && !await ViewAsSessions.IsOpenAsync(dbContext, claims, context.RequestAborted))
+            {
+                reason = TenantAuthorityDenialReasons.ViewEnded;
+            }
         }
 
         if (reason is null)

@@ -1,18 +1,22 @@
+using EY.HRPlatform.Identity.Domain.Entities;
 using EY.HRPlatform.Identity.Domain.Enums;
+using EY.HRPlatform.Identity.Infrastructure.Persistence;
 using EY.HRPlatform.Identity.Features.TenantAdministration;
 using EY.HRPlatform.Identity.Models.Responses;
 using EY.HRPlatform.SharedKernel.Auth;
 using EY.HRPlatform.SharedKernel.Multitenancy;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EY.HRPlatform.Identity.Controllers;
 
-public sealed record InviteAdministratorRequest(string Email, string? FirstName, string? LastName);
-
-public sealed record ReplaceInvitationEmailRequest(string Email);
-
 public sealed record AdministratorActionRequest(string? Reason);
+
+/// <param name="UserId">Someone in this company who already signs in.</param>
+/// <param name="Password">The caller's own password, asked again for every administrator they add.</param>
+public sealed record AddAdministratorRequest(Guid UserId, string? Password);
 
 /// <summary>
 /// The customer Access Management surface: who administers this tenant, who has
@@ -28,8 +32,9 @@ public sealed record AdministratorActionRequest(string? Reason);
 [Authorize]
 public sealed class TenantAccessController(
     ITenantAccessProjection projection,
-    IAdministratorInvitationService invitations,
     ITenantAdministratorLifecycleService lifecycle,
+    AppIdentityDbContext dbContext,
+    UserManager<ApplicationUser> userManager,
     ITenantContext tenantContext) : ControllerBase
 {
     // ── Reads ────────────────────────────────────────────
@@ -40,10 +45,25 @@ public sealed class TenantAccessController(
             ? Success(await projection.GetSummaryAsync(tenantId, cancellationToken))
             : refusal;
 
+    /// <summary>Who administers the company; anyone who can read roles sees them, as the roles table does.</summary>
     [HttpGet("administrators")]
     public async Task<IActionResult> Administrators(CancellationToken cancellationToken)
-        => Resolve(out var tenantId, requireManage: false, out var refusal)
+        => Resolve(out var tenantId, requireManage: false, out var refusal, rolesReaders: true)
             ? Success(await projection.GetAdministratorsAsync(tenantId, cancellationToken))
+            : refusal;
+
+    /// <summary>Every grant and removal of administrator authority, newest first.</summary>
+    [HttpGet("administrators/history")]
+    public async Task<IActionResult> History(CancellationToken cancellationToken)
+        => Resolve(out var tenantId, requireManage: false, out var refusal, rolesReaders: true)
+            ? Success(await projection.GetAdministratorHistoryAsync(tenantId, cancellationToken))
+            : refusal;
+
+    /// <summary>Who could be added: people who sign in, and people invited who haven't yet (shown, not choosable).</summary>
+    [HttpGet("administrators/candidates")]
+    public async Task<IActionResult> Candidates([FromQuery] string? search, CancellationToken cancellationToken)
+        => Resolve(out var tenantId, requireManage: true, out var refusal)
+            ? Success(await projection.GetAdministratorCandidatesAsync(tenantId, search, cancellationToken))
             : refusal;
 
     [HttpGet("administrators/removed")]
@@ -80,43 +100,6 @@ public sealed class TenantAccessController(
             ? Success(await projection.GetRecentActivityAsync(tenantId, 5, cancellationToken))
             : refusal;
 
-    // ── Invitations ──────────────────────────────────────
-
-    [HttpPost("invitations")]
-    public async Task<IActionResult> Invite(
-        [FromBody] InviteAdministratorRequest request, CancellationToken cancellationToken)
-    {
-        if (!Resolve(out var tenantId, requireManage: true, out var refusal))
-        {
-            return refusal;
-        }
-
-        return Translate(await invitations.IssueAsync(
-            tenantId, request.Email, User.GetUserId(),
-            InvitationPurpose.TenantAdministrator,
-            request.FirstName, request.LastName, cancellationToken));
-    }
-
-    [HttpPost("invitations/{invitationId:guid}/resend")]
-    public async Task<IActionResult> Resend(Guid invitationId, CancellationToken cancellationToken)
-        => Resolve(out var tenantId, requireManage: true, out var refusal)
-            ? Translate(await invitations.ResendAsync(tenantId, invitationId, User.GetUserId(), cancellationToken))
-            : refusal;
-
-    [HttpPost("invitations/{invitationId:guid}/replace-email")]
-    public async Task<IActionResult> ReplaceEmail(
-        Guid invitationId, [FromBody] ReplaceInvitationEmailRequest request, CancellationToken cancellationToken)
-        => Resolve(out var tenantId, requireManage: true, out var refusal)
-            ? Translate(await invitations.ReplaceEmailAsync(
-                tenantId, invitationId, request.Email, User.GetUserId(), cancellationToken))
-            : refusal;
-
-    [HttpPost("invitations/{invitationId:guid}/revoke")]
-    public async Task<IActionResult> Revoke(Guid invitationId, CancellationToken cancellationToken)
-        => Resolve(out var tenantId, requireManage: true, out var refusal)
-            ? Translate(await invitations.RevokeAsync(tenantId, invitationId, User.GetUserId(), cancellationToken))
-            : refusal;
-
     // ── Administrator lifecycle ──────────────────────────
 
     [HttpPost("administrators/{membershipId:guid}/suspend")]
@@ -135,13 +118,63 @@ public sealed class TenantAccessController(
                 Command(tenantId, membershipId, null), cancellationToken))
             : refusal;
 
-    [HttpPost("administrators/{membershipId:guid}/authority:grant")]
-    public async Task<IActionResult> GrantAuthority(
-        Guid membershipId, CancellationToken cancellationToken)
-        => Resolve(out var tenantId, requireManage: true, out var refusal)
-            ? Translate(await lifecycle.GrantAuthorityAsync(
-                Command(tenantId, membershipId, null), cancellationToken))
-            : refusal;
+    /// <summary>
+    /// Makes someone who already signs in an administrator. Asks for the caller's own password every time, so an
+    /// unattended session can't hand out the company; five wrong tries lock the check for a few minutes.
+    /// </summary>
+    [HttpPost("administrators")]
+    public async Task<IActionResult> AddAdministrator(
+        [FromBody] AddAdministratorRequest request, CancellationToken cancellationToken)
+    {
+        if (!Resolve(out var tenantId, requireManage: true, out var refusal))
+        {
+            return refusal;
+        }
+
+        var actorId = User.GetUserId();
+        var actor = await dbContext.Users.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(user => user.Id == actorId, cancellationToken);
+        if (actor is null)
+        {
+            return Problem("permission-denied", "You do not have permission to perform this action.", StatusCodes.Status403Forbidden);
+        }
+
+        if (await userManager.IsLockedOutAsync(actor))
+        {
+            return Problem("password-locked", "Too many wrong passwords. Try again in a few minutes.", StatusCodes.Status429TooManyRequests);
+        }
+
+        if (string.IsNullOrEmpty(request.Password) || string.IsNullOrEmpty(actor.PasswordHash)
+            || userManager.PasswordHasher.VerifyHashedPassword(actor, actor.PasswordHash, request.Password) == PasswordVerificationResult.Failed)
+        {
+            await userManager.AccessFailedAsync(actor);
+            return Problem("password-incorrect", "That isn't your password.", StatusCodes.Status403Forbidden);
+        }
+
+        await userManager.ResetAccessFailedCountAsync(actor);
+
+        // Only someone who already signs in to this company: an Active membership on an active account with a
+        // password. Fusion's own staff hold no membership, and are refused here even if one existed.
+        var membership = await dbContext.TenantMemberships.IgnoreQueryFilters()
+            .Where(item => item.TenantId == tenantId && item.UserId == request.UserId
+                && item.Status == TenantMembershipStatus.Active
+                && item.User!.IsActive && item.User!.PasswordHash != null)
+            .Select(item => new { item.Id, item.UserId })
+            .FirstOrDefaultAsync(cancellationToken);
+        var isOperator = membership is not null && await (
+                from userRole in dbContext.UserRoles
+                join role in dbContext.Roles on userRole.RoleId equals role.Id
+                where userRole.UserId == membership.UserId && role.Name == PlatformRole.PlatformAdmin
+                select userRole.UserId)
+            .AnyAsync(cancellationToken);
+        if (membership is null || isOperator)
+        {
+            return Problem("not-eligible", "Only people who already sign in to this company can be made administrators.",
+                StatusCodes.Status409Conflict);
+        }
+
+        return Translate(await lifecycle.GrantAuthorityAsync(Command(tenantId, membership.Id, null), cancellationToken));
+    }
 
     /// <summary>Covers self-removal: the actor names their own membership.</summary>
     [HttpPost("administrators/{membershipId:guid}/authority:revoke")]
@@ -173,7 +206,7 @@ public sealed class TenantAccessController(
     /// with no tenant context and a request from someone without permission are
     /// different refusals with different recoveries.
     /// </summary>
-    private bool Resolve(out Guid tenantId, bool requireManage, out IActionResult refusal)
+    private bool Resolve(out Guid tenantId, bool requireManage, out IActionResult refusal, bool rolesReaders = false)
     {
         tenantId = Guid.Empty;
         refusal = Problem(
@@ -191,7 +224,10 @@ public sealed class TenantAccessController(
         var permitted = requireManage
             ? User.HasCorePermission(CorePermissions.AccessAssignmentsManage, PermissionScopes.Tenant)
             : User.HasCorePermission(CorePermissions.AccessAssignmentsView, PermissionScopes.Tenant)
-              || User.HasCorePermission(CorePermissions.AccessAssignmentsManage, PermissionScopes.Tenant);
+              || User.HasCorePermission(CorePermissions.AccessAssignmentsManage, PermissionScopes.Tenant)
+              || (rolesReaders
+                  && (User.HasCorePermission(CorePermissions.AccessProfilesView, PermissionScopes.Tenant)
+                      || User.HasCorePermission(CorePermissions.AccessProfilesManageV2, PermissionScopes.Tenant)));
 
         if (!permitted)
         {
@@ -206,48 +242,11 @@ public sealed class TenantAccessController(
         return true;
     }
 
-    private IActionResult Translate(InvitationCommandResult result) => result.Outcome switch
-    {
-        InvitationCommandOutcome.Succeeded => Success(new
-        {
-            invitationId = result.InvitationId,
-            // Not an error status: the invitation exists and can be resent, so
-            // reporting a delivery problem as a failure would misstate what
-            // happened.
-            deliveryFailed = result.DeliveryFailed,
-        }),
-        InvitationCommandOutcome.InvalidEmail => Problem(
-            "validation-failed", "Enter a valid email address.", StatusCodes.Status400BadRequest),
-        InvitationCommandOutcome.ExistingAccount => Problem(
-            "existing-account",
-            "This email already belongs to a Fusion account and cannot be invited through this new-administrator flow.",
-            StatusCodes.Status409Conflict),
-        InvitationCommandOutcome.DuplicatePending => Problem(
-            "duplicate-pending-invitation",
-            "A pending invitation already exists for this email.",
-            StatusCodes.Status409Conflict),
-        InvitationCommandOutcome.NotFound => Problem(
-            "not-found", "That invitation no longer exists.", StatusCodes.Status404NotFound),
-        InvitationCommandOutcome.NotPending => Problem(
-            "invitation-not-pending",
-            "That invitation is no longer pending.",
-            StatusCodes.Status409Conflict),
-        InvitationCommandOutcome.RecoveryAlreadyPending => Problem(
-            "recovery-already-pending",
-            "A recovery invitation is already pending for this tenant.",
-            StatusCodes.Status409Conflict),
-        InvitationCommandOutcome.RecoveryNotEligible => Problem(
-            "recovery-not-eligible",
-            "This tenant still has a usable Tenant Administrator.",
-            StatusCodes.Status409Conflict),
-        _ => Problem("unexpected", "The request could not be completed.", StatusCodes.Status500InternalServerError),
-    };
-
     private IActionResult Translate<T>(ContinuityResult<T> result) => result.Failure switch
     {
         ContinuityFailure.None => Success(result.Value),
-        ContinuityFailure.FinalAdministrator => Problem(
-            "final-administrator",
+        ContinuityFailure.TooFewAdministrators => Problem(
+            "too-few-administrators",
             TenantAccessProjection.FinalAdministratorReason,
             StatusCodes.Status409Conflict),
         // States the conflict only. Whether anything was reloaded is a fact about

@@ -24,7 +24,15 @@ public interface IAccessProfileService
     Task SetInviteAccessProfilesAsync(Guid tenantId, Guid inviteId, IReadOnlyCollection<Guid> accessProfileIds, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<AccessProfileAssignmentSummaryDto>> GetInviteAccessProfilesAsync(Guid inviteId, CancellationToken cancellationToken = default);
     Task ApplyInviteProfilesAsync(InviteToken invite, ApplicationUser user, CancellationToken cancellationToken = default);
-    Task SyncCompatibilityRolesAsync(ApplicationUser user, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// People whose roles just changed get a fresh token on their next request (B-213): their memberships' access
+    /// revision moves, so the Gateway turns the old token away, and the browser trades its refresh token for one
+    /// with today's permissions instead of signing out. Refresh grants stay, unlike a suspension.
+    /// </summary>
+    Task RefreshAccessAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken = default);
+
+    /// <summary>The invitation's role label (Employee, Manager, HRAdmin) from the permissions it gives.</summary>
     string ResolveCompatibilityRole(IReadOnlyCollection<EffectivePermissionGrant> grants);
 }
 
@@ -89,13 +97,6 @@ public sealed class AccessProfileService(
         return membershipId.Value;
     }
 
-    private static readonly string[] TenantRoles = [
-        PlatformRole.HRAdmin,
-        PlatformRole.OrgAdmin,
-        PlatformRole.Manager,
-        PlatformRole.Employee,
-    ];
-
 
     public async Task EnsureSeedDataAsync(CancellationToken cancellationToken = default)
     {
@@ -107,7 +108,6 @@ public sealed class AccessProfileService(
         foreach (var tenantId in tenantIds)
         {
             await EnsureTenantProfilesAsync(tenantId, cancellationToken);
-            await BackfillTenantAssignmentsAsync(tenantId, cancellationToken);
         }
     }
 
@@ -446,44 +446,28 @@ public sealed class AccessProfileService(
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
-        await SyncCompatibilityRolesAsync(user, cancellationToken);
 
         // The new person may match rules (a department, a team) the invitation didn't name.
         recomputeQueue?.Enqueue(invite.TenantId);
     }
 
-    public async Task SyncCompatibilityRolesAsync(ApplicationUser user, CancellationToken cancellationToken = default)
+    public async Task RefreshAccessAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken = default)
     {
-        var currentRoles = await userManager.GetRolesAsync(user);
-        if (currentRoles.Contains(PlatformRole.PlatformAdmin, StringComparer.Ordinal))
+        if (userIds.Count == 0)
         {
-            var removable = currentRoles.Where(role => TenantRoles.Contains(role, StringComparer.Ordinal)).ToArray();
-            if (removable.Length > 0)
-            {
-                await userManager.RemoveFromRolesAsync(user, removable);
-            }
             return;
         }
 
-        var effectivePermissions = await GetEffectivePermissionsAsync(user, cancellationToken);
-        var desiredRoles = DetermineCompatibilityRoles(effectivePermissions);
-        var currentTenantRoles = currentRoles.Where(role => TenantRoles.Contains(role, StringComparer.Ordinal)).ToArray();
-        var rolesToAdd = desiredRoles.Except(currentTenantRoles, StringComparer.Ordinal).ToArray();
-        var rolesToRemove = currentTenantRoles.Except(desiredRoles, StringComparer.Ordinal).ToArray();
-
-        if (rolesToRemove.Length > 0)
+        var memberships = await dbContext.TenantMemberships
+            .IgnoreQueryFilters()
+            .Where(membership => membership.TenantId == tenantId && userIds.Contains(membership.UserId))
+            .ToListAsync(cancellationToken);
+        foreach (var membership in memberships)
         {
-            var removeResult = await userManager.RemoveFromRolesAsync(user, rolesToRemove);
-            if (!removeResult.Succeeded)
-                throw new InvalidOperationException(string.Join(", ", removeResult.Errors.Select(error => error.Description)));
+            membership.BumpAccessRevision();
         }
 
-        if (rolesToAdd.Length > 0)
-        {
-            var addResult = await userManager.AddToRolesAsync(user, rolesToAdd);
-            if (!addResult.Succeeded)
-                throw new InvalidOperationException(string.Join(", ", addResult.Errors.Select(error => error.Description)));
-        }
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public string ResolveCompatibilityRole(IReadOnlyCollection<EffectivePermissionGrant> grants)
@@ -493,12 +477,7 @@ public sealed class AccessProfileService(
     {
         var roles = new List<string>();
 
-        if (HasOrgAdminCompatibilityCoverage(effectivePermissions))
-        {
-            roles.Add(PlatformRole.OrgAdmin);
-        }
-
-        if (HasHrAdminCompatibilityCoverage(effectivePermissions))
+        if (LearningRoleCopy.Covers(effectivePermissions))
         {
             roles.Add(PlatformRole.HRAdmin);
         }
@@ -519,18 +498,6 @@ public sealed class AccessProfileService(
 
         return roles.Distinct(StringComparer.Ordinal).ToArray();
     }
-
-    private static bool HasOrgAdminCompatibilityCoverage(IReadOnlyCollection<EffectivePermissionGrant> effectivePermissions)
-        => CompatibilityRoleCoverage.OrgAdmin.All(required =>
-            effectivePermissions.Any(grant =>
-                string.Equals(grant.PermissionKey, required.PermissionKey, StringComparison.Ordinal)
-                && PermissionScopes.GetRank(grant.Scope) >= PermissionScopes.GetRank(required.Scope)));
-
-    private static bool HasHrAdminCompatibilityCoverage(IReadOnlyCollection<EffectivePermissionGrant> effectivePermissions)
-        => CompatibilityRoleCoverage.HrAdmin.All(required =>
-            effectivePermissions.Any(grant =>
-                string.Equals(grant.PermissionKey, required.PermissionKey, StringComparison.Ordinal)
-                && PermissionScopes.GetRank(grant.Scope) >= PermissionScopes.GetRank(required.Scope)));
 
     public Task EnsureTenantAccessProfilesAsync(Guid tenantId, CancellationToken cancellationToken = default)
         => EnsureTenantProfilesAsync(tenantId, cancellationToken);
@@ -806,50 +773,6 @@ public sealed class AccessProfileService(
         }
     }
 
-    private async Task BackfillTenantAssignmentsAsync(Guid tenantId, CancellationToken cancellationToken)
-    {
-        var seededProfiles = await dbContext.AccessProfiles
-            .IgnoreQueryFilters()
-            .Where(profile => profile.TenantId == tenantId && profile.Type == AccessProfileTypes.SystemSeeded)
-            .ToListAsync(cancellationToken);
-
-        var seededByName = seededProfiles.ToDictionary(profile => profile.Name, StringComparer.Ordinal);
-        var seededByKey = seededProfiles
-            .Where(p => !string.IsNullOrEmpty(p.InternalKey))
-            .ToDictionary(p => p.InternalKey!, StringComparer.Ordinal);
-
-        var users = await dbContext.Users
-            .IgnoreQueryFilters()
-            .Where(user => user.TenantMemberships.Any(membership =>
-                membership.TenantId == tenantId
-                && membership.Status == TenantMembershipStatus.Active))
-            .ToListAsync(cancellationToken);
-
-        foreach (var user in users)
-        {
-            var hasAssignments = await dbContext.UserAccessProfiles
-                .IgnoreQueryFilters()
-                .AnyAsync(assignment => assignment.TenantId == tenantId && assignment.UserId == user.Id, cancellationToken);
-            if (hasAssignments)
-            {
-                continue;
-            }
-
-            var desiredProfiles = await ResolveRoleMappedSeededProfileIdsAsync(user, seededByName, seededByKey);
-
-            if (desiredProfiles.Count == 0)
-            {
-                continue;
-            }
-
-            var seedMembershipId = await ResolveActiveMembershipIdAsync(tenantId, user.Id, cancellationToken);
-            dbContext.UserAccessProfiles.AddRange(desiredProfiles.Select(profileId =>
-                UserAccessProfile.Create(tenantId, user.Id, profileId, seedMembershipId)));
-            await dbContext.SaveChangesAsync(cancellationToken);
-            await SyncCompatibilityRolesAsync(user, cancellationToken);
-        }
-    }
-
     private async Task<List<AccessProfile>> LoadProfilesAsync(Guid tenantId, CancellationToken cancellationToken)
         => await dbContext.AccessProfiles
             .Include(profile => profile.Grants)
@@ -967,35 +890,6 @@ public sealed class AccessProfileService(
         // profiles from them would let a stale OrgAdmin role recreate authority
         // after the canonical Tenant Administrator assignment was revoked.
         return assignments;
-    }
-
-    private async Task<List<Guid>> ResolveRoleMappedSeededProfileIdsAsync(
-        ApplicationUser user,
-        IReadOnlyDictionary<string, AccessProfile> seededByName,
-        IReadOnlyDictionary<string, AccessProfile> seededByKey)
-    {
-        var roles = await userManager.GetRolesAsync(user);
-        var ids = new List<Guid>();
-        foreach (var role in roles)
-        {
-            if (role is PlatformRole.PlatformAdmin or PlatformRole.OrgAdmin)
-                continue;
-
-            // Match by name first
-            if (seededByName.TryGetValue(role, out var byName))
-            {
-                ids.Add(byName.Id);
-                continue;
-            }
-
-            // Match by internal key (with role-to-key mapping)
-            var internalKey = PlatformRoleToInternalKey(role);
-            if (seededByKey.TryGetValue(internalKey, out var byKey))
-            {
-                ids.Add(byKey.Id);
-            }
-        }
-        return ids.Distinct().ToList();
     }
 
 

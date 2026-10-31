@@ -132,14 +132,7 @@ public sealed class RoleHolderService(
             return;
         }
 
-        // The old token roles follow effective permissions until they retire (B-178).
-        var users = await dbContext.Users.IgnoreQueryFilters()
-            .Where(user => changedUsers.Contains(user.Id))
-            .ToListAsync(cancellationToken);
-        foreach (var user in users)
-        {
-            await accessProfiles.SyncCompatibilityRolesAsync(user, cancellationToken);
-        }
+        await accessProfiles.RefreshAccessAsync(tenantId, changedUsers, cancellationToken);
     }
 }
 

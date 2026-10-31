@@ -116,11 +116,6 @@ public sealed class WorkforceContractService(
             user.GetUserId(),
             tenantContext.TenantId,
             access.LinkedEmployeeId,
-            user.Claims
-                .Where(claim => claim.Type == ClaimTypes.Role)
-                .Select(claim => claim.Value)
-                .Distinct(StringComparer.Ordinal)
-                .ToArray(),
             employee,
             managerScope,
             employee is not null,

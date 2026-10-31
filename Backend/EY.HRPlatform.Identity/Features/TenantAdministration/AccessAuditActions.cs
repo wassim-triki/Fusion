@@ -13,6 +13,7 @@ public static class AccessAuditActions
 {
     public const string ResourceTypeAdministrator = "TenantAdministrator";
     public const string ResourceTypeInvitation = "AdministratorInvitation";
+    public const string ResourceTypeMembership = "TenantMembership";
 
     /// <summary>The tenant's initial administrator authority became canonical.</summary>
     public const string AuthorityRecognized = "AdministratorAuthorityRecognized";
@@ -38,6 +39,9 @@ public static class AccessAuditActions
     /// </summary>
     public const string FinalAdministratorActionBlocked = "FinalAdministratorActionBlocked";
 
+    /// <summary>An administrator saw Fusion as someone in the company (read-only, recorded).</summary>
+    public const string SeenAs = "FusionSeenAs";
+
     public const string PlatformRecoveryInitiated = "PlatformRecoveryInitiated";
     public const string PlatformRecoveryInvitationAccepted = "PlatformRecoveryInvitationAccepted";
     public const string PlatformRecoveryCompleted = "PlatformRecoveryCompleted";
@@ -58,6 +62,7 @@ public static class AccessAuditActions
         AuthorityRevoked,
         AuthoritySelfRemoved,
         FinalAdministratorActionBlocked,
+        SeenAs,
         PlatformRecoveryInitiated,
         PlatformRecoveryInvitationAccepted,
         PlatformRecoveryCompleted,

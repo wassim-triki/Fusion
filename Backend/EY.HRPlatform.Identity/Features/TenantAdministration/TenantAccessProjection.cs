@@ -1,3 +1,4 @@
+using EY.HRPlatform.SharedKernel.Auth;
 using EY.HRPlatform.Identity.Domain.Entities;
 using EY.HRPlatform.Identity.Domain.Enums;
 using EY.HRPlatform.Identity.Infrastructure.Persistence;
@@ -64,7 +65,38 @@ public sealed record TenantAdministratorListItem(
     /// as provenance, so "how did this access come to exist" is answerable without
     /// opening the activity log.
     /// </summary>
-    string AddedBy);
+    string AddedBy,
+    /// <summary>How the authority came: <c>activation</c>, <c>invitation</c>, <c>recovery</c> or <c>administrator</c>.</summary>
+    string AddedByKind = AdministratorOrigins.Administrator,
+    /// <summary>The administrator who added them, when one did.</summary>
+    string? AddedByName = null,
+    Guid? EmployeeId = null);
+
+public static class AdministratorOrigins
+{
+    public const string Activation = "activation";
+    public const string Invitation = "invitation";
+    public const string Recovery = "recovery";
+    public const string Administrator = "administrator";
+
+    public static string Of(TenantAdministratorGrantActor actor) => actor switch
+    {
+        TenantAdministratorGrantActor.BootstrapActivation => Activation,
+        TenantAdministratorGrantActor.PlatformRecovery => Recovery,
+        TenantAdministratorGrantActor.InvitationAcceptance => Invitation,
+        _ => Administrator,
+    };
+}
+
+/// <summary>
+/// One grant or removal of administrator authority, newest first. Read from the assignments themselves, which are
+/// never deleted, so every grant is kept.
+/// </summary>
+/// <param name="Kind">An <see cref="AdministratorOrigins"/> value for a grant; <c>removed</c> or <c>stepped-down</c> for a removal.</param>
+public sealed record AdministratorHistoryItem(DateTime At, string Kind, string PersonName, string? ActorName);
+
+/// <summary>Someone in the company who could be made an administrator; only people who already sign in can be.</summary>
+public sealed record AdministratorCandidate(Guid UserId, Guid? EmployeeId, string Name, string? JobTitle, bool SignsIn);
 
 /// <summary>
 /// An administrator whose authority has been revoked and not re-granted. Kept as a
@@ -123,6 +155,12 @@ public interface ITenantAccessProjection
     Task<IReadOnlyList<RemovedAdministratorListItem>> GetRemovedAdministratorsAsync(
         Guid tenantId, CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<AdministratorHistoryItem>> GetAdministratorHistoryAsync(
+        Guid tenantId, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<AdministratorCandidate>> GetAdministratorCandidatesAsync(
+        Guid tenantId, string? search, CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<AdministratorInvitationListItem>> GetInvitationsAsync(
         Guid tenantId, bool includeHistorical = false, CancellationToken cancellationToken = default);
 
@@ -155,7 +193,7 @@ public sealed class TenantAccessProjection(AppIdentityDbContext dbContext) : ITe
     /// authority removed. Shown before interaction rather than after a refusal.
     /// </summary>
     public const string FinalAdministratorReason =
-        "Another active administrator is required before this access can be suspended or removed.";
+        "A company keeps at least two administrators. Add another before removing or suspending one.";
 
     public async Task<TenantAccessSummary> GetSummaryAsync(
         Guid tenantId, CancellationToken cancellationToken = default)
@@ -237,6 +275,7 @@ public sealed class TenantAccessProjection(AppIdentityDbContext dbContext) : ITe
                 assignment.GrantedByUserId,
                 Status = assignment.TenantMembership!.Status,
                 Version = assignment.TenantMembership!.Version,
+                EmployeeId = assignment.TenantMembership!.EmployeeId,
                 FirstName = assignment.User!.FirstName,
                 LastName = assignment.User!.LastName,
                 Email = assignment.User!.Email,
@@ -264,9 +303,13 @@ public sealed class TenantAccessProjection(AppIdentityDbContext dbContext) : ITe
                 isUsable,
                 // A pending invitation does not satisfy continuity: nobody has
                 // accepted it, so it cannot administer anything yet.
-                isUsable && usable.Count == 1 ? FinalAdministratorReason : null,
+                isUsable && usable.Count <= UsableTenantAdministrator.Minimum ? FinalAdministratorReason : null,
                 item.Version,
-                DescribeAddedBy(item.GrantedByActorType, item.GrantedByUserId, grantorNames));
+                DescribeAddedBy(item.GrantedByActorType, item.GrantedByUserId, grantorNames),
+                AdministratorOrigins.Of(item.GrantedByActorType),
+                item.GrantedByUserId is { } grantor && grantorNames.TryGetValue(grantor, out var grantorName)
+                    && !string.IsNullOrWhiteSpace(grantorName) ? grantorName : null,
+                item.EmployeeId);
         }).ToList();
     }
 
@@ -375,6 +418,117 @@ public sealed class TenantAccessProjection(AppIdentityDbContext dbContext) : ITe
             TenantAdministratorGrantActor.InvitationAcceptance => grantorName ?? "Invitation accepted",
             _ => grantorName ?? "An administrator",
         };
+    }
+
+    public async Task<IReadOnlyList<AdministratorHistoryItem>> GetAdministratorHistoryAsync(
+        Guid tenantId, CancellationToken cancellationToken = default)
+    {
+        var rows = await dbContext.TenantAdministratorAssignments
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Where(assignment => assignment.TenantId == tenantId)
+            .Select(assignment => new
+            {
+                assignment.UserId,
+                assignment.GrantedAt,
+                assignment.GrantedByUserId,
+                assignment.GrantedByActorType,
+                assignment.RevokedAt,
+                assignment.RevokedByUserId,
+                FirstName = assignment.User!.FirstName,
+                LastName = assignment.User!.LastName,
+            })
+            .ToListAsync(cancellationToken);
+
+        var names = await ResolveNamesAsync(
+            rows.SelectMany(row => new[] { row.GrantedByUserId, row.RevokedByUserId })
+                .Where(id => id.HasValue).Select(id => id!.Value),
+            cancellationToken);
+        string? NameOf(Guid? id) => id is { } value && names.TryGetValue(value, out var name) && !string.IsNullOrWhiteSpace(name) ? name : null;
+
+        var history = new List<AdministratorHistoryItem>();
+        foreach (var row in rows)
+        {
+            var person = $"{row.FirstName} {row.LastName}".Trim();
+            var origin = AdministratorOrigins.Of(row.GrantedByActorType);
+            history.Add(new AdministratorHistoryItem(row.GrantedAt, origin, person,
+                origin is AdministratorOrigins.Administrator or AdministratorOrigins.Invitation ? NameOf(row.GrantedByUserId) : null));
+            if (row.RevokedAt is { } revokedAt)
+            {
+                var self = row.RevokedByUserId == row.UserId;
+                history.Add(new AdministratorHistoryItem(revokedAt, self ? "stepped-down" : "removed", person,
+                    self ? null : NameOf(row.RevokedByUserId)));
+            }
+        }
+
+        return history.OrderByDescending(item => item.At).ToList();
+    }
+
+    public async Task<IReadOnlyList<AdministratorCandidate>> GetAdministratorCandidatesAsync(
+        Guid tenantId, string? search, CancellationToken cancellationToken = default)
+    {
+        var term = search?.Trim().ToUpperInvariant() ?? string.Empty;
+
+        // Fusion's own staff never appear inside a company, even if an account were somehow both.
+        var operators = from userRole in dbContext.UserRoles
+                        join role in dbContext.Roles on userRole.RoleId equals role.Id
+                        where role.Name == PlatformRole.PlatformAdmin
+                        select userRole.UserId;
+        var administrators = dbContext.TenantAdministratorAssignments.IgnoreQueryFilters()
+            .Where(assignment => assignment.TenantId == tenantId && assignment.RevokedAt == null)
+            .Select(assignment => assignment.TenantMembershipId);
+
+        var members = dbContext.TenantMemberships.IgnoreQueryFilters().AsNoTracking()
+            .Where(membership => membership.TenantId == tenantId
+                && membership.Status == TenantMembershipStatus.Active
+                && membership.User!.IsActive
+                && !administrators.Contains(membership.Id)
+                && !operators.Contains(membership.UserId));
+        if (term.Length > 0)
+        {
+            members = members.Where(membership => (membership.User!.FirstName + " " + membership.User!.LastName).ToUpper().Contains(term)
+                || (membership.User!.NormalizedEmail != null && membership.User!.NormalizedEmail.Contains(term)));
+        }
+
+        var signedUp = await members
+            .OrderBy(membership => membership.User!.FirstName).ThenBy(membership => membership.User!.LastName)
+            .Take(30)
+            .Select(membership => new AdministratorCandidate(
+                membership.UserId,
+                membership.EmployeeId,
+                (membership.User!.FirstName + " " + membership.User!.LastName).Trim(),
+                membership.User!.JobTitle,
+                membership.User!.PasswordHash != null))
+            .ToListAsync(cancellationToken);
+
+        // People invited to sign in who haven't yet: shown so the person adding sees why they can't be chosen.
+        var now = DateTime.UtcNow;
+        var invited = dbContext.InviteTokens.IgnoreQueryFilters().AsNoTracking()
+            .Where(invite => invite.TenantId == tenantId
+                && invite.Purpose == InvitationPurpose.WorkforceAccount
+                && invite.AcceptedAt == null && !invite.IsRevoked && invite.SupersededAt == null && invite.ExpiresAt > now);
+        if (term.Length > 0)
+        {
+            invited = invited.Where(invite => ((invite.FirstName ?? "") + " " + (invite.LastName ?? "")).ToUpper().Contains(term)
+                || invite.Email.ToUpper().Contains(term));
+        }
+
+        var pending = await invited
+            .OrderBy(invite => invite.FirstName).ThenBy(invite => invite.LastName)
+            .Take(10)
+            .Select(invite => new { invite.EmployeeId, invite.FirstName, invite.LastName, invite.Email })
+            .ToListAsync(cancellationToken);
+
+        return
+        [
+            .. signedUp,
+            .. pending.Select(invite => new AdministratorCandidate(
+                Guid.Empty,
+                invite.EmployeeId,
+                $"{invite.FirstName} {invite.LastName}".Trim() is { Length: > 0 } name ? name : invite.Email,
+                null,
+                false)),
+        ];
     }
 
     public async Task<IReadOnlyList<AdministratorInvitationListItem>> GetInvitationsAsync(

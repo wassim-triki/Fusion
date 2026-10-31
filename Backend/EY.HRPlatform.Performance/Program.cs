@@ -94,6 +94,7 @@ app.UseSerilogRequestLogging();
 app.UseInternalServiceBodyBuffering();
 
 app.UseAuthentication();
+app.UseMiddleware<EY.HRPlatform.SharedKernel.Auth.ReadOnlyViewMiddleware>(); // seeing Fusion as someone is read-only
 // Development-only simulated request time; refused elsewhere (performance-demo-clock).
 app.UseMiddleware<DemoClockMiddleware>();
 app.UseAuthorization();

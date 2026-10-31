@@ -14,6 +14,12 @@ namespace EY.HRPlatform.Identity.Features.Accounts;
 public interface IAuthSessionFactory
 {
     Task<AuthResponse> CreateAsync(ApplicationUser user, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// A session for seeing Fusion as <paramref name="user"/>: their own authority in a token marked with the view,
+    /// ending when it does, and no refresh token, so it can't outlive the view.
+    /// </summary>
+    Task<AuthResponse> CreateViewAsync(ApplicationUser user, ViewAsToken view, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -50,7 +56,20 @@ public sealed class AuthSessionFactory(
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        var roles = await userManager.GetRolesAsync(user);
+        return await BuildAsync(user, accessToken, refreshTokenString,
+            DateTime.UtcNow.AddMinutes(int.Parse(configuration["Jwt:ExpirationInMinutes"]!)), cancellationToken);
+    }
+
+    public async Task<AuthResponse> CreateViewAsync(
+        ApplicationUser user, ViewAsToken view, CancellationToken cancellationToken = default)
+        => await BuildAsync(user, await tokenService.GenerateAccessTokenAsync(user, view), string.Empty, view.ExpiresAt,
+            cancellationToken);
+
+    private async Task<AuthResponse> BuildAsync(
+        ApplicationUser user, string accessToken, string refreshTokenString, DateTime expiresAt,
+        CancellationToken cancellationToken)
+    {
+        var roles = await tokenService.RolesForAsync(user);
 
         // Without a customer context there is no tenant, no entitlement and no
         // tenant permission to report, so the client cannot render a workspace the
@@ -103,8 +122,7 @@ public sealed class AuthSessionFactory(
             NotificationSound = user.NotificationSound,
             AccessToken = accessToken,
             RefreshToken = refreshTokenString,
-            AccessTokenExpiration = DateTime.UtcNow.AddMinutes(
-                int.Parse(configuration["Jwt:ExpirationInMinutes"]!)),
+            AccessTokenExpiration = expiresAt,
         };
     }
 }

@@ -197,7 +197,7 @@ public class CoreAccessControllerPermissionTests
         public Task ApplyInviteProfilesAsync(InviteToken invite, ApplicationUser user, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
-        public Task SyncCompatibilityRolesAsync(ApplicationUser user, CancellationToken cancellationToken = default)
+        public Task RefreshAccessAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
         public string ResolveCompatibilityRole(IReadOnlyCollection<EffectivePermissionGrant> grants)

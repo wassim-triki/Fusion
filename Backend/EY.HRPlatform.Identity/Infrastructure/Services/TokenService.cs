@@ -11,9 +11,20 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace EY.HRPlatform.Identity.Infrastructure.Services;
 
+/// <summary>What a token for seeing Fusion as someone adds: its session, who is seeing, and when it stops.</summary>
+public sealed record ViewAsToken(Guid SessionId, Guid ViewerUserId, DateTime ExpiresAt);
+
 public interface ITokenService
 {
-    Task<string> GenerateAccessTokenAsync(ApplicationUser user);
+    Task<string> GenerateAccessTokenAsync(ApplicationUser user, ViewAsToken? view = null);
+
+    /// <summary>
+    /// The role claims a token carries. Tenant roles retired with B-178: everything of ours reads permissions from
+    /// the roles model. What's left is the operator marker and Learning's own copy (HRAdmin), which Learning's
+    /// service still authorizes on.
+    /// </summary>
+    Task<IReadOnlyList<string>> RolesForAsync(ApplicationUser user);
+
     string GenerateRefreshToken();
 }
 
@@ -36,10 +47,21 @@ public class TokenService : ITokenService
         _customerContextResolver = customerContextResolver;
     }
 
-    public async Task<string> GenerateAccessTokenAsync(ApplicationUser user)
+    public async Task<IReadOnlyList<string>> RolesForAsync(ApplicationUser user)
     {
-        // Step 1: Get user's roles from the database
-        var roles = await _userManager.GetRolesAsync(user);
+        if (await _userManager.IsInRoleAsync(user, PlatformRole.PlatformAdmin))
+        {
+            return [PlatformRole.PlatformAdmin];
+        }
+
+        var permissions = await _accessProfileService.GetEffectivePermissionsAsync(user);
+        return LearningRoleCopy.Covers(permissions) ? [PlatformRole.HRAdmin] : [];
+    }
+
+    public async Task<string> GenerateAccessTokenAsync(ApplicationUser user, ViewAsToken? view = null)
+    {
+        // Step 1: The roles the token still carries (the operator marker, Learning's copy)
+        var roles = await RolesForAsync(user);
 
         // Step 2: Build the claims (data embedded inside the token)
         var claims = new List<Claim>
@@ -95,6 +117,13 @@ public class TokenService : ITokenService
             }
         }
 
+        // Seeing as someone: their authority, marked so every service keeps it read-only and the Gateway can end it.
+        if (view is not null)
+        {
+            claims.Add(new Claim(CustomClaimTypes.ViewSession, view.SessionId.ToString()));
+            claims.Add(new Claim(CustomClaimTypes.ViewerId, view.ViewerUserId.ToString()));
+        }
+
         // Step 5: Create the signing key from our secret
         var key = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]!));
@@ -106,7 +135,7 @@ public class TokenService : ITokenService
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(
+            expires: view?.ExpiresAt ?? DateTime.UtcNow.AddMinutes(
                 int.Parse(_configuration["Jwt:ExpirationInMinutes"]!)),
             signingCredentials: credentials
         );

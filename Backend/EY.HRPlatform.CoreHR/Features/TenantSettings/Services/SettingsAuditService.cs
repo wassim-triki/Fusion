@@ -105,6 +105,9 @@ public sealed class SettingsAuditService(
             ?? actor.FindFirst(ClaimTypes.Email)?.Value
             ?? "Unknown";
 
+    // The actor's token role retired (B-178); the record keeps a plain kind from the roles model.
     private static string GetActorRole(ClaimsPrincipal actor)
-        => actor.FindFirst(ClaimTypes.Role)?.Value ?? "Unknown";
+        => actor.HasCorePermission(CorePermissions.AccessAssignmentsManage, PermissionScopes.Tenant)
+            ? TenantAdministratorAuthority.DisplayName
+            : "Member";
 }

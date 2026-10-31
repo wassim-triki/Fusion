@@ -85,6 +85,7 @@ app.UseInternalServiceBodyBuffering();
 
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
+app.UseMiddleware<EY.HRPlatform.SharedKernel.Auth.ReadOnlyViewMiddleware>(); // seeing Fusion as someone is read-only
 app.UseMiddleware<TenantAuthorityRevisionMiddleware>();
 app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseAuthorization();

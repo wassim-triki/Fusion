@@ -10,8 +10,8 @@ public enum ContinuityFailure
 {
     None = 0,
 
-    /// <summary>Committing would have left the tenant with no usable administrator.</summary>
-    FinalAdministrator,
+    /// <summary>Committing would have left the tenant with fewer usable administrators than it must keep.</summary>
+    TooFewAdministrators,
 
     /// <summary>The caller acted on a version of the state that has since changed.</summary>
     StaleState,
@@ -48,6 +48,7 @@ public sealed class TenantContinuityContext(
     Guid? actorUserId)
 {
     private readonly HashSet<Guid> _invalidatedMemberships = [];
+    private readonly HashSet<Guid> _endedSessions = [];
 
     public AppIdentityDbContext Db { get; } = dbContext;
 
@@ -57,6 +58,9 @@ public sealed class TenantContinuityContext(
 
     internal IReadOnlyCollection<Guid> InvalidatedMemberships => _invalidatedMemberships;
 
+    /// <summary>Memberships whose refresh grants go too, so their sessions end rather than refresh.</summary>
+    internal IReadOnlyCollection<Guid> EndedSessions => _endedSessions;
+
     internal List<AccessAuditEvent> AuditEvents { get; } = [];
 
     /// <summary>
@@ -65,11 +69,20 @@ public sealed class TenantContinuityContext(
     /// commit as the mutation, so the next request carrying the old token fails
     /// closed rather than being served from a stale authority.
     /// </summary>
-    public void InvalidateTenantAccess(TenantMembership membership)
+    /// <param name="endSessions">
+    /// True (the default) when access is reduced: the person's refresh grants go too, so the old authority can't be
+    /// refreshed back. False when it grows (becoming an administrator): the old token is still turned away, and the
+    /// browser's refresh brings the new authority without signing them out (B-213).
+    /// </param>
+    public void InvalidateTenantAccess(TenantMembership membership, bool endSessions = true)
     {
         ArgumentNullException.ThrowIfNull(membership);
         membership.BumpAccessRevision();
         _invalidatedMemberships.Add(membership.Id);
+        if (endSessions)
+        {
+            _endedSessions.Add(membership.Id);
+        }
     }
 
     /// <summary>Records an access-administration event in this command's transaction.</summary>
@@ -139,10 +152,11 @@ public sealed class TenantContinuityCommandExecutor(AppIdentityDbContext dbConte
         dbContext.ChangeTracker.Clear();
 
         // Read under the lock, before the mutation. The invariant is that no
-        // command may be the one that leaves a tenant unadministered — not that
-        // every command must end with an administrator. A tenant that already has
-        // none is in the state Platform recovery exists to fix, and refusing the
-        // fix because the count is still zero would make it unrecoverable.
+        // command may be the one that takes a tenant below its minimum of usable
+        // administrators — not that every command must end at the minimum. A
+        // tenant with one administrator can still add a second, and one with none
+        // is in the state Platform recovery exists to fix; refusing those because
+        // the count is still short would make them unrecoverable.
         var usableBefore = await UsableTenantAdministrator.CountAsync(dbContext, tenantId, cancellationToken);
 
         var context = new TenantContinuityContext(dbContext, tenantId, actorUserId);
@@ -162,7 +176,7 @@ public sealed class TenantContinuityCommandExecutor(AppIdentityDbContext dbConte
         dbContext.ChangeTracker.DetectChanges();
         var remaining = await CountUsableAfterMutationAsync(tenantId, cancellationToken);
 
-        if (usableBefore > 0 && remaining == 0)
+        if (remaining < usableBefore && remaining < UsableTenantAdministrator.Minimum)
         {
             if (transaction is not null)
             {
@@ -173,8 +187,8 @@ public sealed class TenantContinuityCommandExecutor(AppIdentityDbContext dbConte
             await RecordBlockedAttemptAsync(tenantId, actorUserId, context, cancellationToken);
 
             return ContinuityResult<T>.Refused(
-                ContinuityFailure.FinalAdministrator,
-                "The tenant would be left without a usable Tenant Administrator.");
+                ContinuityFailure.TooFewAdministrators,
+                "The tenant would be left with fewer than two usable Tenant Administrators.");
         }
 
         foreach (var auditEvent in context.AuditEvents)
@@ -182,7 +196,7 @@ public sealed class TenantContinuityCommandExecutor(AppIdentityDbContext dbConte
             dbContext.AccessAuditEvents.Add(auditEvent);
         }
 
-        await RevokeRefreshGrantsAsync(context.InvalidatedMemberships, cancellationToken);
+        await RevokeRefreshGrantsAsync(context.EndedSessions, cancellationToken);
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
@@ -256,7 +270,7 @@ public sealed class TenantContinuityCommandExecutor(AppIdentityDbContext dbConte
             AccessAuditActions.FinalAdministratorActionBlocked,
             blocked?.ResourceType ?? AccessAuditActions.ResourceTypeAdministrator,
             blocked?.ResourceId,
-            "Action refused: the tenant would have been left without a usable Tenant Administrator.",
+            "Action refused: the tenant would have been left with fewer than two usable Tenant Administrators.",
             beforeJson: null,
             afterJson: null,
             correlationId: blocked?.CorrelationId));

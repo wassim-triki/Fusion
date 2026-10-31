@@ -154,7 +154,7 @@ public sealed class AuthorityStateContractTests : IAsyncLifetime
     public async Task A_token_issued_before_a_suspension_is_rejected_on_the_very_next_request()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var world = await ArrangeAsync(secondAdministrator: true);
+        var world = await ArrangeAsync(administrators: 3);
         var revisionAtSignIn = await RevisionAsync(world.Db, world.SecondMembershipId!.Value);
 
         await new TenantAdministratorLifecycleService(world.Db, new TenantContinuityCommandExecutor(world.Db))
@@ -173,7 +173,7 @@ public sealed class AuthorityStateContractTests : IAsyncLifetime
     public async Task A_stale_revision_alone_is_rejected()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var world = await ArrangeAsync(secondAdministrator: true);
+        var world = await ArrangeAsync(administrators: 3);
         var membershipId = world.SecondMembershipId!.Value;
         var revisionAtSignIn = await RevisionAsync(world.Db, membershipId);
 
@@ -193,7 +193,7 @@ public sealed class AuthorityStateContractTests : IAsyncLifetime
     public async Task A_direct_identity_request_cannot_bypass_revision_enforcement()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var world = await ArrangeAsync(secondAdministrator: true);
+        var world = await ArrangeAsync(administrators: 3);
         var membershipId = world.SecondMembershipId!.Value;
         var accountId = world.SecondAccountId!.Value;
         var revisionAtSignIn = await RevisionAsync(world.Db, membershipId);
@@ -227,10 +227,10 @@ public sealed class AuthorityStateContractTests : IAsyncLifetime
     }
 
     [SkippableFact]
-    public async Task A_stale_compatibility_role_cannot_recreate_removed_authority()
+    public async Task Removed_authority_leaves_nothing_behind_on_the_account()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var world = await ArrangeAsync(secondAdministrator: true);
+        var world = await ArrangeAsync(administrators: 3);
         var membershipId = world.SecondMembershipId!.Value;
         var accountId = world.SecondAccountId!.Value;
         var account = await world.Db.Users.IgnoreQueryFilters().SingleAsync(user => user.Id == accountId);
@@ -246,7 +246,9 @@ public sealed class AuthorityStateContractTests : IAsyncLifetime
             UserAccessProfile.Create(world.TenantId, accountId, profileId, membershipId)));
         await world.Db.SaveChangesAsync();
 
-        Assert.Contains(PlatformRole.OrgAdmin, await users.GetRolesAsync(account));
+        // Tenant roles no longer live on accounts (B-178), so there is no stale copy to bring authority back.
+        Assert.DoesNotContain(PlatformRole.OrgAdmin, await users.GetRolesAsync(account));
+        Assert.DoesNotContain(PlatformRole.HRAdmin, await users.GetRolesAsync(account));
 
         await new TenantAdministratorLifecycleService(world.Db, new TenantContinuityCommandExecutor(world.Db))
             .RevokeAuthorityAsync(new AdministratorCommand(
@@ -262,6 +264,87 @@ public sealed class AuthorityStateContractTests : IAsyncLifetime
         Assert.Equal(legacyProfileIds.Count, await world.Db.UserAccessProfiles.IgnoreQueryFilters()
             .CountAsync(assignment => assignment.UserId == accountId
                 && legacyProfileIds.Contains(assignment.AccessProfileId)));
+    }
+
+    // ── Seeing Fusion as someone (B-178) ────────────────
+
+    [SkippableFact]
+    public async Task A_view_token_is_honoured_only_while_its_session_is_open()
+    {
+        Skip.IfNot(Available, "No PostgreSQL connection configured.");
+        var world = await ArrangeAsync(administrators: 2);
+        var personRevision = await RevisionAsync(world.Db, world.SecondMembershipId!.Value);
+        var session = ViewAsSession.Start(world.TenantId, world.FirstAccountId, world.FirstMembershipId,
+            world.SecondAccountId!.Value, world.SecondMembershipId.Value, DateTime.UtcNow);
+        world.Db.ViewAsSessions.Add(session);
+        await world.Db.SaveChangesAsync();
+
+        var open = await AskAsync(world, personRevision, world.SecondMembershipId, world.SecondAccountId, viewSession: session.Id);
+        Assert.True(open.Valid);
+
+        // A token naming the session for someone else is not that view.
+        var misused = await AskAsync(world, world.Revision, world.FirstMembershipId, world.FirstAccountId, viewSession: session.Id);
+        Assert.Equal(TenantAuthorityDenialReasons.ViewEnded, misused.Reason);
+
+        var stored = await world.Db.ViewAsSessions.IgnoreQueryFilters().SingleAsync(item => item.Id == session.Id);
+        stored.End(DateTime.UtcNow);
+        await world.Db.SaveChangesAsync();
+
+        var ended = await AskAsync(world, personRevision, world.SecondMembershipId, world.SecondAccountId, viewSession: session.Id);
+        Assert.False(ended.Valid);
+        Assert.Equal(TenantAuthorityDenialReasons.ViewEnded, ended.Reason);
+    }
+
+    [SkippableFact]
+    public async Task A_view_ends_when_its_viewer_stops_being_an_administrator()
+    {
+        Skip.IfNot(Available, "No PostgreSQL connection configured.");
+        var world = await ArrangeAsync(administrators: 3);
+        var personRevision = await RevisionAsync(world.Db, world.FirstMembershipId);
+
+        // The second administrator sees Fusion as the first, then loses their administration.
+        var session = ViewAsSession.Start(world.TenantId, world.SecondAccountId!.Value, world.SecondMembershipId!.Value,
+            world.FirstAccountId, world.FirstMembershipId, DateTime.UtcNow);
+        world.Db.ViewAsSessions.Add(session);
+        await world.Db.SaveChangesAsync();
+        await new TenantAdministratorLifecycleService(world.Db, new TenantContinuityCommandExecutor(world.Db))
+            .RevokeAuthorityAsync(new AdministratorCommand(world.TenantId, world.SecondMembershipId.Value, world.FirstAccountId));
+
+        var state = await AskAsync(world, personRevision, viewSession: session.Id);
+
+        Assert.False(state.Valid);
+        Assert.Equal(TenantAuthorityDenialReasons.ViewEnded, state.Reason);
+    }
+
+    [SkippableFact]
+    public async Task A_view_token_carries_the_persons_authority_marked_and_expiring_with_the_view()
+    {
+        Skip.IfNot(Available, "No PostgreSQL connection configured.");
+        var world = await ArrangeAsync(administrators: 2);
+        var users = RelationalTestDatabase.CreateUserManager(world.Db);
+        var accessProfiles = new AccessProfileService(world.Db, users);
+        var configuration = TokenConfiguration();
+        var context = new CustomerContextResolver(world.Db, users);
+        var tokens = new TokenService(configuration, users, accessProfiles, context);
+        var person = await world.Db.Users.IgnoreQueryFilters().SingleAsync(user => user.Id == world.SecondAccountId);
+        var expires = DateTime.UtcNow.AddMinutes(30);
+        var sessionId = Guid.NewGuid();
+
+        var auth = await new AuthSessionFactory(users, tokens, accessProfiles, world.Db, configuration, context)
+            .CreateViewAsync(person, new ViewAsToken(sessionId, world.FirstAccountId, expires));
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(auth.AccessToken);
+
+        Assert.Equal(sessionId.ToString(), jwt.Claims.Single(claim => claim.Type == CustomClaimTypes.ViewSession).Value);
+        Assert.Equal(world.FirstAccountId.ToString(), jwt.Claims.Single(claim => claim.Type == CustomClaimTypes.ViewerId).Value);
+        Assert.Equal(person.Id.ToString(), jwt.Claims.Single(claim => claim.Type == ClaimTypes.NameIdentifier).Value);
+        Assert.True(jwt.ValidTo <= expires.AddSeconds(1));
+        // No refresh token: a view can't outlive itself.
+        Assert.Equal(string.Empty, auth.RefreshToken);
+        Assert.False(await world.Db.RefreshTokens.AnyAsync(token => token.UserId == person.Id && token.RevokedAt == null
+            && token.CreatedAt > DateTime.UtcNow.AddMinutes(-1)));
+        // Tenant roles retired: the operator marker and Learning's HRAdmin copy are all a token can carry.
+        Assert.All(jwt.Claims.Where(claim => claim.Type == ClaimTypes.Role),
+            claim => Assert.Contains(claim.Value, new[] { PlatformRole.PlatformAdmin, PlatformRole.HRAdmin }));
     }
 
     [SkippableFact]
@@ -331,7 +414,8 @@ public sealed class AuthorityStateContractTests : IAsyncLifetime
         int revision,
         Guid? membershipOverride = null,
         Guid? accountOverride = null,
-        Guid? tenantOverride = null)
+        Guid? tenantOverride = null,
+        Guid? viewSession = null)
     {
         world.Db.ChangeTracker.Clear();
 
@@ -340,7 +424,8 @@ public sealed class AuthorityStateContractTests : IAsyncLifetime
                 accountOverride ?? world.FirstAccountId,
                 tenantOverride ?? world.TenantId,
                 membershipOverride ?? world.FirstMembershipId,
-                revision),
+                revision,
+                viewSession),
             CancellationToken.None);
 
         return Assert.IsType<TenantAuthorityStateResponse>(
@@ -374,7 +459,7 @@ public sealed class AuthorityStateContractTests : IAsyncLifetime
     public async Task Permission_holders_are_the_tenant_accounts_whose_effective_grants_carry_the_permission()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var world = await ArrangeAsync(secondAdministrator: true);
+        var world = await ArrangeAsync(administrators: 2);
         var users = RelationalTestDatabase.CreateUserManager(world.Db);
         var accessProfiles = new AccessProfileService(world.Db, users);
         world.Db.TenantModuleEntitlements.Add(TenantModuleEntitlement.Create(world.TenantId, TenantModule.Performance));
@@ -450,7 +535,7 @@ public sealed class AuthorityStateContractTests : IAsyncLifetime
         Guid? SecondAccountId,
         Guid? SecondMembershipId);
 
-    private async Task<World> ArrangeAsync(bool secondAdministrator = false)
+    private async Task<World> ArrangeAsync(int administrators = 1)
     {
         var db = await _databases.CreateAsync("fusion_authority");
         var bootstrap = new CapturingBootstrapDelivery();
@@ -488,11 +573,11 @@ public sealed class AuthorityStateContractTests : IAsyncLifetime
         Guid? secondAccountId = null;
         Guid? secondMembershipId = null;
 
-        if (secondAdministrator)
+        foreach (var (email, name) in new[] { ("second.admin@atlas.example", "Bea"), ("third.admin@atlas.example", "Cleo") }.Take(administrators - 1))
         {
             var delivery = new SilentDelivery();
             await new AdministratorInvitationService(db, users, delivery)
-                .IssueAsync(tenantId, "second.admin@atlas.example", firstAccountId);
+                .IssueAsync(tenantId, email, firstAccountId);
             db.ChangeTracker.Clear();
 
             var accepted = await new AdministrativeInvitationAcceptanceService(
@@ -500,13 +585,14 @@ public sealed class AuthorityStateContractTests : IAsyncLifetime
                 .AcceptAsync(new AdministrativeAcceptanceRequest
                 {
                     Credential = delivery.Credential!.RawValue,
-                    Email = "second.admin@atlas.example",
+                    Email = email,
                     Password = "Administrator@123456",
-                    FirstName = "Bea",
+                    FirstName = name,
                     LastName = "Admin",
                 });
 
             db.ChangeTracker.Clear();
+            if (secondAccountId is not null) continue;
             secondAccountId = accepted.AccountId;
             secondMembershipId = await db.TenantMemberships.IgnoreQueryFilters()
                 .Where(item => item.UserId == accepted.AccountId).Select(item => item.Id).SingleAsync();

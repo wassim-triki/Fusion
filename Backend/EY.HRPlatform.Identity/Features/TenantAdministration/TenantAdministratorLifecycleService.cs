@@ -1,3 +1,4 @@
+using System.Text.Json;
 using EY.HRPlatform.Identity.Features.Notifications;
 using EY.HRPlatform.Identity.Domain.Entities;
 using EY.HRPlatform.Identity.Domain.Enums;
@@ -162,7 +163,7 @@ public sealed class TenantAdministratorLifecycleService(
                 grantedByUserId: command.ActorUserId);
 
             context.Db.TenantAdministratorAssignments.Add(assignment);
-            context.InvalidateTenantAccess(membership);
+            context.InvalidateTenantAccess(membership, endSessions: false);
 
             context.Audit(Event(
                 command, AccessAuditActions.AuthorityGranted, membership,
@@ -247,6 +248,7 @@ public sealed class TenantAdministratorLifecycleService(
         TenantContinuityContext context, AdministratorCommand command, CancellationToken cancellationToken)
         => context.Db.TenantMemberships
             .IgnoreQueryFilters()
+            .Include(membership => membership.User)
             .FirstOrDefaultAsync(membership => membership.Id == command.MembershipId
                 && membership.TenantId == command.TenantId, cancellationToken);
 
@@ -288,7 +290,9 @@ public sealed class TenantAdministratorLifecycleService(
             resourceType: AccessAuditActions.ResourceTypeAdministrator,
             resourceId: membership.Id.ToString(),
             summary: summary,
-            beforeJson: $"{{\"state\":\"{before}\"}}",
-            afterJson: $"{{\"state\":\"{after}\"}}",
+            // The person is named in the record so Change history can say who was made or stopped being an
+            // administrator, even after the account is renamed or gone.
+            beforeJson: JsonSerializer.Serialize(new { state = before, person = membership.User?.FullName.Trim() }),
+            afterJson: JsonSerializer.Serialize(new { state = after, person = membership.User?.FullName.Trim() }),
             correlationId: null);
 }

@@ -967,6 +967,47 @@ namespace EY.HRPlatform.Identity.Infrastructure.Persistence.Migrations
                     b.ToTable("UserAccessProfileOrgUnitScopes", "identity");
                 });
 
+            modelBuilder.Entity("EY.HRPlatform.Identity.Domain.Entities.ViewAsSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("EndedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("TargetMembershipId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TargetUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ViewerMembershipId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ViewerUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "ViewerUserId");
+
+                    b.HasIndex("TargetMembershipId", "TargetUserId", "TenantId");
+
+                    b.HasIndex("ViewerMembershipId", "ViewerUserId", "TenantId");
+
+                    b.ToTable("ViewAsSessions", "identity");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1273,6 +1314,23 @@ namespace EY.HRPlatform.Identity.Infrastructure.Persistence.Migrations
                     b.HasOne("EY.HRPlatform.Identity.Domain.Entities.UserAccessProfile", null)
                         .WithMany()
                         .HasForeignKey("UserId", "AccessProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("EY.HRPlatform.Identity.Domain.Entities.ViewAsSession", b =>
+                {
+                    b.HasOne("EY.HRPlatform.Identity.Domain.Entities.TenantMembership", null)
+                        .WithMany()
+                        .HasForeignKey("TargetMembershipId", "TargetUserId", "TenantId")
+                        .HasPrincipalKey("Id", "UserId", "TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EY.HRPlatform.Identity.Domain.Entities.TenantMembership", null)
+                        .WithMany()
+                        .HasForeignKey("ViewerMembershipId", "ViewerUserId", "TenantId")
+                        .HasPrincipalKey("Id", "UserId", "TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

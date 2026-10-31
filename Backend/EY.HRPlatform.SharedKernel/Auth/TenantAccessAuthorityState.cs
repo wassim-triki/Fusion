@@ -8,7 +8,9 @@ public sealed record TenantAuthorityStateRequest(
     Guid UserId,
     Guid TenantId,
     Guid MembershipId,
-    int AccessRevision);
+    int AccessRevision,
+    /// <summary>The view session a read-only token for seeing Fusion as someone belongs to; null otherwise.</summary>
+    Guid? ViewSessionId = null);
 
 /// <summary>
 /// Why a token no longer carries authority. Typed rather than boolean so the
@@ -26,6 +28,9 @@ public static class TenantAuthorityDenialReasons
 
     /// <summary>The token's account, tenant, and membership do not describe one real membership.</summary>
     public const string MembershipMismatch = "membership-mismatch";
+
+    /// <summary>The token was for seeing Fusion as someone, and that view has ended, expired, or lost its viewer.</summary>
+    public const string ViewEnded = "view-ended";
 
     /// <summary>Identity could not be reached or did not answer. Denies, never allows.</summary>
     public const string AuthorityUnavailable = "authority-unavailable";

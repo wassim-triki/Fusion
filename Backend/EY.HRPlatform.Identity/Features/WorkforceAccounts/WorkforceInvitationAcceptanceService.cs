@@ -207,7 +207,6 @@ public sealed class WorkforceInvitationAcceptanceService(
             correlationId: invitation.Id.ToString()));
 
         await dbContext.SaveChangesAsync(cancellationToken);
-        await accessProfiles.SyncCompatibilityRolesAsync(account, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         if (transaction is not null)

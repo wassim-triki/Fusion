@@ -45,13 +45,20 @@ public class TenantContextController(
             tenant.IsArchived)));
     }
 
+    /// <summary>
+    /// The caller's own company's operational status, for the people who run it: read from the roles model (the
+    /// company-wide overview) now that token roles have retired (B-178).
+    /// </summary>
     [HttpGet("organization-status")]
-    [Authorize(Roles = $"{PlatformRole.PlatformAdmin},{PlatformRole.HRAdmin}")]
     [ProducesResponseType(typeof(ApiResponse<TenantOperationalStatusDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<TenantOperationalStatusDto>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<TenantOperationalStatusDto>>> GetOrganizationStatus(
         CancellationToken cancellationToken)
     {
+        if (!User.HasCorePermission(CorePermissions.OverviewView, PermissionScopes.Tenant))
+            return StatusCode(StatusCodes.Status403Forbidden,
+                ApiResponse<TenantOperationalStatusDto>.Failure("You do not have permission to read the organization's status."));
+
         var tenant = await dbContext.Tenants
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Id == tenantContext.TenantId, cancellationToken);

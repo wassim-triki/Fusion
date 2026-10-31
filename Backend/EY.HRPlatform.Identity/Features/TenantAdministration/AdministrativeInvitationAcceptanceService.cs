@@ -202,7 +202,6 @@ public sealed class AdministrativeInvitationAcceptanceService(
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
-        await accessProfiles.SyncCompatibilityRolesAsync(account, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         if (transaction is not null)

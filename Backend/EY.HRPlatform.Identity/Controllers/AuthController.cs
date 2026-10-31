@@ -37,7 +37,7 @@ public class AuthController : ControllerBase
     /// CoreHR employees and managers must activate access from an employee-linked invitation.
     /// </summary>
     [HttpPost("register")]
-    [Authorize(Roles = $"{PlatformRole.PlatformAdmin},{PlatformRole.HRAdmin}")]
+    [Authorize(Roles = PlatformRole.PlatformAdmin)]
     [ProducesResponseType(typeof(ApiResponse<AuthResponse>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

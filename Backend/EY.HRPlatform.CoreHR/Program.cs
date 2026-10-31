@@ -119,6 +119,7 @@ app.UseSerilogRequestLogging(options =>
 app.UseInternalServiceBodyBuffering();
 
 app.UseAuthentication();
+app.UseMiddleware<EY.HRPlatform.SharedKernel.Auth.ReadOnlyViewMiddleware>(); // seeing Fusion as someone is read-only
 app.UseMiddleware<TenantResolutionMiddleware>(); // after auth (claims populated), resolves tenant from claim/header
 app.UseMiddleware<LogContextEnrichmentMiddleware>(); // enriches logs with correlation/user/tenant
 app.UseAuthorization();

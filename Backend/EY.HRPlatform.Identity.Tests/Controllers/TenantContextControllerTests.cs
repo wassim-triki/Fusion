@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Http;
+using EY.HRPlatform.SharedKernel.Auth;
+using System.Security.Claims;
 using EY.HRPlatform.Identity.Controllers;
 using EY.HRPlatform.Identity.Domain.Entities;
 using EY.HRPlatform.Identity.Features.TenantContext.Dtos;
@@ -43,10 +46,30 @@ public class TenantContextControllerTests
             attribute => Assert.Null(attribute.Roles));
         Assert.Empty(type.GetMethod(nameof(TenantContextController.GetTenantSummary))!
             .GetCustomAttributes(typeof(AuthorizeAttribute), true).Cast<AuthorizeAttribute>().Where(a => a.Roles is not null));
-        Assert.Contains(type.GetMethod(nameof(TenantContextController.GetOrganizationStatus))!
-            .GetCustomAttributes(typeof(AuthorizeAttribute), true).Cast<AuthorizeAttribute>(), a => a.Roles is not null);
+        // Token roles retired (B-178): organization status reads the roles model instead (see below).
+        Assert.Empty(type.GetMethod(nameof(TenantContextController.GetOrganizationStatus))!
+            .GetCustomAttributes(typeof(AuthorizeAttribute), true).Cast<AuthorizeAttribute>().Where(a => a.Roles is not null));
         // The tenant is never a request value: the summary takes no parameter that could name another.
         Assert.Empty(type.GetMethod(nameof(TenantContextController.GetTenantSummary))!.GetParameters()
             .Where(p => p.ParameterType != typeof(CancellationToken)));
+    }
+
+    [Fact]
+    public async Task Organization_status_stays_with_the_people_who_run_the_company()
+    {
+        var (controller, own) = await ArrangeAsync();
+        controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity([new Claim(CustomClaimTypes.TenantId, own.ToString())], "test")),
+        } };
+        var member = await controller.GetOrganizationStatus(CancellationToken.None);
+        Assert.Equal(StatusCodes.Status403Forbidden, Assert.IsType<ObjectResult>(member.Result).StatusCode);
+
+        controller.ControllerContext.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(
+        [
+            new Claim(CustomClaimTypes.TenantId, own.ToString()),
+            new Claim(CustomClaimTypes.CorePermission, CorePermissionClaimValue.Encode(CorePermissions.OverviewView, PermissionScopes.Tenant)),
+        ], "test"));
+        Assert.IsType<OkObjectResult>((await controller.GetOrganizationStatus(CancellationToken.None)).Result);
     }
 }

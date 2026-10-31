@@ -18,6 +18,7 @@ public static class ApplicationBuilderExtensions
             app.UseHttpsRedirection();
         }
         app.UseAuthentication();
+        app.UseMiddleware<EY.HRPlatform.SharedKernel.Auth.ReadOnlyViewMiddleware>(); // seeing Fusion as someone is read-only (B-178)
         app.UseAuthorization();
         app.MapControllers();
 

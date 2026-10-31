@@ -93,7 +93,6 @@ public sealed record WorkforceCurrentUserContextDto(
     Guid UserId,
     Guid TenantId,
     Guid? EmployeeId,
-    IReadOnlyList<string> Roles,
     WorkforceEmployeeSummaryDto? Employee,
     WorkforceManagerScopeDto? ManagerScope,
     bool IsWorkforceLinked,

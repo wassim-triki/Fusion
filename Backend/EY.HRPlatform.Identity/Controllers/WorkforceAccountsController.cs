@@ -598,7 +598,7 @@ public sealed class WorkforceAccountsController(
             },
             cancellationToken);
 
-        if (deactivated.Failure == ContinuityFailure.FinalAdministrator)
+        if (deactivated.Failure == ContinuityFailure.TooFewAdministrators)
         {
             return Conflict(ApiResponse.Failure(
                 "This account belongs to the tenant's only usable Tenant Administrator. "

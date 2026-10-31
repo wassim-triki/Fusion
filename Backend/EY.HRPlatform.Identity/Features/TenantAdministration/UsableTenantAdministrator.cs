@@ -19,6 +19,12 @@ namespace EY.HRPlatform.Identity.Features.TenantAdministration;
 public static class UsableTenantAdministrator
 {
     /// <summary>
+    /// A company keeps at least two administrators once it has two (D-25): a command that would take it below this
+    /// is refused, so one person leaving or losing access never leaves the company without a way back.
+    /// </summary>
+    public const int Minimum = 2;
+
+    /// <summary>
     /// An administrator is usable when the tenant is live, the account is active,
     /// the membership is Active, and the canonical authority is unrevoked.
     /// </summary>

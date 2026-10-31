@@ -385,7 +385,6 @@ public sealed class BootstrapActivationService(
 
         // Detailed permission history stays in the existing access audit; bootstrap
         // history records only the outcome.
-        await accessProfiles.SyncCompatibilityRolesAsync(account, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         if (transaction is not null)

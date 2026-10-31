@@ -30,4 +30,13 @@ public static class CustomClaimTypes
     public const string Department = "department";
     public const string JobTitle = "job_title";
     public const string CorePermission = "core_permission";
+
+    /// <summary>
+    /// Present only on a token for seeing Fusion as someone: the open view session it belongs to. Such a token is
+    /// the person's own authority, read-only, and stops working when the session ends.
+    /// </summary>
+    public const string ViewSession = "view_session";
+
+    /// <summary>The administrator doing the seeing, on a view token.</summary>
+    public const string ViewerId = "view_viewer_id";
 }

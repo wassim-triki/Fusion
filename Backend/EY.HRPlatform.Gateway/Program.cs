@@ -97,6 +97,7 @@ app.MapHealthChecks("/health").AllowAnonymous();
 app.UseCors("AllowFrontend");
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseAuthentication();
+app.UseMiddleware<EY.HRPlatform.SharedKernel.Auth.ReadOnlyViewMiddleware>(); // seeing Fusion as someone is read-only
 
 // After authentication so the token's claims are available, and before the proxy
 // so a request that lost its authority never reaches a downstream service.

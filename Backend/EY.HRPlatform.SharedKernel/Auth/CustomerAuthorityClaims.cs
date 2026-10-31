@@ -62,8 +62,21 @@ public readonly record struct CustomerAuthorityClaims(
             return new CustomerAuthorityClaims(CustomerClaimsKind.Incomplete, null);
         }
 
+        // A view token names its session; one that names it unreadably can't prove the view is still open.
+        var view = principal.FindFirstValue(CustomClaimTypes.ViewSession);
+        Guid? viewSession = null;
+        if (view is not null)
+        {
+            if (!Guid.TryParse(view, out var session))
+            {
+                return new CustomerAuthorityClaims(CustomerClaimsKind.Incomplete, null);
+            }
+
+            viewSession = session;
+        }
+
         return new CustomerAuthorityClaims(
             CustomerClaimsKind.Complete,
-            new TenantAuthorityStateRequest(user, tenant, membership, accessRevision));
+            new TenantAuthorityStateRequest(user, tenant, membership, accessRevision, viewSession));
     }
 }

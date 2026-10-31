@@ -69,25 +69,40 @@ public sealed class AccessAuditService(
         CancellationToken cancellationToken)
     {
         var pageSize = Math.Clamp(take, 1, 100);
-        return await dbContext.AccessAuditEvents
+        var events = await dbContext.AccessAuditEvents
             .IgnoreQueryFilters()
             .AsNoTracking()
             .Where(auditEvent => auditEvent.TenantId == tenantId)
             .OrderByDescending(auditEvent => auditEvent.OccurredAt)
             .Take(pageSize)
-            .Select(auditEvent => new AccessAuditEventDto(
-                auditEvent.Id,
-                auditEvent.OccurredAt,
-                auditEvent.ActorName,
-                auditEvent.ActorRole,
-                auditEvent.Action,
-                auditEvent.ResourceType,
-                auditEvent.ResourceId,
-                auditEvent.Summary,
-                auditEvent.BeforeJson,
-                auditEvent.AfterJson,
-                auditEvent.CorrelationId))
+            .Select(auditEvent => new
+            {
+                Event = auditEvent,
+                // Administrator commands record the actor by id only; name them here.
+                Named = auditEvent.ActorName == AccessAuditEvent.UnresolvedActor && auditEvent.ActorUserId != null
+                    ? dbContext.Users.IgnoreQueryFilters()
+                        .Where(user => user.Id == auditEvent.ActorUserId)
+                        .Select(user => user.FirstName + " " + user.LastName)
+                        .FirstOrDefault()
+                    : null,
+            })
             .ToListAsync(cancellationToken);
+
+        return events
+            .Select(item => (auditEvent: item.Event, name: item.Named))
+            .Select(item => new AccessAuditEventDto(
+                item.auditEvent.Id,
+                item.auditEvent.OccurredAt,
+                string.IsNullOrWhiteSpace(item.name) ? item.auditEvent.ActorName : item.name.Trim(),
+                item.auditEvent.ActorRole,
+                item.auditEvent.Action,
+                item.auditEvent.ResourceType,
+                item.auditEvent.ResourceId,
+                item.auditEvent.Summary,
+                item.auditEvent.BeforeJson,
+                item.auditEvent.AfterJson,
+                item.auditEvent.CorrelationId))
+            .ToList();
     }
 
     private static string? SerializeOrNull(object? value)
@@ -107,5 +122,7 @@ public sealed class AccessAuditService(
             ?? "Unknown";
 
     private static string GetActorRole(ClaimsPrincipal actor)
-        => actor.FindFirst(ClaimTypes.Role)?.Value ?? "Unknown";
+        => actor.HasCorePermission(CorePermissions.AccessAssignmentsManage, PermissionScopes.Tenant)
+            ? TenantAdministratorAuthority.DisplayName
+            : "Member";
 }

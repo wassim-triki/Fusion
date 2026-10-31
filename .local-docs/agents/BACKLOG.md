@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-219.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-220.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -40,8 +40,6 @@ Open work only. Agents keep it current from the conversation; closed items leave
           Roles already store who proposes and who approves (`core.change.propose`@team, `core.change.approve`@everyone; Managers propose, HR approves; B-177): enforce those keys here.
       - [ ] **B-168** A deep link that opens a change on a person's record (`?change=job|end`) leaves the address without `/core`, so a refresh lands outside Core HR · Core HR · 2026-10-30
             Found in the B-165 walk: `features/people/changes/change-sheet.tsx` passes `usePathname()` (basePath-less) to `history.replaceState`. Fixed with the rebuilt change sheet.
-    - [ ] **B-217** Cards without a contrasting border, as the drawings have them: our DS card and section frames carry a border that stands out from the fill; the user prefers the borderless look. Change it in `@repo/ds` (and DESIGN.md's surface rules), then check every app · DS, All · 2026-10-31
-    - [ ] **B-218** People's initials in identity hues (D-05: "initials in identity hues stay the fallback"): `PersonAvatar` is grey today; tint from the person's id as the drawings do (hue text, 16% fill, 60% ring), everywhere a face shows · DS, All · 2026-10-31
     - [ ] **B-212** Reach "their unit" for roles (D-25 draws it): Core HR's record reads and Performance resolve the viewer's unit and the units under it, then the Jobs, Personal and Plans areas offer it. Not offered in B-177 because nothing enforces it yet (`performance.cycle.view@OrgUnit` is unseeded and treated as a team) · Core HR, Performance, Identity · 2026-10-30
     - [ ] **B-180** One person page across Core HR and Performance: tabs, Personal and Access, documents, on leave, photos (D-01, D-16) · Core HR, Performance · 2026-10-30
       - [ ] **B-195** Show the job's family and level on the person page's Job tab; the profile read already carries `jobFamily`, `jobLevel`, `jobId`, `placeId` (B-175) · Core HR · 2026-10-30
@@ -72,8 +70,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 - [ ] **B-177** One roles model: ten areas × level × reach, holders by rule that update themselves, a person's roles with why; every role as one table and a role page in sentences with a live preview (D-25, slice 3 of B-167) · Identity, Core HR · 2026-10-30
       Look at: [checklist](plans/B-177-roles.md) and `plans/B-177-screens/` (01 table, 02 HR, 03 rule, 04 Jobs moving with Personal, 05 Administrators, 06 Leila's Access tab). Two deviations from the drawing to judge: "their unit" isn't offered yet (B-212) and Personal details move with Jobs (B-214).
       Review round 1 (user, 2026-10-31): the surfaces drift from the accepted drawing in spacing and consistency; port it closely. Specs in the [checklist](plans/B-177-roles.md#review-round-1-user-2026-10-31-side-by-side-with-the-accepted-drawing).
-  - [ ] **B-215** Roles table as drawn: avatars in identity hues, wider area column with smaller one-line labels, reference row height and column padding, pips and words centred whether one line or two · Core HR · 2026-10-31
-  - [ ] **B-216** Role page as drawn: "Who has it" with segmented condition chips, dashed add buttons and the result row ("night and day" today), the sentence rows and picks of "What X can do", the preview card with its bar and person band · Core HR · 2026-10-31
+      Round 1 fixed 2026-10-31 (B-215 table, B-216 role page, B-217 borderless cards, B-218 identity hues): look at [side by side](plans/B-177-roles.md#round-1-fixes-side-by-side-2026-10-31).
 
 - [ ] **B-104** Final manual verification pass, once the big features are done (Settings, any wow feature): the user verifies B-089 phase 2 and everything since by hand, then the little stuff that's left · Performance · 2026-10-23
       2026-10-29: the fixes are done (B-089 audit, phase 2 committed ba8f58af, which also closed B-088's ask); only the user's hand check is left, so this sits In review.
@@ -118,6 +115,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## Needs discussion
 
+- [ ] **B-219** Borderless cards in light mode: B-217 dropped the card hairline everywhere, as the drawings have it, but in light `--card` (white) sits on `--background` (0.985) and `--section` equals `--card`, so frames nearly vanish. Pick a light edge (a step darker canvas, a faint shadow, or the hairline back in light only) · DS · 2026-10-31
 - [ ] **B-169** Core HR after the rebuild: the rungs chosen at checkpoint 2 to keep for later, so they aren't lost · Core HR, Shell · 2026-10-30
       From B-164's scope page (brief §6b). Each is the next rung above what B-167 builds.
   - [ ] **B-170** Companies arrange the person page's sections from their own fields (P1 rung 3) · Core HR · 2026-10-30

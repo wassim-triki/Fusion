@@ -26,6 +26,23 @@ Verdict: the model is fine; the surfaces drift from the drawing in spacing and c
 - **Administrators (in B-178).** Port the drawn page (two slots with "1 of at least 2", the Everything card, History) as it is.
 - **Cards (B-217).** The drawing's cards have no visible border (`.card { background: var(--card); border-radius }`); ours carry a border that stands out from the fill. Adopt borderless cards in `@repo/ds` and check the other apps.
 
+### Round 1 fixes, side by side (2026-10-31)
+
+Same frame for both: dark, 1440×900; the drawing's frames are cut from the explorer (`ref-*`). Ours on the left.
+
+| Ours | Drawing |
+|---|---|
+| ![](B-177-screens/01-every-role.png) | ![](B-177-screens/ref-01-every-role.png) |
+| ![](B-177-screens/02-hr-role.png) | ![](B-177-screens/ref-02-hr-role.png) |
+| ![](B-177-screens/03-rule-role.png) | (a rule role: same chip language) |
+| ![](B-177-screens/05-administrators.png) | ![](B-177-screens/ref-05-administrators.png) (ported in B-178) |
+
+- [ ] **Faces in identity hues (B-218):** every initials avatar in Core HR, Performance, Platform and the shell takes one of five hues from the person's name (hue text, 16% fill, 60% ring). The name, not an id: Roles knows people by account, Core HR by employee, so an id would give one person two colours. The org chart keeps its division colours.
+- [ ] **Borderless cards (B-217):** the DS card and every section/card frame in our apps lost the hairline; the tone step is the edge (DESIGN.md §5 rule 9). Amber state rings, dashed placeholders and overlays keep theirs. Look at any page you know (People, Performance plans, Settings). Light mode needs its own call (B-219).
+- [ ] **Table (B-215):** 230px area column, one line, medium weight; 50px rows, 52px group rows with the amber tile; pips 12×8, level and reach on one line; Administrators column at 70%.
+- [ ] **Role page (B-216):** the holder kind is the first line's pick ("Rule ▾", "Chosen people ▾", "Everyone ▾", "Anyone with a team ▾"); conditions are joined chips ("Job · is · **Project Manager** · ×"), click the value to add or drop values; dashed "+ Condition" / "+ Person"; result row with faces and "Show them →". Sentences are 54px rows with the drawing's picks; a moved pick rings once. The preview is the section-tone card: title and one person picker in its bar (who looks, whose page), the band with a 56px face and tabs that vanish.
+- Not ported on purpose: "See Fusion as Nour" (B-178) and the drawing's "No access **to** …" wording (breaks French and Arabic word order).
+
 ## Behaviour changes to know
 
 - Managers is now everyone with a team (9 people at Carthage instead of the 3 chosen at their invitation); Employees is everyone.

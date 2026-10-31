@@ -6,6 +6,9 @@
  * Personal details to Change for everyone (Jobs moves with it, unsaved), the Administrators role, and Leila's Access
  * tab with her roles and why. Changes no data (the edit is discarded).
  *
+ * Also frames the accepted drawing (explorer 3b, Roles: every role, HR, Administrators) at the same size, as
+ * ref-*.png, for the side-by-side review (round 1).
+ *
  * Usage: node .local-docs/agents/data/screens-b177-roles.cjs
  * Writes PNGs to .local-docs/agents/plans/B-177-screens/<name>.png.
  */
@@ -87,6 +90,34 @@ async function open(page, route, ready) {
     await shot(page, "06-access-tab-why");
 
     await context.close();
+
+    // The drawing, framed the same way: each 1440×900 frame at actual size, pins off.
+    const ref = await browser.newContext({ viewport: { width: 1600, height: 1000 }, colorScheme: "dark" });
+    const drawing = await ref.newPage();
+    await drawing.goto("file:///" + path.join(__dirname, "..", "plans", "B-164-explorer-3b.html").replace(/\\/g, "/"), { waitUntil: "networkidle" });
+    for (const [phase, name] of [["matrix", "ref-01-every-role"], ["one", "ref-02-hr-role"], ["admins", "ref-05-administrators"]]) {
+      await drawing.evaluate((ph) => {
+        view.pins = "off"; view.actual = { ...(view.actual || {}), roles: true };
+        goPhase("roles", ph); applyView();
+      }, phase);
+      await drawing.waitForTimeout(800);
+      // Lift the frame out of the explorer's page so nothing overlaps or clips it.
+      await drawing.evaluate(() => {
+        const fx = document.querySelector("#stage-roles .fx");
+        const host = document.createElement("div");
+        host.id = "ref-host";
+        host.style.cssText = "position:fixed;inset:0;z-index:99999;width:1440px;height:900px;overflow:hidden;background:#000";
+        const clone = fx.cloneNode(true);
+        clone.style.transform = "none";
+        host.appendChild(clone);
+        document.querySelector("#ref-host")?.remove();
+        fx.parentElement.parentElement.appendChild(host);
+      });
+      await drawing.waitForTimeout(300);
+      await drawing.screenshot({ path: path.join(OUT, `${name}.png`), clip: { x: 0, y: 0, width: 1440, height: 900 } });
+      console.log(`  ${name}.png`);
+    }
+    await ref.close();
   } finally {
     await browser.close();
   }

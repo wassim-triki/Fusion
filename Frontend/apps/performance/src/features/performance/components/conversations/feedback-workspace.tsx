@@ -23,6 +23,7 @@ import {
   usePraisePage,
   usePraiseSummary,
 } from "../../api/use-conversations";
+import { usePersonSummary } from "../../api/use-performance";
 
 import { formatDay } from "../one-on-ones/one-on-one-lib";
 import { ContentUnavailable } from "../content-unavailable";
@@ -38,7 +39,7 @@ import { useLanding } from "@/lib/use-landing";
 type Tab = "received" | "given" | "requests" | "praise" | "team";
 const TABS: readonly { value: Tab }[] = [{ value: "received" }, { value: "given" }, { value: "requests" }, { value: "praise" }];
 
-type Composing = { kind: "feedback" } | { kind: "request"; objective?: FixedObjective } | { kind: "praise"; value?: string } | null;
+type Composing = { kind: "feedback"; to?: string } | { kind: "request"; objective?: FixedObjective } | { kind: "praise"; value?: string } | null;
 
 /**
  * The Feedback workspace (S-12): Received · Given · Requests · Praise, each in the address so notifications and other
@@ -53,7 +54,11 @@ export function FeedbackWorkspace() {
   const feedbackId = params.get("feedback");
   const praiseId = params.get("praise");
   const requestedTab = TABS.find((t) => t.value === params.get("tab"))?.value ?? (params.get("tab") === "team" ? "team" : null);
-  const [composing, setComposing] = useState<Composing>(params.get("compose") === "praise" ? { kind: "praise" } : null);
+  // `?give=<employeeId>` opens feedback for that person: the person page's "Give feedback" lands here (B-180).
+  const giveTo = params.get("give");
+  const [composing, setComposing] = useState<Composing>(
+    giveTo ? { kind: "feedback", to: giveTo } : params.get("compose") === "praise" ? { kind: "praise" } : null
+  );
   const summary = useFeedbackSummary();
   const oneOnOnes = useOneOnOnes();
   const managesPeople = (oneOnOnes.data?.reports.length ?? 0) + (oneOnOnes.data?.startWithReports.length ?? 0) > 0;
@@ -125,7 +130,13 @@ export function FeedbackWorkspace() {
       </div>
       <FeedbackDrawer feedbackId={feedbackId} onClose={() => update({ feedback: null })} />
       <PraiseDrawer praiseId={praiseId} onClose={() => update({ praise: null })} />
-      {composing?.kind === "feedback" ? <FeedbackComposer onClose={() => setComposing(null)} /> : null}
+      {composing?.kind === "feedback" ? (
+        composing.to ? (
+          <FeedbackTo employeeId={composing.to} onClose={() => setComposing(null)} />
+        ) : (
+          <FeedbackComposer onClose={() => setComposing(null)} />
+        )
+      ) : null}
       {composing?.kind === "request" ? (
         <RequestComposer objective={composing.objective} onClose={() => setComposing(null)} onSent={(id) => router.push(`/feedback/requests/${id}`)} />
       ) : null}
@@ -720,3 +731,15 @@ function FeedSkeleton() {
   );
 }
 
+/** Feedback for one named person, once their name is known; someone the viewer can't see opens an empty composer. */
+function FeedbackTo({ employeeId, onClose }: { employeeId: string; onClose: () => void }) {
+  const person = usePersonSummary(employeeId);
+  if (person.isLoading && !person.data) return null;
+  const data = person.data;
+  return (
+    <FeedbackComposer
+      receiver={data?.displayName ? { employeeId: data.employeeId, displayName: data.displayName, subtitle: data.jobTitle } : undefined}
+      onClose={onClose}
+    />
+  );
+}

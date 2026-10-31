@@ -106,12 +106,23 @@ public sealed class RoleAreasTests
     }
 
     [Fact]
-    public void Personal_details_for_others_move_with_jobs_because_one_record_carries_both()
+    public void Personal_details_and_jobs_are_set_apart()
     {
-        var saved = RoleAreas.Compose([new RoleAreaCell("personal", RoleLevels.Change, RoleReaches.Everyone)], []);
-        var cells = RoleAreas.Read(saved);
+        // Leadership: everyone's jobs, nobody's personal details (B-214).
+        var leadership = RoleAreas.Read(RoleAreas.Compose([new RoleAreaCell("job", RoleLevels.See, RoleReaches.Everyone)], []));
+        Assert.Equal(new RoleAreaCell("job", RoleLevels.See, RoleReaches.Everyone), Cell(leadership, "job"));
+        Assert.Equal(new RoleAreaCell("personal", RoleLevels.None, null), Cell(leadership, "personal"));
 
-        Assert.Equal(new RoleAreaCell("job", RoleLevels.Change, RoleReaches.Everyone), Cell(cells, "job"));
+        // Payroll: everyone's personal details, only their own job.
+        var saved = RoleAreas.Compose([
+            new RoleAreaCell("personal", RoleLevels.Change, RoleReaches.Everyone),
+            new RoleAreaCell("job", RoleLevels.See, RoleReaches.Self),
+        ], []);
+        var payroll = RoleAreas.Read(saved);
+        Assert.Equal(new RoleAreaCell("personal", RoleLevels.Change, RoleReaches.Everyone), Cell(payroll, "personal"));
+        Assert.Equal(new RoleAreaCell("job", RoleLevels.See, RoleReaches.Self), Cell(payroll, "job"));
+        Assert.DoesNotContain(saved, grant => grant.PermissionKey is CorePermissions.EmployeeManage
+            || (grant.PermissionKey == CorePermissions.EmployeeView && grant.Scope != PermissionScopes.Self));
     }
 
     private static string Key(EffectivePermissionGrant grant) => $"{grant.PermissionKey}@{grant.Scope}";

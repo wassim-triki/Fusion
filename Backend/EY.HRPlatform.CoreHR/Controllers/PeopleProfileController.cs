@@ -137,6 +137,67 @@ public sealed class PeopleProfileController(
         return result.IsFailure ? Failure(result.Error) : Ok(ApiResponse<EmployeePhotoDto>.Success(result.Value));
     }
 
+    /// <summary>The person's documents: the person and whoever changes personal details (B-180).</summary>
+    [HttpGet("documents")]
+    [ProducesResponseType(typeof(ApiResponse<EmployeeDocumentsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetDocuments(string employeeKey, CancellationToken cancellationToken)
+    {
+        if (!CanOpenProfiles())
+            return Forbid();
+
+        var result = await sender.Send(new EmployeeDocumentsQuery(employeeKey, Viewer()), cancellationToken);
+        return result.IsFailure ? Failure(result.Error) : Ok(ApiResponse<EmployeeDocumentsDto>.Success(result.Value));
+    }
+
+    /// <summary>One document's file, as an attachment; never kept by a cache.</summary>
+    [HttpGet("documents/{documentId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetDocument(string employeeKey, Guid documentId, CancellationToken cancellationToken)
+    {
+        if (!CanOpenProfiles())
+            return Forbid();
+
+        var result = await sender.Send(new EmployeeDocumentFileQuery(employeeKey, documentId, Viewer()), cancellationToken);
+        if (result.IsFailure)
+            return Failure(result.Error);
+        var stream = await photoStore.OpenAsync(result.Value.StorageKey, cancellationToken);
+        if (stream is null)
+            return NotFound(ApiResponse.Failure("Not found."));
+
+        Response.Headers.CacheControl = "private, no-store";
+        Response.Headers.XContentTypeOptions = "nosniff";
+        return File(stream, result.Value.ContentType, result.Value.Name, enableRangeProcessing: false);
+    }
+
+    /// <summary>Adds a PDF or image up to 10 MB, checked by its bytes.</summary>
+    [HttpPost("documents")]
+    [RequestSizeLimit(EmployeeDocuments.MaxBytes + 64 * 1024)]
+    [ProducesResponseType(typeof(ApiResponse<EmployeeDocumentDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> AddDocument(string employeeKey, IFormFile? file, CancellationToken cancellationToken)
+    {
+        if (!CanOpenProfiles())
+            return Forbid();
+
+        var result = await sender.Send(new AddEmployeeDocumentCommand(employeeKey, Viewer(), file, ActorName()), cancellationToken);
+        return result.IsFailure ? Failure(result.Error) : Ok(ApiResponse<EmployeeDocumentDto>.Success(result.Value));
+    }
+
+    [HttpDelete("documents/{documentId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> RemoveDocument(string employeeKey, Guid documentId, CancellationToken cancellationToken)
+    {
+        if (!CanOpenProfiles())
+            return Forbid();
+
+        var result = await sender.Send(new RemoveEmployeeDocumentCommand(employeeKey, documentId, Viewer()), cancellationToken);
+        return result.IsFailure ? Failure(result.Error) : NoContent();
+    }
+
     /// <summary>The same gate as opening a profile: any worker in the tenant with a view permission.</summary>
     private bool CanOpenProfiles() => accessPolicy.GetEmployeeViewScope(User) is not null;
 
@@ -145,7 +206,11 @@ public sealed class PeopleProfileController(
         accessPolicy.CanManageEmployees(User),
         accessPolicy.CanViewTenantEmployees(User),
         accessPolicy.CanViewTeam(User),
-        accessPolicy.CanUpdateOwnProfile(User));
+        accessPolicy.CanUpdateOwnProfile(User),
+        accessPolicy.GetPersonalGrant(User));
+
+    private string ActorName()
+        => User.FindFirstValue(CustomClaimTypes.FullName) ?? User.FindFirstValue(ClaimTypes.Email) ?? "Unknown user";
 
     private string Actor()
     {

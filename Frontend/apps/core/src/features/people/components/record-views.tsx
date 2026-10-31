@@ -32,13 +32,17 @@ const REACTION_ICONS: PraiseReactionIcons = {
  * The person's performance on their Core HR record, read from Performance's viewer-shaped summary.
  * It loads on its own, so the Profile view never waits on Performance and a failure stays in place.
  */
-export function PerformanceRecordView({ employeeId }: { employeeId: string }) {
+export function PerformanceRecordView({ employeeId, compact = false }: { employeeId: string; compact?: boolean }) {
   const summary = useApiQuery(performanceQueryKeys.personSummary(employeeId), (signal) =>
     createPerformanceApi(createPlatformApiClient()).getPersonSummary(employeeId, null, signal),
   );
   const react = useReactToPraise();
+  // The Overview's compact summary shows the plan, the review and the next 1:1; with none of them visible, nothing.
+  const data = summary.data;
+  if (compact && data && !data.currentCycle && !data.reviews && !data.oneOnOne) return null;
   return (
     <PersonPerformanceSummary
+      compact={compact}
       renderLink={renderCoreLink}
       reactionIcons={REACTION_ICONS}
       onReact={(praise, kind, add) => react.mutate({ praiseId: praise.id, kind, add })}

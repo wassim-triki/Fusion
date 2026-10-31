@@ -61,16 +61,16 @@
     "editWorkEmail": "Edit work email",
     "hiredAnnouncement": "Employee hired.",
     "addedAnnouncement": "Employee added.",
-    "back": "People",
     "hired": "Hired",
     "added": "Added",
     "asOf": "As of {date}",
     "today": "Today",
     "backToPeople": "Back to People",
     "retry": "Retry",
-    "asOfToday": "As of Today",
     "viewAsOf": "View as of a date",
-    "viewAsOfDate": "View as of date"
+    "viewAsOfDate": "View as of date",
+    "cancel": "Cancel",
+    "show": "Show"
   },
   "workEmail": {
     "required": "Enter a work email.",
@@ -101,7 +101,9 @@
     "job": "Job",
     "personal": "Personal",
     "performance": "Performance",
-    "access": "Access"
+    "access": "Access",
+    "overview": "Overview",
+    "documents": "Documents"
   },
   "band": {
     "unitIn": "{unit}, in {parent}",
@@ -146,10 +148,12 @@
     "comingUp": "Coming up",
     "nothingScheduled": "Nothing scheduled",
     "schedule": "Schedule a change",
-    "history": "History"
+    "history": "History",
+    "theJob": "The job",
+    "family": "Family",
+    "level": "Level"
   },
   "personal": {
-    "name": "Name",
     "legalName": "Legal name",
     "preferredName": "Preferred name",
     "dateOfBirth": "Date of birth",
@@ -169,8 +173,6 @@
     "addContact": "Add a contact",
     "removeContact": "Remove {name}",
     "contactNumber": "Contact {number}",
-    "private": "Only {name} and HR",
-    "privateSelf": "You and HR",
     "edit": "Edit",
     "editSection": "Edit {section}",
     "save": "Save",
@@ -186,7 +188,15 @@
     "lockedByCompany": "Your company manages this field.",
     "loadFailed": "Personal details could not be loaded.",
     "retry": "Retry",
-    "current": "Current"
+    "current": "Current",
+    "identity": "Identity",
+    "lockedHint": "Only HR changes this",
+    "seenBy": {
+      "everyone": "Everyone at the company",
+      "you": "You",
+      "yourManagers": "your managers",
+      "theirManagers": "{name}'s managers"
+    }
   },
   "photo": {
     "titleSelf": "Your photo",
@@ -206,5 +216,46 @@
     "wrongType": "Choose a JPG, PNG or WebP image.",
     "tooLarge": "Choose an image up to 5 MB.",
     "unreadable": "This image could not be read. Choose another."
+  },
+  "glance": {
+    "manager": "Manager",
+    "team": "Team",
+    "theirTeam": "Their team",
+    "managersTeam": "{name}'s team",
+    "people": "{count, plural, one {# person} other {# people}}",
+    "withCompanySince": "With {company} since {date}",
+    "since": "Here since {date}",
+    "place": "Works from"
+  },
+  "overview": {
+    "comingUp": "Coming up",
+    "performance": "Performance",
+    "openPerformance": "All of it",
+    "jobAndHistory": "Job and history",
+    "openJob": "The whole story",
+    "job": "Job",
+    "unit": "Team",
+    "manager": "Manager",
+    "place": "Place",
+    "noJob": "No current job.",
+    "anniversary": "{count, plural, one {# year} other {# years}} with the company"
+  },
+  "documents": {
+    "title": "Documents",
+    "add": "Add a document",
+    "adding": "Adding…",
+    "added": "{name} added",
+    "addFailed": "The document wasn't added.",
+    "tooLarge": "That file is larger than 10 MB.",
+    "removed": "{name} removed",
+    "removeFailed": "The document wasn't removed.",
+    "openFailed": "The document couldn't be opened.",
+    "download": "Download {name}",
+    "remove": "Remove {name}",
+    "meta": "Added by {by} · {date} · {size}",
+    "empty": "No documents yet.",
+    "emptyCanAdd": "No documents yet. PDF or images, up to 10 MB.",
+    "loadFailed": "Documents couldn't be loaded.",
+    "retry": "Try again"
   }
 }

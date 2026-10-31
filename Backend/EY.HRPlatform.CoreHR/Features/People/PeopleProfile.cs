@@ -17,12 +17,14 @@ namespace EY.HRPlatform.CoreHR.Features.People;
 /// Set for a manager without tenant-wide access: they read their own branch as a manager and everyone else
 /// (themselves included) as a colleague.
 /// </param>
+/// <param name="Personal">The viewer's Personal details reach (B-214): it alone decides whether the mobile shows.</param>
 public sealed record PeopleProfileQuery(
     string EmployeeKey,
     DateTime? AsOf = null,
     EmployeeReadAudience Audience = EmployeeReadAudience.HrAdmin,
     Guid? BranchOfEmployeeId = null,
-    Guid? ViewerEmployeeId = null) : IQuery<Result<PeopleProfileDto>>;
+    Guid? ViewerEmployeeId = null,
+    PersonalGrant Personal = PersonalGrant.None) : IQuery<Result<PeopleProfileDto>>;
 
 public sealed record PeopleProfileIdentityDto(
     string EmployeeKey,
@@ -238,6 +240,12 @@ public sealed class PeopleProfileQueryHandler(
             ? []
             : await changeReader.ComingUpAsync(employee.Id, cancellationToken);
 
+        // The mobile follows the Personal tab: the person, and whoever sees personal details for them.
+        var seesMobile = employee.Id == request.ViewerEmployeeId
+            || request.Personal is PersonalGrant.Change or PersonalGrant.Everyone
+            || (request.Personal == PersonalGrant.Team && request.ViewerEmployeeId is { } viewerId
+                && (await Changes.ChangeSupport.BranchAsync(dbContext, viewerId, cancellationToken)).Contains(employee.Id));
+
         var result = new PeopleProfileDto(
             new PeopleProfileIdentityDto(
                 employee.StableEmployeeKey,
@@ -247,8 +255,7 @@ public sealed class PeopleProfileQueryHandler(
                 employee.LastName,
                 employee.PreferredName,
                 employee.Email,
-                // The mobile follows the Personal tab: the person, HR and their branch manager; not colleagues.
-                request.Audience != EmployeeReadAudience.Employee || employee.Id == request.ViewerEmployeeId ? employee.Phone : null,
+                seesMobile ? employee.Phone : null,
                 employee.Id,
                 EmployeePhotos.UrlFor(employee.StableEmployeeKey, employee.PhotoKey)),
             new PeopleProfileEmploymentDto(
@@ -273,16 +280,19 @@ public sealed class PeopleProfileQueryHandler(
         // A plain colleague sees workforce-directory context only: identity, current
         // work, org, and reporting relationships — never employment tenure/type or
         // scheduled changes. History and Fusion-access are withheld at the endpoint.
+        // The person keeps their own employment dates and type (their own page, B-180).
         if (request.Audience == EmployeeReadAudience.Employee)
         {
             result = result with
             {
-                Employment = result.Employment with
-                {
-                    Start = null,
-                    End = null,
-                    EmploymentType = null,
-                },
+                Employment = employee.Id == request.ViewerEmployeeId
+                    ? result.Employment
+                    : result.Employment with
+                    {
+                        Start = null,
+                        End = null,
+                        EmploymentType = null,
+                    },
                 ComingUp = [],
             };
         }

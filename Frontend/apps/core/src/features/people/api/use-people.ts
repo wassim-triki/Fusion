@@ -207,3 +207,29 @@ export function usePhotoMutations(employeeKey: string) {
     remove: useApiMutation(() => api.removePhoto(employeeKey), { onSuccess: refresh }),
   };
 }
+
+/** The person's documents: the person and HR only (the server answers 403 to anyone else). */
+export function usePeopleDocuments(employeeKey: string, enabled = true) {
+  const api = usePeopleApi();
+  const { user, isAuthenticated, isLoading } = useAuth();
+  return useApiQuery(
+    corePeopleQueryKeys.documents(employeeKey),
+    useCallback((signal) => api.documents(employeeKey, signal), [api, employeeKey]),
+    { enabled: !isLoading && isAuthenticated && canAccessEmployeeProfile(user) && Boolean(employeeKey) && enabled }
+  );
+}
+
+/** Adds, removes and opens a person's documents. */
+export function useDocumentMutations(employeeKey: string) {
+  const api = usePeopleApi();
+  const queryClient = useQueryClient();
+  const refresh = useCallback(
+    () => void queryClient.invalidateQueries({ queryKey: corePeopleQueryKeys.documents(employeeKey) }),
+    [queryClient, employeeKey]
+  );
+  return {
+    add: useApiMutation((file: File) => api.addDocument(employeeKey, file), { onSuccess: refresh }),
+    remove: useApiMutation((documentId: string) => api.removeDocument(employeeKey, documentId), { onSuccess: refresh }),
+    open: useCallback((documentId: string) => api.documentFile(employeeKey, documentId), [api, employeeKey]),
+  };
+}

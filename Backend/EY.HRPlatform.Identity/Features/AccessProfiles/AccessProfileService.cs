@@ -21,6 +21,7 @@ public interface IAccessProfileService
     Task<IReadOnlyList<AccessProfileAssignmentSummaryDto>> GetAssignedProfilesAsync(ApplicationUser user, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<EffectivePermissionGrant>> GetEffectivePermissionsAsync(ApplicationUser user, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<PermissionHolder>> GetPermissionHoldersAsync(Guid tenantId, string permissionKey, string scope, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<PermissionRole>> GetPermissionRolesAsync(Guid tenantId, IReadOnlyCollection<string> permissionKeys, CancellationToken cancellationToken = default);
     Task SetInviteAccessProfilesAsync(Guid tenantId, Guid inviteId, IReadOnlyCollection<Guid> accessProfileIds, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<AccessProfileAssignmentSummaryDto>> GetInviteAccessProfilesAsync(Guid inviteId, CancellationToken cancellationToken = default);
     Task ApplyInviteProfilesAsync(InviteToken invite, ApplicationUser user, CancellationToken cancellationToken = default);
@@ -265,6 +266,22 @@ public sealed class AccessProfileService(
     /// confirmed through <see cref="GetEffectivePermissionsAsync"/> so this answer can
     /// never disagree with what the account's own token carries.
     /// </summary>
+    public async Task<IReadOnlyList<PermissionRole>> GetPermissionRolesAsync(
+        Guid tenantId, IReadOnlyCollection<string> permissionKeys, CancellationToken cancellationToken = default)
+    {
+        var rows = await dbContext.AccessProfileGrants
+            .IgnoreQueryFilters()
+            .Where(grant => grant.TenantId == tenantId && permissionKeys.Contains(grant.PermissionKey))
+            .Join(dbContext.AccessProfiles.IgnoreQueryFilters().Where(profile => profile.TenantId == tenantId),
+                grant => grant.AccessProfileId, profile => profile.Id,
+                (grant, profile) => new { profile.Name, profile.InternalKey, grant.PermissionKey, grant.Scope })
+            .ToListAsync(cancellationToken);
+        return rows
+            .Select(row => new PermissionRole(row.Name, row.PermissionKey, row.Scope, row.InternalKey == TenantAdministratorAuthority.InternalKey))
+            .OrderBy(role => role.Name, StringComparer.Ordinal)
+            .ToList();
+    }
+
     public async Task<IReadOnlyList<PermissionHolder>> GetPermissionHoldersAsync(
         Guid tenantId, string permissionKey, string scope, CancellationToken cancellationToken = default)
     {

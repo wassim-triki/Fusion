@@ -76,6 +76,7 @@ vi.mock("@repo/auth", () => ({
 vi.mock("@repo/api/query", () => ({
   useApiQuery: () => mockSummary(),
   usePhoto: () => null,
+  useTenantSummary: () => ({ data: { name: "Lumera" } }),
   useReactToPraise: () => ({ mutate: vi.fn(), isLoading: false }),
   useCompanyValues: () => ({ data: [] }),
 }));
@@ -103,6 +104,8 @@ vi.mock("../api/use-people", () => ({
   usePeopleJobHistory: () => mockJobHistory(),
   useUpdatePeopleWorkEmail: () => mockUpdateWorkEmail(),
   useUpdatePeoplePersonal: () => mockUpdatePersonal(),
+  usePeopleDocuments: () => ({ data: { documents: [], canAdd: true }, isLoading: false, error: null, refetch: vi.fn() }),
+  useDocumentMutations: () => ({ add: { isLoading: false, mutateAsync: vi.fn() }, remove: { isLoading: false, mutateAsync: vi.fn() }, open: vi.fn() }),
   usePhotoMutations: () => ({
     upload: { isLoading: false, mutateAsync: vi.fn() },
     remove: { isLoading: false, mutateAsync: vi.fn() },
@@ -217,6 +220,7 @@ function full(over: Partial<PeoplePersonalDto> = {}): PeoplePersonalDto {
 
 beforeEach(() => {
   mockSearchParams.current = new URLSearchParams();
+  mockSummary.mockReturnValue({ data: undefined, error: null, isLoading: true, refetch: vi.fn() });
   mockPersonal.mockReturnValue(q({ data: personal() }));
   mockJobHistory.mockReturnValue(
     q({
@@ -251,12 +255,14 @@ const tab = (name: string) => {
 describe("PeopleProfileWorkspace", () => {
   it("shows the band with tabs, the rail and HR's actions", () => {
     mockProfile.mockReturnValue(q({ data: profile() }));
+    mockPersonal.mockReturnValue(q({ data: personal({ access: "Full", canEdit: true }) }));
     render(<PeopleProfileWorkspace employeeKey="E-KEY-1" />);
 
     expect(screen.getByRole("heading", { level: 1, name: "Ada Lovelace" })).toBeInTheDocument();
     const tabs = screen.getByRole("navigation", { name: "Profile sections" });
-    expect(tabs).toHaveTextContent("JobPersonalPerformanceAccess");
-    expect(screen.getByRole("link", { name: "Job" })).toHaveAttribute("aria-current", "page");
+    expect(tabs).toHaveTextContent("OverviewJobPersonalPerformanceDocumentsAccess");
+    expect(screen.getByRole("link", { name: "Overview" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("heading", { name: "Job and history" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Personal" })).toHaveAttribute("href", "/people/E-KEY-1?tab=personal");
     expect(screen.getAllByText("E000123").length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: /Show on the org chart/i })).toHaveAttribute("href", "/org-chart?focus=E-KEY-1");
@@ -268,9 +274,11 @@ describe("PeopleProfileWorkspace", () => {
     expect(screen.getByRole("button", { name: "Change photo" })).toBeInTheDocument();
   });
 
-  it("shows employment figures and Job information on the Job tab", () => {
+  it("shows the job, employment figures and Job information on the Job tab", () => {
+    tab("job");
     mockProfile.mockReturnValue(q({ data: profile() }));
     render(<PeopleProfileWorkspace employeeKey="E-KEY-1" />);
+    expect(screen.getByRole("heading", { name: "The job" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Employment" })).toBeInTheDocument();
     expect(screen.getByText("With the company")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Job information" })).toBeInTheDocument();
@@ -279,6 +287,7 @@ describe("PeopleProfileWorkspace", () => {
   });
 
   it("leaves Job information out when the server refuses it", () => {
+    tab("job");
     mockProfile.mockReturnValue(q({ data: profile() }));
     mockJobHistory.mockReturnValue(q({ error: new ApiError(403, "Forbidden", ["Forbidden"], null) }));
     render(<PeopleProfileWorkspace employeeKey="E-KEY-1" />);
@@ -286,6 +295,7 @@ describe("PeopleProfileWorkspace", () => {
   });
 
   it("shows a scheduled change under Coming up with Edit and Cancel", () => {
+    tab("job");
     mockProfile.mockReturnValue(
       q({
         data: profile({
@@ -322,6 +332,7 @@ describe("PeopleProfileWorkspace", () => {
   });
 
   it("offers to schedule a change when nothing is coming up", () => {
+    tab("job");
     mockProfile.mockReturnValue(q({ data: profile() }));
     render(<PeopleProfileWorkspace employeeKey="E-KEY-1" />);
     expect(screen.getByText("Nothing scheduled")).toBeInTheDocument();
@@ -355,13 +366,24 @@ describe("PeopleProfileWorkspace", () => {
     expect(screen.getByText("15 September 2099")).toBeInTheDocument();
   });
 
-  it("gives a colleague outside the branch the header, rail and reporting line only", () => {
+  it("gives a colleague outside the branch the Overview and Performance only", () => {
+    tab("job");
     mockProfile.mockReturnValue(q({ data: profile() }));
     mockPersonal.mockReturnValue(q({ data: personal({ access: "Directory", mobile: null }) }));
     render(<PeopleProfileWorkspace employeeKey="E-KEY-1" />);
-    expect(screen.queryByRole("navigation", { name: "Profile sections" })).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Reporting line" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Profile sections" })).toHaveTextContent("OverviewPerformanceAccess");
+    // A tab they don't have opens on Overview.
+    expect(screen.getByRole("link", { name: "Overview" })).toHaveAttribute("aria-current", "page");
+    expect(screen.queryByRole("link", { name: "Personal" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Documents" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Job information" })).not.toBeInTheDocument();
+  });
+
+  it("leaves Documents to whoever sees all personal details", () => {
+    mockProfile.mockReturnValue(q({ data: profile() }));
+    render(<PeopleProfileWorkspace employeeKey="E-KEY-1" />);
+    expect(screen.getByRole("navigation", { name: "Profile sections" })).toHaveTextContent("OverviewJobPersonalPerformanceAccess");
+    expect(screen.queryByRole("link", { name: "Documents" })).not.toBeInTheDocument();
   });
 
   describe("Personal tab", () => {
@@ -508,7 +530,7 @@ describe("PeopleProfileWorkspace", () => {
       tab("performance");
       render(<PeopleProfileWorkspace employeeKey="E-KEY-1" />);
       expect(screen.queryByRole("link", { name: "Performance" })).not.toBeInTheDocument();
-      expect(screen.getByRole("link", { name: "Job" })).toHaveAttribute("aria-current", "page");
+      expect(screen.getByRole("link", { name: "Overview" })).toHaveAttribute("aria-current", "page");
     });
 
     it("keeps the record header when Performance fails and offers a retry in place", async () => {

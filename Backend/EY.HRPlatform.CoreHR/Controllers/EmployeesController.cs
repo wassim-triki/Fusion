@@ -138,7 +138,7 @@ public class EmployeesController(
         var effectiveAsOf = audience == EmployeeReadAudience.Employee ? null : asOf;
         Guid? branchOf = audience == EmployeeReadAudience.Manager ? User.GetEmployeeId() ?? Guid.Empty : null;
         var result = await sender.Send(
-            new PeopleProfileQuery(employeeKey, effectiveAsOf, audience, branchOf, User.GetEmployeeId()),
+            new PeopleProfileQuery(employeeKey, effectiveAsOf, audience, branchOf, User.GetEmployeeId(), accessPolicy.GetPersonalGrant(User)),
             cancellationToken);
         if (result.IsFailure)
             return NotFound(ApiResponse.Failure("Employee was not found."));
@@ -154,16 +154,17 @@ public class EmployeesController(
         CancellationToken cancellationToken)
     {
         // History is a manager/HR view, not part of the colleague directory projection. A manager without
-        // tenant-wide People access sees it for their own branch only.
+        // tenant-wide People access sees it for their own branch only; everyone reads their own (B-180).
         Guid? branchOf = null;
+        var self = User.GetEmployeeId();
         if (!accessPolicy.CanViewTenantEmployees(User))
         {
-            if (!accessPolicy.CanViewTeam(User) || User.GetEmployeeId() is not { } managerId)
+            if (self is not { } me || !(accessPolicy.CanViewTeam(User) || accessPolicy.CanViewOwnProfile(User)))
                 return Forbid();
-            branchOf = managerId;
+            branchOf = accessPolicy.CanViewTeam(User) ? me : Guid.Empty;
         }
 
-        var result = await sender.Send(new PeopleTimelineQuery(employeeKey, branchOf), cancellationToken);
+        var result = await sender.Send(new PeopleTimelineQuery(employeeKey, branchOf, self), cancellationToken);
         if (result.IsFailure)
             return NotFound(ApiResponse.Failure("Employee was not found."));
 
@@ -509,7 +510,7 @@ public class EmployeesController(
 
         Response.Headers.ETag = $"\"{result.Value.Version}\"";
 
-        return Ok(ApiResponseOfEmployeeDetailsDto.Success(result.Value));
+        return Ok(ApiResponseOfEmployeeDetailsDto.Success(WithPersonalReach(result.Value)));
     }
 
     /// <summary>
@@ -534,7 +535,7 @@ public class EmployeesController(
 
         Response.Headers.ETag = $"\"{result.Value.Version}\"";
 
-        return Ok(ApiResponseOfEmployeeDetailsDto.Success(result.Value));
+        return Ok(ApiResponseOfEmployeeDetailsDto.Success(WithPersonalReach(result.Value)));
     }
 
     /// <summary>
@@ -870,6 +871,16 @@ public class EmployeesController(
 
         return scope == PermissionScopes.DirectReports && employee.ManagerId == linkedEmployeeId.Value;
     }
+
+    /// <summary>
+    /// These reads are for the person and tenant-wide readers; the mobile goes only to the person and to whoever
+    /// sees everyone's personal details (B-214), not to a role that sees jobs alone.
+    /// </summary>
+    private EmployeeDetailsDto WithPersonalReach(EmployeeDetailsDto details)
+        => User.GetEmployeeId() == details.Id
+            || accessPolicy.GetPersonalGrant(User) is PersonalGrant.Everyone or PersonalGrant.Change
+                ? details
+                : details with { Phone = null };
 
     private bool CanViewEmployeeDetails(Guid employeeId)
         => accessPolicy.CanViewTenantEmployees(User)

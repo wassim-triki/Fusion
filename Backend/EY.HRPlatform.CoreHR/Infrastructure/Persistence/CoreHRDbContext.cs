@@ -60,6 +60,7 @@ public class CoreHRDbContext : DbContext
     public DbSet<CoreNotificationPreference> NotificationPreferences => Set<CoreNotificationPreference>();
     public DbSet<CoreNotificationDefaults> NotificationDefaults => Set<CoreNotificationDefaults>();
     public DbSet<OpenRole> OpenRoles => Set<OpenRole>();
+    public DbSet<EmployeeDocument> EmployeeDocuments => Set<EmployeeDocument>();
     public DbSet<Job> Jobs => Set<Job>();
     public DbSet<Place> Places => Set<Place>();
     public DbSet<CompanyListValue> CompanyListValues => Set<CompanyListValue>();
@@ -153,6 +154,9 @@ public class CoreHRDbContext : DbContext
 
         modelBuilder.Entity<OpenRole>()
             .HasQueryFilter(role => CurrentTenantId != Guid.Empty && role.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<EmployeeDocument>()
+            .HasQueryFilter(document => CurrentTenantId != Guid.Empty && document.TenantId == CurrentTenantId);
 
         modelBuilder.Entity<Job>()
             .HasQueryFilter(job => CurrentTenantId != Guid.Empty && job.TenantId == CurrentTenantId);

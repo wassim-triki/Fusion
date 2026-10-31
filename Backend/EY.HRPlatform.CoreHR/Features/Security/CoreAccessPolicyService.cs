@@ -1,4 +1,5 @@
 using EY.HRPlatform.CoreHR.Features.Employees.Services;
+using EY.HRPlatform.CoreHR.Features.People;
 using EY.HRPlatform.SharedKernel.Auth;
 using System.Security.Claims;
 
@@ -53,6 +54,9 @@ public interface ICoreAccessPolicyService
 
     /// <summary>Approves or declines proposed changes, for everyone (Roles › Approving changes: Approve).</summary>
     bool CanApproveChanges(ClaimsPrincipal user) => false;
+
+    /// <summary>How far the caller reads others' personal details (Roles › Personal details; B-214).</summary>
+    PersonalGrant GetPersonalGrant(ClaimsPrincipal user) => PersonalGrant.None;
     EmployeeReadAudience GetEmployeeReadAudience(ClaimsPrincipal user);
     string? GetEmployeeViewScope(ClaimsPrincipal user);
 }
@@ -211,6 +215,12 @@ public sealed class CoreAccessPolicyService : ICoreAccessPolicyService
 
     public bool CanApproveChanges(ClaimsPrincipal user)
         => user.HasCorePermission(CorePermissions.ChangeApprove, PermissionScopes.Tenant);
+
+    public PersonalGrant GetPersonalGrant(ClaimsPrincipal user)
+        => user.HasCorePermission(CorePermissions.PersonalManage, PermissionScopes.Tenant) ? PersonalGrant.Change
+            : user.HasCorePermission(CorePermissions.PersonalView, PermissionScopes.Tenant) ? PersonalGrant.Everyone
+            : user.HasCorePermission(CorePermissions.PersonalView, PermissionScopes.DirectReports) ? PersonalGrant.Team
+            : PersonalGrant.None;
 
     public EmployeeReadAudience GetEmployeeReadAudience(ClaimsPrincipal user)
     {

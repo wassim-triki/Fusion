@@ -78,6 +78,12 @@ public static class CorePermissions
     public const string ProfileSelfUpdate = "core.profile.self.update";
     public const string TeamView = "core.team.view";
 
+    /// <summary>Read others' personal contact details (Roles › Personal details, a team or everyone; B-214).</summary>
+    public const string PersonalView = "core.personal.view";
+
+    /// <summary>Read and change everyone's personal details (Roles › Personal details; B-214).</summary>
+    public const string PersonalManage = "core.personal.manage";
+
     /// <summary>Propose dated changes for one's team (Roles › Approving changes); enforced by the change flow (B-179).</summary>
     public const string ChangePropose = "core.change.propose";
 
@@ -120,6 +126,8 @@ public static class CorePermissions
             ProfileSelfView,
             ProfileSelfUpdate,
             TeamView,
+            PersonalView,
+            PersonalManage,
             ChangePropose,
             ChangeApprove,
         ]);
@@ -188,6 +196,8 @@ public static class CorePermissionCatalog
             new(CorePermissions.ProfileSelfView, "View own profile", "Self & Team", [PermissionScopes.Self]),
             new(CorePermissions.ProfileSelfUpdate, "Update own profile", "Self & Team", [PermissionScopes.Self]),
             new(CorePermissions.TeamView, "View direct team", "Self & Team", [PermissionScopes.DirectReports]),
+            new(CorePermissions.PersonalView, "View personal details", "Employees", [PermissionScopes.DirectReports, PermissionScopes.Tenant]),
+            new(CorePermissions.PersonalManage, "Manage personal details", "Employees", [PermissionScopes.Tenant]),
             new(CorePermissions.ChangePropose, "Propose changes", "Changes", [PermissionScopes.DirectReports]),
             new(CorePermissions.ChangeApprove, "Approve changes", "Changes", [PermissionScopes.Tenant]),
             new(ModuleSettingsPermissions.LearningView, "View Learning module settings", "Module settings", [PermissionScopes.Module]),

@@ -10,7 +10,7 @@ import { useReactToPraise } from "@repo/api/query";
 import { usePersonSummary } from "../../api/use-performance";
 import { REACTION_ICONS } from "../conversations/reaction-icons";
 import { FeedbackComposer } from "../conversations/composers";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRecentRecord } from "@repo/api/react";
 import { useTranslations } from "next-intl";
 
@@ -28,7 +28,10 @@ export const renderPerformanceLink: RenderSummaryLink = ({ href, className, chil
     </a>
   );
 
-/** One person inside Performance (D-32): their summary, with a way to their Core HR record. */
+/**
+ * One person inside Performance (D-32). The person page is one page across modules (B-180): whoever can open Core HR
+ * goes to its Performance tab; this stays for anyone who can't.
+ */
 export function PersonPage({ employeeId }: { employeeId: string }) {
   const t = useTranslations("common.PersonPage");
   const { user } = useAuth();
@@ -42,11 +45,15 @@ export function PersonPage({ employeeId }: { employeeId: string }) {
     person?.displayName ? { label: person.displayName, kind: "Person", href: `/performance/people/${employeeId}` } : null,
   );
   const coreRecord = person?.stableEmployeeKey && canEnterCoreHr(user) ? `/core/people/${person.stableEmployeeKey}` : null;
+  const onePage = coreRecord ? (person?.relation === "Self" ? "/core/profile?tab=performance" : `${coreRecord}?tab=performance`) : null;
+  useEffect(() => {
+    if (onePage) window.location.replace(onePage);
+  }, [onePage]);
   const context = [person?.jobTitle, person?.orgUnitName].filter(Boolean);
 
   return (
     <PageContainer width="wide">
-      {person ? (
+      {person && !onePage ? (
         <PageHeader className="mb-4"
           title={person.displayName ?? t("person")}
           description={context.length ? context.join(", ") : undefined}
@@ -76,7 +83,7 @@ export function PersonPage({ employeeId }: { employeeId: string }) {
           onReact={(praise, kind, add) => react.mutate({ praiseId: praise.id, kind, add })}
           onOpenPraise={(praise) => router.push(`/feedback?tab=praise&praise=${praise.id}`)}
           state={
-            person
+            person && !onePage
               ? { status: "ready", summary: person }
               : summary.error
                 ? { status: "error", onRetry: () => void summary.refetch() }

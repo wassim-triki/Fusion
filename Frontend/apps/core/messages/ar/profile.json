@@ -61,16 +61,16 @@
     "editWorkEmail": "تعديل البريد المهني",
     "hiredAnnouncement": "تم توظيف الموظف.",
     "addedAnnouncement": "تمت إضافة الموظف.",
-    "back": "الموظفون",
     "hired": "تم التوظيف",
     "added": "تمت الإضافة",
     "asOf": "بتاريخ {date}",
     "today": "اليوم",
     "backToPeople": "العودة إلى الموظفين",
     "retry": "إعادة المحاولة",
-    "asOfToday": "بتاريخ اليوم",
     "viewAsOf": "العرض بتاريخ معيّن",
-    "viewAsOfDate": "العرض بتاريخ"
+    "viewAsOfDate": "العرض بتاريخ",
+    "cancel": "إلغاء",
+    "show": "عرض"
   },
   "workEmail": {
     "required": "أدخل بريدًا مهنيًا.",
@@ -101,7 +101,9 @@
     "job": "الوظيفة",
     "personal": "شخصي",
     "performance": "الأداء",
-    "access": "الوصول"
+    "access": "الوصول",
+    "overview": "نظرة عامة",
+    "documents": "المستندات"
   },
   "band": {
     "unitIn": "{unit}، ضمن {parent}",
@@ -146,10 +148,12 @@
     "comingUp": "قادم",
     "nothingScheduled": "لا شيء مجدول",
     "schedule": "جدولة تغيير",
-    "history": "السجل"
+    "history": "السجل",
+    "theJob": "الوظيفة",
+    "family": "العائلة المهنية",
+    "level": "المستوى"
   },
   "personal": {
-    "name": "الاسم",
     "legalName": "الاسم القانوني",
     "preferredName": "الاسم المفضل",
     "dateOfBirth": "تاريخ الميلاد",
@@ -169,8 +173,6 @@
     "addContact": "إضافة جهة اتصال",
     "removeContact": "إزالة {name}",
     "contactNumber": "جهة الاتصال {number}",
-    "private": "{name} والموارد البشرية فقط",
-    "privateSelf": "أنت والموارد البشرية",
     "edit": "تعديل",
     "editSection": "تعديل {section}",
     "save": "حفظ",
@@ -186,7 +188,15 @@
     "lockedByCompany": "تدير شركتك هذا الحقل.",
     "loadFailed": "تعذّر تحميل البيانات الشخصية.",
     "retry": "إعادة المحاولة",
-    "current": "الحالي"
+    "current": "الحالي",
+    "identity": "الهوية",
+    "lockedHint": "لا يغيّر هذا إلا قسم الموارد البشرية",
+    "seenBy": {
+      "everyone": "الجميع في الشركة",
+      "you": "أنت",
+      "yourManagers": "مسؤولوك",
+      "theirManagers": "مسؤولو {name}"
+    }
   },
   "photo": {
     "titleSelf": "صورتك",
@@ -206,5 +216,46 @@
     "wrongType": "اختر صورة JPG أو PNG أو WebP.",
     "tooLarge": "اختر صورة لا يتجاوز حجمها 5 ميغابايت.",
     "unreadable": "تعذّرت قراءة هذه الصورة. اختر صورة أخرى."
+  },
+  "glance": {
+    "manager": "المسؤول",
+    "team": "الفريق",
+    "theirTeam": "فريقه",
+    "managersTeam": "فريق {name}",
+    "people": "{count, plural, one {شخص واحد} two {شخصان} few {# أشخاص} many {# شخصًا} other {# شخص}}",
+    "withCompanySince": "في {company} منذ {date}",
+    "since": "هنا منذ {date}",
+    "place": "يعمل من"
+  },
+  "overview": {
+    "comingUp": "قادم",
+    "performance": "الأداء",
+    "openPerformance": "عرض الكل",
+    "jobAndHistory": "الوظيفة والسجل",
+    "openJob": "السجل كاملًا",
+    "job": "الوظيفة",
+    "unit": "الفريق",
+    "manager": "المسؤول",
+    "place": "المكان",
+    "noJob": "لا توجد وظيفة حالية.",
+    "anniversary": "{count, plural, one {سنة واحدة} two {سنتان} few {# سنوات} other {# سنة}} في الشركة"
+  },
+  "documents": {
+    "title": "المستندات",
+    "add": "إضافة مستند",
+    "adding": "جارٍ الإضافة…",
+    "added": "تمت إضافة {name}",
+    "addFailed": "لم تتم إضافة المستند.",
+    "tooLarge": "حجم هذا الملف أكبر من 10 ميغابايت.",
+    "removed": "تم حذف {name}",
+    "removeFailed": "لم يتم حذف المستند.",
+    "openFailed": "تعذر فتح المستند.",
+    "download": "تنزيل {name}",
+    "remove": "حذف {name}",
+    "meta": "أضافه {by} · {date} · {size}",
+    "empty": "لا توجد مستندات بعد.",
+    "emptyCanAdd": "لا توجد مستندات بعد. ملفات PDF أو صور، حتى 10 ميغابايت.",
+    "loadFailed": "تعذر تحميل المستندات.",
+    "retry": "إعادة المحاولة"
   }
 }

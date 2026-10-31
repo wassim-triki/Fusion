@@ -3,7 +3,10 @@ using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Exceptions;
 using EY.HRPlatform.CoreHR.Features.TenantSettings.Services;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence;
+using System.Net.Http.Json;
+using EY.HRPlatform.SharedKernel.Auth;
 using EY.HRPlatform.SharedKernel.CQRS;
+using EY.HRPlatform.SharedKernel.Security;
 using EY.HRPlatform.SharedKernel.Multitenancy;
 using EY.HRPlatform.SharedKernel.Results;
 using Microsoft.EntityFrameworkCore;
@@ -17,24 +20,38 @@ namespace EY.HRPlatform.CoreHR.Features.People;
 /// from a request value.
 /// </summary>
 /// <param name="ManagesPeople">People admin (<c>core.employee.manage</c> at tenant scope).</param>
-/// <param name="ViewsTenant">Reads every employee (<c>core.employee.view</c> at tenant scope).</param>
+/// <param name="ViewsTenant">Reads every employee's job (<c>core.employee.view</c> at tenant scope).</param>
 /// <param name="ManagesTeam">A manager who reads their own branch.</param>
 /// <param name="UpdatesSelf">May change their own profile (<c>core.profile.self.update</c>).</param>
+/// <param name="Personal">How far they read others' personal details (<c>core.personal.*</c>), apart from jobs.</param>
 public sealed record PeopleViewer(
     Guid? EmployeeId,
     bool ManagesPeople,
     bool ViewsTenant,
     bool ManagesTeam,
-    bool UpdatesSelf);
+    bool UpdatesSelf,
+    PersonalGrant Personal = PersonalGrant.None);
+
+/// <summary>A role's Personal details area for others (B-214): their keys, separate from Jobs.</summary>
+public enum PersonalGrant
+{
+    None,
+    /// <summary>Contact details of their branch (<c>core.personal.view</c> for direct reports).</summary>
+    Team,
+    /// <summary>Contact details of everyone (<c>core.personal.view</c> for the tenant).</summary>
+    Everyone,
+    /// <summary>Reads and changes everyone's personal details (<c>core.personal.manage</c>).</summary>
+    Change,
+}
 
 /// <summary>How much of a person's personal details a viewer may read.</summary>
 public enum PersonalAccess
 {
     /// <summary>The preferred name only: what any colleague sees.</summary>
     Directory,
-    /// <summary>Adds the mobile: a manager for their branch, and tenant-wide readers.</summary>
+    /// <summary>Adds the mobile: whoever sees personal details for the person's team or for everyone.</summary>
     Contact,
-    /// <summary>Everything: the person themselves and people admins.</summary>
+    /// <summary>Everything: the person themselves and whoever changes personal details.</summary>
     Full,
 }
 
@@ -48,17 +65,18 @@ public static class PeopleAccess
     public static async Task<PeopleAccessDecision> DecideAsync(
         CoreHRDbContext dbContext, PeopleViewer viewer, Guid employeeId, CancellationToken cancellationToken)
     {
+        // Personal details follow the Personal keys and job history the Jobs keys (B-214); the branch is read once.
         var isSelf = viewer.EmployeeId == employeeId;
-        if (viewer.ManagesPeople)
-            return new(PersonalAccess.Full, CanEdit: true, CanReadJobHistory: true);
-        if (isSelf)
-            return new(PersonalAccess.Full, CanEdit: viewer.UpdatesSelf, CanReadJobHistory: viewer.ViewsTenant);
-        if (viewer.ViewsTenant)
-            return new(PersonalAccess.Contact, CanEdit: false, CanReadJobHistory: true);
-        if (viewer.ManagesTeam && viewer.EmployeeId is { } managerId
-            && (await Changes.ChangeSupport.BranchAsync(dbContext, managerId, cancellationToken)).Contains(employeeId))
-            return new(PersonalAccess.Contact, CanEdit: false, CanReadJobHistory: true);
-        return new(PersonalAccess.Directory, CanEdit: false, CanReadJobHistory: false);
+        bool? inBranch = null;
+        async Task<bool> InBranchAsync() => inBranch ??= viewer.EmployeeId is { } managerId
+            && (await Changes.ChangeSupport.BranchAsync(dbContext, managerId, cancellationToken)).Contains(employeeId);
+
+        var access = isSelf || viewer.Personal == PersonalGrant.Change ? PersonalAccess.Full
+            : viewer.Personal == PersonalGrant.Everyone || (viewer.Personal == PersonalGrant.Team && await InBranchAsync()) ? PersonalAccess.Contact
+            : PersonalAccess.Directory;
+        var canEdit = viewer.Personal == PersonalGrant.Change || (isSelf && viewer.UpdatesSelf);
+        var jobHistory = viewer.ManagesPeople || viewer.ViewsTenant || (!isSelf && viewer.ManagesTeam && await InBranchAsync());
+        return new(access, canEdit, jobHistory);
     }
 
     public static Error Forbidden(string message) => new(ForbiddenCode, message);
@@ -87,7 +105,62 @@ public sealed record PeoplePersonalDto(
     DateOnly? DateOfBirth,
     IReadOnlyList<PeopleEmergencyContactDto>? EmergencyContacts,
     uint Version,
-    PeoplePendingAddressDto? PendingHomeAddress = null);
+    PeoplePendingAddressDto? PendingHomeAddress = null,
+    PeoplePersonalAudienceDto? Audience = null);
+
+/// <summary>
+/// Who sees each tier of the Personal tab besides the person, from the company's roles (B-214). The preferred name is
+/// everyone's; the mobile reaches <see cref="Contact"/> roles and, when <see cref="ContactTeam"/>, the managers above
+/// the person; the rest only <see cref="Full"/> roles. The Administrators role, which holds everything, is named only
+/// when no other role is.
+/// </summary>
+public sealed record PeoplePersonalAudienceDto(IReadOnlyList<string> Contact, bool ContactTeam, IReadOnlyList<string> Full);
+
+/// <summary>Reads the company's roles that reach personal details, from Identity.</summary>
+public interface IPersonalAudienceDirectory
+{
+    Task<PeoplePersonalAudienceDto?> GetAsync(CancellationToken cancellationToken);
+}
+
+public sealed class PersonalAudienceDirectory(HttpClient httpClient, IInternalServiceRequestSigner signer, ITenantContext tenant)
+    : IPersonalAudienceDirectory
+{
+    public async Task<PeoplePersonalAudienceDto?> GetAsync(CancellationToken cancellationToken)
+    {
+        if (!tenant.IsResolved) return null;
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(httpClient.BaseAddress!, "internal/identity/access/permission-roles"))
+            {
+                Content = JsonContent.Create(new PermissionRolesRequest(tenant.TenantId, [CorePermissions.PersonalView, CorePermissions.PersonalManage])),
+            };
+            await signer.SignAsync(request, cancellationToken);
+            using var response = await httpClient.SendAsync(request, cancellationToken);
+            if (!response.IsSuccessStatusCode) return null;
+            return Compose(await response.Content.ReadFromJsonAsync<List<PermissionRole>>(cancellationToken) ?? []);
+        }
+        catch (HttpRequestException)
+        {
+            // The labels are a courtesy: without Identity the tab shows its fields and no "who sees".
+            return null;
+        }
+    }
+
+    public static PeoplePersonalAudienceDto Compose(IReadOnlyList<PermissionRole> roles)
+    {
+        IReadOnlyList<string> Names(Func<PermissionRole, bool> reaches)
+        {
+            var matching = roles.Where(reaches).ToList();
+            var named = matching.Where(role => !role.IsAdministrators).Select(role => role.Name).Distinct().ToList();
+            return named.Count > 0 ? named : matching.Select(role => role.Name).Distinct().ToList();
+        }
+
+        var full = Names(role => role.PermissionKey == CorePermissions.PersonalManage);
+        var contact = Names(role => role.Scope == PermissionScopes.Tenant);
+        var team = roles.Any(role => role.PermissionKey == CorePermissions.PersonalView && role.Scope == PermissionScopes.DirectReports);
+        return new PeoplePersonalAudienceDto(contact, team, full);
+    }
+}
 
 /// <summary>A new home address waiting for HR (D-16); its asker can withdraw it.</summary>
 public sealed record PeoplePendingAddressDto(Guid RequestId, PeopleHomeAddressDto Address, DateTime RequestedAt, string RequestedBy);
@@ -112,7 +185,7 @@ public sealed record UpdatePeoplePersonalCommand(
 
 // --- Handlers ---------------------------------------------------------------------------------------
 
-public sealed class PeoplePersonalQueryHandler(CoreHRDbContext dbContext)
+public sealed class PeoplePersonalQueryHandler(CoreHRDbContext dbContext, IPersonalAudienceDirectory? audience = null)
     : IQueryHandler<PeoplePersonalQuery, Result<PeoplePersonalDto>>
 {
     public async Task<Result<PeoplePersonalDto>> Handle(PeoplePersonalQuery request, CancellationToken cancellationToken)
@@ -122,7 +195,8 @@ public sealed class PeoplePersonalQueryHandler(CoreHRDbContext dbContext)
             return Result.Failure<PeoplePersonalDto>(new Error("Employee.NotFound", "Employee was not found."));
 
         var decision = await PeopleAccess.DecideAsync(dbContext, request.Viewer, employee.Id, cancellationToken);
-        return Result.Success(PersonalSupport.Project(employee, decision, await PersonalSupport.PendingAddressAsync(dbContext, employee.Id, decision, cancellationToken)));
+        return Result.Success(PersonalSupport.Project(employee, decision, await PersonalSupport.PendingAddressAsync(dbContext, employee.Id, decision, cancellationToken))
+            with { Audience = audience is null ? null : await audience.GetAsync(cancellationToken) });
     }
 }
 
@@ -150,13 +224,17 @@ public sealed class UpdatePeoplePersonalCommandHandler(
 
         var body = command.Request;
         // The company's self-service settings bind the person, never HR.
-        if (!command.Viewer.ManagesPeople)
+        var hr = command.Viewer.Personal == PersonalGrant.Change;
+        if (!hr)
         {
             var selfService = (await tenantSettingsReader.GetCurrentAsync(cancellationToken)).SelfService;
             if (!selfService.CanEditPreferredName && Blank(body.PreferredName) != employee.PreferredName)
                 return Result.Failure<PeoplePersonalDto>(PeopleAccess.Forbidden("Your company doesn't let you change your preferred name."));
             if (!selfService.CanEditPhone && Blank(body.Mobile) != employee.Phone)
                 return Result.Failure<PeoplePersonalDto>(PeopleAccess.Forbidden("Your company doesn't let you change your mobile."));
+            // Locked on the Personal tab (D-16): the date of birth is HR's to change.
+            if (body.DateOfBirth != employee.DateOfBirth)
+                return Result.Failure<PeoplePersonalDto>(PeopleAccess.Forbidden("Only HR changes your date of birth."));
         }
 
         IReadOnlyList<string> changed;
@@ -169,7 +247,7 @@ public sealed class UpdatePeoplePersonalCommandHandler(
                 .Select(contact => new EmergencyContactDetails(contact.Name, contact.Relationship, contact.Phone))
                 .ToList();
             // A person's own new address waits for HR when the company asks for it (D-16); the rest saves now.
-            if (!command.Viewer.ManagesPeople && changeRequests is not null
+            if (!hr && changeRequests is not null
                 && Employee.NormalizedHomeAddress(address) is var wanted && wanted != employee.CurrentHomeAddress
                 && await dbContext.ChangeApprovalRules.AnyAsync(rule => rule.Type == ChangeApprovalTypes.HomeAddress, cancellationToken))
             {

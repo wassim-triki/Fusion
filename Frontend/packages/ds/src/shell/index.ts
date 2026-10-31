@@ -61,6 +61,8 @@ export {
 } from "./dashboard";
 export type { KpiStatProps, DashboardSectionProps } from "./dashboard";
 export { Section } from "./section";
+export { LinkTabs } from "./link-tabs";
+export type { LinkTab, LinkTabsProps } from "./link-tabs";
 export type { SectionProps } from "./section";
 export {
   DonutChart,

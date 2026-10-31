@@ -21,6 +21,8 @@ export interface PersonPerformanceSummaryProps {
   reactionIcons: PraiseReactionIcons;
   onReact?: (praise: PraiseDto, kind: PraiseReactionKind, add: boolean) => void;
   onOpenPraise?: (praise: PraiseDto) => void;
+  /** The person page's Overview (B-180): the glance, the next 1:1 and the plan only. */
+  compact?: boolean;
 }
 
 function SummarySkeleton() {
@@ -41,7 +43,7 @@ function SummarySkeleton() {
  * the reviews. Only the sections the server returned are rendered; when it returned none, one line
  * says so. Loading and failure stay in place, so the surrounding record never waits on Performance.
  */
-export function PersonPerformanceSummary({ state, renderLink, reactionIcons, onReact, onOpenPraise }: PersonPerformanceSummaryProps) {
+export function PersonPerformanceSummary({ state, renderLink, reactionIcons, onReact, onOpenPraise, compact = false }: PersonPerformanceSummaryProps) {
   const t = useTranslations("performanceUi.PersonPerformanceSummary");
   if (state.status === "loading") return <SummarySkeleton />;
   if (state.status === "error") {
@@ -68,10 +70,10 @@ export function PersonPerformanceSummary({ state, renderLink, reactionIcons, onR
       {cycle || reviews ? <SummaryGlance cycle={cycle} reviews={reviews} /> : null}
       {summary.oneOnOne ? <SummaryOneOnOne oneOnOne={summary.oneOnOne} renderLink={renderLink} /> : null}
       {cycle ? <SummaryObjectives cycle={cycle} renderLink={renderLink} /> : null}
-      {reviews ? <SummaryReviews reviews={reviews} renderLink={renderLink} /> : null}
-      {development ? <SummaryDevelopment development={development} renderLink={renderLink} /> : null}
-      {summary.feedback ? <SummaryFeedback feedback={summary.feedback} renderLink={renderLink} /> : null}
-      {summary.praise ? (
+      {compact ? null : reviews ? <SummaryReviews reviews={reviews} renderLink={renderLink} /> : null}
+      {!compact && development ? <SummaryDevelopment development={development} renderLink={renderLink} /> : null}
+      {!compact && summary.feedback ? <SummaryFeedback feedback={summary.feedback} renderLink={renderLink} /> : null}
+      {!compact && summary.praise ? (
         <SummaryPraise praise={summary.praise} renderLink={renderLink} reactionIcons={reactionIcons} onReact={onReact} onOpen={onOpenPraise} />
       ) : null}
     </div>

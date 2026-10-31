@@ -236,7 +236,6 @@
     "levelOf": "ما يمكن لـ {role} فعله في {what}",
     "reachOf": "لمن: {what}",
     "administratorsOnly": "للمسؤولين فقط",
-    "linked": "يتغير مع {area}: Core HR يعدّل الاثنين في سجل واحد",
     "holders": {
       "chosen": "أشخاص مختارون",
       "everyone": "الجميع",

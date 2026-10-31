@@ -32,7 +32,7 @@ public sealed class PersonalDetailsRelationalTests
             }
 
             var key = await Key(connectionString, tenantId);
-            var self = new PeopleViewer(null, ManagesPeople: true, ViewsTenant: true, ManagesTeam: false, UpdatesSelf: false);
+            var self = new PeopleViewer(null, ManagesPeople: true, ViewsTenant: true, ManagesTeam: false, UpdatesSelf: false, PersonalGrant.Change);
             async Task<PeoplePersonalDto> SaveAsync(params PeopleEmergencyContactDto[] contacts)
             {
                 await using var db = CreateDb(connectionString, tenantId);

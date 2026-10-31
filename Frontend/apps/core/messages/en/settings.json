@@ -236,7 +236,6 @@
     "levelOf": "What {role} can do with {what}",
     "reachOf": "Whose {what}",
     "administratorsOnly": "Administrators only",
-    "linked": "Moves with {area}: Core HR edits both on one record",
     "holders": {
       "chosen": "Chosen people",
       "everyone": "Everyone",

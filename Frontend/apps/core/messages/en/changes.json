@@ -142,7 +142,11 @@
     "showInChart": "Show in org chart",
     "more": "More actions",
     "propose": "Propose a change",
-    "makeChange": "Make a change"
+    "makeChange": "Make a change",
+    "giveFeedback": "Give feedback",
+    "asOf": "See it on another date",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied"
   },
   "dotted": {
     "since": "Dotted line · since {date}",

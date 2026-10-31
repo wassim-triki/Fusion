@@ -163,6 +163,16 @@ public static class ServiceCollectionExtensions
             client.Timeout = TimeSpan.FromSeconds(15);
         }).ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
 
+        services.AddHttpClient<Features.People.IPersonalAudienceDirectory, Features.People.PersonalAudienceDirectory>(client =>
+        {
+            var baseUrl = configuration["ServiceUrls:IdentityApiBaseUrl"];
+            if (string.IsNullOrWhiteSpace(baseUrl))
+                throw new InvalidOperationException(
+                    "ServiceUrls:IdentityApiBaseUrl is not configured. Set it via environment variable or appsettings.");
+            client.BaseAddress = new Uri(EnsureTrailingSlash(baseUrl));
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
+
         services.AddHttpClient<Features.People.Changes.IChangeApproverDirectory, Features.People.Changes.ChangeApproverDirectory>(client =>
         {
             var baseUrl = configuration["ServiceUrls:IdentityApiBaseUrl"];

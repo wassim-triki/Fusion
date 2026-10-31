@@ -33,4 +33,20 @@ public sealed class InternalPermissionHoldersController(
         return Ok(await accessProfiles.GetPermissionHoldersAsync(
             request.TenantId, request.PermissionKey, request.Scope, cancellationToken));
     }
+
+    /// <summary>The tenant's roles holding any of these permissions, with the scope each holds it at.</summary>
+    [HttpPost("permission-roles")]
+    public async Task<ActionResult<IReadOnlyList<PermissionRole>>> PermissionRoles(
+        [FromBody] PermissionRolesRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!await authorizer.AuthorizeAsync(Request, cancellationToken))
+            return Unauthorized();
+        if (request.TenantId == Guid.Empty
+            || request.PermissionKeys is not { Count: > 0 and <= 10 }
+            || !request.PermissionKeys.All(PermissionCatalog.IsKnown))
+            return BadRequest();
+
+        return Ok(await accessProfiles.GetPermissionRolesAsync(request.TenantId, request.PermissionKeys, cancellationToken));
+    }
 }

@@ -92,10 +92,20 @@ public sealed class PeopleChangesControllerTests
         Assert.IsType<OkObjectResult>(await hr.GetPeopleTimeline("CDG-1", default));
         hrSender.Verify(s => s.Send(It.Is<PeopleTimelineQuery>(q => q.BranchOfEmployeeId == null), It.IsAny<CancellationToken>()), Times.Once);
 
-        var (colleague, colleagueSender) = Controller(Caller(Guid.NewGuid(), Self));
+        // A colleague reads only their own history: an empty branch plus themselves, so anyone else is not found.
+        var colleagueId = Guid.NewGuid();
+        var (colleague, colleagueSender) = Controller(Caller(colleagueId, Self));
         Assert.IsType<ForbidResult>(await colleague.GetUpcomingChanges(default));
-        Assert.IsType<ForbidResult>(await colleague.GetPeopleTimeline("CDG-1", default));
-        colleagueSender.VerifyNoOtherCalls();
+        colleagueSender.Setup(s => s.Send(It.IsAny<PeopleTimelineQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(EY.HRPlatform.SharedKernel.Results.Result.Failure<PeopleTimelineDto>(new EY.HRPlatform.SharedKernel.Results.Error("Employee.NotFound", "No.")));
+        Assert.IsType<NotFoundObjectResult>(await colleague.GetPeopleTimeline("CDG-1", default));
+        colleagueSender.Verify(s => s.Send(It.Is<PeopleTimelineQuery>(q => q.BranchOfEmployeeId == Guid.Empty && q.SelfEmployeeId == colleagueId),
+            It.IsAny<CancellationToken>()), Times.Once);
+
+        // Without a person or a profile permission there is nothing to read.
+        var (nobody, nobodySender) = Controller(Caller(Guid.NewGuid()));
+        Assert.IsType<ForbidResult>(await nobody.GetPeopleTimeline("CDG-1", default));
+        nobodySender.VerifyNoOtherCalls();
     }
 
     private static ClaimsPrincipal Caller(Guid employeeId, params (string Key, string Scope)[] grants)

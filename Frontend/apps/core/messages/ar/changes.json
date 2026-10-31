@@ -142,7 +142,11 @@
     "showInChart": "عرض في الهيكل التنظيمي",
     "more": "مزيد من الإجراءات",
     "propose": "اقتراح تغيير",
-    "makeChange": "إجراء تغيير"
+    "makeChange": "إجراء تغيير",
+    "giveFeedback": "إبداء ملاحظات",
+    "asOf": "العرض في تاريخ آخر",
+    "copyLink": "نسخ الرابط",
+    "linkCopied": "تم نسخ الرابط"
   },
   "dotted": {
     "since": "خط منقط · منذ {date}",

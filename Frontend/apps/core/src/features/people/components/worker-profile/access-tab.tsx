@@ -29,7 +29,7 @@ export function AccessTab({
   const t = useTranslations("profile");
   const access = view.access;
   return (
-    <div className="space-y-5 lg:pt-2">
+    <div className="space-y-5">
       <Section id="profile-access" title={t("fusionAccess.title")}>
         {state === "loading" ? (
           <div className="space-y-3">

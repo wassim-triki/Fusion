@@ -49,7 +49,8 @@ export function JobTab({
 }) {
   const t = useTranslations("profile.job");
   return (
-    <div className="space-y-5 lg:pt-2">
+    <div className="space-y-5">
+      <TheJob view={view} />
       <EmploymentFigures view={view} rows={jobHistory?.rows} />
 
       {jobHistory ? (
@@ -106,6 +107,31 @@ function JobSection({ title, aside, children }: { title: string; aside?: string;
   return (
     <Section title={title} meta={aside}>
       {children}
+    </Section>
+  );
+}
+
+/** The job as the company's catalogue has it (B-195): title, family and level, where it sits and where from. */
+function TheJob({ view }: { view: WorkerProfileView }) {
+  const t = useTranslations("profile.job");
+  const facts = [
+    { label: t("jobTitle"), value: view.jobTitle },
+    { label: t("family"), value: view.jobFamily },
+    { label: t("level"), value: view.jobLevel },
+    { label: t("unit"), value: view.orgUnitName },
+    { label: t("location"), value: view.workLocation },
+  ].filter((fact): fact is { label: string; value: string } => Boolean(fact.value));
+  if (facts.length === 0) return null;
+  return (
+    <Section title={t("theJob")}>
+      <dl className="grid gap-x-10 gap-y-4 sm:grid-cols-3">
+        {facts.map((fact) => (
+          <div key={fact.label} className="min-w-0">
+            <dt className="type-meta text-muted-foreground">{fact.label}</dt>
+            <dd className="mt-0.5 truncate type-body text-foreground">{fact.value}</dd>
+          </div>
+        ))}
+      </dl>
     </Section>
   );
 }

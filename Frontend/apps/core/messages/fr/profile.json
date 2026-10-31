@@ -61,16 +61,16 @@
     "editWorkEmail": "Modifier l’adresse e-mail professionnelle",
     "hiredAnnouncement": "Collaborateur embauché.",
     "addedAnnouncement": "Collaborateur ajouté.",
-    "back": "Collaborateurs",
     "hired": "Embauché",
     "added": "Ajouté",
     "asOf": "Au {date}",
     "today": "Aujourd’hui",
     "backToPeople": "Retour aux collaborateurs",
     "retry": "Réessayer",
-    "asOfToday": "Aujourd’hui",
     "viewAsOf": "Voir à une autre date",
-    "viewAsOfDate": "Date d’affichage"
+    "viewAsOfDate": "Date d’affichage",
+    "cancel": "Annuler",
+    "show": "Afficher"
   },
   "workEmail": {
     "required": "Saisissez une adresse e-mail professionnelle.",
@@ -101,7 +101,9 @@
     "job": "Poste",
     "personal": "Personnel",
     "performance": "Performance",
-    "access": "Accès"
+    "access": "Accès",
+    "overview": "Aperçu",
+    "documents": "Documents"
   },
   "band": {
     "unitIn": "{unit}, dans {parent}",
@@ -146,10 +148,12 @@
     "comingUp": "À venir",
     "nothingScheduled": "Rien de prévu",
     "schedule": "Planifier un changement",
-    "history": "Historique"
+    "history": "Historique",
+    "theJob": "Le poste",
+    "family": "Famille",
+    "level": "Niveau"
   },
   "personal": {
-    "name": "Nom",
     "legalName": "Nom légal",
     "preferredName": "Nom d’usage",
     "dateOfBirth": "Date de naissance",
@@ -169,8 +173,6 @@
     "addContact": "Ajouter un contact",
     "removeContact": "Retirer {name}",
     "contactNumber": "Contact {number}",
-    "private": "Seuls {name} et les RH",
-    "privateSelf": "Vous et les RH",
     "edit": "Modifier",
     "editSection": "Modifier : {section}",
     "save": "Enregistrer",
@@ -186,7 +188,15 @@
     "lockedByCompany": "Votre entreprise gère ce champ.",
     "loadFailed": "Les informations personnelles n’ont pas pu être chargées.",
     "retry": "Réessayer",
-    "current": "Actuelle"
+    "current": "Actuelle",
+    "identity": "Identité",
+    "lockedHint": "Seuls les RH modifient ceci",
+    "seenBy": {
+      "everyone": "Toute l'entreprise",
+      "you": "Vous",
+      "yourManagers": "vos responsables",
+      "theirManagers": "les responsables de {name}"
+    }
   },
   "photo": {
     "titleSelf": "Votre photo",
@@ -206,5 +216,46 @@
     "wrongType": "Choisissez une image JPG, PNG ou WebP.",
     "tooLarge": "Choisissez une image de 5 Mo maximum.",
     "unreadable": "Cette image n’a pas pu être lue. Choisissez-en une autre."
+  },
+  "glance": {
+    "manager": "Responsable",
+    "team": "Équipe",
+    "theirTeam": "Son équipe",
+    "managersTeam": "Équipe de {name}",
+    "people": "{count, plural, one {# personne} other {# personnes}}",
+    "withCompanySince": "Chez {company} depuis le {date}",
+    "since": "Ici depuis le {date}",
+    "place": "Travaille depuis"
+  },
+  "overview": {
+    "comingUp": "À venir",
+    "performance": "Performance",
+    "openPerformance": "Tout voir",
+    "jobAndHistory": "Poste et historique",
+    "openJob": "Tout l'historique",
+    "job": "Poste",
+    "unit": "Équipe",
+    "manager": "Responsable",
+    "place": "Lieu",
+    "noJob": "Aucun poste actuel.",
+    "anniversary": "{count, plural, one {# an} other {# ans}} dans l'entreprise"
+  },
+  "documents": {
+    "title": "Documents",
+    "add": "Ajouter un document",
+    "adding": "Ajout…",
+    "added": "{name} ajouté",
+    "addFailed": "Le document n'a pas été ajouté.",
+    "tooLarge": "Ce fichier dépasse 10 Mo.",
+    "removed": "{name} supprimé",
+    "removeFailed": "Le document n'a pas été supprimé.",
+    "openFailed": "Le document n'a pas pu être ouvert.",
+    "download": "Télécharger {name}",
+    "remove": "Supprimer {name}",
+    "meta": "Ajouté par {by} · {date} · {size}",
+    "empty": "Aucun document pour l'instant.",
+    "emptyCanAdd": "Aucun document pour l'instant. PDF ou images, 10 Mo au plus.",
+    "loadFailed": "Les documents n'ont pas pu être chargés.",
+    "retry": "Réessayer"
   }
 }

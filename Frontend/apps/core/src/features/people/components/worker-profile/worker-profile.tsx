@@ -4,9 +4,9 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import type { ReactNode, Ref } from "react";
 import { PersonAvatar, cn } from "@repo/ds";
-import { PageContainer, Section, StatusBadge } from "@repo/ds/shell";
+import { LinkTabs, PageContainer, StatusBadge } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
-import { usePhoto } from "@repo/api/query";
+import { usePhoto, useTenantSummary } from "@repo/api/query";
 import { Mail, MapPin, Phone, Workflow } from "lucide-react";
 import { useSay } from "@repo/ds/lib/say";
 import { Monogram, useWorkforceDate } from "../workforce-ui";
@@ -17,7 +17,7 @@ import {
   type WorkerProfileView,
 } from "./worker-profile-view";
 
-export type ProfileTab = "job" | "personal" | "performance" | "access";
+export type ProfileTab = "overview" | "job" | "personal" | "performance" | "documents" | "access";
 
 export interface ProfileTabLink {
   key: ProfileTab;
@@ -29,7 +29,7 @@ export interface WorkerProfileProps {
   view: WorkerProfileView;
   /** Back navigation above the band (a person's record returns to People). */
   backLink?: ReactNode;
-  /** Top-right of the band: as-of date and the record's actions. */
+  /** Top-right of the band: the record's actions, then its ⋯ menu. */
   headerActions?: ReactNode;
   /** Chip beside the name after an establishment reveal. */
   nameBadge?: ReactNode;
@@ -37,7 +37,7 @@ export interface WorkerProfileProps {
   headingRef?: Ref<HTMLHeadingElement>;
   /** Sits on the photo's edge: change the photo (the person or HR). */
   photoAction?: ReactNode;
-  /** The viewer's tabs; none for a colleague outside their branch, who gets the header, rail and reporting line. */
+  /** The viewer's tabs, in the band. */
   tabs?: ProfileTabLink[];
   currentTab?: ProfileTab;
   /** Others on the same manager, for someone without reports. */
@@ -54,7 +54,10 @@ export interface WorkerProfileProps {
 
 const RAIL_PEOPLE = 5;
 
-/** One person's record: a band with the photo, name and tabs, a rail that stays on every tab, and the tab's body. */
+/**
+ * One person's page (D-01, B-180): a band with the photo, name, a glance row (manager, team, time with the company,
+ * place) and the tabs; a rail that stays on every tab; the tab's body, its sections stacked one under another.
+ */
 export function WorkerProfile({
   view,
   backLink,
@@ -78,13 +81,13 @@ export function WorkerProfile({
     <PageContainer width="wide" className="max-w-6xl pb-16">
       {backLink ? <div className="mb-4">{backLink}</div> : null}
 
-      <section aria-labelledby="profile-name" className="relative z-10 rounded-surface bg-section px-6 pt-6 sm:grid sm:grid-cols-[9.5rem_minmax(0,1fr)] sm:gap-x-8 sm:px-8 sm:pt-7">
-        <div className="relative mb-4 w-fit sm:row-span-2 sm:-mb-16 sm:self-end">
+      <section aria-labelledby="profile-name" className="relative z-10 rounded-surface bg-section px-6 pt-6 sm:grid sm:grid-cols-[10.5rem_minmax(0,1fr)] sm:gap-x-8 sm:px-8 sm:pt-8">
+        <div className="relative mb-4 w-fit sm:row-span-3 sm:mb-0 sm:self-start">
           <PersonAvatar
             name={view.displayName}
             photo={photo}
             size="profile"
-            className="size-24 border-2 text-3xl ring-[6px] ring-background sm:size-[9.5rem] sm:text-[2.75rem]"
+            className="size-24 border-2 font-serif text-3xl font-medium ring-[6px] ring-section sm:size-[10.5rem] sm:text-[3.5rem]"
           />
           {photoAction ? <div className="absolute end-[4%] bottom-[4%]">{photoAction}</div> : null}
         </div>
@@ -92,21 +95,23 @@ export function WorkerProfile({
         <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4 sm:col-start-2">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-              <h1 id="profile-name" ref={headingRef} tabIndex={-1} className="type-page-title min-w-0 max-w-full truncate outline-none">
+              <h1 id="profile-name" ref={headingRef} tabIndex={-1} className="type-display min-w-0 max-w-full truncate outline-none sm:text-[2.25rem]">
                 {view.displayName}
               </h1>
-              <StatusBadge tone={view.status.tone} dot>
-                {view.status.label}
-              </StatusBadge>
+              {view.status.tone !== "success" ? (
+                <StatusBadge tone={view.status.tone} dot>
+                  {view.status.label}
+                </StatusBadge>
+              ) : null}
               {nameBadge}
             </div>
             {view.jobTitle ? (
-              <p className="mt-1.5 type-body text-foreground">{view.jobTitle}</p>
+              <p className="mt-1.5 type-subsection-title text-foreground">{view.jobTitle}</p>
             ) : view.workUnavailable ? (
               <p className="mt-1.5 type-body text-muted-foreground">{t("assignment.unavailable")}</p>
             ) : null}
             {view.orgUnitName ? (
-              <p className="mt-0.5 type-body-secondary text-muted-foreground">
+              <p className="mt-1 type-body text-muted-foreground">
                 {parent ? t("band.unitIn", { unit: view.orgUnitName, parent }) : view.orgUnitName}
               </p>
             ) : null}
@@ -114,31 +119,16 @@ export function WorkerProfile({
           {headerActions ? <div className="flex shrink-0 flex-wrap items-center gap-2">{headerActions}</div> : null}
         </div>
 
+        <Glance view={view} teammates={teammates} />
+
         {tabs?.length ? (
-          <nav aria-label={t("tabs.label")} className="-mb-px mt-5 flex gap-1 overflow-x-auto sm:col-start-2">
-            {tabs.map((tab) => (
-              <Link
-                key={tab.key}
-                href={tab.href}
-                scroll={false}
-                aria-current={tab.key === currentTab ? "page" : undefined}
-                className={cn(
-                  "border-b-2 px-3.5 pt-2.5 pb-3 type-label whitespace-nowrap outline-none transition-colors focus-visible:rounded-control focus-visible:ring-2 focus-visible:ring-ring",
-                  tab.key === currentTab
-                    ? "border-primary text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {tab.label}
-              </Link>
-            ))}
-          </nav>
+          <LinkTabs label={t("tabs.label")} tabs={tabs} current={currentTab ?? tabs[0]!.key} className="mt-6 pb-5 sm:col-start-2" />
         ) : (
-          <div className="h-6 sm:col-start-2 sm:h-8" />
+          <div className="h-6 sm:col-start-2" />
         )}
       </section>
 
-      <div className="mt-6 flex flex-col gap-10 lg:flex-row lg:items-start">
+      <div className="mt-8 flex flex-col gap-10 lg:flex-row lg:items-start">
         <ProfileRail
           view={view}
           showPeople={Boolean(tabs?.length)}
@@ -147,11 +137,73 @@ export function WorkerProfile({
           orgChartHref={orgChartHref}
           workEmailAction={workEmailAction}
         />
-        <div className="min-w-0 flex-1">
-          {children ?? (tabs?.length ? null : <ReportingLine view={view} />)}
-        </div>
+        <div className="min-w-0 flex-1">{children}</div>
       </div>
     </PageContainer>
+  );
+}
+
+/** Who they work with and for how long, before any tab: manager, team, time with the company, place. */
+function Glance({ view, teammates }: { view: WorkerProfileView; teammates?: WorkerProfileReport[] }) {
+  const t = useTranslations("profile.glance");
+  const workforceDate = useWorkforceDate();
+  const tenureOf = useTenure();
+  const company = useTenantSummary().data?.name;
+  const leads = view.directReportCount > 0;
+  // A manager's team is their reports; anyone else's is their manager's, themselves included.
+  const faces = leads ? view.directReports : (teammates ?? []);
+  const teamSize = leads ? view.directReportCount : faces.length > 0 ? faces.length + 1 : 0;
+  const since = tenureOf(view.employmentStart);
+  const managerFirst = view.manager?.name.split(" ")[0];
+  const started = view.employmentStart ? workforceDate(view.employmentStart, { month: "short" }) : null;
+  return (
+    <div className="mt-5 flex flex-wrap items-center gap-x-10 gap-y-4 sm:col-start-2">
+      {view.manager ? (
+        <Link href={view.manager.href} className="group flex items-center gap-2.5 outline-none focus-visible:rounded-control focus-visible:ring-2 focus-visible:ring-ring">
+          <Monogram name={view.manager.name} photoUrl={view.manager.photoUrl} size="md" />
+          <span className="min-w-0">
+            <span className="block type-meta text-muted-foreground">{t("manager")}</span>
+            <span className="block truncate type-label text-foreground group-hover:underline">{view.manager.name}</span>
+          </span>
+        </Link>
+      ) : null}
+      {teamSize > 0 ? (
+        <div className="flex items-center gap-2.5">
+          <ul className="flex" aria-hidden>
+            {faces.slice(0, 5).map((mate) => (
+              <li key={mate.href} className="-ms-2 first:ms-0">
+                <Monogram name={mate.name} photoUrl={mate.photoUrl} size="sm" className="border-2 border-section" />
+              </li>
+            ))}
+          </ul>
+          <span className="min-w-0">
+            <span className="block type-meta text-muted-foreground">
+              {leads ? t("theirTeam") : managerFirst ? t("managersTeam", { name: managerFirst }) : t("team")}
+            </span>
+            <span className="block type-label text-foreground">{t("people", { count: teamSize })}</span>
+          </span>
+        </div>
+      ) : null}
+      {started && since ? (
+        <div className="min-w-0">
+          <span className="block type-meta text-muted-foreground">
+            {company ? t("withCompanySince", { company, date: started }) : t("since", { date: started })}
+          </span>
+          <span className="block type-label text-foreground">{since}</span>
+        </div>
+      ) : null}
+      {view.workLocation ? (
+        <div className="flex items-center gap-2.5">
+          <span className="grid size-9 place-items-center rounded-full bg-card text-muted-foreground">
+            <MapPin className="size-4" aria-hidden />
+          </span>
+          <span className="min-w-0">
+            <span className="block type-meta text-muted-foreground">{t("place")}</span>
+            <span className="block truncate type-label text-foreground">{view.workLocation}</span>
+          </span>
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -251,7 +303,7 @@ function ProfileRail({
   const hasContact = Boolean(view.workEmail || view.phone || view.workLocation || workEmailAction);
 
   return (
-    <aside aria-label={t("label", { name: view.displayName })} className="w-full shrink-0 lg:sticky lg:top-6 lg:w-64 lg:pt-12">
+    <aside aria-label={t("label", { name: view.displayName })} className="w-full shrink-0 lg:sticky lg:top-6 lg:w-64 lg:pt-1">
       {hasContact ? (
         <RailGroup>
           {view.workEmail ? (
@@ -345,46 +397,5 @@ function ProfileRail({
         </RailGroup>
       ) : null}
     </aside>
-  );
-}
-
-/** What a colleague outside the viewer's branch gets in place of tabs: who they report to, and who reports to them. */
-function ReportingLine({ view }: { view: WorkerProfileView }) {
-  const t = useTranslations("profile");
-  const reports = view.directReports.slice(0, RAIL_PEOPLE);
-  return (
-    <Section id="profile-reporting" title={t("colleague.reportingLine")} flush className="lg:mt-12">
-      <ol className="divide-y">
-        <li className="px-5 py-3">
-          <p className="type-label text-muted-foreground">{t("rail.manager")}</p>
-          {view.manager ? (
-            <PersonLink name={view.manager.name} href={view.manager.href} photoUrl={view.manager.photoUrl} />
-          ) : (
-            <p className="py-1 type-body text-muted-foreground">{t("rail.noManager")}</p>
-          )}
-        </li>
-        <li className="flex items-center gap-2.5 px-5 py-3">
-          <Monogram name={view.displayName} photoUrl={view.photoUrl} size="sm" accent />
-          <span className="min-w-0">
-            <span className="block truncate type-label text-foreground">{view.displayName}</span>
-            {view.jobTitle ? <span className="block truncate type-meta text-muted-foreground">{view.jobTitle}</span> : null}
-          </span>
-        </li>
-        {view.directReportCount > 0 ? (
-          <li className="px-5 py-3">
-            <p className="flex justify-between type-label text-muted-foreground">
-              {t("rail.directReports")}
-              <span className="type-meta tabular-nums">{view.directReportCount}</span>
-            </p>
-            {reports.map((report) => (
-              <PersonLink key={report.href} name={report.name} href={report.href} detail={report.jobTitle} photoUrl={report.photoUrl} />
-            ))}
-            {view.directReportCount > reports.length ? (
-              <p className="mt-1 type-meta text-muted-foreground">{t("rail.more", { count: view.directReportCount - reports.length })}</p>
-            ) : null}
-          </li>
-        ) : null}
-      </ol>
-    </Section>
   );
 }

@@ -50,6 +50,8 @@ import {
   Camera,
   Check,
   ChevronRight,
+  Link2,
+  MessageSquarePlus,
   MoreHorizontal,
   RotateCcw,
   ShieldAlert,
@@ -74,7 +76,9 @@ import { fromPeopleProfile } from "./worker-profile/worker-profile-view";
 import { PersonRoles } from "@/features/settings/roles/person-roles";
 import { AccessTab } from "./worker-profile/access-tab";
 import { JobTab } from "./worker-profile/job-tab";
-import { PersonalTab } from "./worker-profile/personal-tab";
+import { PersonalTab, useSeenBy } from "./worker-profile/personal-tab";
+import { OverviewTab } from "./worker-profile/overview-tab";
+import { DocumentsTab } from "./worker-profile/documents-tab";
 import { PhotoDialog } from "./worker-profile/photo-dialog";
 import { useProfileTabs } from "./worker-profile/profile-tabs";
 import { useRecentRecord } from "@repo/api/react";
@@ -88,7 +92,20 @@ function isoDay(value: string): string {
   return value.length >= 10 ? value.slice(0, 10) : value;
 }
 
-export default function PeopleProfileWorkspace({ employeeKey }: { employeeKey: string }) {
+/**
+ * One person's page across modules (B-180): Core HR's record, My profile and Performance's person page are this one
+ * page. `self` is the signed-in person's own page at /profile; the tabs follow what the viewer may see.
+ */
+export default function PeopleProfileWorkspace({
+  employeeKey,
+  self = false,
+  selfService,
+}: {
+  employeeKey: string;
+  self?: boolean;
+  /** The company's self-service rules, for the person's own Personal tab. */
+  selfService?: { canEditPreferredName: boolean; canEditPhone: boolean };
+}) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -119,13 +136,18 @@ export default function PeopleProfileWorkspace({ employeeKey }: { employeeKey: s
   const directoryOnly = personal.data ? personal.data.access === "Directory" : !(mayExplore || isSelf);
   const tabsKnown = Boolean(personal.data) || personal.error != null || !(mayExplore || isSelf);
   const explores = tabsKnown && !directoryOnly;
+  const seesAll = personal.data?.access === "Full";
 
   const { tab, tabs } = useProfileTabs({
-    personal: true,
+    job: explores,
+    personal: explores,
     performance: showPerformance,
+    documents: seesAll,
     access: canSeeAccess,
   });
-  const timeline = usePeopleTimeline(employeeKey, Boolean(profile.data) && explores && tab === "job");
+  const seenBy = useSeenBy(personal.data?.audience, isSelf, profile.data?.identity.displayName ?? "");
+  const [asOfOpen, setAsOfOpen] = useState(false);
+  const timeline = usePeopleTimeline(employeeKey, Boolean(profile.data) && explores && (tab === "job" || tab === "overview"));
   const jobHistory = usePeopleJobHistory(employeeKey, Boolean(profile.data) && explores && tab === "job");
   const access = usePeopleAccessStatus(employeeKey, Boolean(profile.data) && canSeeAccess && tab === "access");
   const managerKey = profile.data?.primaryManager?.employeeKey ?? "";
@@ -146,7 +168,7 @@ export default function PeopleProfileWorkspace({ employeeKey }: { employeeKey: s
   useBreadcrumbLabel(employeeKey, profile.data?.identity.displayName);
   useRecentRecord(
     "core",
-    profile.data
+    profile.data && !self
       ? { label: profile.data.identity.displayName, kind: "Person", href: `/core/people/${encodeURIComponent(employeeKey)}` }
       : null,
   );
@@ -192,7 +214,7 @@ export default function PeopleProfileWorkspace({ employeeKey }: { employeeKey: s
   const pendingRequests = usePendingRequestCards(employeeKey,
     Boolean(profile.data) && !profile.data?.isAsOf && (rights.approve || canManage || (rights.propose && managesThisPerson)));
 
-  if (profile.isLoading || authLoading) return <WorkerProfileSkeleton showBackLink />;
+  if (profile.isLoading || authLoading) return <WorkerProfileSkeleton />;
 
   if (profile.error || !profile.data) {
     const kind = profile.error ? classifyApiError(profile.error) : "validation";
@@ -235,8 +257,8 @@ export default function PeopleProfileWorkspace({ employeeKey }: { employeeKey: s
   const proposesHere = rights.propose && !canManage && managesThisPerson;
   const showActions = (rights.lines || proposesHere) && !isAsOf && (!isFormer || canManage);
   const orgChartHref = orgChart.canSee ? `/org-chart?focus=${encodeURIComponent(employeeKey)}` : undefined;
-  const goAsOf = (date: string) => router.push(`${pathname}?asOf=${date}`);
-  const returnToToday = () => router.push(tab === "job" ? pathname : `${pathname}?tab=${tab}`);
+  const goAsOf = (date: string) => router.push(`${pathname}?asOf=${date}${tab === "overview" ? "" : `&tab=${tab}`}`);
+  const returnToToday = () => router.push(tab === "overview" ? pathname : `${pathname}?tab=${tab}`);
 
   const accessState = access.isLoading ? ("loading" as const) : access.error ? ("error" as const) : ("ready" as const);
   const canManageWorkEmail = canManage && !isAsOf;
@@ -268,17 +290,30 @@ export default function PeopleProfileWorkspace({ employeeKey }: { employeeKey: s
   const canChangePhoto = !isAsOf && (canManage || (isSelf && personal.data?.canEdit === true));
   const hasDottedLines = employee.dottedLineManagers.length > 0 || (rights.lines && !isFormer);
 
+  const tabHref = (key: string) => tabs.find((item) => item.key === key)?.href;
+  const comingUpCards = !isAsOf
+    ? [
+        ...pendingRequests.cards,
+        ...employee.comingUp.map((change) => (
+          <ComingUpCard key={change.id} change={change} canChange={change.details.isReportingOnly ? rights.lines : rights.people} onEdit={changeSheet.edit} />
+        )),
+      ]
+    : [];
+
   const body = !tabsKnown ? (
     <PageListSkeleton rows={4} />
-  ) : directoryOnly ? undefined : tab === "personal" ? (
+  ) : tab === "personal" ? (
     <PersonalTab
       employeeKey={employeeKey}
       displayName={view.displayName}
       workEmail={view.workEmail}
       isSelf={isSelf}
+      selfService={isSelf ? selfService : undefined}
     />
   ) : tab === "performance" ? (
     <PerformanceRecordView employeeId={employee.identity.employeeId} />
+  ) : tab === "documents" ? (
+    <DocumentsTab employeeKey={employeeKey} audience={seenBy?.full} />
   ) : tab === "access" ? (
     <AccessTab
       view={view}
@@ -288,7 +323,7 @@ export default function PeopleProfileWorkspace({ employeeKey }: { employeeKey: s
       workEmailAction={workEmailAction}
       roles={<PersonRoles employeeId={employee.identity.employeeId} />}
     />
-  ) : (
+  ) : tab === "job" ? (
     <JobTab
       view={view}
       jobHistory={
@@ -303,18 +338,60 @@ export default function PeopleProfileWorkspace({ employeeKey }: { employeeKey: s
       }
       timeline={timelineForbidden ? undefined : { events: view.timeline, isLoading: timeline.isLoading }}
       dottedLines={!isAsOf && hasDottedLines ? <DottedLines person={employee} canEdit={rights.lines && !isFormer} /> : undefined}
-      comingUp={
-        !isAsOf && (employee.comingUp.length > 0 || pendingRequests.cards.length > 0 || showActions)
-          ? [
-              ...pendingRequests.cards,
-              ...employee.comingUp.map((change) => (
-                <ComingUpCard key={change.id} change={change} canChange={change.details.isReportingOnly ? rights.lines : rights.people} onEdit={changeSheet.edit} />
-              )),
-            ]
-          : undefined
-      }
+      comingUp={!isAsOf && (comingUpCards.length > 0 || showActions) ? comingUpCards : undefined}
       onSchedule={showActions && !isFormer ? () => changeSheet.start(employeeKey, "job") : undefined}
     />
+  ) : (
+    <OverviewTab
+      view={view}
+      comingUp={comingUpCards}
+      performance={showPerformance ? <PerformanceRecordView employeeId={employee.identity.employeeId} compact /> : undefined}
+      performanceHref={showPerformance ? tabHref("performance") : undefined}
+      timeline={explores && !timelineForbidden ? { isLoading: timeline.isLoading } : undefined}
+      jobHref={tabHref("job")}
+    />
+  );
+
+  // The band's ⋯ menu (D-01): whatever else there is to do with this person, never empty.
+  const menu = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button size="icon" variant="outline" aria-label={tc("more")}>
+          <MoreHorizontal className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {showPerformance && !isSelf ? (
+          <DropdownMenuItem asChild>
+            <a href={`/performance/feedback?give=${encodeURIComponent(employee.identity.employeeId)}`}>
+              <MessageSquarePlus className="size-4" /> {tc("giveFeedback")}
+            </a>
+          </DropdownMenuItem>
+        ) : null}
+        {orgChartHref ? (
+          <DropdownMenuItem asChild>
+            <Link href={orgChartHref}><Workflow className="size-4" /> {tc("showInChart")}</Link>
+          </DropdownMenuItem>
+        ) : null}
+        {explores && canExplore && !isAsOf ? (
+          <DropdownMenuItem onSelect={() => setAsOfOpen(true)}>
+            <CalendarDays className="size-4" /> {tc("asOf")}
+          </DropdownMenuItem>
+        ) : null}
+        <DropdownMenuItem
+          onSelect={() => {
+            void navigator.clipboard?.writeText(`${window.location.origin}/core/people/${encodeURIComponent(employeeKey)}`).then(() => toast.success(tc("linkCopied")));
+          }}
+        >
+          <Link2 className="size-4" /> {tc("copyLink")}
+        </DropdownMenuItem>
+        {showActions && canManage && !isFormer ? (
+          <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => changeSheet.start(employeeKey, "end")}>
+            <UserRoundX className="size-4" /> {tc("endEmployment")}
+          </DropdownMenuItem>
+        ) : null}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 
   return (
@@ -330,17 +407,9 @@ export default function PeopleProfileWorkspace({ employeeKey }: { employeeKey: s
         view={view}
         headingRef={headingRef}
         orgChartHref={orgChartHref}
-        tabs={explores ? tabs : undefined}
+        tabs={tabsKnown ? tabs : undefined}
         currentTab={tab}
         teammates={teammates}
-        backLink={
-          <Link
-            href="/people"
-            className="inline-flex items-center gap-2 type-body text-muted-foreground underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:rounded-control focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <ArrowLeft className="size-4 rtl:rotate-180" /> {t("back")}
-          </Link>
-        }
         nameBadge={
           showResult && established ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success-subtle px-2.5 py-1 type-meta font-medium text-foreground animate-in fade-in">
@@ -357,69 +426,40 @@ export default function PeopleProfileWorkspace({ employeeKey }: { employeeKey: s
           ) : undefined
         }
         headerActions={
-          isAsOf || (explores && canExplore) || showActions ? (
-            <>
-              {isAsOf ? (
-                <div className="inline-flex items-center gap-2.5 rounded-full border border-primary/30 bg-primary/[0.06] py-1.5 ps-3.5 pe-1.5 animate-in fade-in">
-                  <span className="type-label">
-                    {t("asOf", { date: workforceDate(employee.viewedDate, { month: "long" }) })}
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 gap-1.5 rounded-full px-2.5 text-muted-foreground hover:text-foreground"
-                    onClick={returnToToday}
-                  >
-                    <RotateCcw className="size-3.5" /> {t("today")}
-                  </Button>
-                </div>
-              ) : explores && canExplore ? (
-                <AsOfControl
-                  today={isoDay(employee.viewedDate)}
-                  onPick={goAsOf}
-                />
-              ) : null}
-              {showActions ? (
-                <div className="flex items-center gap-2">
-                  {isFormer ? (
-                    <Button size="sm" variant="outline" onClick={() => changeSheet.start(employeeKey, "start")}>
-                      <UserRoundPlus className="size-4" /> {tc("startEmployment")}
-                    </Button>
-                  ) : (
-                    <Button size="sm" variant="outline" onClick={() => changeSheet.start(employeeKey, "job")}>
-                      <ArrowLeftRight className="size-4" /> {canManage ? tc("makeChange") : proposesHere ? tc("propose") : tc("changeManager")}
-                    </Button>
-                  )}
-                  {canManage && !isFormer ? (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button size="icon" variant="outline" aria-label={tc("more")}>
-                          <MoreHorizontal className="size-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {orgChartHref ? (
-                          <DropdownMenuItem asChild>
-                            <Link href={orgChartHref}><Workflow className="size-4" /> {tc("showInChart")}</Link>
-                          </DropdownMenuItem>
-                        ) : null}
-                        <DropdownMenuItem
-                          className="text-destructive focus:text-destructive"
-                          onSelect={() => changeSheet.start(employeeKey, "end")}
-                        >
-                          <UserRoundX className="size-4" /> {tc("endEmployment")}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  ) : null}
-                </div>
-              ) : null}
-            </>
-          ) : undefined
+          <>
+            {isAsOf ? (
+              <div className="inline-flex items-center gap-2.5 rounded-full border border-primary/30 bg-primary/[0.06] py-1.5 ps-3.5 pe-1.5 animate-in fade-in">
+                <span className="type-label">
+                  {t("asOf", { date: workforceDate(employee.viewedDate, { month: "long" }) })}
+                </span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 gap-1.5 rounded-full px-2.5 text-muted-foreground hover:text-foreground"
+                  onClick={returnToToday}
+                >
+                  <RotateCcw className="size-3.5" /> {t("today")}
+                </Button>
+              </div>
+            ) : null}
+            {showActions ? (
+              isFormer ? (
+                <Button variant="outline" onClick={() => changeSheet.start(employeeKey, "start")}>
+                  <UserRoundPlus className="size-4" /> {tc("startEmployment")}
+                </Button>
+              ) : (
+                <Button onClick={() => changeSheet.start(employeeKey, "job")}>
+                  <ArrowLeftRight className="size-4" /> {canManage ? tc("makeChange") : proposesHere ? tc("propose") : tc("changeManager")}
+                </Button>
+              )
+            ) : null}
+            {menu}
+          </>
         }
       >
         {body}
       </WorkerProfile>
+      <AsOfDialog open={asOfOpen} onOpenChange={setAsOfOpen} today={isoDay(employee.viewedDate)} onPick={(date) => { setAsOfOpen(false); goAsOf(date); }} />
       {changeSheet.element}
       {pendingRequests.sheet}
       {canChangePhoto ? (
@@ -487,24 +527,44 @@ function ProfileNotice({
   );
 }
 
-/** Quiet Today-only affordance to view the worker as of another date. */
-function AsOfControl({
+/** The page as it stood on another date, picked from the ⋯ menu. */
+function AsOfDialog({
+  open,
+  onOpenChange,
   today,
   onPick,
 }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   today: string;
   onPick: (date: string) => void;
 }) {
   const t = useTranslations("profile.record");
+  const [date, setDate] = useState(today);
+  useEffect(() => {
+    if (open) setDate(today);
+  }, [open, today]);
   return (
-    <div className="inline-flex items-center gap-2 type-body text-muted-foreground">
-      <CalendarDays className="size-4" aria-hidden />
-      <span className="type-label">{t("asOfToday")}</span>
-      <span aria-hidden className="text-muted-foreground/40">
-        ·
-      </span>
-      <DatePicker value={today} onChange={onPick} aria-label={t("viewAsOfDate")} className="h-8 w-auto" />
-    </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-sm" aria-describedby={undefined}>
+        <DialogHeader>
+          <DialogTitle>{t("viewAsOfDate")}</DialogTitle>
+        </DialogHeader>
+        <form
+          className="grid gap-5 pt-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (date) onPick(date);
+          }}
+        >
+          <DatePicker value={date} onChange={setDate} aria-label={t("viewAsOfDate")} />
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>{t("cancel")}</Button>
+            <Button type="submit" disabled={!date}>{t("show")}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 

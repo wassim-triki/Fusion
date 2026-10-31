@@ -1,17 +1,18 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useId, useState, type ChangeEvent, type ReactNode } from "react";
 import {
   ApiError,
   type PeopleEmergencyContactDto,
   type PeopleHomeAddressDto,
   type PeoplePendingAddressDto,
+  type PeoplePersonalAudienceDto,
   type PeoplePersonalDto,
   type UpdatePersonalRequest,
 } from "@repo/api";
 import { Button, DatePicker, Input, Label, Skeleton, cn } from "@repo/ds";
-import { Clock3, Lock, Plus, RotateCcw, X } from "lucide-react";
+import { Clock3, Eye, Lock, Plus, RotateCcw, X } from "lucide-react";
 import { toast } from "sonner";
 import { useRefusal } from "@/i18n/words";
 import { useFormat } from "@repo/ds/lib/use-format";
@@ -20,7 +21,7 @@ import { useChangeRights, useRequestDecisions } from "../../changes/use-changes"
 import { usePeoplePersonal, useUpdatePeoplePersonal } from "../../api/use-people";
 import { Monogram, useWorkforceDate } from "../workforce-ui";
 
-type Section = "name" | "contact" | "address" | "emergency";
+type Section = "identity" | "contact" | "address" | "emergency";
 
 const MAX_CONTACTS = 3;
 
@@ -29,9 +30,26 @@ export interface SelfServiceRules {
   canEditPhone: boolean;
 }
 
+/** Who sees each part of the Personal tab, in words, from the company's roles (B-214); null when unknown. */
+export function useSeenBy(audience: PeoplePersonalAudienceDto | null | undefined, isSelf: boolean, displayName: string) {
+  const t = useTranslations("profile.personal.seenBy");
+  const locale = useLocale();
+  if (!audience) return null;
+  const list = (parts: string[]) => new Intl.ListFormat(locale, { type: "conjunction" }).format(parts);
+  const first = displayName.split(" ")[0] ?? displayName;
+  const who = isSelf ? t("you") : first;
+  const managers = audience.contactTeam ? [isSelf ? t("yourManagers") : t("theirManagers", { name: first })] : [];
+  return {
+    everyone: t("everyone"),
+    contact: list([who, ...managers, ...audience.contact]),
+    full: list([who, ...audience.full]),
+  };
+}
+
 /**
- * The Personal tab. The server shapes it for the viewer (`access`) and says whether they may change it
- * (`canEdit`); each section edits in place and saves the whole tab against the version it read.
+ * The Personal tab (D-16), as drawn: Contact, Home address, Emergency contact and Identity, each saying who sees it.
+ * The server shapes it for the viewer (`access`) and says whether they may change it (`canEdit`); what only HR
+ * changes is locked and has no form. Each section edits in place and saves the whole tab against the version it read.
  */
 export function PersonalTab({
   employeeKey,
@@ -54,7 +72,7 @@ export function PersonalTab({
   if (personal.isLoading && !personal.data) return <PersonalSkeleton />;
   if (!personal.data) {
     return (
-      <div className="flex items-center justify-between gap-4 rounded-surface border border-dashed px-5 py-4 lg:mt-2">
+      <div className="flex items-center justify-between gap-4 rounded-surface border border-dashed px-5 py-4">
         <p className="type-body text-muted-foreground">{t("loadFailed")}</p>
         <Button variant="ghost" size="sm" onClick={() => void personal.refetch()}>
           <RotateCcw className="size-4" aria-hidden /> {t("retry")}
@@ -63,27 +81,46 @@ export function PersonalTab({
     );
   }
 
-  const data = personal.data;
+  return <PersonalSections data={personal.data} employeeKey={employeeKey} displayName={displayName} workEmail={workEmail} isSelf={isSelf}
+    selfService={selfService} editing={editing} setEditing={setEditing} refetch={() => void personal.refetch()} />;
+}
+
+function PersonalSections({
+  data,
+  employeeKey,
+  displayName,
+  workEmail,
+  isSelf,
+  selfService,
+  editing,
+  setEditing,
+  refetch,
+}: {
+  data: PeoplePersonalDto;
+  employeeKey: string;
+  displayName: string;
+  workEmail: string | null;
+  isSelf: boolean;
+  selfService?: SelfServiceRules;
+  editing: Section | null;
+  setEditing: (section: Section | null) => void;
+  refetch: () => void;
+}) {
   const full = data.access === "Full";
+  const seenBy = useSeenBy(data.audience, isSelf, displayName);
   const locks = isSelf && selfService ? selfService : { canEditPreferredName: true, canEditPhone: true };
-  const shared = {
-    data,
-    employeeKey,
-    canEdit: data.canEdit,
-    editing,
-    setEditing,
-    privateLabel: full ? (isSelf ? t("privateSelf") : t("private", { name: displayName })) : undefined,
-    refetch: () => void personal.refetch(),
-  };
+  // The person changes what the company lets them; only HR changes their date of birth (D-16).
+  const hr = data.canEdit && !isSelf;
+  const shared = { data, employeeKey, canEdit: data.canEdit, editing, setEditing, refetch };
 
   return (
-    <div className="grid gap-5 lg:pt-2">
-      <NameSection {...shared} locked={!locks.canEditPreferredName} />
+    <div className="grid gap-5">
       {data.access !== "Directory" || workEmail ? (
-        <ContactSection {...shared} workEmail={workEmail} locked={!locks.canEditPhone} />
+        <ContactSection {...shared} seenBy={seenBy?.contact} fullSeenBy={seenBy?.full} workEmail={workEmail} locked={!locks.canEditPhone} />
       ) : null}
-      {full ? <AddressSection {...shared} /> : null}
-      {full ? <EmergencySection {...shared} displayName={displayName} /> : null}
+      {full ? <AddressSection {...shared} seenBy={seenBy?.full} /> : null}
+      {full ? <EmergencySection {...shared} seenBy={seenBy?.full} displayName={displayName} /> : null}
+      <IdentitySection {...shared} seenBy={full ? seenBy?.full : seenBy?.everyone} locked={!locks.canEditPreferredName} hr={hr} />
     </div>
   );
 }
@@ -94,8 +131,8 @@ interface SectionProps {
   canEdit: boolean;
   editing: Section | null;
   setEditing: (section: Section | null) => void;
-  /** Who else sees a private section, for the person or HR. */
-  privateLabel?: string;
+  /** Who sees the section, in words. */
+  seenBy?: string;
   refetch: () => void;
 }
 
@@ -141,14 +178,15 @@ function SectionFrame({
   id,
   title,
   props,
-  private: isPrivate = false,
+  editable = true,
   form,
   children,
 }: {
   id: Section;
   title: string;
   props: SectionProps;
-  private?: boolean;
+  /** False when nothing in the section is the viewer's to change. */
+  editable?: boolean;
   /** The section's form while it is being edited. */
   form: ReactNode;
   children: ReactNode;
@@ -162,12 +200,8 @@ function SectionFrame({
       <div className="flex min-h-11 items-center justify-between gap-3">
         <h2 id={headingId} className="type-section-title">{title}</h2>
         <div className="flex items-center gap-3">
-          {isPrivate && props.privateLabel ? (
-            <span className="inline-flex items-center gap-1.5 type-meta text-muted-foreground">
-              <Lock className="size-3.5" aria-hidden /> {props.privateLabel}
-            </span>
-          ) : null}
-          {!isEditing && props.canEdit ? (
+          {props.seenBy ? <SeenBy>{props.seenBy}</SeenBy> : null}
+          {!isEditing && props.canEdit && editable ? (
             <Button
               variant="ghost"
               size="sm"
@@ -185,15 +219,35 @@ function SectionFrame({
   );
 }
 
-/** One fact as a row: its label on the left, its value beside it. */
-function Fact({ label, children, empty }: { label: string; children?: ReactNode; empty?: boolean }) {
+function SeenBy({ children }: { children: ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 type-meta text-muted-foreground">
+      <Eye className="size-3.5" aria-hidden /> {children}
+    </span>
+  );
+}
+
+/**
+ * One fact as a row: its label, its value, and at the end a lock when only HR changes it, or who sees it when that
+ * differs from the section.
+ */
+function Fact({ label, children, empty, locked, seenBy }: { label: string; children?: ReactNode; empty?: boolean; locked?: boolean; seenBy?: string }) {
   const t = useTranslations("profile.personal");
   return (
-    <div className="grid min-w-0 grid-cols-[minmax(0,11rem)_minmax(0,1fr)] items-baseline gap-4 py-3">
+    <div className="grid min-h-12 min-w-0 grid-cols-[minmax(0,11rem)_minmax(0,1fr)_auto] items-center gap-4 py-2.5">
       <p className="type-meta text-muted-foreground">{label}</p>
       <div className={cn("type-body break-words", empty ? "text-muted-foreground" : "text-foreground")}>
         {empty ? t("notSet") : children}
       </div>
+      {locked ? (
+        <span title={t("lockedHint")} className="text-muted-foreground">
+          <Lock className="size-3.5" aria-label={t("lockedHint")} />
+        </span>
+      ) : seenBy ? (
+        <SeenBy>{seenBy}</SeenBy>
+      ) : (
+        <span />
+      )}
     </div>
   );
 }
@@ -248,19 +302,21 @@ function FormActions({
   );
 }
 
-function NameSection(props: SectionProps & { locked: boolean }) {
+function IdentitySection(props: SectionProps & { locked: boolean; hr: boolean }) {
   const t = useTranslations("profile.personal");
   const workforceDate = useWorkforceDate();
   const { data } = props;
   const full = data.access === "Full";
+  // The legal name is HR's, and the date of birth too unless HR is the one editing.
+  const editable = !props.locked || props.hr;
   return (
-    <SectionFrame id="name" title={t("name")} props={props} form={<NameForm {...props} />}>
-      <Fact label={t("legalName")}>{`${data.firstName} ${data.lastName}`}</Fact>
-      <Fact label={t("preferredName")} empty={!data.preferredName}>
+    <SectionFrame id="identity" title={t("identity")} props={props} editable={editable} form={<IdentityForm {...props} />}>
+      <Fact label={t("legalName")} locked>{`${data.firstName} ${data.lastName}`}</Fact>
+      <Fact label={t("preferredName")} empty={!data.preferredName} locked={props.locked && !props.hr}>
         {data.preferredName}
       </Fact>
       {full ? (
-        <Fact label={t("dateOfBirth")} empty={!data.dateOfBirth}>
+        <Fact label={t("dateOfBirth")} empty={!data.dateOfBirth} locked={!props.hr}>
           {data.dateOfBirth ? workforceDate(data.dateOfBirth, { month: "long" }) : null}
         </Fact>
       ) : null}
@@ -268,56 +324,67 @@ function NameSection(props: SectionProps & { locked: boolean }) {
   );
 }
 
-function NameForm(props: SectionProps & { locked: boolean }) {
+function IdentityForm(props: SectionProps & { locked: boolean; hr: boolean }) {
   const t = useTranslations("profile.personal");
-  const { data } = props;
+  const workforceDate = useWorkforceDate();
+  const { data, hr } = props;
   const [preferredName, setPreferredName] = useState(data.preferredName ?? "");
   const [dateOfBirth, setDateOfBirth] = useState(data.dateOfBirth ?? "");
   const { save, saving, error } = useSectionSave(props);
   const today = new Date().toISOString().slice(0, 10);
+  const nameLocked = props.locked && !hr;
   return (
     <form
       className="grid gap-4"
       onSubmit={(event) => {
         event.preventDefault();
-        void save({ preferredName: props.locked ? data.preferredName : blank(preferredName), dateOfBirth: dateOfBirth || null });
+        void save({
+          preferredName: nameLocked ? data.preferredName : blank(preferredName),
+          dateOfBirth: hr ? dateOfBirth || null : data.dateOfBirth,
+        });
       }}
     >
-      <Fact label={t("legalName")}>{`${data.firstName} ${data.lastName}`}</Fact>
-      <Field label={t("preferredName")} hint={props.locked ? t("lockedByCompany") : undefined}>
-        {(id) => (
-          <Input id={id} value={preferredName} maxLength={100} disabled={props.locked} autoFocus={!props.locked} onChange={(event) => setPreferredName(event.target.value)} />
-        )}
-      </Field>
-      <Field label={t("dateOfBirth")}>
-        {(id) => (
-          <DatePicker id={id} min="1900-01-01" max={today} value={dateOfBirth} onChange={setDateOfBirth} captionLayout="dropdown" />
-        )}
-      </Field>
+      <Fact label={t("legalName")} locked>{`${data.firstName} ${data.lastName}`}</Fact>
+      {nameLocked ? (
+        <Fact label={t("preferredName")} empty={!data.preferredName} locked>{data.preferredName}</Fact>
+      ) : (
+        <Field label={t("preferredName")}>
+          {(id) => <Input id={id} value={preferredName} maxLength={100} autoFocus onChange={(event) => setPreferredName(event.target.value)} />}
+        </Field>
+      )}
+      {hr ? (
+        <Field label={t("dateOfBirth")}>
+          {(id) => <DatePicker id={id} min="1900-01-01" max={today} value={dateOfBirth} onChange={setDateOfBirth} captionLayout="dropdown" />}
+        </Field>
+      ) : data.access === "Full" ? (
+        <Fact label={t("dateOfBirth")} empty={!data.dateOfBirth} locked>
+          {data.dateOfBirth ? workforceDate(data.dateOfBirth, { month: "long" }) : null}
+        </Fact>
+      ) : null}
       <FormActions saving={saving} error={error} onCancel={() => props.setEditing(null)} />
     </form>
   );
 }
 
-function ContactSection(props: SectionProps & { workEmail: string | null; locked: boolean }) {
+function ContactSection(props: SectionProps & { workEmail: string | null; locked: boolean; fullSeenBy?: string }) {
   const t = useTranslations("profile.personal");
   const { data, workEmail } = props;
   const full = data.access === "Full";
   return (
     <SectionFrame id="contact" title={t("contact")} props={props} form={<ContactForm {...props} />}>
+      {workEmail ? (
+        <Fact label={t("workEmail")} locked>
+          {workEmail}
+        </Fact>
+      ) : null}
       {data.access !== "Directory" ? (
-        <Fact label={t("mobile")} empty={!data.mobile}>
+        <Fact label={t("mobile")} empty={!data.mobile} locked={props.locked && props.canEdit}>
           {data.mobile}
         </Fact>
       ) : null}
       {full ? (
-        <Fact label={t("personalEmail")} empty={!data.personalEmail}>
+        <Fact label={t("personalEmail")} empty={!data.personalEmail} seenBy={props.fullSeenBy}>
           {data.personalEmail}
-        </Fact>
-      ) : null}
-      {workEmail ? (
-        <Fact label={t("workEmail")}>
-          <span className="text-muted-foreground">{workEmail}</span>
         </Fact>
       ) : null}
     </SectionFrame>
@@ -349,8 +416,8 @@ function ContactForm(props: SectionProps & { workEmail: string | null; locked: b
         )}
       </Field>
       {props.workEmail ? (
-        <Fact label={t("workEmail")}>
-          <span className="text-muted-foreground">{props.workEmail}</span>
+        <Fact label={t("workEmail")} locked>
+          {props.workEmail}
         </Fact>
       ) : null}
       <FormActions saving={saving} error={error} onCancel={() => props.setEditing(null)} />
@@ -368,7 +435,7 @@ function AddressSection(props: SectionProps) {
   const t = useTranslations("profile.personal");
   const lines = addressLines(props.data.homeAddress);
   return (
-    <SectionFrame id="address" title={t("address")} props={props} private form={<AddressForm {...props} />}>
+    <SectionFrame id="address" title={t("address")} props={props} form={<AddressForm {...props} />}>
       {props.data.pendingHomeAddress ? <PendingAddress pending={props.data.pendingHomeAddress} /> : null}
       <Fact label={t("current")} empty={lines.length === 0}>
         <address className="not-italic">{lines.join(", ")}</address>
@@ -442,7 +509,7 @@ function EmergencySection(props: SectionProps & { displayName: string }) {
   const t = useTranslations("profile.personal");
   const contacts = props.data.emergencyContacts ?? [];
   return (
-    <SectionFrame id="emergency" title={t("emergency")} props={props} private form={<EmergencyForm {...props} />}>
+    <SectionFrame id="emergency" title={t("emergency")} props={props} form={<EmergencyForm {...props} />}>
       {contacts.length > 0 ? (
         <ul className="divide-y divide-border">
           {contacts.map((contact, index) => (
@@ -522,7 +589,7 @@ function EmergencyForm(props: SectionProps) {
 
 function PersonalSkeleton() {
   return (
-    <div className="grid gap-5 lg:pt-2">
+    <div className="grid gap-5">
       {[0, 1, 2, 3].map((index) => (
         <div key={index} className="space-y-3 rounded-surface bg-card p-5">
           <Skeleton className="h-5 w-32" />

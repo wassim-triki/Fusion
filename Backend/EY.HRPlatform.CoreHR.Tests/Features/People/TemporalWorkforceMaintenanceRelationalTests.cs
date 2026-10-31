@@ -311,6 +311,9 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
             Assert.True((await timeline.Handle(new PeopleTimelineQuery(ctx.KarimKey, ctx.YoussefId), default)).IsFailure);
             Assert.True((await timeline.Handle(new PeopleTimelineQuery(ctx.AminaKey, ctx.AminaId), default)).IsFailure);
             Assert.True((await timeline.Handle(new PeopleTimelineQuery(ctx.KarimKey), default)).IsSuccess);
+            // Their own history, whatever the branch; nobody else's.
+            Assert.True((await timeline.Handle(new PeopleTimelineQuery(ctx.AminaKey, Guid.Empty, ctx.AminaId), default)).IsSuccess);
+            Assert.True((await timeline.Handle(new PeopleTimelineQuery(ctx.KarimKey, Guid.Empty, ctx.AminaId), default)).IsFailure);
         });
 
     [RelationalDatabaseFact]

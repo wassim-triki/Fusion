@@ -142,7 +142,11 @@
     "showInChart": "Voir dans l'organigramme",
     "more": "Plus d'actions",
     "propose": "Proposer un changement",
-    "makeChange": "Faire un changement"
+    "makeChange": "Faire un changement",
+    "giveFeedback": "Donner un feedback",
+    "asOf": "Voir à une autre date",
+    "copyLink": "Copier le lien",
+    "linkCopied": "Lien copié"
   },
   "dotted": {
     "since": "Lien en pointillé · depuis le {date}",

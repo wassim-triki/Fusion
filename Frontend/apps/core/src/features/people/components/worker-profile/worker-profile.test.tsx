@@ -2,180 +2,123 @@
 import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import type {
-  EmployeeDetailsDto,
-  EmployeeReportingLinesDto,
-} from "@/features/people/api/employee-roster.types";
 import type { PeopleProfileDto, PeopleTimelineEventDto } from "@repo/api";
 import { ProfileTimeline } from "./job-tab";
+import { nextAnniversary } from "./overview-tab";
 import { WorkerProfile } from "./worker-profile";
-import { fromSelfDetails, tenure } from "./worker-profile-view";
+import { fromPeopleProfile, tenure } from "./worker-profile-view";
 
-vi.mock("@repo/api/query", () => ({ usePhoto: () => null }));
+vi.mock("@repo/api/query", () => ({ usePhoto: () => null, useTenantSummary: () => ({ data: { name: "Carthage Digital Group" } }) }));
 
 vi.mock("next/link", () => ({
   default: ({
     href,
     children,
+    scroll: _scroll,
     ...props
-  }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { scroll?: boolean }) => (
     <a href={href} {...props}>
       {children}
     </a>
   ),
 }));
 
-const details: EmployeeDetailsDto = {
-  id: "employee-1",
-  tenantId: "tenant-1",
-  stableEmployeeKey: "AST-1001",
-  employeeNumber: "AST-1001",
-  firstName: "Amina",
-  lastName: "Mestiri",
-  preferredName: null,
-  email: "amina@asteria.example",
-  phone: "+216 20 000 000",
-  currentEmployment: {
-    employmentId: "employment-1",
-    effectiveFrom: "2023-02-01",
-    effectiveTo: null,
-    status: "Active",
-    employmentType: "FullTime",
+const person = (overrides: Partial<PeopleProfileDto> = {}): PeopleProfileDto => ({
+  identity: {
+    employeeKey: "CDG-027",
+    employeeNumber: "CDG-027",
+    displayName: "Aicha Bouazizi",
+    firstName: "Aicha",
+    lastName: "Bouazizi",
+    preferredName: null,
+    workEmail: "aicha.bouazizi@example.test",
+    phone: null,
+    employeeId: "employee-27",
+    photoUrl: null,
   },
-  currentWorkAssignment: {
-    workAssignmentId: "assignment-1",
-    employmentId: "employment-1",
+  employment: { state: "Active", start: "2021-12-15", end: null, employmentType: "FullTime" },
+  work: {
     orgUnitId: "unit-1",
-    orgUnitName: "Customer Success",
-    orgUnitType: "Department",
-    jobTitle: "Customer Success Manager",
-    workLocation: "Tunis",
-    isPrimary: true,
-    effectiveFrom: "2023-02-01",
-    effectiveTo: null,
+    jobTitle: "QA Automation Engineer",
+    organizationName: "Consulting A Core",
+    organizationPath: "Carthage / Client Solutions / Consulting A Core",
+    location: "Ariana",
+    effectiveFrom: "2021-12-15",
+    isHistorical: false,
   },
-  currentManager: {
-    relationshipId: "relationship-1",
-    managerEmployeeId: "manager-1",
-    managerStableEmployeeKey: "AST-1000",
-    managerWorkAssignmentId: "manager-assignment-1",
-    managerFirstName: "Alexandre",
-    managerLastName: "Idrissi",
-    managerEmail: "alexandre@asteria.example",
-    effectiveFrom: "2023-02-01",
-    effectiveTo: null,
-    managerFullName: "Alexandre Idrissi",
-  },
-  historySummary: {
-    employmentCount: 1,
-    workAssignmentCount: 1,
-    managerRelationshipCount: 1,
-  },
-  readiness: {
-    employeeStateIssueCount: 0,
-    blockingIssueCount: 0,
-    employeeStateIssues: [],
-    blockingIssues: [],
-    hasEmployeeStateIssues: false,
-    hasBlockingIssues: false,
-  },
-  createdAt: "2023-02-01T10:00:00Z",
-  updatedAt: null,
+  primaryManager: { employeeKey: "CDG-004", employeeNumber: "CDG-004", displayName: "Mariam Gharbi", employeeId: "employee-4", photoUrl: null },
+  directReportCount: 0,
+  directReports: [],
+  completeness: "Complete",
   version: 3,
-  fullName: "Amina Mestiri",
-  displayName: "Amina Mestiri",
-};
+  viewedDate: "2026-10-31",
+  isAsOf: false,
+  comingUp: [],
+  dottedLineManagers: [],
+  ...overrides,
+}) as PeopleProfileDto;
 
-const reportingLines: EmployeeReportingLinesDto = {
-  employee: {} as EmployeeReportingLinesDto["employee"],
-  managerChain: [],
-  directReports: [
-    {
-      depth: 1,
-      employee: {
-        id: "report-1",
-        stableEmployeeKey: "AST-1002",
-        employeeNumber: "AST-1002",
-        displayName: "Sami Trabelsi",
-        fullName: "Sami Trabelsi",
-        firstName: "Sami",
-        lastName: "Trabelsi",
-        email: "sami@asteria.example",
-        orgUnitId: "unit-1",
-        orgUnitName: "Customer Success",
-        jobTitle: "Consultant",
-        status: "Active",
-        hireDate: "2024-01-01",
-        managerId: "employee-1",
-        managerName: "Amina Mestiri",
-        hierarchyStatus: "Healthy",
-        directReportCount: 0,
-        readiness: details.readiness,
-        version: 1,
-      },
-    },
-  ],
-  downline: [],
-  directReportCount: 1,
-  downlineCount: 1,
-};
+const tabs = [
+  { key: "overview" as const, label: "Overview", href: "/people/CDG-027" },
+  { key: "job" as const, label: "Job", href: "/people/CDG-027?tab=job" },
+  { key: "personal" as const, label: "Personal", href: "/people/CDG-027?tab=personal" },
+];
 
 describe("WorkerProfile", () => {
-  const tabs = [
-    { key: "job" as const, label: "Job", href: "/profile" },
-    { key: "personal" as const, label: "Personal", href: "/profile?tab=personal" },
-  ];
+  it("draws the band: name, job, a glance row with manager, team, time with the company and place, and the tabs", () => {
+    const view = fromPeopleProfile(person(), undefined, null);
+    const mates = ["Fares Labidi", "Meriem Hamrouni", "Salah Jaziri"].map((name, index) => ({ name, href: `/people/CDG-10${index}` }));
+    render(<WorkerProfile view={view} tabs={tabs} currentTab="overview" teammates={mates} headerActions={<button type="button">More actions</button>} />);
 
-  it("shows the band, the tabs and a rail with the manager, team and hire date", () => {
-    const view = fromSelfDetails(details, reportingLines, {});
-    render(<WorkerProfile view={view} tabs={tabs} currentTab="personal" />);
-
-    expect(screen.getByRole("heading", { level: 1, name: "Amina Mestiri" })).toBeInTheDocument();
-    expect(screen.getByText("Customer Success Manager")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Personal" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("heading", { level: 1, name: "Aicha Bouazizi" })).toBeInTheDocument();
+    expect(screen.getByText("QA Automation Engineer")).toBeInTheDocument();
+    expect(screen.getByText("Consulting A Core, in Client Solutions")).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /Mariam Gharbi/ })[0]).toHaveAttribute("href", "/people/CDG-004");
+    expect(screen.getByText("Mariam's team")).toBeInTheDocument();
+    expect(screen.getByText("4 people")).toBeInTheDocument();
+    expect(screen.getByText("With Carthage Digital Group since 15 Dec 2021")).toBeInTheDocument();
+    expect(screen.getByText("Works from")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "More actions" })).toBeInTheDocument();
+    // An active person carries no status chip; tabs are links, the current one marked.
+    expect(screen.queryByText("Active")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Overview" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: "Job" })).not.toHaveAttribute("aria-current");
+  });
+
+  it("keeps the rail: contact, hire date and employee number", () => {
+    const view = fromPeopleProfile(person(), undefined, null);
+    render(<WorkerProfile view={view} tabs={tabs} currentTab="job" />);
+
+    expect(screen.getByText("aicha.bouazizi@example.test")).toBeInTheDocument();
     expect(screen.getByText("Hire date")).toBeInTheDocument();
-    expect(screen.getByText("1 February 2023")).toBeInTheDocument();
-    expect(screen.getByText("Full-time")).toBeInTheDocument();
-    // manager and reports deep-link into the people profile route
-    expect(screen.getByRole("link", { name: /Alexandre Idrissi/ })).toHaveAttribute("href", "/people/AST-1000");
-    expect(screen.getByRole("link", { name: /Sami Trabelsi/ })).toHaveAttribute("href", "/people/AST-1002");
+    expect(screen.getByText("15 December 2021")).toBeInTheDocument();
+    expect(screen.getByText("Employee number")).toBeInTheDocument();
   });
 
-  it("takes the manager's and reports' photos from the person's own record", () => {
-    const people = {
-      primaryManager: { employeeKey: "AST-1000", displayName: "Alexandre Idrissi", employeeNumber: "AST-1000", photoUrl: "/p/1000?v=a" },
-      directReports: [{ employeeKey: "AST-1002", employeeNumber: "AST-1002", displayName: "Sami Trabelsi", jobTitle: null, photoUrl: "/p/1002?v=b" }],
-      directReportCount: 7,
-    } as unknown as PeopleProfileDto;
-    const view = fromSelfDetails(details, reportingLines, { people });
-
-    expect(view.manager).toMatchObject({ name: "Alexandre Idrissi", photoUrl: "/p/1000?v=a" });
-    expect(view.directReports).toEqual([{ name: "Sami Trabelsi", href: "/people/AST-1002", jobTitle: null, photoUrl: "/p/1002?v=b" }]);
-    expect(view.directReportCount).toBe(7);
-  });
-
-  it("gives a colleague outside the branch the reporting line in place of tabs", () => {
-    const view = fromSelfDetails(details, reportingLines, {});
-    render(<WorkerProfile view={view} />);
-
-    expect(screen.queryByRole("navigation", { name: "Profile sections" })).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Reporting line" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Alexandre Idrissi/ })).toBeInTheDocument();
-  });
-
-  it("shows teammates for someone without reports", () => {
-    const view = fromSelfDetails(details, undefined, {});
-    render(
-      <WorkerProfile
-        view={view}
-        tabs={tabs}
-        currentTab="job"
-        teammates={[{ name: "Leila Baccouche", href: "/people/AST-1003" }]}
-      />
+  it("shows a manager's own team in the glance, and a former person's state", () => {
+    const view = fromPeopleProfile(
+      person({
+        employment: { state: "Former", start: "2020-01-01", end: "2026-01-31", employmentType: "FullTime" },
+        directReportCount: 7,
+        directReports: [{ employeeKey: "CDG-031", displayName: "Sami Trabelsi", jobTitle: null, photoUrl: null }] as PeopleProfileDto["directReports"],
+      }),
+      undefined,
+      null
     );
-    expect(screen.getByText("Teammates")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Leila Baccouche/ })).toHaveAttribute("href", "/people/AST-1003");
+    render(<WorkerProfile view={view} tabs={tabs} currentTab="overview" />);
+
+    expect(screen.getByText("Their team")).toBeInTheDocument();
+    expect(screen.getByText("7 people")).toBeInTheDocument();
+    expect(screen.getByText("Former")).toBeInTheDocument();
+  });
+});
+
+describe("nextAnniversary", () => {
+  it("is the next work anniversary within two months, never the first year", () => {
+    expect(nextAnniversary("2021-12-15", new Date(2026, 9, 31))).toEqual({ date: "2026-12-15", years: 5 });
+    expect(nextAnniversary("2021-03-15", new Date(2026, 9, 31))).toBeNull();
+    expect(nextAnniversary("2026-12-01", new Date(2026, 9, 31))).toBeNull();
+    expect(nextAnniversary(null)).toBeNull();
   });
 });
 

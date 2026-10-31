@@ -236,7 +236,6 @@
     "levelOf": "Ce que {role} peut faire avec {what}",
     "reachOf": "Pour qui : {what}",
     "administratorsOnly": "Administrateurs seulement",
-    "linked": "Évolue avec {area} : Core HR modifie les deux sur une même fiche",
     "holders": {
       "chosen": "Personnes choisies",
       "everyone": "Tout le monde",

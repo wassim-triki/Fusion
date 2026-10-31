@@ -41,8 +41,9 @@ public sealed record PeopleTimelineDto(
     IReadOnlyList<PeopleUpcomingChangeDto> Upcoming,
     IReadOnlyList<PeopleTimelineEventDto> Timeline);
 
-/// <param name="BranchOfEmployeeId">Set for a manager without tenant-wide access: only their branch is readable.</param>
-public sealed record PeopleTimelineQuery(string EmployeeKey, Guid? BranchOfEmployeeId = null) : IQuery<Result<PeopleTimelineDto>>;
+/// <param name="BranchOfEmployeeId">Set for a reader without tenant-wide access: only this manager's branch is readable.</param>
+/// <param name="SelfEmployeeId">The caller's own person: their own history is always theirs to read (B-180).</param>
+public sealed record PeopleTimelineQuery(string EmployeeKey, Guid? BranchOfEmployeeId = null, Guid? SelfEmployeeId = null) : IQuery<Result<PeopleTimelineDto>>;
 
 public sealed class PeopleTimelineQueryHandler(
     CoreHRDbContext dbContext,
@@ -58,7 +59,7 @@ public sealed class PeopleTimelineQueryHandler(
             .FirstOrDefaultAsync(item => item.StableEmployeeKey == key, cancellationToken);
         if (employee is null)
             return Result.Failure<PeopleTimelineDto>(new Error("Employee.NotFound", "Employee was not found."));
-        if (request.BranchOfEmployeeId is { } managerId
+        if (request.BranchOfEmployeeId is { } managerId && employee.Id != request.SelfEmployeeId
             && !(await Changes.ChangeSupport.BranchAsync(dbContext, managerId, cancellationToken)).Contains(employee.Id))
             return Result.Failure<PeopleTimelineDto>(new Error("Employee.NotFound", "Employee was not found."));
 

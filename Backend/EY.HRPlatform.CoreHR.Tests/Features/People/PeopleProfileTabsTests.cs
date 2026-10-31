@@ -82,9 +82,13 @@ public sealed class PeopleProfileTabsTests : IDisposable
     private CoreHRDbContext Db(Guid tenant) => TestDbContextFactory.Create(TestTenantContext.WithTenant(tenant), _db);
 
     private static PeopleViewer Colleague(Guid id) => new(id, ManagesPeople: false, ViewsTenant: false, ManagesTeam: false, UpdatesSelf: true);
-    private static PeopleViewer Manager(Guid id) => new(id, ManagesPeople: false, ViewsTenant: false, ManagesTeam: true, UpdatesSelf: true);
-    private static PeopleViewer TenantReader(Guid id) => new(id, ManagesPeople: false, ViewsTenant: true, ManagesTeam: true, UpdatesSelf: true);
-    private static PeopleViewer PeopleAdmin(Guid id) => new(id, ManagesPeople: true, ViewsTenant: true, ManagesTeam: true, UpdatesSelf: true);
+    private static PeopleViewer Manager(Guid id) => new(id, ManagesPeople: false, ViewsTenant: false, ManagesTeam: true, UpdatesSelf: true, PersonalGrant.Team);
+    private static PeopleViewer TenantReader(Guid id) => new(id, ManagesPeople: false, ViewsTenant: true, ManagesTeam: true, UpdatesSelf: true, PersonalGrant.Everyone);
+    private static PeopleViewer PeopleAdmin(Guid id) => new(id, ManagesPeople: true, ViewsTenant: true, ManagesTeam: true, UpdatesSelf: true, PersonalGrant.Change);
+    /// <summary>Sees and changes everyone's jobs, nobody's personal details (B-214).</summary>
+    private static PeopleViewer JobsOnly(Guid id) => new(id, ManagesPeople: true, ViewsTenant: true, ManagesTeam: true, UpdatesSelf: true);
+    /// <summary>Changes personal details and holds no Jobs key beyond their own.</summary>
+    private static PeopleViewer PersonalOnly(Guid id) => new(id, ManagesPeople: false, ViewsTenant: false, ManagesTeam: false, UpdatesSelf: true, PersonalGrant.Change);
 
     private Task<EY.HRPlatform.SharedKernel.Results.Result<PeoplePersonalDto>> ReadAsync(string key, PeopleViewer viewer, Guid? tenant = null)
         => new PeoplePersonalQueryHandler(Db(tenant ?? TenantA)).Handle(new PeoplePersonalQuery(key, viewer), default);
@@ -160,6 +164,39 @@ public sealed class PeopleProfileTabsTests : IDisposable
     }
 
     [Fact]
+    public async Task Personal_details_follow_their_own_keys_not_the_jobs_keys()
+    {
+        await SeedAsync();
+        Assert.True((await UpdateAsync(_nourKey, PeopleAdmin(_amira), Body())).IsSuccess);
+
+        // A role over everyone's jobs, without Personal details, reads the preferred name only and changes nothing.
+        var jobs = (await ReadAsync(_nourKey, JobsOnly(_karim))).Value;
+        Assert.Equal(PersonalAccess.Directory, jobs.Access);
+        Assert.False(jobs.CanEdit);
+        Assert.Null(jobs.Mobile);
+        Assert.Null(jobs.HomeAddress);
+        Assert.Equal(PeopleAccess.ForbiddenCode, (await UpdateAsync(_nourKey, JobsOnly(_karim), Body(email: "x@example.test"))).Error.Code);
+        Assert.Equal(PeopleAccess.ForbiddenCode, (await UploadAsync(_nourKey, JobsOnly(_karim), Png())).Error.Code);
+        Assert.True((await HistoryAsync(_nourKey, JobsOnly(_karim))).IsSuccess);
+
+        // Personal details for a team reach only that branch, even with every job in view.
+        var teamPersonalOnly = new PeopleViewer(_karim, false, ViewsTenant: true, ManagesTeam: true, UpdatesSelf: true, PersonalGrant.Team);
+        Assert.Equal(PersonalAccess.Directory, (await ReadAsync(_nourKey, teamPersonalOnly)).Value.Access);
+        Assert.Equal(PersonalAccess.Contact, (await ReadAsync(_samiKey, teamPersonalOnly)).Value.Access);
+
+        // A Personal-details role reads and changes everything there, without the Jobs keys, and not job history.
+        var personal = (await ReadAsync(_nourKey, PersonalOnly(_sami))).Value;
+        Assert.Equal(PersonalAccess.Full, personal.Access);
+        Assert.True(personal.CanEdit);
+        Assert.True((await UpdateAsync(_nourKey, PersonalOnly(_sami), Body(email: "nour.b@example.test"))).IsSuccess);
+        Assert.Equal(PeopleAccess.ForbiddenCode, (await HistoryAsync(_nourKey, PersonalOnly(_sami))).Error.Code);
+
+        // And never across tenants.
+        Assert.True((await ReadAsync(_bobKey, PersonalOnly(_sami))).IsFailure);
+        Assert.True((await UpdateAsync(_bobKey, PersonalOnly(_sami), Body())).IsFailure);
+    }
+
+    [Fact]
     public async Task Another_tenants_person_is_not_found()
     {
         await SeedAsync();
@@ -175,14 +212,16 @@ public sealed class PeopleProfileTabsTests : IDisposable
     public async Task A_person_changes_their_own_details_at_once_and_it_lands_in_history()
     {
         await SeedAsync();
-        var result = await UpdateAsync(_nourKey, Colleague(_nour), Body(contacts: 3));
+        // Her date of birth is HR's to change (D-16); everything else is hers.
+        Assert.Equal(PeopleAccess.ForbiddenCode, (await UpdateAsync(_nourKey, Colleague(_nour), Body(contacts: 3))).Error.Code);
+        var result = await UpdateAsync(_nourKey, Colleague(_nour), Body(contacts: 3) with { DateOfBirth = null });
         Assert.True(result.IsSuccess);
         Assert.Equal(3, result.Value.EmergencyContacts!.Count);
 
         await using var db = Db(TenantA);
         var entry = Assert.Single(db.WorkforceAuditEntries, item => item.Action == WorkforceAuditAction.PersonalDetailsUpdated);
         Assert.Equal(_nour, entry.EntityId);
-        Assert.Equal("Preferred name, Mobile, Personal email, Home address, Date of birth, Emergency contacts", entry.ChangeDetails);
+        Assert.Equal("Preferred name, Mobile, Personal email, Home address, Emergency contacts", entry.ChangeDetails);
 
         var timeline = await new PeopleTimelineComposer(db).ComposeAsync(_nour, _nourKey, default);
         var personal = Assert.Single(timeline.Timeline, item => item.Kind == PeopleChangeKind.PersonalDetails);
@@ -190,7 +229,7 @@ public sealed class PeopleProfileTabsTests : IDisposable
         Assert.Contains(personal.Fields, field => field.Label == "Mobile" && field.From is null && field.To is null);
 
         // Saving the same values again changes nothing and writes no history.
-        Assert.True((await UpdateAsync(_nourKey, Colleague(_nour), Body(contacts: 3))).IsSuccess);
+        Assert.True((await UpdateAsync(_nourKey, Colleague(_nour), Body(contacts: 3) with { DateOfBirth = null })).IsSuccess);
         await using var after = Db(TenantA);
         Assert.Single(after.WorkforceAuditEntries, item => item.Action == WorkforceAuditAction.PersonalDetailsUpdated);
     }
@@ -220,7 +259,7 @@ public sealed class PeopleProfileTabsTests : IDisposable
         Assert.Equal("Your company doesn't let you change your mobile.", mobile.Error.Message);
 
         // Leaving the locked fields as they are, the rest still saves.
-        var rest = Body() with { PreferredName = null, Mobile = " +216 20 000 000 " };
+        var rest = Body() with { PreferredName = null, Mobile = " +216 20 000 000 ", DateOfBirth = null };
         Assert.True((await UpdateAsync(_nourKey, Colleague(_nour), rest, selfService: locked)).IsSuccess);
 
         Assert.True((await UpdateAsync(_nourKey, PeopleAdmin(_amira), Body(), selfService: locked)).IsSuccess);
@@ -230,11 +269,11 @@ public sealed class PeopleProfileTabsTests : IDisposable
     public async Task Invalid_details_are_refused()
     {
         await SeedAsync();
-        Assert.Equal("Employee.Validation", (await UpdateAsync(_nourKey, Colleague(_nour), Body(contacts: 4))).Error.Code);
-        Assert.Equal("Employee.Validation", (await UpdateAsync(_nourKey, Colleague(_nour), Body(born: DateOnly.FromDateTime(Today.AddDays(1))))).Error.Code);
-        Assert.Equal("Employee.Validation", (await UpdateAsync(_nourKey, Colleague(_nour), Body(email: "not-an-email"))).Error.Code);
+        Assert.Equal("Employee.Validation", (await UpdateAsync(_nourKey, PeopleAdmin(_amira), Body(contacts: 4))).Error.Code);
+        Assert.Equal("Employee.Validation", (await UpdateAsync(_nourKey, PeopleAdmin(_amira), Body(born: DateOnly.FromDateTime(Today.AddDays(1))))).Error.Code);
+        Assert.Equal("Employee.Validation", (await UpdateAsync(_nourKey, PeopleAdmin(_amira), Body(email: "not-an-email"))).Error.Code);
         var noPhone = Body() with { EmergencyContacts = [new PeopleEmergencyContactDto("Leila", null, " ")] };
-        Assert.Equal("Employee.Validation", (await UpdateAsync(_nourKey, Colleague(_nour), noPhone)).Error.Code);
+        Assert.Equal("Employee.Validation", (await UpdateAsync(_nourKey, PeopleAdmin(_amira), noPhone)).Error.Code);
     }
 
     [Fact]
@@ -425,13 +464,87 @@ public sealed class PeopleProfileTabsTests : IDisposable
             Assert.Equal(PeopleAccess.ForbiddenCode, (await HistoryAsync(_nourKey, viewer)).Error.Code);
     }
 
+    // --- Documents: the person and HR (B-180) ----------------------------------------------------------
+
+    private static byte[] Pdf() => "%PDF-1.7 fusion test"u8.ToArray();
+
+    private Task<EY.HRPlatform.SharedKernel.Results.Result<EmployeeDocumentDto>> AddDocumentAsync(
+        string key, PeopleViewer viewer, byte[] bytes, string fileName = "contract.pdf", Guid? tenant = null)
+    {
+        var t = tenant ?? TenantA;
+        var file = new FormFile(new MemoryStream(bytes), 0, bytes.Length, "file", fileName);
+        return new AddEmployeeDocumentHandler(Db(t), TestTenantContext.WithTenant(t), Store(t))
+            .Handle(new AddEmployeeDocumentCommand(key, viewer, file, "Tester"), default);
+    }
+
+    private Task<EY.HRPlatform.SharedKernel.Results.Result<EmployeeDocumentsDto>> DocumentsAsync(string key, PeopleViewer viewer, Guid? tenant = null)
+        => new EmployeeDocumentsQueryHandler(Db(tenant ?? TenantA)).Handle(new EmployeeDocumentsQuery(key, viewer), default);
+
+    private Task<EY.HRPlatform.SharedKernel.Results.Result> RemoveDocumentAsync(string key, Guid id, PeopleViewer viewer, Guid? tenant = null)
+    {
+        var t = tenant ?? TenantA;
+        return new RemoveEmployeeDocumentHandler(Db(t), Store(t), NullLogger<RemoveEmployeeDocumentHandler>.Instance)
+            .Handle(new RemoveEmployeeDocumentCommand(key, id, viewer), default);
+    }
+
+    [Fact]
+    public async Task Documents_are_for_the_person_and_hr_and_never_cross_tenants()
+    {
+        await SeedAsync();
+        var mine = await AddDocumentAsync(_nourKey, Colleague(_nour), Pdf(), "diploma.pdf");
+        Assert.True(mine.IsSuccess);
+        Assert.Equal("application/pdf", mine.Value.ContentType);
+        Assert.True(mine.Value.CanRemove);
+        var hrs = await AddDocumentAsync(_nourKey, PeopleAdmin(_amira), Png(), "contract.png");
+        Assert.True(hrs.IsSuccess);
+
+        var own = (await DocumentsAsync(_nourKey, Colleague(_nour))).Value;
+        Assert.Equal(2, own.Documents.Count);
+        Assert.True(own.CanAdd);
+        // The person removes what they added, not what HR added.
+        Assert.False(own.Documents.Single(d => d.Id == hrs.Value.Id).CanRemove);
+        Assert.Equal(PeopleAccess.ForbiddenCode, (await RemoveDocumentAsync(_nourKey, hrs.Value.Id, Colleague(_nour))).Error.Code);
+
+        // Her manager, a jobs-only role, a team-personal reader and a colleague neither see nor add.
+        foreach (var viewer in new[] { Manager(_mariam), JobsOnly(_karim), TenantReader(_sami), Colleague(_sami) })
+        {
+            Assert.Equal(PeopleAccess.ForbiddenCode, (await DocumentsAsync(_nourKey, viewer)).Error.Code);
+            Assert.Equal(PeopleAccess.ForbiddenCode, (await AddDocumentAsync(_nourKey, viewer, Pdf())).Error.Code);
+            Assert.Equal(PeopleAccess.ForbiddenCode, (await RemoveDocumentAsync(_nourKey, mine.Value.Id, viewer)).Error.Code);
+        }
+
+        // Another tenant can't reach the person or the document, even as HR.
+        Assert.True((await DocumentsAsync(_nourKey, PeopleAdmin(_bob), TenantB)).IsFailure);
+        Assert.True((await RemoveDocumentAsync(_nourKey, mine.Value.Id, PeopleAdmin(_bob), TenantB)).IsFailure);
+        Assert.True((await new EmployeeDocumentFileQueryHandler(Db(TenantB))
+            .Handle(new EmployeeDocumentFileQuery(_nourKey, mine.Value.Id, PeopleAdmin(_bob)), default)).IsFailure);
+        // A document id from someone else's record doesn't open through this person.
+        Assert.True((await new EmployeeDocumentFileQueryHandler(Db(TenantA))
+            .Handle(new EmployeeDocumentFileQuery(_samiKey, mine.Value.Id, PeopleAdmin(_amira)), default)).IsFailure);
+
+        Assert.True((await RemoveDocumentAsync(_nourKey, mine.Value.Id, Colleague(_nour))).IsSuccess);
+        Assert.True((await RemoveDocumentAsync(_nourKey, hrs.Value.Id, PeopleAdmin(_amira))).IsSuccess);
+        Assert.Empty((await DocumentsAsync(_nourKey, PeopleAdmin(_amira))).Value.Documents);
+        Assert.Empty(Directory.GetFiles(Path.Combine(_photoRoot, $"{TenantA:N}")));
+    }
+
+    [Fact]
+    public async Task A_document_must_be_a_pdf_or_an_image_by_its_bytes()
+    {
+        await SeedAsync();
+        var fake = "MZ not a pdf"u8.ToArray();
+        Assert.Equal("Employee.Validation", (await AddDocumentAsync(_nourKey, PeopleAdmin(_amira), fake, "report.pdf")).Error.Code);
+        Assert.Equal("Employee.Validation", (await AddDocumentAsync(_nourKey, PeopleAdmin(_amira), [])).Error.Code);
+        Assert.False(Directory.Exists(_photoRoot));
+    }
+
     // --- Profile: the mobile follows the Personal tab ---------------------------------------------------
 
     [Fact]
     public async Task The_profile_shows_the_mobile_to_the_person_hr_and_their_branch_manager_only()
     {
         await SeedAsync();
-        Task<string?> PhoneAsync(EmployeeReadAudience audience, Guid viewer, Guid? branchOf = null)
+        Task<string?> PhoneAsync(EmployeeReadAudience audience, Guid viewer, Guid? branchOf = null, PersonalGrant? personal = null)
         {
             var db = Db(TenantA);
             var organization = new Mock<IOrganizationService>();
@@ -439,7 +552,12 @@ public sealed class PeopleProfileTabsTests : IDisposable
                 .ReturnsAsync(new OrganizationUnitStateDto(Guid.NewGuid(), "OPS", "Operations", Guid.NewGuid(), "Department", null, null,
                     "Operations", OrgUnitLifecycleState.Active, DateOnly.MinValue, 1));
             return new PeopleProfileQueryHandler(db, organization.Object, new WorkforceChangeReader(db))
-                .Handle(new PeopleProfileQuery(_nourKey, null, audience, branchOf, viewer), default)
+                .Handle(new PeopleProfileQuery(_nourKey, null, audience, branchOf, viewer, personal ?? audience switch
+                {
+                    EmployeeReadAudience.HrAdmin => PersonalGrant.Change,
+                    EmployeeReadAudience.Manager => PersonalGrant.Team,
+                    _ => PersonalGrant.None,
+                }), default)
                 .ContinueWith(task => task.Result.Value.Identity.Phone);
         }
 
@@ -448,6 +566,8 @@ public sealed class PeopleProfileTabsTests : IDisposable
         Assert.NotNull(await PhoneAsync(EmployeeReadAudience.Employee, _nour));
         Assert.Null(await PhoneAsync(EmployeeReadAudience.Manager, _karim, _karim));
         Assert.Null(await PhoneAsync(EmployeeReadAudience.Employee, _sami));
+        // Every job in view without Personal details: no mobile (B-214).
+        Assert.Null(await PhoneAsync(EmployeeReadAudience.HrAdmin, _karim, personal: PersonalGrant.None));
     }
 
     // --- Endpoints --------------------------------------------------------------------------------------
@@ -476,8 +596,40 @@ public sealed class PeopleProfileTabsTests : IDisposable
         Assert.Equal(StatusCodes.Status403Forbidden, forbidden.StatusCode);
         sender.Verify(s => s.Send(
             It.Is<UpdatePeoplePersonalCommand>(c => c.ExpectedVersion == 7 && c.Viewer.EmployeeId == employeeId
-                && c.Viewer.UpdatesSelf && !c.Viewer.ManagesPeople && !c.Viewer.ViewsTenant && !c.Viewer.ManagesTeam),
+                && c.Viewer.UpdatesSelf && !c.Viewer.ManagesPeople && !c.Viewer.ViewsTenant && !c.Viewer.ManagesTeam
+                && c.Viewer.Personal == PersonalGrant.None),
             It.IsAny<CancellationToken>()), Times.Once);
+
+        // The Personal keys reach the viewer from the caller's claims, apart from the Jobs keys.
+        var (hr, hrSender) = Controller(Caller(employeeId,
+            (CorePermissions.EmployeeView, PermissionScopes.Tenant), (CorePermissions.PersonalView, PermissionScopes.DirectReports)));
+        hrSender.Setup(s => s.Send(It.IsAny<PeoplePersonalQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(EY.HRPlatform.SharedKernel.Results.Result.Failure<PeoplePersonalDto>(new EY.HRPlatform.SharedKernel.Results.Error("Employee.NotFound", "No.")));
+        Assert.IsType<NotFoundObjectResult>(await hr.GetPersonal("K", default));
+        hrSender.Verify(s => s.Send(It.Is<PeoplePersonalQuery>(q => q.Viewer.Personal == PersonalGrant.Team && q.Viewer.ViewsTenant),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public void Who_sees_personal_details_is_read_from_the_roles()
+    {
+        var audience = PersonalAudienceDirectory.Compose([
+            new PermissionRole("Administrators", CorePermissions.PersonalManage, PermissionScopes.Tenant, true),
+            new PermissionRole("Administrators", CorePermissions.PersonalView, PermissionScopes.Tenant, true),
+            new PermissionRole("HR", CorePermissions.PersonalManage, PermissionScopes.Tenant, false),
+            new PermissionRole("HR", CorePermissions.PersonalView, PermissionScopes.Tenant, false),
+            new PermissionRole("Managers", CorePermissions.PersonalView, PermissionScopes.DirectReports, false),
+            new PermissionRole("Payroll", CorePermissions.PersonalView, PermissionScopes.Tenant, false),
+        ]);
+        Assert.Equal(["HR", "Payroll"], audience.Contact);
+        Assert.True(audience.ContactTeam);
+        Assert.Equal(["HR"], audience.Full);
+
+        var onlyAdministrators = PersonalAudienceDirectory.Compose([
+            new PermissionRole("Administrators", CorePermissions.PersonalManage, PermissionScopes.Tenant, true),
+        ]);
+        Assert.Equal(["Administrators"], onlyAdministrators.Full);
+        Assert.False(onlyAdministrators.ContactTeam);
     }
 
     private static ClaimsPrincipal Caller(Guid employeeId, params (string Key, string Scope)[] grants)

@@ -9,21 +9,11 @@ import type {
 import { englishSay, type Say } from "@repo/ds/lib/say";
 import { englishMessages } from "@/i18n/messages";
 import { formatWorkforceDate } from "../workforce-ui";
-import type {
-  EmployeeDetailsDto,
-  EmployeeReportingLinesDto,
-  MyFusionAccessDto,
-} from "@/features/people/api/employee-roster.types";
 
 /**
- * The canonical worker-profile view model.
- *
- * One shape both entry points normalize into so a single presentational surface
- * (`WorkerProfile`) renders the current worker regardless of whether the viewer
- * is looking at their own record (`/core/profile`) or another person's
- * (`/core/people/{employeeKey}`). Business data comes from Core workforce truth;
- * the viewer's capabilities and relationship to the subject are expressed by the
- * container through the surface's slots, never baked into this model.
+ * The person page's view model (B-180): one shape for `/core/profile` and `/core/people/{employeeKey}`, both read from
+ * the People snapshot. Business data comes from Core workforce truth; the viewer's capabilities and relationship to
+ * the subject are expressed by the container through the surface's slots, never baked into this model.
  */
 export interface WorkerProfileManager {
   name: string;
@@ -47,10 +37,6 @@ export interface WorkerProfileAccess {
   tone: StatusTone;
   /** People projection: one authoritative detail line. */
   detail?: string | null;
-  /** Self projection: the richer account facts. */
-  linkedEmail?: string | null;
-  accessProfiles?: string[];
-  lastSignInAt?: string | null;
 }
 
 export interface WorkerProfileView {
@@ -62,8 +48,11 @@ export interface WorkerProfileView {
   status: { label: string; tone: StatusTone };
 
   jobTitle: string | null;
+  /** The job's family and level from the company's catalogue (B-195). */
+  jobFamily: string | null;
+  jobLevel: string | null;
   orgUnitName: string | null;
-  /** Full org path (People has ancestry; self has only the unit name). */
+  /** Full org path, for the unit's parent in the band. */
   orgUnitPath: string | null;
   workLocation: string | null;
   assignmentEffectiveFrom: string | null;
@@ -145,103 +134,6 @@ const PEOPLE_STATE_TONE: Record<string, StatusTone> = {
 };
 
 /**
- * Normalize the authenticated worker's own Core record into the shared view.
- * Self stays a clean current-state view — no as-of/upcoming temporal machinery.
- */
-export function fromSelfDetails(
-  details: EmployeeDetailsDto,
-  reportingLines: EmployeeReportingLinesDto | undefined,
-  context: {
-    timeline?: PeopleTimelineDto;
-    access?: MyFusionAccessDto | null;
-    photoUrl?: string | null;
-    /** The person's own record: its manager and reports carry photos, which the self sources don't. */
-    people?: PeopleProfileDto;
-  },
-  words: ProfileWords = ENGLISH
-): WorkerProfileView {
-  const { say, locale } = words;
-  const long = (value: string) => formatWorkforceDate(value, { month: "long", locale });
-  const assignment = details.currentWorkAssignment;
-  const employment = details.currentEmployment;
-  const manager = details.currentManager;
-  const active = employment?.status !== "Ended";
-  const reports = reportingLines?.directReports ?? [];
-  const access = context.access ?? null;
-
-  const selfEmploymentLine = employment
-    ? employment.status === "Ended"
-      ? employment.effectiveTo
-        ? say("line.ended", { date: long(employment.effectiveTo) })
-        : say("line.employmentEnded")
-      : employment.effectiveFrom
-        ? say("line.since", { date: long(employment.effectiveFrom) })
-        : say("line.active")
-    : null;
-
-  return {
-    employeeKey: details.stableEmployeeKey,
-    displayName: details.displayName,
-    photoUrl: context.photoUrl ?? null,
-    employeeNumber: details.employeeNumber ?? null,
-    status: active
-      ? { label: say("status.Active"), tone: "success" }
-      : { label: say("status.Ended"), tone: "muted" },
-
-    jobTitle: assignment?.jobTitle ?? null,
-    orgUnitName: assignment?.orgUnitName ?? null,
-    orgUnitPath: null,
-    workLocation: assignment?.workLocation ?? null,
-    assignmentEffectiveFrom: assignment?.effectiveFrom ?? null,
-    workUnavailable: !assignment,
-
-    employmentType: employment?.employmentType ?? null,
-    employmentStart: employment?.effectiveFrom ?? null,
-    employmentLine: selfEmploymentLine,
-
-    workEmail: details.email,
-    phone: details.phone,
-
-    manager: manager
-      ? {
-          name: manager.managerFullName,
-          employeeKey: manager.managerStableEmployeeKey,
-          // The People profile route resolves by stable employee key, not the uuid.
-          href: `/people/${manager.managerStableEmployeeKey}`,
-          email: manager.managerEmail,
-          photoUrl: context.people?.primaryManager?.photoUrl ?? null,
-        }
-      : null,
-    directReports: context.people
-      ? reportsOf(context.people)
-      : reports.map(({ employee }) => ({
-          name:
-            employee.displayName ||
-            employee.fullName ||
-            `${employee.firstName} ${employee.lastName}`,
-          href: `/people/${employee.stableEmployeeKey}`,
-          jobTitle: employee.jobTitle,
-        })),
-    directReportCount: context.people?.directReportCount ?? reports.length,
-
-    access: access
-      ? {
-          label: accessLabel(access.state, access.label, say),
-          tone: ACCESS_TONE[access.state] ?? "muted",
-          linkedEmail: access.linkedEmail ?? details.email,
-          accessProfiles: access.accessProfiles,
-          lastSignInAt: access.lastSignInAt,
-        }
-      : null,
-
-    timeline: context.timeline?.timeline ?? [],
-
-    isAsOf: false,
-    viewedDate: null,
-  };
-}
-
-/**
  * Normalize another worker's temporal People snapshot into the shared view.
  * Carries the as-of/upcoming machinery and org ancestry the People read owns.
  */
@@ -265,6 +157,8 @@ export function fromPeopleProfile(
     },
 
     jobTitle: work?.jobTitle ?? null,
+    jobFamily: work?.jobFamily ?? null,
+    jobLevel: work?.jobLevel ?? null,
     orgUnitName: work?.organizationName ?? null,
     orgUnitPath: work?.organizationPath ?? null,
     workLocation: work?.location ?? null,

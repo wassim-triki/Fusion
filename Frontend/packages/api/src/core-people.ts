@@ -129,6 +129,34 @@ export interface PeoplePersonalDto {
   version: number;
   /** A new home address waiting for HR (B-179); shown to the person and HR. */
   pendingHomeAddress?: PeoplePendingAddressDto | null;
+  /** Who sees each part besides the person, from the company's roles (B-214); null when it couldn't be read. */
+  audience?: PeoplePersonalAudienceDto | null;
+}
+
+/**
+ * The preferred name is everyone's; the mobile reaches the `contact` roles and, with `contactTeam`, the managers above
+ * the person; everything else only the `full` roles. Administrators are named only when no other role is.
+ */
+export interface PeoplePersonalAudienceDto {
+  contact: string[];
+  contactTeam: boolean;
+  full: string[];
+}
+
+/** A file on a person's page (B-180): the person and HR. */
+export interface EmployeeDocumentDto {
+  id: string;
+  name: string;
+  contentType: string;
+  sizeBytes: number;
+  addedAt: string;
+  addedBy: string;
+  canRemove: boolean;
+}
+
+export interface EmployeeDocumentsDto {
+  documents: EmployeeDocumentDto[];
+  canAdd: boolean;
 }
 
 export interface PeoplePendingAddressDto {
@@ -528,6 +556,10 @@ export const corePeoplePaths = {
     `/corehr/employees/people/${encodeURIComponent(employeeKey)}/job-history`,
   photo: (employeeKey: string) =>
     `/corehr/employees/people/${encodeURIComponent(employeeKey)}/photo`,
+  documents: (employeeKey: string) =>
+    `/corehr/employees/people/${encodeURIComponent(employeeKey)}/documents`,
+  document: (employeeKey: string, documentId: string) =>
+    `/corehr/employees/people/${encodeURIComponent(employeeKey)}/documents/${encodeURIComponent(documentId)}`,
   hire: () => "/corehr/employees/hire",
   addExisting: () => "/corehr/employees/add-existing",
 } as const;
@@ -553,6 +585,8 @@ export const corePeopleQueryKeys = {
     [...corePeopleQueryKeys.profiles(), employeeKey, "personal"] as const,
   jobHistory: (employeeKey: string) =>
     [...corePeopleQueryKeys.profiles(), employeeKey, "job-history"] as const,
+  documents: (employeeKey: string) =>
+    [...corePeopleQueryKeys.profiles(), employeeKey, "documents"] as const,
   /** Keyed by the versioned address, so a new upload is a new entry and an old one never goes stale. */
   photo: (photoUrl: string) => [...corePeopleQueryKeys.all(), "photo", photoUrl] as const,
   managerOptions: (effectiveDate: string, q: string, forEmployee?: string | null) =>
@@ -637,6 +671,19 @@ export function createCorePeopleApi(client: ApiClient) {
     },
     removePhoto: (employeeKey: string) =>
       client.delete<EmployeePhotoDto>(corePeoplePaths.photo(employeeKey)),
+    documents: (employeeKey: string, signal?: AbortSignal) =>
+      client.get<EmployeeDocumentsDto>(corePeoplePaths.documents(employeeKey), { signal }),
+    /** The file itself; the API needs the bearer token, so a plain link can't download it. */
+    documentFile: (employeeKey: string, documentId: string) =>
+      client.get<Blob>(corePeoplePaths.document(employeeKey, documentId), { responseType: "blob" }),
+    /** A PDF, JPEG, PNG or WebP up to 10 MB. */
+    addDocument: (employeeKey: string, file: File) => {
+      const form = new FormData();
+      form.append("file", file, file.name);
+      return client.post<EmployeeDocumentDto>(corePeoplePaths.documents(employeeKey), form);
+    },
+    removeDocument: (employeeKey: string, documentId: string) =>
+      client.delete<void>(corePeoplePaths.document(employeeKey, documentId)),
     accessStatus: (employeeKey: string, signal?: AbortSignal) =>
       client.get<PeopleAccessStatusDto>(
         corePeoplePaths.accessStatus(employeeKey),

@@ -55,8 +55,9 @@ public sealed record RoleAreaCell(string AreaId, string Level, string? Reach);
 /// What the editor shows is therefore exactly what is saved.
 /// </para>
 /// <para>
-/// Jobs and Personal details for others share Core HR's one record read and edit today, so their options for a
-/// team or everyone share defining grants and move together until the person page splits them.
+/// Jobs and Personal details have their own keys (B-214): a role can see everyone's jobs and nobody's personal
+/// details. Seeing personal details for a team or everyone reads their contact details; changing them reads and
+/// changes everything on the Personal tab.
 /// </para>
 /// </summary>
 public static class RoleAreas
@@ -87,9 +88,9 @@ public static class RoleAreas
         new("personal", CoreGroup, PermissionModuleKeys.CoreHR, false, [
             O(RoleLevels.See, RoleReaches.Self, [G(CorePermissions.ProfileSelfView, S)]),
             O(RoleLevels.Change, RoleReaches.Self, [G(CorePermissions.ProfileSelfUpdate, S)], G(CorePermissions.ProfileSelfView, S)),
-            O(RoleLevels.See, RoleReaches.Team, [G(CorePermissions.EmployeeView, Dr)], OwnPersonal),
-            O(RoleLevels.See, RoleReaches.Everyone, [G(CorePermissions.EmployeeView, T)], OwnPersonal),
-            O(RoleLevels.Change, RoleReaches.Everyone, [G(CorePermissions.EmployeeManage, T)], [G(CorePermissions.EmployeeView, T), .. OwnPersonal]),
+            O(RoleLevels.See, RoleReaches.Team, [G(CorePermissions.PersonalView, Dr)], OwnPersonal),
+            O(RoleLevels.See, RoleReaches.Everyone, [G(CorePermissions.PersonalView, T)], OwnPersonal),
+            O(RoleLevels.Change, RoleReaches.Everyone, [G(CorePermissions.PersonalManage, T)], [G(CorePermissions.PersonalView, T), .. OwnPersonal]),
         ]),
         new("org", CoreGroup, PermissionModuleKeys.CoreHR, false, [
             O(RoleLevels.See, null, [G(CorePermissions.OrgChartView, T)]),

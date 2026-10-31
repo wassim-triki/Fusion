@@ -11,8 +11,8 @@ import type {
 
 // The roles model on the page (B-177). Identity owns it; this mirrors its two rules so the editor shows what saving
 // does before saving: a role is at the strongest option whose defining grants it holds, and saving writes each cell's
-// defining and companion grants. Jobs and Personal details share Core HR's record today, so changing one can move
-// the other; the editor shows that move instead of hiding it.
+// defining and companion grants. When two areas share a grant, changing one can move the other; the editor shows that
+// move instead of hiding it. Jobs and Personal details have their own keys since B-214, so they no longer do.
 
 export type Cells = Partial<Record<RoleAreaId, RoleCellDto>>;
 

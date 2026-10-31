@@ -17,7 +17,7 @@ Agents run this system; the user should rarely open these files and almost never
 
 For every task that changes files (audits, checks and cleanups included):
 1. Read `STATE.md`. If it names active work, resume it. Otherwise take the task from the user or the board, set it as Active work, and move its item to In progress.
-2. Keep `STATE.md` current in near-real time: a few-line update right after each step, decision or change of direction, so a session cut off at any moment loses nothing.
+2. Keep `STATE.md` light but enough for a cold pickup: a few lines at each milestone (plan set, backend done, frontend done, before the commit) and when direction changes, not after every step. A session cut off by a usage limit is resumed from it, by Codex or a fresh session.
 3. Anything you notice but don't do: add it to the board (Ready, or Needs discussion).
 4. When the work is done, log it, reset `STATE.md` and set `Last finished`. Then:
    - **Close it** (○) when evidence settles it: backend-only work of any size, refactors, cleanups, config, small fixes, anything done exactly as asked.
@@ -25,7 +25,7 @@ For every task that changes files (audits, checks and cleanups included):
 5. Read the verdict from the conversation: approval or moving on accepts it (✓); a complaint becomes a Ready child under the parent, which stays In review. Ask in one line only when the signal is truly ambiguous. A box the user ticks also accepts.
 
 ## Ownership and sources
-- Ours: shell/platform foundation, Platform administration, Core HR, Performance, and shared `@repo/ds`, `@repo/auth`, `@repo/api`. Other contributors' (don't modify unless a shared contract requires it): Recruitment, Interview, Learning, Onboarding.
+- Ours: shell/platform foundation, Platform administration, Core HR, Performance, and shared `@repo/ds`, `@repo/auth`, `@repo/api`. Other contributors' (don't modify unless a shared contract requires it): Recruitment, Interview, Learning, Onboarding. The commit hook doesn't check theirs; B-192 checks them once.
 - Product behavior: approved requirements and existing product contracts.
 - Planned work: follow whatever plan or spec the user chose for it (an OpenSpec change, a plan from another workflow, …); its artifacts and their stated authorities win. Use OpenSpec (`openspec/`) only when the user invokes it or names an existing change; never start one on your own.
 - UI or UX work: read `DESIGN.md` first.
@@ -36,6 +36,7 @@ For every task that changes files (audits, checks and cleanups included):
 Functionality and engineering quality come first, without over-engineering: build what the task needs, no more.
 - Model the domain correctly; enforce authorization and tenant isolation on the server; keep API contracts typed and consistent.
 - Make the smallest change that fully solves the task: no adjacent refactors, second patterns, speculative abstractions or premature generality.
+- One developer, no outside clients or shared databases: no backward compatibility. When something replaces an endpoint, path or field, delete the old one; don't keep or guard it.
 - Follow the established Fusion pattern when one fits. If a weak pattern blocks a correct solution, say so rather than copying it.
 - Frontend work is held to the same bar: build it as well as you can per `DESIGN.md`, against real data, with loading, error and empty states working. Visual review happens on request, which is not a license for sloppy UI.
 - User-facing text: plain, specific and short, with no AI-sounding phrasing (rules in `DESIGN.md`).
@@ -47,10 +48,10 @@ Run checks once the work settles, scoped to what changed. Report the evidence: e
 
 | You changed | Run |
 |---|---|
-| Domain, persistence or API behavior | the service's test project (relational suite included); an API journey for the affected workflow |
-| A migration | the relational suite (it runs Up/Down) |
-| An API contract | backend tests + `@repo/api` type-check + type-check of each consuming app |
-| Frontend logic or components | that app's type-check, lint, test |
+| Domain, persistence or API behavior | the service's test project (relational suite included); an API journey only where authorization or tenant isolation changed |
+| A migration | the relational suite (it migrates up). Schema only: no data carried across, no Down test; re-run the demo data scripts instead |
+| An API contract | backend tests; the hook type-checks `@repo/api` and our apps |
+| Frontend logic or components | that app's touched tests; the hook lints and type-checks |
 | Routes, layouts or Next config | add a cold `build`: a warm dev server hides route-tree errors |
 | Only visuals | nothing, unless the user asks for rendered QA (then always through the shell) |
 
@@ -59,10 +60,14 @@ Run checks once the work settles, scoped to what changed. Report the evidence: e
 - Backend: the `fusion-dev` skill's `test-backend.ps1 <Service>` (sets the relational-test connection, avoids the running service's file lock, prints passed/failed/skipped); cloud: `test-backend.sh`.
 - API journeys: through `http://localhost:3000/api/*` with the `fusion-dev` skill's `api.cjs` (sign-in, calls, Mailpit invites).
 
-### Build speed and memory (user, 2026-10-27; streamlined 2026-10-30)
-- **Speed:** a session takes a whole planned chunk (fresh session each) and ends in one review; port approved designs as they are. While building, run only the touched files' tests (`pnpm --filter <app> exec vitest run <paths>`, `test-backend.ps1 -Filter`); lean on the language servers for type errors instead of repeated type-checks. When the work settles: one full backend suite for the service changed, the touched apps' tests; frontend lint and type-check are left to the commit hook (it runs them all). No other module's tests unless its code or a contract it reads changed. One cold build, in the background, only if routes, layouts or Next config changed. Commits together at the end with the hook in the background; rendered checks last and alone (a few screens, dark, 1440×900). A slice that moves a contract across many files may split into a backend session and a screens session.
+### Build speed and memory (user, 2026-10-27; leaner 2026-10-31, B-234)
+- **A slice is one session, one agent, one commit.** A fresh session per slice, Claude end to end at medium effort (high for auth work); Codex takes over only when a usage limit cuts a session, from `STATE.md`. The one commit holds the code and the board files (STATE, BACKLOG, LOG, memory); no separate docs commit. Run it in the background.
+- **While building:** only the touched tests (`pnpm --filter <app> exec vitest run <paths>`, `test-backend.ps1 -Filter`), not again after every small fix; type errors from the language servers.
+- **Once, at the end:** one full backend suite per service changed and the touched apps' tests. The commit hook lints and type-checks our apps and packages. A cold build, in the background, only if routes, layouts or Next config changed. No other module's tests unless its code or a contract it reads changed.
+- **Journeys:** only for authorization and tenant isolation, with their negatives; the same script sets up the slice's demo data.
+- **Screens:** port the drawing literally the first time, then one screen per new surface (dark, 1440×900), compared with its drawing by the agent before sending, so a review is one look, not rounds. No reference-frame scripts; a review file only for a real manual checklist.
 - **Never cut:** server-side authorization and tenant-isolation tests with their negatives, `security-review` for auth changes, type-check (the hook's, at the latest), and the cold build when routes changed.
-- **Memory (13.9 GB machine):** heavy jobs one at a time. Start, restart or stop the stack only with `stack.ps1` (keep it running; our four apps by default, `-AllApps` for the rest) and run backend tests only with `test-backend.ps1`: they keep memory in check. A job refused by the memory check or killed for low memory is reported, not retried.
+- **Memory (13.9 GB machine):** heavy jobs one at a time. Start, restart or stop the stack only with `stack.ps1` (keep it running; our four apps by default, `-Apps core` for the shell with only the apps a slice touches, `-AllApps` for the rest) and run backend tests only with `test-backend.ps1`: they keep memory in check. A job refused by the memory check or killed for low memory is reported, not retried.
 
 ## Local environment and data
 Docker-free: PostgreSQL (user `postgres`, password in `FUSION_PG_PASSWORD`) and Mailpit run natively. Use the `fusion-dev` skill to run the stack, backend tests, read-only SQL and API calls.

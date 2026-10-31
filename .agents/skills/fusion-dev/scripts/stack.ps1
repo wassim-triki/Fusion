@@ -15,7 +15,8 @@
    CoreHR         http://localhost:5301   (gateway-only)
    Performance    http://localhost:5401   (gateway-only)
    Frontend       shell http://localhost:3000 + our MFEs core 3002 / performance 3004 / platform 3007
-                  (-AllApps also starts Interview, Learning, Recruitment, Onboarding)
+                  (-Apps core[,performance,platform] starts the shell with only those;
+                  -AllApps also starts Interview, Learning, Recruitment, Onboarding)
 
  Memory (13.9 GB dev machine): backends run their built app directly (no `dotnet run` host left
  resident), only our four Next apps start by default, compiler servers are shut down once the
@@ -45,6 +46,8 @@ param(
     [switch]$Down,         # stop the whole managed stack and exit
     [switch]$NoFrontend,   # skip the pnpm dev frontend
     [switch]$AllApps,      # also start the MFEs we don't own (Interview, Learning, Recruitment, Onboarding)
+    [ValidateSet('core','performance','platform')]
+    [string[]]$Apps,       # start the shell with only these of our MFEs (default: all three); saves memory
     [switch]$NoMailpit,    # skip mailpit
     [switch]$Status,       # read-only: report what is up (incl. the shell->gateway->Performance chain) and exit
     [ValidateSet('Gateway','Identity','CoreHR','Performance','Frontend','Mailpit')]
@@ -75,7 +78,7 @@ $Backend = @(
     @{ Name = 'Performance'; Project = 'Backend/EY.HRPlatform.Performance'; Port = 5401; Url = 'http://localhost:5401';        Health = 'http://localhost:5401/health' }
 )
 $FrontendPorts = 3000..3007        # shell 3000 + every MFE port (stopping clears all of them)
-$OurApps       = @('shell', 'core', 'performance', 'platform')   # the shell waits on 3002/3004/3007
+$OurApps       = @('shell', 'core', 'performance', 'platform')   # the shell waits on the MFEs started (scripts/wait-mfes.cjs)
 $OtherAppPorts = @(3001, 3003, 3005, 3006)                       # Interview, Learning, Recruitment, Onboarding
 $MailpitPorts  = @(1025, 8025)
 
@@ -250,8 +253,10 @@ if ((Want 'Frontend') -and -not $NoFrontend) {
     } else {
         Stop-Window (Get-WindowTitle 'Frontend')
         Stop-Port $FrontendPorts   # clear any partial MFE set
-        $devCommand = if ($AllApps) { 'pnpm dev' } else { 'pnpm exec turbo dev ' + (($OurApps | ForEach-Object { "--filter=$_" }) -join ' ') }
-        Start-Window -Title (Get-WindowTitle 'Frontend') -WorkDir (Join-Path $Repo 'Frontend') -Command $devCommand
+        $started = if ($Apps) { @('shell') + $Apps } else { $OurApps }
+        $devCommand = if ($AllApps) { 'pnpm dev' } else { 'pnpm exec turbo dev ' + (($started | ForEach-Object { "--filter=$_" }) -join ' ') }
+        $devEnv = if ($Apps -and -not $AllApps) { @{ FUSION_DEV_APPS = ($Apps -join ',') } } else { $null }
+        Start-Window -Title (Get-WindowTitle 'Frontend') -WorkDir (Join-Path $Repo 'Frontend') -Command $devCommand -EnvVars $devEnv
         Write-Ok "starting in its own window (first boot takes ~30-60s)..."
     }
 }

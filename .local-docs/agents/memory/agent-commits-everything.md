@@ -8,7 +8,7 @@ metadata:
   modified: 2026-10-26T10:55:47.401Z
 ---
 
-The user does not commit anything (2026-10-26: "i aint gonna commit nothing btw, all you"). The agent commits every piece of finished work itself, OpenSpec applies included, in small logical commits per `.local-docs/agents/git-conventions/` (no trailers). Push and PRs stay the user's unless asked.
+The user does not commit anything (2026-10-26: "i aint gonna commit nothing btw, all you"). The agent commits every piece of finished work itself, OpenSpec applies included, in one commit per slice, code and board files together (since 2026-10-31, B-234), per `.local-docs/agents/git-conventions/` (no trailers). Push and PRs stay the user's unless asked.
 
 **Why:** the user wants to spend their time on product work, not git chores.
 

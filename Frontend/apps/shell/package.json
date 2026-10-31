@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "wait-on -t 60000 tcp:3002 tcp:3004 tcp:3007 && next dev --port 3000 --turbopack",
-    "dev:turbo": "wait-on -t 60000 tcp:3002 tcp:3004 tcp:3007 && next dev --port 3000 --turbopack",
+    "dev": "node scripts/wait-mfes.cjs && next dev --port 3000 --turbopack",
+    "dev:turbo": "node scripts/wait-mfes.cjs && next dev --port 3000 --turbopack",
     "build": "next build",
     "start": "next start --port 3000",
     "lint": "next lint",

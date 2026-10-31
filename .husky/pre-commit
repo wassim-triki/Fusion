@@ -1,9 +1,11 @@
 # Where the fusion-dev memory check can run (Windows with PowerShell 7), refuse up front when RAM is
 # short and lint and type-check two packages at a time. Elsewhere (no pwsh, e.g. a cloud session), the
-# hook runs as before.
+# hook runs as before. Only our apps and the packages they use: the colleague modules are checked once, in B-192.
 check=.agents/skills/fusion-dev/scripts/memory-check.ps1
 if [ -f "$check" ] && command -v pwsh >/dev/null 2>&1; then
   pwsh -NoProfile -File "$check" -NeedGB 2.5 -Job "the pre-commit hook" || exit 1
   FUSION_HOOK_CONCURRENCY=${FUSION_HOOK_CONCURRENCY:-2}
 fi
-cd Frontend && pnpm lint ${FUSION_HOOK_CONCURRENCY:+--concurrency=$FUSION_HOOK_CONCURRENCY} && pnpm type-check ${FUSION_HOOK_CONCURRENCY:+--concurrency=$FUSION_HOOK_CONCURRENCY}
+ours='--filter=shell... --filter=core... --filter=performance... --filter=platform...'
+cd Frontend && pnpm exec turbo lint $ours ${FUSION_HOOK_CONCURRENCY:+--concurrency=$FUSION_HOOK_CONCURRENCY} \
+  && pnpm exec turbo type-check $ours ${FUSION_HOOK_CONCURRENCY:+--concurrency=$FUSION_HOOK_CONCURRENCY}

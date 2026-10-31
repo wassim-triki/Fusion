@@ -52,7 +52,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
     - [ ] **B-189** Reports: (roles' Reports area offers only "See for everyone" today, the Core HR overview and change history; add Build and team reach here) standard and your own, on a date or between two, run as the viewer (D-14) · Core HR · 2026-10-30
     - [ ] **B-190** Core HR's front page: Growth and People on one time slider, department cards (D-30) · Core HR · 2026-10-30
     - [ ] **B-191** Single sign-on: Microsoft, Google, a company's own provider, required per domain · Identity, Shell · 2026-10-30
-    - [ ] **B-192** Seams and finish: colleague modules only when on, one vocabulary, replaced surfaces gone, demo presets for the tour · All · 2026-10-30
+    - [ ] **B-192** Seams and finish: colleague modules only when on, their lint and type-check once (the hook skips them since B-234), one vocabulary, replaced surfaces gone, demo presets for the tour · All · 2026-10-30
       - [ ] **B-200** Reorder list values by drag and drop (a handle on each row) instead of up and down arrows, in Settings › Lists; reuse the milestone editor's drag if it fits · Core HR · 2026-10-30
       - [ ] **B-201** Make the Places table richer: it does its job but reads lackluster (user 2026-10-30, not urgent) · Core HR · 2026-10-30
       - [ ] **B-194** Remove the legacy employee write endpoints (`POST /employees`, `PUT /employees/{id}`, rehire, terminate, change-manager) and their commands: no screen calls them; B-175 had to move them onto job and place ids anyway · Core HR · 2026-10-30

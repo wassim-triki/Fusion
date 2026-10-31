@@ -261,6 +261,8 @@
     },
     "is": "est",
     "or": "ou",
+    "and": "et",
+    "holderKind": "Qui l’a : {kind}",
     "condition": "Condition",
     "person": "Personne",
     "addValue": "Ajouter : {kind}",
@@ -313,6 +315,7 @@
       "nobodyLine": "Choisissez qui l'a pour voir sa vue",
       "viewer": "Vu par",
       "subject": "Page de",
+      "choose": "Choisir qui regarde et quelle page",
       "tabs": {
         "overview": "Aperçu",
         "job": "Poste",

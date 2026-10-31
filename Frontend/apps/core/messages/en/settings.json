@@ -261,6 +261,8 @@
     },
     "is": "is",
     "or": "or",
+    "and": "and",
+    "holderKind": "Who has it: {kind}",
     "condition": "Condition",
     "person": "Person",
     "addValue": "Add a {kind}",
@@ -313,6 +315,7 @@
       "nobodyLine": "Choose who has it to see their view",
       "viewer": "Seen by",
       "subject": "Page of",
+      "choose": "Choose who looks and whose page",
       "tabs": {
         "overview": "Overview",
         "job": "Job",

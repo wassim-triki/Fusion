@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Lock, Plus } from "lucide-react";
+import { Building2, ChartNoAxesColumn, Lock, Plus, Users } from "lucide-react";
 import type { FusionSettingsSection, RoleAreaDto, RoleCellDto, RoleSummaryDto } from "@repo/api";
 import {
   Button,
@@ -26,16 +26,17 @@ import { holderSummary, useRuleValues } from "./role-words";
 const GROUPS = ["core", "performance", "company"] as const;
 
 /** Two marks: one for a look (see, propose), both for acting (change, approve). */
-export function LevelPips({ cell, quiet }: { cell: RoleCellDto; quiet?: boolean }) {
+export function LevelPips({ cell }: { cell: RoleCellDto }) {
   const weight = weightOf(cell.level);
   return (
-    <span aria-hidden className="inline-flex shrink-0 gap-0.5">
+    <span aria-hidden className="inline-flex shrink-0 gap-[3px]">
       {[1, 2].map((step) => (
         <span
           key={step}
           className={cn(
-            "h-2.5 w-1.5 rounded-detail",
-            step <= weight ? (quiet ? "bg-muted-foreground" : "bg-foreground") : "bg-border"
+            // eslint-disable-next-line no-restricted-syntax -- the drawing's 12×8 pip, a mark below the radius roles
+            "h-2 w-3 rounded-[3px] border",
+            step <= weight ? "border-transparent bg-foreground/78" : "border-input bg-inlay"
           )}
         />
       ))}
@@ -43,19 +44,19 @@ export function LevelPips({ cell, quiet }: { cell: RoleCellDto; quiet?: boolean 
   );
 }
 
-function Cell({ cell, say, quiet }: { cell: RoleCellDto; say: Say; quiet?: boolean }) {
+function Cell({ cell, say }: { cell: RoleCellDto; say: Say }) {
   if (cell.level === "none") {
-    return <span aria-label={say("roles.levels.none")} className="mt-2.5 block h-px w-3 bg-border" />;
+    return (
+      <span aria-label={say("roles.levels.none")} className="type-control text-muted-foreground">
+        —
+      </span>
+    );
   }
   return (
-    <span className="flex items-start gap-2">
-      <span className="pt-1">
-        <LevelPips cell={cell} quiet={quiet} />
-      </span>
-      <span className="flex min-w-0 flex-col">
-        <span className={cn("type-meta-strong", quiet ? "text-muted-foreground" : "text-foreground")}>{say(`roles.levels.${cell.level}`)}</span>
-        {cell.reach ? <span className="type-meta text-muted-foreground">{say(`roles.reaches.${cell.reach}`)}</span> : null}
-      </span>
+    <span className="inline-flex items-center gap-[9px] whitespace-nowrap type-control-label text-foreground">
+      <LevelPips cell={cell} />
+      {say(`roles.levels.${cell.level}`)}
+      {cell.reach ? <span className="font-normal text-muted-foreground">{say(`roles.reaches.${cell.reach}`)}</span> : null}
     </span>
   );
 }
@@ -64,7 +65,7 @@ function Faces({ role }: { role: RoleSummaryDto }) {
   return (
     <span className="flex items-center gap-2">
       {role.faces.length ? (
-        <span className="flex -space-x-1.5">
+        <span className="flex -space-x-2">
           {role.faces.map((face) => (
             <PersonAvatar key={face.userId} name={face.name} size="xs" className="ring-2 ring-card" />
           ))}
@@ -79,14 +80,13 @@ function RoleHeader({ role, names, say }: { role: RoleSummaryDto; names: Map<str
   return (
     <Link
       href={`/settings/roles/${role.id}`}
-      className="group flex min-w-32 flex-col gap-1.5 rounded-control px-2 py-2 text-start outline-none transition-colors hover:bg-inlay focus-visible:ring-2 focus-visible:ring-ring"
+      className="-m-3 grid gap-2 rounded-menu border border-transparent p-3 text-start outline-none transition-colors hover:bg-inlay focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <span className="flex items-center gap-1.5 type-label text-foreground">
+      <span className="flex items-center gap-1.5 type-panel-title text-foreground">
         {role.isAdministrators ? say("roles.administrators.name") : role.name}
         {role.isAdministrators ? <Lock aria-hidden className="size-3.5 text-muted-foreground" /> : null}
-        <ChevronRight aria-hidden className="ms-auto size-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 rtl:rotate-180" />
       </span>
-      <span className="type-meta text-muted-foreground">{holderSummary(role, names, say)}</span>
+      <span className="truncate type-meta text-muted-foreground">{holderSummary(role, names, say)}</span>
       <Faces role={role} />
     </Link>
   );
@@ -130,51 +130,74 @@ function NewRoleDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o
   );
 }
 
+const GROUP_ICON = { core: Users, performance: ChartNoAxesColumn, company: Building2 } as const;
+
+/** A group's heading: a small amber tile and the group's name. */
+export function AreaGroupTitle({ group, say }: { group: (typeof GROUPS)[number]; say: Say }) {
+  const Icon = GROUP_ICON[group];
+  return (
+    <span className="flex items-center gap-2">
+      <span className="grid size-6 place-items-center rounded-control-sm bg-primary-tint text-primary-ink">
+        <Icon aria-hidden className="size-3.5" />
+      </span>
+      <span className="type-subsection-title text-foreground">{say(`roles.groups.${group}`)}</span>
+    </span>
+  );
+}
+
 function Matrix({ areas, roles, say, names }: { areas: RoleAreaDto[]; roles: RoleSummaryDto[]; say: Say; names: Map<string, string> }) {
   const cells = roles.map((role) => toCells(role.cells));
+  const groups = GROUPS.map((group) => ({ group, rows: areas.filter((area) => area.group === group) })).filter((g) => g.rows.length);
   return (
-    <div className="overflow-x-auto rounded-surface border border-border bg-card">
-      <table className="w-full border-collapse">
+    <div className="overflow-x-auto rounded-surface bg-card px-1.5 pt-1 pb-1.5">
+      <table className="w-full min-w-max table-fixed border-collapse">
+        <colgroup>
+          <col className="w-[230px]" />
+          {roles.map((role) => (
+            <col key={role.id} className="w-[180px]" />
+          ))}
+        </colgroup>
         <thead>
-          <tr className="border-b border-border align-bottom">
-            <th scope="col" className="sticky start-0 z-10 min-w-52 bg-card px-5 py-3">
+          <tr className="border-b border-border">
+            <th scope="col" className="sticky start-0 z-10 bg-card px-3 pt-[22px] pb-3.5 ps-5 align-bottom">
               <span className="sr-only">{say("roles.title")}</span>
             </th>
             {roles.map((role) => (
-              <th key={role.id} scope="col" className={cn("px-2 py-2 font-normal", role.isAdministrators && "bg-inlay")}>
+              <th key={role.id} scope="col" className={cn("px-3 pt-[22px] pb-3.5 align-bottom font-normal", role.isAdministrators && "opacity-70")}>
                 <RoleHeader role={role} names={names} say={say} />
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {GROUPS.map((group) => {
-            const rows = areas.filter((area) => area.group === group);
-            if (!rows.length) return null;
-            return [
-              <tr key={group}>
-                <th scope="colgroup" colSpan={roles.length + 1} className="sticky start-0 bg-card px-5 pt-6 pb-2 text-start font-normal">
-                  <span className="type-subsection-title">{say(`roles.groups.${group}`)}</span>
+          {groups.flatMap(({ group, rows }, groupIndex) => [
+            <tr key={group} className="border-b border-border">
+              <th scope="colgroup" colSpan={roles.length + 1} className="sticky start-0 h-[52px] bg-card px-3 pt-4 ps-5 text-start align-middle font-normal">
+                <AreaGroupTitle group={group} say={say} />
+              </th>
+            </tr>,
+            ...rows.map((area, rowIndex) => (
+              <tr
+                key={area.id}
+                className={cn("border-b border-border", groupIndex === groups.length - 1 && rowIndex === rows.length - 1 && "border-b-0")}
+              >
+                <th scope="row" className="sticky start-0 z-10 h-[50px] bg-card px-3 ps-5 text-start align-middle font-normal">
+                  <span className="block truncate py-0.5 type-label text-foreground">{say(`roles.areas.${area.id}.label`)}</span>
                 </th>
-              </tr>,
-              ...rows.map((area) => (
-                <tr key={area.id} className="border-t border-border first:border-t-0">
-                  <th scope="row" className="sticky start-0 z-10 bg-card px-5 py-3 text-start font-normal">
-                    <span className="whitespace-nowrap type-label text-foreground">{say(`roles.areas.${area.id}.label`)}</span>
-                  </th>
-                  {roles.map((role, index) => (
-                    <td key={role.id} className={cn("px-4 py-3 align-top", role.isAdministrators && "bg-inlay")}>
-                      {area.administratorsOnly && !role.isAdministrators ? (
-                        <span aria-label={say("roles.administratorsOnly")} className="mt-2.5 block h-px w-3 bg-border" />
-                      ) : (
-                        <Cell cell={cellOf(cells[index]!, area.id)} say={say} quiet={role.isAdministrators} />
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              )),
-            ];
-          })}
+                {roles.map((role, index) => (
+                  <td key={role.id} className={cn("h-[50px] px-3 align-middle", role.isAdministrators && "opacity-70")}>
+                    {area.administratorsOnly && !role.isAdministrators ? (
+                      <span aria-label={say("roles.administratorsOnly")} className="type-control text-muted-foreground">
+                        —
+                      </span>
+                    ) : (
+                      <Cell cell={cellOf(cells[index]!, area.id)} say={say} />
+                    )}
+                  </td>
+                ))}
+              </tr>
+            )),
+          ])}
         </tbody>
       </table>
     </div>

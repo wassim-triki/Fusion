@@ -1,17 +1,16 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { ChevronDown, EyeOff } from "lucide-react";
+import { Check, ChevronDown, EyeOff, UserRoundSearch } from "lucide-react";
 import type { RoleAreaDto, RoleAreaId, RoleHolderDto } from "@repo/api";
 import {
   cn,
   Command,
   CommandEmpty,
+  CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
-  NativeSelect,
-  NativeSelectOption,
   PersonAvatar,
   Popover,
   PopoverContent,
@@ -42,61 +41,101 @@ function reaches(cells: Cells, area: RoleAreaId, relation: Relation): boolean {
 
 function Action({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex h-7 shrink-0 items-center rounded-control-sm border border-border bg-card px-2.5 type-meta-strong text-foreground">
+    <span className="inline-flex h-[26px] shrink-0 items-center rounded-control-sm border border-border bg-card px-[9px] type-meta-strong text-foreground">
       {children}
     </span>
   );
 }
 
-function Row({ label, value, action }: { label: string; value: ReactNode; action?: ReactNode }) {
+/** The drawing's quiet link-style action on a preview row. */
+function TextAction({ children }: { children: ReactNode }) {
+  return <span className="shrink-0 type-control-label text-foreground">{children}</span>;
+}
+
+function Section({ label, value, action }: { label: string; value: ReactNode; action?: ReactNode }) {
   return (
-    <div className="flex animate-in items-center gap-3 py-3 fade-in-0 duration-200">
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="type-meta text-muted-foreground">{label}</span>
-        <span className="truncate type-body text-foreground">{value}</span>
+    <div className="grid animate-in gap-0.5 border-t border-border py-3 fade-in-0 duration-300 first:border-t-0">
+      <span className="type-meta text-muted-foreground">{label}</span>
+      <div className="flex min-h-7 items-center justify-between gap-2.5">
+        <span className="min-w-0 truncate type-control text-foreground">{value}</span>
+        {action}
       </div>
-      {action}
     </div>
   );
 }
 
 function Outside({ children }: { children: ReactNode }) {
   return (
-    <p className="flex animate-in items-center gap-2 py-3 type-meta text-muted-foreground fade-in-0 duration-200">
+    <p className="flex animate-in items-center gap-2 border-t border-border py-3 type-control text-muted-foreground fade-in-0 duration-300 first:border-t-0">
       <EyeOff aria-hidden className="size-3.5 shrink-0" />
       {children}
     </p>
   );
 }
 
-function SubjectPicker({ subject, onPick, say }: { subject: Person | null; onPick: (person: Person) => void; say: Say }) {
+/** One picker for the preview: who looks (the role's holders) and whose page (anyone who signs in). */
+function PeoplePicker({
+  viewer,
+  subject,
+  holders,
+  canSearch,
+  onViewer,
+  onSubject,
+  say,
+}: {
+  viewer: Person;
+  subject: Person | null;
+  holders: Person[];
+  canSearch: boolean;
+  onViewer: (person: Person) => void;
+  onSubject: (person: Person) => void;
+  say: Say;
+}) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const candidates = useRoleCandidates(search, open);
+  const candidates = useRoleCandidates(search, open && canSearch);
+  const needle = search.trim().toLowerCase();
+  const seenBy = holders.filter((person) => !needle || person.name.toLowerCase().includes(needle));
+  const pageOf = (candidates.data ?? []).map((candidate) => ({ employeeId: candidate.employeeId, name: candidate.name }));
+  const item = (person: Person, current: boolean, pick: (person: Person) => void, key: string) => (
+    <CommandItem
+      key={key}
+      value={key}
+      onSelect={() => {
+        pick(person);
+        setOpen(false);
+      }}
+    >
+      <PersonAvatar name={person.name} size="xs" />
+      <span className="truncate">{person.name}</span>
+      {current ? <Check aria-hidden className="ms-auto size-3.5" /> : null}
+    </CommandItem>
+  );
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger className="inline-flex h-8 min-w-0 items-center gap-1.5 rounded-control border border-border bg-card px-2.5 type-meta-strong text-foreground outline-none hover:bg-inlay focus-visible:ring-2 focus-visible:ring-ring">
-        <span className="truncate">{subject?.name ?? say("roles.preview.subject")}</span>
+      <PopoverTrigger
+        aria-label={say("roles.preview.choose")}
+        className="inline-flex h-[34px] min-w-0 shrink-0 items-center gap-2 rounded-control border border-border bg-card px-3 type-control text-foreground outline-none hover:bg-inlay focus-visible:ring-2 focus-visible:ring-ring aria-expanded:bg-inlay"
+      >
+        <UserRoundSearch aria-hidden className="size-3.5 shrink-0 text-muted-foreground" />
+        <span className="truncate">{(subject ?? viewer).name.split(" ")[0]}</span>
         <ChevronDown aria-hidden className="size-3.5 shrink-0 text-muted-foreground" />
       </PopoverTrigger>
       <PopoverContent align="end" className="w-72 p-0">
         <Command shouldFilter={false}>
           <CommandInput placeholder={say("roles.findPerson")} value={search} onValueChange={setSearch} />
           <CommandList>
-            {candidates.data && candidates.data.length === 0 ? <CommandEmpty>{say("roles.nobodyFound")}</CommandEmpty> : null}
-            {(candidates.data ?? []).map((candidate) => (
-              <CommandItem
-                key={candidate.userId}
-                value={candidate.userId}
-                onSelect={() => {
-                  onPick({ employeeId: candidate.employeeId, name: candidate.name });
-                  setOpen(false);
-                }}
-              >
-                <PersonAvatar name={candidate.name} size="xs" />
-                <span className="truncate">{candidate.name}</span>
-              </CommandItem>
-            ))}
+            {seenBy.length === 0 && pageOf.length === 0 ? <CommandEmpty>{say("roles.nobodyFound")}</CommandEmpty> : null}
+            {seenBy.length > 1 ? (
+              <CommandGroup heading={say("roles.preview.viewer")}>
+                {seenBy.map((person) => item(person, person.employeeId === viewer.employeeId, onViewer, `viewer-${person.employeeId}`))}
+              </CommandGroup>
+            ) : null}
+            {canSearch && pageOf.length ? (
+              <CommandGroup heading={say("roles.preview.subject")}>
+                {pageOf.map((person) => item(person, person.employeeId === subject?.employeeId, onSubject, `subject-${person.employeeId}`))}
+              </CommandGroup>
+            ) : null}
           </CommandList>
         </Command>
       </PopoverContent>
@@ -175,44 +214,38 @@ export function RolePreview({
   const plans = cellOf(cells, "plans");
   const proposes = cellOf(cells, "approve").level === "propose" && relation === "team";
 
+  const title =
+    viewer && subject
+      ? relation === "self"
+        ? say("roles.preview.titleSelf", { viewer: firstName(viewer) })
+        : say("roles.preview.title", { viewer: firstName(viewer), subject: subject.name })
+      : say("roles.preview.nobody", { role: roleName });
+
   return (
-    <aside aria-label={say("roles.preview.viewer")} className="flex flex-col gap-3 lg:sticky lg:top-6">
-      <div className="flex flex-col gap-3">
-        <h2 className="type-section-title">
-          {viewer && subject
-            ? relation === "self"
-              ? say("roles.preview.titleSelf", { viewer: firstName(viewer) })
-              : say("roles.preview.title", { viewer: firstName(viewer), subject: subject.name })
-            : say("roles.preview.nobody", { role: roleName })}
-        </h2>
-        {viewer ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <NativeSelect
-              size="sm"
-              aria-label={say("roles.preview.viewer")}
-              value={viewer.employeeId}
-              onChange={(event) => setViewerId(event.target.value)}
-              className="max-w-48"
-            >
-              {people.map((option) => (
-                <NativeSelectOption key={option.employeeId} value={option.employeeId}>
-                  {option.name}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-            {canSearch ? <SubjectPicker subject={subject} onPick={setPicked} say={say} /> : null}
-          </div>
+    <aside aria-label={say("roles.preview.viewer")} className="grid gap-3 rounded-surface bg-section p-4 lg:sticky lg:top-5">
+      <div className="flex min-h-[34px] items-center justify-between gap-3">
+        <h2 className="min-w-0 truncate type-subsection-title">{title}</h2>
+        {viewer && (people.length > 1 || canSearch) ? (
+          <PeoplePicker
+            viewer={viewer}
+            subject={subject}
+            holders={people}
+            canSearch={canSearch}
+            onViewer={(person) => setViewerId(person.employeeId)}
+            onSubject={setPicked}
+            say={say}
+          />
         ) : null}
       </div>
 
-      <div className="overflow-hidden rounded-surface border border-border bg-card">
+      <div className="overflow-hidden rounded-menu border border-border bg-background">
         {!viewer ? (
           <p className="px-5 py-10 text-center type-body text-muted-foreground">{say("roles.preview.nobodyLine")}</p>
         ) : details.error && !person ? (
           <p className="px-5 py-10 text-center type-body text-muted-foreground">{say("roles.preview.didNotLoad")}</p>
         ) : !person ? (
-          <div className="flex flex-col gap-3 p-5">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-3 p-[18px]">
+            <div className="flex items-center gap-3.5">
               <Skeleton className="size-14 rounded-full" />
               <div className="flex flex-col gap-2">
                 <Skeleton className="h-5 w-36" />
@@ -224,25 +257,25 @@ export function RolePreview({
           </div>
         ) : (
           <>
-            <div className="flex flex-col gap-4 bg-inlay px-5 pt-5">
-              <div className="flex items-center gap-3">
-                <PersonAvatar name={person.displayName} size="lg" />
-                <div className="flex min-w-0 flex-col">
-                  <span className="truncate type-panel-title">{person.displayName}</span>
-                  <span className="truncate type-meta text-muted-foreground">
-                    {[work?.orgUnitName, work?.workLocation].filter(Boolean).join(" · ")}
-                  </span>
-                </div>
+            <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3.5 bg-section px-[18px] pt-[18px]">
+              <PersonAvatar name={person.displayName} size="xl" className="size-14 text-lg" />
+              <div className="flex min-w-0 flex-col">
+                <span className="truncate type-section-title">{person.displayName}</span>
+                <span className="truncate type-meta text-muted-foreground">
+                  {[work?.orgUnitName, work?.workLocation].filter(Boolean).join(" · ")}
+                </span>
               </div>
-              <nav aria-label={say("roles.preview.subject")} className="-mb-px flex gap-4 overflow-hidden">
+              <nav aria-label={say("roles.preview.subject")} className="col-span-full mt-3.5 flex overflow-hidden">
                 {tabs
                   .filter((tab) => tab.shown)
                   .map((tab, index) => (
                     <span
                       key={tab.id}
                       className={cn(
-                        "animate-in border-b-2 pb-2.5 type-meta-strong fade-in-0 duration-200",
-                        index === 0 ? "border-primary text-foreground" : "border-transparent text-muted-foreground"
+                        "relative animate-in px-[9px] pt-2 pb-2.5 type-control-label fade-in-0 duration-300",
+                        index === 0
+                          ? "text-foreground after:absolute after:inset-x-[9px] after:bottom-0 after:h-0.5 after:rounded-full after:bg-primary"
+                          : "text-muted-foreground"
                       )}
                     >
                       {say(`roles.preview.tabs.${tab.id}`)}
@@ -250,9 +283,9 @@ export function RolePreview({
                   ))}
               </nav>
             </div>
-            <div className="flex flex-col divide-y divide-border px-5">
+            <div className="grid px-[18px] pt-1.5 pb-3.5">
               {on("job") ? (
-                <Row
+                <Section
                   label={say("roles.preview.job")}
                   value={
                     work
@@ -270,32 +303,32 @@ export function RolePreview({
               ) : blocked("job") ? (
                 <Outside>{outside("job")}</Outside>
               ) : null}
+              {on("approve") && cellOf(cells, "approve").level === "approve" ? (
+                <Section label={say("roles.preview.changes")} value={say("roles.preview.approve")} />
+              ) : null}
               {on("personal") ? (
-                <Row
+                <Section
                   label={say("roles.preview.personal")}
                   value={person.phone ?? say("roles.preview.noPhone")}
-                  action={personal.level === "change" ? <Action>{say("roles.preview.edit")}</Action> : null}
+                  action={personal.level === "change" ? <TextAction>{say("roles.preview.edit")}</TextAction> : null}
                 />
               ) : blocked("personal") ? (
                 <Outside>{outside("personal")}</Outside>
               ) : null}
               {on("plans") ? (
-                <Row
+                <Section
                   label={say("roles.preview.performance")}
                   value={say("roles.preview.plan")}
-                  action={plans.level === "change" ? <Action>{say("roles.preview.update")}</Action> : null}
+                  action={plans.level === "change" ? <TextAction>{say("roles.preview.update")}</TextAction> : null}
                 />
               ) : blocked("plans") ? (
                 <Outside>{outside("plans")}</Outside>
               ) : null}
-              {on("approve") && cellOf(cells, "approve").level === "approve" ? (
-                <Row label={say("roles.preview.changes")} value={say("roles.preview.approve")} />
-              ) : null}
               {on("signin") ? (
-                <Row
+                <Section
                   label={say("roles.preview.signin")}
                   value={say("roles.preview.signsIn")}
-                  action={cellOf(cells, "signin").level === "change" ? <Action>{say("roles.preview.manage")}</Action> : null}
+                  action={cellOf(cells, "signin").level === "change" ? <TextAction>{say("roles.preview.manage")}</TextAction> : null}
                 />
               ) : null}
             </div>

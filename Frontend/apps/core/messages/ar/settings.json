@@ -261,6 +261,8 @@
     },
     "is": "هو",
     "or": "أو",
+    "and": "و",
+    "holderKind": "من يملكه: {kind}",
     "condition": "شرط",
     "person": "شخص",
     "addValue": "إضافة: {kind}",
@@ -313,6 +315,7 @@
       "nobodyLine": "اختر من لديه لرؤية ما يراه",
       "viewer": "يراه",
       "subject": "صفحة",
+      "choose": "اختر من ينظر وأي صفحة",
       "tabs": {
         "overview": "نظرة عامة",
         "job": "الوظيفة",

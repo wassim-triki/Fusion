@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ChevronDown, Crown, Lock, MoreHorizontal, Plus, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ChevronDown, Crown, Lock, MoreHorizontal, Plus, X } from "lucide-react";
 import {
   ApiError,
   type FusionSettingsSection,
@@ -52,7 +52,6 @@ import {
   PopoverTrigger,
   Skeleton,
 } from "@repo/ds";
-import { Segmented } from "@repo/ds/choice";
 import { LastChange, PageError, ViewOnlyBadge } from "@repo/ds/shell";
 import { useDeleteRole, useRole, useRoleCandidates, useSaveRole } from "@/features/settings/api/use-core-access";
 import { useSaveFailure, useSettingsSay, type Say } from "@/features/settings/say";
@@ -67,7 +66,7 @@ import {
   toCells,
   type Cells,
 } from "./role-model";
-import { LevelPips } from "./roles-table";
+import { AreaGroupTitle } from "./roles-table";
 import { RolePreview } from "./role-preview";
 import { useRuleValues, type RuleValue, type RuleValues } from "./role-words";
 
@@ -112,9 +111,20 @@ function sameDraft(a: Draft, b: Draft, areas: RoleAreaDto[]): boolean {
 
 // ── What it can do ──
 
+// The drawing's chip language (B-216): picks are 30px, condition chips and add buttons 32px, both plain-rounded
+// below the radius roles.
+// eslint-disable-next-line no-restricted-syntax -- the drawing's pick radius
+const PICK = "inline-flex h-[30px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[10px] border border-border bg-inlay ps-2.5 pe-[9px]";
+// eslint-disable-next-line no-restricted-syntax -- the drawing's condition chip radius
+const CHIP = "inline-flex h-8 max-w-full items-stretch overflow-hidden rounded-[11px] border border-border bg-inlay type-control text-foreground";
+// eslint-disable-next-line no-restricted-syntax -- the drawing's add button radius
+const ADD = "inline-flex h-8 shrink-0 items-center gap-[5px] rounded-[11px] border border-dashed border-input px-2.5 type-control text-muted-foreground outline-none transition-colors hover:border-ring hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring aria-expanded:text-foreground";
+const SEGMENT = "inline-flex min-w-0 items-center gap-1.5 border-s border-border px-2.5 first:border-s-0";
+
 function Pick({
   label,
   value,
+  shown,
   options,
   onChange,
   muted,
@@ -122,24 +132,27 @@ function Pick({
 }: {
   label: string;
   value: string;
+  /** What the pick reads when it differs from the option's menu label. */
+  shown?: string;
   options: { value: string; label: string }[];
   onChange: (value: string) => void;
   muted?: boolean;
   flash?: boolean;
 }) {
-  const current = options.find((option) => option.value === value)?.label ?? value;
+  const current = shown ?? options.find((option) => option.value === value)?.label ?? value;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={label}
         className={cn(
-          "inline-flex h-7 items-center gap-1 rounded-control-sm border border-border px-2 type-meta-strong outline-none transition-colors hover:bg-inlay focus-visible:ring-2 focus-visible:ring-ring aria-expanded:bg-inlay",
-          muted ? "text-muted-foreground" : "bg-card text-foreground",
-          flash && "animate-pulse bg-primary-tint text-primary-ink"
+          PICK,
+          "outline-none transition-colors hover:border-input focus-visible:ring-2 focus-visible:ring-ring aria-expanded:border-input",
+          muted ? "type-control-label text-muted-foreground" : "type-control-strong text-foreground",
+          flash && "animate-pick-flash"
         )}
       >
         {current}
-        <ChevronDown aria-hidden className="size-3.5 text-muted-foreground" />
+        <ChevronDown aria-hidden className="size-[13px] text-muted-foreground" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-40">
         <DropdownMenuRadioGroup value={value} onValueChange={onChange}>
@@ -152,6 +165,11 @@ function Pick({
       </DropdownMenuContent>
     </DropdownMenu>
   );
+}
+
+/** A pick as it reads to someone who can't change it. */
+function Fixed({ children, muted }: { children: ReactNode; muted?: boolean }) {
+  return <span className={cn(PICK, muted ? "type-control-label text-muted-foreground" : "type-control-strong text-foreground")}>{children}</span>;
 }
 
 function Sentence({
@@ -172,14 +190,15 @@ function Sentence({
   say: Say;
 }) {
   const what = say(`roles.areas.${area.id}.what`);
+  const row = "flex min-h-[54px] flex-wrap items-center gap-2 border-t border-border py-2 type-body first:border-t-0";
   if (area.administratorsOnly) {
     return (
-      <li className="flex min-h-11 flex-wrap items-center gap-x-2 gap-y-1 py-2">
-        <span className="inline-flex h-7 items-center gap-1.5 rounded-control-sm px-2 type-meta-strong text-muted-foreground">
-          <Lock aria-hidden className="size-3.5" />
+      <li className={row}>
+        <Fixed muted>
+          <Lock aria-hidden className="size-[13px]" />
           {say("roles.administratorsOnly")}
-        </span>
-        <span className="type-body text-muted-foreground">{what}</span>
+        </Fixed>
+        <span className="text-muted-foreground">{what}</span>
       </li>
     );
   }
@@ -193,8 +212,7 @@ function Sentence({
   };
 
   return (
-    <li className={cn("flex min-h-11 flex-wrap items-center gap-x-2 gap-y-1 py-2 transition-colors", flash && "rounded-control")}>
-      <LevelPips cell={cell} />
+    <li className={row}>
       {editable ? (
         <Pick
           label={say("roles.levelOf", { role, what })}
@@ -205,12 +223,12 @@ function Sentence({
           onChange={chooseLevel}
         />
       ) : (
-        <span className={cn("type-meta-strong", off ? "text-muted-foreground" : "text-foreground")}>{say(`roles.levels.${cell.level}`)}</span>
+        <Fixed muted={off}>{say(`roles.levels.${cell.level}`)}</Fixed>
       )}
-      <span className={cn("type-body", off ? "text-muted-foreground" : "text-foreground")}>{what}</span>
+      <span className={off ? "text-muted-foreground" : "text-foreground"}>{what}</span>
       {!off && cell.reach ? (
         <>
-          <span className="type-body text-muted-foreground">{say("roles.for")}</span>
+          <span className="text-muted-foreground">{say("roles.for")}</span>
           {editable && reaches.length > 1 ? (
             <Pick
               label={say("roles.reachOf", { what })}
@@ -220,7 +238,7 @@ function Sentence({
               onChange={(reach) => onChange({ ...cell, reach: reach as RoleReach })}
             />
           ) : (
-            <span className="type-meta-strong text-foreground">{say(`roles.reaches.${cell.reach}`)}</span>
+            <Fixed>{say(`roles.reaches.${cell.reach}`)}</Fixed>
           )}
         </>
       ) : null}
@@ -230,52 +248,74 @@ function Sentence({
 
 // ── Who has it ──
 
-function ValuePicker({
+/** The values a condition matches, toggled in one list; the last one out removes the condition. */
+function ValueToggle({
   kind,
   values,
-  taken,
-  onPick,
+  chosen,
+  editable,
+  names,
+  onToggle,
   say,
 }: {
   kind: RoleConditionKind;
   values: RuleValue[];
-  taken: Set<string>;
-  onPick: (id: string) => void;
+  chosen: string[];
+  editable: boolean;
+  names: Map<string, string>;
+  onToggle: (id: string) => void;
   say: Say;
 }) {
   const [open, setOpen] = useState(false);
   const kindWord = say(`roles.conditionKinds.${kind}`).toLowerCase();
+  const shown = (
+    <>
+      {chosen.map((id, index) => (
+        <span key={id} className="inline-flex min-w-0 items-center gap-1.5">
+          {index > 0 ? <span className="text-muted-foreground">{say("roles.or")}</span> : null}
+          <b className="truncate font-semibold">{names.get(id) ?? say("roles.unknownValue")}</b>
+        </span>
+      ))}
+    </>
+  );
+  if (!editable) return <span className={SEGMENT}>{shown}</span>;
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon-sm" aria-label={say("roles.addValue", { kind: kindWord })}>
-          <Plus aria-hidden className="size-4" />
-        </Button>
+      <PopoverTrigger
+        aria-label={say("roles.addValue", { kind: kindWord })}
+        className={cn(SEGMENT, "outline-none hover:bg-card focus-visible:bg-card aria-expanded:bg-card")}
+      >
+        {shown}
       </PopoverTrigger>
       <PopoverContent align="start" className="w-72 p-0">
         <Command>
           <CommandInput placeholder={say("roles.findValue", { kind: kindWord })} />
           <CommandList>
             <CommandEmpty>{say("roles.noValues")}</CommandEmpty>
-            {values
-              .filter((value) => !taken.has(value.id))
-              .map((value) => (
-                <CommandItem
-                  key={value.id}
-                  value={`${value.name} ${value.detail ?? ""} ${value.id}`}
-                  onSelect={() => {
-                    onPick(value.id);
-                    setOpen(false);
-                  }}
-                >
-                  <span className="truncate">{value.name}</span>
-                  {value.detail ? <span className="ms-auto truncate type-meta text-muted-foreground">{value.detail}</span> : null}
-                </CommandItem>
-              ))}
+            {values.map((value) => (
+              <CommandItem key={value.id} value={`${value.name} ${value.detail ?? ""} ${value.id}`} onSelect={() => onToggle(value.id)}>
+                <span className="truncate">{value.name}</span>
+                {value.detail ? <span className="ms-auto truncate type-meta text-muted-foreground">{value.detail}</span> : null}
+                <Check aria-hidden className={cn("size-3.5 shrink-0", value.detail ? "" : "ms-auto", chosen.includes(value.id) ? "opacity-100" : "opacity-0")} />
+              </CommandItem>
+            ))}
           </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
+  );
+}
+
+function RemoveSegment({ label, onRemove }: { label: string; onRemove: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onRemove}
+      className="inline-flex items-center border-s border-border px-2 text-muted-foreground outline-none hover:bg-card hover:text-foreground focus-visible:bg-card"
+    >
+      <X aria-hidden className="size-[13px]" />
+    </button>
   );
 }
 
@@ -285,11 +325,9 @@ function PersonPicker({ taken, onPick, say }: { taken: Set<string>; onPick: (per
   const candidates = useRoleCandidates(search, open);
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="ghost" size="sm">
-          <Plus aria-hidden className="size-3.5" />
-          {say("roles.person")}
-        </Button>
+      <PopoverTrigger className={ADD}>
+        <Plus aria-hidden className="size-[13px]" />
+        {say("roles.person")}
       </PopoverTrigger>
       <PopoverContent align="start" className="w-80 p-0">
         <Command shouldFilter={false}>
@@ -319,32 +357,19 @@ function PersonPicker({ taken, onPick, say }: { taken: Set<string>; onPick: (per
   );
 }
 
-function Chip({ children, onRemove, label }: { children: ReactNode; onRemove?: () => void; label: string }) {
+/** One part of "Who has it": a short muted label (or the holder kind's pick) in the shared first column, then its chips. */
+function Line({ label, children }: { label: ReactNode; children: ReactNode }) {
   return (
-    <span className="inline-flex h-7 max-w-full items-center gap-1.5 rounded-control-sm bg-inlay ps-2 pe-1 type-meta-strong text-foreground">
-      <span className="truncate">{children}</span>
-      {onRemove ? (
-        <button
-          type="button"
-          aria-label={label}
-          onClick={onRemove}
-          className="grid size-5 place-items-center rounded-detail text-muted-foreground outline-none hover:bg-card hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <X aria-hidden className="size-3" />
-        </button>
-      ) : null}
-    </span>
+    <>
+      <div className="flex min-h-8 items-center">
+        {typeof label === "string" ? <span className="type-meta text-muted-foreground">{label}</span> : label}
+      </div>
+      <div className="flex min-w-0 flex-wrap items-center gap-2">{children}</div>
+    </>
   );
 }
 
-function RuleRow({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="grid grid-cols-[4.5rem_minmax(0,1fr)] items-start gap-3 py-2">
-      <span className="pt-1.5 type-meta text-muted-foreground">{label}</span>
-      <div className="flex min-w-0 flex-wrap items-center gap-1.5">{children}</div>
-    </div>
-  );
-}
+const HOLDER_KINDS = ["everyone", "team", "rule", "chosen"] as const;
 
 function WhoHasIt({
   detail,
@@ -371,130 +396,144 @@ function WhoHasIt({
   const chosenCount = detail.holders.filter((holder) => holder.isChosen).length;
   const chosenIds = new Set(draft.chosen.map((person) => person.userId));
 
-  const kindOptions = (["chosen", "everyone", "team", "rule"] as const).map((kind) => ({ value: kind, label: say(`roles.holders.${kind}`) }));
+  const kindLabel = (kind: RoleHolderKind) => (kind === "rule" ? say("roles.rule") : say(`roles.holders.${kind}`));
   const setKind = (kind: RoleHolderKind) =>
     onChange({
       holderKind: kind,
       conditions: kind === "rule" ? draft.conditions : [],
       chosen: kind === "everyone" ? [] : draft.chosen,
     });
+  const toggleValue = (kind: RoleConditionKind, targetId: string) => {
+    const has = draft.conditions.some((condition) => condition.kind === kind && condition.targetId === targetId);
+    onChange({
+      conditions: has
+        ? draft.conditions.filter((condition) => !(condition.kind === kind && condition.targetId === targetId))
+        : [...draft.conditions, { kind, targetId }],
+    });
+  };
+
+  const kindPick = editable ? (
+    <Pick
+      label={say("roles.holderKind", { kind: kindLabel(draft.holderKind) })}
+      value={draft.holderKind}
+      shown={kindLabel(draft.holderKind)}
+      options={HOLDER_KINDS.map((kind) => ({ value: kind, label: say(`roles.holders.${kind}`) }))}
+      onChange={(kind) => setKind(kind as RoleHolderKind)}
+    />
+  ) : (
+    <span className="shrink-0 type-meta text-muted-foreground">{kindLabel(draft.holderKind)}</span>
+  );
+
+  const people = (
+    <>
+      {draft.chosen.map((person) => (
+        <span key={person.userId} className={CHIP}>
+          <span className={SEGMENT}>
+            <PersonAvatar name={person.name} size="xs" className="size-5" />
+            <b className="truncate font-semibold">{person.name}</b>
+          </span>
+          {editable ? (
+            <RemoveSegment
+              label={say("roles.remove", { name: person.name })}
+              onRemove={() => onChange({ chosen: draft.chosen.filter((item) => item.userId !== person.userId) })}
+            />
+          ) : null}
+        </span>
+      ))}
+      {editable ? <PersonPicker taken={chosenIds} say={say} onPick={(person) => onChange({ chosen: [...draft.chosen, person] })} /> : null}
+    </>
+  );
 
   return (
-    <section aria-labelledby="role-holders" className="flex flex-col gap-3">
+    <section aria-labelledby="role-holders" className="grid gap-3.5">
       <h2 id="role-holders" className="type-section-title">{say("roles.whoHasIt")}</h2>
-      <div className="flex flex-col gap-4 rounded-surface border border-border bg-card p-5">
-        {editable ? (
-          <Segmented value={draft.holderKind} onChange={setKind} options={kindOptions} label={say("roles.whoHasIt")} size="sm" />
-        ) : (
-          <p className="type-label text-foreground">{say(`roles.holders.${draft.holderKind}`)}</p>
-        )}
-
-        {draft.holderKind !== "everyone" ? (
-          <div className="flex flex-col divide-y divide-border">
-            {draft.holderKind === "rule" ? (
-              <>
-                {kindsInRule.map((kind) => {
-                  const inKind = draft.conditions.filter((condition) => condition.kind === kind);
-                  return (
-                    <RuleRow key={kind} label={kindsInRule[0] === kind ? say("roles.rule") : ""}>
-                      <span className="type-label text-foreground">{say(`roles.conditionKinds.${kind}`)}</span>
-                      <span className="type-body text-muted-foreground">{say("roles.is")}</span>
-                      {inKind.map((condition, index) => {
-                        const name = names.get(condition.targetId) ?? say("roles.unknownValue");
-                        return (
-                          <span key={condition.targetId} className="inline-flex items-center gap-1.5">
-                            {index > 0 ? <span className="type-meta text-muted-foreground">{say("roles.or")}</span> : null}
-                            <Chip
-                              label={say("roles.remove", { name })}
-                              onRemove={
-                                editable
-                                  ? () => onChange({ conditions: draft.conditions.filter((item) => item !== condition) })
-                                  : undefined
-                              }
-                            >
-                              {name}
-                            </Chip>
-                          </span>
-                        );
-                      })}
+      <div className="grid gap-4 rounded-surface bg-card px-[22px] py-5">
+        <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-4">
+        <Line label={kindPick}>
+          {draft.holderKind === "rule" ? (
+            <>
+              {kindsInRule.map((kind, index) => {
+                const inKind = draft.conditions.filter((condition) => condition.kind === kind).map((condition) => condition.targetId);
+                const kindName = say(`roles.conditionKinds.${kind}`);
+                return (
+                  <span key={kind} className="inline-flex max-w-full items-center gap-2">
+                    {index > 0 ? <span className="type-control text-muted-foreground">{say("roles.and")}</span> : null}
+                    <span className={CHIP}>
+                      <span className={cn(SEGMENT, "text-muted-foreground")}>{kindName}</span>
+                      <span className={cn(SEGMENT, "text-muted-foreground")}>{say("roles.is")}</span>
+                      <ValueToggle
+                        kind={kind}
+                        values={values[kind]}
+                        chosen={inKind}
+                        editable={editable}
+                        names={names}
+                        onToggle={(id) => toggleValue(kind, id)}
+                        say={say}
+                      />
                       {editable ? (
-                        <ValuePicker
-                          kind={kind}
-                          values={values[kind]}
-                          taken={new Set(inKind.map((condition) => condition.targetId))}
-                          onPick={(targetId) => onChange({ conditions: [...draft.conditions, { kind, targetId }] })}
-                          say={say}
+                        <RemoveSegment
+                          label={say("roles.remove", { name: kindName })}
+                          onRemove={() => onChange({ conditions: draft.conditions.filter((condition) => condition.kind !== kind) })}
                         />
                       ) : null}
-                    </RuleRow>
-                  );
-                })}
-                {editable && kindsInRule.length < KINDS.length ? (
-                  <RuleRow label={kindsInRule.length ? "" : say("roles.rule")}>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <Plus aria-hidden className="size-3.5" />
-                          {say("roles.condition")}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start">
-                        {KINDS.filter((kind) => !kindsInRule.includes(kind)).map((kind) => (
-                          <ValueMenu key={kind} kind={kind} values={values[kind]} say={say}
-                            onPick={(targetId) => onChange({ conditions: [...draft.conditions, { kind, targetId }] })} />
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </RuleRow>
-                ) : null}
-              </>
-            ) : null}
-
-            {editable || draft.chosen.length > 0 ? (
-              <RuleRow label={draft.holderKind === "chosen" ? say("roles.holders.chosen") : say("roles.also")}>
-                {draft.chosen.map((person) => (
-                  <Chip
-                    key={person.userId}
-                    label={say("roles.remove", { name: person.name })}
-                    onRemove={
-                      editable ? () => onChange({ chosen: draft.chosen.filter((item) => item.userId !== person.userId) }) : undefined
-                    }
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <PersonAvatar name={person.name} size="xs" />
-                      {person.name}
                     </span>
-                  </Chip>
-                ))}
-                {editable ? <PersonPicker taken={chosenIds} say={say} onPick={(person) => onChange({ chosen: [...draft.chosen, person] })} /> : null}
-              </RuleRow>
-            ) : null}
-          </div>
-        ) : null}
+                  </span>
+                );
+              })}
+              {editable && kindsInRule.length < KINDS.length ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger className={ADD}>
+                    <Plus aria-hidden className="size-[13px]" />
+                    {say("roles.condition")}
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    {KINDS.filter((kind) => !kindsInRule.includes(kind)).map((kind) => (
+                      <ValueMenu key={kind} kind={kind} values={values[kind]} say={say}
+                        onPick={(targetId) => onChange({ conditions: [...draft.conditions, { kind, targetId }] })} />
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : null}
+            </>
+          ) : draft.holderKind === "chosen" ? (
+            people
+          ) : null}
+        </Line>
 
-        <div className={cn("flex flex-col gap-3 border-t border-border pt-4", dirtyHolders && "opacity-60")}>
+        {(draft.holderKind === "rule" || draft.holderKind === "team") && (editable || draft.chosen.length > 0) ? (
+          <Line label={say("roles.also")}>{people}</Line>
+        ) : null}
+        </div>
+
+        <div className={cn("grid gap-3 border-t border-border pt-3.5", dirtyHolders && "opacity-60")}>
           <div className="flex flex-wrap items-center gap-3">
             {detail.holders.length ? (
-              <span className="flex -space-x-1.5">
-                {detail.holders.slice(0, 6).map((holder) => (
-                  <PersonAvatar key={holder.userId} name={holder.name} size="sm" className="ring-2 ring-card" />
+              <span className="flex">
+                {detail.holders.slice(0, 6).map((holder, index) => (
+                  <PersonAvatar key={holder.userId} name={holder.name} size="sm" className={cn("size-7 ring-2 ring-card", index > 0 && "-ms-2")} />
                 ))}
               </span>
             ) : null}
-            <div className="flex min-w-0 flex-1 flex-col">
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
               <span className="type-label text-foreground">{say("roles.people", { count: detail.holders.length })}</span>
               {dirtyHolders ? (
                 <span className="type-meta text-muted-foreground">{say("roles.updatesOnSave")}</span>
-              ) : ruleCount && chosenCount ? (
+              ) : ruleCount || chosenCount ? (
                 <span className="type-meta text-muted-foreground">
-                  {say("roles.fromRule", { rule: ruleCount, chosen: chosenCount, both: "yes" })}
+                  {say("roles.fromRule", { rule: ruleCount, chosen: chosenCount, both: ruleCount && chosenCount ? "yes" : "no" })}
                 </span>
               ) : null}
             </div>
             {detail.holders.length ? (
-              <Button variant="ghost" size="sm" aria-expanded={showAll} onClick={() => setShowAll((value) => !value)}>
+              <button
+                type="button"
+                aria-expanded={showAll}
+                onClick={() => setShowAll((value) => !value)}
+                className="inline-flex items-center gap-1 rounded-control-sm type-control-label text-foreground outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+              >
                 {showAll ? say("roles.hideThem") : say("roles.showThem")}
-              </Button>
+                <ArrowRight aria-hidden className={cn("size-3.5 text-muted-foreground transition-transform rtl:rotate-180", showAll && "rotate-90 rtl:rotate-90")} />
+              </button>
             ) : null}
           </div>
           {showAll ? (
@@ -602,7 +641,7 @@ function AdministratorsRole({ detail, say, editable }: { detail: RoleDetailDto; 
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <section aria-labelledby="admins-who" className="flex flex-col gap-3">
         <h2 id="admins-who" className="type-section-title">{say("roles.whoHasIt")}</h2>
-        <ul className="flex flex-col divide-y divide-border rounded-surface border border-border bg-card">
+        <ul className="flex flex-col divide-y divide-border rounded-surface bg-card">
           {detail.holders.map((holder) => (
             <li key={holder.userId} className="flex items-center gap-3 px-5 py-3.5">
               <PersonAvatar name={holder.name} size="md" />
@@ -618,7 +657,7 @@ function AdministratorsRole({ detail, say, editable }: { detail: RoleDetailDto; 
       </section>
       <section aria-labelledby="admins-what" className="flex flex-col gap-3">
         <h2 id="admins-what" className="type-section-title">{say("roles.whatItCanDo", { role: say("roles.administrators.name") })}</h2>
-        <div className="flex items-center gap-4 rounded-surface border border-border bg-card px-5 py-4">
+        <div className="flex items-center gap-4 rounded-surface bg-card px-5 py-4">
           <span className="grid size-10 place-items-center rounded-control bg-inlay text-foreground">
             <Crown aria-hidden className="size-5" />
           </span>
@@ -673,7 +712,7 @@ function RoleEditor({ roleId, section }: { roleId: string; section: FusionSettin
   if (!detail || !draft || !saved) {
     return (
       <Frame back={say("roles.back")} title={<Skeleton className="h-9 w-48" />}>
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="grid gap-[30px] lg:grid-cols-[minmax(0,1fr)_440px]">
           <div className="flex flex-col gap-6">
             <Skeleton className="h-40 w-full rounded-surface" />
             <Skeleton className="h-96 w-full rounded-surface" />
@@ -766,8 +805,8 @@ function RoleEditor({ roleId, section }: { roleId: string; section: FusionSettin
       {detail.role.isAdministrators ? (
         <AdministratorsRole detail={detail} say={say} editable={section.access === "manage"} />
       ) : (
-        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
-          <div className="flex min-w-0 flex-col gap-10">
+        <div className="grid items-start gap-[30px] lg:grid-cols-[minmax(0,1fr)_440px]">
+          <div className="grid min-w-0 gap-7">
             <WhoHasIt
               detail={detail}
               draft={draft}
@@ -778,16 +817,18 @@ function RoleEditor({ roleId, section }: { roleId: string; section: FusionSettin
               onChange={update}
               say={say}
             />
-            <section aria-labelledby="role-areas" className="flex flex-col gap-3">
+            <section aria-labelledby="role-areas" className="grid gap-3.5">
               <h2 id="role-areas" className="type-section-title">{say("roles.whatItCanDo", { role: roleName })}</h2>
-              <div className="flex flex-col gap-2 rounded-surface border border-border bg-card px-5 py-4">
+              <div className="rounded-surface bg-card py-1.5">
                 {GROUPS.map((group) => {
                   const rows = areas.filter((area) => area.group === group);
                   if (!rows.length) return null;
                   return (
-                    <div key={group} className="flex flex-col pt-2 first:pt-0">
-                      <h3 className="pb-1 type-subsection-title">{say(`roles.groups.${group}`)}</h3>
-                      <ul className="flex flex-col divide-y divide-border">
+                    <div key={group}>
+                      <div className="px-[22px] pt-4">
+                        <AreaGroupTitle group={group} say={say} />
+                      </div>
+                      <ul className="grid px-[22px] pt-1 pb-1.5">
                         {rows.map((area) => (
                           <Sentence
                             key={area.id}

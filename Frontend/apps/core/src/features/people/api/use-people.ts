@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react";
 import {
   coreOrgChartQueryKeys,
   corePeopleQueryKeys,
+  tenantSettingsQueryKeys,
   createCorePeopleApi,
   fusionNavigationQueryKeys,
   type UpdatePersonalRequest,
@@ -215,6 +216,31 @@ export function useUpdatePeopleAbout(employeeKey: string) {
   return useApiMutation((about: string | null) => api.updateAbout(employeeKey, about), {
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: corePeopleQueryKeys.profiles() }),
   });
+}
+
+/** Company fields the server allows this viewer to see on the person. */
+export function usePeopleFields(employeeKey: string, enabled = true) {
+  const api = usePeopleApi();
+  const { user, isAuthenticated, isLoading } = useAuth();
+  return useApiQuery(
+    corePeopleQueryKeys.fields(employeeKey),
+    useCallback((signal) => api.fields(employeeKey, signal), [api, employeeKey]),
+    { enabled: !isLoading && isAuthenticated && canAccessEmployeeProfile(user) && Boolean(employeeKey) && enabled }
+  );
+}
+
+export function useUpdatePeopleField(employeeKey: string) {
+  const api = usePeopleApi();
+  const queryClient = useQueryClient();
+  return useApiMutation(
+    ({ fieldKey, value }: { fieldKey: string; value: unknown }) => api.updateField(employeeKey, fieldKey, value),
+    {
+      onSuccess: () => {
+        void queryClient.invalidateQueries({ queryKey: corePeopleQueryKeys.fields(employeeKey) });
+        void queryClient.invalidateQueries({ queryKey: tenantSettingsQueryKeys.fields() });
+      },
+    }
+  );
 }
 
 /** The person's documents: the person and HR only (the server answers 403 to anyone else). */

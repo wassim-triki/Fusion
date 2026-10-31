@@ -44,6 +44,59 @@
     "didNotLoad": "Employee fields didn't load",
     "notSaved": "Employee fields didn't save. Try again.",
     "leave": "Leave without saving? Your changes to Employee fields are discarded.",
+    "newField": "New field",
+    "editField": "Edit field",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "discard": "Discard",
+    "cancel": "Cancel",
+    "apply": "Apply",
+    "remove": "Remove",
+    "showsIn": "Shows in",
+    "fieldType": "Type",
+    "required": "Required",
+    "seenBy": "Seen by",
+    "seenByField": "Who sees {field}",
+    "changedBy": "Changed by",
+    "datedChange": "Dated change",
+    "more": "More for {field}",
+    "readyMade": "Ready-made",
+    "readyMadeMeta": "Add one, then change it",
+    "added": "Added",
+    "add": "Add",
+    "recordsToComplete": "Records to complete",
+    "peopleCount": "{count, plural, =0 {None} one {# person} other {# people}}",
+    "recordsComplete": "Every required field is complete.",
+    "onPersonPage": "On the person page",
+    "choosePerson": "Choose a person",
+    "aboutName": "About {name}",
+    "areas": {
+      "About": "About",
+      "Personal": "Personal",
+      "Job": "Job"
+    },
+    "types": {
+      "Text": "Text",
+      "Tags": "Tags",
+      "Date": "Date",
+      "Email": "Email",
+      "Phone": "Phone number",
+      "Address": "Address",
+      "Section": "Section"
+    },
+    "audience": {
+      "Everyone": "Everyone",
+      "ManagersAndHr": "Managers and HR",
+      "YouAndHr": "You and HR",
+      "Hr": "HR",
+      "Hidden": "Hidden"
+    },
+    "editors": {
+      "Employee": "Them",
+      "Hr": "HR",
+      "EmployeeWithApproval": "Them, HR approves",
+      "DatedChange": "Dated change"
+    },
     "onProfile": "On a profile",
     "field": "Field",
     "columns": {
@@ -134,7 +187,11 @@
         "label": "Managers and HR",
         "detail": "HR sees the whole company and managers their own line. Nobody else sees the chart."
       }
-    }
+    },
+    "jobRow": "Job, unit, place, manager and employment type",
+    "jobRowMeta": "Change through Make a change, with a date",
+    "jobEditors": "HR and managers",
+    "notFilled": "Not filled in yet"
   },
   "invitations": {
     "didNotLoad": "Invitations didn't load",

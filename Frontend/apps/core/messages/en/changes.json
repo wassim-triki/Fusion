@@ -25,6 +25,7 @@
     "unit": "Unit",
     "jobTitle": "Title",
     "location": "Location",
+    "employmentType": "Employment type",
     "none": "None",
     "change": "Change",
     "undo": "Undo",

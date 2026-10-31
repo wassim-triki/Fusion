@@ -51,6 +51,11 @@ vi.mock("@/features/catalog/components/catalog-pickers", () => ({
   JobPicker: ({ id }: { id?: string }) => <button type="button" id={id}>Pick a job</button>,
   PlacePicker: ({ id }: { id?: string }) => <button type="button" id={id}>Pick a place</button>,
 }));
+vi.mock("@/features/catalog/api/use-catalog", () => ({
+  useCompanyLists: () => ({ data: [{ id: "employment-types", values: [
+    { id: "full", key: "full-time", label: "Full-time", sortOrder: 0, isRetired: false, usageCount: 0, inUse: false },
+  ] }] }),
+}));
 
 import EstablishmentWorkspace from "./establishment-workspace";
 
@@ -75,8 +80,9 @@ describe("EstablishmentWorkspace — Add existing", () => {
     expect(screen.getByText("Employment start")).toBeInTheDocument();
     expect(screen.getByText("Work details effective from")).toBeInTheDocument();
 
-    // Employment type is gone from the Slice 1 UI
-    expect(screen.queryByText(/Employment type/i)).not.toBeInTheDocument();
+    // B-196: initial employment is where the company's employment type is set.
+    expect(screen.getByText("Employment type")).toBeInTheDocument();
+    expect(screen.getByText("Full-time")).toBeInTheDocument();
 
     // Compact number mode choice
     expect(screen.getByText("Generate automatically")).toBeInTheDocument();
@@ -104,7 +110,7 @@ describe("EstablishmentWorkspace — Hire", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Hire employee" })).toBeInTheDocument();
     expect(screen.getByText("Start date")).toBeInTheDocument();
     expect(screen.queryByText("Work details effective from")).not.toBeInTheDocument();
-    expect(screen.queryByText(/Employment type/i)).not.toBeInTheDocument();
+    expect(screen.getByText("Employment type")).toBeInTheDocument();
   });
 
   it("treats a future start as Scheduled, not an error", () => {

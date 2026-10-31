@@ -103,6 +103,56 @@ export interface PeopleDataSettingsDto {
   orgChart: OrgChartSettingsDto;
 }
 
+export type EmployeeFieldArea = "About" | "Personal" | "Job";
+export type EmployeeFieldType = "Text" | "Tags" | "Date" | "Email" | "Phone" | "Address" | "Section";
+export type EmployeeFieldEditor = "Employee" | "Hr" | "EmployeeWithApproval" | "DatedChange";
+
+export interface EmployeeFieldDefinitionDto {
+  id: string | null;
+  key: string;
+  label: string;
+  area: EmployeeFieldArea;
+  type: EmployeeFieldType;
+  changedBy: EmployeeFieldEditor;
+  visible: boolean;
+  visibleToEmployee: boolean;
+  visibleToManager: boolean;
+  required: boolean;
+  builtIn: boolean;
+  sortOrder: number;
+  sourceKey: string | null;
+  galleryKey: string | null;
+}
+
+export interface EmployeeFieldGalleryItemDto {
+  key: string;
+  label: string;
+  description: string;
+  area: EmployeeFieldArea;
+  type: EmployeeFieldType;
+  changedBy: EmployeeFieldEditor;
+}
+
+export interface EmployeeFieldMissingPersonDto {
+  employeeKey: string;
+  displayName: string;
+  jobTitle: string | null;
+  missing: string[];
+}
+
+export interface EmployeeFieldSettingsDto {
+  version: number | null;
+  fields: EmployeeFieldDefinitionDto[];
+  gallery: EmployeeFieldGalleryItemDto[];
+  recordsToComplete: EmployeeFieldMissingPersonDto[];
+}
+
+export type EmployeeFieldInput = Omit<EmployeeFieldDefinitionDto, "builtIn" | "sourceKey">;
+
+export interface UpdateEmployeeFieldsRequest {
+  fields: EmployeeFieldInput[];
+}
+
 export interface ProvisioningSettingsResponseDto {
   version: number | null;
   provisioning: ProvisioningSettingsDto;
@@ -113,6 +163,7 @@ export const tenantSettingsPaths = {
   current: () => "/corehr/settings",
   organization: () => "/corehr/settings/organization",
   peopleData: () => "/corehr/settings/people-data",
+  fields: () => "/corehr/settings/fields",
   provisioning: () => "/corehr/settings/provisioning",
   audit: () => "/corehr/settings/governance/audit",
 } as const;
@@ -122,6 +173,7 @@ export const tenantSettingsQueryKeys = {
   current: () => [...tenantSettingsQueryKeys.all(), "current"] as const,
   organization: () => [...tenantSettingsQueryKeys.all(), "organization"] as const,
   peopleData: () => [...tenantSettingsQueryKeys.all(), "people-data"] as const,
+  fields: () => [...tenantSettingsQueryKeys.all(), "fields"] as const,
   provisioning: () => [...tenantSettingsQueryKeys.all(), "provisioning"] as const,
   audit: () => [...tenantSettingsQueryKeys.all(), "audit"] as const,
 } as const;

@@ -104,10 +104,10 @@ export function ChangePanel({
 
 // --- Job change -----------------------------------------------------------------------------------
 
-type Fact = "unit" | "title" | "location" | "reason";
+type Fact = "unit" | "title" | "location" | "employmentType" | "reason";
 type Picked = { id: string; name: string };
 /** A part of the change the sentence can fill. */
-type Part = "job" | "unit" | "place" | "reason" | "date";
+type Part = "job" | "unit" | "place" | "employmentType" | "reason" | "date";
 
 /** How long typing pauses before Fusion drafts the sentence. */
 const DRAFT_PAUSE_MS = 900;
@@ -151,6 +151,8 @@ function JobForm({
   const [job, setJob] = useState<(Picked & { level?: string | null }) | null>(d?.titleChanged && d.jobToId ? { id: d.jobToId, name: d.titleTo ?? "" } : null);
   const [place, setPlace] = useState<Picked | null | undefined>(
     d?.locationChanged ? (d.placeToId ? { id: d.placeToId, name: d.locationTo ?? "" } : null) : undefined);
+  const [employmentType, setEmploymentType] = useState<Picked | null>(
+    d?.employmentTypeChanged && d.employmentTypeId ? { id: d.employmentTypeId, name: d.employmentType ?? "" } : null);
   const [reasonId, setReasonId] = useState<string | null>(d?.reasonId ?? null);
   const [note, setNote] = useState(editing?.note ?? "");
   const [said, setSaid] = useState("");
@@ -164,9 +166,11 @@ function JobForm({
   const [error, setError] = useState<string | null>(null);
 
   const approvals = useApprovalSettings(describes);
-  const lists = useCompanyLists(describes);
+  const lists = useCompanyLists(!reportingOnly);
   const jobs = useJobs(describes);
   const reasons = (lists.data?.find((list) => list.id === "change-reasons")?.values ?? []).filter((value) => !value.isRetired || value.id === reasonId);
+  const employmentTypes = (lists.data?.find((list) => list.id === "employment-types")?.values ?? [])
+    .filter((value) => !value.isRetired || value.id === employmentType?.id || value.id === person.employment.employmentTypeId);
 
   // A chart drop names the new manager by key; look them up once.
   const dropped = useManagerOptions(date, initialManagerKey ?? "", employeeId);
@@ -182,7 +186,8 @@ function JobForm({
   const unitChanged = Boolean(unit && unit.id !== work?.orgUnitId);
   const titleChanged = job !== null && job.id !== work?.jobId;
   const locationChanged = place !== undefined && (place?.id ?? null) !== (work?.placeId ?? null);
-  const anything = managerChanged || unitChanged || titleChanged || locationChanged;
+  const employmentTypeChanged = employmentType !== null && employmentType.id !== person.employment.employmentTypeId;
+  const anything = managerChanged || unitChanged || titleChanged || locationChanged || employmentTypeChanged;
   const teamShown = person.directReportCount > 0 && (managerChanged || unitChanged);
   const isToday = date === todayIso();
 
@@ -192,7 +197,7 @@ function JobForm({
 
   // The parts of this change the company wants approved; HR's own never wait.
   const touched: ChangeApprovalType[] = [
-    ...(unitChanged || titleChanged ? (["job"] as const) : []),
+    ...(unitChanged || titleChanged || employmentTypeChanged ? (["job"] as const) : []),
     ...(managerChanged || (teamShown && teamStays) ? (["manager"] as const) : []),
     ...(locationChanged ? (["place"] as const) : []),
   ];
@@ -270,6 +275,7 @@ function JobForm({
       jobId: titleChanged ? job!.id : null,
       placeId: locationChanged ? place?.id ?? null : null,
       removePlace: locationChanged && place === null,
+      employmentTypeId: employmentTypeChanged ? employmentType!.id : null,
       reasonId,
       note: note.trim() || null,
     };
@@ -354,6 +360,22 @@ function JobForm({
                 open={open === "location"} onOpen={() => setOpen("location")} onUndo={() => { setByHand("place"); setPlace(undefined); setOpen(null); }} onDone={() => setOpen(null)}>
                 <PlacePicker value={place === undefined ? work?.placeId ?? null : place?.id ?? null}
                   onChange={(next) => { setByHand("place"); setPlace(next ? { id: next.id, name: next.name } : null); setOpen(null); }} />
+              </FactRow>
+              <FactRow label={t("facts.employmentType")} current={person.employment.employmentType ?? t("facts.none")} next={employmentTypeChanged ? employmentType!.name : null}
+                drafted={byAi.has("employmentType")}
+                open={open === "employmentType"} onOpen={() => setOpen("employmentType")}
+                onUndo={() => { setByHand("employmentType"); setEmploymentType(null); setOpen(null); }} onDone={() => setOpen(null)}>
+                <QuickPicks
+                  label={t("facts.employmentType")}
+                  value={employmentType?.id ?? person.employment.employmentTypeId ?? ""}
+                  onPick={(value) => {
+                    setByHand("employmentType");
+                    const picked = employmentTypes.find((item) => item.id === value);
+                    setEmploymentType(picked ? { id: picked.id, name: picked.label } : null);
+                    setOpen(null);
+                  }}
+                  options={employmentTypes.map((value) => ({ value: value.id, label: value.label }))}
+                />
               </FactRow>
               {describes && reasons.length > 0 ? (
                 <FactRow label={t("facts.reason")} current={reasons.find((value) => value.id === reasonId)?.label ?? t("facts.none")} next={null}
@@ -647,12 +669,17 @@ function StartForm({ person, editing, onClose }: { person: PeopleProfileDto; edi
     d?.unitToId ? { id: d.unitToId, name: d.unitTo ?? "" } : person.work?.orgUnitId ? { id: person.work.orgUnitId, name: person.work.organizationName } : null);
   const [jobId, setJobId] = useState<string | null>(d?.jobToId ?? person.work?.jobId ?? null);
   const [placeId, setPlaceId] = useState<string | null>(d ? d.placeToId ?? null : person.work?.placeId ?? null);
+  const lists = useCompanyLists(true);
+  const employmentTypes = (lists.data?.find((list) => list.id === "employment-types")?.values ?? [])
+    .filter((value) => !value.isRetired || value.id === d?.employmentTypeId);
+  const [employmentTypeId, setEmploymentTypeId] = useState<string | null>(d?.employmentTypeId ?? null);
   const [error, setError] = useState<string | null>(null);
   const isToday = date === todayIso();
 
   const save = async () => {
     setError(null);
-    const request = { startDate: date, orgUnitId: unit!.id, jobId: jobId!, placeId, managerEmployeeId: manager?.employeeId ?? null };
+    const request = { startDate: date, orgUnitId: unit!.id, jobId: jobId!, placeId,
+      managerEmployeeId: manager?.employeeId ?? null, employmentTypeId };
     try {
       if (editing) await editChange.mutateAsync({ id: editing.id, request: { join: request } });
       else await startEmployment.mutateAsync(request);
@@ -677,6 +704,9 @@ function StartForm({ person, editing, onClose }: { person: PeopleProfileDto; edi
               <JobPicker value={jobId} onChange={(next) => setJobId(next.id)} /></div>
             <div className="grid gap-1"><span className="type-meta text-muted-foreground">{t("facts.location")}</span>
               <PlacePicker value={placeId} onChange={(next) => setPlaceId(next?.id ?? null)} /></div>
+            <div className="grid gap-1"><span className="type-meta text-muted-foreground">{t("facts.employmentType")}</span>
+              <QuickPicks label={t("facts.employmentType")} value={employmentTypeId ?? ""} onPick={setEmploymentTypeId}
+                options={employmentTypes.map((value) => ({ value: value.id, label: value.label }))} /></div>
           </div>
         </Block>
         <WhenBlock label={t("when.starts")} value={date} onChange={setDate} options={[todayIso()]} />

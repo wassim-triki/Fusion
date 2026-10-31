@@ -4,7 +4,7 @@ import { useSettingsSectionName } from "@repo/ds/shell";
 export const CORE_SETTINGS_SECTIONS = [
   { id: "brand", label: "Brand" },
   { id: "details", label: "Details" },
-  { id: "employee-fields", label: "Employee fields" },
+  { id: "employee-fields", label: "Fields" },
   { id: "lists", label: "Lists" },
   { id: "roles", label: "Roles" },
   { id: "approvals", label: "Changes and approvals" },

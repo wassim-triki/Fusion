@@ -25,6 +25,7 @@
     "unit": "Unité",
     "jobTitle": "Intitulé",
     "location": "Lieu",
+    "employmentType": "Type d’emploi",
     "none": "Aucun",
     "change": "Modifier",
     "undo": "Annuler",

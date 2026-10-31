@@ -1,157 +1,138 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
-import type { FusionSettingsSection, OrgChartAudience, PeopleDataSettingsDto } from "@repo/api";
-import { useSettingsConflictSaver } from "@repo/api/query";
-import { useStagedSettings } from "@repo/api/react";
-import { Checkbox, cn, Switch } from "@repo/ds";
-import { OptionCards } from "@repo/ds/choice";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useState } from "react";
+import type {
+  EmployeeFieldArea,
+  EmployeeFieldDefinitionDto,
+  EmployeeFieldEditor,
+  EmployeeFieldGalleryItemDto,
+  EmployeeFieldType,
+  FusionSettingsSection,
+} from "@repo/api";
 import {
-  PageError,
-  SettingsBlock,
-  SettingsPage,
-  SettingsRow,
-  SettingsRows,
-  SettingsSaveBar,
-  SettingsValue,
-  useSettingsSectionName,
-} from "@repo/ds/shell";
-import {
-  usePeopleDataSettings,
-  useUpdatePeopleDataSettings,
-} from "@/features/settings/api/use-tenant-settings";
-import { sayInEnglish, useSaveFailure, useSettingsSay, type Say } from "@/features/settings/say";
+  Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Switch,
+  cn,
+} from "@repo/ds";
+import { PageError, Said, Section, SettingsPage } from "@repo/ds/shell";
+import { Check, Eye, LockKeyhole, MoreHorizontal, Plus, Save, X } from "lucide-react";
+import { usePeople, usePeopleFields, usePeopleProfile } from "@/features/people/api/use-people";
+import { Monogram } from "@/features/people/components/workforce-ui";
+import { useEmployeeFields, useUpdateEmployeeFields } from "@/features/settings/api/use-tenant-settings";
+import { useCoreSettingsLabel } from "@/features/settings/core-settings";
+import { useRefusal } from "@/i18n/words";
 
-type FieldKey = "firstName" | "lastName" | "email" | "hireDate" | "phone" | "jobTitle" | "workLocation" | "employmentType";
-type Audience = "required" | "visibleToEmployee" | "visibleToManager";
+type Audience = "Everyone" | "ManagersAndHr" | "YouAndHr" | "Hr" | "Hidden";
 
-interface FieldRule {
-  required: boolean;
-  visibleToEmployee: boolean;
-  visibleToManager: boolean;
+const AREAS: EmployeeFieldArea[] = ["About", "Personal", "Job"];
+function audienceOf(field: EmployeeFieldDefinitionDto): Audience {
+  if (!field.visible) return "Hidden";
+  if (field.visibleToEmployee && field.visibleToManager) return "Everyone";
+  if (field.visibleToManager) return "ManagersAndHr";
+  if (field.visibleToEmployee) return "YouAndHr";
+  return "Hr";
 }
 
-export interface EmployeeFieldsDraft {
-  fields: Record<FieldKey, FieldRule>;
-  selfService: { canEditPreferredName: boolean; canEditPhone: boolean };
-  orgChart: OrgChartAudience;
+function withAudience(field: EmployeeFieldDefinitionDto, audience: Audience): EmployeeFieldDefinitionDto {
+  return {
+    ...field,
+    visible: audience !== "Hidden",
+    visibleToEmployee: audience === "Everyone" || audience === "YouAndHr",
+    visibleToManager: audience === "Everyone" || audience === "ManagersAndHr",
+  };
 }
 
-/**
- * The fields on a profile, in the order people meet them, with what can't change: names are always required and
- * seen by everyone, work email is always seen, hire date is always required (the server refuses otherwise). Each
- * field's words (`employeeFields.fields.<key>`: its label, "their …" and the plural) are in the catalogue.
- */
-const FIELDS: { key: FieldKey; locked: readonly Audience[] }[] = [
-  { key: "firstName", locked: ["required", "visibleToEmployee", "visibleToManager"] },
-  { key: "lastName", locked: ["required", "visibleToEmployee", "visibleToManager"] },
-  { key: "email", locked: ["visibleToEmployee", "visibleToManager"] },
-  { key: "hireDate", locked: ["required"] },
-  { key: "phone", locked: [] },
-  { key: "jobTitle", locked: [] },
-  { key: "workLocation", locked: [] },
-  { key: "employmentType", locked: [] },
-];
-
-const COLUMNS: readonly Audience[] = ["required", "visibleToEmployee", "visibleToManager"];
-
-const SELF_SERVICE = ["canEditPreferredName", "canEditPhone"] as const;
-
-const ORG_CHART_AUDIENCES: readonly OrgChartAudience[] = ["Everyone", "ManagersAndHr"];
-
-export function toDraft(settings: PeopleDataSettingsDto): EmployeeFieldsDraft {
-  const fields = Object.fromEntries(
-    FIELDS.map((field) => {
-      const rule = settings.employeeFieldConfig[field.key];
-      return [
-        field.key,
-        {
-          required: rule?.required ?? false,
-          visibleToEmployee: rule?.visibleToEmployee ?? true,
-          visibleToManager: rule?.visibleToManager ?? true,
-        },
-      ];
-    })
-  ) as Record<FieldKey, FieldRule>;
-  return { fields, selfService: { ...settings.selfService }, orgChart: settings.orgChart?.audience ?? "Everyone" };
-}
-
-/** What saving does, one sentence per change, at most two before "and N more". */
-export function employeeFieldsConsequence(saved: EmployeeFieldsDraft, draft: EmployeeFieldsDraft, say: Say = sayInEnglish): string {
-  const field = (key: FieldKey, word: "label" | "their" | "plural") => say(`employeeFields.fields.${key}.${word}`);
-  const said = (key: string, values: Record<string, string>) => say(`employeeFields.consequence.${key}`, values);
-  const sentences: string[] = [];
-  for (const { key } of FIELDS) {
-    const before = saved.fields[key];
-    const after = draft.fields[key];
-    if (before.visibleToManager !== after.visibleToManager) {
-      sentences.push(said(after.visibleToManager ? "managersSee" : "managersStop", { nouns: field(key, "plural") }));
-    }
-    if (before.visibleToEmployee !== after.visibleToEmployee) {
-      sentences.push(said(after.visibleToEmployee ? "employeesSee" : "employeesStop", { their: field(key, "their") }));
-    }
-    if (before.required !== after.required) {
-      sentences.push(said(after.required ? "required" : "optional", { label: field(key, "label") }));
-    }
-  }
-  for (const option of SELF_SERVICE) {
-    if (saved.selfService[option] !== draft.selfService[option]) {
-      const their = say(`employeeFields.selfService.${option}.their`);
-      sentences.push(said(draft.selfService[option] ? "canChange" : "cannotChange", { their }));
-    }
-  }
-  if (saved.orgChart !== draft.orgChart) sentences.push(say(`employeeFields.consequence.orgChart${draft.orgChart}`));
-  if (sentences.length <= 2) return sentences.join(" ");
-  return say("employeeFields.consequence.more", { sentences: sentences.slice(0, 2).join(" "), count: sentences.length - 2 });
-}
-
-/** Settings › Employee fields: who sees each profile field, and what employees change themselves. */
+/** Settings › Company › Fields, ported from the accepted explorer's grouped list, gallery and real-person preview. */
 export function EmployeeFieldsSettings({ section }: { section: FusionSettingsSection }) {
-  const say = useSettingsSay();
-  const failure = useSaveFailure();
-  const title = useSettingsSectionName()(section);
-  const fieldLabel = (key: FieldKey) => say(`employeeFields.fields.${key}.label`);
-  const columnLabel = (column: Audience) => say(`employeeFields.columns.${column}`);
+  const t = useTranslations("settings.employeeFields");
+  const title = useCoreSettingsLabel()(section.id);
+  const refusal = useRefusal();
   const editable = section.access === "manage";
-  const query = usePeopleDataSettings();
-  const update = useUpdatePeopleDataSettings();
-  const saved = useMemo(() => (query.data ? toDraft(query.data) : undefined), [query.data]);
-  const { mutateAsync } = update;
-  const version = query.data?.version ?? null;
-  const save = useCallback(
-    (draft: EmployeeFieldsDraft) =>
-      mutateAsync({
-        expectedVersion: version,
-        input: {
-          employeeFieldConfig: Object.fromEntries(
-            FIELDS.map((field) => [field.key, { visible: true, ...draft.fields[field.key] }])
-          ),
-          selfService: draft.selfService,
-          orgChart: { audience: draft.orgChart },
-        },
-      }),
-    [mutateAsync, version]
+  const query = useEmployeeFields();
+  const update = useUpdateEmployeeFields();
+  const people = usePeople({ page: 1, pageSize: 50, sort: "Name", direction: "Asc" });
+  const [draft, setDraft] = useState<EmployeeFieldDefinitionDto[] | null>(null);
+  const [previewKey, setPreviewKey] = useState("");
+  const [editing, setEditing] = useState<EmployeeFieldDefinitionDto | "new" | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const saved = query.data?.fields;
+  const fields = draft ?? saved ?? [];
+  const dirty = draft !== null && JSON.stringify(draft) !== JSON.stringify(saved);
+
+  useEffect(() => {
+    if (previewKey || !people.data?.items.length) return;
+    setPreviewKey(people.data.items[0]!.employeeKey);
+  }, [people.data, previewKey]);
+
+  const profile = usePeopleProfile(previewKey);
+  const profileFields = usePeopleFields(previewKey, Boolean(previewKey));
+
+  const change = useCallback(
+    (key: string, next: (field: EmployeeFieldDefinitionDto) => EmployeeFieldDefinitionDto) => {
+      setDraft((current) => (current ?? saved ?? []).map((field) => (field.key === key ? next(field) : field)));
+      setError(null);
+    },
+    [saved],
   );
-  const staged = useStagedSettings(saved, save, {
-    onReload: () => void query.refetch(),
-    leaveMessage: say("employeeFields.leave"),
-  });
-  const saver = useSettingsConflictSaver("core", [section.id], staged.conflict);
-  const draft = staged.draft;
+
+  const addGallery = (item: EmployeeFieldGalleryItemDto) => {
+    if (fields.some((field) => field.galleryKey === item.key)) return;
+    const next: EmployeeFieldDefinitionDto = {
+      id: null,
+      key: item.key,
+      label: item.label,
+      area: item.area,
+      type: item.type,
+      changedBy: item.changedBy,
+      visible: true,
+      visibleToEmployee: item.area === "About",
+      visibleToManager: true,
+      required: false,
+      builtIn: false,
+      sortOrder: Math.max(0, ...fields.filter((field) => field.area === item.area).map((field) => field.sortOrder)) + 10,
+      sourceKey: null,
+      galleryKey: item.key,
+    };
+    setDraft([...(draft ?? saved ?? []), next]);
+    setError(null);
+  };
+
+  const remove = (key: string) => {
+    setDraft((current) => (current ?? saved ?? []).filter((field) => field.key !== key));
+    setEditing(null);
+  };
+
+  const save = async () => {
+    if (!dirty) return;
+    setError(null);
+    try {
+      await update.mutateAsync({
+        expectedVersion: query.data?.version ?? null,
+        input: { fields: fields.map(({ builtIn: _builtIn, sourceKey: _sourceKey, ...field }) => field) },
+      });
+      setDraft(null);
+    } catch (caught) {
+      setError(refusal(caught, t("notSaved")));
+    }
+  };
 
   if (query.error && !query.data) {
-    return (
-      <SettingsPage title={title}>
-        <PageError title={say("employeeFields.didNotLoad")} onRetry={() => void query.refetch()} />
-      </SettingsPage>
-    );
+    return <SettingsPage title={title} studio><PageError title={t("didNotLoad")} onRetry={() => void query.refetch()} /></SettingsPage>;
   }
-
-  const setRule = (key: FieldKey, audience: Audience, value: boolean) =>
-    staged.update((current) => ({
-      ...current,
-      fields: { ...current.fields, [key]: { ...current.fields[key], [audience]: value } },
-    }));
 
   return (
     <SettingsPage
@@ -159,134 +140,255 @@ export function EmployeeFieldsSettings({ section }: { section: FusionSettingsSec
       lastChange={section.lastChange}
       setUpAt={section.setUpAt}
       viewOnly={!editable}
-      loading={!draft}
-    >
-      {draft ? (
+      studio
+      loading={!saved}
+      aside={editable ? (
         <>
-          <SettingsBlock title={say("employeeFields.onProfile")}>
-            <div className="-mx-5 -mb-5 overflow-hidden border-t border-border">
-              <table className="w-full table-fixed text-sm">
-                <thead className="bg-inlay">
-                  <tr className="type-meta text-muted-foreground">
-                    <th scope="col" className="px-5 py-2.5 text-start font-semibold">{say("employeeFields.field")}</th>
-                    {COLUMNS.map((column) => (
-                      <th key={column} scope="col" className="w-[128px] px-2 py-2.5 text-center font-semibold">
-                        {columnLabel(column)}
-                      </th>
-                    ))}
-                    <th scope="col" className="w-[96px] px-2 py-2.5 text-center font-semibold">{say("employeeFields.hr")}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {FIELDS.map((field) => {
-                    const rule = draft.fields[field.key];
-                    const changed = saved ? JSON.stringify(saved.fields[field.key]) !== JSON.stringify(rule) : false;
-                    return (
-                      <tr key={field.key} className={cn("h-12", changed && "bg-primary-tint")}>
-                        <th scope="row" className="px-5 text-start type-label font-semibold text-foreground">
-                          {fieldLabel(field.key)}
-                        </th>
-                        {COLUMNS.map((column) => {
-                          const value = rule[column];
-                          return (
-                            <td key={column} className="px-2 text-center">
-                              {editable ? (
-                                <Checkbox
-                                  aria-label={say("employeeFields.cell", { field: fieldLabel(field.key), column: columnLabel(column) })}
-                                  checked={value}
-                                  disabled={field.locked.includes(column)}
-                                  onCheckedChange={(next) => setRule(field.key, column, next === true)}
-                                />
-                              ) : (
-                                <span className="text-foreground">
-                                  {column === "required"
-                                    ? say(value ? "employeeFields.yes" : "employeeFields.no")
-                                    : say(value ? "employeeFields.seesIt" : "employeeFields.hidden")}
-                                </span>
-                              )}
-                            </td>
-                          );
-                        })}
-                        <td className="px-2 text-center">
-                          {editable ? (
-                            <Checkbox aria-label={say("employeeFields.hrAlways", { field: fieldLabel(field.key) })} checked disabled />
-                          ) : (
-                            <span className="text-foreground">{say("employeeFields.seesIt")}</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </SettingsBlock>
-
-          <SettingsBlock title={say("employeeFields.canChange")}>
-            <SettingsRows>
-              {SELF_SERVICE.map((option) => (
-                <SettingsRow
-                  key={option}
-                  label={say(`employeeFields.selfService.${option}.label`)}
-                  htmlFor={editable ? `self-service-${option}` : undefined}
-                >
-                  {editable ? (
-                    <Switch
-                      id={`self-service-${option}`}
-                      checked={draft.selfService[option]}
-                      onCheckedChange={(next) =>
-                        staged.update((current) => ({
-                          ...current,
-                          selfService: { ...current.selfService, [option]: next },
-                        }))
-                      }
-                    />
-                  ) : (
-                    <SettingsValue>{say(draft.selfService[option] ? "employeeFields.yes" : "employeeFields.no")}</SettingsValue>
-                  )}
-                </SettingsRow>
-              ))}
-            </SettingsRows>
-          </SettingsBlock>
-
-          <SettingsBlock title={say("employeeFields.orgChart.title")}>
-            {editable ? (
-              <OptionCards
-                columns={2}
-                label={say("employeeFields.orgChart.title")}
-                value={draft.orgChart}
-                onChange={(value) => staged.update((current) => ({ ...current, orgChart: value }))}
-                options={ORG_CHART_AUDIENCES.map((audience) => ({
-                  value: audience,
-                  label: say(`employeeFields.orgChart.${audience}.label`),
-                  description: say(`employeeFields.orgChart.${audience}.detail`),
-                }))}
-              />
-            ) : (
-              <SettingsRows>
-                <SettingsRow
-                  label={say(`employeeFields.orgChart.${draft.orgChart}.label`)}
-                  description={say(`employeeFields.orgChart.${draft.orgChart}.detail`)}
-                />
-              </SettingsRows>
-            )}
-          </SettingsBlock>
-
-          {editable && saved ? (
-            <SettingsSaveBar
-              changes={staged.changes}
-              consequence={employeeFieldsConsequence(saved, draft, say)}
-              saving={staged.saving}
-              error={failure(staged.error, say("employeeFields.notSaved"))}
-              conflict={saver}
-              conflictPending={staged.conflict && !saver}
-              onDiscard={staged.discard}
-              onSave={() => void staged.submit()}
-              onReload={staged.reload}
-            />
-          ) : null}
+          <Button variant="outline" onClick={() => setEditing("new")}><Plus className="size-4" aria-hidden />{t("newField")}</Button>
+          <Button variant="ghost" disabled={!dirty || update.isLoading} onClick={() => { setDraft(null); setError(null); }}>{t("discard")}</Button>
+          <Button disabled={!dirty || update.isLoading} onClick={() => void save()}><Save className="size-4" aria-hidden />{update.isLoading ? t("saving") : t("save")}</Button>
         </>
-      ) : null}
+      ) : undefined}
+    >
+      <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="min-w-0 space-y-7">
+          {AREAS.map((area) => (
+            <FieldGroup
+              key={area}
+              area={area}
+              fields={fields.filter((field) => field.area === area).sort((a, b) => a.sortOrder - b.sortOrder)}
+              editable={editable}
+              onAudience={(key, audience) => change(key, (field) => withAudience(field, audience))}
+              onEdit={setEditing}
+            />
+          ))}
+          <Gallery items={query.data?.gallery ?? []} added={new Set(fields.map((field) => field.galleryKey).filter(Boolean))} editable={editable} onAdd={addGallery} />
+          <RecordsToComplete records={query.data?.recordsToComplete ?? []} />
+          {error ? <p role="alert" className="type-body text-destructive">{error}</p> : null}
+        </div>
+        <Preview
+          people={people.data?.items ?? []}
+          employeeKey={previewKey}
+          onEmployee={setPreviewKey}
+          name={profile.data?.identity.displayName ?? ""}
+          photoUrl={profile.data?.identity.photoUrl}
+          about={profile.data?.identity.about ?? null}
+          fields={fields.filter((field) => field.area === "About" && field.sourceKey === null)}
+          savedFields={profileFields.data ?? []}
+        />
+      </div>
+      <FieldDialog
+        field={editing}
+        onClose={() => setEditing(null)}
+        onSave={(field) => {
+          if (editing === "new") setDraft([...(draft ?? saved ?? []), field]);
+          else change(field.key, () => field);
+          setEditing(null);
+        }}
+        onRemove={remove}
+      />
     </SettingsPage>
+  );
+}
+
+function FieldGroup({ area, fields, editable, onAudience, onEdit }: {
+  area: EmployeeFieldArea;
+  fields: EmployeeFieldDefinitionDto[];
+  editable: boolean;
+  onAudience: (key: string, audience: Audience) => void;
+  onEdit: (field: EmployeeFieldDefinitionDto) => void;
+}) {
+  const t = useTranslations("settings.employeeFields");
+  if (area === "Job") return <JobGroup />;
+  return (
+    <Section title={t(`areas.${area}`)} flush>
+      <div className="grid min-h-9 grid-cols-[minmax(0,1fr)_150px_128px_36px] items-center gap-3 border-b px-5 type-meta text-muted-foreground">
+        <span /><span>{t("seenBy")}</span><span>{t("changedBy")}</span><span />
+      </div>
+      <div className="divide-y divide-border">
+        {fields.map((field) => {
+          return (
+            <div key={field.key} className="grid min-h-[52px] grid-cols-[minmax(0,1fr)_150px_128px_36px] items-center gap-3 px-5">
+              <div className="min-w-0">
+                <p className="truncate type-label text-foreground">{field.label}{field.required ? <span className="ms-1 text-primary-ink">*</span> : null}</p>
+                <p className="type-meta text-muted-foreground">{t(`types.${field.type}`)}</p>
+              </div>
+              {editable ? (
+                <AudienceSelect value={audienceOf(field)} onChange={(value) => onAudience(field.key, value)} label={field.label} />
+              ) : (
+                <span className="inline-flex items-center gap-1.5 type-meta text-muted-foreground"><Eye className="size-3.5" aria-hidden />{t(`audience.${audienceOf(field)}`)}</span>
+              )}
+              <span className="type-meta text-muted-foreground">
+                {t(`editors.${field.changedBy}`)}
+              </span>
+              {editable ? (
+                <Button variant="ghost" size="icon-sm" aria-label={t("more", { field: field.label })} onClick={() => onEdit(field)}><MoreHorizontal className="size-4" aria-hidden /></Button>
+              ) : <span />}
+            </div>
+          );
+        })}
+      </div>
+    </Section>
+  );
+}
+
+/** Job facts are one locked row: they change only through Make a change, with a date (D-18). */
+function JobGroup() {
+  const t = useTranslations("settings.employeeFields");
+  return (
+    <Section title={t("areas.Job")} flush>
+      <div className="grid min-h-[52px] grid-cols-[minmax(0,1fr)_150px_128px_36px] items-center gap-3 px-5">
+        <div className="min-w-0">
+          <p className="flex items-center gap-2 type-label text-foreground">{t("jobRow")}<LockKeyhole className="size-3.5 text-muted-foreground" aria-hidden /></p>
+          <p className="type-meta text-muted-foreground">{t("jobRowMeta")}</p>
+        </div>
+        <span className="inline-flex items-center gap-1.5 type-meta text-muted-foreground"><Eye className="size-3.5" aria-hidden />{t("audience.Everyone")}</span>
+        <span className="type-meta text-muted-foreground">{t("jobEditors")}</span>
+        <span />
+      </div>
+    </Section>
+  );
+}
+
+function AudienceSelect({ value, onChange, label }: { value: Audience; onChange: (value: Audience) => void; label: string }) {
+  const t = useTranslations("settings.employeeFields");
+  return (
+    <Select value={value} onValueChange={(next) => onChange(next as Audience)}>
+      <SelectTrigger className="h-8 w-[146px]" aria-label={t("seenByField", { field: label })}><Eye className="size-3.5" aria-hidden /><SelectValue /></SelectTrigger>
+      <SelectContent>
+        {(["Everyone", "ManagersAndHr", "YouAndHr", "Hr", "Hidden"] as Audience[]).map((audience) => <SelectItem key={audience} value={audience}>{t(`audience.${audience}`)}</SelectItem>)}
+      </SelectContent>
+    </Select>
+  );
+}
+
+function Gallery({ items, added, editable, onAdd }: { items: EmployeeFieldGalleryItemDto[]; added: Set<string | null>; editable: boolean; onAdd: (item: EmployeeFieldGalleryItemDto) => void }) {
+  const t = useTranslations("settings.employeeFields");
+  return (
+    <Section title={t("readyMade")} meta={t("readyMadeMeta")} flush>
+      <div className="grid px-5 sm:grid-cols-2 sm:gap-x-6">
+        {items.map((item, index) => {
+          const isAdded = added.has(item.key);
+          return (
+            <div key={item.key} className={cn("flex min-h-14 items-center gap-3 border-t py-2.5", index < 2 && "sm:border-t-0", index === 0 && "border-t-0")}>
+              <div className="min-w-0 flex-1"><p className="type-label text-foreground">{item.label}</p><p className="truncate type-meta text-muted-foreground">{item.description}</p></div>
+              {isAdded ? <span className="inline-flex items-center gap-1 type-meta text-muted-foreground"><Check className="size-3.5 text-success" aria-hidden />{t("added")}</span>
+                : editable ? <Button variant="outline" size="sm" onClick={() => onAdd(item)}><Plus className="size-3.5" aria-hidden />{t("add")}</Button> : null}
+            </div>
+          );
+        })}
+      </div>
+    </Section>
+  );
+}
+
+function RecordsToComplete({ records }: { records: { employeeKey: string; displayName: string; jobTitle: string | null; missing: string[] }[] }) {
+  const t = useTranslations("settings.employeeFields");
+  return (
+    <Section title={t("recordsToComplete")} meta={t("peopleCount", { count: records.length })} flush>
+      {records.length ? <div className="divide-y divide-border">
+        {records.slice(0, 8).map((person) => (
+          <Link key={person.employeeKey} href={`/people/${person.employeeKey}`} className="flex min-h-14 items-center gap-3 px-5 hover:bg-inlay">
+            <Monogram name={person.displayName} size="sm" />
+            <div className="min-w-0 flex-1"><p className="truncate type-label">{person.displayName}</p><p className="truncate type-meta text-muted-foreground">{person.jobTitle}</p></div>
+            <span className="max-w-[45%] truncate type-meta text-muted-foreground">{person.missing.join(", ")}</span>
+          </Link>
+        ))}
+      </div> : <p className="px-5 py-4 type-body text-muted-foreground">{t("recordsComplete")}</p>}
+    </Section>
+  );
+}
+
+function Preview({ people, employeeKey, onEmployee, name, photoUrl, about, fields, savedFields }: {
+  people: { employeeKey: string; displayName: string }[];
+  employeeKey: string;
+  onEmployee: (key: string) => void;
+  name: string;
+  photoUrl?: string | null;
+  about: string | null;
+  fields: EmployeeFieldDefinitionDto[];
+  savedFields: { key: string; value: unknown }[];
+}) {
+  const t = useTranslations("settings.employeeFields");
+  const value = (field: EmployeeFieldDefinitionDto): string[] => {
+    const stored = savedFields.find((candidate) => candidate.key === field.key)?.value;
+    if (Array.isArray(stored)) return stored.map(String);
+    if (typeof stored === "string" && stored.trim()) return [stored];
+    return [];
+  };
+  return (
+    <aside className="grid gap-3 xl:sticky xl:top-5">
+      <div className="flex items-center justify-between gap-3">
+        <p className="type-meta text-muted-foreground">{t("onPersonPage")}</p>
+        <Select value={employeeKey} onValueChange={onEmployee}>
+          <SelectTrigger className="h-8 max-w-56"><SelectValue placeholder={t("choosePerson")} /></SelectTrigger>
+          <SelectContent>{people.map((person) => <SelectItem key={person.employeeKey} value={person.employeeKey}>{person.displayName}</SelectItem>)}</SelectContent>
+        </Select>
+      </div>
+      <Section title={name ? t("aboutName", { name }) : t("areas.About")}>
+        {name ? <div className="mb-4 flex items-center gap-3"><Monogram name={name} photoUrl={photoUrl} size="md" /><p className="type-label">{name}</p></div> : null}
+        {about ? <Said className="mb-5">{about}</Said> : null}
+        <div className="space-y-4">
+          {fields.map((field) => {
+            const values = value(field);
+            return <div key={field.key} className={cn("grid gap-2", field.id === null && "animate-in fade-in slide-in-from-bottom-1 duration-300")}><p className="type-meta text-muted-foreground">{field.label}</p><div className="flex flex-wrap gap-2">
+              {values.length ? values.map((item) => <span key={item} className="rounded-control border border-border bg-inlay px-2.5 py-1 type-meta-strong">{item}</span>)
+                : <span className="type-meta text-muted-foreground">{t("notFilled")}</span>}
+            </div></div>;
+          })}
+        </div>
+      </Section>
+    </aside>
+  );
+}
+
+function FieldDialog({ field, onClose, onSave, onRemove }: { field: EmployeeFieldDefinitionDto | "new" | null; onClose: () => void; onSave: (field: EmployeeFieldDefinitionDto) => void; onRemove: (key: string) => void }) {
+  const t = useTranslations("settings.employeeFields");
+  const original = field && field !== "new" ? field : null;
+  // A built-in field keeps its name, place and editor; only whether it is required changes here.
+  const fixed = Boolean(original?.builtIn);
+  const [label, setLabel] = useState("");
+  const [area, setArea] = useState<EmployeeFieldArea>("About");
+  const [type, setType] = useState<EmployeeFieldType>("Text");
+  const [editor, setEditor] = useState<EmployeeFieldEditor>("Employee");
+  const [required, setRequired] = useState(false);
+  useEffect(() => {
+    setLabel(original?.label ?? ""); setArea(original?.area ?? "About"); setType(original?.type ?? "Text");
+    setEditor(original?.changedBy ?? "Employee"); setRequired(original?.required ?? false);
+  }, [field, original]);
+  const submit = () => {
+    const clean = label.trim();
+    if (!clean) return;
+    onSave(original ? { ...original, label: clean, area, type, changedBy: editor, required } : {
+      id: null, key: `custom-${globalThis.crypto?.randomUUID?.().slice(0, 8) ?? Date.now()}`, label: clean, area, type,
+      changedBy: editor, visible: true, visibleToEmployee: true, visibleToManager: true, required, builtIn: false,
+      sortOrder: 500, sourceKey: null, galleryKey: null,
+    });
+  };
+  return (
+    <Dialog open={Boolean(field)} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
+        <DialogHeader><DialogTitle>{original ? t("editField") : t("newField")}</DialogTitle></DialogHeader>
+        <div className="grid gap-4">
+          <label className="grid gap-1.5 type-label">{t("field")}<Input value={label} maxLength={100} autoFocus disabled={fixed} onChange={(event) => setLabel(event.target.value)} /></label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="grid gap-1.5 type-label">{t("showsIn")}<Select value={area} disabled={fixed} onValueChange={(next) => setArea(next as EmployeeFieldArea)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
+              <SelectItem value="About">{t("areas.About")}</SelectItem><SelectItem value="Personal">{t("areas.Personal")}</SelectItem>
+            </SelectContent></Select></label>
+            <label className="grid gap-1.5 type-label">{t("fieldType")}<Select value={type} disabled={Boolean(original)} onValueChange={(next) => setType(next as EmployeeFieldType)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
+              {(["Text", "Tags", "Date", "Email", "Phone", "Address", "Section"] as EmployeeFieldType[]).map((value) => <SelectItem key={value} value={value}>{t(`types.${value}`)}</SelectItem>)}
+            </SelectContent></Select></label>
+          </div>
+          <label className="grid gap-1.5 type-label">{t("changedBy")}<Select value={editor} disabled={fixed} onValueChange={(next) => setEditor(next as EmployeeFieldEditor)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
+            {([...(fixed && editor !== "Employee" && editor !== "Hr" ? [editor] : []), "Employee", "Hr"] as EmployeeFieldEditor[]).map((value) => <SelectItem key={value} value={value}>{t(`editors.${value}`)}</SelectItem>)}
+          </SelectContent></Select></label>
+          <label className="flex min-h-10 items-center justify-between gap-4 rounded-control border px-3 type-label">{t("required")}<Switch checked={required} onCheckedChange={setRequired} /></label>
+        </div>
+        <DialogFooter className="items-center sm:justify-between">
+          {original && !original.builtIn ? <Button variant="ghost" className="text-destructive" onClick={() => onRemove(original.key)}><X className="size-4" aria-hidden />{t("remove")}</Button> : <span />}
+          <div className="flex gap-2"><Button variant="ghost" onClick={onClose}>{t("cancel")}</Button><Button disabled={!label.trim()} onClick={submit}>{t("apply")}</Button></div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

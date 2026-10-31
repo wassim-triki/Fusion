@@ -3,13 +3,14 @@
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import type { PersonPerformanceSummaryDto } from "@repo/api";
+import type { EmployeeProfileFieldDto, PersonPerformanceSummaryDto } from "@repo/api";
 import { Button, Skeleton, Textarea, cn } from "@repo/ds";
 import { Section, Said } from "@repo/ds/shell";
 import { ArrowRight, BarChart3, Inbox, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useRefusal } from "@/i18n/words";
-import { useUpdatePeopleAbout } from "../../api/use-people";
+import { usePeopleFields, useUpdatePeopleAbout } from "../../api/use-people";
+import { ProfileFields } from "./profile-fields";
 import { ProfileTimeline } from "./job-tab";
 import type { WorkerProfileView } from "./worker-profile-view";
 
@@ -139,6 +140,7 @@ export function OverviewTab({
   performanceHref?: string;
 }) {
   const t = useTranslations("profile.overview");
+  const fields = usePeopleFields(view.employeeKey);
   const { month, day } = useDayParts();
   const anniversary = nextAnniversary(view.employmentStart);
   const rows: UpcomingItem[] = [
@@ -165,7 +167,14 @@ export function OverviewTab({
 
   return (
     <div className="space-y-5">
-      {view.about || canEditAbout ? <AboutSection view={view} canEdit={canEditAbout} isSelf={isSelf} /> : null}
+      {view.about || canEditAbout || (fields.data?.some((field) => field.area === "About") ?? false) ? (
+        <AboutSection
+          view={view}
+          canEdit={canEditAbout}
+          isSelf={isSelf}
+          fields={(fields.data ?? []).filter((field) => field.area === "About")}
+        />
+      ) : null}
 
       {changes.length > 0 || rows.length > 0 ? (
         <Section title={t("comingUp")} flush={rows.length > 0 && changes.length === 0}>
@@ -227,7 +236,17 @@ export function useDayParts() {
 }
 
 /** About (D-01): a few lines in the person's own words, in the editorial face; edited in place. */
-function AboutSection({ view, canEdit, isSelf }: { view: WorkerProfileView; canEdit: boolean; isSelf: boolean }) {
+function AboutSection({
+  view,
+  canEdit,
+  isSelf,
+  fields,
+}: {
+  view: WorkerProfileView;
+  canEdit: boolean;
+  isSelf: boolean;
+  fields: EmployeeProfileFieldDto[];
+}) {
   const t = useTranslations("profile.overview");
   const refusal = useRefusal();
   const update = useUpdatePeopleAbout(view.employeeKey);
@@ -279,9 +298,14 @@ function AboutSection({ view, canEdit, isSelf }: { view: WorkerProfileView; canE
         </form>
       ) : view.about ? (
         <Said>{view.about}</Said>
-      ) : (
+      ) : fields.length === 0 ? (
         <p className="type-body text-muted-foreground">{isSelf ? t("aboutEmptySelf") : t("aboutEmpty")}</p>
-      )}
+      ) : null}
+      {fields.length > 0 ? (
+        <div className={cn((editing || view.about) && "mt-5 border-t border-border pt-5")}>
+          <ProfileFields employeeKey={view.employeeKey} fields={fields} />
+        </div>
+      ) : null}
     </Section>
   );
 }

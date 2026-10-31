@@ -196,7 +196,8 @@
       "you": "Vous",
       "yourManagers": "vos responsables",
       "theirManagers": "les responsables de {name}"
-    }
+    },
+    "moreDetails": "Autres informations"
   },
   "photo": {
     "titleSelf": "Votre photo",
@@ -251,6 +252,9 @@
     "aboutEmpty": "Rien pour l'instant.",
     "aboutPromptSelf": "Ce sur quoi vous travaillez, ce qu'on peut vous demander",
     "aboutPrompt": "Ce sur quoi {name} travaille, ce qu'on peut lui demander",
+    "tagsPrompt": "Saisissez-en un, puis Entrée",
+    "fieldSaved": "{field} enregistré",
+    "fieldFailed": "{field} n’a pas été enregistré.",
     "workAnniversary": "Anniversaire d'entrée",
     "oneOnOne": "Votre 1:1 avec {name}",
     "asked": "{by} a demandé un point sur « {title} »",
@@ -260,7 +264,8 @@
     "open": "Ouvert",
     "today": "Aujourd'hui",
     "fromPerformance": "Performance",
-    "fromCoreHr": "Core HR"
+    "fromCoreHr": "Core HR",
+    "removeTag": "Retirer {tag}"
   },
   "documents": {
     "title": "Documents",

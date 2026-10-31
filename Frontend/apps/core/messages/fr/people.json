@@ -149,6 +149,7 @@
       "phone": "Téléphone",
       "startDate": "Date d’arrivée",
       "employmentStart": "Début du contrat",
+      "employmentType": "Type d’emploi",
       "workFrom": "Poste effectif à partir du",
       "scheduledStarts": "Programmé · arrive le {date}",
       "organization": "Unité",

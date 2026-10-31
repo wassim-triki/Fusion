@@ -149,6 +149,7 @@
       "phone": "الهاتف",
       "startDate": "تاريخ البدء",
       "employmentStart": "بداية التوظيف",
+      "employmentType": "نوع التوظيف",
       "workFrom": "تسري تفاصيل العمل من",
       "scheduledStarts": "مجدول · يبدأ في {date}",
       "organization": "الوحدة",

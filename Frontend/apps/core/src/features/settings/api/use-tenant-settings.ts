@@ -7,6 +7,8 @@ import {
   tenantSettingsQueryKeys,
   tenantSettingsPaths,
   type OrganizationSettingsDto,
+  type EmployeeFieldSettingsDto,
+  type UpdateEmployeeFieldsRequest,
   type PeopleDataSettingsDto,
   type ProvisioningSettingsResponseDto,
   type SettingsAuditEventDto,
@@ -27,6 +29,11 @@ interface UpdatePeopleDataSettingsArgs {
 interface UpdateProvisioningSettingsArgs {
   expectedVersion: number | null;
   input: Pick<UpdateTenantSettingsRequest, "provisioning">;
+}
+
+interface UpdateEmployeeFieldsArgs {
+  expectedVersion: number | null;
+  input: UpdateEmployeeFieldsRequest;
 }
 
 function buildIfMatchHeaders(expectedVersion: number | null) {
@@ -67,6 +74,16 @@ export function usePeopleDataSettings(enabled = true) {
   return useApiQuery(tenantSettingsQueryKeys.peopleData(), queryFn, {
     enabled: isAuthenticated && enabled,
   });
+}
+
+export function useEmployeeFields(enabled = true) {
+  const { isAuthenticated } = useAuth();
+  const client = useMemo(() => createPlatformApiClient(), []);
+  const queryFn = useCallback(
+    (signal: AbortSignal) => client.get<EmployeeFieldSettingsDto>(tenantSettingsPaths.fields(), { signal }),
+    [client]
+  );
+  return useApiQuery(tenantSettingsQueryKeys.fields(), queryFn, { enabled: isAuthenticated && enabled });
 }
 
 export function useProvisioningSettings(enabled = true) {
@@ -135,6 +152,24 @@ export function useUpdatePeopleDataSettings() {
     {
       onSuccess: async (data) => {
         queryClient.setQueryData(tenantSettingsQueryKeys.peopleData(), data);
+        await afterSave();
+      },
+    }
+  );
+}
+
+export function useUpdateEmployeeFields() {
+  const client = useMemo(() => createPlatformApiClient(), []);
+  const queryClient = useApiQueryClient();
+  const afterSave = useAfterSave();
+  return useApiMutation<EmployeeFieldSettingsDto, UpdateEmployeeFieldsArgs>(
+    ({ expectedVersion, input }) =>
+      client.put<EmployeeFieldSettingsDto>(tenantSettingsPaths.fields(), input, {
+        headers: buildIfMatchHeaders(expectedVersion),
+      }),
+    {
+      onSuccess: async (data) => {
+        queryClient.setQueryData(tenantSettingsQueryKeys.fields(), data);
         await afterSave();
       },
     }

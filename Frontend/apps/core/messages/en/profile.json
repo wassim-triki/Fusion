@@ -196,7 +196,8 @@
       "you": "You",
       "yourManagers": "your managers",
       "theirManagers": "{name}'s managers"
-    }
+    },
+    "moreDetails": "More details"
   },
   "photo": {
     "titleSelf": "Your photo",
@@ -251,6 +252,9 @@
     "aboutEmpty": "Nothing here yet.",
     "aboutPromptSelf": "What you work on, what people can ask you about",
     "aboutPrompt": "What {name} works on, what people can ask them about",
+    "tagsPrompt": "Type one, then press Enter",
+    "fieldSaved": "{field} saved",
+    "fieldFailed": "{field} wasn't saved.",
     "workAnniversary": "Work anniversary",
     "oneOnOne": "Your 1:1 with {name}",
     "asked": "{by} asked for an update on \"{title}\"",
@@ -260,7 +264,8 @@
     "open": "Open",
     "today": "Today",
     "fromPerformance": "Performance",
-    "fromCoreHr": "Core HR"
+    "fromCoreHr": "Core HR",
+    "removeTag": "Remove {tag}"
   },
   "documents": {
     "title": "Documents",

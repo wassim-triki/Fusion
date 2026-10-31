@@ -18,7 +18,9 @@ import { useRefusal } from "@/i18n/words";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { RequestSheet } from "@/features/changes/request-sheet";
 import { useChangeRights, useRequestDecisions } from "../../changes/use-changes";
-import { usePeoplePersonal, useUpdatePeoplePersonal } from "../../api/use-people";
+import { usePeopleFields, usePeoplePersonal, useUpdatePeoplePersonal } from "../../api/use-people";
+import { Section as Block } from "@repo/ds/shell";
+import { ProfileFields } from "./profile-fields";
 import { Monogram, useWorkforceDate } from "../workforce-ui";
 
 type Section = "identity" | "contact" | "address" | "emergency";
@@ -121,7 +123,20 @@ function PersonalSections({
       {full ? <AddressSection {...shared} seenBy={seenBy?.full} /> : null}
       {full ? <EmergencySection {...shared} seenBy={seenBy?.full} displayName={displayName} /> : null}
       <IdentitySection {...shared} seenBy={full ? seenBy?.full : seenBy?.everyone} locked={!locks.canEditPreferredName} hr={hr} />
+      <CompanyFields employeeKey={employeeKey} />
     </div>
+  );
+}
+
+/** The company's own Personal fields (B-181); each one comes back only to people it is shown to. */
+function CompanyFields({ employeeKey }: { employeeKey: string }) {
+  const t = useTranslations("profile.personal");
+  const fields = (usePeopleFields(employeeKey).data ?? []).filter((field) => field.area === "Personal");
+  if (!fields.some((field) => field.canEdit || (Array.isArray(field.value) ? field.value.length > 0 : Boolean(field.value)))) return null;
+  return (
+    <Block title={t("moreDetails")}>
+      <ProfileFields employeeKey={employeeKey} fields={fields} />
+    </Block>
   );
 }
 

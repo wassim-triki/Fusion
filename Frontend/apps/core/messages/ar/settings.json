@@ -44,6 +44,59 @@
     "didNotLoad": "تعذّر تحميل حقول الموظفين",
     "notSaved": "لم تُحفظ حقول الموظفين. أعد المحاولة.",
     "leave": "المغادرة دون حفظ؟ ستُتجاهل تغييراتك على حقول الموظفين.",
+    "newField": "حقل جديد",
+    "editField": "تعديل الحقل",
+    "save": "حفظ التغييرات",
+    "saving": "جارٍ الحفظ…",
+    "discard": "تجاهل",
+    "cancel": "إلغاء",
+    "apply": "تطبيق",
+    "remove": "إزالة",
+    "showsIn": "يظهر في",
+    "fieldType": "النوع",
+    "required": "مطلوب",
+    "seenBy": "يراه",
+    "seenByField": "من يرى {field}",
+    "changedBy": "يعدّله",
+    "datedChange": "تغيير مؤرّخ",
+    "more": "المزيد لـ {field}",
+    "readyMade": "حقول جاهزة",
+    "readyMadeMeta": "أضف حقلاً ثم عدّله",
+    "added": "مضاف",
+    "add": "إضافة",
+    "recordsToComplete": "سجلات تحتاج إلى إكمال",
+    "peopleCount": "{count, plural, =0 {لا أحد} one {شخص واحد} other {# أشخاص}}",
+    "recordsComplete": "جميع الحقول المطلوبة مكتملة.",
+    "onPersonPage": "على صفحة الشخص",
+    "choosePerson": "اختر شخصاً",
+    "aboutName": "نبذة عن {name}",
+    "areas": {
+      "About": "نبذة",
+      "Personal": "شخصي",
+      "Job": "الوظيفة"
+    },
+    "types": {
+      "Text": "نص",
+      "Tags": "وسوم",
+      "Date": "تاريخ",
+      "Email": "بريد إلكتروني",
+      "Phone": "رقم هاتف",
+      "Address": "عنوان",
+      "Section": "قسم"
+    },
+    "audience": {
+      "Everyone": "الجميع",
+      "ManagersAndHr": "المديرون والموارد البشرية",
+      "YouAndHr": "أنت والموارد البشرية",
+      "Hr": "الموارد البشرية",
+      "Hidden": "مخفي"
+    },
+    "editors": {
+      "Employee": "الشخص",
+      "Hr": "الموارد البشرية",
+      "EmployeeWithApproval": "الشخص، بموافقة الموارد البشرية",
+      "DatedChange": "تغيير مؤرّخ"
+    },
     "onProfile": "في الملف",
     "field": "الحقل",
     "columns": {
@@ -134,7 +187,11 @@
         "label": "المديرون والموارد البشرية",
         "detail": "ترى الموارد البشرية الشركة كاملة ويرى المديرون فرقهم فقط. لا يراه أحد غيرهم."
       }
-    }
+    },
+    "jobRow": "الوظيفة والوحدة والمكان والمدير ونوع العقد",
+    "jobRowMeta": "يتغير عبر إجراء تغيير، بتاريخ",
+    "jobEditors": "الموارد البشرية والمديرون",
+    "notFilled": "لم يُملأ بعد"
   },
   "invitations": {
     "didNotLoad": "تعذّر تحميل الدعوات",

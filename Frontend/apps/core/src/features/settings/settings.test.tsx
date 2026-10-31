@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import type { FusionSettingsSection, PeopleDataSettingsDto } from "@repo/api";
+import type { EmployeeFieldSettingsDto, FusionSettingsSection } from "@repo/api";
 
 const mocks = vi.hoisted(() => ({
   sections: undefined as FusionSettingsSection[] | undefined,
-  peopleData: undefined as PeopleDataSettingsDto | undefined,
+  fields: undefined as EmployeeFieldSettingsDto | undefined,
 }));
 
 vi.mock("@repo/api/query", () => ({
@@ -14,8 +14,13 @@ vi.mock("@repo/api/query", () => ({
 }));
 
 vi.mock("@/features/settings/api/use-tenant-settings", () => ({
-  usePeopleDataSettings: () => ({ data: mocks.peopleData, error: null, refetch: vi.fn() }),
-  useUpdatePeopleDataSettings: () => ({ mutateAsync: vi.fn() }),
+  useEmployeeFields: () => ({ data: mocks.fields, error: null, refetch: vi.fn() }),
+  useUpdateEmployeeFields: () => ({ mutateAsync: vi.fn(), isLoading: false }),
+}));
+vi.mock("@/features/people/api/use-people", () => ({
+  usePeople: () => ({ data: { items: [] } }),
+  usePeopleProfile: () => ({ data: undefined }),
+  usePeopleFields: () => ({ data: [] }),
 }));
 
 import { createTranslator } from "next-intl";
@@ -26,7 +31,7 @@ import type { Say } from "./say";
 import { describeChange, isRoleChange, periodOf, roleChange } from "./sections/change-history";
 import { invitationsConsequence } from "./sections/invitations";
 import { CoreSettingsSectionHost } from "./section-host";
-import { EmployeeFieldsSettings, employeeFieldsConsequence, toDraft } from "./sections/employee-fields";
+import { EmployeeFieldsSettings } from "./sections/employee-fields";
 
 const replace = vi.fn();
 Object.defineProperty(window, "location", { value: { ...window.location, replace }, writable: true });
@@ -40,63 +45,38 @@ function section(id: string, access: "view" | "manage"): FusionSettingsSection {
   return { id, label: id === "employee-fields" ? "Employee fields" : "Company", order: 1, path: `/core/settings/${id}`, access, lastChange: null };
 }
 
-const PEOPLE_DATA: PeopleDataSettingsDto = {
+const FIELDS: EmployeeFieldSettingsDto = {
   version: 3,
-  downstreamConsumers: [],
-  selfService: { canEditPreferredName: true, canEditPhone: true },
-  orgChart: { audience: "Everyone" },
-  employeeFieldConfig: {
-    firstName: { visible: true, required: true, visibleToEmployee: true, visibleToManager: true },
-    lastName: { visible: true, required: true, visibleToEmployee: true, visibleToManager: true },
-    email: { visible: true, required: false, visibleToEmployee: true, visibleToManager: true },
-    hireDate: { visible: true, required: true, visibleToEmployee: true, visibleToManager: true },
-    phone: { visible: true, required: false, visibleToEmployee: true, visibleToManager: false },
-    jobTitle: { visible: true, required: false, visibleToEmployee: true, visibleToManager: true },
-    workLocation: { visible: true, required: false, visibleToEmployee: true, visibleToManager: true },
-    employmentType: { visible: true, required: false, visibleToEmployee: true, visibleToManager: true },
-  },
+  fields: [
+    { id: "1", key: "about-me", label: "About me", area: "About", type: "Text", changedBy: "Employee", visible: true, visibleToEmployee: true, visibleToManager: true, required: false, builtIn: true, sortOrder: 10, sourceKey: "about", galleryKey: null },
+    { id: "2", key: "phone", label: "Phone", area: "Personal", type: "Phone", changedBy: "Employee", visible: true, visibleToEmployee: true, visibleToManager: false, required: false, builtIn: true, sortOrder: 20, sourceKey: "phone", galleryKey: null },
+    { id: "3", key: "job-title", label: "Job", area: "Job", type: "Text", changedBy: "DatedChange", visible: true, visibleToEmployee: true, visibleToManager: true, required: false, builtIn: true, sortOrder: 20, sourceKey: "jobTitle", galleryKey: null },
+  ],
+  gallery: [{ key: "skills", label: "Skills", description: "Tags", area: "About", type: "Tags", changedBy: "Employee" }],
+  recordsToComplete: [],
 };
 
 describe("Employee fields", () => {
   it("shows a view-only reader every value as text, with no inputs or save bar", () => {
-    mocks.peopleData = PEOPLE_DATA;
+    mocks.fields = FIELDS;
     render(<EmployeeFieldsSettings section={section("employee-fields", "view")} />);
     expect(screen.getByText("View only")).toBeInTheDocument();
-    expect(screen.queryAllByRole("checkbox")).toHaveLength(0);
     expect(screen.queryAllByRole("switch")).toHaveLength(0);
-    const phone = screen.getByRole("row", { name: /Phone/ });
-    expect(phone).toHaveTextContent("NoSees itHiddenSees it");
+    expect(screen.getByText("Phone")).toBeInTheDocument();
+    expect(screen.getByText("You and HR")).toBeInTheDocument();
+    expect(screen.getByText("Change through Make a change, with a date")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Save" })).not.toBeInTheDocument();
   });
 
-  it("locks names and gives a manager a checkbox per audience, HR fixed", () => {
-    mocks.peopleData = PEOPLE_DATA;
+  it("groups fields, exposes audiences, and keeps job facts dated", () => {
+    mocks.fields = FIELDS;
     render(<EmployeeFieldsSettings section={section("employee-fields", "manage")} />);
-    expect(screen.getByRole("checkbox", { name: "First name: Required" })).toBeDisabled();
-    expect(screen.getByRole("checkbox", { name: "Phone: Their manager" })).toBeEnabled();
-    expect(screen.getByRole("checkbox", { name: "Phone: HR always sees it" })).toBeDisabled();
-    expect(screen.getByRole("radio", { name: /^Everyone/ })).toBeChecked();
-    expect(screen.getByRole("radio", { name: /^Managers and HR/ })).not.toBeChecked();
-  });
-
-  it("shows a view-only reader who sees the org chart", () => {
-    mocks.peopleData = { ...PEOPLE_DATA, orgChart: { audience: "ManagersAndHr" } };
-    render(<EmployeeFieldsSettings section={section("employee-fields", "view")} />);
-    expect(screen.queryAllByRole("radio")).toHaveLength(0);
-    expect(screen.getByText("Managers and HR")).toBeInTheDocument();
-  });
-
-  it("names the consequence of a change", () => {
-    const saved = toDraft({
-      ...PEOPLE_DATA,
-      employeeFieldConfig: { ...PEOPLE_DATA.employeeFieldConfig, phone: { ...PEOPLE_DATA.employeeFieldConfig.phone!, visibleToManager: true } },
-    });
-    const draft = toDraft(PEOPLE_DATA);
-    expect(employeeFieldsConsequence(saved, draft)).toBe("Managers stop seeing phone numbers on their team's profiles.");
-    expect(
-      employeeFieldsConsequence(draft, { ...draft, selfService: { ...draft.selfService, canEditPhone: false } })
-    ).toBe("Employees can no longer change their phone number.");
-    expect(employeeFieldsConsequence(draft, { ...draft, orgChart: "ManagersAndHr" })).toBe("Only managers and HR see the org chart.");
+    expect(screen.getAllByRole("heading", { name: "About" }).length).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: "Personal" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Job" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "New field" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Save changes" })).toBeDisabled();
+    expect(screen.getByText("Change through Make a change, with a date")).toBeInTheDocument();
   });
 });
 
@@ -106,24 +86,18 @@ const sayInFrench: Say = (key, values) => french(key as never, values as never);
 
 describe("In French", () => {
   it("renders Employee fields in French, naming the section from the catalogue", () => {
-    mocks.peopleData = PEOPLE_DATA;
+    mocks.fields = FIELDS;
     render(
       <IntlTestProvider locale="fr" messages={{ ...dsFr, ...fr }}>
         <EmployeeFieldsSettings section={section("employee-fields", "view")} />
       </IntlTestProvider>
     );
-    expect(screen.getByRole("heading", { level: 1, name: "Champs collaborateur" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Champs" })).toBeInTheDocument();
     expect(screen.getByText("Lecture seule")).toBeInTheDocument();
-    expect(screen.getByRole("row", { name: /Téléphone/ })).toHaveTextContent("NonVisibleMasquéVisible");
+    expect(screen.getByText("Vous et les RH")).toBeInTheDocument();
   });
 
   it("says what saving does with French agreement", () => {
-    const saved = toDraft(PEOPLE_DATA);
-    const draft = toDraft({
-      ...PEOPLE_DATA,
-      employeeFieldConfig: { ...PEOPLE_DATA.employeeFieldConfig, hireDate: { ...PEOPLE_DATA.employeeFieldConfig.hireDate!, required: false } },
-    });
-    expect(employeeFieldsConsequence(saved, draft, sayInFrench)).toBe("Date d’embauche n’est plus obligatoire.");
     expect(
       invitationsConsequence(
         { inviteExpiryDays: 7, resendCooldownHours: 24, defaultAccessProfileId: null, pendingInviteBehavior: "RefreshExisting" },

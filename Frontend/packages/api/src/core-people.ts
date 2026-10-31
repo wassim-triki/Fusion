@@ -135,6 +135,16 @@ export interface PeoplePersonalDto {
   audience?: PeoplePersonalAudienceDto | null;
 }
 
+export interface EmployeeProfileFieldDto {
+  key: string;
+  label: string;
+  area: "About" | "Personal" | "Job";
+  type: "Text" | "Tags" | "Date" | "Email" | "Phone" | "Address" | "Section";
+  value: unknown;
+  required: boolean;
+  canEdit: boolean;
+}
+
 /**
  * The preferred name is everyone's; the mobile reaches the `contact` roles and, with `contactTeam`, the managers above
  * the person; everything else only the `full` roles. Administrators are named only when no other role is.
@@ -336,6 +346,9 @@ export interface WorkforceChangeDetails {
   placeFromId?: string | null;
   placeToId?: string | null;
   employmentTypeId?: string | null;
+  employmentTypeFromId?: string | null;
+  employmentTypeFrom?: string | null;
+  employmentTypeChanged?: boolean;
   /** Why, from the company's change reasons; the label as it was then. */
   reasonId?: string | null;
   reason?: string | null;
@@ -372,6 +385,7 @@ export interface JobChangeRequest {
   jobId?: string | null;
   placeId?: string | null;
   removePlace?: boolean;
+  employmentTypeId?: string | null;
   note?: string | null;
   /** A value of the company's change reasons. */
   reasonId?: string | null;
@@ -562,6 +576,10 @@ export const corePeoplePaths = {
     `/corehr/employees/people/${encodeURIComponent(employeeKey)}/documents`,
   about: (employeeKey: string) =>
     `/corehr/employees/people/${encodeURIComponent(employeeKey)}/about`,
+  fields: (employeeKey: string) =>
+    `/corehr/employees/people/${encodeURIComponent(employeeKey)}/fields`,
+  field: (employeeKey: string, fieldKey: string) =>
+    `/corehr/employees/people/${encodeURIComponent(employeeKey)}/fields/${encodeURIComponent(fieldKey)}`,
   document: (employeeKey: string, documentId: string) =>
     `/corehr/employees/people/${encodeURIComponent(employeeKey)}/documents/${encodeURIComponent(documentId)}`,
   hire: () => "/corehr/employees/hire",
@@ -587,6 +605,8 @@ export const corePeopleQueryKeys = {
     [...corePeopleQueryKeys.profiles(), employeeKey, "access"] as const,
   personal: (employeeKey: string) =>
     [...corePeopleQueryKeys.profiles(), employeeKey, "personal"] as const,
+  fields: (employeeKey: string) =>
+    [...corePeopleQueryKeys.profiles(), employeeKey, "fields"] as const,
   jobHistory: (employeeKey: string) =>
     [...corePeopleQueryKeys.profiles(), employeeKey, "job-history"] as const,
   documents: (employeeKey: string) =>
@@ -678,6 +698,10 @@ export function createCorePeopleApi(client: ApiClient) {
     /** The person or whoever changes personal details; blank clears it. At most 1000 characters. */
     updateAbout: (employeeKey: string, about: string | null) =>
       client.put<string | null>(corePeoplePaths.about(employeeKey), { about }),
+    fields: (employeeKey: string, signal?: AbortSignal) =>
+      client.get<EmployeeProfileFieldDto[]>(corePeoplePaths.fields(employeeKey), { signal }),
+    updateField: (employeeKey: string, fieldKey: string, value: unknown) =>
+      client.put<EmployeeProfileFieldDto>(corePeoplePaths.field(employeeKey, fieldKey), { value }),
     documents: (employeeKey: string, signal?: AbortSignal) =>
       client.get<EmployeeDocumentsDto>(corePeoplePaths.documents(employeeKey), { signal }),
     /** The file itself; the API needs the bearer token, so a plain link can't download it. */

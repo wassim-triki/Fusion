@@ -19,7 +19,7 @@ import {
   PopoverTrigger,
   cn,
 } from "@repo/ds";
-import { Segmented } from "@repo/ds/choice";
+import { QuickPicks, Segmented } from "@repo/ds/choice";
 import { PageContainer, StatusBadge } from "@repo/ds/shell";
 import type {
   AddExistingEmployeeRequest,
@@ -40,6 +40,7 @@ import {
   Plus,
 } from "lucide-react";
 import { JobPicker, PlacePicker } from "@/features/catalog/components/catalog-pickers";
+import { useCompanyLists } from "@/features/catalog/api/use-catalog";
 import { useOrganizationHierarchy } from "@/features/organization/api/use-organization";
 import { OrganizationTree } from "@/features/organization/components/organization-tree";
 import { usePeopleEstablishmentMutations } from "../api/use-people";
@@ -57,6 +58,7 @@ type FormState = {
   numberMode: "Generated" | "Manual";
   employeeNumber: string;
   startDate: string;
+  employmentTypeId: string;
   workDate: string;
   orgUnitId: string;
   jobId: string;
@@ -152,6 +154,7 @@ export default function EstablishmentWorkspace({ mode }: { mode: EstablishmentMo
   const [form, setForm] = useState<FormState>({
     firstName: "", lastName: "", preferredName: "", workEmail: "", phone: "",
     numberMode: "Generated", employeeNumber: "", startDate: isHire ? today() : "",
+    employmentTypeId: "",
     workDate: today(), orgUnitId: "", jobId: "", jobTitle: "", placeId: "", placeName: "",
     managerMode: "None", managerEmployeeId: "",
   });
@@ -162,6 +165,10 @@ export default function EstablishmentWorkspace({ mode }: { mode: EstablishmentMo
   const manualNumberRef = useRef<HTMLInputElement>(null);
   const effectiveDate = isHire ? form.startDate : form.workDate;
   const hierarchy = useOrganizationHierarchy(effectiveDate || today(), Boolean(effectiveDate));
+  const lists = useCompanyLists();
+  const employmentTypes = (lists.data?.find((list) => list.id === "employment-types")?.values ?? [])
+    .filter((value) => !value.isRetired || value.id === form.employmentTypeId);
+  const employmentType = employmentTypes.find((value) => value.id === form.employmentTypeId);
   const orgChoices = useMemo(() => flattenOrg(hierarchy.data?.roots ?? []), [hierarchy.data?.roots]);
   // The server searches every possible manager; the chosen one stays listed while another search runs.
   const [managerSearch, setManagerSearch] = useState("");
@@ -241,6 +248,7 @@ export default function EstablishmentWorkspace({ mode }: { mode: EstablishmentMo
         workEmail: form.workEmail.trim() || null, phone: form.phone.trim() || null,
         employeeNumberMode: form.numberMode, employeeNumber: form.numberMode === "Manual" ? form.employeeNumber.trim() : null,
         orgUnitId: form.orgUnitId, jobId: form.jobId, placeId: form.placeId || null,
+        employmentTypeId: form.employmentTypeId || null,
         primaryManagerEmployeeId: form.managerMode === "Manager" ? form.managerEmployeeId : null,
       };
       const result = isHire
@@ -287,6 +295,7 @@ export default function EstablishmentWorkspace({ mode }: { mode: EstablishmentMo
               <p className="type-meta text-muted-foreground">{t("summary.workEffective", { date: form.workDate ? workforceDate(form.workDate) : "—" })}</p>
             </>
           )}
+          {employmentType ? <p className="type-meta text-muted-foreground">{employmentType.label}</p> : null}
         </dd>
       </div>
       <div className="border-t pt-4">
@@ -392,6 +401,11 @@ export default function EstablishmentWorkspace({ mode }: { mode: EstablishmentMo
                   <div className="flex items-end pb-2"><StatusBadge tone="info" dot>{t("fields.scheduledStarts", { date: workforceDate(form.startDate) })}</StatusBadge></div>
                 ) : null}
               </div>
+              <Field><FieldLabel>{t("fields.employmentType")} <span className="font-normal text-muted-foreground">{t("fields.optional")}</span></FieldLabel>
+                <QuickPicks label={t("fields.employmentType")} value={form.employmentTypeId}
+                  onPick={(value) => set("employmentTypeId", value === form.employmentTypeId ? "" : value)}
+                  options={employmentTypes.map((value) => ({ value: value.id, label: value.label }))} />
+              </Field>
             </FormSection>
 
             <FormSection title={isHire ? t("section.work") : t("section.currentWork")}>

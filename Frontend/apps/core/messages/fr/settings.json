@@ -44,6 +44,59 @@
     "didNotLoad": "Impossible de charger les champs collaborateur",
     "notSaved": "Les champs collaborateur n’ont pas été enregistrés. Réessayez.",
     "leave": "Quitter sans enregistrer ? Vos modifications des champs collaborateur seront perdues.",
+    "newField": "Nouveau champ",
+    "editField": "Modifier le champ",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "discard": "Annuler les modifications",
+    "cancel": "Annuler",
+    "apply": "Appliquer",
+    "remove": "Supprimer",
+    "showsIn": "Affiché dans",
+    "fieldType": "Type",
+    "required": "Obligatoire",
+    "seenBy": "Visible par",
+    "seenByField": "Qui voit {field}",
+    "changedBy": "Modifié par",
+    "datedChange": "Changement daté",
+    "more": "Plus pour {field}",
+    "readyMade": "Prêts à l’emploi",
+    "readyMadeMeta": "Ajoutez-en un, puis adaptez-le",
+    "added": "Ajouté",
+    "add": "Ajouter",
+    "recordsToComplete": "Dossiers à compléter",
+    "peopleCount": "{count, plural, =0 {Aucun} one {# personne} other {# personnes}}",
+    "recordsComplete": "Tous les champs obligatoires sont renseignés.",
+    "onPersonPage": "Sur la page de la personne",
+    "choosePerson": "Choisir une personne",
+    "aboutName": "À propos de {name}",
+    "areas": {
+      "About": "À propos",
+      "Personal": "Personnel",
+      "Job": "Poste"
+    },
+    "types": {
+      "Text": "Texte",
+      "Tags": "Étiquettes",
+      "Date": "Date",
+      "Email": "E-mail",
+      "Phone": "Téléphone",
+      "Address": "Adresse",
+      "Section": "Section"
+    },
+    "audience": {
+      "Everyone": "Tout le monde",
+      "ManagersAndHr": "Managers et RH",
+      "YouAndHr": "Vous et les RH",
+      "Hr": "RH",
+      "Hidden": "Masqué"
+    },
+    "editors": {
+      "Employee": "La personne",
+      "Hr": "RH",
+      "EmployeeWithApproval": "La personne, validation RH",
+      "DatedChange": "Changement daté"
+    },
     "onProfile": "Sur un profil",
     "field": "Champ",
     "columns": {
@@ -134,7 +187,11 @@
         "label": "Managers et RH",
         "detail": "Les RH voient toute l’entreprise et les managers leur propre ligne. Les autres ne le voient pas."
       }
-    }
+    },
+    "jobRow": "Poste, unité, lieu, manager et type de contrat",
+    "jobRowMeta": "Se change par Faire un changement, avec une date",
+    "jobEditors": "RH et managers",
+    "notFilled": "Pas encore renseigné"
   },
   "invitations": {
     "didNotLoad": "Impossible de charger les invitations",

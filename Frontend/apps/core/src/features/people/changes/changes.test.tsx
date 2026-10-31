@@ -29,7 +29,10 @@ vi.mock("./use-changes", () => ({
 vi.mock("@/features/catalog/api/use-catalog", () => ({
   useJobs: () => ({ data: [] }),
   usePlaces: () => ({ data: [] }),
-  useCompanyLists: () => ({ data: [{ id: "change-reasons", values: [{ id: "promo", key: "promotion", label: "Promotion", sortOrder: 0, isRetired: false, usageCount: 0, inUse: false }] }] }),
+  useCompanyLists: () => ({ data: [
+    { id: "change-reasons", values: [{ id: "promo", key: "promotion", label: "Promotion", sortOrder: 0, isRetired: false, usageCount: 0, inUse: false }] },
+    { id: "employment-types", values: [{ id: "full", key: "full-time", label: "Full-time", sortOrder: 0, isRetired: false, usageCount: 0, inUse: false }] },
+  ] }),
 }));
 vi.mock("../api/use-people", () => ({ usePeopleProfile: () => ({ data: person() }) }));
 vi.mock("@/features/organization/api/use-organization", () => ({ useOrganizationHierarchy: () => ({ data: { roots: [] }, isLoading: false }) }));

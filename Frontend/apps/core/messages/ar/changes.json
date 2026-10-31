@@ -25,6 +25,7 @@
     "unit": "الوحدة",
     "jobTitle": "المسمى",
     "location": "الموقع",
+    "employmentType": "نوع التوظيف",
     "none": "لا شيء",
     "change": "تغيير",
     "undo": "تراجع",

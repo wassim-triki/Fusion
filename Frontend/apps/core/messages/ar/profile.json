@@ -196,7 +196,8 @@
       "you": "أنت",
       "yourManagers": "مسؤولوك",
       "theirManagers": "مسؤولو {name}"
-    }
+    },
+    "moreDetails": "تفاصيل أخرى"
   },
   "photo": {
     "titleSelf": "صورتك",
@@ -251,6 +252,9 @@
     "aboutEmpty": "لا شيء هنا بعد.",
     "aboutPromptSelf": "ما تعمل عليه، وما يمكن أن يسألك الناس عنه",
     "aboutPrompt": "ما يعمل عليه {name}، وما يمكن أن يُسأل عنه",
+    "tagsPrompt": "اكتب واحدًا ثم اضغط Enter",
+    "fieldSaved": "تم حفظ {field}",
+    "fieldFailed": "لم يتم حفظ {field}.",
     "workAnniversary": "ذكرى الانضمام",
     "oneOnOne": "لقاؤك الفردي مع {name}",
     "asked": "طلب {by} تحديثًا حول «{title}»",
@@ -260,7 +264,8 @@
     "open": "مفتوح",
     "today": "اليوم",
     "fromPerformance": "الأداء",
-    "fromCoreHr": "Core HR"
+    "fromCoreHr": "Core HR",
+    "removeTag": "إزالة {tag}"
   },
   "documents": {
     "title": "المستندات",

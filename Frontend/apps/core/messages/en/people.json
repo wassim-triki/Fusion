@@ -149,6 +149,7 @@
       "phone": "Phone",
       "startDate": "Start date",
       "employmentStart": "Employment start",
+      "employmentType": "Employment type",
       "workFrom": "Work details effective from",
       "scheduledStarts": "Scheduled · starts {date}",
       "organization": "Organization",

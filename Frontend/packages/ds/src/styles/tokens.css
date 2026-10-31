@@ -18,19 +18,18 @@
     --font-heading: var(--font-sans);
     --font-editorial: "Lora Variable", "Noto Sans Arabic Variable", Georgia, "Times New Roman", serif;
     --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-    /* A quiet canvas step keeps working surfaces legible without turning the
-       product into white/gray soup. Cards and overlays remain true white. */
-    --background: oklch(0.985 0.001 286.375);
+    /* Frames have no border (DESIGN.md §5), so light mode carries every step in tone: a grey canvas, sections a
+       step up, cards and overlays true white (B-219). */
+    --background: oklch(0.955 0.002 286.375);
     --foreground: oklch(0.141 0.005 285.823);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.141 0.005 285.823);
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.141 0.005 285.823);
-    /* Surface tone ladder (DESIGN.md §8): canvas → section → card → inlay, each nested level one step
-       lighter, never darker. Light mode can't lift past white, so frames and cards share it (borders
-       carry the step) and the inlay drops to a near-white tint. */
-    --section: oklch(1 0 0);
-    --inlay: oklch(0.975 0.001 286.375);
+    /* Surface tone ladder (DESIGN.md §5): canvas → section → card, each nested level one step lighter. Light
+       mode can't lift past white, so the inlay, set into a white card, drops to a near-white tint. */
+    --section: oklch(0.977 0.001 286.375);
+    --inlay: oklch(0.967 0.001 286.375);
     --primary: oklch(0.852 0.199 91.936);
     --primary-foreground: oklch(0.421 0.095 57.708);
     /* Amber icon tiles: light amber is pale on white, so its tint and ring sit a step firmer; the ink is the same amber hue, slightly deeper. */

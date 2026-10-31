@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-240.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-241.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -30,7 +30,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
   - [ ] **B-110** Tenant configurability as a hero: branding (logo, theme/accent, branded sign-in, own address, email branding) and internal configuration (company defaults and whatever the research puts on the ladder), depth chosen on B-163's scope page · Shell, Platform, Core HR, Identity · 2026-10-24
         User 2026-10-30: "I really wanna establish it as a core wow factor"; EY discussed it a lot but never gave specs or how far to take it. Earlier (2026-10-24) brain dump, ideas not requirements. A tenant's default language meets B-105. Context: B-071 removed the unused brand colour from Core's branding settings; Core's branding settings store a `LogoUrl` that no screen sets or shows; Company settings show name and locale.
   - [ ] **B-167** Rebuild: slices in dependency order, each end to end with screens for the taste check ([decisions](plans/B-164-decisions.md), D-01–D-30; [slices](plans/B-167-rebuild.md)) · 2026-10-30
-        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 done (✓ 2026-10-31); B-178 done (✓ 2026-10-31); B-179 done (✓ 2026-10-31); B-180 done (✓ 2026-10-31); B-181 done (✓ 2026-10-31); B-182 built 2026-10-31, In review; B-183 next, fresh session.
+        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 done (✓ 2026-10-31); B-178 done (✓ 2026-10-31); B-179 done (✓ 2026-10-31); B-180 done (✓ 2026-10-31); B-181 done (✓ 2026-10-31); B-182 done (✓ 2026-10-31); B-183 next, fresh session.
     - [ ] **B-198** One tab and view-switch pattern across Fusion, matching the target design: every tab strip and view switch today is reused old UI (the Organization lenses are the latest example). Define it once in `@repo/ds` from the accepted grammar (D-01 band tabs, D-17 views), first where a slice draws tabs (B-180's person page or B-183's Organization, whichever comes first), then replace every other use; B-192 checks none is left · All · 2026-10-30
           2026-10-31: defined as `LinkTabs` in `@repo/ds/shell` (active = company color, outline + subtle fill) and used on the person page (B-180); every other tab strip and view switch still to move.
     - [ ] **B-212** Reach "their unit" for roles (D-25 draws it): Core HR's record reads and Performance resolve the viewer's unit and the units under it, then the Jobs, Personal and Plans areas offer it. Not offered in B-177 because nothing enforces it yet (`performance.cycle.view@OrgUnit` is unseeded and treated as a team) · Core HR, Performance, Identity · 2026-10-30
@@ -57,21 +57,10 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In review
 
-- [ ] **B-182** People, the directory and invitations: HR table, portrait cards, the invite sheet, Settings › Sign-in, Export everywhere (D-11, D-13, D-28) · Core HR, Shared · 2026-10-30
-      2026-10-31 review round 1: the invite sheet looks great; filters (B-237), Later's picker (B-238) and Add a person's restyle (B-239) go to a later pass; the directory card comparison still open (the 3b link now shows 3c).
-      Built 2026-10-31. Look at (screens in `plans/B-182-screens/`, live in Carthage as Amira and Aicha): `/core/people` (views with counts, Sign-in column, Filter › Unit/Place/Job/Manager/Skills, Export › CSV or Excel), `?view=not-signed-in`, Invite people (the sheet: who, now or later, first day and reminder switches, the email), the cards switch and Aicha's directory (Your team, A–Z rail), Settings › Sign-in (two new rows). Workforce access is gone: its per-person part opens from a person's Access tab ("Review access").
-  - [ ] **B-199** Redesign the hire / add-one-person form ("Add people", D-13) · Core HR · 2026-10-30
-        Built 2026-10-31 as one `/core/people/add` (hire and add-existing merged; a past first day adds someone already here): the person band fills in as you type, two sections under it. Look at: `08-add-person-typing.png`, then add someone for real.
-
-- [ ] **B-104** Final manual verification pass, once the big features are done (Settings, any wow feature): the user verifies B-089 phase 2 and everything since by hand, then the little stuff that's left · Performance · 2026-10-23
-      2026-10-29: the fixes are done (B-089 audit, phase 2 committed ba8f58af, which also closed B-088's ask); only the user's hand check is left, so this sits In review.
-      User: "once we establish a bunch of things and the big features all done and only the little stuff left, maybe we'll do a manual thing right there and verify everything". B-089 phase 2 waits on it; committed 2026-10-25 at the user's request (ba8f58af), still unverified by hand.
-  - [ ] **B-089** Cross-slice polish: one critical pass over the UI/UX, ergonomics, routing and architecture of everything slices 1–6 built, then fix what it finds · Performance · 2026-10-20
-        User: "a final cleanup pass over the ui/ux and ergonomics in general of the totality of the slices feature, screens and architecture, looking at it in ergonomic constructive critical lenses". Runs after the demo seeder (B-095) so every phase can be audited live, and before Settings. Audit first (ranked findings with screenshots, dark 1440×900), then fixes. Absorbs B-088, B-080, B-085, B-097 and B-100. Phase 1 done 2026-10-23: [findings](plans/B-089-cross-slice-polish.md) (24, batches A–J). Phase 2 (user: "do whats best"): A, B, C, E, F, H, I done; D, G, J partial (see the doc's "Phase 2" section). Committed `ba8f58af`. The user will verify it later, by hand, in **B-104** (not to be accepted as is now). Look at then: `plans/B-089-screens/after/` and the Phase 2 table in the doc.
-    - [ ] **B-088** Final polish of the slice 3 surfaces (1:1s, Feedback, requests, praise): specific UI/UX, routing, layout and design · Performance · 2026-10-19
-          User, locking B-087 in: "generally its not bad, although idk if its gonna be the final polish, in terms of specific ui ux and routing and layout and design". Folded into B-089.
-
 ## Ready
+
+- [ ] **B-240** Directory card as drawn (D-28): initials in Fusion's serif on every face, and the card footer's org chart icon matching the drawing's (Hugeicons Hierarchy; Core's chrome is still Lucide, so pick the match or move this icon). Long names already end in an ellipsis · Core HR · 2026-10-31
+      User 2026-10-31 (B-182 review, card compared with `plans/B-182-screens/ref-directory-card.png`).
 
 - [ ] **B-237** People's filters as drawn (D-13): one "+ Unit", "+ Place", "+ Job", "+ Manager" chip per field in the toolbar, instead of the kit's single Filter button. A table-kit change (`DataTableFilters`), so the directory and every other table follow · Shared, Core HR · 2026-10-31
       User 2026-10-31 (B-182 review): "the filter button of our implementation should instead match the ref's design".

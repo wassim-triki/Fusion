@@ -85,6 +85,14 @@ public sealed class GetWorkforceReadinessSummaryQueryHandler(
         var employmentByEmployee = employmentFacts
             .GroupBy(e => e.EmployeeId)
             .ToDictionary(g => g.Key, g => g.First().EmploymentType);
+        var currentEmploymentTypes = await dbContext.EmploymentTypePeriods.AsNoTracking()
+            .Where(item => employeeIds.Contains(item.EmployeeId) && item.EffectiveFrom <= now
+                && (item.EffectiveTo == null || now < item.EffectiveTo))
+            .GroupBy(item => item.EmployeeId)
+            .Select(group => group.OrderByDescending(item => item.EffectiveFrom).First())
+            .ToDictionaryAsync(item => item.EmployeeId, item => item.EmploymentType, cancellationToken);
+        foreach (var (employeeId, employmentType) in currentEmploymentTypes)
+            employmentByEmployee[employeeId] = employmentType;
 
         // Primary WorkAssignment facts (org unit, job title, work location)
         var primaryAssignments = await dbContext.WorkAssignments

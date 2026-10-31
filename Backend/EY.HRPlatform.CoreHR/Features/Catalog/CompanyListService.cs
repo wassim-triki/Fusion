@@ -55,6 +55,8 @@ public sealed class CompanyListService(CoreHRDbContext dbContext, ITenantContext
         {
             var employments = await dbContext.Employments.Where(item => item.EmploymentTypeId == value.Id).ToListAsync(cancellationToken);
             employments.ForEach(item => item.ReflectEmploymentType(value));
+            var periods = await dbContext.EmploymentTypePeriods.Where(item => item.EmploymentTypeId == value.Id).ToListAsync(cancellationToken);
+            periods.ForEach(item => item.ReflectEmploymentType(value));
         }
         await audit.RecordAsync(AuditSection, "Update", ResourceType(list), value.Id.ToString(),
             $"Renamed {oldLabel} to {value.Label} in {Name(list)}.", null, null, user, cancellationToken);
@@ -159,13 +161,20 @@ public sealed class CompanyListService(CoreHRDbContext dbContext, ITenantContext
         var today = DateTime.UtcNow.Date;
         var employments = await dbContext.Employments.AsNoTracking()
             .Where(item => item.EmploymentTypeId != null)
-            .Select(item => new { Id = item.EmploymentTypeId!.Value, Now = item.EffectiveFrom <= today && (item.EffectiveTo == null || today < item.EffectiveTo) })
+            .Select(item => new { Id = item.EmploymentTypeId!.Value, item.EmployeeId,
+                Now = item.EffectiveFrom <= today && (item.EffectiveTo == null || today < item.EffectiveTo) })
+            .ToListAsync(cancellationToken);
+        var periods = await dbContext.EmploymentTypePeriods.AsNoTracking()
+            .Where(item => item.EmploymentTypeId != null)
+            .Select(item => new { Id = item.EmploymentTypeId!.Value, item.EmployeeId,
+                Now = item.EffectiveFrom <= today && (item.EffectiveTo == null || today < item.EffectiveTo) })
             .ToListAsync(cancellationToken);
 
         var counts = jobs.SelectMany(job => new[] { job.FamilyId, job.LevelId }).OfType<Guid>()
-            .Concat(employments.Where(item => item.Now).Select(item => item.Id))
+            .Concat(employments.Where(item => item.Now && periods.All(period => !period.Now || period.EmployeeId != item.EmployeeId)).Select(item => item.Id))
+            .Concat(periods.Where(item => item.Now).Select(item => item.Id))
             .GroupBy(id => id).ToDictionary(group => group.Key, group => group.Count());
-        var inUse = counts.Keys.Concat(employments.Select(item => item.Id)).ToHashSet();
+        var inUse = counts.Keys.Concat(employments.Select(item => item.Id)).Concat(periods.Select(item => item.Id)).ToHashSet();
         return new Usage(counts, inUse);
     }
 

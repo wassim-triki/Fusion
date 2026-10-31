@@ -10,6 +10,7 @@ using EY.HRPlatform.CoreHR.Features.Employees.Import.Services;
 using EY.HRPlatform.CoreHR.Features.Organization;
 using EY.HRPlatform.CoreHR.Features.OrganizationImport;
 using EY.HRPlatform.CoreHR.Features.TenantSettings.Services;
+using EY.HRPlatform.CoreHR.Features.EmployeeFields;
 using EY.HRPlatform.CoreHR.Features.Security;
 using EY.HRPlatform.CoreHR.Features.Workforce.Services;
 using EY.HRPlatform.SharedKernel.Multitenancy;
@@ -50,6 +51,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmployeeDetailsReadModelService, EmployeeDetailsReadModelService>();
         services.AddScoped<ICoreAccessPolicyService, CoreAccessPolicyService>();
         services.AddScoped<ITenantSettingsReadService, TenantSettingsReadService>();
+        services.AddScoped<EmployeeFieldService>();
         services.AddScoped<ISettingsSectionRegistry, SettingsSectionRegistry>();
         services.AddScoped<ISettingsAuditService, SettingsAuditService>();
         services.AddScoped<Features.Catalog.CompanyListService>();

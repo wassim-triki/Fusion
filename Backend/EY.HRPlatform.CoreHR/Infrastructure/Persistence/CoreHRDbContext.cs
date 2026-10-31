@@ -42,6 +42,7 @@ public class CoreHRDbContext : DbContext
 
     // Canonical workforce model (Employee -> Employment -> WorkAssignment -> ManagerRelationship).
     public DbSet<Employment> Employments => Set<Employment>();
+    public DbSet<EmploymentTypePeriod> EmploymentTypePeriods => Set<EmploymentTypePeriod>();
     public DbSet<WorkAssignment> WorkAssignments => Set<WorkAssignment>();
     public DbSet<ManagerRelationship> ManagerRelationships => Set<ManagerRelationship>();
     public DbSet<WorkforceAuditEntry> WorkforceAuditEntries => Set<WorkforceAuditEntry>();
@@ -49,6 +50,9 @@ public class CoreHRDbContext : DbContext
     public DbSet<WorkEmailOccupancy> WorkEmailOccupancies => Set<WorkEmailOccupancy>();
 
     public DbSet<TenantSettings> TenantSettings => Set<TenantSettings>();
+    public DbSet<EmployeeFieldCatalog> EmployeeFieldCatalogs => Set<EmployeeFieldCatalog>();
+    public DbSet<EmployeeFieldDefinition> EmployeeFieldDefinitions => Set<EmployeeFieldDefinition>();
+    public DbSet<EmployeeFieldValue> EmployeeFieldValues => Set<EmployeeFieldValue>();
     public DbSet<OrgUnit> OrgUnits => Set<OrgUnit>();
     public DbSet<OrgUnitEffectiveState> OrgUnitEffectiveStates => Set<OrgUnitEffectiveState>();
     public DbSet<OrganizationChange> OrganizationChanges => Set<OrganizationChange>();
@@ -105,6 +109,9 @@ public class CoreHRDbContext : DbContext
         modelBuilder.Entity<Employment>()
             .HasQueryFilter(x => CurrentTenantId != Guid.Empty && x.TenantId == CurrentTenantId);
 
+        modelBuilder.Entity<EmploymentTypePeriod>()
+            .HasQueryFilter(x => CurrentTenantId != Guid.Empty && x.TenantId == CurrentTenantId);
+
         modelBuilder.Entity<WorkAssignment>()
             .HasQueryFilter(x => CurrentTenantId != Guid.Empty && x.TenantId == CurrentTenantId);
 
@@ -122,6 +129,15 @@ public class CoreHRDbContext : DbContext
 
         modelBuilder.Entity<TenantSettings>()
             .HasQueryFilter(ts => CurrentTenantId != Guid.Empty && ts.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<EmployeeFieldCatalog>()
+            .HasQueryFilter(item => CurrentTenantId != Guid.Empty && item.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<EmployeeFieldDefinition>()
+            .HasQueryFilter(item => CurrentTenantId != Guid.Empty && item.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<EmployeeFieldValue>()
+            .HasQueryFilter(item => CurrentTenantId != Guid.Empty && item.TenantId == CurrentTenantId);
 
         modelBuilder.Entity<OrgUnit>()
             .HasQueryFilter(o => CurrentTenantId != Guid.Empty && o.TenantId == CurrentTenantId);

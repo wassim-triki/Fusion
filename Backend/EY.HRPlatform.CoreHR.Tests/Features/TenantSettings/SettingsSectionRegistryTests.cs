@@ -56,7 +56,7 @@ public class SettingsSectionRegistryTests
             (CorePermissions.AccessProfilesManageV2, PermissionScopes.Tenant)));
 
         Assert.Equal(["brand", "details", "employee-fields", "lists", "roles", "approvals", "invitations", "notifications", "change-history"], sections.Select(section => section.Id));
-        Assert.Equal(["Brand", "Details", "Employee fields", "Lists", "Roles", "Changes and approvals", "Invitations", "Notifications", "Change history"], sections.Select(section => section.Label));
+        Assert.Equal(["Brand", "Details", "Fields", "Lists", "Roles", "Changes and approvals", "Invitations", "Notifications", "Change history"], sections.Select(section => section.Label));
         Assert.Equal([1, 2, 3, 4, 5, 6, 7, 8, 9], sections.Select(section => section.Order));
         Assert.Equal(FusionSettingsSectionDto.Manage, sections[0].Access);
         Assert.Equal(FusionSettingsSectionDto.View, sections[1].Access);
@@ -166,6 +166,24 @@ public class SettingsSectionRegistryTests
     }
 
     [Fact]
+    public async Task The_field_catalogue_requires_people_data_access_and_manage_access_to_write()
+    {
+        await using var db = TestDbContextFactory.Create(TestTenantContext.WithTenant(TenantA));
+        var policy = new Mock<ICoreAccessPolicyService>();
+        var controller = Controller(db, policy.Object, TestTenantContext.WithTenant(TenantA), Principal());
+
+        policy.Setup(item => item.CanViewPeopleDataSettings(It.IsAny<ClaimsPrincipal>())).Returns(false);
+        policy.Setup(item => item.CanManagePeopleDataSettings(It.IsAny<ClaimsPrincipal>())).Returns(false);
+        Assert.IsType<ForbidResult>(await controller.GetEmployeeFields(default));
+        Assert.IsType<ForbidResult>(await controller.PutEmployeeFields(new(null), null, default));
+
+        policy.Setup(item => item.CanViewPeopleDataSettings(It.IsAny<ClaimsPrincipal>())).Returns(true);
+        policy.Setup(item => item.CanManagePeopleDataSettings(It.IsAny<ClaimsPrincipal>())).Returns(true);
+        Assert.IsType<OkObjectResult>(await controller.GetEmployeeFields(default));
+        Assert.IsType<BadRequestObjectResult>(await controller.PutEmployeeFields(new(null), null, default));
+    }
+
+    [Fact]
     public async Task The_field_policy_is_the_callers_tenant()
     {
         var database = Guid.NewGuid().ToString();
@@ -226,7 +244,7 @@ public class SettingsSectionRegistryTests
             new UpdateTenantSettingsCommand(null, null, request.Branding), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        var stored = (await new GetTenantSettingsQueryHandler(db).Handle(new GetTenantSettingsQuery(), CancellationToken.None));
+        var stored = (await new GetTenantSettingsQueryHandler(new TenantSettingsReadService(db)).Handle(new GetTenantSettingsQuery(), CancellationToken.None));
         var json = JsonSerializer.Serialize(stored, new JsonSerializerOptions(JsonSerializerDefaults.Web));
         Assert.DoesNotContain("primaryColor", json, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("ff0000", json, StringComparison.OrdinalIgnoreCase);
@@ -264,8 +282,9 @@ public class SettingsSectionRegistryTests
     {
         var sender = new Mock<ISender>();
         sender.Setup(x => x.Send(It.IsAny<GetTenantSettingsQuery>(), It.IsAny<CancellationToken>()))
-            .Returns((GetTenantSettingsQuery query, CancellationToken token) => new GetTenantSettingsQueryHandler(db).Handle(query, token));
-        return new TenantSettingsController(sender.Object, policy, Mock.Of<ISettingsSectionRegistry>(), Mock.Of<ISettingsAuditService>(), tenant)
+            .Returns((GetTenantSettingsQuery query, CancellationToken token) => new GetTenantSettingsQueryHandler(new TenantSettingsReadService(db)).Handle(query, token));
+        return new TenantSettingsController(sender.Object, policy, Mock.Of<ISettingsSectionRegistry>(), Mock.Of<ISettingsAuditService>(), tenant,
+            new EY.HRPlatform.CoreHR.Features.EmployeeFields.EmployeeFieldService(db, tenant))
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = user } },
         };

@@ -16,6 +16,7 @@ using EY.HRPlatform.CoreHR.Features.Employees.Queries.GetEmployeeReportingLines;
 using EY.HRPlatform.CoreHR.Features.Employees.Queries.GetEmployeeReportingLinesByKey;
 using EY.HRPlatform.CoreHR.Features.Employees.Queries.GetWorkforceReadinessSummary;
 using EY.HRPlatform.CoreHR.Features.Security;
+using EY.HRPlatform.CoreHR.Features.EmployeeFields;
 using EY.HRPlatform.CoreHR.Models.Requests;
 using EY.HRPlatform.CoreHR.Models.Responses;
 using EY.HRPlatform.SharedKernel.Auth;
@@ -37,7 +38,8 @@ namespace EY.HRPlatform.CoreHR.Controllers;
 [Authorize]
 public class EmployeesController(
     ISender sender,
-    ICoreAccessPolicyService accessPolicy) : ControllerBase
+    ICoreAccessPolicyService accessPolicy,
+    EmployeeFieldService? employeeFields = null) : ControllerBase
 {
     [HttpPost("hire")]
     [ProducesResponseType(typeof(EY.HRPlatform.SharedKernel.Api.ApiResponse<EstablishmentResultDto>), StatusCodes.Status201Created)]
@@ -145,6 +147,50 @@ public class EmployeesController(
 
         Response.Headers.ETag = $"\"{result.Value.Version}\"";
         return Ok(ApiResponseOfPeopleProfileDto.Success(result.Value));
+    }
+
+    [HttpGet("people/{employeeKey}/fields")]
+    [ProducesResponseType(typeof(EY.HRPlatform.SharedKernel.Api.ApiResponse<IReadOnlyList<EmployeeProfileFieldDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetEmployeeFields(string employeeKey, CancellationToken cancellationToken)
+    {
+        var audience = accessPolicy.GetEmployeeReadAudience(User);
+        if (accessPolicy.GetEmployeeViewScope(User) is null) return Forbid();
+        var profile = await sender.Send(new PeopleProfileQuery(
+            employeeKey, null, audience,
+            audience == EmployeeReadAudience.Manager ? User.GetEmployeeId() ?? Guid.Empty : null,
+            User.GetEmployeeId(), accessPolicy.GetPersonalGrant(User)), cancellationToken);
+        if (profile.IsFailure) return NotFound(ApiResponse.Failure("Employee was not found."));
+        var fields = await employeeFields!.ProfileFieldsAsync(
+            profile.Value.Identity.EmployeeId, audience, User.GetEmployeeId(), accessPolicy.CanManageEmployees(User), cancellationToken);
+        return Ok(EY.HRPlatform.SharedKernel.Api.ApiResponse<IReadOnlyList<EmployeeProfileFieldDto>>.Success(fields));
+    }
+
+    [HttpPut("people/{employeeKey}/fields/{fieldKey}")]
+    [ProducesResponseType(typeof(EY.HRPlatform.SharedKernel.Api.ApiResponse<EmployeeProfileFieldDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> PutEmployeeField(
+        string employeeKey,
+        string fieldKey,
+        [FromBody] UpdateEmployeeFieldValueRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (accessPolicy.GetEmployeeViewScope(User) is null) return Forbid();
+        var result = await employeeFields!.UpdateValueAsync(
+            employeeKey,
+            fieldKey,
+            request.Value,
+            accessPolicy.GetEmployeeReadAudience(User),
+            User.GetEmployeeId(),
+            accessPolicy.CanManageEmployees(User),
+            GetAuditActor(),
+            cancellationToken);
+        if (result.IsSuccess)
+            return Ok(EY.HRPlatform.SharedKernel.Api.ApiResponse<EmployeeProfileFieldDto>.Success(result.Value));
+        return result.Error.Code switch
+        {
+            "Employee.NotFound" or "EmployeeField.NotFound" => NotFound(ApiResponse.Failure(result.Error.Message)),
+            "EmployeeField.Forbidden" => Forbid(),
+            _ => BadRequest(ApiResponse.Failure(result.Error.Message)),
+        };
     }
 
     /// <summary>Bounded business Upcoming preview and Timeline for an employee.</summary>

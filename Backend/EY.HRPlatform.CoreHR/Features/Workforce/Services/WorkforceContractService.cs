@@ -902,6 +902,12 @@ public sealed class WorkforceContractService(
         var employmentByEmployee = employmentFacts
             .GroupBy(e => e.EmployeeId)
             .ToDictionary(g => g.Key, g => g.First());
+        var employmentTypeByEmployee = await dbContext.EmploymentTypePeriods.AsNoTracking()
+            .Where(item => employeeIds.Contains(item.EmployeeId) && item.EffectiveFrom <= now
+                && (item.EffectiveTo == null || now < item.EffectiveTo))
+            .GroupBy(item => item.EmployeeId)
+            .Select(group => group.OrderByDescending(item => item.EffectiveFrom).First())
+            .ToDictionaryAsync(item => item.EmployeeId, item => item.EmploymentType, cancellationToken);
         var activeEmployeeIds = employmentByEmployee.Keys.ToHashSet();
 
         // Primary WorkAssignment facts (org unit, job title, work location)
@@ -968,7 +974,7 @@ public sealed class WorkforceContractService(
             var assignment = assignmentByEmployee.GetValueOrDefault(employee.Id);
             var isActive = activeEmployeeIds.Contains(employee.Id);
             var hireDate = employmentByEmployee.TryGetValue(employee.Id, out var emp) ? emp.EffectiveFrom : default;
-            var employmentType = emp?.EmploymentType;
+            var employmentType = employmentTypeByEmployee.GetValueOrDefault(employee.Id) ?? emp?.EmploymentType;
             var jobTitle = CanViewSummaryField(settings, "jobTitle", audience) ? assignment?.JobTitle : null;
 
             // Manager summary

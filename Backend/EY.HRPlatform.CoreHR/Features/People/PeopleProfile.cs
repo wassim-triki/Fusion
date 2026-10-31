@@ -136,6 +136,13 @@ public sealed class PeopleProfileQueryHandler(
                     && (item.EffectiveTo == null || displayAt < item.EffectiveTo))
                 .OrderByDescending(item => item.EffectiveFrom)
                 .FirstOrDefaultAsync(cancellationToken);
+        var employmentType = employment is null
+            ? null
+            : await dbContext.EmploymentTypePeriods.AsNoTracking()
+                .Where(item => item.EmployeeId == employee.Id && item.EmploymentId == employment.Id
+                    && item.EffectiveFrom <= displayAt && (item.EffectiveTo == null || displayAt < item.EffectiveTo))
+                .OrderByDescending(item => item.EffectiveFrom)
+                .FirstOrDefaultAsync(cancellationToken);
 
         PeopleWorkDto? work = null;
         if (assignment is not null)
@@ -264,8 +271,8 @@ public sealed class PeopleProfileQueryHandler(
                 state,
                 employment?.EffectiveFrom,
                 employment?.EffectiveTo,
-                employment?.EmploymentType,
-                employment?.EmploymentTypeId),
+                employmentType?.EmploymentType ?? employment?.EmploymentType,
+                employmentType?.EmploymentTypeId ?? employment?.EmploymentTypeId),
             work,
             manager,
             directReportCount,

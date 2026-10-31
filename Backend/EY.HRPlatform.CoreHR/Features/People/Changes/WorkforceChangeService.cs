@@ -39,7 +39,8 @@ public sealed class WorkforceChangeService(
     {
         var date = DateOnly.FromDateTime(request.EffectiveDate);
         var at = At(date);
-        var touchesWork = request.OrgUnitId is not null || request.JobId is not null || request.PlaceId is not null || request.RemovePlace;
+        var touchesWork = request.OrgUnitId is not null || request.JobId is not null || request.PlaceId is not null
+            || request.RemovePlace || request.EmploymentTypeId is not null;
         if (touchesWork && !canManageEmployees)
             return Forbidden<WorkforceChange>();
 
@@ -55,6 +56,18 @@ public sealed class WorkforceChangeService(
         if (assignment is null)
             return Fail<WorkforceChange>("Change.NotEmployed", $"{subject.DisplayName} is not employed on {date:d MMM yyyy}.");
         var currentLine = await ActivePrimaryLineAsync(subject.Id, at, cancellationToken);
+        var employment = await dbContext.Employments.AsNoTracking()
+            .SingleAsync(item => item.Id == assignment.EmploymentId, cancellationToken);
+        var currentType = await EmploymentTypeAtAsync(subject.Id, employment, at, cancellationToken);
+        CompanyListValue? employmentTypeTo = null;
+        if (request.EmploymentTypeId is { } employmentTypeId)
+        {
+            employmentTypeTo = await dbContext.CompanyListValues.AsNoTracking().FirstOrDefaultAsync(
+                item => item.Id == employmentTypeId && item.List == CompanyList.EmploymentTypes && !item.IsRetired,
+                cancellationToken);
+            if (employmentTypeTo is null)
+                return Fail<WorkforceChange>("Change.UnknownEmploymentType", "Choose an employment type from your company's list.");
+        }
 
         var unitTo = request.OrgUnitId ?? assignment.OrgUnitId;
         var jobTo = request.JobId ?? assignment.JobId;
@@ -62,12 +75,13 @@ public sealed class WorkforceChangeService(
         var unitChanged = unitTo != assignment.OrgUnitId;
         var titleChanged = jobTo != assignment.JobId;
         var locationChanged = placeTo != assignment.PlaceId;
+        var employmentTypeChanged = employmentTypeTo is not null && employmentTypeTo.Id != currentType.Id;
         string? titleTo = null;
         string? locationTo = null;
 
         Guid? managerTo = request.RemoveManager ? null : request.ManagerEmployeeId ?? currentLine?.ManagerEmployeeId;
         var managerChanged = managerTo != currentLine?.ManagerEmployeeId;
-        if (!unitChanged && !titleChanged && !locationChanged && !managerChanged)
+        if (!unitChanged && !titleChanged && !locationChanged && !managerChanged && !employmentTypeChanged)
             return Fail<WorkforceChange>("Change.NothingChanges", "Nothing changes. Pick a new manager or change a job fact.");
 
         // The team is read before anything is staged: the reports of the person on that date.
@@ -81,6 +95,21 @@ public sealed class WorkforceChangeService(
                 return Result.Failure<WorkforceChange>(work.Error);
             titleTo = work.Value.JobTitle;
             locationTo = work.Value.WorkLocation;
+        }
+
+        if (employmentTypeChanged)
+        {
+            var openType = await dbContext.EmploymentTypePeriods.FirstOrDefaultAsync(
+                item => item.EmployeeId == subject.Id && item.EffectiveFrom <= at
+                    && (item.EffectiveTo == null || at < item.EffectiveTo), cancellationToken);
+            if (openType is not null)
+            {
+                if (openType.EffectiveFrom == at)
+                    return Fail<WorkforceChange>("Change.EmploymentTypeSameDate", "Employment type already changes on that date.");
+                openType.End(at, actor);
+            }
+            dbContext.EmploymentTypePeriods.Add(EmploymentTypePeriod.Start(
+                tenantContext.TenantId, subject.Id, employment.Id, at, employmentTypeTo, actor));
         }
 
         var dottedLinesEnded = new List<EndedDottedLine>();
@@ -158,6 +187,11 @@ public sealed class WorkforceChangeService(
             UnitChanged: unitChanged,
             TitleChanged: titleChanged,
             LocationChanged: locationChanged,
+            EmploymentType: employmentTypeChanged ? employmentTypeTo!.Label : null,
+            EmploymentTypeId: employmentTypeChanged ? employmentTypeTo!.Id : null,
+            EmploymentTypeFromId: currentType.Id,
+            EmploymentTypeFrom: currentType.Label,
+            EmploymentTypeChanged: employmentTypeChanged,
             TeamOutcome: teamOutcome,
             TeamCount: team.Count,
             TeamManager: teamManager,
@@ -260,6 +294,11 @@ public sealed class WorkforceChangeService(
         }
         if (missing.Count > 0)
             return Fail<WorkforceChange>("Change.ReportsNeedManager", $"Choose who {string.Join(", ", missing)} report to.");
+
+        var openEmploymentType = await dbContext.EmploymentTypePeriods.FirstOrDefaultAsync(
+            item => item.EmployeeId == subject.Id && item.EffectiveFrom < boundary
+                && (item.EffectiveTo == null || boundary < item.EffectiveTo), cancellationToken);
+        openEmploymentType?.End(boundary, actor);
 
         var ended = await mutations.EndEmploymentReleasingReportsAsync(
             subject.Id, new EndEmploymentInput(At(lastDay), request.Note, WorkforceSourceType.Manual), actor, cancellationToken);
@@ -388,6 +427,7 @@ public sealed class WorkforceChangeService(
 
         // Children before parents, so a removed row never leaves a tracked dependent behind.
         string[] order = [WorkforceChangeEffect.ManagerRelationshipEntity, WorkforceChangeEffect.WorkAssignmentEntity,
+            WorkforceChangeEffect.EmploymentTypePeriodEntity,
             WorkforceChangeEffect.EmploymentEntity, WorkforceChangeEffect.EmployeeEntity];
         var effects = change.Effects.OrderBy(item => Array.IndexOf(order, item.EntityType)).ToList();
         var created = effects.Where(item => item.Action == WorkforceChangeEffectAction.Created).Select(item => item.EntityId).ToHashSet();
@@ -423,6 +463,15 @@ public sealed class WorkforceChangeService(
                             return builtOn;
                         removals.Add(row);
                     }
+                    else restores.Add(() => row.RestoreEnd(effect.PreviousEffectiveTo));
+                    break;
+                }
+                case WorkforceChangeEffect.EmploymentTypePeriodEntity:
+                {
+                    var row = await dbContext.EmploymentTypePeriods.FirstOrDefaultAsync(item => item.Id == effect.EntityId, cancellationToken);
+                    if (row is null || row.EffectiveTo != effect.AppliedEffectiveTo)
+                        return builtOn;
+                    if (effect.Action == WorkforceChangeEffectAction.Created) removals.Add(row);
                     else restores.Add(() => row.RestoreEnd(effect.PreviousEffectiveTo));
                     break;
                 }
@@ -524,8 +573,12 @@ public sealed class WorkforceChangeService(
             .Where(item => item.EmployeeId == employeeId && (item.EffectiveFrom > todayAt || item.EffectiveTo > todayAt))
             .Select(item => item.EffectiveTo > todayAt ? item.EffectiveTo : (DateTime?)item.EffectiveFrom)
             .MaxAsync(cancellationToken);
+        var lastEmploymentType = await dbContext.EmploymentTypePeriods.AsNoTracking()
+            .Where(item => item.EmployeeId == employeeId && (item.EffectiveFrom > todayAt || item.EffectiveTo > todayAt))
+            .Select(item => item.EffectiveTo > todayAt ? item.EffectiveTo : (DateTime?)item.EffectiveFrom)
+            .MaxAsync(cancellationToken);
 
-        var last = new[] { lastLine, lastWork, lastEmployment }
+        var last = new[] { lastLine, lastWork, lastEmployment, lastEmploymentType }
             .Where(item => item.HasValue)
             .Select(item => (DateOnly?)DateOnly.FromDateTime(item!.Value))
             .Append(lastChange)
@@ -545,6 +598,18 @@ public sealed class WorkforceChangeService(
         => dbContext.ManagerRelationships.AsNoTracking().FirstOrDefaultAsync(
             item => item.SubjectEmployeeId == employeeId && item.Type == ReportingRelationshipType.PrimaryManager
                 && item.EffectiveFrom <= at && (item.EffectiveTo == null || at < item.EffectiveTo), cancellationToken);
+
+    private async Task<(Guid? Id, string? Label)> EmploymentTypeAtAsync(
+        Guid employeeId, Employment employment, DateTime at, CancellationToken cancellationToken)
+    {
+        var period = await dbContext.EmploymentTypePeriods.AsNoTracking()
+            .Where(item => item.EmployeeId == employeeId && item.EmploymentId == employment.Id
+                && item.EffectiveFrom <= at && (item.EffectiveTo == null || at < item.EffectiveTo))
+            .OrderByDescending(item => item.EffectiveFrom)
+            .Select(item => new { Id = (Guid?)item.EmploymentTypeId, Label = item.EmploymentType })
+            .FirstOrDefaultAsync(cancellationToken);
+        return period is null ? (employment.EmploymentTypeId, employment.EmploymentType) : (period.Id, period.Label);
+    }
 
     private Task<List<ManagerRelationship>> ActiveReportLinesAsync(Guid managerId, DateTime at, CancellationToken cancellationToken)
         => dbContext.ManagerRelationships.AsNoTracking()
@@ -629,6 +694,7 @@ internal static class WorkforceChangeRecorder
                 Employee item => (WorkforceChangeEffect.EmployeeEntity, item.Id, item.Id),
                 Employment item => (WorkforceChangeEffect.EmploymentEntity, item.Id, item.EmployeeId),
                 WorkAssignment item => (WorkforceChangeEffect.WorkAssignmentEntity, item.Id, item.EmployeeId),
+                EmploymentTypePeriod item => (WorkforceChangeEffect.EmploymentTypePeriodEntity, item.Id, item.EmployeeId),
                 ManagerRelationship item => (WorkforceChangeEffect.ManagerRelationshipEntity, item.Id, item.SubjectEmployeeId),
                 _ => (null, Guid.Empty, Guid.Empty),
             };

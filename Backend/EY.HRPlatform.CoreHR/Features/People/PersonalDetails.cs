@@ -2,6 +2,7 @@ using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Exceptions;
 using EY.HRPlatform.CoreHR.Features.TenantSettings.Services;
+using EY.HRPlatform.CoreHR.Features.EmployeeFields;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence;
 using System.Net.Http.Json;
 using EY.HRPlatform.SharedKernel.Auth;
@@ -210,7 +211,8 @@ public sealed class UpdatePeoplePersonalCommandHandler(
     CoreHRDbContext dbContext,
     ITenantContext tenantContext,
     ITenantSettingsReadService? tenantSettingsReadService = null,
-    Changes.ChangeRequestService? changeRequests = null)
+    Changes.ChangeRequestService? changeRequests = null,
+    EmployeeFieldService? employeeFields = null)
     : ICommandHandler<UpdatePeoplePersonalCommand, Result<PeoplePersonalDto>>
 {
     private readonly ITenantSettingsReadService tenantSettingsReader =
@@ -234,10 +236,21 @@ public sealed class UpdatePeoplePersonalCommandHandler(
         if (!hr)
         {
             var selfService = (await tenantSettingsReader.GetCurrentAsync(cancellationToken)).SelfService;
-            if (!selfService.CanEditPreferredName && Blank(body.PreferredName) != employee.PreferredName)
+            async Task<bool> CanChange(string sourceKey, bool fallback)
+                => employeeFields is null
+                    ? fallback
+                    : await employeeFields.CanSelfEditSourceAsync(sourceKey, cancellationToken) ?? fallback;
+
+            if (!await CanChange("preferredName", selfService.CanEditPreferredName) && Blank(body.PreferredName) != employee.PreferredName)
                 return Result.Failure<PeoplePersonalDto>(PeopleAccess.Forbidden("Your company doesn't let you change your preferred name."));
-            if (!selfService.CanEditPhone && Blank(body.Mobile) != employee.Phone)
+            if (!await CanChange("phone", selfService.CanEditPhone) && Blank(body.Mobile) != employee.Phone)
                 return Result.Failure<PeoplePersonalDto>(PeopleAccess.Forbidden("Your company doesn't let you change your mobile."));
+            if (!await CanChange("personalEmail", true) && Blank(body.PersonalEmail) != employee.PersonalEmail)
+                return Result.Failure<PeoplePersonalDto>(PeopleAccess.Forbidden("Your company doesn't let you change your personal email."));
+            if (!await CanChange("homeAddress", true) && RequestedAddress(body.HomeAddress) != employee.CurrentHomeAddress)
+                return Result.Failure<PeoplePersonalDto>(PeopleAccess.Forbidden("Your company doesn't let you change your home address."));
+            if (!await CanChange("emergencyContacts", true) && EmergencyContactsChanged(body.EmergencyContacts, employee))
+                return Result.Failure<PeoplePersonalDto>(PeopleAccess.Forbidden("Your company doesn't let you change your emergency contacts."));
             // Locked on the Personal tab (D-16): the date of birth is HR's to change.
             if (body.DateOfBirth != employee.DateOfBirth)
                 return Result.Failure<PeoplePersonalDto>(PeopleAccess.Forbidden("Only HR changes your date of birth."));
@@ -287,6 +300,17 @@ public sealed class UpdatePeoplePersonalCommandHandler(
     }
 
     private static string? Blank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static HomeAddress? RequestedAddress(PeopleHomeAddressDto? value)
+        => value is null ? null : Employee.NormalizedHomeAddress(new HomeAddress(value.Street, value.City, value.PostalCode, value.Country));
+
+    private static bool EmergencyContactsChanged(IReadOnlyList<PeopleEmergencyContactDto>? requested, Employee employee)
+    {
+        var wanted = (requested ?? []).Select(item => (item.Name.Trim(), Blank(item.Relationship), item.Phone.Trim())).ToList();
+        var current = employee.EmergencyContacts.OrderBy(item => item.Position)
+            .Select(item => (item.Name, item.Relationship, item.Phone)).ToList();
+        return !wanted.SequenceEqual(current);
+    }
 }
 
 public sealed class UpdatePeopleAboutCommandHandler(CoreHRDbContext dbContext, ITenantContext tenantContext)

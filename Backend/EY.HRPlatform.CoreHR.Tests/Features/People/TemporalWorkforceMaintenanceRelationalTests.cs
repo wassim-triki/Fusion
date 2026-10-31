@@ -116,6 +116,40 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
         });
 
     [RelationalDatabaseFact]
+    public Task Employment_type_changes_only_on_its_date_and_cancel_restores_the_previous_value()
+        => WithDatabaseAsync(async (db, ctx, other) =>
+        {
+            var future = Today.AddDays(25);
+            var before = await ProfileAsync(db, ctx, ctx.KarimKey);
+            var partTime = db.EmploymentType(ctx.Tenant.TenantId, "Part-time");
+            await db.SaveChangesAsync();
+            var change = await JobAsync(db, ctx, ctx.KarimKey,
+                new JobChangeRequest(future, EmploymentTypeId: partTime.Id));
+
+            Assert.True(change.Details.EmploymentTypeChanged);
+            Assert.Equal(("Full-time", "Part-time"),
+                (change.Details.EmploymentTypeFrom, change.Details.EmploymentType));
+            Assert.Equal("Full-time", (await ProfileAsync(db, ctx, ctx.KarimKey)).Employment.EmploymentType);
+            var then = await ProfileAsync(db, ctx, ctx.KarimKey, future);
+            Assert.Equal("Part-time", then.Employment.EmploymentType);
+            Assert.Equal(before.Employment.Start, then.Employment.Start);
+            Assert.Equal("Change.BeforeScheduled", (await TryJobAsync(db, ctx, ctx.KarimKey,
+                new JobChangeRequest(future.AddDays(-5), EmploymentTypeId: partTime.Id))).Error.Code);
+
+            var otherType = other.Db.EmploymentType(other.Tenant.TenantId, "Contractor");
+            await other.Db.SaveChangesAsync();
+            Assert.Equal("Change.UnknownEmploymentType", (await TryJobAsync(db, ctx, ctx.YoussefKey,
+                new JobChangeRequest(future.AddDays(1), EmploymentTypeId: otherType.Id))).Error.Code);
+            Assert.Equal(WorkforceChangeService.ForbiddenCode, (await new JobChangeCommandHandler(db, Service(db, ctx), new WorkforceChangeReader(db)).Handle(
+                new JobChangeCommand(ctx.YoussefKey, new JobChangeRequest(future.AddDays(1), EmploymentTypeId: partTime.Id), Actor, false), default)).Error.Code);
+
+            Assert.True((await CancelAsync(db, ctx, change.Id)).IsSuccess);
+            db.ChangeTracker.Clear();
+            Assert.Equal("Full-time", (await ProfileAsync(db, ctx, ctx.KarimKey, future)).Employment.EmploymentType);
+            Assert.Empty(await db.EmploymentTypePeriods.Where(item => item.EmployeeId == ctx.KarimId).ToListAsync());
+        });
+
+    [RelationalDatabaseFact]
     public Task The_server_refuses_empty_past_cyclic_and_out_of_order_changes()
         => WithDatabaseAsync(async (db, ctx, _) =>
         {
@@ -527,7 +561,9 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
             .Select(item => $"W {item.Id} {item.EffectiveFrom:O} {item.EffectiveTo:O} {item.OrgUnitId} {item.JobTitle} {item.WorkLocation}").ToListAsync();
         var lines = await db.ManagerRelationships.AsNoTracking().Where(item => item.SubjectEmployeeId == employeeId || item.ManagerEmployeeId == employeeId)
             .Select(item => $"M {item.Id} {item.SubjectEmployeeId} {item.ManagerEmployeeId} {item.Type} {item.EffectiveFrom:O} {item.EffectiveTo:O}").ToListAsync();
-        return [.. employments.Concat(assignments).Concat(lines).Order(StringComparer.Ordinal)];
+        var types = await db.EmploymentTypePeriods.AsNoTracking().Where(item => item.EmployeeId == employeeId)
+            .Select(item => $"T {item.Id} {item.EffectiveFrom:O} {item.EffectiveTo:O} {item.EmploymentTypeId} {item.EmploymentType}").ToListAsync();
+        return [.. employments.Concat(assignments).Concat(lines).Concat(types).Order(StringComparer.Ordinal)];
     }
 
     private static DateTime At(DateOnly date) => DateTime.SpecifyKind(date.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);

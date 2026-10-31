@@ -4,6 +4,7 @@ using EY.HRPlatform.CoreHR.Features.TenantSettings.Dtos;
 using EY.HRPlatform.CoreHR.Features.TenantSettings.Queries.GetTenantSettings;
 using EY.HRPlatform.CoreHR.Features.TenantSettings.Services;
 using EY.HRPlatform.CoreHR.Features.Security;
+using EY.HRPlatform.CoreHR.Features.EmployeeFields;
 using EY.HRPlatform.SharedKernel.Api;
 using EY.HRPlatform.SharedKernel.Multitenancy;
 using EY.HRPlatform.SharedKernel.Notifications;
@@ -21,7 +22,8 @@ public class TenantSettingsController(
     ICoreAccessPolicyService accessPolicy,
     ISettingsSectionRegistry sectionRegistry,
     ISettingsAuditService auditService,
-    ITenantContext tenantContext) : ControllerBase
+    ITenantContext tenantContext,
+    EmployeeFieldService? employeeFields = null) : ControllerBase
 {
     /// <summary>The caller's Core HR settings sections (B-071 D1): empty when they can view none.</summary>
     [HttpGet("sections")]
@@ -171,6 +173,44 @@ public class TenantSettingsController(
         return Ok(ApiResponse<PeopleDataSettingsDto>.Success(MapPeopleData(settings)));
     }
 
+    /// <summary>The company's person-page field catalogue, gallery and required records to complete.</summary>
+    [HttpGet("fields")]
+    [ProducesResponseType(typeof(ApiResponse<EmployeeFieldSettingsDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetEmployeeFields(CancellationToken cancellationToken)
+    {
+        if (!accessPolicy.CanViewPeopleDataSettings(User)) return Forbid();
+        var result = await employeeFields!.SettingsAsync(cancellationToken);
+        if (result.Version.HasValue) Response.Headers.ETag = $"\"{result.Version}\"";
+        return Ok(ApiResponse<EmployeeFieldSettingsDto>.Success(result));
+    }
+
+    [HttpPut("fields")]
+    [ProducesResponseType(typeof(ApiResponse<EmployeeFieldSettingsDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> PutEmployeeFields(
+        [FromBody] UpdateEmployeeFieldsRequest request,
+        [FromHeader(Name = "If-Match")] string? ifMatch,
+        CancellationToken cancellationToken)
+    {
+        if (!accessPolicy.CanManagePeopleDataSettings(User)) return Forbid();
+        if (request.Fields is null) return BadRequest(ApiResponse.Failure("Fields are required."));
+
+        var before = await employeeFields!.SettingsAsync(cancellationToken);
+        var expected = TryParseVersion(ifMatch, out var version) ? version : (uint?)null;
+        var saved = await employeeFields!.SaveAsync(request.Fields, expected, User.Identity?.Name, cancellationToken);
+        await auditService.RecordAsync(
+            SettingsSectionIds.PeopleData,
+            "settings.peopleData.fields.updated",
+            "EmployeeFieldCatalog",
+            null,
+            "Employee fields updated.",
+            before,
+            saved,
+            User,
+            cancellationToken);
+        if (saved.Version.HasValue) Response.Headers.ETag = $"\"{saved.Version}\"";
+        return Ok(ApiResponse<EmployeeFieldSettingsDto>.Success(saved));
+    }
+
     [HttpPatch("people-data")]
     [ProducesResponseType(typeof(ApiResponse<PeopleDataSettingsDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> PatchPeopleData(
@@ -182,6 +222,8 @@ public class TenantSettingsController(
         {
             return Forbid();
         }
+
+        if (request.EmployeeFieldConfig is not null) return BadRequest(ApiResponse.Failure(FieldsMovedMessage));
 
         var before = await GetSettingsAsync(cancellationToken);
         var updated = await UpdateSettingsAsync(
@@ -283,6 +325,8 @@ public class TenantSettingsController(
             return Forbid();
         }
 
+        if (request.EmployeeFieldConfig is not null) return BadRequest(ApiResponse.Failure(FieldsMovedMessage));
+
         // Parse If-Match header (optional for creation, required for updates)
         uint? expectedVersion = TryParseVersion(ifMatch, out var version) ? version : null;
 
@@ -316,6 +360,9 @@ public class TenantSettingsController(
 
         return Ok(ApiResponse<TenantSettingsDto>.Success(result.Value));
     }
+
+    // B-181: the field policy lives in the company's field catalogue; the JSON copy is no longer read.
+    private const string FieldsMovedMessage = "Fields are changed in Settings › Fields.";
 
     private async Task<TenantSettingsDto> GetSettingsAsync(CancellationToken cancellationToken)
         => await sender.Send(new GetTenantSettingsQuery(), cancellationToken);

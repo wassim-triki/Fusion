@@ -55,7 +55,7 @@ public sealed class EmployeeDetailsReadModelService(
                     facts.Employment.EffectiveFrom,
                     facts.Employment.EffectiveTo,
                     facts.Employment.Status,
-                    CanViewField(settings, "employmentType", audience) ? facts.Employment.EmploymentType : null),
+                    CanViewField(settings, "employmentType", audience) ? facts.EmploymentType : null),
             facts.Assignment is null
                 ? null
                 : new EmployeeCurrentWorkAssignmentDto(
@@ -132,7 +132,7 @@ public sealed class EmployeeDetailsReadModelService(
         AddRequiredFieldIssueIfMissing(issues, employee.Email, "email", "Email", settings, employee);
         AddRequiredFieldIssueIfMissing(issues, employee.Phone, "phone", "Phone", settings, employee);
 
-        if (IsFieldRequired(settings, "employmentType") && string.IsNullOrWhiteSpace(facts.Employment?.EmploymentType))
+        if (IsFieldRequired(settings, "employmentType") && string.IsNullOrWhiteSpace(facts.EmploymentType))
         {
             issues.Add(new EmployeeReadinessIssueDto(
                 EmployeeReadinessIssueCodes.MissingRequiredField,
@@ -308,6 +308,14 @@ public sealed class EmployeeDetailsReadModelService(
                     x.JobId,
                     x.PlaceId))
                 .FirstOrDefaultAsync(cancellationToken);
+        var employmentType = employment is null
+            ? null
+            : (await dbContext.EmploymentTypePeriods.AsNoTracking()
+                .Where(item => item.EmployeeId == employee.Id && item.EmploymentId == employment.Id
+                    && item.EffectiveFrom <= at && (item.EffectiveTo == null || at < item.EffectiveTo))
+                .OrderByDescending(item => item.EffectiveFrom)
+                .Select(item => item.EmploymentType)
+                .FirstOrDefaultAsync(cancellationToken)) ?? employment.EmploymentType;
 
         var manager = await workforceCanonicalResolver.GetPrimaryManagerAsync(employee.Id, at, cancellationToken);
         OrgUnit? orgUnit = null;
@@ -378,7 +386,8 @@ public sealed class EmployeeDetailsReadModelService(
             hierarchyStatus,
             employmentCount,
             workAssignmentCount,
-            managerRelationshipCount);
+            managerRelationshipCount,
+            employmentType);
     }
 
     private static EmployeeStatus ToEmployeeStatus(Employment? employment)
@@ -398,4 +407,5 @@ internal sealed record CanonicalEmployeeReadFacts(
     string HierarchyStatus,
     int EmploymentCount,
     int WorkAssignmentCount,
-    int ManagerRelationshipCount);
+    int ManagerRelationshipCount,
+    string? EmploymentType = null);

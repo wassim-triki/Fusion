@@ -19,6 +19,7 @@ public sealed record JobChangeRequest(
     Guid? JobId = null,
     Guid? PlaceId = null,
     bool RemovePlace = false,
+    Guid? EmploymentTypeId = null,
     [MaxLength(1000)] string? Note = null,
     Guid? ReasonId = null);
 
@@ -95,19 +96,22 @@ public sealed record WorkforceChangeDetails(
     Guid? PlaceFromId = null,
     Guid? PlaceToId = null,
     Guid? EmploymentTypeId = null,
+    Guid? EmploymentTypeFromId = null,
+    string? EmploymentTypeFrom = null,
+    bool EmploymentTypeChanged = false,
     /// <summary>Why, from the company's change reasons; the label as it was then.</summary>
     Guid? ReasonId = null,
     string? Reason = null)
 {
     /// <summary>A change a reporting admin may make: it touches only who the person (and their team) report to.</summary>
-    public bool IsReportingOnly => !UnitChanged && !TitleChanged && !LocationChanged;
+    public bool IsReportingOnly => !UnitChanged && !TitleChanged && !LocationChanged && !EmploymentTypeChanged;
 
     /// <summary>The parts of the company's approval settings this change touches.</summary>
     public IReadOnlyList<string> ApprovalTypes(WorkforceChangeKind kind)
     {
         if (kind == WorkforceChangeKind.EndEmployment) return [ChangeApprovalTypes.Leaving];
         var types = new List<string>();
-        if (UnitChanged || TitleChanged) types.Add(ChangeApprovalTypes.Job);
+        if (UnitChanged || TitleChanged || EmploymentTypeChanged) types.Add(ChangeApprovalTypes.Job);
         if (ManagerChanged || TeamOutcome == "Stays") types.Add(ChangeApprovalTypes.Manager);
         if (LocationChanged) types.Add(ChangeApprovalTypes.Place);
         return types;

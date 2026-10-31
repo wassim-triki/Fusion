@@ -103,6 +103,7 @@ public sealed class WorkforceChangeEffect : BaseEntity, ITenantEntity
 {
     public const string EmployeeEntity = "Employee";
     public const string EmploymentEntity = "Employment";
+    public const string EmploymentTypePeriodEntity = "EmploymentTypePeriod";
     public const string WorkAssignmentEntity = "WorkAssignment";
     public const string ManagerRelationshipEntity = "ManagerRelationship";
 

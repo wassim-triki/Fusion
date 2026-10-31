@@ -4,6 +4,8 @@ using EY.HRPlatform.CoreHR.Controllers;
 using EY.HRPlatform.CoreHR.Features.People;
 using EY.HRPlatform.CoreHR.Features.People.Changes;
 using EY.HRPlatform.CoreHR.Features.Security;
+using EY.HRPlatform.CoreHR.Features.EmployeeFields;
+using EY.HRPlatform.CoreHR.Tests.TestHelpers;
 using EY.HRPlatform.SharedKernel.Auth;
 using EY.HRPlatform.SharedKernel.Results;
 using MediatR;
@@ -137,7 +139,10 @@ public sealed class PeopleChangesControllerTests
             .ReturnsAsync(Result.Success(new PeopleTimelineDto([], [])));
         sender.Setup(s => s.Send(It.IsAny<ManagerOptionsQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success<IReadOnlyList<ManagerOptionDto>>([]));
-        return (new EmployeesController(sender.Object, new CoreAccessPolicyService())
+        var tenantId = Guid.Parse(caller.FindFirstValue(CustomClaimTypes.TenantId)!);
+        var tenant = TestTenantContext.WithTenant(tenantId);
+        var fields = new EmployeeFieldService(TestDbContextFactory.Create(tenant), tenant);
+        return (new EmployeesController(sender.Object, new CoreAccessPolicyService(), fields)
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = caller } },
         }, sender);

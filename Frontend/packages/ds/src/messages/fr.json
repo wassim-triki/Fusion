@@ -26,7 +26,7 @@
         "lists": "Listes",
         "roles": "Rôles",
         "approvals": "Changements et validations",
-        "invitations": "Invitations",
+        "sign-in": "Connexion",
         "change-history": "Historique des modifications",
         "rating-scale": "Échelle de notation",
         "competencies": "Compétences",
@@ -219,7 +219,13 @@
       "removeFilter": "Retirer le filtre {field}",
       "clear": "Effacer",
       "clearFilters": "Effacer les filtres",
-      "noOptions": "Aucun résultat"
+      "noOptions": "Aucun résultat",
+      "export": {
+        "button": "Exporter",
+        "csv": "CSV",
+        "xlsx": "Excel",
+        "failed": "Le fichier n'a pas été téléchargé. Réessayez."
+      }
     },
     "topBar": {
       "language": "Langue",

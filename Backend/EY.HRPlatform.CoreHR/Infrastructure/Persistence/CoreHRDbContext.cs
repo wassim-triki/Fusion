@@ -43,6 +43,8 @@ public class CoreHRDbContext : DbContext
     // Canonical workforce model (Employee -> Employment -> WorkAssignment -> ManagerRelationship).
     public DbSet<Employment> Employments => Set<Employment>();
     public DbSet<EmploymentTypePeriod> EmploymentTypePeriods => Set<EmploymentTypePeriod>();
+    public DbSet<InvitationSchedule> InvitationSchedules => Set<InvitationSchedule>();
+    public DbSet<InvitationAutoSend> InvitationAutoSends => Set<InvitationAutoSend>();
     public DbSet<WorkAssignment> WorkAssignments => Set<WorkAssignment>();
     public DbSet<ManagerRelationship> ManagerRelationships => Set<ManagerRelationship>();
     public DbSet<WorkforceAuditEntry> WorkforceAuditEntries => Set<WorkforceAuditEntry>();
@@ -110,6 +112,12 @@ public class CoreHRDbContext : DbContext
             .HasQueryFilter(x => CurrentTenantId != Guid.Empty && x.TenantId == CurrentTenantId);
 
         modelBuilder.Entity<EmploymentTypePeriod>()
+            .HasQueryFilter(x => CurrentTenantId != Guid.Empty && x.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<InvitationSchedule>()
+            .HasQueryFilter(x => CurrentTenantId != Guid.Empty && x.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<InvitationAutoSend>()
             .HasQueryFilter(x => CurrentTenantId != Guid.Empty && x.TenantId == CurrentTenantId);
 
         modelBuilder.Entity<WorkAssignment>()

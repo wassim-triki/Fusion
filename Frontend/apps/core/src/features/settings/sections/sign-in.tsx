@@ -4,7 +4,7 @@ import { useCallback, useMemo } from "react";
 import type { FusionSettingsSection, ProvisioningSettingsDto } from "@repo/api";
 import { useSettingsConflictSaver } from "@repo/api/query";
 import { useStagedSettings } from "@repo/api/react";
-import { Input, NativeSelect, NativeSelectOption } from "@repo/ds";
+import { Input, NativeSelect, NativeSelectOption, Switch } from "@repo/ds";
 import { OptionCards } from "@repo/ds/choice";
 import {
   PageError,
@@ -42,6 +42,10 @@ export function invitationsConsequence(
   if (saved.resendCooldownHours !== draft.resendCooldownHours) sentences.push(said("cooldown", { count: draft.resendCooldownHours }));
   if (saved.defaultAccessProfileId !== draft.defaultAccessProfileId)
     sentences.push(roleName ? said("role", { role: roleName }) : said("chosenRole"));
+  if (saved.remindAfterDays !== draft.remindAfterDays)
+    sentences.push(draft.remindAfterDays > 0 ? said("remind", { count: draft.remindAfterDays }) : said("noRemind"));
+  if (saved.inviteJoinersOnFirstDay !== draft.inviteJoinersOnFirstDay)
+    sentences.push(said(draft.inviteJoinersOnFirstDay ? "firstDay" : "noFirstDay"));
   if (saved.pendingInviteBehavior !== draft.pendingInviteBehavior)
     sentences.push(said(draft.pendingInviteBehavior === "KeepExisting" ? "keep" : "fresh"));
   return sentences.join(" ");
@@ -82,8 +86,8 @@ function NumberField({
   );
 }
 
-/** Settings › Invitations: how Fusion invites new people. */
-export function InvitationsSettings({ section }: { section: FusionSettingsSection }) {
+/** Settings › Sign-in: how people get into Fusion (B-182): invitations, the one reminder, first-day invitations. */
+export function SignInSettings({ section }: { section: FusionSettingsSection }) {
   const say = useSettingsSay();
   const failure = useSaveFailure();
   const title = useSettingsSectionName()(section);
@@ -160,6 +164,32 @@ export function InvitationsSettings({ section }: { section: FusionSettingsSectio
                 />
               ) : (
                 <SettingsValue>{say("invitations.hourCount", { count: draft.resendCooldownHours })}</SettingsValue>
+              )}
+            </SettingsRow>
+            <SettingsRow label={say("invitations.remind")} htmlFor={editable ? "invite-remind" : undefined}>
+              {editable ? (
+                <NumberField
+                  id="invite-remind"
+                  label={say("invitations.remindInDays")}
+                  value={draft.remindAfterDays}
+                  unit={say("invitations.days")}
+                  min={0}
+                  max={30}
+                  onChange={(value) => set({ remindAfterDays: value })}
+                />
+              ) : (
+                <SettingsValue>{draft.remindAfterDays > 0 ? say("invitations.dayCount", { count: draft.remindAfterDays }) : say("invitations.never")}</SettingsValue>
+              )}
+            </SettingsRow>
+            <SettingsRow label={say("invitations.firstDay")} htmlFor={editable ? "invite-first-day" : undefined}>
+              {editable ? (
+                <Switch
+                  id="invite-first-day"
+                  checked={draft.inviteJoinersOnFirstDay}
+                  onCheckedChange={(checked) => set({ inviteJoinersOnFirstDay: checked })}
+                />
+              ) : (
+                <SettingsValue>{say(draft.inviteJoinersOnFirstDay ? "invitations.on" : "invitations.off")}</SettingsValue>
               )}
             </SettingsRow>
             <SettingsRow label={say("invitations.role")} htmlFor={editable ? "invite-role" : undefined}>

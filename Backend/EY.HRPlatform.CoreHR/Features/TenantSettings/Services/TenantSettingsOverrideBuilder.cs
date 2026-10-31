@@ -69,6 +69,8 @@ public static class TenantSettingsOverrideBuilder
             if (provisioning.InviteExpiryDays.HasValue) existing["inviteExpiryDays"] = provisioning.InviteExpiryDays.Value;
             if (provisioning.ResendCooldownHours.HasValue) existing["resendCooldownHours"] = provisioning.ResendCooldownHours.Value;
             if (provisioning.PendingInviteBehavior is not null) existing["pendingInviteBehavior"] = provisioning.PendingInviteBehavior;
+            if (provisioning.RemindAfterDays.HasValue) existing["remindAfterDays"] = provisioning.RemindAfterDays.Value;
+            if (provisioning.InviteJoinersOnFirstDay.HasValue) existing["inviteJoinersOnFirstDay"] = provisioning.InviteJoinersOnFirstDay.Value;
             if (existing.Count > 0) root["provisioning"] = existing;
         }
 

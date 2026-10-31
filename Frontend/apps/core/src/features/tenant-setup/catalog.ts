@@ -99,7 +99,7 @@ export const SETUP_CAPABILITIES: SetupCapability[] = [
     purpose: "Connect workforce identities to Fusion accounts and access.",
     group: "foundation",
     availability: "implemented",
-    route: "/workforce-access",
+    route: "/people?view=not-signed-in&invite=1",
     actionLabel: "Manage workforce access",
     prerequisites: ["workforce"],
     order: 50,

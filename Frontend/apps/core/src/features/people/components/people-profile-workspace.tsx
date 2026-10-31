@@ -29,6 +29,9 @@ import {
   DatePicker,
   Input,
   Label,
+  Sheet,
+  SheetContent,
+  SheetTitle,
 } from "@repo/ds";
 import { PageContainer, PageListSkeleton } from "@repo/ds/shell";
 import { toast } from "sonner";
@@ -40,9 +43,10 @@ import {
   canEnterPerformance,
   canManageCoreEmployees,
   canViewWorkforceAccess,
+  canManageWorkforceAccess,
   useAuth,
 } from "@repo/auth";
-import { classifyApiError } from "@repo/api";
+import { classifyApiError, type WorkforceAccessCandidateDto } from "@repo/api";
 import {
   ArrowLeft,
   ArrowLeftRight,
@@ -75,6 +79,8 @@ import { WorkerProfileSkeleton } from "./worker-profile/worker-profile-skeleton"
 import { fromPeopleProfile } from "./worker-profile/worker-profile-view";
 import { PersonRoles } from "@/features/settings/roles/person-roles";
 import { AccessTab } from "./worker-profile/access-tab";
+import { AccountInspector } from "@/features/workforce-access/components/account-inspector";
+import { IdentityCorrection } from "@/features/workforce-access/components/identity-correction";
 import { JobTab } from "./worker-profile/job-tab";
 import { PersonalTab, useSeenBy } from "./worker-profile/personal-tab";
 import { OverviewTab, performanceUpcoming, useDayParts } from "./worker-profile/overview-tab";
@@ -161,12 +167,12 @@ export default function PeopleProfileWorkspace({
 
   const [workEmailEditorOpen, setWorkEmailEditorOpen] = useState(false);
   const [photoOpen, setPhotoOpen] = useState(false);
+  // The person's Fusion account, opened from the Access tab (it used to live on Workforce access, D-11).
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [correcting, setCorrecting] = useState<WorkforceAccessCandidateDto | null>(null);
   const workEmailActionHandled = useRef(false);
   const requestedAction = searchParams.get("action");
-  const returnTo =
-    searchParams.get("returnTo") === "/core/workforce-access"
-      ? "/core/workforce-access"
-      : null;
+  const returnTo = null;
 
   const established = searchParams.get("established");
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -270,12 +276,9 @@ export default function PeopleProfileWorkspace({
   const canManageWorkEmail = canManage && !isAsOf;
   const accessAction =
     access.data && view.workEmail && canViewWorkforceAccess(user) ? (
-      <Link
-        href="/workforce-access"
-        className="inline-block type-meta text-primary-ink underline-offset-4 hover:underline"
-      >
+      <Button variant="link" className="h-auto p-0 type-meta text-primary-ink" onClick={() => setAccountOpen(true)}>
         {access.data.state === "NoAccess" ? t("setUpAccess") : t("reviewAccess")}
-      </Link>
+      </Button>
     ) : undefined;
   const workEmailAction = canManageWorkEmail ? (
     <Button
@@ -483,6 +486,36 @@ export default function PeopleProfileWorkspace({
       <AsOfDialog open={asOfOpen} onOpenChange={setAsOfOpen} today={isoDay(employee.viewedDate)} onPick={(date) => { setAsOfOpen(false); goAsOf(date); }} />
       {changeSheet.element}
       {pendingRequests.sheet}
+      {canViewWorkforceAccess(user) ? (
+        <AccountInspector
+          employeeId={accountOpen ? employee.identity.employeeId : null}
+          accessState={null}
+          canManage={canManageWorkforceAccess(user)}
+          onOpenChange={setAccountOpen}
+          onCorrect={(candidate) => {
+            setAccountOpen(false);
+            setCorrecting(candidate);
+          }}
+        />
+      ) : null}
+      <Sheet open={Boolean(correcting)} onOpenChange={(open) => { if (!open) setCorrecting(null); }}>
+        <SheetContent side="right" className="w-full overflow-y-auto p-0 sm:!max-w-xl">
+          <SheetTitle className="sr-only">{t("reviewAccess")}</SheetTitle>
+          {correcting ? (
+            <IdentityCorrection
+              source={correcting}
+              onBack={() => {
+                setCorrecting(null);
+                setAccountOpen(true);
+              }}
+              onDone={() => {
+                setCorrecting(null);
+                void access.refetch();
+              }}
+            />
+          ) : null}
+        </SheetContent>
+      </Sheet>
       {canChangePhoto ? (
         <PhotoDialog
           open={photoOpen}

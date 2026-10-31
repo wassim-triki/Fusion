@@ -139,6 +139,18 @@ public class BrandControllerTests
     }
 
     [Fact]
+    public async Task Whoever_sends_invitations_previews_the_email_but_changes_nothing()
+    {
+        var arranged = await SeedAsync();
+        var inviter = Controller(arranged.Db, arranged.Own, (CorePermissions.AccessManage, PermissionScopes.Tenant));
+        Assert.IsType<OkObjectResult>((await inviter.EmailPreview(new BrandEmailPreviewRequest("Carthage", null, "en", false), CancellationToken.None)).Result);
+        Assert.IsType<ForbidResult>((await inviter.Save(Request(), CancellationToken.None)).Result);
+
+        var viewer = Controller(arranged.Db, arranged.Own, (CorePermissions.AccessView, PermissionScopes.Tenant));
+        Assert.IsType<ForbidResult>((await viewer.EmailPreview(new BrandEmailPreviewRequest("Carthage", null, "en", false), CancellationToken.None)).Result);
+    }
+
+    [Fact]
     public async Task The_legacy_settings_manage_permission_still_counts()
     {
         var arranged = await SeedAsync();

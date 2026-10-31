@@ -7,7 +7,6 @@ import { useFusionNavigation, useFusionSettings, useSettingsReturn } from "@repo
 import { FusionSidebar, sectionPaths } from "@repo/ds/shell";
 import {
   useAuth,
-  canViewWorkforceAccess,
   canViewCoreOrganization,
   canSeeCoreSettingsNavigation,
   canViewTenantAdministration,
@@ -18,6 +17,7 @@ import {
 import { useCoreNav } from "@/shell/navigation/use-core-nav";
 import { useOrgChartAccess } from "@/features/org-chart/api/use-org-chart-access";
 import {
+  canAccessEmployeeProfile,
   canSeeEmployeeRosterNavigation,
   canSeeSelfEmployeeProfileNavigation,
   canSeeTeamWorkspaceNavigation,
@@ -35,7 +35,6 @@ export function CoreSidebar() {
   const t = useTranslations("ds.sidebar");
   const nav = useCoreNav();
   const canSeeSetup = canViewTenantAdministration(user);
-  const canSeeWorkforceAccess = canViewWorkforceAccess(user);
   const canSeeSettings = canSeeCoreSettingsNavigation(user);
   const canSeeEmployeeRoster = canSeeEmployeeRosterNavigation(user);
   const canSeeOrganization = canViewCoreOrganization(user);
@@ -46,7 +45,8 @@ export function CoreSidebar() {
   const peopleItems = nav.people.items.filter((item) => {
     if (item.href === "/profile") return canSeeMyProfile;
     if (item.href === "/team") return canSeeMyTeam;
-    if (item.href === "/people") return canSeeEmployeeRoster;
+    // Everyone has People: HR's table, the directory for everyone else (D-28).
+    if (item.href === "/people") return canSeeEmployeeRoster || canAccessEmployeeProfile(user);
     if (item.href === "/org-chart") return canSeeOrgChart;
     if (item.href === "/organization") return canSeeOrganization;
     if (item.href === "/changes") return canApproveCoreChanges(user) || canProposeCoreChanges(user) || canManageCoreEmployees(user);
@@ -54,7 +54,6 @@ export function CoreSidebar() {
   });
   const adminItems = nav.admin.items.filter((item) => {
     if (item.href === "/getting-started") return canSeeSetup;
-    if (item.href === "/workforce-access") return canSeeWorkforceAccess;
     if (item.href === "/settings") return canSeeSettings;
     return canSeeSetup;
   });

@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-233.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-237.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -30,7 +30,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
   - [ ] **B-110** Tenant configurability as a hero: branding (logo, theme/accent, branded sign-in, own address, email branding) and internal configuration (company defaults and whatever the research puts on the ladder), depth chosen on B-163's scope page · Shell, Platform, Core HR, Identity · 2026-10-24
         User 2026-10-30: "I really wanna establish it as a core wow factor"; EY discussed it a lot but never gave specs or how far to take it. Earlier (2026-10-24) brain dump, ideas not requirements. A tenant's default language meets B-105. Context: B-071 removed the unused brand colour from Core's branding settings; Core's branding settings store a `LogoUrl` that no screen sets or shows; Company settings show name and locale.
   - [ ] **B-167** Rebuild: slices in dependency order, each end to end with screens for the taste check ([decisions](plans/B-164-decisions.md), D-01–D-30; [slices](plans/B-167-rebuild.md)) · 2026-10-30
-        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 done (✓ 2026-10-31); B-178 done (✓ 2026-10-31); B-179 done (✓ 2026-10-31); B-180 done (✓ 2026-10-31); B-181 done (✓ 2026-10-31); B-182 next, fresh session.
+        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 done (✓ 2026-10-31); B-178 done (✓ 2026-10-31); B-179 done (✓ 2026-10-31); B-180 done (✓ 2026-10-31); B-181 done (✓ 2026-10-31); B-182 built 2026-10-31, In review; B-183 next, fresh session.
     - [ ] **B-198** One tab and view-switch pattern across Fusion, matching the target design: every tab strip and view switch today is reused old UI (the Organization lenses are the latest example). Define it once in `@repo/ds` from the accepted grammar (D-01 band tabs, D-17 views), first where a slice draws tabs (B-180's person page or B-183's Organization, whichever comes first), then replace every other use; B-192 checks none is left · All · 2026-10-30
           2026-10-31: defined as `LinkTabs` in `@repo/ds/shell` (active = company color, outline + subtle fill) and used on the person page (B-180); every other tab strip and view switch still to move.
     - [ ] **B-212** Reach "their unit" for roles (D-25 draws it): Core HR's record reads and Performance resolve the viewer's unit and the units under it, then the Jobs, Personal and Plans areas offer it. Not offered in B-177 because nothing enforces it yet (`performance.cycle.view@OrgUnit` is unseeded and treated as a team) · Core HR, Performance, Identity · 2026-10-30
@@ -38,8 +38,6 @@ Open work only. Agents keep it current from the conversation; closed items leave
     - [ ] **B-229** On leave: dates and a type on a person, shown wherever the person appears (Performance included); slice 6's row, not in this session's ask · Core HR, Performance · 2026-10-31
     - [ ] **B-230** Demo photos for Carthage's people (slice 6's row); every page draws initials today · Core HR · 2026-10-31
     - [ ] **B-231** Access tab › History (the drawn account story: invited by, accepted, signed in); Identity has no per-person account history read yet · Identity, Core HR · 2026-10-31
-    - [ ] **B-182** People, the directory and invitations: HR table, portrait cards, the invite sheet, Settings › Sign-in, Export everywhere (D-11, D-13, D-28) · Core HR, Shared · 2026-10-30
-      - [ ] **B-199** Redesign the hire / add-one-person form ("Add people", D-13): the current page is old UI the explorer never drew (user 2026-10-30: very bad). Design it in the accepted grammar, keep the job and place pickers from B-175 · Core HR · 2026-10-30
     - [ ] **B-183** Organization in time: one place, three views, one time slider, unit pages, open roles (D-17) · Core HR · 2026-10-30
     - [ ] **B-184** Joining and leaving: checklists, a joiner's first week, celebrations · Core HR, Shell · 2026-10-30
       - [ ] **B-146** Celebrations: birthdays and work anniversaries on Home (BambooHR-style life); who sees a birthday (day and month only) · Shell, Core HR · 2026-10-28
@@ -59,6 +57,11 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In review
 
+- [ ] **B-182** People, the directory and invitations: HR table, portrait cards, the invite sheet, Settings › Sign-in, Export everywhere (D-11, D-13, D-28) · Core HR, Shared · 2026-10-30
+      Built 2026-10-31. Look at (screens in `plans/B-182-screens/`, live in Carthage as Amira and Aicha): `/core/people` (views with counts, Sign-in column, Filter › Unit/Place/Job/Manager/Skills, Export › CSV or Excel), `?view=not-signed-in`, Invite people (the sheet: who, now or later, first day and reminder switches, the email), the cards switch and Aicha's directory (Your team, A–Z rail), Settings › Sign-in (two new rows). Workforce access is gone: its per-person part opens from a person's Access tab ("Review access").
+  - [ ] **B-199** Redesign the hire / add-one-person form ("Add people", D-13) · Core HR · 2026-10-30
+        Built 2026-10-31 as one `/core/people/add` (hire and add-existing merged; a past first day adds someone already here): the person band fills in as you type, two sections under it. Look at: `08-add-person-typing.png`, then add someone for real.
+
 - [ ] **B-104** Final manual verification pass, once the big features are done (Settings, any wow feature): the user verifies B-089 phase 2 and everything since by hand, then the little stuff that's left · Performance · 2026-10-23
       2026-10-29: the fixes are done (B-089 audit, phase 2 committed ba8f58af, which also closed B-088's ask); only the user's hand check is left, so this sits In review.
       User: "once we establish a bunch of things and the big features all done and only the little stuff left, maybe we'll do a manual thing right there and verify everything". B-089 phase 2 waits on it; committed 2026-10-25 at the user's request (ba8f58af), still unverified by hand.
@@ -68,6 +71,9 @@ Open work only. Agents keep it current from the conversation; closed items leave
           User, locking B-087 in: "generally its not bad, although idk if its gonna be the final polish, in terms of specific ui ux and routing and layout and design". Folded into B-089.
 
 ## Ready
+
+- [ ] **B-235** Withdrawing a workforce invitation answers "Invitation withdrawn" but leaves it pending (Identity's withdraw doesn't revoke; seen on Ala Bouzgarrou in Carthage, 2026-10-31, whose invitation from the B-182 journey is still out). Pre-existing, not from B-182 · Identity · 2026-10-31
+- [ ] **B-236** Platform's tenant list keeps its own CSV export; move it onto the table kit's `DataTableExport` (B-182's one Export) · Platform · 2026-10-31
 
 - [ ] **B-228** Performance's object lists keep their headings on the canvas (My Plan's sections, the review record's sections, Feedback's request lists, the person summary's Performance parts): each is a list of standalone rich cards, so putting the title inside means the objects become rows or inlays in one frame. Recommendation: rows with the rich detail in the drawer, as Needs you does. Left out of B-225's sweep for that reason · Performance · 2026-10-31
 

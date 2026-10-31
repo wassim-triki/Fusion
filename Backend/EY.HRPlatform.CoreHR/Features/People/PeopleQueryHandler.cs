@@ -1,5 +1,7 @@
 using System.Data;
 using System.Data.Common;
+using EY.HRPlatform.CoreHR.Domain.Entities;
+using EY.HRPlatform.CoreHR.Features.Employees.Services;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence;
 using EY.HRPlatform.SharedKernel.CQRS;
 using EY.HRPlatform.SharedKernel.Multitenancy;
@@ -11,18 +13,21 @@ namespace EY.HRPlatform.CoreHR.Features.People;
 
 public sealed class PeopleQueryHandler(
     CoreHRDbContext dbContext,
-    ITenantContext tenantContext) : IQueryHandler<PeopleQuery, Result<PeoplePageDto>>
+    ITenantContext tenantContext,
+    IWorkforceAccountStatusReader? accountStatuses = null) : IQueryHandler<PeopleQuery, Result<PeoplePageDto>>
 {
     private const int MaxPageSize = 100;
+
+    /// <summary>One matching person before views, sign-in and paging apply.</summary>
+    private sealed record Candidate(Guid EmployeeId, PeopleRowDto Row);
 
     public async Task<Result<PeoplePageDto>> Handle(PeopleQuery request, CancellationToken cancellationToken)
     {
         if (!dbContext.Database.IsNpgsql())
             return await HandlePortableAsync(request, cancellationToken);
 
-        var page = Math.Max(1, request.Page);
-        var pageSize = Math.Clamp(request.PageSize, 1, MaxPageSize);
-        var offset = (page - 1) * pageSize;
+        var page = request.Unpaged ? 1 : Math.Max(1, request.Page);
+        var pageSize = request.Unpaged ? int.MaxValue : Math.Clamp(request.PageSize, 1, MaxPageSize);
         var orderBy = BuildOrderBy(request.Sort, request.Direction);
         var cohortKeys = await ResolveImportCohortAsync(request.ImportBatchId, cancellationToken);
         var sql = BuildSql(orderBy);
@@ -31,6 +36,7 @@ public sealed class PeopleQueryHandler(
         if (shouldClose)
             await connection.OpenAsync(cancellationToken);
 
+        var candidates = new List<Candidate>();
         try
         {
             await using var command = connection.CreateCommand();
@@ -42,42 +48,45 @@ public sealed class PeopleQueryHandler(
             AddParameter(command, "state", request.State?.ToString() ?? (object)DBNull.Value, DbType.String);
             AddParameter(command, "orgUnitId", request.OrgUnitId ?? (object)DBNull.Value, DbType.Guid);
             AddParameter(command, "orgScope", request.OrganizationScope.ToString());
+            AddParameter(command, "jobId", request.JobId ?? (object)DBNull.Value, DbType.Guid);
+            AddParameter(command, "placeId", request.PlaceId ?? (object)DBNull.Value, DbType.Guid);
+            AddParameter(command, "managerKey", string.IsNullOrWhiteSpace(request.ManagerKey) ? DBNull.Value : request.ManagerKey.Trim().ToUpperInvariant(), DbType.String);
             // A typed text[] parameter so PostgreSQL can resolve `= ANY(@cohortKeys)` even when null.
             command.Parameters.Add(new Npgsql.NpgsqlParameter("cohortKeys", NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Text)
             {
                 Value = (object?)cohortKeys ?? DBNull.Value,
             });
-            AddParameter(command, "offset", offset);
-            AddParameter(command, "limit", pageSize);
 
-            var items = new List<PeopleRowDto>(pageSize);
-            var total = 0;
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
             while (await reader.ReadAsync(cancellationToken))
             {
-                total = reader.GetInt32(reader.GetOrdinal("TotalCount"));
                 var state = Enum.Parse<PeopleEmploymentState>(reader.GetString(reader.GetOrdinal("EmploymentState")));
                 var jobTitle = GetNullableString(reader, "JobTitle");
                 var work = jobTitle is null
                     ? null
                     : new PeopleWorkDto(
-                        null,
+                        GetNullableGuid(reader, "OrgUnitId"),
                         jobTitle,
                         GetNullableString(reader, "OrganizationName") ?? "Work details unavailable",
                         GetNullableString(reader, "OrganizationPath") ?? "Work details unavailable",
                         GetNullableString(reader, "WorkLocation"),
                         reader.GetDateTime(reader.GetOrdinal("WorkEffectiveFrom")),
-                        state == PeopleEmploymentState.Former);
+                        state == PeopleEmploymentState.Former,
+                        GetNullableGuid(reader, "JobId"),
+                        GetNullableGuid(reader, "PlaceId"));
                 var managerKey = GetNullableString(reader, "ManagerEmployeeKey");
                 var manager = managerKey is null
                     ? null
                     : new PeopleManagerDto(
                         managerKey,
                         reader.GetString(reader.GetOrdinal("ManagerDisplayName")),
-                        reader.GetString(reader.GetOrdinal("ManagerEmployeeNumber")));
+                        reader.GetString(reader.GetOrdinal("ManagerEmployeeNumber")),
+                        EmployeePhotos.UrlFor(managerKey, GetNullableString(reader, "ManagerPhotoKey")));
 
-                items.Add(new PeopleRowDto(
-                    reader.GetString(reader.GetOrdinal("EmployeeKey")),
+                var employeeKey = reader.GetString(reader.GetOrdinal("EmployeeKey"));
+                var employeeId = reader.GetGuid(reader.GetOrdinal("EmployeeId"));
+                candidates.Add(new Candidate(employeeId, new PeopleRowDto(
+                    employeeKey,
                     reader.GetString(reader.GetOrdinal("EmployeeNumber")),
                     reader.GetString(reader.GetOrdinal("DisplayName")),
                     reader.GetString(reader.GetOrdinal("FirstName")),
@@ -89,22 +98,160 @@ public sealed class PeopleQueryHandler(
                     work,
                     manager,
                     work is null ? "WorkDetailsUnavailable" : "Complete",
-                    EmployeePhotos.UrlFor(reader.GetString(reader.GetOrdinal("EmployeeKey")), GetNullableString(reader, "PhotoKey"))));
+                    EmployeePhotos.UrlFor(employeeKey, GetNullableString(reader, "PhotoKey")),
+                    EmployeeId: employeeId)));
             }
-
-            return Result.Success(new PeoplePageDto(
-                items,
-                total,
-                page,
-                pageSize,
-                total == 0 ? 0 : (int)Math.Ceiling(total / (double)pageSize)));
         }
         finally
         {
             if (shouldClose)
                 await connection.CloseAsync();
         }
+
+        var facets = request.Unpaged ? null : await FacetsAsync(cancellationToken);
+        candidates = await FilterByFieldsAsync(candidates, request.Fields, cancellationToken);
+        if (request.IncludeSignIn)
+            candidates = await WithSignInAsync(candidates, cancellationToken);
+
+        var views = new PeopleViewCountsDto(
+            candidates.Count(item => InView(item.Row, PeopleView.Everyone)),
+            candidates.Count(item => InView(item.Row, PeopleView.StartingSoon)),
+            candidates.Count(item => InView(item.Row, PeopleView.Leaving)),
+            request.IncludeSignIn ? candidates.Count(item => InView(item.Row, PeopleView.NotSignedIn)) : null,
+            candidates.Count(item => InView(item.Row, PeopleView.Left)));
+        // Without sign-in facts nobody is in Not signed in, rather than everyone.
+        var matching = request.View is { } view
+            ? candidates.Where(item => InView(item.Row, view)).ToList()
+            : candidates;
+        var total = matching.Count;
+        var skip = (int)Math.Min(int.MaxValue, (long)(page - 1) * pageSize);
+        var items = matching.Skip(skip).Take(pageSize).Select(item => item.Row).ToList();
+
+        return Result.Success(new PeoplePageDto(
+            items,
+            total,
+            page,
+            request.Unpaged ? Math.Max(1, total) : pageSize,
+            total == 0 ? 0 : request.Unpaged ? 1 : (int)Math.Ceiling(total / (double)pageSize),
+            views,
+            facets));
     }
+
+    /// <summary>The company's Tags fields and every value someone holds, for People's filters.</summary>
+    private async Task<IReadOnlyList<PeopleFieldFacetDto>> FacetsAsync(CancellationToken cancellationToken)
+    {
+        var definitions = await dbContext.EmployeeFieldDefinitions.AsNoTracking()
+            .Where(item => item.IsActive && item.Visible && item.SourceKey == null && item.Type == EmployeeFieldType.Tags)
+            .OrderBy(item => item.Area).ThenBy(item => item.SortOrder)
+            .ToListAsync(cancellationToken);
+        if (definitions.Count == 0) return [];
+        var ids = definitions.Select(item => item.Id).ToList();
+        var values = await dbContext.EmployeeFieldValues.AsNoTracking()
+            .Where(item => ids.Contains(item.FieldId))
+            .Select(item => new { item.FieldId, item.ValueJson })
+            .ToListAsync(cancellationToken);
+        return definitions.Select(definition => new PeopleFieldFacetDto(
+                definition.Key,
+                definition.Label,
+                values.Where(item => item.FieldId == definition.Id)
+                    .SelectMany(item => TagsOf(item.ValueJson))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Order(StringComparer.CurrentCultureIgnoreCase)
+                    .ToList()))
+            .Where(facet => facet.Values.Count > 0)
+            .ToList();
+    }
+
+    private static bool InView(PeopleRowDto row, PeopleView view) => view switch
+    {
+        PeopleView.Everyone => row.EmploymentState != PeopleEmploymentState.Former,
+        PeopleView.StartingSoon => row.EmploymentState == PeopleEmploymentState.Scheduled,
+        PeopleView.Leaving => row.EmploymentState == PeopleEmploymentState.Active && row.EmploymentEnd is not null,
+        PeopleView.NotSignedIn => row.EmploymentState != PeopleEmploymentState.Former
+            && row.SignIn is { State: not PeopleSignInState.SignsIn },
+        PeopleView.Left => row.EmploymentState == PeopleEmploymentState.Former,
+        _ => true,
+    };
+
+    /// <summary>Keeps the people whose Tags field holds each asked value (case-insensitive).</summary>
+    private async Task<List<Candidate>> FilterByFieldsAsync(
+        List<Candidate> candidates, IReadOnlyDictionary<string, string>? fields, CancellationToken cancellationToken)
+    {
+        if (fields is null || fields.Count == 0 || candidates.Count == 0) return candidates;
+        var wanted = fields.ToDictionary(pair => pair.Key.Trim().ToLowerInvariant(), pair => pair.Value.Trim());
+        var keys = wanted.Keys.ToList();
+        var definitions = await dbContext.EmployeeFieldDefinitions.AsNoTracking()
+            .Where(item => item.IsActive && item.SourceKey == null && item.Type == EmployeeFieldType.Tags && keys.Contains(item.Key))
+            .ToListAsync(cancellationToken);
+        // An unknown field matches nobody, like a filter on a value nobody has.
+        if (definitions.Count != keys.Count) return [];
+        var fieldIds = definitions.Select(item => item.Id).ToList();
+        var values = await dbContext.EmployeeFieldValues.AsNoTracking()
+            .Where(item => fieldIds.Contains(item.FieldId))
+            .Select(item => new { item.EmployeeId, item.FieldId, item.ValueJson })
+            .ToListAsync(cancellationToken);
+        var held = values.ToDictionary(item => (item.EmployeeId, item.FieldId), item => TagsOf(item.ValueJson));
+        return candidates.Where(candidate => definitions.All(definition =>
+                held.TryGetValue((candidate.EmployeeId, definition.Id), out var tags)
+                && tags.Contains(wanted[definition.Key], StringComparer.OrdinalIgnoreCase)))
+            .ToList();
+    }
+
+    internal static IReadOnlyList<string> TagsOf(string json)
+    {
+        try
+        {
+            using var document = System.Text.Json.JsonDocument.Parse(json);
+            return document.RootElement.ValueKind == System.Text.Json.JsonValueKind.Array
+                ? document.RootElement.EnumerateArray()
+                    .Where(item => item.ValueKind == System.Text.Json.JsonValueKind.String)
+                    .Select(item => item.GetString()!)
+                    .ToList()
+                : [];
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return [];
+        }
+    }
+
+    /// <summary>Asks Identity once for everyone listed; people without a work email can't be invited.</summary>
+    private async Task<List<Candidate>> WithSignInAsync(List<Candidate> candidates, CancellationToken cancellationToken)
+    {
+        if (accountStatuses is null || candidates.Count == 0) return candidates;
+        IReadOnlyDictionary<Guid, WorkforceAccountStatusDto> statuses;
+        try
+        {
+            statuses = await accountStatuses.GetStatusesAsync(
+                candidates.Where(item => !string.IsNullOrWhiteSpace(item.Row.WorkEmail))
+                    .Select(item => new WorkforceAccountSubjectDto(item.EmployeeId, item.Row.WorkEmail!, item.Row.FirstName, item.Row.LastName))
+                    .ToList(),
+                cancellationToken);
+        }
+        catch (HttpRequestException)
+        {
+            // Identity unreachable: the list still answers, without sign-in.
+            return candidates;
+        }
+        return candidates.Select(item => item with
+        {
+            Row = item.Row with
+            {
+                SignIn = string.IsNullOrWhiteSpace(item.Row.WorkEmail)
+                    ? new PeopleSignInDto(PeopleSignInState.NoEmail, null)
+                    : SignInOf(statuses.GetValueOrDefault(item.EmployeeId)),
+            },
+        }).ToList();
+    }
+
+    internal static PeopleSignInDto SignInOf(WorkforceAccountStatusDto? account) => account?.ProvisioningState switch
+    {
+        "Active" or "InviteAccepted" => new PeopleSignInDto(PeopleSignInState.SignsIn, account.LastLoginAt),
+        "InvitePending" => new PeopleSignInDto(PeopleSignInState.Invited, account.InviteCreatedAt),
+        "InviteExpired" => new PeopleSignInDto(PeopleSignInState.Expired, account.InviteExpiresAt),
+        "Inactive" => new PeopleSignInDto(PeopleSignInState.Suspended, null),
+        _ => new PeopleSignInDto(PeopleSignInState.NotInvited, null),
+    };
 
     private async Task<Result<PeoplePageDto>> HandlePortableAsync(PeopleQuery request, CancellationToken cancellationToken)
     {
@@ -208,6 +355,7 @@ public sealed class PeopleQueryHandler(
         ),
         work_facts AS (
             SELECT f.*, wa."Id" AS "WorkAssignmentId", wa."OrgUnitId", wa."JobTitle", wa."WorkLocation",
+                wa."JobId", wa."PlaceId",
                 wa."EffectiveFrom" AS "WorkEffectiveFrom", ous."Name" AS "OrganizationName", ous."ParentOrgUnitId"
             FROM facts f
             LEFT JOIN LATERAL (
@@ -245,7 +393,7 @@ public sealed class PeopleQueryHandler(
             SELECT wf.*, path."OrganizationPath",
                 me."StableEmployeeKey" AS "ManagerEmployeeKey",
                 COALESCE(NULLIF(me."PreferredName", ''), me."FirstName") || ' ' || me."LastName" AS "ManagerDisplayName",
-                me."EmployeeNumber" AS "ManagerEmployeeNumber"
+                me."EmployeeNumber" AS "ManagerEmployeeNumber", me."PhotoKey" AS "ManagerPhotoKey"
             FROM work_facts wf
             LEFT JOIN LATERAL (
                 SELECT op."OrganizationPath" FROM org_paths op
@@ -273,11 +421,12 @@ public sealed class PeopleQueryHandler(
                         SELECT 1 FROM org_paths op
                         WHERE op."EmployeeId" = f."EmployeeId" AND op."CurrentOrgUnitId" = @orgUnitId)))
                 AND (@cohortKeys IS NULL OR f."EmployeeKey" = ANY(@cohortKeys))
+                AND (@jobId IS NULL OR f."JobId" = @jobId)
+                AND (@placeId IS NULL OR f."PlaceId" = @placeId)
+                AND (@managerKey IS NULL OR f."ManagerEmployeeKey" = @managerKey)
         )
-        SELECT f.*, COUNT(*) OVER()::int AS "TotalCount"
-        FROM filtered f
+        SELECT f.* FROM filtered f
         ORDER BY {{orderBy}}
-        OFFSET @offset LIMIT @limit
         """;
 
     private static void AddParameter(DbCommand command, string name, object value, DbType? dbType = null)
@@ -294,6 +443,12 @@ public sealed class PeopleQueryHandler(
     {
         var ordinal = reader.GetOrdinal(name);
         return reader.IsDBNull(ordinal) ? null : reader.GetString(ordinal);
+    }
+
+    private static Guid? GetNullableGuid(DbDataReader reader, string name)
+    {
+        var ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? null : reader.GetGuid(ordinal);
     }
 
     private static DateTime? GetNullableDateTime(DbDataReader reader, string name)

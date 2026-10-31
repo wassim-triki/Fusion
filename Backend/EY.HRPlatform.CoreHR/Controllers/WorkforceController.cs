@@ -15,7 +15,8 @@ public class WorkforceController(
     IWorkforceContractService workforceContractService,
     ICoreAccessPolicyService accessPolicy,
     IWorkforceAccessIdentityClient workforceAccessClient,
-    IWorkforceBulkProvisioner workforceBulkProvisioner) : ControllerBase
+    IWorkforceBulkProvisioner workforceBulkProvisioner,
+    WorkforceInvitationSender invitationSender) : ControllerBase
 {
     [HttpGet("me")]
     [ProducesResponseType(typeof(ApiResponse<WorkforceCurrentUserContextDto>), StatusCodes.Status200OK)]
@@ -482,10 +483,7 @@ public class WorkforceController(
             return BadRequest(ApiResponse.Failure("Select at least one person to activate."));
         }
 
-        // Resolve the canonical Employees and current account candidates once for the
-        // complete reviewed population. Mutation endpoints still re-resolve under their
-        // own transaction, but the bulk command no longer performs one CoreHR query and
-        // one signed Identity round-trip per selected person.
+        // Resolve the canonical Employees once, in the caller's scope; the sender re-resolves account state.
         var requestedItems = request.Items
             .Where(item => item.EmployeeId != Guid.Empty)
             .DistinctBy(item => item.EmployeeId)
@@ -495,154 +493,19 @@ public class WorkforceController(
             User,
             cancellationToken);
         var employeesById = employees.ToDictionary(employee => employee.EmployeeId);
-        IReadOnlyDictionary<Guid, WorkforceAccessCandidateResult> candidates;
-        try
+        var visible = requestedItems.Where(item => employeesById.ContainsKey(item.EmployeeId)).ToList();
+        var sent = await invitationSender.SendAsync(
+            visible.Select(item => employeesById[item.EmployeeId]).ToList(),
+            visible.ToDictionary(item => item.EmployeeId, item => item.Baseline),
+            cancellationToken);
+        var unseen = requestedItems.Where(item => !employeesById.ContainsKey(item.EmployeeId))
+            .Select(item => new WorkforceAccessBulkResultItemDto(item.EmployeeId, "Unknown", "Failed", null, "This person is no longer visible."))
+            .ToList();
+        return Ok(ApiResponse<WorkforceAccessBulkResultDto>.Success(sent with
         {
-            candidates = await workforceAccessClient.ResolveCandidatesAsync(
-                employees.Select(employee => new WorkforceAccessCandidateSubject(
-                    employee.EmployeeId,
-                    NormalizeEmail(employee.WorkEmail))).ToArray(),
-                cancellationToken);
-        }
-        catch
-        {
-            candidates = new Dictionary<Guid, WorkforceAccessCandidateResult>();
-        }
-
-        var results = new WorkforceAccessBulkResultItemDto[requestedItems.Count];
-        var invitations = new List<(int Index, WorkforceEmployeeSummaryDto Employee, string Baseline, string AccountState)>();
-
-        for (var index = 0; index < requestedItems.Count; index++)
-        {
-            var item = requestedItems[index];
-            if (!employeesById.TryGetValue(item.EmployeeId, out var employee))
-            {
-                results[index] = new WorkforceAccessBulkResultItemDto(
-                    item.EmployeeId, "Unknown", "Failed", null, "This person is no longer visible.");
-                continue;
-            }
-
-            var display = employee.DisplayName;
-            var email = NormalizeEmail(employee.WorkEmail);
-            var baseline = NormalizeBaseline(item.Baseline) ?? RecommendedBaseline(employee.DirectReportCount);
-            if (!candidates.TryGetValue(employee.EmployeeId, out var candidate))
-            {
-                results[index] = new WorkforceAccessBulkResultItemDto(
-                    employee.EmployeeId, display, "Failed", null, "The account state could not be resolved.");
-                continue;
-            }
-
-            switch (candidate.AccountState)
-            {
-                case WorkforceAccountStates.NewAccount when string.IsNullOrEmpty(email):
-                    results[index] = new WorkforceAccessBulkResultItemDto(
-                        employee.EmployeeId, display, "Blocked", candidate.AccountState,
-                        "No work email — add one before sending an invitation.");
-                    break;
-                case WorkforceAccountStates.NewAccount:
-                    invitations.Add((index, employee, baseline, candidate.AccountState));
-                    break;
-                case WorkforceAccountStates.ExistingAccountReadyToLink:
-                    results[index] = await DispatchMutateAsync(
-                        employee, email, "Link", baseline, display, "Linked", "Account linked.", cancellationToken);
-                    break;
-                case WorkforceAccountStates.SuspendedAccountReadyToReactivate:
-                    results[index] = await DispatchMutateAsync(
-                        employee, email, "ReactivateAndLink", baseline, display, "Reactivated", "Reactivated and linked.", cancellationToken);
-                    break;
-                case WorkforceAccountStates.ExistingAccountReadyToJoinTenant:
-                    results[index] = await DispatchMutateAsync(
-                        employee, email, "Connect", baseline, display, "Linked", "Account connected.", cancellationToken);
-                    break;
-                case WorkforceAccountStates.Active:
-                    results[index] = new WorkforceAccessBulkResultItemDto(
-                        employee.EmployeeId, display, "AlreadyActive", candidate.AccountState, "Already active.");
-                    break;
-                case WorkforceAccountStates.BindingConflict:
-                    results[index] = new WorkforceAccessBulkResultItemDto(
-                        employee.EmployeeId, display, "Blocked", candidate.AccountState,
-                        "Linked to a different employee. Use correction.");
-                    break;
-                case WorkforceAccountStates.AccountUnavailable:
-                    results[index] = new WorkforceAccessBulkResultItemDto(
-                        employee.EmployeeId, display, "Blocked", candidate.AccountState, "Account in use elsewhere.");
-                    break;
-                default:
-                    results[index] = new WorkforceAccessBulkResultItemDto(
-                        employee.EmployeeId, display, "Failed", candidate.AccountState, "Unrecognised account state.");
-                    break;
-            }
-        }
-
-        if (invitations.Count > 0)
-        {
-            try
-            {
-                var provision = await workforceBulkProvisioner.BulkProvisionAsync(
-                    invitations.Select(invitation => new WorkforceBulkProvisionSubject(
-                        invitation.Employee.EmployeeId,
-                        NormalizeEmail(invitation.Employee.WorkEmail)!,
-                        invitation.Employee.FirstName,
-                        invitation.Employee.LastName,
-                        invitation.Baseline)).ToList(),
-                    Guid.Empty,
-                    cancellationToken);
-                var provisionByEmployeeId = provision.Items.ToDictionary(item => item.EmployeeId);
-
-                foreach (var invitation in invitations)
-                {
-                    var employee = invitation.Employee;
-                    var item = provisionByEmployeeId.GetValueOrDefault(employee.EmployeeId);
-                    results[invitation.Index] = item?.Outcome switch
-                    {
-                        "Created" => new WorkforceAccessBulkResultItemDto(
-                            employee.EmployeeId, employee.DisplayName, "Invited", invitation.AccountState, "Invitation sent."),
-                        "Pending" => new WorkforceAccessBulkResultItemDto(
-                            employee.EmployeeId, employee.DisplayName, "AlreadyPending", invitation.AccountState, "Invitation already pending."),
-                        "Active" => new WorkforceAccessBulkResultItemDto(
-                            employee.EmployeeId, employee.DisplayName, "AlreadyActive", invitation.AccountState, "Already active."),
-                        _ => new WorkforceAccessBulkResultItemDto(
-                            employee.EmployeeId, employee.DisplayName, "Failed", invitation.AccountState,
-                            item?.Message ?? "The invitation could not be issued."),
-                    };
-                }
-            }
-            catch
-            {
-                foreach (var invitation in invitations)
-                {
-                    var employee = invitation.Employee;
-                    results[invitation.Index] = new WorkforceAccessBulkResultItemDto(
-                        employee.EmployeeId, employee.DisplayName, "Failed", invitation.AccountState,
-                        "The invitation service was unavailable.");
-                }
-            }
-        }
-
-        var completedResults = results.ToList();
-
-        return Ok(ApiResponse<WorkforceAccessBulkResultDto>.Success(new WorkforceAccessBulkResultDto(
-            completedResults,
-            completedResults.Count(r => r.Outcome == "Invited"),
-            completedResults.Count(r => r.Outcome == "Linked"),
-            completedResults.Count(r => r.Outcome == "Reactivated"),
-            completedResults.Count(r => r.Outcome == "AlreadyActive"),
-            completedResults.Count(r => r.Outcome == "Blocked"),
-            completedResults.Count(r => r.Outcome is "Failed" or "Stale"))));
-    }
-
-    private async Task<WorkforceAccessBulkResultItemDto> DispatchMutateAsync(
-        WorkforceEmployeeSummaryDto employee, string? email, string action, string baseline,
-        string display, string okOutcome, string okMessage, CancellationToken cancellationToken)
-    {
-        var result = await workforceAccessClient.MutateAsync(employee.EmployeeId, email, action, baseline, cancellationToken);
-        return result.Outcome switch
-        {
-            "Ok" => new WorkforceAccessBulkResultItemDto(employee.EmployeeId, display, okOutcome, result.AccountState, okMessage),
-            "Conflict" => new WorkforceAccessBulkResultItemDto(employee.EmployeeId, display, "Blocked", result.AccountState, result.Message),
-            "Unavailable" => new WorkforceAccessBulkResultItemDto(employee.EmployeeId, display, "Blocked", result.AccountState, result.Message),
-            _ => new WorkforceAccessBulkResultItemDto(employee.EmployeeId, display, "Stale", result.AccountState, result.Message),
-        };
+            Items = [.. sent.Items, .. unseen],
+            Failed = sent.Failed + unseen.Count,
+        }));
     }
 
     private async Task<IActionResult> MutateAsync(

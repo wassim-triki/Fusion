@@ -30,6 +30,37 @@ public enum PeopleSortDirection
     Desc
 }
 
+/// <summary>People's views (D-13). Everyone is today's and future people; Left holds former ones.</summary>
+public enum PeopleView
+{
+    Everyone,
+    StartingSoon,
+    Leaving,
+    NotSignedIn,
+    Left
+}
+
+/// <summary>Whether and how a person signs in to Fusion, as Identity sees it now.</summary>
+public enum PeopleSignInState
+{
+    SignsIn,
+    Invited,
+    Expired,
+    NotInvited,
+    NoEmail,
+    Suspended
+}
+
+public sealed record PeopleSignInDto(
+    PeopleSignInState State,
+    /// <summary>Last sign-in, when the invitation was sent, or when it expired.</summary>
+    DateTime? At);
+
+/// <summary>A company Tags field People can filter on, with the values people hold.</summary>
+public sealed record PeopleFieldFacetDto(string Key, string Label, IReadOnlyList<string> Values);
+
+public sealed record PeopleViewCountsDto(int Everyone, int StartingSoon, int Leaving, int? NotSignedIn, int Left);
+
 public sealed record PeopleQuery(
     string? Q = null,
     PeopleEmploymentState? State = null,
@@ -40,7 +71,17 @@ public sealed record PeopleQuery(
     int Page = 1,
     int PageSize = 25,
     /// <summary>Transient handoff filter: the cohort added by a completed Workforce Import session.</summary>
-    Guid? ImportBatchId = null) : IQuery<Result<PeoplePageDto>>;
+    Guid? ImportBatchId = null,
+    PeopleView? View = null,
+    Guid? JobId = null,
+    Guid? PlaceId = null,
+    string? ManagerKey = null,
+    /// <summary>The company's own Tags fields: field key → a value the person must have.</summary>
+    IReadOnlyDictionary<string, string>? Fields = null,
+    /// <summary>Set when the viewer may see Fusion access: rows carry sign-in and the Not signed in view counts.</summary>
+    bool IncludeSignIn = false,
+    /// <summary>Every matching row in one page (export).</summary>
+    bool Unpaged = false) : IQuery<Result<PeoplePageDto>>;
 
 public sealed record PeopleManagerDto(
     string EmployeeKey,
@@ -79,11 +120,18 @@ public sealed record PeopleRowDto(
     PeopleManagerDto? PrimaryManager,
     string Completeness,
     /// <summary>API-relative photo address with a cache version, or null without a photo.</summary>
-    string? PhotoUrl = null);
+    string? PhotoUrl = null,
+    /// <summary>Only for viewers who may see Fusion access.</summary>
+    PeopleSignInDto? SignIn = null,
+    /// <summary>The worker's id, which invitations and other modules key by.</summary>
+    Guid? EmployeeId = null);
 
 public sealed record PeoplePageDto(
     IReadOnlyList<PeopleRowDto> Items,
     int TotalCount,
     int Page,
     int PageSize,
-    int TotalPages);
+    int TotalPages,
+    /// <summary>How many people each view holds under the other filters.</summary>
+    PeopleViewCountsDto? Views = null,
+    IReadOnlyList<PeopleFieldFacetDto>? Facets = null);

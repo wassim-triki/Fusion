@@ -29,6 +29,10 @@ export interface ProvisioningSettingsDto {
   inviteExpiryDays: number;
   resendCooldownHours: number;
   pendingInviteBehavior: "RefreshExisting" | "KeepExisting" | string;
+  /** Days before one reminder goes out; 0 sends none. */
+  remindAfterDays: number;
+  /** Joiners added before their first day get their invitation that morning. */
+  inviteJoinersOnFirstDay: boolean;
 }
 
 export interface FieldConfigInputDto {
@@ -52,6 +56,8 @@ export interface ProvisioningSettingsInputDto {
   inviteExpiryDays?: number | null;
   resendCooldownHours?: number | null;
   pendingInviteBehavior?: "RefreshExisting" | "KeepExisting" | string | null;
+  remindAfterDays?: number | null;
+  inviteJoinersOnFirstDay?: boolean | null;
 }
 
 export interface TenantSettingsDto {

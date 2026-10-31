@@ -53,9 +53,6 @@ public sealed class WorkforceBulkProvisioner(
             return new WorkforceBulkProvisionResponse([]);
         }
 
-        var httpContext = httpContextAccessor.HttpContext
-            ?? throw new InvalidOperationException("No active HTTP context is available for bulk provision.");
-
         // Tenant from the authenticated claims (via the tenant-resolution middleware),
         // never a browser-supplied header; passed to Identity as the trusted X-Tenant-Id.
         if (tenantContext.TenantIdOrDefault is not { } resolvedTenantId || resolvedTenantId == Guid.Empty)
@@ -87,7 +84,8 @@ public sealed class WorkforceBulkProvisioner(
         };
         request.Headers.TryAddWithoutValidation("X-Tenant-Id", tenantHeader);
 
-        var actingUserId = httpContext.User.GetUserId();
+        // A scheduled send has no acting person; Core HR records who scheduled it.
+        var actingUserId = httpContextAccessor.HttpContext?.User.GetUserId() ?? Guid.Empty;
         if (actingUserId != Guid.Empty)
             request.Headers.TryAddWithoutValidation("X-Acting-User-Id", actingUserId.ToString());
 

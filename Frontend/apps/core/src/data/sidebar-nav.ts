@@ -1,6 +1,5 @@
 import {
   ClipboardList,
-  KeyRound,
   LayoutDashboard,
   Network,
   Settings2,
@@ -38,7 +37,6 @@ export const ADMIN_NAV: ShellNavSection = {
       shellRoute: true,
       icon: ClipboardList,
     },
-    { label: "workforceAccess", href: "/workforce-access", icon: KeyRound },
     { label: "settings", href: "/settings", icon: Settings2 },
   ],
 };

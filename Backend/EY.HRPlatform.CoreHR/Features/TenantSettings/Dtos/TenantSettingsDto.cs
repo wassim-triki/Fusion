@@ -83,4 +83,8 @@ public sealed record ProvisioningSettings(
     Guid? DefaultAccessProfileId = null,
     int InviteExpiryDays = 14,
     int ResendCooldownHours = 24,
-    string PendingInviteBehavior = "RefreshExisting");
+    string PendingInviteBehavior = "RefreshExisting",
+    /// <summary>Days after an invitation before Fusion sends one reminder; 0 sends none.</summary>
+    int RemindAfterDays = 3,
+    /// <summary>Joiners added before their first day get their invitation that morning.</summary>
+    bool InviteJoinersOnFirstDay = true);

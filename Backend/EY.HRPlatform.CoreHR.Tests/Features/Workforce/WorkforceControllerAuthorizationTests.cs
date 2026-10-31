@@ -124,7 +124,8 @@ public class WorkforceControllerAuthorizationTests
             service,
             new StubCoreAccessPolicyService(canViewAccess, canManageAccess),
             new StubWorkforceAccessIdentityClient(),
-            new StubWorkforceBulkProvisioner())
+            new StubWorkforceBulkProvisioner(),
+            new WorkforceInvitationSender(new StubWorkforceAccessIdentityClient(), new StubWorkforceBulkProvisioner()))
         {
             ControllerContext = new ControllerContext
             {
@@ -220,6 +221,7 @@ public class WorkforceControllerAuthorizationTests
         public Task<WorkforceCurrentUserContextDto> GetCurrentUserContextAsync(ClaimsPrincipal user, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<WorkforceEmployeeSummaryDto?> GetEmployeeAsync(Guid employeeId, ClaimsPrincipal user, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<IReadOnlyList<WorkforceEmployeeSummaryDto>> ResolveEmployeesAsync(IReadOnlyCollection<Guid> employeeIds, ClaimsPrincipal user, CancellationToken cancellationToken) => throw new NotImplementedException();
+        public Task<IReadOnlyList<WorkforceEmployeeSummaryDto>> ResolveEmployeesForCompanyAsync(IReadOnlyCollection<Guid> employeeIds, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<PagedResponse<WorkforceEmployeeSummaryDto>> SearchEmployeesAsync(string? search, int page, int pageSize, ClaimsPrincipal user, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<IReadOnlyList<WorkforceEmployeeSummaryDto>> GetEmployeesByScopeAsync(IReadOnlyCollection<Guid> orgUnitIds, bool includeDescendants, bool includeInactive, ClaimsPrincipal user, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<PagedResponse<WorkforceAccessSubjectSummaryDto>> SearchAccessSubjectsAsync(string? search, string? access, Guid? profileId, string? employeeStatus, string? deliveryState, string? employeeKey, string? baseline, Guid? cohort, Guid? orgUnitId, bool includeDescendants, int page, int pageSize, CancellationToken cancellationToken) => throw new NotImplementedException();

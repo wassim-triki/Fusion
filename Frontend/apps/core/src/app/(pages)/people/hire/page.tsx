@@ -1,5 +1,5 @@
-import EstablishmentWorkspace from "@/features/people/components/establishment-workspace";
+import { redirect } from "next/navigation";
 
-export default function HireEmployeePage() {
-  return <EstablishmentWorkspace mode="hire" />;
+export default function Page() {
+  redirect("/people/add");
 }

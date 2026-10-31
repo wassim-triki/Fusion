@@ -26,7 +26,7 @@
         "lists": "القوائم",
         "roles": "الأدوار",
         "approvals": "التغييرات والموافقات",
-        "invitations": "الدعوات",
+        "sign-in": "تسجيل الدخول",
         "change-history": "سجل التغييرات",
         "rating-scale": "سلّم التقييم",
         "competencies": "الكفاءات",
@@ -219,7 +219,13 @@
       "removeFilter": "إزالة عامل تصفية {field}",
       "clear": "مسح",
       "clearFilters": "مسح عوامل التصفية",
-      "noOptions": "لا نتائج"
+      "noOptions": "لا نتائج",
+      "export": {
+        "button": "تصدير",
+        "csv": "CSV",
+        "xlsx": "Excel",
+        "failed": "لم يتم تنزيل الملف. أعد المحاولة."
+      }
     },
     "topBar": {
       "language": "اللغة",

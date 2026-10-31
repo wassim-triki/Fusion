@@ -9,6 +9,24 @@ export type PeopleOrganizationScope = "Direct" | "Subtree";
 export type PeopleSortField = "Name" | "EmployeeNumber" | "EmploymentDate";
 export type PeopleSortDirection = "Asc" | "Desc";
 export type EmployeeNumberMode = "Generated" | "Manual";
+/** People's views (D-13); Left holds former people. */
+export type PeopleView = "Everyone" | "StartingSoon" | "Leaving" | "NotSignedIn" | "Left";
+export type PeopleSignInState = "SignsIn" | "Invited" | "Expired" | "NotInvited" | "NoEmail" | "Suspended";
+
+export interface PeopleSignInDto {
+  state: PeopleSignInState;
+  /** Last sign-in, when the invitation was sent, or when it expired. */
+  at: string | null;
+}
+
+export interface PeopleViewCountsDto {
+  everyone: number;
+  startingSoon: number;
+  leaving: number;
+  /** Null when the viewer may not see Fusion access. */
+  notSignedIn: number | null;
+  left: number;
+}
 
 export interface PeopleManagerDto {
   employeeKey: string;
@@ -56,6 +74,9 @@ export interface PeopleRowDto {
   completeness: "Complete" | "WorkDetailsUnavailable" | string;
   /** API-relative photo address with a cache version; null without a photo. */
   photoUrl: string | null;
+  /** Only for viewers who may see Fusion access. */
+  signIn?: PeopleSignInDto | null;
+  employeeId?: string | null;
 }
 
 export interface PeoplePageDto {
@@ -64,6 +85,73 @@ export interface PeoplePageDto {
   page: number;
   pageSize: number;
   totalPages: number;
+  views?: PeopleViewCountsDto | null;
+  /** The company's Tags fields People can filter on, with the values people hold. */
+  facets?: PeopleFieldFacetDto[] | null;
+}
+
+export interface PeopleFieldFacetDto {
+  key: string;
+  label: string;
+  values: string[];
+}
+
+/** One person in the directory (D-28), as any colleague may read them. */
+export interface PeopleDirectoryPersonDto {
+  employeeKey: string;
+  displayName: string;
+  photoUrl: string | null;
+  jobTitle: string | null;
+  unitId: string | null;
+  unitName: string | null;
+  placeId: string | null;
+  place: string | null;
+  jobId: string | null;
+  manager: PeopleManagerDto | null;
+  workEmail: string | null;
+  startingSoon: boolean;
+  /** The company's Tags fields everyone sees (skills, languages), for search. */
+  tags: string[];
+}
+
+export interface PeopleDirectoryDto {
+  viewerEmployeeKey: string | null;
+  people: PeopleDirectoryPersonDto[];
+}
+
+export type PeopleExportFormat = "Csv" | "Xlsx";
+
+export type InvitationAudience = "NotSignedIn" | "Managers" | "Chosen";
+
+export interface ScheduledInvitationDto {
+  id: string;
+  audience: InvitationAudience;
+  sendAt: string;
+  people: number;
+  scheduledBy: string | null;
+}
+
+export interface InvitationPlanDto {
+  notSignedIn: number;
+  managers: number;
+  noEmail: number;
+  joinersOnFirstDay: number;
+  scheduled: ScheduledInvitationDto[];
+}
+
+export interface SendInvitationsRequest {
+  audience: InvitationAudience;
+  employeeIds?: string[] | null;
+  /** UTC instant; null sends now. */
+  sendAt?: string | null;
+}
+
+export interface SendInvitationsResultDto {
+  scheduled: ScheduledInvitationDto | null;
+  invited: number;
+  linked: number;
+  alreadyActive: number;
+  notSent: number;
 }
 
 export interface PeopleQueryParams {
@@ -77,6 +165,20 @@ export interface PeopleQueryParams {
   pageSize?: number;
   /** Transient handoff filter: show only the cohort added by a completed Workforce Import. */
   importBatch?: string | null;
+  view?: PeopleView | null;
+  jobId?: string | null;
+  placeId?: string | null;
+  /** The manager's employee key. */
+  manager?: string | null;
+  /** The company's Tags fields: field key → a value the person must have. */
+  fields?: Record<string, string> | null;
+}
+
+/** Flattens the field filters to `fields[key]=value`, which the server binds as a dictionary. */
+function peopleParams({ fields, ...params }: PeopleQueryParams) {
+  const flat: Record<string, string | number | boolean | null | undefined> = { ...params };
+  for (const [key, value] of Object.entries(fields ?? {})) flat[`fields[${key}]`] = value;
+  return flat;
 }
 
 export interface PeopleProfileIdentityDto {
@@ -538,6 +640,10 @@ export interface EstablishmentResultDto {
 
 export const corePeoplePaths = {
   people: () => "/corehr/employees/people",
+  directory: () => "/corehr/employees/people/directory",
+  export: () => "/corehr/employees/people/export",
+  invitations: () => "/corehr/employees/people/invitations",
+  invitation: (scheduleId: string) => `/corehr/employees/people/invitations/${encodeURIComponent(scheduleId)}`,
   profile: (employeeKey: string) =>
     `/corehr/employees/people/${encodeURIComponent(employeeKey)}`,
   timeline: (employeeKey: string) =>
@@ -591,6 +697,8 @@ export const corePeopleQueryKeys = {
   lists: () => [...corePeopleQueryKeys.all(), "list"] as const,
   list: (params: PeopleQueryParams) =>
     [...corePeopleQueryKeys.lists(), params] as const,
+  directory: () => [...corePeopleQueryKeys.all(), "directory"] as const,
+  invitations: () => [...corePeopleQueryKeys.all(), "invitations"] as const,
   profiles: () => [...corePeopleQueryKeys.all(), "profile"] as const,
   profile: (employeeKey: string, asOf?: string | null) =>
     [...corePeopleQueryKeys.profiles(), employeeKey, asOf ?? "today"] as const,
@@ -622,9 +730,20 @@ export function createCorePeopleApi(client: ApiClient) {
   return {
     people: (params: PeopleQueryParams, signal?: AbortSignal) =>
       client.get<PeoplePageDto>(corePeoplePaths.people(), {
-        params: { ...params },
+        params: peopleParams(params),
         signal,
       }),
+    directory: (signal?: AbortSignal) => client.get<PeopleDirectoryDto>(corePeoplePaths.directory(), { signal }),
+    /** People as filtered, as a file; paging is ignored. */
+    exportPeople: (format: PeopleExportFormat, { page: _page, pageSize: _size, state: _state, importBatch: _batch, ...params }: PeopleQueryParams) =>
+      client.get<Blob>(corePeoplePaths.export(), {
+        params: { ...peopleParams(params), format },
+        responseType: "blob",
+      }),
+    invitationPlan: (signal?: AbortSignal) => client.get<InvitationPlanDto>(corePeoplePaths.invitations(), { signal }),
+    sendInvitations: (request: SendInvitationsRequest) =>
+      client.post<SendInvitationsResultDto>(corePeoplePaths.invitations(), request),
+    cancelInvitations: (scheduleId: string) => client.delete<void>(corePeoplePaths.invitation(scheduleId)),
     profile: (
       employeeKey: string,
       asOf?: string | null,

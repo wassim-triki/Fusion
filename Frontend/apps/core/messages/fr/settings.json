@@ -223,8 +223,18 @@
       "role": "Les nouveaux comptes reçoivent le rôle « {role} ».",
       "chosenRole": "Les nouveaux comptes reçoivent le rôle choisi.",
       "keep": "Une nouvelle invitation conserve le premier lien.",
-      "fresh": "Une nouvelle invitation envoie un nouveau lien et désactive le précédent."
-    }
+      "fresh": "Une nouvelle invitation envoie un nouveau lien et désactive le précédent.",
+      "remind": "Les personnes qui n'ont pas accepté reçoivent une relance après {count, plural, one {# jour} other {# jours}}.",
+      "noRemind": "Personne ne reçoit de relance.",
+      "firstDay": "Les nouveaux reçoivent leur invitation le jour de leur arrivée.",
+      "noFirstDay": "Les nouveaux sont invités avec tout le monde."
+    },
+    "remind": "Relancer après",
+    "remindInDays": "Relancer après, en jours (0 : aucune relance)",
+    "never": "Jamais",
+    "firstDay": "Inviter les nouveaux le jour de leur arrivée",
+    "on": "Activé",
+    "off": "Désactivé"
   },
   "roles": {
     "didNotLoad": "Les rôles ne se sont pas chargés",

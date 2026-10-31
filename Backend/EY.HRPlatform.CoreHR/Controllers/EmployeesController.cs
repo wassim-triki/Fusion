@@ -109,15 +109,62 @@ public class EmployeesController(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 25,
         [FromQuery] Guid? importBatch = null,
+        [FromQuery] PeopleView? view = null,
+        [FromQuery] Guid? jobId = null,
+        [FromQuery] Guid? placeId = null,
+        [FromQuery] string? manager = null,
         CancellationToken cancellationToken = default)
     {
         if (!accessPolicy.CanViewTenantEmployees(User))
             return Forbid();
 
         var result = await sender.Send(
-            new PeopleQuery(q, state, orgUnitId, organizationScope, sort, direction, page, pageSize, importBatch),
+            new PeopleQuery(q, state, orgUnitId, organizationScope, sort, direction, page, pageSize, importBatch,
+                view, jobId, placeId, manager, FieldFilters(), IncludeSignIn: accessPolicy.CanViewAccess(User)),
             cancellationToken);
         return Ok(ApiResponseOfPeoplePageDto.Success(result.Value));
+    }
+
+    /// <summary>People as filtered, as CSV or Excel: the table's rows, with sign-in only for who may see access.</summary>
+    [HttpGet("people/export")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ExportPeople(
+        [FromServices] PeopleExport export,
+        [FromQuery] PeopleExportFormat format = PeopleExportFormat.Csv,
+        [FromQuery] string? q = null,
+        [FromQuery] Guid? orgUnitId = null,
+        [FromQuery] PeopleOrganizationScope organizationScope = PeopleOrganizationScope.Subtree,
+        [FromQuery] PeopleSortField sort = PeopleSortField.Name,
+        [FromQuery] PeopleSortDirection direction = PeopleSortDirection.Asc,
+        [FromQuery] PeopleView? view = null,
+        [FromQuery] Guid? jobId = null,
+        [FromQuery] Guid? placeId = null,
+        [FromQuery] string? manager = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (!accessPolicy.CanViewTenantEmployees(User))
+            return Forbid();
+
+        var fields = FieldFilters();
+        var includeSignIn = accessPolicy.CanViewAccess(User);
+        var result = await sender.Send(
+            new PeopleQuery(q, null, orgUnitId, organizationScope, sort, direction, 1, 1, null,
+                view, jobId, placeId, manager, fields, includeSignIn, Unpaged: true),
+            cancellationToken);
+        var file = await export.BuildAsync(result.Value.Items, includeSignIn, format, cancellationToken);
+        return File(file.Bytes, file.ContentType, file.FileName);
+    }
+
+    /// <summary>The directory (D-28): everyone in the company as any colleague sees them.</summary>
+    [HttpGet("people/directory")]
+    [ProducesResponseType(typeof(EY.HRPlatform.SharedKernel.Api.ApiResponse<PeopleDirectoryDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPeopleDirectory(CancellationToken cancellationToken)
+    {
+        if (accessPolicy.GetEmployeeViewScope(User) is null)
+            return Forbid();
+
+        var result = await sender.Send(new PeopleDirectoryQuery(User.GetEmployeeId()), cancellationToken);
+        return Ok(EY.HRPlatform.SharedKernel.Api.ApiResponse<PeopleDirectoryDto>.Success(result.Value));
     }
 
     [HttpGet("people/{employeeKey}")]
@@ -431,6 +478,15 @@ public class EmployeesController(
 
         Response.Headers.ETag = $"\"{result.Value.Version}\"";
         return NoContent();
+    }
+
+    /// <summary>The company's field filters, sent as <c>fields[key]=value</c>.</summary>
+    private Dictionary<string, string>? FieldFilters()
+    {
+        var fields = (HttpContext?.Request.Query ?? new Microsoft.AspNetCore.Http.QueryCollection())
+            .Where(pair => pair.Key.StartsWith("fields[", StringComparison.Ordinal) && pair.Key.EndsWith(']') && pair.Key.Length > 8)
+            .ToDictionary(pair => pair.Key[7..^1], pair => pair.Value.ToString());
+        return fields.Count == 0 ? null : fields;
     }
 
     private string GetAuditActor()

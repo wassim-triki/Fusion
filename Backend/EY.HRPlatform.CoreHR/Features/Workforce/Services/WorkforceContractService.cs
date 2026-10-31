@@ -19,6 +19,8 @@ public interface IWorkforceContractService
     Task<WorkforceCurrentUserContextDto> GetCurrentUserContextAsync(ClaimsPrincipal user, CancellationToken cancellationToken);
     Task<WorkforceEmployeeSummaryDto?> GetEmployeeAsync(Guid employeeId, ClaimsPrincipal user, CancellationToken cancellationToken);
     Task<IReadOnlyList<WorkforceEmployeeSummaryDto>> ResolveEmployeesAsync(IReadOnlyCollection<Guid> employeeIds, ClaimsPrincipal user, CancellationToken cancellationToken);
+    /// <summary>The company's own resolution, for work no person runs (scheduled invitations); still tenant-filtered.</summary>
+    Task<IReadOnlyList<WorkforceEmployeeSummaryDto>> ResolveEmployeesForCompanyAsync(IReadOnlyCollection<Guid> employeeIds, CancellationToken cancellationToken);
     Task<PagedResponse<WorkforceEmployeeSummaryDto>> SearchEmployeesAsync(string? search, int page, int pageSize, ClaimsPrincipal user, CancellationToken cancellationToken);
     Task<IReadOnlyList<WorkforceEmployeeSummaryDto>> GetEmployeesByScopeAsync(IReadOnlyCollection<Guid> orgUnitIds, bool includeDescendants, bool includeInactive, ClaimsPrincipal user, CancellationToken cancellationToken);
     Task<PagedResponse<WorkforceAccessSubjectSummaryDto>> SearchAccessSubjectsAsync(
@@ -167,6 +169,24 @@ public sealed class WorkforceContractService(
             .ToListAsync(cancellationToken);
 
         return await BuildSummariesAsync(employees, access.Audience, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<WorkforceEmployeeSummaryDto>> ResolveEmployeesForCompanyAsync(
+        IReadOnlyCollection<Guid> employeeIds,
+        CancellationToken cancellationToken)
+    {
+        if (employeeIds.Count == 0)
+        {
+            return [];
+        }
+
+        var employees = await dbContext.Employees
+            .AsNoTracking()
+            .Where(current => employeeIds.Contains(current.Id))
+            .OrderBy(current => current.LastName)
+            .ThenBy(current => current.FirstName)
+            .ToListAsync(cancellationToken);
+        return await BuildSummariesAsync(employees, EmployeeReadAudience.HrAdmin, cancellationToken);
     }
 
     public async Task<PagedResponse<WorkforceEmployeeSummaryDto>> SearchEmployeesAsync(

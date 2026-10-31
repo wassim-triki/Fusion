@@ -7,7 +7,7 @@ import { ChangeHistorySettings } from "@/features/settings/sections/change-histo
 import { BrandSettings } from "@/features/settings/sections/brand";
 import { DetailsSettings } from "@/features/settings/sections/details";
 import { EmployeeFieldsSettings } from "@/features/settings/sections/employee-fields";
-import { InvitationsSettings } from "@/features/settings/sections/invitations";
+import { SignInSettings } from "@/features/settings/sections/sign-in";
 import { ListsSettings } from "@/features/settings/sections/lists";
 import { NotificationsSettings } from "@/features/settings/sections/notifications";
 import { RolesSettings } from "@/features/settings/roles/roles-table";
@@ -32,8 +32,8 @@ export default function SettingsSectionPage({ params }: { params: Promise<{ sect
             return <RolesSettings section={section} />;
           case "approvals":
             return <ApprovalsSettings section={section} />;
-          case "invitations":
-            return <InvitationsSettings section={section} />;
+          case "sign-in":
+            return <SignInSettings section={section} />;
           case "notifications":
             return <NotificationsSettings section={section} />;
           default:

@@ -59,8 +59,8 @@ public sealed class CoreWorkItemsTests
     {
         var items = CoreWorkItems.Compose(TenantId, null, Access(12, needsReview: 1));
         Assert.Equal(["12 people don't have Fusion access yet", "1 person needs an access review"], items.Select(i => i.Title));
-        Assert.All(items, item => Assert.Equal("/core/workforce-access", item.Href));
-        Assert.All(items, item => Assert.Equal("/core/workforce-access", item.Section));
+        Assert.All(items, item => Assert.Equal("/core/people?view=not-signed-in", item.Href));
+        Assert.All(items, item => Assert.Equal("/core/people?view=not-signed-in", item.Section));
     }
 
     // ── Controller: permissions and tenant ──────────────────────────────────

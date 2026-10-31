@@ -67,6 +67,7 @@ vi.mock("@repo/auth", () => ({
   canManageCoreEmployees: () => true,
   canManageCoreReporting: () => true,
   canViewWorkforceAccess: () => true,
+  canManageWorkforceAccess: () => true,
   canAccessCoreTeam: () => true,
   canAccessCorePeople: () => true,
   canAccessCoreOrgChart: () => true,
@@ -457,7 +458,7 @@ describe("PeopleProfileWorkspace", () => {
       render(<PeopleProfileWorkspace employeeKey="E-KEY-1" />);
       expect(screen.getAllByText(label).length).toBeGreaterThan(0);
       expect(screen.getByText("Authoritative detail")).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: actionLabel })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: actionLabel })).toBeInTheDocument();
     });
 
     it("makes a missing work email directly resolvable", async () => {
@@ -484,7 +485,7 @@ describe("PeopleProfileWorkspace", () => {
   });
 
   it("opens the work-email editor from the recovery deep link", () => {
-    mockSearchParams.current = new URLSearchParams("action=work-email&returnTo=%2Fcore%2Fworkforce-access");
+    mockSearchParams.current = new URLSearchParams("action=work-email");
     mockProfile.mockReturnValue(q({ data: profile({ identity: { ...profile().identity, workEmail: null } }) }));
     render(<PeopleProfileWorkspace employeeKey="E-KEY-1" />);
     expect(screen.getByRole("dialog")).toBeInTheDocument();

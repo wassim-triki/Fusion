@@ -32,11 +32,11 @@ public static class CoreWorkItems
             if (access.NotInvitedCount > 0)
                 items.Add(Item("access-not-invited", tenantId,
                     $"{People(access.NotInvitedCount)} {(access.NotInvitedCount == 1 ? "doesn't" : "don't")} have Fusion access yet",
-                    "Workforce access", "/core/workforce-access", "/core/workforce-access"));
+                    "People", "/core/people?view=not-signed-in", "/core/people?view=not-signed-in"));
             if (access.NeedsReviewCount > 0)
                 items.Add(Item("access-needs-review", tenantId,
                     $"{People(access.NeedsReviewCount)} {(access.NeedsReviewCount == 1 ? "needs" : "need")} an access review",
-                    "Workforce access", "/core/workforce-access", "/core/workforce-access"));
+                    "People", "/core/people?view=not-signed-in", "/core/people?view=not-signed-in"));
         }
         return items;
     }

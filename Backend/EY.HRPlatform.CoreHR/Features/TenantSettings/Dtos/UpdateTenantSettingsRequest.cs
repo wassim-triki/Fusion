@@ -39,4 +39,6 @@ public sealed record ProvisioningSettingsInput(
     Guid? DefaultAccessProfileId,
     int? InviteExpiryDays,
     int? ResendCooldownHours,
-    string? PendingInviteBehavior);
+    string? PendingInviteBehavior,
+    int? RemindAfterDays = null,
+    bool? InviteJoinersOnFirstDay = null);

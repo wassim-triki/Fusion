@@ -7,6 +7,8 @@ export interface LinkTab {
   key: string;
   label: string;
   href: string;
+  /** How many the tab holds, said after its label (People's views). */
+  count?: number;
 }
 
 export interface LinkTabsProps {
@@ -40,6 +42,9 @@ export function LinkTabs({ label, tabs, current, className }: LinkTabsProps) {
             )}
           >
             {tab.label}
+            {tab.count !== undefined ? (
+              <span className={cn("ms-1.5 tabular-nums", active ? "text-primary-ink" : "text-muted-foreground/80")}>{tab.count}</span>
+            ) : null}
           </Link>
         );
       })}

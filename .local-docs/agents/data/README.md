@@ -63,6 +63,8 @@ Retired tenants: Fusion has no tenant deletion, so a reset renames the previous 
 
 ## Scripts
 
+- [journey-b182-people-invitations.cjs](journey-b182-people-invitations.cjs): B-182 API journey in Carthage (People views and sign-in, export, the directory as Aicha, invitations planned and cancelled, another company refused, one invitation sent now). Withdrawing the sent invitation doesn't take yet (B-235), so each run leaves one pending invitation.
+- [screens-b182-people.cjs](screens-b182-people.cjs): B-182 screens (dark, 1440×900) into `plans/B-182-screens/`; changes no data.
 - [demo-preset.mjs](demo-preset.mjs): B-095 demo presets (`list | build <preset> | reset <preset>`), each its own Carthage tenant built through the gateway's API with the Development-only demo clock; its modules live in `demo-presets/` (`client`, `foundation`, `accounts`, `year`, `presets`). See "Demo presets" above.
 - [journey-demo-preset.cjs](journey-demo-preset.cjs): B-095 read-only journey per preset (`<preset>`): personas sign in, the preset's state, and the demo clock refusing a future and a malformed value.
 - [screens-demo-presets.cjs](screens-demo-presets.cjs): B-095 task 6.1 live screens from the presets into `plans/B-070-slice-6-screens/live/s7-*.png` and `plans/B-070-slice-4-screens/live/s7-07-round-closed.png`; changes no data. Ran 2026-10-22.

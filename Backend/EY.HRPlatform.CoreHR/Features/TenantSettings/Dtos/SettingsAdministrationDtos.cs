@@ -12,7 +12,8 @@ public static class CoreSettingsSectionIds
     public const string Roles = "roles";
     /// <summary>Which change types wait for approval (B-179).</summary>
     public const string Approvals = "approvals";
-    public const string Invitations = "invitations";
+    /// <summary>How people get into Fusion: invitations, reminders, first-day invitations (B-182).</summary>
+    public const string SignIn = "sign-in";
     public const string ChangeHistory = "change-history";
     public const string Notifications = "notifications";
 }

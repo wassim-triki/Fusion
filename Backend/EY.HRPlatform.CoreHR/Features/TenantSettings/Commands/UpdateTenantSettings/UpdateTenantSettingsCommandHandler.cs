@@ -77,5 +77,7 @@ public sealed partial class UpdateTenantSettingsCommandHandler(
             throw new ArgumentException("InviteExpiryDays must be between 1 and 90.");
         if (request.Provisioning?.ResendCooldownHours is < 0 or > 720)
             throw new ArgumentException("ResendCooldownHours must be between 0 and 720.");
+        if (request.Provisioning?.RemindAfterDays is < 0 or > 30)
+            throw new ArgumentException("RemindAfterDays must be between 0 and 30.");
     }
 }

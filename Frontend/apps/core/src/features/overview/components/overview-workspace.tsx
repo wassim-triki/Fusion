@@ -485,7 +485,7 @@ function WorkforceDashboard({
         <DashboardPanel>
           <DashboardSection title={t("admin.quickActions")}>
             <div className="flex flex-col gap-2">
-              <QuickLink href={toHref("/people/hire")} icon={Plus}>
+              <QuickLink href={toHref("/people/add")} icon={Plus}>
                 {t("admin.addEmployee")}
               </QuickLink>
               <QuickLink href={toHref(ADMINISTRATORS_PATH)} icon={ShieldCheck}>

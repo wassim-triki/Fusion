@@ -52,6 +52,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICoreAccessPolicyService, CoreAccessPolicyService>();
         services.AddScoped<ITenantSettingsReadService, TenantSettingsReadService>();
         services.AddScoped<EmployeeFieldService>();
+        services.AddScoped<Features.People.PeopleExport>();
+        services.AddScoped<Features.People.PeopleInvitations>();
+        services.AddScoped<Features.Workforce.Services.WorkforceInvitationSender>();
+        services.AddHostedService<Features.People.PeopleInvitationsWorker>();
         services.AddScoped<ISettingsSectionRegistry, SettingsSectionRegistry>();
         services.AddScoped<ISettingsAuditService, SettingsAuditService>();
         services.AddScoped<Features.Catalog.CompanyListService>();

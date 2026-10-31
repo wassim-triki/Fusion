@@ -55,8 +55,8 @@ public class SettingsSectionRegistryTests
             (CorePermissions.SettingsManage, PermissionScopes.Tenant),
             (CorePermissions.AccessProfilesManageV2, PermissionScopes.Tenant)));
 
-        Assert.Equal(["brand", "details", "employee-fields", "lists", "roles", "approvals", "invitations", "notifications", "change-history"], sections.Select(section => section.Id));
-        Assert.Equal(["Brand", "Details", "Fields", "Lists", "Roles", "Changes and approvals", "Invitations", "Notifications", "Change history"], sections.Select(section => section.Label));
+        Assert.Equal(["brand", "details", "employee-fields", "lists", "roles", "approvals", "sign-in", "notifications", "change-history"], sections.Select(section => section.Id));
+        Assert.Equal(["Brand", "Details", "Fields", "Lists", "Roles", "Changes and approvals", "Sign-in", "Notifications", "Change history"], sections.Select(section => section.Label));
         Assert.Equal([1, 2, 3, 4, 5, 6, 7, 8, 9], sections.Select(section => section.Order));
         Assert.Equal(FusionSettingsSectionDto.Manage, sections[0].Access);
         Assert.Equal(FusionSettingsSectionDto.View, sections[1].Access);
@@ -87,7 +87,7 @@ public class SettingsSectionRegistryTests
             .ToDictionary(section => section.Id);
 
         Assert.Equal("Amira Khelifi", sections["employee-fields"].LastChange?.ActorName);
-        Assert.Equal("Someone", sections["invitations"].LastChange?.ActorName);
+        Assert.Equal("Someone", sections["sign-in"].LastChange?.ActorName);
         Assert.Null(sections["brand"].LastChange);
         Assert.Null(sections["change-history"].LastChange);
     }

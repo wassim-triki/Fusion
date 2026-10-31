@@ -32,4 +32,5 @@ export {
   DataTableRowChevron,
 } from "./data-table-cells";
 export { DataTablePagination, getPageWindow } from "./data-table-pagination";
+export { DataTableExport, saveFile, type DataTableExportFormat } from "./data-table-export";
 export type { SortingState } from "@tanstack/react-table";

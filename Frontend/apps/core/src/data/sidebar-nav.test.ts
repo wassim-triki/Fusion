@@ -18,7 +18,7 @@ describe("tenant administration navigation", () => {
   it("reaches Administrators through Settings › Roles, not a sidebar entry of its own (B-178)", () => {
     const labels = ADMIN_NAV.items.map((item) => item.label);
     expect(labels).not.toContain("administrators");
-    expect(ADMIN_NAV.items.find((i) => i.label === "workforceAccess")).toMatchObject({ href: "/workforce-access" });
+    expect(ADMIN_NAV.items.find((i) => i.label === "workforceAccess")).toBeUndefined();
     expect(labels).toContain("settings");
   });
 

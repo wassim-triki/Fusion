@@ -29,7 +29,7 @@ import dsFr from "@repo/ds/messages/fr.json";
 import { loadCoreMessages } from "@/i18n/messages";
 import type { Say } from "./say";
 import { describeChange, isRoleChange, periodOf, roleChange } from "./sections/change-history";
-import { invitationsConsequence } from "./sections/invitations";
+import { invitationsConsequence } from "./sections/sign-in";
 import { CoreSettingsSectionHost } from "./section-host";
 import { EmployeeFieldsSettings } from "./sections/employee-fields";
 
@@ -100,8 +100,8 @@ describe("In French", () => {
   it("says what saving does with French agreement", () => {
     expect(
       invitationsConsequence(
-        { inviteExpiryDays: 7, resendCooldownHours: 24, defaultAccessProfileId: null, pendingInviteBehavior: "RefreshExisting" },
-        { inviteExpiryDays: 1, resendCooldownHours: 24, defaultAccessProfileId: null, pendingInviteBehavior: "KeepExisting" },
+        { inviteExpiryDays: 7, resendCooldownHours: 24, defaultAccessProfileId: null, pendingInviteBehavior: "RefreshExisting", remindAfterDays: 3, inviteJoinersOnFirstDay: true },
+        { inviteExpiryDays: 1, resendCooldownHours: 24, defaultAccessProfileId: null, pendingInviteBehavior: "KeepExisting", remindAfterDays: 3, inviteJoinersOnFirstDay: true },
         "Employee",
         sayInFrench
       )

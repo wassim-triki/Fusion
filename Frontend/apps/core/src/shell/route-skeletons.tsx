@@ -376,7 +376,7 @@ export function getRoutePageSkeleton(corePath: string): ReactNode {
     const step = corePath.split("/")[4];
     return <ImportAttemptSkeleton domain="workforce" stage={step === "match" || step === "review" ? step : null} />;
   }
-  if (corePath === "/people/hire" || corePath === "/people/add-existing") return <PersonTaskPageSkeleton />;
+  if (corePath === "/people/add") return <PersonTaskPageSkeleton />;
   if (corePath.startsWith("/people/")) return <EmployeeProfilePageSkeleton />;
   if (corePath === "/profile") return <MyProfilePageSkeleton />;
   if (corePath === "/team") return <TeamPageSkeleton />;

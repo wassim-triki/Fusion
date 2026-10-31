@@ -120,7 +120,9 @@ public class BrandController(AppIdentityDbContext dbContext, IConfiguration conf
     public async Task<ActionResult<ApiResponse<BrandEmailPreviewDto>>> EmailPreview(
         [FromBody] BrandEmailPreviewRequest request, CancellationToken cancellationToken)
     {
-        if (User.GetTenantId() is null || !CanManage())
+        // Whoever sends invitations sees the email too (B-182's invite sheet); it holds nothing beyond the brand.
+        if (User.GetTenantId() is null
+            || !(CanManage() || User.HasCorePermission(CorePermissions.AccessManage, PermissionScopes.Tenant)))
             return Forbid();
 
         string? color;

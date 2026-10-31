@@ -51,7 +51,7 @@ public sealed class SettingsSectionRegistry(
             (policy, user) => policy.CanViewAccessProfiles(user), (policy, user) => policy.CanManageAccessProfiles(user)),
         new(CoreSettingsSectionIds.Approvals, "Changes and approvals", SettingsSectionIds.Approvals,
             (policy, user) => policy.CanViewPeopleDataSettings(user), (policy, user) => policy.CanManagePeopleDataSettings(user)),
-        new(CoreSettingsSectionIds.Invitations, "Invitations", SettingsSectionIds.Provisioning,
+        new(CoreSettingsSectionIds.SignIn, "Sign-in", SettingsSectionIds.Provisioning,
             (policy, user) => policy.CanViewProvisioningSettings(user), (policy, user) => policy.CanManageProvisioningSettings(user)),
         new(CoreSettingsSectionIds.Notifications, "Notifications", SettingsSectionIds.Notifications,
             (policy, user) => policy.CanViewOrganizationSettings(user), (policy, user) => policy.CanManageOrganizationSettings(user)),

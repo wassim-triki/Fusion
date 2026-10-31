@@ -8,7 +8,7 @@ export const CORE_SETTINGS_SECTIONS = [
   { id: "lists", label: "Lists" },
   { id: "roles", label: "Roles" },
   { id: "approvals", label: "Changes and approvals" },
-  { id: "invitations", label: "Invitations" },
+  { id: "sign-in", label: "Sign-in" },
   { id: "notifications", label: "Notifications" },
   { id: "change-history", label: "Change history" },
 ] as const;
@@ -30,7 +30,7 @@ export const AUDIT_SECTION_IDS: Record<string, CoreSettingsSectionId> = {
   organization: "details",
   "people-data": "employee-fields",
   lists: "lists",
-  provisioning: "invitations",
+  provisioning: "sign-in",
   "access-permissions": "roles",
   roles: "roles",
   approvals: "approvals",

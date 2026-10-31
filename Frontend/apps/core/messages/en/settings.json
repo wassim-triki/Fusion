@@ -223,8 +223,18 @@
       "role": "New accounts get the {role} role.",
       "chosenRole": "New accounts get the chosen role.",
       "keep": "Inviting someone again keeps their first link.",
-      "fresh": "Inviting someone again sends a fresh link and stops the earlier one."
-    }
+      "fresh": "Inviting someone again sends a fresh link and stops the earlier one.",
+      "remind": "People who haven't accepted get one reminder after {count, plural, one {# day} other {# days}}.",
+      "noRemind": "Nobody gets a reminder.",
+      "firstDay": "Joiners get their invitation on their first day.",
+      "noFirstDay": "Joiners are invited with everyone else."
+    },
+    "remind": "Remind after",
+    "remindInDays": "Remind after, in days (0 sends none)",
+    "never": "Never",
+    "firstDay": "Invite joiners on their first day",
+    "on": "On",
+    "off": "Off"
   },
   "roles": {
     "didNotLoad": "Roles didn't load",

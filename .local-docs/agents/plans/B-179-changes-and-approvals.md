@@ -40,7 +40,9 @@ Slice 5 of B-167. Authority: D-15, D-16 (`plans/B-164-decisions.md`), the checkp
 | `r2-06-settings-sections`, `r2-07-one-on-ones-sections` | — | B-225 swept: section titles inside their frames (Settings blocks, 1:1s' Your team, Roles, Administrators, Calibration, Insights, request record, closure, launch readiness). |
 | `r2-08-birthday-ds-picker` | — | B-227: every native date input is the DS date picker now (a birthday gets month and year menus); lint refuses a new native one. |
 
-Not swept, on purpose: the person page (B-180 rebuilds it with titles inside) and Performance's lists of standalone cards (B-228, needs the objects turned into rows).
+| `r2-09-personal-sections`, `r2-10-personal-sections-below`, `r2-11-job-sections` | `ref-11-personal-tab` | After your note: the person page's tabs are one column of sections as drawn (no grid), each title with who sees it and Edit inside its frame, facts as label and value rows, the address a Current row under a waiting one. Job and Access tabs, the reporting line and Team's Coming up too. The band (glance row, ⋯ menu, six tabs) stays B-180. |
+
+Not swept, on purpose: Performance's lists of standalone cards (B-228, needs the objects turned into rows).
 
 **The drafter, scored** (`data/eval-b224-change-drafter.cjs`, 39 sentences in English and French: promotions, moves, last days, abstentions, a job the company hasn't got, an injected instruction). Parts are kind, job, unit, place, reason and date; a sentence counts only when every part is right.
 

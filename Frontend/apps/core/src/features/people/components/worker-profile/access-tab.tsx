@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { Button, Skeleton } from "@repo/ds";
-import { StatusBadge } from "@repo/ds/shell";
+import { Section, StatusBadge } from "@repo/ds/shell";
 import { RotateCcw } from "lucide-react";
 import type { WorkerProfileView } from "./worker-profile-view";
 
@@ -29,9 +29,8 @@ export function AccessTab({
   const t = useTranslations("profile");
   const access = view.access;
   return (
-    <div className="space-y-10 lg:pt-2">
-      <section aria-labelledby="profile-access">
-        <h2 id="profile-access" className="mb-3 type-section-title">{t("fusionAccess.title")}</h2>
+    <div className="space-y-5 lg:pt-2">
+      <Section id="profile-access" title={t("fusionAccess.title")}>
         {state === "loading" ? (
           <div className="space-y-3">
             <Skeleton className="h-6 w-40" />
@@ -68,7 +67,7 @@ export function AccessTab({
             </div>
           </dl>
         )}
-      </section>
+      </Section>
       {roles}
     </div>
   );

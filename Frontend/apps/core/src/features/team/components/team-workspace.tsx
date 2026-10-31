@@ -10,6 +10,7 @@ import {
   PageHeader,
   PageEmpty,
   PageError,
+  Section,
   StatusBadge,
 } from "@repo/ds/shell";
 import { Button } from "@repo/ds";
@@ -29,8 +30,8 @@ function TeamComingUp() {
   const upcoming = useUpcomingChanges();
   if (!upcoming.data?.length) return null;
   return (
-    <section className="grid gap-2.5" aria-labelledby="team-coming-up">
-      <h2 id="team-coming-up" className="type-eyebrow text-muted-foreground">{t("title")}</h2>
+    <Section id="team-coming-up" title={t("title")}>
+      <div className="grid gap-2.5">
       {upcoming.data.map((change) => (
         <ComingUpCard
           key={change.id}
@@ -43,7 +44,8 @@ function TeamComingUp() {
           }
         />
       ))}
-    </section>
+      </div>
+    </Section>
   );
 }
 

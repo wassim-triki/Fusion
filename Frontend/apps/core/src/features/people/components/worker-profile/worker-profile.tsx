@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import type { ReactNode, Ref } from "react";
 import { PersonAvatar, cn } from "@repo/ds";
-import { PageContainer, StatusBadge } from "@repo/ds/shell";
+import { PageContainer, Section, StatusBadge } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { usePhoto } from "@repo/api/query";
 import { Mail, MapPin, Phone, Workflow } from "lucide-react";
@@ -353,9 +353,8 @@ function ReportingLine({ view }: { view: WorkerProfileView }) {
   const t = useTranslations("profile");
   const reports = view.directReports.slice(0, RAIL_PEOPLE);
   return (
-    <section aria-labelledby="profile-reporting" className="lg:pt-12">
-      <h2 id="profile-reporting" className="mb-3 type-section-title">{t("colleague.reportingLine")}</h2>
-      <ol className="divide-y overflow-hidden rounded-surface bg-card">
+    <Section id="profile-reporting" title={t("colleague.reportingLine")} flush className="lg:mt-12">
+      <ol className="divide-y">
         <li className="px-5 py-3">
           <p className="type-label text-muted-foreground">{t("rail.manager")}</p>
           {view.manager ? (
@@ -386,6 +385,6 @@ function ReportingLine({ view }: { view: WorkerProfileView }) {
           </li>
         ) : null}
       </ol>
-    </section>
+    </Section>
   );
 }

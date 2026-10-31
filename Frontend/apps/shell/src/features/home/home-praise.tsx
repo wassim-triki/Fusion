@@ -34,6 +34,7 @@ export function HomePraise() {
 
   return (
     <Section
+      size="card"
       id="home-praise"
       title={t("title")}
       action={<Button asChild variant="ghost" size="sm"><a href={`${PRAISE_TAB}&compose=praise`}>{t("give")}</a></Button>}

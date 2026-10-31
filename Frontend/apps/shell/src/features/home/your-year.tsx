@@ -89,14 +89,14 @@ export function YourYear({ employeeId, enabled }: { employeeId: string | null | 
   );
   if (summary.isPending) {
     return (
-      <Section title={t("title")} aria-label={t("loading")}>
+      <Section size="card" title={t("title")} aria-label={t("loading")}>
         <div className="space-y-3"><Skeleton className="h-10 w-28" /><Skeleton className="h-1.5 w-full" /></div>
       </Section>
     );
   }
   if (summary.isError) {
     return (
-      <Section id="your-year" title={t("title")}>
+      <Section size="card" id="your-year" title={t("title")}>
         <p className="type-body-secondary text-muted-foreground">{t("failed")}</p>
       </Section>
     );
@@ -109,7 +109,7 @@ export function YourYear({ employeeId, enabled }: { employeeId: string | null | 
 
   if (status === "Approved") {
     return (
-      <Section id="your-year" title={t("title")} action={myPlan}>
+      <Section size="card" id="your-year" title={t("title")} action={myPlan}>
         <div lang={locale} className="space-y-3">
           <p className="flex items-baseline gap-2.5">
             <span className="type-figure text-foreground">
@@ -134,7 +134,7 @@ export function YourYear({ employeeId, enabled }: { employeeId: string | null | 
   // Before approval: where the plan stands, the cycle it's for, and the way to write it.
   const writes = status === "NotStarted" || status === "Draft" || status === "ReturnedForChanges";
   return (
-    <Section id="your-year" title={t("title")} action={myPlan}>
+    <Section size="card" id="your-year" title={t("title")} action={myPlan}>
       <div lang={locale} className="space-y-3">
         <div className="space-y-0.5">
           <p className="type-section-title text-foreground">{t(`plan.${status}`)}</p>

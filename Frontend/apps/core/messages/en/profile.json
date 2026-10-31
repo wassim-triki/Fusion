@@ -185,7 +185,8 @@
     "conflict": "These details changed while you were editing. They are reloaded: make your change again.",
     "lockedByCompany": "Your company manages this field.",
     "loadFailed": "Personal details could not be loaded.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "current": "Current"
   },
   "photo": {
     "titleSelf": "Your photo",

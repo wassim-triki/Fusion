@@ -4,6 +4,7 @@ import Link from "next/link";
 import { RotateCcw } from "lucide-react";
 import type { PersonRoleDto, PersonRoleReasonDto } from "@repo/api";
 import { Button, Skeleton } from "@repo/ds";
+import { Section } from "@repo/ds/shell";
 import { usePersonRoles } from "@/features/settings/api/use-core-access";
 import { useSettingsSay, type Say } from "@/features/settings/say";
 import { conditionWords, useRuleValues } from "./role-words";
@@ -48,8 +49,7 @@ export function PersonRoles({ employeeId }: { employeeId: string }) {
   const { names } = useRuleValues();
 
   return (
-    <section aria-labelledby="profile-roles">
-      <h2 id="profile-roles" className="mb-3 type-section-title">{say("roles.access.title")}</h2>
+    <Section id="profile-roles" title={say("roles.access.title")}>
       {roles.error && !roles.data ? (
         <div className="flex items-center justify-between gap-4 rounded-surface border border-dashed px-5 py-4">
           <p className="type-body text-muted-foreground">{say("roles.access.didNotLoad")}</p>
@@ -71,6 +71,6 @@ export function PersonRoles({ employeeId }: { employeeId: string }) {
           ))}
         </ul>
       )}
-    </section>
+    </Section>
   );
 }

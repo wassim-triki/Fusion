@@ -225,7 +225,7 @@ export interface SettingsBlockProps {
 /** A group of related settings: one frame with its heading inside (B-225). */
 export function SettingsBlock({ title, meta, action, children, className }: SettingsBlockProps) {
   return (
-    <Section title={title} meta={meta} action={action} className={className}>
+    <Section size="card" title={title} meta={meta} action={action} className={className}>
       {children}
     </Section>
   );

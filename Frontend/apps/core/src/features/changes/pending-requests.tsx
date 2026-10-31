@@ -21,7 +21,7 @@ function PendingRequestCard({ request, onOpen }: { request: ChangeRequestDto; on
   const words = useRequestWords()(request);
   return (
     <button type="button" onClick={onOpen}
-      className="flex w-full items-center gap-3.5 rounded-surface bg-card px-4 py-3.5 text-start outline-none transition-colors hover:bg-card/80 focus-visible:ring-2 focus-visible:ring-ring">
+      className="flex w-full items-center gap-3.5 rounded-control bg-inlay px-4 py-3.5 text-start outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
       <span className="grid size-14 shrink-0 place-items-center rounded-control bg-inlay">
         <Hourglass aria-hidden className="size-5 text-primary-ink" />
       </span>

@@ -185,7 +185,8 @@
     "conflict": "Ces informations ont changé pendant votre modification. Elles sont rechargées : refaites votre modification.",
     "lockedByCompany": "Votre entreprise gère ce champ.",
     "loadFailed": "Les informations personnelles n’ont pas pu être chargées.",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "current": "Actuelle"
   },
   "photo": {
     "titleSelf": "Votre photo",

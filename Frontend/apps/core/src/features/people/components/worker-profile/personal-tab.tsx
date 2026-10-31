@@ -77,7 +77,7 @@ export function PersonalTab({
   };
 
   return (
-    <div className="grid gap-x-12 md:grid-cols-2 lg:pt-2">
+    <div className="grid gap-5 lg:pt-2">
       <NameSection {...shared} locked={!locks.canEditPreferredName} />
       {data.access !== "Directory" || workEmail ? (
         <ContactSection {...shared} workEmail={workEmail} locked={!locks.canEditPhone} />
@@ -156,42 +156,42 @@ function SectionFrame({
   const t = useTranslations("profile.personal");
   const headingId = useId();
   const isEditing = props.editing === id;
+  // One frame per section, its title, who sees it and Edit on its first line (B-225), as drawn.
   return (
-    <section aria-labelledby={headingId} className="border-t pt-5 pb-6 md:[&:nth-child(-n+2)]:border-t-0 md:[&:nth-child(-n+2)]:pt-0 max-md:first:border-t-0 max-md:first:pt-0">
-      <div className="mb-3.5 flex min-h-8 items-center justify-between gap-3">
+    <section aria-labelledby={headingId} className="rounded-surface bg-card px-5 pt-3 pb-4">
+      <div className="flex min-h-11 items-center justify-between gap-3">
         <h2 id={headingId} className="type-section-title">{title}</h2>
-        {isEditing ? null : props.canEdit ? (
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={props.editing !== null}
-            aria-label={t("editSection", { section: title })}
-            onClick={() => props.setEditing(id)}
-          >
-            {t("edit")}
-          </Button>
-        ) : isPrivate && props.privateLabel ? (
-          <span className="inline-flex items-center gap-1.5 type-meta text-muted-foreground">
-            <Lock className="size-3.5" aria-hidden /> {props.privateLabel}
-          </span>
-        ) : null}
+        <div className="flex items-center gap-3">
+          {isPrivate && props.privateLabel ? (
+            <span className="inline-flex items-center gap-1.5 type-meta text-muted-foreground">
+              <Lock className="size-3.5" aria-hidden /> {props.privateLabel}
+            </span>
+          ) : null}
+          {!isEditing && props.canEdit ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={props.editing !== null}
+              aria-label={t("editSection", { section: title })}
+              onClick={() => props.setEditing(id)}
+            >
+              {t("edit")}
+            </Button>
+          ) : null}
+        </div>
       </div>
-      {isEditing ? form : children}
-      {!isEditing && isPrivate && props.canEdit && props.privateLabel ? (
-        <p className="mt-3 inline-flex items-center gap-1.5 type-meta text-muted-foreground">
-          <Lock className="size-3.5" aria-hidden /> {props.privateLabel}
-        </p>
-      ) : null}
+      {isEditing ? <div className="pt-2">{form}</div> : <div className="divide-y divide-border">{children}</div>}
     </section>
   );
 }
 
+/** One fact as a row: its label on the left, its value beside it. */
 function Fact({ label, children, empty }: { label: string; children?: ReactNode; empty?: boolean }) {
   const t = useTranslations("profile.personal");
   return (
-    <div className="mb-3 min-w-0 last:mb-0">
-      <p className="type-label text-muted-foreground">{label}</p>
-      <div className={cn("mt-0.5 type-body break-words", empty ? "text-muted-foreground" : "text-foreground")}>
+    <div className="grid min-w-0 grid-cols-[minmax(0,11rem)_minmax(0,1fr)] items-baseline gap-4 py-3">
+      <p className="type-meta text-muted-foreground">{label}</p>
+      <div className={cn("type-body break-words", empty ? "text-muted-foreground" : "text-foreground")}>
         {empty ? t("notSet") : children}
       </div>
     </div>
@@ -369,18 +369,10 @@ function AddressSection(props: SectionProps) {
   const lines = addressLines(props.data.homeAddress);
   return (
     <SectionFrame id="address" title={t("address")} props={props} private form={<AddressForm {...props} />}>
-      {lines.length > 0 ? (
-        <address className="type-body not-italic text-foreground">
-          {lines.map((line) => (
-            <span key={line} className="block">
-              {line}
-            </span>
-          ))}
-        </address>
-      ) : (
-        <p className="type-body text-muted-foreground">{t("noAddress")}</p>
-      )}
       {props.data.pendingHomeAddress ? <PendingAddress pending={props.data.pendingHomeAddress} /> : null}
+      <Fact label={t("current")} empty={lines.length === 0}>
+        <address className="not-italic">{lines.join(", ")}</address>
+      </Fact>
     </SectionFrame>
   );
 }
@@ -394,7 +386,7 @@ function PendingAddress({ pending }: { pending: PeoplePendingAddressDto }) {
   const { withdraw } = useRequestDecisions();
   const [opened, setOpened] = useState(false);
   return (
-    <div className="mt-3 flex items-start gap-3 rounded-inset bg-inlay px-3.5 py-3 animate-in fade-in-0 duration-300">
+    <div className="my-2 flex items-start gap-3 rounded-control bg-inlay px-3.5 py-3 animate-in fade-in-0 duration-300">
       <Clock3 aria-hidden className="mt-0.5 size-4 shrink-0 text-primary-ink" />
       <div className="grid min-w-0 flex-1 gap-0.5">
         <p className="type-label font-semibold">{t("title")}</p>
@@ -452,9 +444,9 @@ function EmergencySection(props: SectionProps & { displayName: string }) {
   return (
     <SectionFrame id="emergency" title={t("emergency")} props={props} private form={<EmergencyForm {...props} />}>
       {contacts.length > 0 ? (
-        <ul className="grid gap-4">
+        <ul className="divide-y divide-border">
           {contacts.map((contact, index) => (
-            <li key={`${contact.name}-${index}`} className="flex min-w-0 items-start gap-3">
+            <li key={`${contact.name}-${index}`} className="flex min-w-0 items-start gap-3 py-3">
               <Monogram name={contact.name} size="md" />
               <div className="min-w-0">
                 <p className="truncate type-label text-foreground">{contact.name}</p>
@@ -465,7 +457,7 @@ function EmergencySection(props: SectionProps & { displayName: string }) {
           ))}
         </ul>
       ) : (
-        <p className="type-body text-muted-foreground">{t("noContacts")}</p>
+        <p className="py-3 type-body text-muted-foreground">{t("noContacts")}</p>
       )}
     </SectionFrame>
   );
@@ -530,9 +522,9 @@ function EmergencyForm(props: SectionProps) {
 
 function PersonalSkeleton() {
   return (
-    <div className="grid gap-x-12 gap-y-8 md:grid-cols-2 lg:pt-2">
+    <div className="grid gap-5 lg:pt-2">
       {[0, 1, 2, 3].map((index) => (
-        <div key={index} className="space-y-3">
+        <div key={index} className="space-y-3 rounded-surface bg-card p-5">
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-10 w-2/3" />

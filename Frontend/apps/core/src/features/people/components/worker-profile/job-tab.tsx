@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useMemo, type ReactNode } from "react";
 import type { PeopleChangeFieldDto, PeopleJobHistoryRowDto, PeopleTimelineEventDto } from "@repo/api";
 import { Button, Skeleton, cn } from "@repo/ds";
+import { Section } from "@repo/ds/shell";
 import {
   DataTable,
   DataTableCellEmpty,
@@ -48,7 +49,7 @@ export function JobTab({
 }) {
   const t = useTranslations("profile.job");
   return (
-    <div className="space-y-10 lg:pt-2">
+    <div className="space-y-5 lg:pt-2">
       <EmploymentFigures view={view} rows={jobHistory?.rows} />
 
       {jobHistory ? (
@@ -103,13 +104,9 @@ export function JobTab({
 
 function JobSection({ title, aside, children }: { title: string; aside?: string; children: ReactNode }) {
   return (
-    <section aria-label={title}>
-      <div className="mb-3 flex items-baseline justify-between gap-4">
-        <h2 className="type-section-title">{title}</h2>
-        {aside ? <span className="type-meta text-muted-foreground">{aside}</span> : null}
-      </div>
+    <Section title={title} meta={aside}>
       {children}
-    </section>
+    </Section>
   );
 }
 
@@ -140,8 +137,7 @@ function EmploymentFigures({ view, rows }: { view: WorkerProfileView; rows?: Peo
   ].filter((figure): figure is { label: string; value: string } => Boolean(figure.label && figure.value));
 
   return (
-    <section aria-label={t("employment")}>
-      <h2 className="mb-3 type-section-title">{t("employment")}</h2>
+    <Section title={t("employment")}>
       <dl className="flex flex-wrap gap-x-10 gap-y-4">
         {figures.map((figure) => (
           <div key={figure.label} className="min-w-0">
@@ -150,7 +146,7 @@ function EmploymentFigures({ view, rows }: { view: WorkerProfileView; rows?: Peo
           </div>
         ))}
       </dl>
-    </section>
+    </Section>
   );
 }
 

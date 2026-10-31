@@ -385,7 +385,7 @@ describe("PeopleProfileWorkspace", () => {
       render(<PeopleProfileWorkspace employeeKey="E-KEY-1" />);
 
       expect(screen.getByText("Karim Lovelace")).toBeInTheDocument();
-      expect(screen.getByText("Tunisia")).toBeInTheDocument();
+      expect(screen.getByText(/, Tunisia$/)).toBeInTheDocument();
       await userEvent.click(screen.getByRole("button", { name: "Edit Contact" }));
       const mobile = screen.getByRole("textbox", { name: "Mobile" });
       await userEvent.clear(mobile);

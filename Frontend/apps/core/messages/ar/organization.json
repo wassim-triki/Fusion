@@ -337,5 +337,17 @@
   "list": {
     "nounOne": "وحدة",
     "nounOther": "وحدات"
+  },
+  "depth": {
+    "label": "مقدار العرض",
+    "top": "المستويات العليا",
+    "all": "الكل"
+  },
+  "filters": {
+    "hasHead": "لها مسؤول",
+    "noHead": "بلا مسؤول",
+    "hasPeople": "فيها أشخاص",
+    "empty": "لا أحد يعمل فيها",
+    "matching": "{count} من {total} وحدة"
   }
 }

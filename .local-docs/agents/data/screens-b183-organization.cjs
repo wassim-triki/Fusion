@@ -100,6 +100,15 @@ async function open(page, url, waitFor) {
         await shot(hr.page, "07-unit-page");
       }
     }
+    if (want("10")) {
+      await open(hr.page, "/core/organization", (p) => p.getByRole("button", { name: "Filter by Head" }));
+      await hr.page.getByText("Sami Ben Youssef").first().waitFor({ timeout: 240_000 });
+      await hr.page.getByRole("radio", { name: "Everything" }).click();
+      await hr.page.getByRole("button", { name: "Filter by People" }).click();
+      await hr.page.getByRole("menuitemradio", { name: "Nobody works there" }).click();
+      await hr.page.keyboard.press("Escape");
+      await shot(hr.page, "10-structure-filtered");
+    }
     if (want("09")) {
       await open(hr.page, "/core/settings/jobs", (p) => p.getByRole("heading", { level: 1, name: "Jobs" }));
       await hr.page.getByRole("cell").first().waitFor({ timeout: 240_000 });

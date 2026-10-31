@@ -24,6 +24,10 @@ export interface OrganizationChartProps {
   collapsed: ReadonlySet<string>;
   selectedId: string | null;
   revealedIds?: ReadonlySet<string>;
+  /** Units the toolbar's filters keep; the rest dim. Null when nothing filters. */
+  matching?: ReadonlySet<string> | null;
+  /** Changes when the toolbar reshapes the chart (depth, filters): the camera frames again, on the matches if any. */
+  frameKey?: string;
   /** Each unit's people and head on the chart's date, when the viewer may read them. */
   staffing?: ReadonlyMap<string, UnitStaffingDto>;
   canManage: boolean;
@@ -70,6 +74,8 @@ export default function OrganizationChart({
   collapsed,
   selectedId,
   revealedIds = EMPTY_IDS,
+  matching = null,
+  frameKey = "",
   staffing,
   canManage,
   readOnly,
@@ -104,7 +110,7 @@ export default function OrganizationChart({
   );
 
   // ── Camera: enter on the whole tree once per dataset; a fold keeps its unit where it was on screen ──
-  const dataKey = `${model.roots.join(",")}|${model.byId.size}`;
+  const dataKey = `${model.roots.join(",")}|${model.byId.size}|${frameKey}`;
   const framed = useRef<string | null>(null);
   const anchor = useRef<{ id: string; x: number; y: number } | null>(null);
   useLayoutEffect(() => {
@@ -120,7 +126,10 @@ export default function OrganizationChart({
     }
     if (framed.current === dataKey) return;
     framed.current = dataKey;
-    jumpTo(entryCamera(boundsOf(positions), viewport()));
+    const matches = matching ? [...matching].filter((id) => positions.has(id)) : [];
+    jumpTo(entryCamera(boundsOf(positions, matches.length ? matches : undefined), viewport()));
+    // The matches are read when the frame key changes, which is when they change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [positions, dataKey, flyTo, jumpTo, viewport, cam]);
 
   const toggle = (id: string) => {
@@ -262,7 +271,7 @@ export default function OrganizationChart({
                 id === selectedId && "border-primary ring-2 ring-primary/30",
                 revealedIds.has(id) && "org-reveal-highlight z-10",
                 lifted && "z-20 shadow-overlay ring-2 ring-primary",
-                moving?.has(id) && !lifted && "oc-dim",
+                ((moving?.has(id) && !lifted) || (matching && !matching.has(id))) && "oc-dim",
                 over && (valid ? "border-primary ring-2 ring-primary/35" : "border-destructive ring-2 ring-destructive/25")
               )}
               style={{

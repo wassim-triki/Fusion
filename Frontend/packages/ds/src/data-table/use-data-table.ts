@@ -81,7 +81,8 @@ export function isFilterActive(
     : Boolean(value.from || value.to);
 }
 
-function matchesField<TData>(
+/** Whether a row passes one field's filter: the same rule the table applies, for views that filter without a table. */
+export function matchesField<TData>(
   field: DataTableFilterField<TData>,
   value: DataTableFilterValue | undefined,
   row: TData

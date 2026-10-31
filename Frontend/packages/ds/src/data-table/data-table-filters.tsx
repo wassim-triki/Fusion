@@ -2,8 +2,6 @@
 
 import { useRef, useState } from "react";
 import type { RowData } from "@tanstack/react-table";
-import { FilterHorizontalIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { Plus, Search, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import type { DateRange } from "react-day-picker";
@@ -14,18 +12,13 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
 import {
   Popover,
-  PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
 } from "../components/ui/popover";
@@ -34,7 +27,6 @@ import {
   type DataTableDateRange,
   type DataTableFilterField,
   type DataTableFilterOption,
-  type DataTableFilterState,
   type DataTableFilterValue,
   type DataTableModel,
 } from "./use-data-table";
@@ -44,7 +36,8 @@ import { dateFormatter } from "../lib/dates";
  * The filter bar: the one way a Fusion table narrows its rows. Every filter is a chip that reads as a
  * sentence — "Module is any of Performance, Learning" — and edits in place through the DS dropdown
  * (option fields) or the DS calendar popover (date fields). Pinned fields are the table's primary
- * question: their chip is always shown and resets to "All". Other fields are added through "Filter".
+ * question: their chip is always shown and resets to "All". Every other field is spread in the bar as its own
+ * "+ Field" chip (D-13), in the table's order, and becomes a sentence once chosen.
  * The fields, their state and their counts all come from the model (`useDataTable({ filters })`).
  */
 
@@ -64,7 +57,6 @@ export function DataTableFilters<TData extends RowData>({
 
   const pinned = fields.filter((f) => f.pinned);
   const addable = fields.filter((f) => !f.pinned);
-  const active = addable.filter((f) => isFilterActive(state[f.id]));
   const anyActive = fields.some((f) => isFilterActive(state[f.id]));
   const t = useTranslations("ds.table");
 
@@ -79,24 +71,24 @@ export function DataTableFilters<TData extends RowData>({
           onChange={(next) => set({ [field.id]: next })}
         />
       ))}
-      {active.map((field) => (
-        <FilterChip
-          key={field.id}
-          field={field}
-          value={state[field.id]}
-          counts={counts[field.id]}
-          onChange={(next) => set({ [field.id]: next })}
-        />
-      ))}
-      {addable.length > 0 ? (
-        <AddFilter
-          fields={addable}
-          state={state}
-          compact={active.length > 0}
-          countsFor={(field) => counts[field.id]}
-          onCommit={set}
-        />
-      ) : null}
+      {addable.map((field) =>
+        isFilterActive(state[field.id]) ? (
+          <FilterChip
+            key={field.id}
+            field={field}
+            value={state[field.id]}
+            counts={counts[field.id]}
+            onChange={(next) => set({ [field.id]: next })}
+          />
+        ) : (
+          <AddFieldChip
+            key={field.id}
+            field={field}
+            counts={counts[field.id]}
+            onChange={(next) => set({ [field.id]: next })}
+          />
+        )
+      )}
       {anyActive &&
       fields.filter((f) => isFilterActive(state[f.id])).length > 1 ? (
         <Button
@@ -114,166 +106,82 @@ export function DataTableFilters<TData extends RowData>({
   );
 }
 
-// ── Adding a filter: the DS menu, one submenu per field ─────────────────────────
-
-function AddFilter({
-  fields,
-  state,
-  compact,
-  countsFor,
-  onCommit,
+/**
+ * One field's chip outside a table (a chart's toolbar): "+ Field" until chosen, then its sentence. The same chip
+ * the table bar spreads, so every Fusion filter reads alike.
+ */
+export function FilterFieldChip({
+  field,
+  value,
+  counts,
+  onChange,
 }: {
-  fields: Field[];
-  state: DataTableFilterState;
-  compact: boolean;
-  countsFor: (field: Field) => Record<string, number> | undefined;
-  onCommit: (changes: DataTableFilterState) => void;
+  field: DataTableFilterField<unknown>;
+  value: DataTableFilterValue | undefined;
+  counts?: Record<string, number>;
+  onChange: (next: DataTableFilterValue | undefined) => void;
+}) {
+  return isFilterActive(value) ? (
+    <FilterChip field={field} value={value} counts={counts} onChange={onChange} />
+  ) : (
+    <AddFieldChip field={field} counts={counts} onChange={onChange} />
+  );
+}
+
+// ── A field not filtering yet: "+ Unit", opening that field's values ───────────────
+
+function AddFieldChip({
+  field,
+  counts,
+  onChange,
+}: {
+  field: Field;
+  counts?: Record<string, number>;
+  onChange: (next: DataTableFilterValue | undefined) => void;
 }) {
   const t = useTranslations("ds.table");
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  // Choices are held here and become chips when the menu closes. Committing mid-choice would insert a
-  // chip and move this trigger out from under its own open menu.
-  const [drafts, setDrafts] = useState<DataTableFilterState>({});
-  const [dateField, setDateField] = useState<Field | null>(null);
-  const [dateDraft, setDateDraft] = useState<DataTableDateRange | undefined>(
-    undefined
-  );
-
-  const closeDate = (final?: DataTableDateRange) => {
-    const chosen = final ?? dateDraft;
-    if (dateField && chosen) onCommit({ [dateField.id]: chosen });
-    setDateField(null);
-    setDateDraft(undefined);
-  };
-
-  const close = (final?: DataTableFilterState) => {
-    const changes = { ...drafts, ...final };
-    if (Object.keys(changes).length > 0) onCommit(changes);
-    setDrafts({});
-    setQuery("");
+  // A choice is held until the menu closes, so the chip doesn't turn into a filter under its own open menu.
+  const draft = useRef<DataTableFilterValue | undefined>(undefined);
+  const close = () => {
+    if (draft.current !== undefined) onChange(draft.current);
+    draft.current = undefined;
     setOpen(false);
   };
-
-  const term = query.trim().toLowerCase();
-  const visible = term
-    ? fields.filter((f) => f.label.toLowerCase().includes(term))
-    : fields;
-
-  return (
-    <Popover
-      open={dateField !== null}
-      onOpenChange={(next) => {
-        if (!next) closeDate();
-      }}
+  const trigger = (
+    <button
+      type="button"
+      aria-label={t("addFilterFor", { field: field.label })}
+      className="inline-flex h-8 items-center gap-1.5 rounded-control border border-dashed border-input px-2.5 text-sm text-muted-foreground outline-none transition-colors hover:border-foreground/30 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:border-foreground/30 data-[state=open]:text-foreground"
     >
-      <PopoverAnchor asChild>
-        <span className="inline-flex">
-          <DropdownMenu
-            open={open}
-            onOpenChange={(next) => {
-              if (next) setOpen(true);
-              else close();
-            }}
-          >
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size={compact ? "icon" : "default"}
-                aria-label={t("addFilter")}
-              >
-                {compact ? (
-                  <Plus aria-hidden />
-                ) : (
-                  <HugeiconsIcon icon={FilterHorizontalIcon} aria-hidden />
-                )}
-                {compact ? null : t("filter")}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              {fields.length > SEARCH_THRESHOLD ? (
-                <MenuSearch
-                  value={query}
-                  onChange={setQuery}
-                  placeholder={t("filterBy")}
-                />
-              ) : null}
-              {visible.map((field) => {
-                const current = drafts[field.id] ?? state[field.id];
-                if (field.type === "dateRange") {
-                  return (
-                    <DropdownMenuItem
-                      key={field.id}
-                      onSelect={() => {
-                        setDateDraft(undefined);
-                        setDateField(field);
-                      }}
-                    >
-                      {field.icon ? (
-                        <field.icon className="text-muted-foreground" />
-                      ) : null}
-                      {field.label}
-                      {isFilterActive(current) ? (
-                        <span
-                          aria-label={t("active")}
-                          className="ms-auto size-1.5 rounded-full bg-primary"
-                        />
-                      ) : null}
-                    </DropdownMenuItem>
-                  );
-                }
-                return (
-                  <DropdownMenuSub key={field.id}>
-                    <DropdownMenuSubTrigger>
-                      {field.icon ? (
-                        <field.icon className="text-muted-foreground" />
-                      ) : null}
-                      {field.label}
-                      {isFilterActive(current) ? (
-                        <span
-                          aria-label={t("active")}
-                          className="ms-auto size-1.5 rounded-full bg-primary"
-                        />
-                      ) : null}
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent>
-                      <ValueMenu
-                        field={field}
-                        value={current}
-                        counts={countsFor(field)}
-                        onChange={(next) =>
-                          setDrafts((d) => ({ ...d, [field.id]: next }))
-                        }
-                        onDone={(final) =>
-                          close(
-                            final === undefined
-                              ? undefined
-                              : { [field.id]: final }
-                          )
-                        }
-                      />
-                    </DropdownMenuSubContent>
-                  </DropdownMenuSub>
-                );
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </span>
-      </PopoverAnchor>
+      <Plus className="size-3.5" aria-hidden />
+      {field.label}
+    </button>
+  );
+  return field.type === "dateRange" ? (
+    <Popover open={open} onOpenChange={(next) => (next ? setOpen(true) : close())}>
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-1">
-        {dateField ? (
-          <DateRangeEditor
-            value={
-              dateDraft ??
-              (state[dateField.id] as DataTableDateRange | undefined) ??
-              {}
-            }
-            onChange={setDateDraft}
-            onDone={(final) => closeDate(final as DataTableDateRange)}
-          />
-        ) : null}
+        <DateRangeEditor
+          value={(draft.current as DataTableDateRange | undefined) ?? {}}
+          onChange={(next) => { draft.current = next; }}
+          onDone={(final) => { if (final) draft.current = final; close(); }}
+        />
       </PopoverContent>
     </Popover>
+  ) : (
+    <DropdownMenu open={open} onOpenChange={(next) => (next ? setOpen(true) : close())}>
+      <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
+        <ValueMenu
+          field={field}
+          value={draft.current}
+          counts={counts}
+          onChange={(next) => { draft.current = next; }}
+          onDone={(final) => { if (final !== undefined) draft.current = final; close(); }}
+        />
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

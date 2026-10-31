@@ -9,6 +9,7 @@ export {
 export {
   useDataTable,
   isFilterActive,
+  matchesField,
   type DataTableModel,
   type UseDataTableOptions,
   type DataTableFilterField,
@@ -23,7 +24,7 @@ export {
   type DataTableProps,
 } from "./data-table";
 export { DataTableSearch } from "./data-table-toolbar";
-export { DataTableFilters } from "./data-table-filters";
+export { DataTableFilters, FilterFieldChip } from "./data-table-filters";
 export {
   DataTableCellStack,
   DataTableCellNumber,

@@ -205,9 +205,6 @@
       "previousPage": "Previous page",
       "nextPage": "Next page",
       "page": "Page {page}",
-      "addFilter": "Add filter",
-      "filter": "Filter",
-      "filterBy": "Filter by…",
       "active": "Active",
       "all": "All",
       "is": "is",
@@ -225,7 +222,8 @@
         "csv": "CSV",
         "xlsx": "Excel",
         "failed": "The file didn't download. Try again."
-      }
+      },
+      "addFilterFor": "Filter by {field}"
     },
     "topBar": {
       "language": "Language",

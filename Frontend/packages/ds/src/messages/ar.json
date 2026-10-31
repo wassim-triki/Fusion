@@ -205,9 +205,6 @@
       "previousPage": "الصفحة السابقة",
       "nextPage": "الصفحة التالية",
       "page": "الصفحة {page}",
-      "addFilter": "إضافة عامل تصفية",
-      "filter": "تصفية",
-      "filterBy": "التصفية حسب…",
       "active": "نشط",
       "all": "الكل",
       "is": "هو",
@@ -225,7 +222,8 @@
         "csv": "CSV",
         "xlsx": "Excel",
         "failed": "لم يتم تنزيل الملف. أعد المحاولة."
-      }
+      },
+      "addFilterFor": "التصفية حسب {field}"
     },
     "topBar": {
       "language": "اللغة",

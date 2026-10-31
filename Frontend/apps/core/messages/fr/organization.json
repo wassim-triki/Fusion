@@ -337,5 +337,17 @@
   "list": {
     "nounOne": "unité",
     "nounOther": "unités"
+  },
+  "depth": {
+    "label": "Niveau de détail",
+    "top": "Premiers niveaux",
+    "all": "Tout"
+  },
+  "filters": {
+    "hasHead": "A un responsable",
+    "noHead": "Sans responsable",
+    "hasPeople": "Avec des personnes",
+    "empty": "Personne n'y travaille",
+    "matching": "{count} unités sur {total}"
   }
 }

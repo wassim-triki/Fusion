@@ -58,6 +58,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 - [ ] **B-183** Organization in time: one place, three views, one time slider, unit pages, open roles (D-17) · Core HR · 2026-10-30
       Round 1 (user 2026-11-01: two header tab strips, surface not designed as one, import buttons) refitted: one header (People · Structure · List, ⋯ with Import / Export / unit types / planned unit changes, Add unit); Jobs and Places moved to Settings; Structure on the people chart's canvas (same pan, zoom corner, edges); List on the table kit. Look at (Amira, `/core/organization`): Structure, List and People back to back; ⋯ and Add unit; Settings › Jobs and Places. Screens `plans/B-183-screens/r1-*.png` (first round's without prefix).
+      Round 2 (user 2026-11-01: Structure had no filters; spread the filters instead of a Filter button): the table kit spreads every filter as its own "+ Field" chip (covers B-237 for People and every table); Structure gets Top levels / Everything and + Type, + Head, + People chips (non-matching units dim, the chart frames the matches). Look at: `r2-10-structure-filtered.png`, `r2-04-list-today.png`; People's toolbar now shows + Unit, + Place, + Job, + Manager.
   - [ ] **B-241** Clicking a unit opens its page, as drawn (D-17); the panel stays for now (user 2026-11-01: keep clicking as it is, board the note) · Core HR · 2026-11-01
 
 ## Ready
@@ -66,8 +67,6 @@ Open work only. Agents keep it current from the conversation; closed items leave
 - [ ] **B-240** Directory card as drawn (D-28): initials in Fusion's serif on every face, and the card footer's org chart icon matching the drawing's (Hugeicons Hierarchy; Core's chrome is still Lucide, so pick the match or move this icon). Long names already end in an ellipsis · Core HR · 2026-10-31
       User 2026-10-31 (B-182 review, card compared with `plans/B-182-screens/ref-directory-card.png`).
 
-- [ ] **B-237** People's filters as drawn (D-13): one "+ Unit", "+ Place", "+ Job", "+ Manager" chip per field in the toolbar, instead of the kit's single Filter button. A table-kit change (`DataTableFilters`), so the directory and every other table follow · Shared, Core HR · 2026-10-31
-      User 2026-10-31 (B-182 review): "the filter button of our implementation should instead match the ref's design".
 - [ ] **B-238** Invite sheet › When › Later on one line, with one date-and-time picker (a shadcn or ReUI component that combines both) instead of a date picker beside a time select · Core HR, Shared · 2026-10-31
       User 2026-10-31 (B-182 review): the sheet "looks great"; only this note.
 - [ ] **B-239** Restyle the Add a person page (B-199's `/core/people/add`) · Core HR · 2026-10-31

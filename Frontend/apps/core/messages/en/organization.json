@@ -337,5 +337,17 @@
   "list": {
     "nounOne": "unit",
     "nounOther": "units"
+  },
+  "depth": {
+    "label": "How much to show",
+    "top": "Top levels",
+    "all": "Everything"
+  },
+  "filters": {
+    "hasHead": "Has a head",
+    "noHead": "Nobody leads it",
+    "hasPeople": "Has people",
+    "empty": "Nobody works there",
+    "matching": "{count} of {total} units"
   }
 }

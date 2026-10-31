@@ -41,6 +41,8 @@ import {
 import { PagePermissionNotice } from "@repo/ds/shell";
 import type { UnitStaffingDto } from "@repo/api";
 import { useStaffingAccess } from "../api/use-staffing";
+import { FilterFieldChip, isFilterActive, matchesField, type DataTableFilterField, type DataTableFilterState } from "@repo/ds/data-table";
+import { Segmented } from "@repo/ds/choice";
 import {
   AlertTriangle,
   ArrowRight,
@@ -110,6 +112,13 @@ import { useRecentRecord } from "@repo/api/react";
 import OrganizationChart from "./organization-chart";
 
 const EMPTY_REVEAL: ReadonlySet<string> = new Set();
+
+/** The structure's top three levels: everything under the third level folds under its unit. */
+function topLevelsFold(model: OrganizationHierarchyModel) {
+  return new Set(model.units
+    .filter((unit) => model.depthById.get(unit.id) === 2 && (model.childrenByParent.get(unit.id)?.length ?? 0) > 0)
+    .map((unit) => unit.id));
+}
 
 function StructureSkeleton() {
   return (
@@ -602,10 +611,38 @@ export default function OrganizationWorkspace({
   useEffect(() => {
     if (!model || folded) return;
     setFolded(true);
-    const deep = model.units.filter((unit) => model.depthById.get(unit.id) === 2 && (model.childrenByParent.get(unit.id)?.length ?? 0) > 0);
-    if (deep.length && !urlState.selectedId) patchLocal({ collapsed: new Set(deep.map((unit) => unit.id)) });
+    if (!urlState.selectedId) patchLocal({ collapsed: topLevelsFold(model) });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model]);
+
+  // ── The structure's own controls: how deep it opens, and the same filter chips as People and the list ──
+  const [depth, setDepth] = useState<"top" | "all">("top");
+  const [structureFilters, setStructureFilters] = useState<DataTableFilterState>({});
+  const structureFields = useMemo<DataTableFilterField<OrganizationUnitStateDto>[]>(() => {
+    const types = [...new Map((model?.units ?? []).map((unit) => [unit.typeId, unit.typeName])).entries()];
+    const fields: DataTableFilterField<OrganizationUnitStateDto>[] = [
+      { id: "type", label: t("outline.type"), type: "options", options: types.map(([id, name]) => ({ value: id, label: name })), value: (unit) => unit.typeId },
+    ];
+    if (staffing) {
+      fields.push(
+        { id: "head", label: t("outline.head"), type: "options", single: true, options: [
+          { value: "set", label: t("filters.hasHead"), match: (unit) => Boolean(staffing.get(unit.id)?.head) },
+          { value: "none", label: t("filters.noHead"), match: (unit) => !staffing.get(unit.id)?.head },
+        ] },
+        { id: "people", label: t("outline.people"), type: "options", single: true, options: [
+          { value: "some", label: t("filters.hasPeople"), match: (unit) => (staffing.get(unit.id)?.people ?? 0) > 0 },
+          { value: "none", label: t("filters.empty"), match: (unit) => (staffing.get(unit.id)?.people ?? 0) === 0 },
+        ] },
+      );
+    }
+    return fields;
+  }, [model, staffing, t]);
+  const matching = useMemo(() => {
+    if (!model || !structureFields.some((field) => isFilterActive(structureFilters[field.id]))) return null;
+    return new Set(model.units
+      .filter((unit) => structureFields.every((field) => matchesField(field, structureFilters[field.id], unit)))
+      .map((unit) => unit.id));
+  }, [model, structureFields, structureFilters]);
 
   // The root opens by default, so only units the person moved to count as opened.
   const openedUnit =
@@ -877,6 +914,31 @@ export default function OrganizationWorkspace({
                 </div>
               ) : null}
             </div>
+            {urlState.representation === "chart" && model ? (
+              <>
+                <Segmented
+                  label={t("depth.label")}
+                  value={depth}
+                  onChange={(next) => {
+                    setDepth(next);
+                    patchLocal({ collapsed: next === "all" ? new Set() : topLevelsFold(model) });
+                  }}
+                  options={[{ value: "top", label: t("depth.top") }, { value: "all", label: t("depth.all") }]}
+                />
+                {structureFields.map((field) => (
+                  <FilterFieldChip
+                    key={field.id}
+                    field={field as DataTableFilterField<unknown>}
+                    value={structureFilters[field.id]}
+                    onChange={(next) => {
+                      setStructureFilters((current) => ({ ...current, [field.id]: next }));
+                      if (next) patchLocal({ collapsed: new Set() });
+                    }}
+                  />
+                ))}
+                {matching ? <span className="ms-auto type-meta text-muted-foreground">{t("filters.matching", { count: matching.size, total: model.units.length })}</span> : null}
+              </>
+            ) : null}
             {actionsTarget ? createPortal(
               <>
                 <DropdownMenu>
@@ -963,6 +1025,8 @@ export default function OrganizationWorkspace({
                 urlState.representation === "chart" ? (
                   !folded ? <StructureSkeleton /> : <OrganizationChart
                     model={model}
+                    matching={matching}
+                    frameKey={`${depth}|${JSON.stringify(structureFilters)}`}
                     staffing={staffing}
                     collapsed={collapsed}
                     selectedId={urlState.selectedId}

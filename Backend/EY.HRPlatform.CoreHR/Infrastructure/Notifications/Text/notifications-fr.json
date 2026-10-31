@@ -1,7 +1,6 @@
 {
   "Context.recordedBy": "Enregistré par {actor}",
   "Context.cancelledBy": "Annulé par {actor}",
-
   "ManagerChanged": "{manager} sera votre responsable à partir du {date:date}",
   "ManagerChanged.now": "{manager} est désormais votre responsable",
   "ManagerChanged.upcoming": "{manager} devient votre responsable",
@@ -10,7 +9,6 @@
   "ManagerChanged.none.upcoming": "Vous n'avez plus de responsable",
   "ManagerChanged.cancelled": "Le changement de responsable du {date:date} a été annulé",
   "ManagerChanged.action": "Ouvrir votre profil",
-
   "JobChanged": "Votre poste change le {date:date}",
   "JobChanged.now": "Votre poste a changé",
   "JobChanged.upcoming": "Votre poste change",
@@ -18,7 +16,6 @@
   "JobChanged.context.manager": "{summary} · rattaché à {manager}",
   "JobChanged.cancelled": "Le changement de poste du {date:date} a été annulé",
   "JobChanged.action": "Ouvrir votre profil",
-
   "TeamJoining#one": "{name} rejoint votre équipe le {date:date}",
   "TeamJoining#other": "{count} personnes rejoignent votre équipe le {date:date}",
   "TeamJoining.now#one": "{name} a rejoint votre équipe",
@@ -30,7 +27,6 @@
   "TeamJoining.cancelled#other": "L'arrivée de {count} personnes dans votre équipe le {date:date} a été annulée",
   "TeamJoining.hire.cancelled": "L'embauche de {name}, prévue le {date:date}, a été annulée",
   "TeamJoining.action": "Ouvrir votre équipe",
-
   "TeamLeaving#one": "{name} quitte votre équipe le {date:date}",
   "TeamLeaving#other": "{count} personnes quittent votre équipe le {date:date}",
   "TeamLeaving.now#one": "{name} a quitté votre équipe",
@@ -44,6 +40,23 @@
   "TeamLeaving.cancelled#other": "Le départ de {count} personnes de votre équipe le {date:date} a été annulé",
   "TeamLeaving.lastDay.cancelled": "Le dernier jour de {name}, le {date:date}, a été annulé",
   "TeamLeaving.action": "Ouvrir votre équipe",
-
-  "group.team-and-job-changes": "Équipe et changements de poste"
+  "group.team-and-job-changes": "Équipe et changements de poste",
+  "Request.job": "{name} devient {summary}",
+  "Request.manager": "{name} rend compte à {manager}",
+  "Request.noManager": "{name} n'a plus de responsable",
+  "Request.place": "{name} travaille à {summary}",
+  "Request.leaving": "Dernier jour de {name} le {date:date}",
+  "Request.address": "Nouvelle adresse de {name}",
+  "Request.context": "Demandé par {actor} · à partir du {date:date}",
+  "Request.context.reason": "{reason} · demandé par {actor} · à partir du {date:date}",
+  "Request.context.address": "En attente de votre accord",
+  "Request.action": "Ouvrir la demande",
+  "ChangeApproved": "{actor} a approuvé votre demande pour {name}",
+  "ChangeApproved.context": "Elle s'applique le {date:date}",
+  "ChangeApproved.address": "{actor} a approuvé votre nouvelle adresse",
+  "ChangeApproved.action": "Ouvrir la demande",
+  "ChangeDeclined": "{actor} a refusé votre demande pour {name}",
+  "ChangeDeclined.address": "{actor} a refusé votre nouvelle adresse",
+  "ChangeDeclined.context": "« {reason} »",
+  "ChangeDeclined.action": "Ouvrir la demande"
 }

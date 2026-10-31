@@ -49,6 +49,8 @@ public sealed class SettingsSectionRegistry(
             (policy, user) => policy.CanViewPeopleDataSettings(user), (policy, user) => policy.CanManageLists(user)),
         new(CoreSettingsSectionIds.Roles, "Roles", SettingsSectionIds.AccessPermissions,
             (policy, user) => policy.CanViewAccessProfiles(user), (policy, user) => policy.CanManageAccessProfiles(user)),
+        new(CoreSettingsSectionIds.Approvals, "Changes and approvals", SettingsSectionIds.Approvals,
+            (policy, user) => policy.CanViewPeopleDataSettings(user), (policy, user) => policy.CanManagePeopleDataSettings(user)),
         new(CoreSettingsSectionIds.Invitations, "Invitations", SettingsSectionIds.Provisioning,
             (policy, user) => policy.CanViewProvisioningSettings(user), (policy, user) => policy.CanManageProvisioningSettings(user)),
         new(CoreSettingsSectionIds.Notifications, "Notifications", SettingsSectionIds.Notifications,
@@ -108,7 +110,7 @@ public sealed class SettingsSectionRegistry(
                 {
                     null or SettingsSectionIds.AccessPermissions => null,
                     SettingsSectionIds.Notifications => notificationsSetUpAt,
-                    SettingsSectionIds.Lists => null,
+                    SettingsSectionIds.Lists or SettingsSectionIds.Approvals => null,
                     _ => setUpAt,
                 },
             };

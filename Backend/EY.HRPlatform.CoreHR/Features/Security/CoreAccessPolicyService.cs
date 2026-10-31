@@ -47,6 +47,12 @@ public interface ICoreAccessPolicyService
     bool CanViewOwnProfile(ClaimsPrincipal user);
     bool CanUpdateOwnProfile(ClaimsPrincipal user);
     bool CanViewTeam(ClaimsPrincipal user);
+
+    /// <summary>Proposes dated changes for their direct reports (Roles › Approving changes: Propose).</summary>
+    bool CanProposeChanges(ClaimsPrincipal user) => false;
+
+    /// <summary>Approves or declines proposed changes, for everyone (Roles › Approving changes: Approve).</summary>
+    bool CanApproveChanges(ClaimsPrincipal user) => false;
     EmployeeReadAudience GetEmployeeReadAudience(ClaimsPrincipal user);
     string? GetEmployeeViewScope(ClaimsPrincipal user);
 }
@@ -86,7 +92,8 @@ public sealed class CoreAccessPolicyService : ICoreAccessPolicyService
         => CanViewOrganization(user)
             || CanViewTenantEmployees(user)
             || CanManageEmployees(user)
-            || CanViewPeopleDataSettings(user);
+            || CanViewPeopleDataSettings(user)
+            || CanProposeChanges(user);
 
     public bool CanManageJobsAndPlaces(ClaimsPrincipal user) => CanManageOrganization(user);
 
@@ -198,6 +205,12 @@ public sealed class CoreAccessPolicyService : ICoreAccessPolicyService
         => user.HasCorePermission(CorePermissions.TeamView, PermissionScopes.DirectReports)
             || user.HasCorePermission(CorePermissions.EmployeeView, PermissionScopes.DirectReports)
             || user.HasCorePermission(CorePermissions.EmployeeView, PermissionScopes.Tenant);
+
+    public bool CanProposeChanges(ClaimsPrincipal user)
+        => user.HasCorePermission(CorePermissions.ChangePropose, PermissionScopes.DirectReports);
+
+    public bool CanApproveChanges(ClaimsPrincipal user)
+        => user.HasCorePermission(CorePermissions.ChangeApprove, PermissionScopes.Tenant);
 
     public EmployeeReadAudience GetEmployeeReadAudience(ClaimsPrincipal user)
     {

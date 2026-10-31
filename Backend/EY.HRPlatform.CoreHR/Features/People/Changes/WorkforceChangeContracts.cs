@@ -19,7 +19,8 @@ public sealed record JobChangeRequest(
     Guid? JobId = null,
     Guid? PlaceId = null,
     bool RemovePlace = false,
-    [MaxLength(1000)] string? Note = null);
+    [MaxLength(1000)] string? Note = null,
+    Guid? ReasonId = null);
 
 /// <summary>What happens to the person's direct reports: they go along (default) or stay, reporting to someone.</summary>
 public sealed record TeamOutcomeRequest(bool Stays, Guid? ManagerEmployeeId = null);
@@ -31,7 +32,8 @@ public sealed record TeamOutcomeRequest(bool Stays, Guid? ManagerEmployeeId = nu
 public sealed record EndEmploymentChangeRequest(
     DateTime LastDay,
     IReadOnlyList<ReportReassignmentRequest>? Reports = null,
-    [MaxLength(1000)] string? Note = null);
+    [MaxLength(1000)] string? Note = null,
+    Guid? ReasonId = null);
 
 public sealed record ReportReassignmentRequest(Guid EmployeeId, Guid? ManagerEmployeeId);
 
@@ -92,10 +94,24 @@ public sealed record WorkforceChangeDetails(
     Guid? JobToId = null,
     Guid? PlaceFromId = null,
     Guid? PlaceToId = null,
-    Guid? EmploymentTypeId = null)
+    Guid? EmploymentTypeId = null,
+    /// <summary>Why, from the company's change reasons; the label as it was then.</summary>
+    Guid? ReasonId = null,
+    string? Reason = null)
 {
     /// <summary>A change a reporting admin may make: it touches only who the person (and their team) report to.</summary>
     public bool IsReportingOnly => !UnitChanged && !TitleChanged && !LocationChanged;
+
+    /// <summary>The parts of the company's approval settings this change touches.</summary>
+    public IReadOnlyList<string> ApprovalTypes(WorkforceChangeKind kind)
+    {
+        if (kind == WorkforceChangeKind.EndEmployment) return [ChangeApprovalTypes.Leaving];
+        var types = new List<string>();
+        if (UnitChanged || TitleChanged) types.Add(ChangeApprovalTypes.Job);
+        if (ManagerChanged || TeamOutcome == "Stays") types.Add(ChangeApprovalTypes.Manager);
+        if (LocationChanged) types.Add(ChangeApprovalTypes.Place);
+        return types;
+    }
 }
 
 public sealed record WorkforceChangeDto(

@@ -1,7 +1,6 @@
 {
   "Context.recordedBy": "Recorded by {actor}",
   "Context.cancelledBy": "Cancelled by {actor}",
-
   "ManagerChanged": "Your manager will be {manager} from {date:date}",
   "ManagerChanged.now": "Your manager is now {manager}",
   "ManagerChanged.upcoming": "{manager} becomes your manager",
@@ -10,7 +9,6 @@
   "ManagerChanged.none.upcoming": "You stop reporting to a manager",
   "ManagerChanged.cancelled": "Your manager change on {date:date} was cancelled",
   "ManagerChanged.action": "Open your profile",
-
   "JobChanged": "Your job changes on {date:date}",
   "JobChanged.now": "Your job changed",
   "JobChanged.upcoming": "Your job changes",
@@ -18,7 +16,6 @@
   "JobChanged.context.manager": "{summary} · reporting to {manager}",
   "JobChanged.cancelled": "Your job change on {date:date} was cancelled",
   "JobChanged.action": "Open your profile",
-
   "TeamJoining#one": "{name} joins your team on {date:date}",
   "TeamJoining#other": "{count} people join your team on {date:date}",
   "TeamJoining.now#one": "{name} joined your team",
@@ -30,7 +27,6 @@
   "TeamJoining.cancelled#other": "The move of {count} people to your team on {date:date} was cancelled",
   "TeamJoining.hire.cancelled": "{name}'s hire starting {date:date} was cancelled",
   "TeamJoining.action": "Open your team",
-
   "TeamLeaving#one": "{name} leaves your team on {date:date}",
   "TeamLeaving#other": "{count} people leave your team on {date:date}",
   "TeamLeaving.now#one": "{name} left your team",
@@ -44,6 +40,23 @@
   "TeamLeaving.cancelled#other": "The move of {count} people off your team on {date:date} was cancelled",
   "TeamLeaving.lastDay.cancelled": "{name}'s last day on {date:date} was cancelled",
   "TeamLeaving.action": "Open your team",
-
-  "group.team-and-job-changes": "Team and job changes"
+  "group.team-and-job-changes": "Team and job changes",
+  "Request.job": "{name} becomes {summary}",
+  "Request.manager": "{name} reports to {manager}",
+  "Request.noManager": "{name} stops reporting to a manager",
+  "Request.place": "{name} works from {summary}",
+  "Request.leaving": "{name}'s last day on {date:date}",
+  "Request.address": "{name}'s new home address",
+  "Request.context": "{actor} asks · from {date:date}",
+  "Request.context.reason": "{reason} · {actor} asks · from {date:date}",
+  "Request.context.address": "Waiting for your yes",
+  "Request.action": "Open the request",
+  "ChangeApproved": "{actor} approved your request for {name}",
+  "ChangeApproved.context": "It applies on {date:date}",
+  "ChangeApproved.address": "{actor} approved your new home address",
+  "ChangeApproved.action": "Open the request",
+  "ChangeDeclined": "{actor} declined your request for {name}",
+  "ChangeDeclined.address": "{actor} declined your new home address",
+  "ChangeDeclined.context": "“{reason}”",
+  "ChangeDeclined.action": "Open the request"
 }

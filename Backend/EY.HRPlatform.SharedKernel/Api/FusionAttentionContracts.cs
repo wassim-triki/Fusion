@@ -36,7 +36,14 @@ public sealed record FusionWorkItemDto(
     string? Section = null,
     IReadOnlyList<FusionWorkStepDto>? Steps = null,
     string? ActionLabel = null,
-    DateTime? WaitingSince = null);
+    DateTime? WaitingSince = null,
+    FusionWorkDecisionDto? Decision = null);
+
+/// <summary>
+/// A yes or no the home can give in place (B-179): paths below the module's gateway prefix for approving and declining;
+/// declining sends <c>{ "reason": "…" }</c>, which is required.
+/// </summary>
+public sealed record FusionWorkDecisionDto(string ApprovePath, string DeclinePath);
 
 /// <summary>
 /// Something dated that isn't work (a 1:1, a deadline, a cycle's end), served at `GET /api/{module}/upcoming`.

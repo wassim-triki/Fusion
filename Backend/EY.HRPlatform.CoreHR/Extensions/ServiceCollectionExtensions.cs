@@ -87,6 +87,7 @@ public static class ServiceCollectionExtensions
             client.BaseAddress = new Uri(EnsureTrailingSlash(baseUrl));
         });
         services.AddScoped<Features.People.Changes.WorkforceChangeReader>();
+        services.AddScoped<Features.People.Changes.ChangeRequestService>();
         services.AddScoped<Features.People.Changes.WorkforceChangeBackfill>();
         services.AddHostedService<Features.People.Changes.WorkforceChangeBackfillService>();
         services.AddScoped<EY.HRPlatform.CoreHR.Features.People.PeopleTimelineComposer>();
@@ -155,6 +156,22 @@ public static class ServiceCollectionExtensions
             client.BaseAddress = new Uri(EnsureTrailingSlash(semanticAssistance.Endpoint));
             client.Timeout = Timeout.InfiniteTimeSpan;
         }).ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
+
+        services.AddHttpClient<Features.People.Changes.ChangeDrafter>(client =>
+        {
+            client.BaseAddress = new Uri(EnsureTrailingSlash(semanticAssistance.Endpoint));
+            client.Timeout = TimeSpan.FromSeconds(15);
+        }).ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
+
+        services.AddHttpClient<Features.People.Changes.IChangeApproverDirectory, Features.People.Changes.ChangeApproverDirectory>(client =>
+        {
+            var baseUrl = configuration["ServiceUrls:IdentityApiBaseUrl"];
+            if (string.IsNullOrWhiteSpace(baseUrl))
+                throw new InvalidOperationException(
+                    "ServiceUrls:IdentityApiBaseUrl is not configured. Set it via environment variable or appsettings.");
+            client.BaseAddress = new Uri(EnsureTrailingSlash(baseUrl));
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
 
         services.AddHttpClient<IWorkforceBulkProvisioner, WorkforceBulkProvisioner>(client =>
         {

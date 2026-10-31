@@ -179,7 +179,8 @@ public sealed class PeopleProfileQueryHandler(
                     managerEmployee.StableEmployeeKey,
                     (managerEmployee.PreferredName ?? managerEmployee.FirstName) + " " + managerEmployee.LastName,
                     managerEmployee.EmployeeNumber,
-                    EmployeePhotos.UrlFor(managerEmployee.StableEmployeeKey, managerEmployee.PhotoKey)))
+                    EmployeePhotos.UrlFor(managerEmployee.StableEmployeeKey, managerEmployee.PhotoKey),
+                    managerEmployee.Id))
                 .FirstOrDefaultAsync(cancellationToken);
         }
 

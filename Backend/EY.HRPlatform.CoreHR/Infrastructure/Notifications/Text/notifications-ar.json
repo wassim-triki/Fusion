@@ -1,7 +1,6 @@
 {
   "Context.recordedBy": "سجّله {actor}",
   "Context.cancelledBy": "ألغاه {actor}",
-
   "ManagerChanged": "سيكون {manager} مديرك اعتبارًا من {date:date}",
   "ManagerChanged.now": "أصبح {manager} مديرك",
   "ManagerChanged.upcoming": "يصبح {manager} مديرك",
@@ -10,7 +9,6 @@
   "ManagerChanged.none.upcoming": "لن يكون لديك مدير",
   "ManagerChanged.cancelled": "أُلغي تغيير مديرك المقرر في {date:date}",
   "ManagerChanged.action": "افتح ملفك الشخصي",
-
   "JobChanged": "تتغير وظيفتك في {date:date}",
   "JobChanged.now": "تغيرت وظيفتك",
   "JobChanged.upcoming": "تتغير وظيفتك",
@@ -18,7 +16,6 @@
   "JobChanged.context.manager": "{summary} · تحت إشراف {manager}",
   "JobChanged.cancelled": "أُلغي تغيير وظيفتك المقرر في {date:date}",
   "JobChanged.action": "افتح ملفك الشخصي",
-
   "TeamJoining#one": "ينضم {name} إلى فريقك في {date:date}",
   "TeamJoining#other": "ينضم {count} أشخاص إلى فريقك في {date:date}",
   "TeamJoining.now#one": "انضم {name} إلى فريقك",
@@ -30,7 +27,6 @@
   "TeamJoining.cancelled#other": "أُلغي انضمام {count} أشخاص إلى فريقك في {date:date}",
   "TeamJoining.hire.cancelled": "أُلغي توظيف {name} الذي كان سيبدأ في {date:date}",
   "TeamJoining.action": "افتح فريقك",
-
   "TeamLeaving#one": "يغادر {name} فريقك في {date:date}",
   "TeamLeaving#other": "يغادر {count} أشخاص فريقك في {date:date}",
   "TeamLeaving.now#one": "غادر {name} فريقك",
@@ -44,6 +40,23 @@
   "TeamLeaving.cancelled#other": "أُلغيت مغادرة {count} أشخاص لفريقك في {date:date}",
   "TeamLeaving.lastDay.cancelled": "أُلغي آخر يوم عمل لـ {name} في {date:date}",
   "TeamLeaving.action": "افتح فريقك",
-
-  "group.team-and-job-changes": "الفريق وتغييرات الوظيفة"
+  "group.team-and-job-changes": "الفريق وتغييرات الوظيفة",
+  "Request.job": "{name} يصبح {summary}",
+  "Request.manager": "{name} يتبع {manager}",
+  "Request.noManager": "{name} بلا مدير",
+  "Request.place": "{name} يعمل في {summary}",
+  "Request.leaving": "آخر يوم لـ{name} في {date:date}",
+  "Request.address": "عنوان {name} الجديد",
+  "Request.context": "طلب من {actor} · ابتداءً من {date:date}",
+  "Request.context.reason": "{reason} · طلب من {actor} · ابتداءً من {date:date}",
+  "Request.context.address": "بانتظار موافقتك",
+  "Request.action": "فتح الطلب",
+  "ChangeApproved": "وافق {actor} على طلبك بخصوص {name}",
+  "ChangeApproved.context": "يسري في {date:date}",
+  "ChangeApproved.address": "وافق {actor} على عنوانك الجديد",
+  "ChangeApproved.action": "فتح الطلب",
+  "ChangeDeclined": "رفض {actor} طلبك بخصوص {name}",
+  "ChangeDeclined.address": "رفض {actor} عنوانك الجديد",
+  "ChangeDeclined.context": "«{reason}»",
+  "ChangeDeclined.action": "فتح الطلب"
 }

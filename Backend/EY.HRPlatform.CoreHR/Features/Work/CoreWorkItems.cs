@@ -1,3 +1,5 @@
+using EY.HRPlatform.CoreHR.Domain.Entities;
+using EY.HRPlatform.CoreHR.Features.People.Changes;
 using EY.HRPlatform.CoreHR.Features.Setup;
 using EY.HRPlatform.CoreHR.Features.Workforce.Dtos;
 using EY.HRPlatform.SharedKernel.Api;
@@ -37,6 +39,26 @@ public static class CoreWorkItems
                     "Workforce access", "/core/workforce-access", "/core/workforce-access"));
         }
         return items;
+    }
+
+    /// <summary>
+    /// A change waiting for the viewer's answer, approved or declined from Home in place (D-12, D-15). Worded by
+    /// <paramref name="text"/> from the notification catalogue, so it reads in the viewer's language.
+    /// </summary>
+    public static FusionWorkItemDto Decide(ChangeRequestDto request, Func<string, IReadOnlyDictionary<string, string>, string> text)
+    {
+        var (title, context, values) = ChangeRequestService.Headline(request.Kind, request.Person.DisplayName,
+            request.RequestedBy.DisplayName, request.EffectiveDate, request.Change, request.Reason);
+        return new FusionWorkItemDto(
+            $"{Module}:change-request:{request.Id}", Module, "change-request",
+            text(title, values), text(context, values),
+            request.Kind == WorkforceChangeRequestKind.HomeAddress ? null : request.EffectiveDate,
+            $"{ChangeRequestService.RequestsPath}?request={request.Id}",
+            Subject: new FusionWorkSubjectDto(request.Person.DisplayName),
+            Section: ChangeRequestService.RequestsPath,
+            ActionLabel: text("Request.action", values),
+            WaitingSince: DateTime.SpecifyKind(request.RequestedAt, DateTimeKind.Utc),
+            Decision: new FusionWorkDecisionDto($"/changes/requests/{request.Id}/approve", $"/changes/requests/{request.Id}/decline"));
     }
 
     /// <summary>The first workforce gap that keeps Core HR from being ready, or null when there is none.</summary>

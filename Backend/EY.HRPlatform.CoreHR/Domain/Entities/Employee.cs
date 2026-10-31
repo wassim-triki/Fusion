@@ -196,6 +196,23 @@ public class Employee : AggregateRoot, ITenantEntity
         return changed;
     }
 
+    /// <summary>The home address as stored (normalized parts).</summary>
+    public HomeAddress CurrentHomeAddress => new(HomeStreet, HomeCity, HomePostalCode, HomeCountry);
+
+    /// <summary>Normalizes an address the way the profile stores it; throws on a part that is too long.</summary>
+    public static HomeAddress NormalizedHomeAddress(HomeAddress? address) => NormalizeAddress(address);
+
+    /// <summary>Sets the home address alone (an approved request); returns whether it changed.</summary>
+    public bool ReplaceHomeAddress(HomeAddress address)
+    {
+        var next = NormalizeAddress(address);
+        if (next == CurrentHomeAddress)
+            return false;
+        (HomeStreet, HomeCity, HomePostalCode, HomeCountry) = (next.Street, next.City, next.PostalCode, next.Country);
+        UpdatedAt = DateTime.UtcNow;
+        return true;
+    }
+
     /// <summary>Points the profile at a newly stored photo and returns the key of the one it replaces, if any.</summary>
     public string? ReplacePhoto(string photoKey)
     {

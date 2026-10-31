@@ -47,7 +47,9 @@ public sealed record PeopleManagerDto(
     string DisplayName,
     string EmployeeNumber,
     /// <summary>API-relative photo address with a cache version, or null without a photo.</summary>
-    string? PhotoUrl = null);
+    string? PhotoUrl = null,
+    /// <summary>Set on a profile's primary manager, so a manager's own client knows the person is on their team.</summary>
+    Guid? EmployeeId = null);
 
 public sealed record PeopleWorkDto(
     Guid? OrgUnitId,

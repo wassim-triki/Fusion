@@ -1,4 +1,8 @@
+using System.Security.Claims;
+using EY.HRPlatform.CoreHR.Features.People.Changes;
 using EY.HRPlatform.CoreHR.Features.Security;
+using EY.HRPlatform.CoreHR.Infrastructure.Notifications;
+using EY.HRPlatform.SharedKernel.Notifications;
 using EY.HRPlatform.CoreHR.Features.Setup;
 using EY.HRPlatform.CoreHR.Features.Work;
 using EY.HRPlatform.CoreHR.Features.Workforce.Services;
@@ -19,7 +23,8 @@ namespace EY.HRPlatform.CoreHR.Controllers;
 public sealed class WorkController(
     ICoreHRReadinessService readiness,
     IWorkforceContractService workforce,
-    ICoreAccessPolicyService accessPolicy) : ControllerBase
+    ICoreAccessPolicyService accessPolicy,
+    ChangeRequestService? requests = null) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<FusionWorkItemDto>>>> Get(CancellationToken cancellationToken)
@@ -28,6 +33,17 @@ public sealed class WorkController(
             return Ok(ApiResponse<IReadOnlyList<FusionWorkItemDto>>.Success([]));
         var setup = accessPolicy.CanViewSetup(User) ? await readiness.GetAsync(cancellationToken) : null;
         var access = accessPolicy.CanViewAccess(User) ? await workforce.GetAccessRosterSummaryAsync(cancellationToken) : null;
-        return Ok(ApiResponse<IReadOnlyList<FusionWorkItemDto>>.Success(CoreWorkItems.Compose(tenantId, setup, access)));
+        var items = new List<FusionWorkItemDto>();
+        if (requests is not null && accessPolicy.CanApproveChanges(User))
+        {
+            var actor = new ChangeActor(
+                Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) ? userId.ToString() : "",
+                User.GetEmployeeId(), User.GetFullName(), accessPolicy.CanManageEmployees(User), accessPolicy.CanProposeChanges(User), true);
+            var language = FusionRequestLanguage.Of(Request);
+            items.AddRange((await requests.ToDecideAsync(actor, cancellationToken))
+                .Select(request => CoreWorkItems.Decide(request, (key, values) => CoreNotificationRenderer.Catalog.Text(language, key, values) ?? key)));
+        }
+        items.AddRange(CoreWorkItems.Compose(tenantId, setup, access));
+        return Ok(ApiResponse<IReadOnlyList<FusionWorkItemDto>>.Success(items));
     }
 }

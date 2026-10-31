@@ -10,6 +10,8 @@ public static class CoreSettingsSectionIds
     public const string EmployeeFields = "employee-fields";
     public const string Lists = "lists";
     public const string Roles = "roles";
+    /// <summary>Which change types wait for approval (B-179).</summary>
+    public const string Approvals = "approvals";
     public const string Invitations = "invitations";
     public const string ChangeHistory = "change-history";
     public const string Notifications = "notifications";
@@ -27,6 +29,7 @@ public static class SettingsSectionIds
     public const string Governance = "governance";
     public const string Notifications = "notifications";
     public const string Lists = "lists";
+    public const string Approvals = "approvals";
 }
 
 public sealed record OrganizationSettingsDto(

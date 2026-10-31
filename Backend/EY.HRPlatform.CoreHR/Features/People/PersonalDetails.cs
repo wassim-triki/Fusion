@@ -86,7 +86,11 @@ public sealed record PeoplePersonalDto(
     PeopleHomeAddressDto? HomeAddress,
     DateOnly? DateOfBirth,
     IReadOnlyList<PeopleEmergencyContactDto>? EmergencyContacts,
-    uint Version);
+    uint Version,
+    PeoplePendingAddressDto? PendingHomeAddress = null);
+
+/// <summary>A new home address waiting for HR (D-16); its asker can withdraw it.</summary>
+public sealed record PeoplePendingAddressDto(Guid RequestId, PeopleHomeAddressDto Address, DateTime RequestedAt, string RequestedBy);
 
 /// <summary>Replaces every field of the Personal tab; send back what you read with your change applied.</summary>
 public sealed record UpdatePersonalRequest(
@@ -118,14 +122,15 @@ public sealed class PeoplePersonalQueryHandler(CoreHRDbContext dbContext)
             return Result.Failure<PeoplePersonalDto>(new Error("Employee.NotFound", "Employee was not found."));
 
         var decision = await PeopleAccess.DecideAsync(dbContext, request.Viewer, employee.Id, cancellationToken);
-        return Result.Success(PersonalSupport.Project(employee, decision));
+        return Result.Success(PersonalSupport.Project(employee, decision, await PersonalSupport.PendingAddressAsync(dbContext, employee.Id, decision, cancellationToken)));
     }
 }
 
 public sealed class UpdatePeoplePersonalCommandHandler(
     CoreHRDbContext dbContext,
     ITenantContext tenantContext,
-    ITenantSettingsReadService? tenantSettingsReadService = null)
+    ITenantSettingsReadService? tenantSettingsReadService = null,
+    Changes.ChangeRequestService? changeRequests = null)
     : ICommandHandler<UpdatePeoplePersonalCommand, Result<PeoplePersonalDto>>
 {
     private readonly ITenantSettingsReadService tenantSettingsReader =
@@ -163,6 +168,21 @@ public sealed class UpdatePeoplePersonalCommandHandler(
             var contacts = (body.EmergencyContacts ?? [])
                 .Select(contact => new EmergencyContactDetails(contact.Name, contact.Relationship, contact.Phone))
                 .ToList();
+            // A person's own new address waits for HR when the company asks for it (D-16); the rest saves now.
+            if (!command.Viewer.ManagesPeople && changeRequests is not null
+                && Employee.NormalizedHomeAddress(address) is var wanted && wanted != employee.CurrentHomeAddress
+                && await dbContext.ChangeApprovalRules.AnyAsync(rule => rule.Type == ChangeApprovalTypes.HomeAddress, cancellationToken))
+            {
+                var separator = command.Actor.IndexOf('|');
+                var actor = new Changes.ChangeActor(
+                    Guid.TryParse(separator > 0 ? command.Actor[..separator] : command.Actor, out var userId) ? userId.ToString() : command.Actor,
+                    command.Viewer.EmployeeId,
+                    separator > 0 ? command.Actor[(separator + 1)..] : employee.DisplayName, false, false, false);
+                var asked = await changeRequests.StageAddressRequestAsync(employee, wanted, actor, cancellationToken);
+                if (asked.IsFailure)
+                    return Result.Failure<PeoplePersonalDto>(asked.Error);
+                address = employee.CurrentHomeAddress;
+            }
             changed = employee.UpdatePersonalDetails(
                 new PersonalDetails(body.PreferredName, body.Mobile, body.PersonalEmail, address, body.DateOfBirth, contacts),
                 DateOnly.FromDateTime(DateTime.UtcNow));
@@ -173,14 +193,13 @@ public sealed class UpdatePeoplePersonalCommandHandler(
         }
 
         if (changed.Count > 0)
-        {
             dbContext.WorkforceAuditEntries.Add(WorkforceAuditEntry.Record(
                 tenantContext.TenantId, "Employee", employee.Id, WorkforceAuditAction.PersonalDetailsUpdated,
                 WorkforceSourceType.Manual, command.Actor, changeDetails: string.Join(", ", changed)));
+        if (dbContext.ChangeTracker.HasChanges())
             await dbContext.SaveChangesAsync(cancellationToken);
-        }
 
-        return Result.Success(PersonalSupport.Project(employee, decision));
+        return Result.Success(PersonalSupport.Project(employee, decision, await PersonalSupport.PendingAddressAsync(dbContext, employee.Id, decision, cancellationToken)));
     }
 
     private static string? Blank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
@@ -198,7 +217,23 @@ internal static class PersonalSupport
         return query.FirstOrDefaultAsync(item => item.StableEmployeeKey == key, cancellationToken);
     }
 
-    public static PeoplePersonalDto Project(Employee employee, PeopleAccessDecision decision)
+    /// <summary>The address waiting for HR, for whoever reads the full Personal tab.</summary>
+    public static async Task<PeoplePendingAddressDto?> PendingAddressAsync(
+        CoreHRDbContext dbContext, Guid employeeId, PeopleAccessDecision decision, CancellationToken cancellationToken)
+    {
+        if (decision.Access != PersonalAccess.Full) return null;
+        var pending = await dbContext.WorkforceChangeRequests.AsNoTracking()
+            .Where(item => item.SubjectEmployeeId == employeeId && item.Kind == WorkforceChangeRequestKind.HomeAddress
+                && item.Status == WorkforceChangeRequestStatus.Pending)
+            .OrderByDescending(item => item.CreatedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (pending is null) return null;
+        var address = System.Text.Json.JsonSerializer.Deserialize<PeopleHomeAddressDto>(pending.PayloadJson,
+            new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web))!;
+        return new PeoplePendingAddressDto(pending.Id, address, pending.CreatedAt, pending.RequestedByName);
+    }
+
+    public static PeoplePersonalDto Project(Employee employee, PeopleAccessDecision decision, PeoplePendingAddressDto? pendingAddress = null)
     {
         var full = decision.Access == PersonalAccess.Full;
         var contact = decision.Access >= PersonalAccess.Contact;
@@ -218,6 +253,7 @@ internal static class PersonalSupport
                     .Select(item => new PeopleEmergencyContactDto(item.Name, item.Relationship, item.Phone))
                     .ToList()
                 : null,
-            employee.Version);
+            employee.Version,
+            pendingAddress);
     }
 }

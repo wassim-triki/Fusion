@@ -17,6 +17,12 @@ public enum CoreNotificationKind
     TeamLeaving = 4,
     /// <summary>To everyone a change told: it was cancelled before its date.</summary>
     ChangeCancelled = 5,
+    /// <summary>To whoever approves changes: a change waits for their answer (<see cref="ChangeId"/> is the request).</summary>
+    ChangeRequested = 6,
+    /// <summary>To whoever asked: their request was approved.</summary>
+    ChangeApproved = 7,
+    /// <summary>To whoever asked: their request was declined, with the reason.</summary>
+    ChangeDeclined = 8,
 }
 
 /// <summary>
@@ -38,7 +44,7 @@ public sealed class CoreNotification : ITenantEntity, IFeedNudgeRecipient
     Guid? IFeedNudgeRecipient.RecipientEmployeeId => RecipientEmployeeId;
     Guid? IFeedNudgeRecipient.RecipientUserId => null;
     public CoreNotificationKind Kind { get; private set; }
-    /// <summary>The workforce change that raised it.</summary>
+    /// <summary>The workforce change that raised it, or the change request for the request kinds.</summary>
     public Guid ChangeId { get; private set; }
     public string TitleKey { get; private set; } = string.Empty;
     public string? ContextKey { get; private set; }

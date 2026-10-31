@@ -59,4 +59,16 @@ public static class TestCatalog
         db.CompanyListValues.Add(value);
         return value;
     }
+
+    /// <summary>The tenant's change reason with this label, saved so the change flow can read it.</summary>
+    public static Guid ChangeReasons(this CoreHRDbContext db, Guid tenantId, string label)
+    {
+        var normalized = CatalogName.Normalize(label);
+        var value = db.CompanyListValues.IgnoreQueryFilters().FirstOrDefault(item => item.TenantId == tenantId && item.List == CompanyList.ChangeReasons && item.NormalizedLabel == normalized);
+        if (value is not null) return value.Id;
+        value = CompanyListValue.Create(tenantId, CompanyList.ChangeReasons, label, $"reason-{Guid.NewGuid():N}"[..20], 0, "test");
+        db.CompanyListValues.Add(value);
+        db.SaveChanges();
+        return value.Id;
+    }
 }

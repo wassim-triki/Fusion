@@ -54,6 +54,8 @@ public class CoreHRDbContext : DbContext
     public DbSet<OrganizationChange> OrganizationChanges => Set<OrganizationChange>();
     public DbSet<WorkforceChange> WorkforceChanges => Set<WorkforceChange>();
     public DbSet<WorkforceChangeEffect> WorkforceChangeEffects => Set<WorkforceChangeEffect>();
+    public DbSet<WorkforceChangeRequest> WorkforceChangeRequests => Set<WorkforceChangeRequest>();
+    public DbSet<ChangeApprovalRule> ChangeApprovalRules => Set<ChangeApprovalRule>();
     public DbSet<CoreNotification> Notifications => Set<CoreNotification>();
     public DbSet<CoreNotificationPreference> NotificationPreferences => Set<CoreNotificationPreference>();
     public DbSet<CoreNotificationDefaults> NotificationDefaults => Set<CoreNotificationDefaults>();
@@ -134,6 +136,12 @@ public class CoreHRDbContext : DbContext
 
         modelBuilder.Entity<WorkforceChangeEffect>()
             .HasQueryFilter(effect => CurrentTenantId != Guid.Empty && effect.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<WorkforceChangeRequest>()
+            .HasQueryFilter(request => CurrentTenantId != Guid.Empty && request.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<ChangeApprovalRule>()
+            .HasQueryFilter(rule => CurrentTenantId != Guid.Empty && rule.TenantId == CurrentTenantId);
 
         modelBuilder.Entity<CoreNotification>()
             .HasQueryFilter(notification => CurrentTenantId != Guid.Empty && notification.TenantId == CurrentTenantId);

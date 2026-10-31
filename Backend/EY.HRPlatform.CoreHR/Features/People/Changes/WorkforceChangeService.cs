@@ -47,6 +47,10 @@ public sealed class WorkforceChangeService(
         if (refused is not null)
             return Result.Failure<WorkforceChange>(refused);
 
+        var reason = await ReasonAsync(request.ReasonId, cancellationToken);
+        if (reason.IsFailure)
+            return Result.Failure<WorkforceChange>(reason.Error);
+
         var assignment = await ActiveAssignmentAsync(subject.Id, at, cancellationToken);
         if (assignment is null)
             return Fail<WorkforceChange>("Change.NotEmployed", $"{subject.DisplayName} is not employed on {date:d MMM yyyy}.");
@@ -161,7 +165,9 @@ public sealed class WorkforceChangeService(
             JobFromId: assignment.JobId,
             JobToId: titleChanged ? jobTo : null,
             PlaceFromId: assignment.PlaceId,
-            PlaceToId: locationChanged ? placeTo : null);
+            PlaceToId: locationChanged ? placeTo : null,
+            ReasonId: reason.Value?.Id,
+            Reason: reason.Value?.Label);
 
         var change = WorkforceChangeRecorder.Record(
             dbContext, tenantContext.TenantId, subject.Id, WorkforceChangeKind.JobChange, date, request.Note, details, actor);
@@ -234,6 +240,10 @@ public sealed class WorkforceChangeService(
         if (refused is not null)
             return Result.Failure<WorkforceChange>(refused);
 
+        var reason = await ReasonAsync(request.ReasonId, cancellationToken);
+        if (reason.IsFailure)
+            return Result.Failure<WorkforceChange>(reason.Error);
+
         var preview = await PreviewEndEmploymentAsync(subject, lastDay, cancellationToken);
         var overrides = (request.Reports ?? []).ToDictionary(item => item.EmployeeId, item => item.ManagerEmployeeId);
         var toReassign = preview.Value.Reports.Where(item => item.Outcome == "Reassign").ToList();
@@ -279,7 +289,9 @@ public sealed class WorkforceChangeService(
             ManagerFrom: preview.Value.DefaultManager,
             Reassigned: reassigned,
             DottedLinesEnded: preview.Value.DottedLinesEnding,
-            LastDay: lastDay);
+            LastDay: lastDay,
+            ReasonId: reason.Value?.Id,
+            Reason: reason.Value?.Label);
         var change = WorkforceChangeRecorder.Record(
             dbContext, tenantContext.TenantId, subject.Id, WorkforceChangeKind.EndEmployment, boundaryDate, request.Note, details, actor);
         await notifications.StageAsync(change, details, cancellationToken);
@@ -472,6 +484,18 @@ public sealed class WorkforceChangeService(
     }
 
     // --- Rules and lookups ------------------------------------------------------------------------
+
+    /// <summary>A reason from the company's change reasons that is still offered; none is fine.</summary>
+    private async Task<Result<CompanyListValue?>> ReasonAsync(Guid? reasonId, CancellationToken cancellationToken)
+    {
+        if (reasonId is not { } id)
+            return Result.Success<CompanyListValue?>(null);
+        var value = await dbContext.CompanyListValues.AsNoTracking()
+            .FirstOrDefaultAsync(item => item.Id == id && item.List == CompanyList.ChangeReasons && !item.IsRetired, cancellationToken);
+        return value is null
+            ? Fail<CompanyListValue?>("Change.UnknownReason", "Choose a reason from your company's list.")
+            : Result.Success<CompanyListValue?>(value);
+    }
 
     private static Error? ValidateDate(DateOnly date)
         => date < Today

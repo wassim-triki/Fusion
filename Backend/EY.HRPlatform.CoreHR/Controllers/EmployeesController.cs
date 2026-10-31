@@ -328,7 +328,8 @@ public class EmployeesController(
         [FromQuery] int limit = 30,
         CancellationToken cancellationToken = default)
     {
-        if (!accessPolicy.CanManageEmployees(User) && !accessPolicy.CanManageReporting(User))
+        // Proposers pick a new manager when they describe a change for their team (B-179).
+        if (!accessPolicy.CanManageEmployees(User) && !accessPolicy.CanManageReporting(User) && !accessPolicy.CanProposeChanges(User))
             return Forbid();
 
         var result = await sender.Send(

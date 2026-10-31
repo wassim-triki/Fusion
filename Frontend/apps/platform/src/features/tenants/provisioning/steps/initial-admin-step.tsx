@@ -142,7 +142,7 @@ export function InitialAdminStep({
         </div>
       </StepPanel>
 
-      <div className="flex h-full flex-col gap-6 rounded-surface border border-border bg-card p-6">
+      <div className="flex h-full flex-col gap-6 rounded-surface bg-card p-6">
         <div>
           <div className="flex items-start gap-3">
             <span className="flex size-10 shrink-0 items-center justify-center rounded-control bg-primary-tint text-primary-ink">

@@ -32,6 +32,7 @@ function PersonAvatar({
   return (
     <Avatar className={className}>
       <AvatarFallback
+        hue={accent ? null : name}
         className={
           accent
             ? "bg-primary text-[0.65rem] font-medium text-primary-foreground"

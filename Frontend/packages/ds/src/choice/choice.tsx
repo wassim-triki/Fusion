@@ -143,7 +143,7 @@ export function ChoiceMatrix<T extends string>({
   return (
     <div
       className={cn(
-        "overflow-x-auto rounded-surface border border-border bg-card",
+        "overflow-x-auto rounded-surface bg-card",
         className
       )}
     >

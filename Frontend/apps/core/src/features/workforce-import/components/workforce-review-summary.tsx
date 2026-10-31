@@ -125,7 +125,7 @@ export function WorkforceReviewNotices({ notices, onView }: { notices: ReviewNot
   if (notices.length === 0) return null;
   const blocking = notices.some((n) => n.tone === "destructive");
   return (
-    <section aria-labelledby="review-findings-title" className="rounded-surface border border-border bg-card p-4 sm:p-5">
+    <section aria-labelledby="review-findings-title" className="rounded-surface bg-card p-4 sm:p-5">
       <header className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-center gap-4">
           <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-full bg-muted text-foreground">

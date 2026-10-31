@@ -289,7 +289,7 @@ export default function AccessWorkspace() {
 
         {isWide ? (
           <aside aria-label={t("details")}>
-            <div className="sticky top-6 overflow-hidden rounded-surface border bg-card">
+            <div className="sticky top-6 overflow-hidden rounded-surface bg-card">
               {detail ?? <DetailPlaceholder />}
             </div>
           </aside>

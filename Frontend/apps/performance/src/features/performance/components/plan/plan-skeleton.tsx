@@ -18,7 +18,7 @@ export function PlanSurfaceSkeleton() {
             {/* Objective cards mirror PlanObjectiveRow: identity, then facts + weight. */}
             <div className="space-y-3">
               {Array.from({ length: 2 }, (_, i) => (
-                <div key={i} className="rounded-surface border border-border bg-card p-5">
+                <div key={i} className="rounded-surface bg-card p-5">
                   <div className="flex items-start gap-4">
                     <Skeleton className="size-10 shrink-0 rounded-control" />
                     <div className="min-w-0 flex-1 space-y-2 pt-0.5">
@@ -81,7 +81,7 @@ export function PlanEmptySkeleton() {
       <PlanDocument
         main={
           <PlanSection label={<Skeleton className="h-5 w-28" />}>
-            <div className="flex flex-col items-center rounded-surface border border-border bg-card px-6 py-12">
+            <div className="flex flex-col items-center rounded-surface bg-card px-6 py-12">
               <Skeleton className="h-36 w-36 rounded-full" />
               <Skeleton className="mt-6 h-7 w-72" />
               <Skeleton className="mt-3 h-4 w-64" />

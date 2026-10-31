@@ -184,7 +184,7 @@ export function CycleDetailsStep({ detail }: { detail: CycleDetailDto | null }) 
     <div>
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
         {/* main form card */}
-        <section className="flex flex-col rounded-surface border border-border bg-card p-6 lg:p-8">
+        <section className="flex flex-col rounded-surface bg-card p-6 lg:p-8">
           <CardTitle icon={FileText} title={t("cycleDetails")} caption={t("giveYourPerformanceCycleA")} />
 
           <div className="mt-7 space-y-6">
@@ -293,7 +293,7 @@ export function CycleDetailsStep({ detail }: { detail: CycleDetailDto | null }) 
         </section>
 
         {/* live summary aside */}
-        <aside className="flex flex-col rounded-surface border border-border bg-card p-6 lg:p-7">
+        <aside className="flex flex-col rounded-surface bg-card p-6 lg:p-7">
           <CardTitle icon={Clock} title={t("atAGlance")} caption={t("keyDetailsForThisPerformance")} compact />
 
           <div className="mt-6 grid grid-cols-2 gap-3">

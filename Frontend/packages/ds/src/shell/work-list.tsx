@@ -136,7 +136,7 @@ export function WorkList({
                   children: (
                     <>
                       <Avatar className="size-8 shrink-0">
-                        <AvatarFallback className="text-xs">
+                        <AvatarFallback hue={item.subject?.displayName} className="text-xs">
                           {item.subject ? initials(item.subject.displayName) : moduleLabel.slice(0, 1)}
                         </AvatarFallback>
                       </Avatar>

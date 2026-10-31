@@ -152,7 +152,7 @@ function ReviewHeading({ plan, actions }: { plan: EmployeePlanDto; actions?: Rea
     <div className="flex flex-wrap items-center justify-between gap-4">
       <div className="flex min-w-0 items-center gap-3.5">
         <Avatar className="size-12">
-          <AvatarFallback>{initials(plan.employee.name)}</AvatarFallback>
+          <AvatarFallback hue={plan.employee.name}>{initials(plan.employee.name)}</AvatarFallback>
         </Avatar>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2.5">

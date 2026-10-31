@@ -29,7 +29,7 @@ export function AlignedChildrenSection({
     <RecordSection label={t("alignedObjectives", { value: record.children.length + planObjectives.length })}>
       <div className="space-y-6">
         {record.children.length > 0 ? (
-          <ul className="divide-y divide-border overflow-hidden rounded-surface border border-border bg-popover dark:bg-card">
+          <ul className="divide-y divide-border overflow-hidden rounded-surface bg-popover dark:bg-card">
             {record.children.map((child) => (
               <li key={child.id}>
                 <button
@@ -62,7 +62,7 @@ export function AlignedChildrenSection({
         {planObjectives.length > 0 ? (
           <div>
             <p className="mb-2 type-label text-foreground">{t("planObjectives")}</p>
-            <ul className="divide-y divide-border overflow-hidden rounded-surface border border-border bg-popover dark:bg-card">
+            <ul className="divide-y divide-border overflow-hidden rounded-surface bg-popover dark:bg-card">
               {planObjectives.map((child) => (
                 <li key={child.objectiveId}>
                   <Link

@@ -30,7 +30,7 @@ export function MappingSection({
   children: React.ReactNode;
 }) {
   return (
-    <section aria-labelledby={id} className="rounded-surface border border-border bg-card p-4">
+    <section aria-labelledby={id} className="rounded-surface bg-card p-4">
       <header className="px-1">
         <h2 id={id} className="type-section-title text-foreground">
           {title}

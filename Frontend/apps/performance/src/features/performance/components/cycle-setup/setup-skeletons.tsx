@@ -11,7 +11,7 @@ import { useTranslations } from "next-intl";
  */
 
 function Card({ className = "", children }: { className?: string; children: React.ReactNode }) {
-  return <div className={cn("rounded-surface border border-border bg-card p-6 lg:p-7", className)}>{children}</div>;
+  return <div className={cn("rounded-surface bg-card p-6 lg:p-7", className)}>{children}</div>;
 }
 
 /** The Details step's card title: icon tile, serif title, caption. */

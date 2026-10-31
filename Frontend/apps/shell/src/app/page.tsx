@@ -35,7 +35,7 @@ export default function HomePage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-xl items-center px-6 py-16">
-      <section className="w-full rounded-surface border bg-card p-8 text-card-foreground">
+      <section className="w-full rounded-surface bg-card p-8 text-card-foreground">
         <p className="text-sm font-medium text-muted-foreground">Fusion account</p>
         <h1 className="mt-2 text-2xl font-semibold">No workspace is available</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">

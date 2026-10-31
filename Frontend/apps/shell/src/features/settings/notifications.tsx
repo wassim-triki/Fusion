@@ -231,7 +231,7 @@ function ModuleNotifications({
           {t("notSaved")}
         </p>
       ) : null}
-      <div className="overflow-hidden rounded-surface border border-border bg-card">
+      <div className="overflow-hidden rounded-surface bg-card">
         <div className="grid grid-cols-[minmax(0,1fr)_96px_104px] gap-4 border-b border-border bg-inlay px-5 py-2.5 type-meta font-semibold text-muted-foreground">
           <span>{t("about")}</span>
           <span className="text-center">{t("inFusion")}</span>

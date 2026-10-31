@@ -134,7 +134,7 @@ function GoalCard({ goal, plan, cycleId, employeeId, onEdit }: {
   };
 
   return (
-    <div className={cn("rounded-surface border border-border bg-card p-5", goal.carriedToCycleName && "opacity-75")}>
+    <div className={cn("rounded-surface bg-card p-5", goal.carriedToCycleName && "opacity-75")}>
       <div className="flex items-start gap-4">
         <StatusMark status={goal.status} />
         <div className="min-w-0 flex-1">

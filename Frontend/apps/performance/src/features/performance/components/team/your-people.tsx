@@ -147,7 +147,7 @@ function personColumn(showOrgUnit: boolean, say: Say) {
         <DataTableCellStack
           leading={
             <Avatar className="size-8">
-              <AvatarFallback className="type-meta">{initials(m.employeeName)}</AvatarFallback>
+              <AvatarFallback hue={m.employeeName} className="type-meta">{initials(m.employeeName)}</AvatarFallback>
             </Avatar>
           }
           primary={

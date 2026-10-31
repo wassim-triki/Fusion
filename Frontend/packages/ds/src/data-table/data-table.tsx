@@ -139,7 +139,7 @@ export function DataTable<TData extends RowData>({
   return (
     <div
       className={cn(
-        "flex flex-col overflow-hidden rounded-surface border border-border bg-card",
+        "flex flex-col overflow-hidden rounded-surface bg-card",
         className
       )}
     >

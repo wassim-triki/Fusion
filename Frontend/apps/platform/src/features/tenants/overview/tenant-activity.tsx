@@ -119,7 +119,7 @@ function ActivityCard({ entry }: { entry: TenantActivityEntry }) {
   const Icon = iconFor(entry);
 
   return (
-    <li className="flex items-start gap-3 rounded-surface border border-border bg-card p-3.5">
+    <li className="flex items-start gap-3 rounded-surface bg-card p-3.5">
       <span
         className={cn(
           "flex size-8 shrink-0 items-center justify-center rounded-control",
@@ -176,7 +176,7 @@ function ActivitySkeleton() {
       {Array.from({ length: ACTIVITY_PREVIEW_LIMIT }).map((_, index) => (
         <li
           key={index}
-          className="flex items-start gap-3 rounded-surface border border-border bg-card p-3.5"
+          className="flex items-start gap-3 rounded-surface bg-card p-3.5"
         >
           <Skeleton className="size-8 shrink-0 rounded-control" />
           <div className="min-w-0 flex-1 space-y-1.5">
@@ -202,7 +202,7 @@ function ActivityFailure({
   const kind = failureKind(error);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-surface border border-border bg-card px-4 py-3">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-surface bg-card px-4 py-3">
       <p className="text-sm text-muted-foreground">
         {kind === "permission" ? t("common.accessChanged") : t("activity.failed")}
       </p>

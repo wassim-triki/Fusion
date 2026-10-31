@@ -61,7 +61,7 @@ export function PopulationScope({
   const byScope = mode === "ByScope";
 
   return (
-    <section className="rounded-surface border border-border bg-card p-5 lg:p-6">
+    <section className="rounded-surface bg-card p-5 lg:p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="flex size-7 items-center justify-center rounded-full bg-primary-tint text-primary-ink type-meta-strong tabular-nums">
@@ -164,10 +164,10 @@ export function PopulationScope({
               {inclusions.map((candidate) => (
                 <li
                   key={candidate.employeeId}
-                  className="flex items-center gap-2.5 rounded-surface border border-border bg-card px-3 py-2"
+                  className="flex items-center gap-2.5 rounded-surface bg-card px-3 py-2"
                 >
                   <Avatar className="size-8 shrink-0">
-                    <AvatarFallback className="type-mark">
+                    <AvatarFallback hue={candidate.displayName} className="type-mark">
                       {initials(candidate.displayName)}
                     </AvatarFallback>
                   </Avatar>

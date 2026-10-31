@@ -55,7 +55,7 @@ export function ReviewChecks({
 
   const props = { review, saving, matchHref, focusedKey, itemRefs, onViewUnits, onResolve };
   return (
-    <section aria-labelledby="review-checks-title" className="rounded-surface border border-border bg-card p-5">
+    <section aria-labelledby="review-checks-title" className="rounded-surface bg-card p-5">
       <h2 id="review-checks-title" className="type-section-title text-foreground">
         {t("title")}
       </h2>

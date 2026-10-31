@@ -141,7 +141,7 @@ const DirectionNode = memo(function DirectionNode({
   return (
     <div
       className={cn(
-        "group pointer-events-auto relative flex h-[152px] w-[272px] flex-col rounded-surface border border-border bg-card shadow-raised transition-[border-color,box-shadow] duration-300",
+        "group pointer-events-auto relative flex h-[152px] w-[272px] flex-col rounded-surface bg-card shadow-raised transition-[border-color,box-shadow] duration-300",
         company && "bg-[color-mix(in_oklab,var(--primary)_5%,var(--card))]",
         data.focused && "ring-2 ring-primary ring-offset-2 ring-offset-section",
         !data.focused && "hover:border-foreground/25"
@@ -518,7 +518,7 @@ export default function AlignmentMap({
   nodesRef.current = nodes;
 
   return (
-    <div className="relative h-full min-h-[420px] overflow-hidden rounded-surface border border-border bg-section">
+    <div className="relative h-full min-h-[420px] overflow-hidden rounded-surface bg-section">
       <ReactFlow<MapFlowNode, Edge>
         // React Flow positions in physical pixels and breaks right to left; the map reads left to right in every language.
         dir="ltr"

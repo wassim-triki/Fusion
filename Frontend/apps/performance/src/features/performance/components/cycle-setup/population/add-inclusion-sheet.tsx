@@ -240,7 +240,7 @@ function ResultRow({
   const body = (
     <>
       <Avatar className="size-9 shrink-0">
-        <AvatarFallback className="type-meta">
+        <AvatarFallback hue={person.displayName} className="type-meta">
           {initials(person.displayName)}
         </AvatarFallback>
       </Avatar>

@@ -138,6 +138,7 @@ Rule: **sans for the system, serif for the human,** visible but scarce. If unsur
 6. Empty and drop placeholders have no fill: a dashed border on the parent's tone.
 7. Emphasis is not a tone: semantic tints mark state on top of the right tier, never replace it.
 8. Controls carry their own lift via DS variants; never paint them with a surface tone.
+9. Section, card and inlay frames have no border: the tone step is their edge (`Card` ships borderless). Borders stay for controls, chips and picks at rest, dividers inside a frame, overlays, dashed placeholders and state rings (`border-primary-ring`).
 
 **Shadows mean real elevation** (`shadow-raised`, `shadow-overlay` only): dropdowns, dialogs, popovers, dragged objects. A shadow must answer "elevated above what?"; if nothing, remove it. Static content stays flat; nested elevation is rare. Borders clarify structure, state or separation; not every container gets one.
 

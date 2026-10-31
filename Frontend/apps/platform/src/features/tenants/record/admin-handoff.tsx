@@ -16,6 +16,7 @@ import {
 } from "@/lib/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import { cn } from "@repo/ds/lib/utils";
+import { personHueProps } from "@repo/ds/components/ui/person-avatar";
 import type {
   RecoveryAction,
   TenantContinuityHealth,
@@ -65,7 +66,7 @@ export function AdminHandoff() {
   const person = handoffPerson(tenant, continuity, say);
 
   return (
-    <section className="rounded-surface border border-border bg-card p-5">
+    <section className="rounded-surface bg-card p-5">
       <div className="flex items-center gap-3">
         <UsersRound
           aria-hidden="true"
@@ -205,10 +206,12 @@ function HandoffAction({
 }
 
 function PersonAvatar({ identity }: { identity: string }) {
+  const hue = personHueProps(identity);
   return (
     <span
       aria-hidden="true"
-      className="flex size-10 shrink-0 items-center justify-center rounded-full bg-foreground/[0.10] text-xs font-semibold text-foreground/75 ring-1 ring-inset ring-border"
+      style={hue.style}
+      className={cn("flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-semibold", hue.className)}
     >
       {personInitials(identity)}
     </span>

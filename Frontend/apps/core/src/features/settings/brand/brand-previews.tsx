@@ -123,7 +123,7 @@ export function HomePreview({ draft, firstName, label }: { draft: BrandDraftView
               <h1 className="font-editorial text-4xl font-medium tracking-tight">{text.morning(firstName)}</h1>
             </div>
             <div className="grid grid-cols-[minmax(0,1fr)_320px] gap-6">
-              <section className="flex flex-col gap-3 rounded-surface border border-border bg-card p-6">
+              <section className="flex flex-col gap-3 rounded-surface bg-card p-6">
                 <h2 className="type-section-title">{text.needsYou}</h2>
                 {text.items.map((item, index) => (
                   <div key={item} className="flex items-center gap-4 rounded-inset bg-inlay px-4 py-3.5">
@@ -138,7 +138,7 @@ export function HomePreview({ draft, firstName, label }: { draft: BrandDraftView
                   </div>
                 ))}
               </section>
-              <section className="flex flex-col gap-3 rounded-surface border border-border bg-card p-6">
+              <section className="flex flex-col gap-3 rounded-surface bg-card p-6">
                 <h2 className="type-section-title">{text.comingUp}</h2>
                 {text.upcoming.map((item) => (
                   <p key={item} className="border-b border-border pb-3 type-body last:border-0">{item}</p>

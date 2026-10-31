@@ -199,7 +199,7 @@ export function SettingsSkeleton({ rows = 4 }: { rows?: number }) {
   return (
     <div aria-busy aria-label={t("loading")} className="flex flex-col gap-3">
       <Skeleton className="h-5 w-32" />
-      <div className="overflow-hidden rounded-surface border border-border bg-card">
+      <div className="overflow-hidden rounded-surface bg-card">
         {Array.from({ length: rows }).map((_, index) => (
           <div key={index} className="flex items-center gap-4 border-b border-border px-5 py-4 last:border-b-0">
             <Skeleton className="h-4 w-40" />
@@ -246,7 +246,7 @@ export function SettingsBlock({ title, meta, action, children, className }: Sett
 /** The rows of a block: one object, rows separated by hairlines. */
 export function SettingsRows({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn("overflow-hidden rounded-surface border border-border bg-card", className)}>
+    <div className={cn("overflow-hidden rounded-surface bg-card", className)}>
       <div className="divide-y divide-border">{children}</div>
     </div>
   );

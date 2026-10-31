@@ -69,7 +69,7 @@ const OrganizationNode = memo(function OrganizationNode({ data }: NodeProps<Orga
         // React Flow sets pointer-events:none on non-draggable nodes (root, and
         // every node in read-only as-of views); re-enable so the card stays
         // selectable/inspectable and its disclosure stays operable.
-        "group pointer-events-auto relative h-[78px] w-[244px] rounded-surface border bg-card shadow-raised transition-[border-color,box-shadow,opacity,background-color,transform] duration-500 motion-reduce:transition-none",
+        "group pointer-events-auto relative h-[78px] w-[244px] rounded-surface bg-card shadow-raised transition-[border-color,box-shadow,opacity,background-color,transform] duration-500 motion-reduce:transition-none",
         data.root && "border-primary/40 bg-[color-mix(in_oklab,var(--primary)_4%,var(--card))]",
         !data.selected && !data.validDrop && !data.invalidDrop && "hover:border-foreground/25",
         // A descendant of the selected node: part of the highlighted branch, but clearly

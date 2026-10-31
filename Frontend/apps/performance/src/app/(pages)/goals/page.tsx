@@ -41,7 +41,7 @@ import { useTranslations } from "next-intl";
 function MapSkeleton() {
   const t = useTranslations("goals.MapSkeleton");
   return (
-    <div className="grid h-full min-h-[420px] place-items-center rounded-surface border border-border bg-section" aria-label={t("loadingTheAlignmentMap")}>
+    <div className="grid h-full min-h-[420px] place-items-center rounded-surface bg-section" aria-label={t("loadingTheAlignmentMap")}>
       <div className="space-y-6">
         <Skeleton className="mx-auto h-28 w-64 rounded-surface" />
         <div className="flex gap-8">

@@ -370,7 +370,7 @@ function Card({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-surface border border-border bg-card p-5">
+    <section className="rounded-surface bg-card p-5">
       <header className="flex flex-wrap items-center gap-3">
         {icon}
         <h3 className="min-w-0 flex-1 text-sm font-semibold text-foreground">

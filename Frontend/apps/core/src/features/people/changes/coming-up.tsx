@@ -135,7 +135,7 @@ export function ComingUpCard({
     </div>
   ) : null);
   return (
-    <div className={cn(compact ? "grid gap-3" : "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 rounded-surface border bg-section px-4 py-3.5")}>
+    <div className={cn(compact ? "grid gap-3" : "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 rounded-surface bg-section px-4 py-3.5")}>
       <div className={cn(compact && "grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3.5", !compact && "contents")}>
         <CalendarTile date={changeDay(change)} />
         <div className="min-w-0">

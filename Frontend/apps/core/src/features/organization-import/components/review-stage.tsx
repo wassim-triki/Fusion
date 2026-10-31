@@ -224,7 +224,7 @@ export function ReviewStage() {
         <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] xl:items-stretch">
           <section
             aria-labelledby="review-structure-heading"
-            className="relative min-w-0 rounded-surface border border-border bg-card xl:min-h-[32rem]"
+            className="relative min-w-0 rounded-surface bg-card xl:min-h-[32rem]"
           >
             {/* On xl the panel leaves flow so the row height follows the checks column; the tree scrolls. */}
             <div className="flex flex-col p-5 xl:absolute xl:inset-0">

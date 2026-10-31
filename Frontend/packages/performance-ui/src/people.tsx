@@ -20,7 +20,7 @@ const SIZE: Record<PersonInitialsSize, { box: string; text: string }> = {
 export function PersonInitials({ name, size = "md", className }: { name: string | null | undefined; size?: PersonInitialsSize; className?: string }) {
   return (
     <Avatar className={cn(SIZE[size].box, className)}>
-      <AvatarFallback className={cn("font-medium", SIZE[size].text)}>{initials(name)}</AvatarFallback>
+      <AvatarFallback hue={name} className={cn("font-semibold", SIZE[size].text)}>{initials(name)}</AvatarFallback>
     </Avatar>
   );
 }

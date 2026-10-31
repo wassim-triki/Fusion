@@ -117,7 +117,7 @@ export function InvitationTransactionTerminalFrame({
     <main className="dark flex min-h-screen items-center justify-center bg-background px-6 py-12 text-foreground sm:px-10">
       <div className="w-full max-w-[29rem]">
         <InvitationWordmark />
-        <div className="mt-8 rounded-surface border border-border bg-card p-7 shadow-overlay sm:p-8">
+        <div className="mt-8 rounded-surface bg-card p-7 shadow-overlay sm:p-8">
           {children}
         </div>
       </div>

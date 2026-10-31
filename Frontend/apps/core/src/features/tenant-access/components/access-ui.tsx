@@ -100,7 +100,7 @@ export function IdentityMark({
 
   return (
     <Avatar size={size} className={size === "lg" ? "size-10" : "size-9"}>
-      <AvatarFallback className="type-label bg-muted text-muted-foreground">
+      <AvatarFallback hue={name} className="type-label bg-muted text-muted-foreground">
         {initialsOf(name) || "—"}
       </AvatarFallback>
     </Avatar>

@@ -560,7 +560,7 @@ function RecordSkeleton() {
           content lands in place without a reflow. */}
       <div className="space-y-5">
         {/* Lifecycle banner */}
-        <div className="flex items-center gap-4 rounded-surface border border-border bg-card px-5 py-4">
+        <div className="flex items-center gap-4 rounded-surface bg-card px-5 py-4">
           <Skeleton className="size-10 shrink-0 rounded-full" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-32" />
@@ -612,7 +612,7 @@ function SkeletonCardHeader({
 /** Administrative handoff: header, then the person / status / action strip. */
 function HandoffSkeleton() {
   return (
-    <div className="rounded-surface border border-border bg-card p-5">
+    <div className="rounded-surface bg-card p-5">
       <SkeletonCardHeader titleWidth="w-40" subtitleWidth="w-64" />
       <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-4 rounded-surface border border-border bg-inlay px-4 py-3.5">
         <div className="flex min-w-0 items-center gap-3">
@@ -635,7 +635,7 @@ function HandoffSkeleton() {
 /** Products: header with a trailing button, then six catalogue rows. */
 function ProductsSkeleton() {
   return (
-    <div className="rounded-surface border border-border bg-card p-5">
+    <div className="rounded-surface bg-card p-5">
       <SkeletonCardHeader titleWidth="w-24" subtitleWidth="w-48" action />
       <ul className="mt-4 divide-y divide-border overflow-hidden rounded-surface border border-border bg-inlay">
         {Array.from({ length: 6 }).map((_, index) => (
@@ -653,7 +653,7 @@ function ProductsSkeleton() {
 /** Tenant profile: header with an Edit button, then four label / value rows. */
 function ProfileSkeleton() {
   return (
-    <div className="rounded-surface border border-border bg-card p-5">
+    <div className="rounded-surface bg-card p-5">
       <SkeletonCardHeader titleWidth="w-28" action />
       <div className="mt-4 divide-y divide-border">
         {Array.from({ length: 4 }).map((_, index) => (
@@ -673,7 +673,7 @@ function ProfileSkeleton() {
 /** Recent activity: header with a link, then four timeline entries. */
 function ActivitySkeleton() {
   return (
-    <div className="rounded-surface border border-border bg-card p-5">
+    <div className="rounded-surface bg-card p-5">
       <SkeletonCardHeader titleWidth="w-28" action />
       <ol className="mt-4 space-y-5">
         {Array.from({ length: 4 }).map((_, index) => (

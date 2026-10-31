@@ -445,7 +445,7 @@ export default function EstablishmentWorkspace({ mode }: { mode: EstablishmentMo
                 </div>
               ) : null}
 
-              <div className="mt-5 rounded-surface border bg-card p-5">{summary}</div>
+              <div className="mt-5 rounded-surface bg-card p-5">{summary}</div>
 
               {reviewResult?.suggestions.length ? (
                 <div className="mt-5 rounded-surface border border-warning/30 bg-warning-subtle/50 p-4">

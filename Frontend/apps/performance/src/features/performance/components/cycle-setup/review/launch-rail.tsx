@@ -59,7 +59,7 @@ function deriveChecks(detail: CycleDetailDto, population: PopulationDto, t: (key
 
 function RailCard({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <section className={cn("rounded-surface border border-border bg-card p-5 sm:p-6", className)}>
+    <section className={cn("rounded-surface bg-card p-5 sm:p-6", className)}>
       {children}
     </section>
   );

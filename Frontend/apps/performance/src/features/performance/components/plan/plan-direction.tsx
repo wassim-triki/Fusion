@@ -133,7 +133,7 @@ export function PlanReviewerSection({
     <SidebarSection label={t("reviewer")}>
       <div className="mt-4 flex items-center gap-3">
         <Avatar className="size-10">
-          <AvatarFallback className="type-meta">{initials(reviewerName)}</AvatarFallback>
+          <AvatarFallback hue={reviewerName} className="type-meta">{initials(reviewerName)}</AvatarFallback>
         </Avatar>
         <div className="min-w-0">
           <p className="truncate type-subsection-title text-foreground">{reviewerName}</p>

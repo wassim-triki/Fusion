@@ -438,7 +438,7 @@ function ContinuityCard({
     activeAdministrators === null ? null : t("count", { count: activeAdministrators });
 
   return (
-    <article className="flex items-center gap-4 rounded-surface border bg-card p-4 shadow-raised sm:p-5">
+    <article className="flex items-center gap-4 rounded-surface bg-card p-4 shadow-raised sm:p-5">
       <span className="flex size-10 shrink-0 items-center justify-center rounded-control bg-muted text-foreground/75 ring-1 ring-inset ring-border">
         <ShieldCheck className="size-5" aria-hidden />
       </span>
@@ -485,7 +485,7 @@ function AdministrationCard({ entry }: { entry: ComposedCapability }) {
   const action = actionLabel(entry, t);
 
   return (
-    <article className="flex items-center gap-4 rounded-surface border bg-card p-4 shadow-raised sm:p-5">
+    <article className="flex items-center gap-4 rounded-surface bg-card p-4 shadow-raised sm:p-5">
       <span className="flex size-10 shrink-0 items-center justify-center rounded-control bg-muted text-foreground/75 ring-1 ring-inset ring-border">
         <Glyph className="size-5" aria-hidden />
       </span>
@@ -534,7 +534,7 @@ function ReadinessMeter({
 }) {
   const t = useTranslations("setup.meter");
   return (
-    <div className="flex shrink-0 flex-col gap-2.5 rounded-surface border bg-card px-5 py-4 shadow-raised sm:min-w-[13.5rem]">
+    <div className="flex shrink-0 flex-col gap-2.5 rounded-surface bg-card px-5 py-4 shadow-raised sm:min-w-[13.5rem]">
       <div className="flex items-baseline justify-between gap-3">
         <span className="type-eyebrow text-muted-foreground">{t("label")}</span>
         <span className="type-meta text-muted-foreground">

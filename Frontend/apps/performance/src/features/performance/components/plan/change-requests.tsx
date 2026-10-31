@@ -166,7 +166,7 @@ export function OwnerChangeRequest({ request, reviewerName, decidedAt, canAddres
     <div className={cn("rounded-control px-3 py-3", addressed ? "bg-inlay" : "bg-primary-tint ring-1 ring-inset ring-primary-ring")}>
       <div className="flex items-start gap-3">
         <Avatar className="size-7 shrink-0">
-          <AvatarFallback className="type-mark">{initials(reviewerName)}</AvatarFallback>
+          <AvatarFallback hue={reviewerName} className="type-mark">{initials(reviewerName)}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
           <p className="type-meta text-muted-foreground">

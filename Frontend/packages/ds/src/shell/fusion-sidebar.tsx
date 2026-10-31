@@ -551,7 +551,7 @@ function PersonPanel({
           collapsed && "justify-center",
         )}
       >
-        <PersonAvatar name={name} photo={photo} size="sm" className="bg-inlay text-foreground/85 ring-1 ring-border" />
+        <PersonAvatar name={name} photo={photo} size="sm" />
         {!collapsed ? (
           <>
             <span className="flex min-w-0 flex-1 flex-col">

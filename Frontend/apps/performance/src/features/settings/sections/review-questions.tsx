@@ -192,7 +192,7 @@ export function ReviewQuestionsSettings({ section }: { section: FusionSettingsSe
   return (
     <SettingsPage title={title} lastChange={section.lastChange} setUpAt={section.setUpAt} viewOnly={!editable} loading={query.isLoading}>
       {error ? <p role="alert" className="-mt-4 type-meta text-destructive">{error}</p> : null}
-      <div className="overflow-hidden rounded-surface border border-border bg-card">
+      <div className="overflow-hidden rounded-surface bg-card">
         {AUDIENCES.map((audience) => {
           const list = active(audience);
           return (

@@ -72,7 +72,7 @@ export function ResolvedPopulation({
   }, []);
 
   return (
-    <section className="overflow-hidden rounded-surface border border-border bg-card">
+    <section className="overflow-hidden rounded-surface bg-card">
       <div className="flex items-start justify-between gap-4 px-5 pt-5">
         <div className="flex items-center gap-3">
           <span className="flex size-7 items-center justify-center rounded-full bg-primary-tint text-primary-ink type-meta-strong tabular-nums">

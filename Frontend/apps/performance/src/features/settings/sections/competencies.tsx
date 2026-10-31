@@ -240,7 +240,7 @@ export function CompetenciesSettings({ section }: { section: FusionSettingsSecti
       {active.length === 0 && open !== "new" ? (
         <p className="type-body-secondary text-muted-foreground">{t("empty")}</p>
       ) : (
-        <ul className="divide-y divide-border overflow-hidden rounded-surface border border-border bg-card">
+        <ul className="divide-y divide-border overflow-hidden rounded-surface bg-card">
           {open === "new" ? (
             <li>
               <CompetencyEditor item={null} onClose={() => setOpen(null)} onSaved={closeAfterSave} />

@@ -268,7 +268,7 @@ function NineBoxBands({
     return a === b ? `${a}` : `${a}–${b}`;
   };
   return (
-    <div className="flex flex-col gap-4 rounded-surface border border-border bg-card p-5">
+    <div className="flex flex-col gap-4 rounded-surface bg-card p-5">
       <p className="type-meta text-muted-foreground">{t("nineBoxDetail")}</p>
       <div className="relative">
         <ol className="grid overflow-hidden rounded-control border border-border" style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }}>

@@ -84,7 +84,7 @@ export function WorkerProfile({
             name={view.displayName}
             photo={photo}
             size="profile"
-            className="size-24 border-[6px] border-background bg-inlay text-3xl text-foreground/85 sm:size-[9.5rem] sm:text-[2.75rem]"
+            className="size-24 border-2 text-3xl ring-[6px] ring-background sm:size-[9.5rem] sm:text-[2.75rem]"
           />
           {photoAction ? <div className="absolute end-[4%] bottom-[4%]">{photoAction}</div> : null}
         </div>
@@ -355,7 +355,7 @@ function ReportingLine({ view }: { view: WorkerProfileView }) {
   return (
     <section aria-labelledby="profile-reporting" className="lg:pt-12">
       <h2 id="profile-reporting" className="mb-3 type-section-title">{t("colleague.reportingLine")}</h2>
-      <ol className="divide-y overflow-hidden rounded-surface border bg-card">
+      <ol className="divide-y overflow-hidden rounded-surface bg-card">
         <li className="px-5 py-3">
           <p className="type-label text-muted-foreground">{t("rail.manager")}</p>
           {view.manager ? (

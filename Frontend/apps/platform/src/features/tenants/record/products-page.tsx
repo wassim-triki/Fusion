@@ -86,7 +86,7 @@ export function TenantProductsDestination() {
   const direction = shown?.enabled ? "on" : "off";
 
   return (
-    <section className="rounded-surface border border-border bg-card p-5">
+    <section className="rounded-surface bg-card p-5">
       <header className="flex items-center gap-3">
         <Layers
           aria-hidden="true"

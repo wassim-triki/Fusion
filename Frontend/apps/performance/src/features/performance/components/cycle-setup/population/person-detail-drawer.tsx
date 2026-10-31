@@ -54,7 +54,7 @@ export function PersonDetailDrawer({
             <SheetHeader className="border-b border-border px-6 py-5">
               <div className="flex items-center gap-3">
                 <Avatar className="size-11">
-                  <AvatarFallback>{initials(candidate.displayName)}</AvatarFallback>
+                  <AvatarFallback hue={candidate.displayName}>{initials(candidate.displayName)}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0">
                   <SheetTitle className="truncate">{candidate.displayName}</SheetTitle>

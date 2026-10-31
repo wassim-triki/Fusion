@@ -235,7 +235,7 @@ function InspectorContent({
         </div>
         <div className="mt-5 flex items-center gap-4">
           <Avatar size="lg" className="size-14">
-            <AvatarFallback className="bg-primary-tint text-primary-ink type-panel-title">
+            <AvatarFallback hue={data.displayName} className="bg-primary-tint text-primary-ink type-panel-title">
               {initialsOf(data.displayName)}
             </AvatarFallback>
           </Avatar>
@@ -306,7 +306,7 @@ function InspectorContent({
                 {data.manager ? (
                   <div className="mt-2 flex items-center gap-3">
                     <Avatar size="sm">
-                      <AvatarFallback className="bg-muted text-muted-foreground type-meta">
+                      <AvatarFallback hue={data.manager.displayName} className="bg-muted text-muted-foreground type-meta">
                         {initialsOf(data.manager.displayName)}
                       </AvatarFallback>
                     </Avatar>

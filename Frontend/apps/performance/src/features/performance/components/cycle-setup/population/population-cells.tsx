@@ -13,7 +13,7 @@ export function EmployeeCell({ candidate }: { candidate: PopulationCandidateDto 
   return (
     <div className="flex min-w-0 items-center gap-3">
       <Avatar className="size-9 shrink-0">
-        <AvatarFallback className="type-meta">{initials(candidate.displayName)}</AvatarFallback>
+        <AvatarFallback hue={candidate.displayName} className="type-meta">{initials(candidate.displayName)}</AvatarFallback>
       </Avatar>
       <div className="min-w-0">
         <p className="type-label truncate text-foreground">{candidate.displayName}</p>
@@ -50,7 +50,7 @@ export function ReviewerCell({ candidate }: { candidate: PopulationCandidateDto 
   return (
     <span className="flex min-w-0 items-center gap-2">
       <Avatar className="size-6 shrink-0">
-        <AvatarFallback className="type-mark">{initials(reviewer.name)}</AvatarFallback>
+        <AvatarFallback hue={reviewer.name} className="type-mark">{initials(reviewer.name)}</AvatarFallback>
       </Avatar>
       <span className="min-w-0">
         <span

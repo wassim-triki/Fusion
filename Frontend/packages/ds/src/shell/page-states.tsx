@@ -127,7 +127,7 @@ export function PageListSkeleton({ rows = 3, className, label }: PageListSkeleto
   const t = useTranslations("ds.states");
   return (
     <div className={cn("space-y-3", className)} aria-busy aria-label={label ?? t("loadingList")}>
-      <div className="rounded-surface border border-border bg-card p-6">
+      <div className="rounded-surface bg-card p-6">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center">
           <div className="min-w-0 flex-1 space-y-2.5">
             <Skeleton className="h-5 w-28 rounded-full" />

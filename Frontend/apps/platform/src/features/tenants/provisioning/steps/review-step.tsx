@@ -203,7 +203,7 @@ export function ReviewStep({
       </div>
 
       <aside className="lg:sticky lg:top-6 lg:self-start">
-        <div className="space-y-6 rounded-surface border border-border bg-card p-6">
+        <div className="space-y-6 rounded-surface bg-card p-6">
           <div className="flex items-start gap-3">
             <span className="flex size-10 shrink-0 items-center justify-center rounded-control bg-primary-tint text-primary-ink">
               {canProvision ? (
@@ -316,7 +316,7 @@ function SummaryCard({
 }) {
   const t = useTranslations("provisioning.review");
   return (
-    <section className="rounded-surface border border-border bg-card p-6">
+    <section className="rounded-surface bg-card p-6">
       <header className="mb-5 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-control bg-primary-tint text-primary-ink">

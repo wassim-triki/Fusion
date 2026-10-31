@@ -245,7 +245,7 @@ function MilestoneForm({
         if (canSubmit && !submitting) void save();
       }}
     >
-      <div className="rounded-surface border border-border bg-popover p-4 dark:bg-card">
+      <div className="rounded-surface bg-popover p-4 dark:bg-card">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="type-meta text-muted-foreground">{t("milestones")}</p>
@@ -467,7 +467,7 @@ export function DerivedCard({
   const complete = derived >= 100;
   const clamped = Math.max(0, Math.min(100, derived));
   return (
-    <div className="rounded-surface border border-border bg-popover p-4 dark:bg-card">
+    <div className="rounded-surface bg-popover p-4 dark:bg-card">
       {label ? <p className="type-meta text-muted-foreground">{label}</p> : null}
       <div className={cn("flex items-center gap-3", label && "mt-2")}>
         <span className={cn("type-metric", complete ? "text-success" : "text-foreground")}>

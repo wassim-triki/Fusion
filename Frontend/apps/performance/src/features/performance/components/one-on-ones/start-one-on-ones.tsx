@@ -137,7 +137,7 @@ function StartForm({
           <span className="type-meta tabular-nums text-muted-foreground">{t("picked", { value: picked.length + own.length })}</span>
         ) : null}
       </div>
-      <ul className="divide-y divide-border overflow-hidden rounded-surface border border-border bg-card">
+      <ul className="divide-y divide-border overflow-hidden rounded-surface bg-card">
         {options.isLoading
           ? [0, 1].map((i) => (
               <li key={i} className="flex items-center gap-3 px-4 py-3">

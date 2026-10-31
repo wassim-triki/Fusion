@@ -147,7 +147,7 @@ export function RequestBand({ request, onRecord }: { request: UpdateRequestDto; 
   return (
     <div className="flex items-start gap-3 rounded-surface border border-primary-ring bg-primary-tint px-4 py-3.5">
       <Avatar className="size-8 shrink-0">
-        <AvatarFallback className="type-meta">{initials(request.requestedByName)}</AvatarFallback>
+        <AvatarFallback hue={request.requestedByName} className="type-meta">{initials(request.requestedByName)}</AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
         <p className="type-body text-foreground">

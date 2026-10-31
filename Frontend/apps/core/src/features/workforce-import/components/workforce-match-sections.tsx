@@ -220,7 +220,7 @@ export function WorkforceInterpretationPanel({ match, edits, locked }: { match: 
   const settled = all.filter((item) => !item.decision);
   const deciding = all.filter((item) => item.decision);
   return (
-    <section aria-labelledby="match-interpretation-title" className="rounded-surface border border-border bg-card p-4">
+    <section aria-labelledby="match-interpretation-title" className="rounded-surface bg-card p-4">
       <header className="px-1">
         <h2 id="match-interpretation-title" className="type-section-title text-foreground">
           {t("interpretation.title")}

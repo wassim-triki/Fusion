@@ -409,7 +409,7 @@ function SubjectCard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-surface border bg-card p-5 shadow-raised sm:p-6",
+        "relative overflow-hidden rounded-surface bg-card p-5 shadow-raised sm:p-6",
         own
           ? "border-primary/45 ring-1 ring-primary/20"
           : "border-foreground/20 ring-1 ring-foreground/[0.06]"
@@ -568,7 +568,7 @@ function DirectionStrip({
       ? companyEyebrow(orgName, lib)
       : t("objective", { value: node.orgUnitName ?? "Organizational" });
   return (
-    <div className="rounded-surface border border-border bg-card p-3.5 sm:p-4">
+    <div className="rounded-surface bg-card p-3.5 sm:p-4">
       <p className="type-meta mb-1.5 text-muted-foreground/80">{t("alignedTo")}</p>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
         <span
@@ -819,7 +819,7 @@ function ObjectiveRow({
         {node.accountablePersonName ? (
           <div className="hidden shrink-0 items-center gap-2 pt-0.5 2xl:flex">
             <Avatar className="size-7">
-              <AvatarFallback className="type-mark">
+              <AvatarFallback hue={node.accountablePersonName} className="type-mark">
                 {initials(node.accountablePersonName)}
               </AvatarFallback>
             </Avatar>
@@ -1019,7 +1019,7 @@ function ContextHeader({
 }) {
   const t = useTranslations("goals.ContextHeader");
   return (
-    <section className="flex items-center gap-4 rounded-surface border border-border bg-section p-4 sm:px-5">
+    <section className="flex items-center gap-4 rounded-surface bg-section p-4 sm:px-5">
       <span
         aria-hidden
         className="flex size-11 shrink-0 items-center justify-center rounded-control border border-primary-ring bg-primary-tint type-subsection-title text-primary-ink"
@@ -1266,7 +1266,7 @@ function NoPublishedDirection({
   const t = useTranslations("goals.NoPublishedDirection");
   return (
     <div className="space-y-9">
-      <section className="overflow-hidden rounded-surface border border-border bg-card shadow-raised">
+      <section className="overflow-hidden rounded-surface bg-card shadow-raised">
         <div className="grid grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.9fr)] gap-6 px-6 py-8 sm:gap-8 sm:px-8 lg:gap-10 lg:px-10 lg:py-10">
           <div className="flex items-center gap-6 sm:gap-8">
             <div className="relative grid size-24 shrink-0 place-items-center rounded-full border border-primary/30 bg-primary/[0.05] before:absolute before:inset-3 before:rounded-full before:border before:border-primary/40 sm:size-28">
@@ -1422,7 +1422,7 @@ function PersonLine({
       )}
     >
       <Avatar className={compact ? "size-4" : "size-6"}>
-        <AvatarFallback className={compact ? "type-mark" : "type-mark"}>
+        <AvatarFallback hue={name} className={compact ? "type-mark" : "type-mark"}>
           {initials(name)}
         </AvatarFallback>
       </Avatar>

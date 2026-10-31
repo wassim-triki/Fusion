@@ -393,7 +393,7 @@ function DirectionCard({
       ? t("companyObjective")
       : t("objective", { value: node.orgUnitName ?? "Team" });
   return (
-    <div className="flex flex-col rounded-surface border border-border bg-card p-4 sm:p-5">
+    <div className="flex flex-col rounded-surface bg-card p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <span className="flex size-8 items-center justify-center rounded-control border border-primary-ring bg-primary-tint text-primary-ink">
@@ -506,7 +506,7 @@ function StandaloneCard({
 }) {
   const t = useTranslations("team.StandaloneCard");
   return (
-    <div className="flex flex-col rounded-surface border border-border bg-card p-4 sm:p-5">
+    <div className="flex flex-col rounded-surface bg-card p-4 sm:p-5">
       <div className="flex items-start gap-4">
         <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-info/35 bg-info/10 text-info">
           <Waypoints className="size-5" aria-hidden />
@@ -594,7 +594,7 @@ function EmptyDirectionCard({
   const t = useTranslations("team.EmptyDirectionCard");
   const hasTargets = targetCount > 0;
   return (
-    <div className="relative isolate flex flex-col overflow-hidden rounded-surface border border-border bg-card p-4 sm:p-5">
+    <div className="relative isolate flex flex-col overflow-hidden rounded-surface bg-card p-4 sm:p-5">
       {/* The illustration is part of the card's background: anchored right, faded out toward the text by
           a left-to-right scrim, so the text runs full width over it and stays clear. */}
       <DirectionIllustration />
@@ -957,7 +957,7 @@ function TeamObjectiveRow({
     node.accountablePersonId === currentEmployeeId;
   const progress = Math.round(node.hasProgress ? node.derivedProgress : 0);
   return (
-    <article className="rounded-surface border border-border bg-card px-4 py-4 sm:px-5">
+    <article className="rounded-surface bg-card px-4 py-4 sm:px-5">
       <div className="flex gap-4">
         <span
           className={cn(
@@ -1160,7 +1160,7 @@ function OwnerAvatar({ name }: { id: string; name: string | null }) {
 /** Mirrors DirectionCard: eyebrow + badge, title, description, three facts, progress row. */
 function DirectionCardSkeleton() {
   return (
-    <div className="flex flex-col rounded-surface border border-border bg-card p-4 sm:p-5">
+    <div className="flex flex-col rounded-surface bg-card p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <Skeleton className="size-8 rounded-control" />
@@ -1198,7 +1198,7 @@ function DirectionCardSkeleton() {
 /** Mirrors the Next team objective card: eyebrow, title, description, Align to picker, CTA. */
 function NextObjectiveCardSkeleton() {
   return (
-    <div className="flex flex-col rounded-surface border border-border bg-card p-4 sm:p-5">
+    <div className="flex flex-col rounded-surface bg-card p-4 sm:p-5">
       <div className="flex items-center gap-2.5">
         <Skeleton className="size-8 rounded-control" />
         <Skeleton className="h-3 w-36" />
@@ -1219,7 +1219,7 @@ function NextObjectiveCardSkeleton() {
 /** Mirrors TeamObjectiveRow's five columns. */
 function ObjectiveRowSkeleton() {
   return (
-    <div className="rounded-surface border border-border bg-card px-4 py-4 sm:px-5">
+    <div className="rounded-surface bg-card px-4 py-4 sm:px-5">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,2.6fr)_minmax(7.5rem,.7fr)_minmax(7.5rem,.7fr)_minmax(6.5rem,.55fr)_auto] lg:items-center">
         <div className="flex min-w-0 items-center gap-4">
           <div className="min-w-0 flex-1 space-y-2">

@@ -212,7 +212,7 @@ function ComposerSkeleton({
                 {Array.from({ length: 2 }, (_, i) => (
                   <div
                     key={i}
-                    className="flex items-start gap-3 rounded-surface border border-border bg-card p-3.5"
+                    className="flex items-start gap-3 rounded-surface bg-card p-3.5"
                   >
                     <Skeleton className="mt-0.5 size-4 shrink-0 rounded-full" />
                     <div className="flex-1 space-y-1.5">

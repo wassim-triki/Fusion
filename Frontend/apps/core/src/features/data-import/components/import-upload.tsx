@@ -181,7 +181,7 @@ export function ImportUpload(props: ImportUploadProps) {
         ]}
       />
 
-      <section aria-labelledby={`${inputId}-title`} className="rounded-surface border border-border bg-card p-5 shadow-raised sm:p-8">
+      <section aria-labelledby={`${inputId}-title`} className="rounded-surface bg-card p-5 shadow-raised sm:p-8">
         <h2 id={`${inputId}-title`} className="type-page-title text-foreground">
           {sectionTitle}
         </h2>
@@ -522,7 +522,7 @@ function SideAction({
   extra?: ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-surface border border-border bg-card px-5 py-5">
+    <div className="flex items-center gap-4 rounded-surface bg-card px-5 py-5">
       <span className="grid size-12 shrink-0 place-items-center rounded-control bg-muted text-muted-foreground">{icon}</span>
       <div className="min-w-0 flex-1">
         <p className="type-label font-semibold text-foreground">{title}</p>

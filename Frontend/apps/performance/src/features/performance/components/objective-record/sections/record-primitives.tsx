@@ -14,4 +14,4 @@ export function RecordSection({ label, action, children }: { label: ReactNode; a
 }
 
 /** The plain content surface sections place their body on. */
-export const RECORD_SURFACE = "rounded-surface border border-border bg-popover p-4 dark:bg-card";
+export const RECORD_SURFACE = "rounded-surface bg-popover p-4 dark:bg-card";

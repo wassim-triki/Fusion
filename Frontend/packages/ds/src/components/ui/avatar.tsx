@@ -4,6 +4,7 @@ import * as React from "react"
 import { Avatar as AvatarPrimitive } from "radix-ui"
 
 import { cn } from '../../lib/utils'
+import { personHueProps } from './person-avatar'
 
 function Avatar({
   className,
@@ -43,14 +44,22 @@ function AvatarImage({
 
 function AvatarFallback({
   className,
+  style,
+  hue,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
+}: React.ComponentProps<typeof AvatarPrimitive.Fallback> & {
+  /** The person's name: tints their initials in their identity hue. */
+  hue?: string | null
+}) {
+  const tint = hue ? personHueProps(hue) : null
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
+      style={tint ? { ...tint.style, ...style } : style}
       className={cn(
         "flex size-full items-center justify-center rounded-full bg-muted text-sm text-muted-foreground group-data-[size=sm]/avatar:text-xs",
-        className
+        className,
+        tint?.className
       )}
       {...props}
     />

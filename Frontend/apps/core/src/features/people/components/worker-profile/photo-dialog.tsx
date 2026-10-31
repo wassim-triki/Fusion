@@ -255,7 +255,7 @@ export function PhotoDialog({
           </div>
         ) : (
           <div className="grid justify-items-center gap-4 py-4">
-            <PersonAvatar name={displayName} photo={current} size="profile" className="bg-inlay text-foreground/85" />
+            <PersonAvatar name={displayName} photo={current} size="profile" className="border-2" />
             <Button variant="outline" onClick={() => input.current?.click()}>
               <ImageUp className="size-4" aria-hidden /> {t("choose")}
             </Button>

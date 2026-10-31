@@ -10,7 +10,7 @@ export type MatchChecklistLine = { label: string; value: string; done: boolean }
 export function ImportMatchChecklist({ lines }: { lines: MatchChecklistLine[] }) {
   const t = useTranslations("dataImport");
   return (
-    <section aria-labelledby="match-status-title" className="rounded-surface border border-border bg-card p-4">
+    <section aria-labelledby="match-status-title" className="rounded-surface bg-card p-4">
       <header className="flex items-center gap-3">
         <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground">
           <ChartNoAxesColumn className="size-5" strokeWidth={1.75} />

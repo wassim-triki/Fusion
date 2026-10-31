@@ -465,7 +465,7 @@ function PlanNotStarted({
   const t = useTranslations("plan.PlanNotStarted");
   return (
     <PlanSection label={t("objectives")}>
-      <div className="flex flex-col items-center rounded-surface border border-border bg-card px-6 py-12 text-center">
+      <div className="flex flex-col items-center rounded-surface bg-card px-6 py-12 text-center">
         <PlanIllustration />
         <h2 className="mt-6 type-section-title text-foreground">
           {t("createYourPlan", { cycleName })}
@@ -511,7 +511,7 @@ function PlanIllustration() {
       </svg>
       <span className="absolute inset-s-[98px] top-[60px] size-2 rounded-full bg-primary shadow-[0_0_8px_var(--primary)]" />
       <span className="absolute inset-s-[184px] top-[84px] size-2 rounded-full bg-primary shadow-[0_0_8px_var(--primary)]" />
-      <div className="absolute left-1/2 top-2 flex h-32 w-28 -translate-x-1/2 flex-col gap-2 rounded-surface border border-border bg-card p-3 shadow-lg">
+      <div className="absolute left-1/2 top-2 flex h-32 w-28 -translate-x-1/2 flex-col gap-2 rounded-surface bg-card p-3 shadow-lg">
         <span className="flex size-9 items-center justify-center rounded-full bg-primary-tint text-primary-ink">
           <Target className="size-5" />
         </span>

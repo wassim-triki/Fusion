@@ -117,7 +117,7 @@ export function AccessPageSkeleton() {
         <Skeleton className="h-9 w-36 shrink-0" />
       </div>
 
-      <div className="flex flex-col gap-6 rounded-surface border bg-section p-5 lg:flex-row lg:items-center lg:gap-8">
+      <div className="flex flex-col gap-6 rounded-surface bg-section p-5 lg:flex-row lg:items-center lg:gap-8">
         <div className="flex flex-1 items-start gap-4">
           <Skeleton className="size-11 shrink-0 rounded-full" />
           <div className="space-y-2">
@@ -147,7 +147,7 @@ export function AccessPageSkeleton() {
         </div>
 
         <aside className="hidden xl:block">
-          <div className="space-y-5 rounded-surface border bg-card p-5">
+          <div className="space-y-5 rounded-surface bg-card p-5">
             <div className="flex items-center gap-3">
               <Skeleton className="size-10 rounded-full" />
               <div className="space-y-2">

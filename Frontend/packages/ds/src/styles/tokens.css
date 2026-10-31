@@ -394,6 +394,22 @@
     line-height: 1;
     font-weight: 500;
 }
+/* Text inside picks, condition chips and dense cells: a step under label. */
+@utility type-control {
+    font-size: 0.8125rem;
+    line-height: 1.25;
+    font-weight: 400;
+}
+@utility type-control-label {
+    font-size: 0.8125rem;
+    line-height: 1.25;
+    font-weight: 500;
+}
+@utility type-control-strong {
+    font-size: 0.8125rem;
+    line-height: 1.25;
+    font-weight: 600;
+}
 @utility type-meta {
     font-size: 0.75rem;
     line-height: 1.4;
@@ -441,6 +457,7 @@
   --animate-bell-pulse: bell-pulse 1.2s ease-out 2;
   --animate-notification-fresh: notification-fresh 1.8s ease-out;
   --animate-land: land 2.6s ease-out;
+  --animate-pick-flash: pick-flash 420ms cubic-bezier(0.2, 0, 0, 1); /* a pick another pick just moved (B-216) */
 
   @keyframes bell-swing {
     0% { transform: rotate(0); }
@@ -458,6 +475,10 @@
   @keyframes notification-fresh {
     0% { background-color: color-mix(in oklch, var(--primary) 14%, transparent); }
     100% { background-color: transparent; }
+  }
+  @keyframes pick-flash {
+    from { box-shadow: 0 0 0 4px var(--primary-ring); }
+    to { box-shadow: 0 0 0 0 transparent; }
   }
   @keyframes land {
     0%, 35% {

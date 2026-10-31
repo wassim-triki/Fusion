@@ -105,7 +105,7 @@ export function TenantProducts() {
   const rows = productRows(tenant.modules);
 
   return (
-    <section className="rounded-surface border border-border bg-card p-5">
+    <section className="rounded-surface bg-card p-5">
       <div className="flex flex-wrap items-center gap-3">
         <Layers
           aria-hidden="true"

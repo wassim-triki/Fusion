@@ -24,7 +24,7 @@ export function ImportMatchNextSteps({
   return (
     <section
       aria-labelledby="match-next-title"
-      className="grid gap-5 rounded-surface border border-border bg-card p-4 sm:grid-cols-[minmax(0,1fr)_auto]"
+      className="grid gap-5 rounded-surface bg-card p-4 sm:grid-cols-[minmax(0,1fr)_auto]"
     >
       <div className="min-w-0">
         <header className="flex items-center gap-3">

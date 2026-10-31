@@ -273,7 +273,7 @@ function PersonLine({ name, detail }: { name: string; detail: string }) {
   return (
     <div className="flex min-w-0 items-center gap-3">
       <Avatar>
-        <AvatarFallback className="type-meta bg-muted text-muted-foreground">
+        <AvatarFallback hue={name} className="type-meta bg-muted text-muted-foreground">
           {initialsOf(name)}
         </AvatarFallback>
       </Avatar>

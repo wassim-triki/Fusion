@@ -164,7 +164,7 @@ export function EmployeeFieldsSettings({ section }: { section: FusionSettingsSec
       {draft ? (
         <>
           <SettingsBlock title={say("employeeFields.onProfile")}>
-            <div className="overflow-hidden rounded-surface border border-border bg-card">
+            <div className="overflow-hidden rounded-surface bg-card">
               <table className="w-full table-fixed text-sm">
                 <thead className="bg-inlay">
                   <tr className="type-meta text-muted-foreground">

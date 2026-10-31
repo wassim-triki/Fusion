@@ -28,7 +28,7 @@ export function ImportFilePreview({
   const limits = ROW_LIMITS.filter((option, index) => index === 0 || totalRows > ROW_LIMITS[index - 1]!);
 
   return (
-    <section aria-labelledby="match-preview-title" className="rounded-surface border border-border bg-card p-4">
+    <section aria-labelledby="match-preview-title" className="rounded-surface bg-card p-4">
       <header className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
           <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground">

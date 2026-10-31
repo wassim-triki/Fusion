@@ -63,7 +63,7 @@ export function ImportUploadSkeleton({ domain = "organization" }: { domain?: Imp
     <LoadingRegion label={copy.t("loading.domain", { name: copy.name })}>
       <PageContainer className="space-y-8 pb-16">
         <ImportHeader title={copy.title} context={copy.context} steps={skeletonSteps("upload", copy.t)} />
-        <section className="rounded-surface border border-border bg-card p-5 shadow-raised sm:p-8">
+        <section className="rounded-surface bg-card p-5 shadow-raised sm:p-8">
           <Skeleton className="h-7 w-64" />
           <Skeleton className="mt-2 h-4 w-96 max-w-full" />
           <Skeleton className="mt-6 h-24 w-full rounded-control" />
@@ -76,7 +76,7 @@ export function ImportUploadSkeleton({ domain = "organization" }: { domain?: Imp
             </div>
           </div>
         </section>
-        <div className="flex items-center gap-4 rounded-surface border border-border bg-card p-5">
+        <div className="flex items-center gap-4 rounded-surface bg-card p-5">
           <Skeleton className="size-10 shrink-0 rounded-full" />
           <div className="min-w-0 flex-1 space-y-2">
             <Skeleton className="h-4 w-48" />
@@ -249,7 +249,7 @@ function PeopleReviewBody() {
   return (
     <>
       <PageContainer className="space-y-4 pt-2">
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-surface border border-border bg-card p-4 sm:pe-5">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-surface bg-card p-4 sm:pe-5">
           <div className="flex min-w-0 items-center gap-4">
             <Skeleton className="size-12 shrink-0 rounded-full" />
             <div className="min-w-0 space-y-2">
@@ -259,7 +259,7 @@ function PeopleReviewBody() {
           </div>
           <Skeleton className="h-10 w-56 rounded-control" />
         </div>
-        <section className="min-w-0 overflow-hidden rounded-surface border border-border bg-card">
+        <section className="min-w-0 overflow-hidden rounded-surface bg-card">
           <div className="space-y-4 px-4 pb-4 pt-5 sm:px-5">
             <Skeleton className="h-6 w-48" />
             <div className="flex flex-wrap items-center gap-3">
@@ -294,7 +294,7 @@ function PeopleReviewBody() {
 
 function Panel({ children }: { children: React.ReactNode }) {
   return (
-    <section className="min-w-0 rounded-surface border border-border bg-card p-5">
+    <section className="min-w-0 rounded-surface bg-card p-5">
       {children}
     </section>
   );
@@ -302,7 +302,7 @@ function Panel({ children }: { children: React.ReactNode }) {
 
 function BannerSkeleton({ metrics }: { metrics: number }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-8 gap-y-5 rounded-surface border border-border bg-card p-4 sm:pe-6">
+    <div className="flex flex-wrap items-center gap-x-8 gap-y-5 rounded-surface bg-card p-4 sm:pe-6">
       <div className="flex min-w-0 flex-[2] basis-80 items-center gap-4">
         <Skeleton className="size-12 shrink-0 rounded-full" />
         <div className="min-w-0 flex-1 space-y-2">

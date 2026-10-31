@@ -184,7 +184,7 @@ function ReturnNote({
     <div className="space-y-3">
       <div className="flex items-center gap-3">
         <Avatar className="size-8">
-          <AvatarFallback className="type-meta">{initials(reviewer)}</AvatarFallback>
+          <AvatarFallback hue={reviewer} className="type-meta">{initials(reviewer)}</AvatarFallback>
         </Avatar>
         <p className="min-w-0 truncate type-meta text-muted-foreground">
           <span className="font-medium text-foreground/85">{lens === "reviewer" ? t("you") : reviewer}</span>

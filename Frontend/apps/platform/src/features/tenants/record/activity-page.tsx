@@ -19,7 +19,7 @@ export function TenantActivityDestination() {
   const entries = tenant.history;
 
   return (
-    <section className="rounded-surface border border-border bg-card p-5">
+    <section className="rounded-surface bg-card p-5">
       <header className="flex items-center gap-3">
         <Clock
           aria-hidden="true"

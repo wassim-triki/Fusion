@@ -21,7 +21,7 @@ export function StepPanel({
   className?: string;
 }) {
   return (
-    <section className={cn("rounded-surface border border-border bg-card p-6", className)}>
+    <section className={cn("rounded-surface bg-card p-6", className)}>
       <header className="mb-5 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="type-section-title text-foreground">{title}</h2>

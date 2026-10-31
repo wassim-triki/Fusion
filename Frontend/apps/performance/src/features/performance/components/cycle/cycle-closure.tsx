@@ -176,7 +176,7 @@ export function ClosureSection({ closure, loading }: { closure: CycleClosureDto 
       {rows.length === 0 ? (
         closed ? null : <p className="type-body-secondary text-muted-foreground">{t("everyParticipantHasAnApproved")}</p>
       ) : (
-        <ul className="divide-y divide-border rounded-surface border border-border bg-card">
+        <ul className="divide-y divide-border rounded-surface bg-card">
           {rows.map((row) => (
             <li
               key={row.employeeId}

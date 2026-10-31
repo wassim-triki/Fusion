@@ -71,7 +71,7 @@ function LifecycleBanner() {
     return (
       <section
         aria-label={t("lifecycle.label")}
-        className="flex items-center gap-4 rounded-surface border border-border bg-card px-5 py-4"
+        className="flex items-center gap-4 rounded-surface bg-card px-5 py-4"
       >
         <BannerIcon tone="neutral">
           <Archive className="size-5" aria-hidden="true" />

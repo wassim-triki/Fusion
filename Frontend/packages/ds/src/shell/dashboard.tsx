@@ -59,7 +59,7 @@ export function KpiStat({
   );
 
   const base = cn(
-    "group/kpi flex flex-col rounded-surface border border-border bg-card p-4",
+    "group/kpi flex flex-col rounded-surface bg-card p-4",
     href && "transition-colors hover:border-primary/40 hover:bg-muted/10",
     className
   );
@@ -136,7 +136,7 @@ export function DashboardPanel({
   return (
     <div
       className={cn(
-        "rounded-surface border border-border bg-card p-4",
+        "rounded-surface bg-card p-4",
         className
       )}
     >

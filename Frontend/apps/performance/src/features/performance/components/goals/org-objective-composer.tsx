@@ -479,7 +479,7 @@ export function OrgObjectiveComposer({
         <div className="flex-1 overflow-y-auto px-6 py-6">
           <div className="space-y-8">
             {!teamLocked && !isPersisted ? (
-              <section className="rounded-surface border border-border bg-card p-5">
+              <section className="rounded-surface bg-card p-5">
                 <Label className="flex items-center gap-1.5">
                   <Building2
                     className="size-3.5 text-muted-foreground"
@@ -1084,7 +1084,7 @@ function OwnerPicker({
     description: t("activeTeamMemberAtCycle"),
     media: (
       <Avatar className="size-6">
-        <AvatarFallback className="type-mark">
+        <AvatarFallback hue={owner.name} className="type-mark">
           {initials(owner.name)}
         </AvatarFallback>
       </Avatar>
@@ -1099,7 +1099,7 @@ function OwnerPicker({
               title: value.name,
               media: (
                 <Avatar className="size-6">
-                  <AvatarFallback className="type-mark">
+                  <AvatarFallback hue={value.name} className="type-mark">
                     {initials(value.name)}
                   </AvatarFallback>
                 </Avatar>

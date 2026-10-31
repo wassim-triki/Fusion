@@ -119,7 +119,7 @@ export function ReviewStructureSummary({ review }: { review: OrganizationImportR
   const locale = useLocale();
   const { summary } = review;
   return (
-    <section aria-labelledby="review-structure-title" className="rounded-surface border border-border bg-card p-5">
+    <section aria-labelledby="review-structure-title" className="rounded-surface bg-card p-5">
       <h2 id="review-structure-title" className="type-section-title text-foreground">
         {t("structure")}
       </h2>
@@ -191,7 +191,7 @@ export function ReviewImportContext({
   const locale = useLocale();
   const sheet = source.sourceFormat.toLowerCase() === "csv" ? null : source.selectedSheetName;
   return (
-    <section aria-labelledby="review-context-title" className="rounded-surface border border-border bg-card p-5">
+    <section aria-labelledby="review-context-title" className="rounded-surface bg-card p-5">
       <h2 id="review-context-title" className="type-section-title text-foreground">
         {t("context")}
       </h2>

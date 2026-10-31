@@ -42,7 +42,7 @@ export function LaunchReadiness({
         </p>
       </div>
 
-      <ul className="divide-y divide-border/70 overflow-hidden rounded-surface border border-border bg-card">
+      <ul className="divide-y divide-border/70 overflow-hidden rounded-surface bg-card">
         {areas.map((area) => {
           const interactive = Boolean(onOpenArea) && !area.complete;
           const RowTag = interactive ? "button" : "div";

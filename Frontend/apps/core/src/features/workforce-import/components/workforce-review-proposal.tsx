@@ -50,7 +50,7 @@ export function WorkforceProposal({
   const t = useTranslations("wfImport.proposal");
   const say = useSay("wfImport");
   return (
-    <section aria-labelledby="workforce-proposal-title" className="overflow-hidden rounded-surface border border-border bg-card">
+    <section aria-labelledby="workforce-proposal-title" className="overflow-hidden rounded-surface bg-card">
       <header className="space-y-4 px-4 pb-4 pt-5 sm:px-5">
         <h2 id="workforce-proposal-title" className="type-section-title text-foreground">
           {t("title")} <span className="text-muted-foreground">·</span> <span className="tabular-nums">{counts.total}</span>

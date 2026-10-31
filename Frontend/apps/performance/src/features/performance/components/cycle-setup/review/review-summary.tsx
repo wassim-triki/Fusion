@@ -36,7 +36,7 @@ type Icon = typeof Users;
 export function CycleSetupSummary({ children }: { children: ReactNode }) {
   const t = useTranslations("cycleSetup.CycleSetupSummary");
   return (
-    <section className="rounded-surface border border-border bg-card p-4 sm:p-6">
+    <section className="rounded-surface bg-card p-4 sm:p-6">
       <h2 className="type-page-title text-foreground">{t("cycleSetupSummary")}</h2>
       <p className="mt-1 type-body-secondary text-muted-foreground">
         {t("reviewTheKeyDetailsFor")}
@@ -61,7 +61,7 @@ function SummaryBlock({
 }) {
   const t = useTranslations("cycleSetup.SummaryBlock");
   return (
-    <section className="@container rounded-surface border border-border bg-card p-4 sm:p-5">
+    <section className="@container rounded-surface bg-card p-4 sm:p-5">
       <header className="flex items-start gap-3 sm:gap-4">
         <span className="grid size-10 shrink-0 place-items-center rounded-full bg-success/15 text-success sm:size-12">
           <Icon className="size-5" strokeWidth={1.75} aria-hidden />

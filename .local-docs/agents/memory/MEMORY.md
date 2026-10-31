@@ -34,6 +34,7 @@
 - [@repo/ui consolidation](repo-ui-consolidation.md) — owned apps moved to `@repo/ds`; interns' modules still on `@repo/ui`.
 - [Loading architecture](loading-architecture.md) — frame always renders; loading only in content area; no shell gates.
 - [Roles model](roles-model.md) — B-177: areas over access profiles, holders by rule recomputed from Core HR, chosen = user ids, Jobs/Personal linked until B-214.
+- [Section titles inside sections](section-titles-inside-sections.md) — title + actions in the container; fields darker than surface; DS pickers only; icon row actions (B-179 review).
 - [Permission-gate: hide, don't deny](permission-gate-hide-not-deny.md) — hide inaccessible nav/actions; gate on operational access.
 
 ## Core HR / Platform work

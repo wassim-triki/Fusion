@@ -7,7 +7,8 @@ import { Button, PersonAvatar } from "@repo/ds";
 import { PageContainer, Section } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import type { CompanyImportDto, CompanyImportProgressDto } from "@repo/api";
-import { Check, CheckCircle2, Clock, File as FileGlyph, Loader2, Mail, MapPin, Network, PencilLine } from "lucide-react";
+import { AlertTriangle, Check, CheckCircle2, Clock, File as FileGlyph, Loader2, Mail, MapPin, Network, PencilLine, RefreshCw } from "lucide-react";
+import { useImportChange } from "../api/use-company-import";
 import { leftSummary } from "./understood";
 
 type FactState = "done" | "now" | "wait";
@@ -33,7 +34,9 @@ export function bringFraction(progress: CompanyImportProgressDto | null, people:
 export function BringFrame({ data }: { data: CompanyImportDto }) {
   const t = useTranslations("companyImport.bring");
   const format = useFormatter();
+  const tStop = useTranslations("companyImport.stopped");
   const done = data.status === "BroughtIn";
+  const stopped = data.status === "Stopped" ? data.stopped : null;
   const result = data.result;
   const progress = data.progress;
   const total = done ? (result?.people ?? 0) : data.counts.people;
@@ -60,15 +63,19 @@ export function BringFrame({ data }: { data: CompanyImportDto }) {
       <div className="mx-auto grid max-w-[60rem] gap-6">
         <header className="grid justify-items-center gap-2 pt-2 text-center">
           <p className="inline-flex items-center gap-1.5 type-meta text-muted-foreground">
-            {done ? <CheckCircle2 className="size-4 text-success" aria-hidden /> : <FileGlyph className="size-4" aria-hidden />}
+            {done ? <CheckCircle2 className="size-4 text-success" aria-hidden /> : stopped ? <AlertTriangle className="size-4 text-warning" aria-hidden /> : <FileGlyph className="size-4" aria-hidden />}
             {done && result
               ? t("doneMeta", { time: format.dateTime(new Date(result.broughtInAt), { hour: "2-digit", minute: "2-digit" }), files })
-              : files}
+              : stopped ? <span className="text-warning">{tStop("meta")}</span> : files}
           </p>
-          <h1 className="type-display text-balance text-foreground">{done ? t("doneTitle", { company: data.companyName }) : t("title", { company: data.companyName })}</h1>
+          <h1 className="type-display text-balance text-foreground">
+            {done ? t("doneTitle", { company: data.companyName })
+              : stopped ? (stopped.row ? tStop("title", { row: stopped.row }) : tStop("titleLines"))
+              : t("title", { company: data.companyName })}
+          </h1>
         </header>
 
-        <section className="grid gap-6 rounded-surface bg-section px-8 pb-7 pt-8" aria-busy={!done} aria-live="polite">
+        <section className="grid gap-6 rounded-surface bg-section px-8 pb-7 pt-8" aria-busy={!done && !stopped} aria-live="polite">
           <div className="flex flex-wrap items-start justify-center gap-x-8 gap-y-6">
             {groups.map((group) => (
               <div key={group.name} className="grid max-w-[15rem] gap-2">
@@ -101,18 +108,22 @@ export function BringFrame({ data }: { data: CompanyImportDto }) {
                   ["jobs", result.jobs],
                   ["places", result.places],
                   ["lines", result.reportingLines],
+                  ["changed", result.changed],
+                  ["ended", result.ended],
                 ] as const
-              ).map(([key, value]) => (
+              ).filter(([key, value]) => value > 0 || (key !== "changed" && key !== "ended" && result.changed === 0)).map(([key, value]) => (
                 <div key={key} className="grid justify-items-center">
                   <b className="type-metric text-foreground">{value}</b>
-                  <span className="type-meta text-muted-foreground">{t(`counts.${key}`, { count: value })}</span>
+                  <span className="type-meta text-muted-foreground">
+                    {key === "changed" ? t("doneChanged", { count: value }) : key === "ended" ? t("doneEnded", { count: value }) : t(`counts.${key}`, { count: value })}
+                  </span>
                 </div>
               ))}
             </div>
           ) : (
             <div className="grid gap-3.5">
               <div className="h-2 overflow-hidden rounded-full bg-inlay">
-                <i className="block h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${Math.round(bringFraction(progress, total, lines) * 100)}%` }} />
+                <i className={cn("block h-full rounded-full transition-[width] duration-500", stopped ? "bg-warning" : "bg-primary")} style={{ width: `${Math.round(bringFraction(progress, total, lines) * 100)}%` }} />
               </div>
               <div className="flex flex-wrap justify-center gap-x-7 gap-y-2">
                 <Fact state={state("units", ["jobs", "people", "lines", "saving"])}>{t("facts.units", { count: data.counts.newUnits })}</Fact>
@@ -120,14 +131,42 @@ export function BringFrame({ data }: { data: CompanyImportDto }) {
                 <Fact state={state("people", ["lines", "saving"])}>{t("facts.people", { count: created, of: total })}</Fact>
                 <Fact state={state("lines", ["saving"])}>{t("facts.lines", { count: progress?.reportingLines ?? 0, of: lines })}</Fact>
               </div>
-              <p className="text-center type-meta text-muted-foreground">{t("leave")}</p>
+              {stopped ? null : <p className="text-center type-meta text-muted-foreground">{t("leave")}</p>}
             </div>
           )}
         </section>
 
         {done && result ? <Finished data={data} /> : null}
+        {stopped ? <Stopped data={data} stopped={stopped} /> : null}
       </div>
     </PageContainer>
+  );
+}
+
+/** Stopped partway (D-29): the same frame with what's in, what isn't, nobody invited, and Try again from the row. */
+function Stopped({ data, stopped }: { data: CompanyImportDto; stopped: NonNullable<CompanyImportDto["stopped"]> }) {
+  const t = useTranslations("companyImport.stopped");
+  const change = useImportChange(data.id);
+  const facts: [string, string][] = [
+    [t("in"), t("inValue", { units: stopped.units, jobs: stopped.jobs, people: stopped.people })],
+    [t("notYet"), t("notYetValue", { count: stopped.peopleLeft })],
+    [t("invited"), t("nobody")],
+  ];
+  return (
+    <section className="flex flex-wrap items-center gap-x-10 gap-y-5 rounded-surface bg-card px-6 py-5">
+      <dl className="flex flex-1 flex-wrap gap-x-10 gap-y-3">
+        {facts.map(([label, value]) => (
+          <div key={label} className="grid gap-0.5">
+            <dt className="type-meta text-muted-foreground">{label}</dt>
+            <dd className="type-label text-foreground">{value}</dd>
+          </div>
+        ))}
+      </dl>
+      <Button onClick={() => void change.run("resume", (api, version) => api.resume(data.id, version))} disabled={change.pending !== null}>
+        <RefreshCw className="size-4" aria-hidden /> {stopped.row ? t("retry", { row: stopped.row }) : t("retryLines")}
+      </Button>
+      {change.error ? <p className="w-full type-meta text-destructive">{change.error}</p> : null}
+    </section>
   );
 }
 

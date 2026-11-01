@@ -22,12 +22,33 @@ public sealed record CompanyImportDto(
     string? LastFailure,
     CompanyImportProgressDto? Progress,
     CompanyImportResultDto? Result,
-    IReadOnlyList<WallGroupDto> Wall);
+    IReadOnlyList<WallGroupDto> Wall,
+    CompanyImportAgainDto? Again = null,
+    CompanyImportStoppedDto? Stopped = null);
+
+/// <summary>
+/// Importing again (D-22): who the files add, change and leave out against what's in Fusion, matched by employee
+/// number or work email, all dated from ApplyFrom. NotInFile holds the questions about people the files don't list.
+/// </summary>
+public sealed record CompanyImportAgainDto(
+    DateOnly ApplyFrom, string MatchedBy, IReadOnlyList<AgainPersonDto> New, IReadOnlyList<AgainChangeDto> Changed,
+    IReadOnlyList<AgainGoneDto> NotInFile, int Unchanged, IReadOnlyList<AgainChangeDto> Units, IReadOnlyList<AgainChangeDto> Jobs);
+
+public sealed record AgainPersonDto(string Key, string Name, string Title, string Unit, string? Manager, DateOnly Start);
+
+/// <summary>Someone or something in Fusion the files change: each change with what Fusion has and what the file says.</summary>
+public sealed record AgainChangeDto(string Key, string Name, IReadOnlyList<ProposedChange> Changes);
+
+public sealed record AgainGoneDto(string Key, string Name, string? Detail, string? Answer);
+
+/// <summary>Stopped partway (D-29): what's in, what isn't, and the row Try again starts from.</summary>
+public sealed record CompanyImportStoppedDto(int Units, int Jobs, int People, int PeopleLeft, bool LinesLeft, int? Row, string? FileName);
 
 /// <summary>The company's people by department, in the order they're brought in: the bring-in frame fills them in.</summary>
 public sealed record WallGroupDto(string Name, int Count, IReadOnlyList<string> People);
 
-public sealed record CompanyImportFileDto(Guid Id, string Name, string Format, IReadOnlyList<CompanyImportSheetDto> Sheets);
+/// <summary>A dropped file; Problem says why Fusion can't use it (format, unreadable, empty, tooBig, nothing, noNames, noUnitNames).</summary>
+public sealed record CompanyImportFileDto(Guid Id, string Name, string Format, IReadOnlyList<CompanyImportSheetDto> Sheets, string? Problem = null);
 
 public sealed record CompanyImportSheetDto(
     string Name, string Kind, int Rows, int Count, int LeftCount,
@@ -64,14 +85,15 @@ public sealed record FixDto(string Id, string PersonKey, string PersonName, stri
 
 public sealed record LeftOutDto(string Kind, string? FileName, string? Sheet, string? What, int Count, IReadOnlyList<string> Names);
 
-public sealed record CompanyImportCountsDto(int People, int Units, int NewUnits, int Jobs, int Places, int ReportingLines);
+public sealed record CompanyImportCountsDto(
+    int People, int Units, int NewUnits, int Jobs, int Places, int ReportingLines, int NewPeople = 0, int Changed = 0, int Ending = 0);
 
 /// <summary>Bringing in, as it happens: what's created so far.</summary>
 public sealed record CompanyImportProgressDto(string Phase, int Units, int Jobs, int People, int ReportingLines);
 
 public sealed record CompanyImportResultDto(
     DateTime BroughtInAt, string BroughtInBy, int People, int Units, int Jobs, int Places, int ReportingLines,
-    IReadOnlyList<string> FileNames, int Decided, IReadOnlyList<string> DecidedNames, int MissingEmail, int MissingPlace);
+    IReadOnlyList<string> FileNames, int Decided, IReadOnlyList<string> DecidedNames, int MissingEmail, int MissingPlace, int Changed, int Ended);
 
 public sealed record CompanyImportActiveDto(Guid? Id);
 

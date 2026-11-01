@@ -7,8 +7,9 @@ public sealed record CompanyImportReadSheet(
     string SheetName, CompanyImportKind Kind, IReadOnlyList<CompanyImportColumnReading> Readings,
     IReadOnlyList<IReadOnlyList<string?>> Rows);
 
+/// <summary>A dropped file as read; Problem says why Fusion couldn't use it at all (then it has no sheets).</summary>
 public sealed record CompanyImportReadFile(
-    string FileName, string Format, string Sha256, long ByteLength, IReadOnlyList<CompanyImportReadSheet> Sheets);
+    string FileName, string Format, string Sha256, long ByteLength, IReadOnlyList<CompanyImportReadSheet> Sheets, string? Problem = null);
 
 /// <summary>
 /// Reads one dropped file: every usable sheet, recognised by what its headers hold, each column read by the rules
@@ -20,7 +21,7 @@ public sealed class CompanyImportReader(ISafeTabularSourceReader reader, ICompan
     {
         TabularSourceInspection inspection;
         try { inspection = await reader.InspectAsync(stream, fileName, contentType, null, cancellationToken); }
-        catch (TabularSourceException exception) { throw new CompanyImportException(exception.Code, exception.Message, exception.StatusCode); }
+        catch (TabularSourceException exception) { return Unusable(fileName, Problem(exception.Code)); }
 
         var sheets = new List<CompanyImportReadSheet>();
         foreach (var sheet in inspection.UsableSheets)
@@ -32,8 +33,23 @@ public sealed class CompanyImportReader(ISafeTabularSourceReader reader, ICompan
                 : await ReadAsync(kind, sheet.Table, cancellationToken);
             sheets.Add(new CompanyImportReadSheet(sheet.Name, kind, readings, sheet.Table.Rows));
         }
-        if (sheets.Count == 0) throw new CompanyImportException("Empty", $"{inspection.FileName} has no rows Fusion can read.");
+        if (sheets.Count == 0) return Unusable(inspection.FileName, "empty");
         return new CompanyImportReadFile(inspection.FileName, inspection.Format, inspection.Sha256, inspection.ByteLength, sheets);
+    }
+
+    /// <summary>What's wrong with a file, in one of the few ways the person can act on.</summary>
+    public static string Problem(string code) => code switch
+    {
+        "UnsupportedFormat" or "SignatureMismatch" => "format",
+        "Empty" or "NoUsableTable" => "empty",
+        "FileTooLarge" or "RowLimitExceeded" or "ColumnLimitExceeded" or "TextLimitExceeded" or "CellLimitExceeded" => "tooBig",
+        _ => "unreadable",
+    };
+
+    private static CompanyImportReadFile Unusable(string fileName, string problem)
+    {
+        var name = Path.GetFileName(fileName.Trim());
+        return new(name.Length is > 0 and <= 255 ? name : "file", string.Empty, string.Empty, 0, [], problem);
     }
 
     private async Task<IReadOnlyList<CompanyImportColumnReading>> ReadAsync(CompanyImportKind kind, TabularSourceTable table, CancellationToken cancellationToken)

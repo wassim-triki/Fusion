@@ -22,7 +22,9 @@
   "earlier": {
     "title": "Imports précédents",
     "by": "{date} · {name}",
-    "counts": "{people, plural, one {# personne} other {# personnes}}, {units, plural, one {# unité} other {# unités}}"
+    "counts": "{people, plural, one {# personne} other {# personnes}}, {units, plural, one {# unité} other {# unités}}",
+    "open": "Ouvrir",
+    "changed": "{count, plural, one {# modification} other {# modifications}}"
   },
   "reading": {
     "title": "{count, plural, one {Lecture de # fichier} other {Lecture de # fichiers}}",
@@ -70,7 +72,7 @@
       "oneName": "{count, plural, one {# ligne avec un seul nom} other {# lignes avec un seul nom}}",
       "noName": "{count, plural, one {# ligne sans nom} other {# lignes sans nom}}",
       "unitNoName": "{count, plural, one {# unité sans nom} other {# unités sans nom}}",
-      "already": "{count, plural, one {# personne déjà dans Fusion} other {# personnes déjà dans Fusion}}",
+      "already": "{count, plural, one {# personne partie, déjà dans Fusion} other {# personnes parties, déjà dans Fusion}}",
       "decided": "{count, plural, one {# personne laissée de côté par vous} other {# personnes laissées de côté par vous}}"
     }
   },
@@ -226,7 +228,7 @@
   "left": {
     "columns": "{count, plural, one {la colonne {names}} other {les colonnes {names}}}",
     "left": "{count, plural, one {# personne partie} other {# personnes parties}}",
-    "already": "{count, plural, one {# personne déjà dans Fusion} other {# personnes déjà dans Fusion}}",
+    "already": "{count, plural, one {# personne partie, déjà dans Fusion} other {# personnes parties, déjà dans Fusion}}",
     "decided": "{count, plural, one {# personne laissée de côté par vous} other {# personnes laissées de côté par vous}}",
     "oneName": "{count, plural, one {# ligne avec un seul nom} other {# lignes avec un seul nom}}",
     "noName": "{count, plural, one {# ligne sans nom} other {# lignes sans nom}}",
@@ -363,6 +365,77 @@
       "noEmailDetail": "Elles ne peuvent pas être invitées sans e-mail",
       "noPlace": "{count, plural, one {# personne n’a pas de lieu} other {# personnes n’ont pas de lieu}}",
       "seeWho": "Voir qui"
-    }
+    },
+    "doneChanged": "{count, plural, one {modification} other {modifications}}",
+    "doneEnded": "{count, plural, one {départ} other {départs}}"
+  },
+  "badFile": {
+    "format": "Fusion lit les fichiers Excel et CSV",
+    "unreadable": "Impossible de l'ouvrir : endommagé ou protégé par un mot de passe",
+    "empty": "Aucune ligne",
+    "tooBig": "Trop volumineux : jusqu'à 10 Mo et 10 000 lignes",
+    "nothing": "Aucune personne ni unité trouvée",
+    "noNames": "Aucune colonne pour les noms",
+    "noUnitNames": "Aucune colonne pour les noms des unités",
+    "remove": "Retirer",
+    "replace": "Remplacer"
+  },
+  "noManagers": {
+    "title": "Aucune colonne pour les managers",
+    "detail": "Pas nécessaire pour importer les personnes",
+    "without": "Continuer sans managers",
+    "add": "J'ajoute une colonne",
+    "done": "On continue sans managers"
+  },
+  "again": {
+    "crumb": "Modifications",
+    "toChanges": "Voir les modifications",
+    "matchedBy": {
+      "number": "Rapprochés par matricule",
+      "email": "Rapprochés par e-mail professionnel"
+    },
+    "bringIn": "{count, plural, =0 {Rien à importer} one {Importer # modification} other {Importer # modifications}}",
+    "back": "Ce que Fusion a compris",
+    "new": "Nouveaux",
+    "changed": "Modifiés",
+    "notInFile": "Absents de ce fichier",
+    "unchanged": "Inchangés",
+    "units": "Unités",
+    "jobs": "Postes",
+    "newLine": "{title} · {unit} · arrive le {date}",
+    "newManager": "Équipe de {name}",
+    "field": {
+      "jobTitle": "Poste",
+      "unit": "Unité",
+      "place": "Lieu",
+      "manager": "Manager",
+      "name": "Nom",
+      "parent": "Rattachée à",
+      "jobLevel": "Niveau",
+      "jobFamily": "Famille"
+    },
+    "none": "Aucun",
+    "keep": "Le garder tel quel",
+    "end": "Il est parti",
+    "kept": "Gardé tel quel",
+    "ending": "Part le {date}",
+    "undo": "Changer",
+    "applyFrom": "Modifications à partir du",
+    "applyHint": "Visible et daté dans l'historique de chacun",
+    "toCheck": "À vérifier aussi",
+    "nothing": "Rien dans ces fichiers ne change ce que Fusion contient."
+  },
+  "stopped": {
+    "title": "L'import s'est arrêté à la ligne {row}",
+    "titleLines": "L'import s'est arrêté en cours de route",
+    "meta": "Fusion a perdu la connexion en cours de route",
+    "in": "Importé",
+    "inValue": "{units, plural, one {# unité} other {# unités}}, {jobs, plural, one {# poste} other {# postes}}, {people, plural, one {# personne} other {# personnes}}",
+    "notYet": "Pas encore",
+    "notYetValue": "{count, plural, =0 {Les liens hiérarchiques} one {# personne et les liens hiérarchiques} other {# personnes et les liens hiérarchiques}}",
+    "invited": "Invités",
+    "nobody": "Personne",
+    "retry": "Reprendre à la ligne {row}",
+    "retryLines": "Reprendre"
   }
 }

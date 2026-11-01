@@ -14,14 +14,13 @@ public sealed record CompanyImportUpload(Stream Content, string FileName, string
 public sealed class CompanyImportService(
     CoreHRDbContext db,
     ITenantContext tenant,
-    CompanyImportReader reader,
-    CompanyImportProgress progress)
+    CompanyImportReader reader)
 {
     public const int MaxFiles = 12;
 
     public async Task<Guid?> ActiveAsync(CancellationToken cancellationToken)
         => await db.CompanyImportSessions.AsNoTracking()
-            .Where(session => session.Status == CompanyImportStatus.Open || session.Status == CompanyImportStatus.BringingIn)
+            .Where(session => session.Status == CompanyImportStatus.Open || session.Status == CompanyImportStatus.BringingIn || session.Status == CompanyImportStatus.Stopped)
             .OrderByDescending(session => session.CreatedAt).Select(session => (Guid?)session.Id).FirstOrDefaultAsync(cancellationToken);
 
     public async Task<IReadOnlyList<CompanyImportEarlierDto>> EarlierAsync(CancellationToken cancellationToken)
@@ -32,7 +31,7 @@ public sealed class CompanyImportService(
             {
                 var result = CompanyImportJson.Read<CompanyImportResult>(session.ResultJson);
                 return new CompanyImportEarlierDto(session.Id, session.BroughtInAt!.Value, result?.BroughtInBy ?? session.StartedByDisplayName,
-                    session.Sources.Select(source => source.FileName).Distinct().ToList(), result?.People ?? 0, result?.Units ?? 0);
+                    session.Sources.Where(source => source.Problem is null).Select(source => source.FileName).Distinct().ToList(), result?.People ?? 0, result?.Units ?? 0, result?.Changed ?? 0);
             }).ToList();
 
     public async Task<Guid> StartAsync(IReadOnlyList<CompanyImportUpload> files, string? companyName, ImportActor actor, CancellationToken cancellationToken)
@@ -173,7 +172,14 @@ public sealed class CompanyImportService(
         if (!ImportFingerprint.Matches(proposal.Fingerprint, fingerprint))
             throw new CompanyImportException("Changed", "The company or the files changed since the chart was shown. Look again before bringing it in.", 409);
         session.RequestBringIn(proposal.Fingerprint, actor);
-        progress.Set(id, new CompanyImportProgressDto("waiting", 0, 0, 0, 0));
+        await SaveAsync(cancellationToken);
+    }
+
+    /// <summary>Try again after a bring-in stopped partway: the worker picks up at the batch where it stopped.</summary>
+    public async Task ResumeAsync(Guid id, uint version, ImportActor actor, CancellationToken cancellationToken)
+    {
+        var session = await LoadAsync(id, version, cancellationToken);
+        session.Resume(actor);
         await SaveAsync(cancellationToken);
     }
 
@@ -191,20 +197,30 @@ public sealed class CompanyImportService(
             ?? throw new CompanyImportException("NotFound", "This import doesn't exist.", 404);
         if (session.Status is CompanyImportStatus.BroughtIn or CompanyImportStatus.Discarded)
             return CompanyImportView.Closed(session);
+        if (session.PlanJson is not null) return CompanyImportView.Running(session);
         var proposal = await DeriveAsync(session, cancellationToken);
         return CompanyImportView.Build(session, proposal, viewerEmail,
-            session.Status == CompanyImportStatus.BringingIn ? progress.Get(id) ?? new CompanyImportProgressDto("waiting", 0, 0, 0, 0) : null);
+            session.Status == CompanyImportStatus.BringingIn ? new CompanyImportProgressDto("waiting", 0, 0, 0, 0) : null);
     }
 
     // ---------- helpers ----------
 
     private static void Answer(CompanyImportDecisions decisions, CompanyImportProposal proposal, string key, string? value)
     {
+        if (key == CompanyImportDerivation.ApplyFromKey)
+        {
+            if (value is not null && !DateOnly.TryParseExact(value, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None, out _))
+                throw new CompanyImportException("AnswerInvalid", "Pick a date.");
+            Set(decisions.Answers, key, value);
+            return;
+        }
         if (proposal.Questions.FirstOrDefault(question => question.Key == key) is { } question)
         {
-            if (question.Kind == "dates")
+            if (question.Kind is "dates" or "noManagers")
             {
-                if (value is not (null or "dmy" or "mdy")) throw new CompanyImportException("AnswerInvalid", "Pick one of the choices.");
+                if (value is not null && (question.Kind == "dates" ? value is not ("dmy" or "mdy") : value != question.Lean))
+                    throw new CompanyImportException("AnswerInvalid", "Pick one of the choices.");
                 Set(decisions.Answers, key, value);
             }
             else
@@ -251,6 +267,13 @@ public sealed class CompanyImportService(
         foreach (var file in files)
         {
             var fileId = Guid.NewGuid();
+            if (file.Problem is { } problem)
+            {
+                var unusable = CompanyImportSource.Unusable(tenant.TenantId, session.Id, fileId, file.FileName, order++, problem);
+                session.AddSource(unusable);
+                db.CompanyImportSources.Add(unusable);
+                continue;
+            }
             foreach (var sheet in file.Sheets)
             {
                 var source = CompanyImportSource.Create(tenant.TenantId, session.Id, fileId, file.FileName, file.Format, file.Sha256, file.ByteLength,
@@ -280,4 +303,4 @@ public sealed class CompanyImportService(
     }
 }
 
-public sealed record CompanyImportEarlierDto(Guid Id, DateTime BroughtInAt, string By, IReadOnlyList<string> FileNames, int People, int Units);
+public sealed record CompanyImportEarlierDto(Guid Id, DateTime BroughtInAt, string By, IReadOnlyList<string> FileNames, int People, int Units, int Changed);

@@ -1,7 +1,7 @@
 import type { ApiClient } from "./types";
 
 /** B-186: one import of the company from any number of files (`/api/corehr/imports`). */
-export type CompanyImportStatus = "Open" | "BringingIn" | "BroughtIn" | "Discarded";
+export type CompanyImportStatus = "Open" | "BringingIn" | "Stopped" | "BroughtIn" | "Discarded";
 export type CompanyImportKind = "People" | "Units" | "Unknown";
 
 /** The meanings a column can have. `out` leaves it out. */
@@ -70,7 +70,11 @@ export interface CompanyImportFileDto {
   name: string;
   format: string;
   sheets: CompanyImportSheetDto[];
+  /** Why Fusion can't use the file; null when it read. */
+  problem: CompanyImportFileProblem | null;
 }
+
+export type CompanyImportFileProblem = "format" | "unreadable" | "empty" | "tooBig" | "nothing" | "noNames" | "noUnitNames";
 
 export interface ColumnQuestionDto {
   key: string;
@@ -79,7 +83,7 @@ export interface ColumnQuestionDto {
   index: number;
   header: string;
   /** field: is this header that meaning? dates: are dates day first? */
-  kind: "field" | "dates";
+  kind: "field" | "dates" | "noManagers";
   lean: string;
   values: string[];
   distinctCount: number;
@@ -88,6 +92,7 @@ export interface ColumnQuestionDto {
 
 export type CompanyImportFactKind =
   | "managers"
+  | "matched"
   | "units"
   | "unitsFromPeople"
   | "jobs"
@@ -157,7 +162,7 @@ export interface CompanyImportChartDto {
   places: string[];
 }
 
-export type CheckKind = "unitMissing" | "unitParent" | "managerMissing" | "twice" | "sameJob" | "managerLoop" | "noStart" | "noTitle";
+export type CheckKind = "unitMissing" | "unitParent" | "managerMissing" | "twice" | "sameJob" | "managerLoop" | "noStart" | "noTitle" | "notInFile";
 
 export interface CheckOptionDto {
   key: string;
@@ -206,6 +211,9 @@ export interface CompanyImportCountsDto {
   jobs: number;
   places: number;
   reportingLines: number;
+  newPeople: number;
+  changed: number;
+  ending: number;
 }
 
 export interface CompanyImportProgressDto {
@@ -229,6 +237,44 @@ export interface CompanyImportResultDto {
   decidedNames: string[];
   missingEmail: number;
   missingPlace: number;
+  changed: number;
+  ended: number;
+}
+
+/** One change to something in Fusion: what Fusion has and what the file says. */
+export interface ImportChangeDto {
+  field: string;
+  from: string | null;
+  to: string | null;
+}
+
+export interface AgainChangeDto {
+  key: string;
+  name: string;
+  changes: ImportChangeDto[];
+}
+
+/** Importing again: matched against Fusion by employee number or work email, dated from applyFrom. */
+export interface CompanyImportAgainDto {
+  applyFrom: string;
+  matchedBy: "number" | "email";
+  new: { key: string; name: string; title: string; unit: string; manager: string | null; start: string }[];
+  changed: AgainChangeDto[];
+  notInFile: { key: string; name: string; detail: string | null; answer: "keep" | "end" | null }[];
+  unchanged: number;
+  units: AgainChangeDto[];
+  jobs: AgainChangeDto[];
+}
+
+/** Stopped partway: what's in, what isn't, and the row Try again starts from. */
+export interface CompanyImportStoppedDto {
+  units: number;
+  jobs: number;
+  people: number;
+  peopleLeft: number;
+  linesLeft: boolean;
+  row: number | null;
+  fileName: string | null;
 }
 
 export interface CompanyImportDto {
@@ -255,6 +301,8 @@ export interface CompanyImportDto {
   result: CompanyImportResultDto | null;
   /** The people by department in bring-in order (first faces of each); the bring-in frame fills them in. */
   wall: WallGroupDto[];
+  again: CompanyImportAgainDto | null;
+  stopped: CompanyImportStoppedDto | null;
 }
 
 export interface WallGroupDto {
@@ -270,6 +318,7 @@ export interface CompanyImportEarlierDto {
   fileNames: string[];
   people: number;
   units: number;
+  changed: number;
 }
 
 /** A sentence read as a fix; null when Fusion can't place it. */
@@ -298,6 +347,7 @@ export const coreImportPaths = {
   fix: (id: string, fixId: string) => `/corehr/imports/${id}/fixes/${fixId}`,
   bringIn: (id: string) => `/corehr/imports/${id}/bring-in`,
   discard: (id: string) => `/corehr/imports/${id}/discard`,
+  resume: (id: string) => `/corehr/imports/${id}/resume`,
 } as const;
 
 export const coreImportQueryKeys = {
@@ -334,6 +384,7 @@ export function createCoreImportApi(client: ApiClient) {
     removeFix: (id: string, version: number, fixId: string) => client.delete<CompanyImportDto>(coreImportPaths.fix(id, fixId), ifMatch(version)),
     bringIn: (id: string, version: number, fingerprint: string) =>
       client.post<CompanyImportDto>(coreImportPaths.bringIn(id), { fingerprint }, ifMatch(version)),
+    resume: (id: string, version: number) => client.post<CompanyImportDto>(coreImportPaths.resume(id), undefined, ifMatch(version)),
     discard: (id: string, version: number) => client.post<CompanyImportDto>(coreImportPaths.discard(id), undefined, ifMatch(version)),
   };
 }

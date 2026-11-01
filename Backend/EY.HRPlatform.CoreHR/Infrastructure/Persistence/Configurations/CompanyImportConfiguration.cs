@@ -22,6 +22,8 @@ public sealed class CompanyImportSessionConfiguration : IEntityTypeConfiguration
         builder.Property(session => session.LastFailure).HasMaxLength(32);
         builder.Property(session => session.ResultJson).HasColumnType("jsonb");
         builder.Property(session => session.ProvenanceJson).HasColumnType("jsonb");
+        builder.Property(session => session.PlanJson).HasColumnType("jsonb");
+        builder.Property(session => session.RunJson).HasColumnType("jsonb");
         builder.Property(session => session.CreatedBy).HasMaxLength(256);
         builder.Property(session => session.UpdatedBy).HasMaxLength(256);
         builder.HasIndex(session => new { session.TenantId, session.Status });
@@ -45,6 +47,7 @@ public sealed class CompanyImportSourceConfiguration : IEntityTypeConfiguration<
         builder.Property(source => source.Kind).HasConversion<string>().HasMaxLength(16).IsRequired();
         builder.Property(source => source.ReadingsJson).HasColumnType("jsonb").IsRequired();
         builder.Property(source => source.CellsJson).HasColumnType("jsonb");
+        builder.Property(source => source.Problem).HasMaxLength(16);
         builder.Property(source => source.CreatedBy).HasMaxLength(256);
         builder.Property(source => source.UpdatedBy).HasMaxLength(256);
         builder.HasIndex(source => new { source.TenantId, source.SessionId });

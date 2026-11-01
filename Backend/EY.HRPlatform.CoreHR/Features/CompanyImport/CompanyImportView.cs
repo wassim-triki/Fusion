@@ -8,11 +8,11 @@ public static class CompanyImportView
     public static CompanyImportDto Build(CompanyImportSession session, CompanyImportProposal proposal, string? viewerEmail, CompanyImportProgressDto? progress)
     {
         var viewer = viewerEmail?.Trim().ToLowerInvariant();
-        var sourceByKey = session.Sources.ToDictionary(source => (source.FileId, source.SheetName));
+        var sourceByKey = session.Sources.Where(source => source.Problem is null).ToDictionary(source => (source.FileId, source.SheetName));
         var files = proposal.Sheets.GroupBy(sheet => sheet.FileId).Select(group =>
         {
             var first = sourceByKey[(group.Key, group.First().Sheet)];
-            return new CompanyImportFileDto(group.Key, first.FileName, first.Format, group.Select(sheet =>
+            return (first.Order, File: new CompanyImportFileDto(group.Key, first.FileName, first.Format, group.Select(sheet =>
             {
                 var rows = sourceByKey[(sheet.FileId, sheet.Sheet)].Rows;
                 var emailColumn = sheet.Columns.FirstOrDefault(column => column.Field == CompanyImportFields.WorkEmail)?.Index;
@@ -20,8 +20,11 @@ public static class CompanyImportView
                 var mine = viewer is null || emailColumn is null ? -1 : rows.ToList().FindIndex(cells => IsViewer(cells, emailColumn, viewer));
                 if (mine >= PreviewRows) preview[^1] = new SheetRowDto(mine + 2, rows[mine], true);
                 return new CompanyImportSheetDto(sheet.Sheet, sheet.Kind.ToString(), sheet.Rows, sheet.PeopleCount, sheet.LeftCount, sheet.Columns, preview);
-            }).ToList());
-        }).ToList();
+            }).ToList(), Problem(group.ToList())));
+        })
+            .Concat(session.Sources.Where(source => source.Problem is not null)
+                .Select(source => (source.Order, File: new CompanyImportFileDto(source.FileId, source.FileName, source.Format, [], source.Problem))))
+            .OrderBy(item => item.Order).Select(item => item.File).ToList();
 
         var checksBySubject = proposal.Checks.Where(check => check.Subject is not null && check.Answer is null)
             .GroupBy(check => check.Subject!).ToDictionary(group => group.Key, group => group.Select(check => check.Key).ToList());
@@ -67,10 +70,62 @@ public static class CompanyImportView
             new CompanyImportChartDto(proposal.RootKey, people, units, jobs, proposal.Places.Select(place => place.Name).ToList()),
             proposal.Checks.Select(check => new CheckDto(check.Key, check.Kind, check.Subject, check.Title, check.Detail, check.Options, check.Answer, check.Count)).ToList(),
             fixes, leftOut,
-            new CompanyImportCountsDto(proposal.People.Count, proposal.Units.Count, proposal.NewUnits, proposal.Jobs.Count, proposal.Places.Count, proposal.ReportingLines),
+            new CompanyImportCountsDto(proposal.People.Count, proposal.Units.Count, proposal.NewUnits, proposal.Jobs.Count, proposal.Places.Count, proposal.ReportingLines,
+                proposal.NewPeople, proposal.ChangedPeople, proposal.Ends.Count),
             proposal.Fingerprint, proposal.CanBringIn && session.Status == CompanyImportStatus.Open, proposal.OpenCount, session.LastFailure, progress, null,
-            Wall(proposal));
+            Wall(proposal), proposal.Again ? Again(proposal, jobTitle, unitName) : null);
     }
+
+    /// <summary>Why a file that read gives nothing: no sheet of people or units, or the column that names them is missing.</summary>
+    private static string? Problem(IReadOnlyList<ReadSheet> sheets)
+    {
+        if (sheets.All(sheet => sheet.Kind == CompanyImportKind.Unknown)) return "nothing";
+        bool Has(ReadSheet sheet, params string[] fields) => sheet.Columns.Any(column => column.Field is { } field && fields.Contains(field));
+        if (sheets.Any(sheet => sheet.Kind == CompanyImportKind.People && !Has(sheet, CompanyImportFields.FirstName, CompanyImportFields.LastName, CompanyImportFields.FullName)
+                && !sheet.Columns.Any(column => column.State == "ask")))
+            return "noNames";
+        if (sheets.Any(sheet => sheet.Kind == CompanyImportKind.Units && !Has(sheet, CompanyImportFields.UnitName) && !sheet.Columns.Any(column => column.State == "ask")))
+            return "noUnitNames";
+        return null;
+    }
+
+    private static CompanyImportAgainDto Again(CompanyImportProposal proposal, Dictionary<string, string> jobTitle, Dictionary<string, string> unitName)
+    {
+        var name = proposal.People.ToDictionary(person => person.Key, person => person.DisplayName);
+        return new CompanyImportAgainDto(proposal.ApplyFrom, proposal.Facts.FirstOrDefault(fact => fact.Kind == "matched")?.Detail ?? "number",
+            proposal.People.Where(person => person.IsNew).Select(person => new AgainPersonDto(person.Key, person.DisplayName, jobTitle[person.JobKey],
+                unitName[person.UnitKey], person.ManagerKey is null ? null : name.GetValueOrDefault(person.ManagerKey), person.StartDate)).ToList(),
+            proposal.People.Where(person => person.IsChanged).Select(person => new AgainChangeDto(person.Key, person.DisplayName, person.Changes!)).ToList(),
+            proposal.Checks.Where(check => check.Kind == "notInFile").Select(check => new AgainGoneDto(check.Key, check.Title ?? string.Empty, check.Detail, check.Answer)).ToList(),
+            proposal.People.Count(person => !person.IsNew && !person.IsChanged),
+            proposal.Units.Where(unit => unit.Changes is not null).Select(unit => new AgainChangeDto(unit.Key, unit.Name, unit.Changes!)).ToList(),
+            proposal.Jobs.Where(job => job.Changes is not null).Select(job => new AgainChangeDto(job.Key, job.Title, job.Changes!)).ToList());
+    }
+
+    /// <summary>
+    /// Bringing in once the first batch froze the plan, and Stopped partway: drawn from the plan and the run record,
+    /// never from the files again (part of them is already in Fusion).
+    /// </summary>
+    public static CompanyImportDto Running(CompanyImportSession session)
+    {
+        var plan = CompanyImportJson.Read<CompanyImportPlan>(session.PlanJson)!;
+        var run = CompanyImportJson.Read<CompanyImportRun>(session.RunJson) ?? new CompanyImportRun();
+        var phase = !run.UnitChangesDone ? "units" : run.PeopleDone < plan.People.Count ? "people" : run.LinesDone < plan.Lines.Count ? "lines" : "saving";
+        var progress = new CompanyImportProgressDto(phase, plan.Counts.NewUnits, plan.Counts.Jobs, run.PeopleDone, run.LinesDone);
+        var next = plan.People.ElementAtOrDefault(run.PeopleDone);
+        var stopped = session.Status == CompanyImportStatus.Stopped
+            ? new CompanyImportStoppedDto(plan.Result.Units, plan.Result.Jobs, run.PeopleDone, plan.People.Count - run.PeopleDone,
+                run.LinesDone < plan.Lines.Count, next?.Row, next?.FileName)
+            : null;
+        return new CompanyImportDto(session.Id, session.Version, session.Status.ToString(), session.CompanyName, session.CreatedAt, session.StartedByDisplayName,
+            ClosedFiles(session), [], [], new CompanyImportChartDto(string.Empty, [], [], [], []), [], [], plan.Result.LeftOut, plan.Counts,
+            session.RequestedFingerprint ?? string.Empty, false, 0, session.LastFailure, progress, null, plan.Result.Wall, null, stopped);
+    }
+
+    private static List<CompanyImportFileDto> ClosedFiles(CompanyImportSession session)
+        => session.Sources.GroupBy(source => source.FileId).Select(group => new CompanyImportFileDto(group.Key, group.First().FileName, group.First().Format,
+            group.Where(source => source.Problem is null).Select(source => new CompanyImportSheetDto(source.SheetName, source.Kind.ToString(), source.RowCount,
+                source.RowCount, 0, [], [])).ToList(), group.First().Problem)).ToList();
 
     /// <summary>Everything not brought in, with its reason: rows, sheets Fusion couldn't place, columns left out.</summary>
     public static IReadOnlyList<LeftOutDto> LeftOut(CompanyImportProposal proposal)
@@ -121,14 +176,14 @@ public static class CompanyImportView
     public static CompanyImportDto Closed(CompanyImportSession session)
     {
         var stored = CompanyImportJson.Read<CompanyImportResult>(session.ResultJson);
-        var files = session.Sources.GroupBy(source => source.FileId).Select(group => new CompanyImportFileDto(group.Key, group.First().FileName, group.First().Format,
-            group.Select(source => new CompanyImportSheetDto(source.SheetName, source.Kind.ToString(), source.RowCount, source.RowCount, 0, [], [])).ToList())).ToList();
+        var files = ClosedFiles(session);
         var result = stored is null || session.BroughtInAt is null ? null : new CompanyImportResultDto(session.BroughtInAt.Value, stored.BroughtInBy,
             stored.People, stored.Units, stored.Jobs, stored.Places, stored.ReportingLines, stored.FileNames, stored.Decided, stored.DecidedNames,
-            stored.MissingEmail, stored.MissingPlace);
+            stored.MissingEmail, stored.MissingPlace, stored.Changed, stored.Ended);
         return new CompanyImportDto(session.Id, session.Version, session.Status.ToString(), session.CompanyName, session.CreatedAt, session.StartedByDisplayName,
             files, [], [], new CompanyImportChartDto(string.Empty, [], [], [], []), [], [], stored?.LeftOut ?? [],
-            new CompanyImportCountsDto(stored?.People ?? 0, stored?.Units ?? 0, stored?.Units ?? 0, stored?.Jobs ?? 0, stored?.Places ?? 0, stored?.ReportingLines ?? 0),
+            new CompanyImportCountsDto(stored?.People ?? 0, stored?.Units ?? 0, stored?.Units ?? 0, stored?.Jobs ?? 0, stored?.Places ?? 0, stored?.ReportingLines ?? 0,
+                stored?.People ?? 0, stored?.Changed ?? 0, stored?.Ended ?? 0),
             string.Empty, false, 0, null, null, result, stored?.Wall ?? []);
     }
 

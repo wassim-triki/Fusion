@@ -99,6 +99,10 @@ public sealed class CompanyImportController(CompanyImportService imports, ICoreA
     public Task<IActionResult> BringIn(Guid id, [FromHeader(Name = "If-Match")] string? ifMatch, [FromBody] BringInRequest request, CancellationToken cancellationToken)
         => Change(id, ifMatch, version => imports.BringInAsync(id, version, request.Fingerprint ?? string.Empty, Actor(), cancellationToken), cancellationToken);
 
+    [HttpPost("{id:guid}/resume")]
+    public Task<IActionResult> Resume(Guid id, [FromHeader(Name = "If-Match")] string? ifMatch, CancellationToken cancellationToken)
+        => Change(id, ifMatch, version => imports.ResumeAsync(id, version, Actor(), cancellationToken), cancellationToken);
+
     [HttpPost("{id:guid}/discard")]
     public Task<IActionResult> Discard(Guid id, [FromHeader(Name = "If-Match")] string? ifMatch, CancellationToken cancellationToken)
         => Change(id, ifMatch, version => imports.DiscardAsync(id, version, cancellationToken), cancellationToken);

@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Features.Organization;
@@ -10,143 +9,332 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EY.HRPlatform.CoreHR.Features.CompanyImport;
 
-/// <summary>What's been created so far while an import is brought in; shown live, never the record of what happened.</summary>
-public sealed class CompanyImportProgress
-{
-    private readonly ConcurrentDictionary<Guid, CompanyImportProgressDto> running = new();
-
-    public void Set(Guid sessionId, CompanyImportProgressDto progress) => running[sessionId] = progress;
-    public CompanyImportProgressDto? Get(Guid sessionId) => running.GetValueOrDefault(sessionId);
-    public void Clear(Guid sessionId) => running.TryRemove(sessionId, out _);
-}
-
 /// <summary>The import changed between review and bring-in; nothing was written.</summary>
 public sealed class CompanyImportChangedException() : Exception("The files or the company changed since the chart was shown.");
 
-/// <summary>What a bring-in created, kept on the import.</summary>
+/// <summary>What a bring-in created and changed, kept on the import.</summary>
 public sealed record CompanyImportResult(
     int People, int Units, int Jobs, int Places, int ReportingLines, IReadOnlyList<string> FileNames,
     int Decided, IReadOnlyList<string> DecidedNames, int MissingEmail, int MissingPlace, string BroughtInBy,
-    IReadOnlyList<WallGroupDto> Wall, IReadOnlyList<LeftOutDto> LeftOut);
+    IReadOnlyList<WallGroupDto> Wall, IReadOnlyList<LeftOutDto> LeftOut, int Changed = 0, int Ended = 0);
+
+/// <summary>A person the bring-in creates (no ExistingId) or moves to a new job, unit or place on On.</summary>
+public sealed record PlanPerson(
+    string Key, string FirstName, string LastName, string? PreferredName, string Number, string? Email, Guid? ExistingId,
+    string JobKey, string UnitKey, string? PlaceKey, DateOnly Start, DateOnly On, string FileName, int Row);
+
+/// <summary>A reporting line to write on On; no manager means the person's line ends.</summary>
+public sealed record PlanLine(string PersonKey, string? ManagerKey, Guid? ManagerId, DateOnly On);
+
+public sealed record PlanUnitChange(Guid UnitId, string? Name, string? ParentKey, DateOnly On);
+
+/// <summary>What the bring-in writes, frozen by its first batch so a resumed run never derives again from the files.</summary>
+public sealed record CompanyImportPlan(
+    IReadOnlyList<PlanPerson> People,
+    IReadOnlyList<PlanLine> Lines,
+    IReadOnlyList<PlanUnitChange> UnitChanges,
+    IReadOnlyList<ProposedEnd> Ends,
+    Dictionary<string, Guid> Existing,
+    CompanyImportResult Result,
+    CompanyImportCountsDto Counts);
+
+/// <summary>What's written so far. Saved with each batch, in that batch's transaction, so a batch is in once or not at all.</summary>
+public sealed class CompanyImportRun
+{
+    public Dictionary<string, Guid> Units { get; set; } = [];
+    public Dictionary<string, Guid> Jobs { get; set; } = [];
+    public Dictionary<string, Guid> Places { get; set; } = [];
+    public bool UnitChangesDone { get; set; }
+    public int PeopleDone { get; set; }
+    public Dictionary<string, Guid> Employees { get; set; } = [];
+    public int LinesDone { get; set; }
+    public bool EndsDone { get; set; }
+}
 
 /// <summary>
-/// Brings one reviewed import in, in one transaction: derived again from the files under the organization's write
-/// lock, refused unless its fingerprint is the one the person reviewed, then written through the organization and
-/// workforce services as dated history (units from the earliest start, each person from their own start). All or
-/// nothing: a failure leaves the company as it was.
+/// Brings one reviewed import in, in batches. The first derives the proposal again under the organization's write
+/// lock, refuses it unless its fingerprint is the one the person reviewed, writes units, jobs and places and freezes
+/// the plan; then unit changes, people a batch at a time, reporting lines and ends, each batch in its own transaction
+/// with the run record. A run cut off anywhere picks up at the next batch: nobody is created or changed twice.
 /// </summary>
 public sealed class CompanyImportBringIn(
     CoreHRDbContext db,
     ITenantContext tenant,
     IOrganizationService organization,
     IWorkforceMutationService mutation,
-    IEmployeeNumberAllocator allocator,
-    CompanyImportProgress progress)
+    IEmployeeNumberAllocator allocator)
 {
+    public const int PeoplePerBatch = 25;
+    public const int LinesPerBatch = 100;
+
     private Guid TenantId => tenant.TenantId;
 
-    public async Task ExecuteAsync(Guid sessionId, CancellationToken cancellationToken)
+    /// <summary>Runs batches until the import is in (true), or until <paramref name="batches"/> have run (false).</summary>
+    public async Task<bool> ExecuteAsync(Guid sessionId, CancellationToken cancellationToken, int? batches = null)
+    {
+        for (var n = 0; batches is null || n < batches; n++)
+        {
+            // A service stopping ends the run between batches; the next worker picks it up at the next one.
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!await NextBatchAsync(sessionId, cancellationToken)) return true;
+        }
+        return false;
+    }
+
+    /// <summary>One batch; false once there's nothing left to do.</summary>
+    private async Task<bool> NextBatchAsync(Guid sessionId, CancellationToken cancellationToken)
+    {
+        db.ChangeTracker.Clear();
+        var session = await db.CompanyImportSessions.SingleAsync(item => item.Id == sessionId, cancellationToken);
+        if (session.Status != CompanyImportStatus.BringingIn) return false;
+        if (session.PlanJson is null)
+        {
+            await PlanAsync(session, cancellationToken);
+            return true;
+        }
+        var plan = CompanyImportJson.Read<CompanyImportPlan>(session.PlanJson)!;
+        var run = CompanyImportJson.Read<CompanyImportRun>(session.RunJson) ?? new CompanyImportRun();
+        var actor = session.BringInByDisplayName ?? session.StartedByDisplayName;
+        if (!run.UnitChangesDone) await UnitChangesAsync(session, plan, run, cancellationToken);
+        else if (run.PeopleDone < plan.People.Count) await PeopleAsync(session, plan, run, actor, cancellationToken);
+        else if (run.LinesDone < plan.Lines.Count) await LinesAsync(session, plan, run, actor, cancellationToken);
+        else if (!run.EndsDone) await EndsAsync(session, plan, run, actor, cancellationToken);
+        else
+        {
+            await CompleteAsync(session, plan, run, cancellationToken);
+            return false;
+        }
+        return true;
+    }
+
+    // ---------- batch 0: the plan, units, jobs, places ----------
+
+    private async Task PlanAsync(CompanyImportSession session, CancellationToken cancellationToken)
     {
         await using var transaction = await OrganizationWriteTransaction.BeginAsync(db, TenantId, cancellationToken);
-        var session = await db.CompanyImportSessions.Include(item => item.Sources).SingleAsync(item => item.Id == sessionId, cancellationToken);
-        if (session.Status != CompanyImportStatus.BringingIn) return;
-
+        await db.Entry(session).Collection(item => item.Sources).LoadAsync(cancellationToken);
         var snapshot = await CompanyImportSnapshotLoader.LoadAsync(db, session.CompanyName, cancellationToken);
         var proposal = CompanyImportDerivation.Derive(CompanyImportSnapshotLoader.Inputs(session), session.Decisions, snapshot);
         if (!proposal.CanBringIn || !ImportFingerprint.Matches(proposal.Fingerprint, session.RequestedFingerprint))
             throw new CompanyImportChangedException();
 
         var actor = session.BringInByDisplayName ?? session.StartedByDisplayName;
-        var sourceRef = $"CompanyImport:{session.Id}";
-        var counts = new int[4];
-        void Report(string phase) => progress.Set(session.Id, new CompanyImportProgressDto(phase, counts[0], counts[1], counts[2], counts[3]));
-
-        Report("units");
-        var unitIds = await BringUnitsAsync(proposal, snapshot, cancellationToken);
-        counts[0] = proposal.NewUnits;
-        Report("jobs");
-        var jobIds = await BringJobsAsync(proposal, actor, cancellationToken);
-        var placeIds = BringPlaces(proposal, actor);
-        counts[1] = proposal.Jobs.Count;
-        Report("people");
-
-        var unitFrom = snapshot.Units.ToDictionary(unit => unit.Id, unit => unit.ActiveFrom);
-        DateOnly AssignedOn(ProposedPerson person)
+        var run = new CompanyImportRun
         {
-            var unitId = unitIds[person.UnitKey];
-            var opens = unitFrom.TryGetValue(unitId, out var from) ? from : UnitsDate(proposal, snapshot);
-            return person.StartDate > opens ? person.StartDate : opens;
+            Units = await BringUnitsAsync(proposal, snapshot, cancellationToken),
+            Jobs = await BringJobsAsync(proposal, actor, cancellationToken),
+        };
+        var places = BringPlaces(proposal, actor);
+        run.Places = places.ToDictionary(item => item.Key, item => item.Value.Id);
+        await db.SaveChangesAsync(cancellationToken);
+
+        var plan = Plan(proposal, snapshot, run, places.Values.Count(place => place.New), session, actor,
+            await allocator.AllocateManyAsync(proposal.People.Count(person => person.IsNew && person.Number is null),
+                proposal.People.Where(person => person.Number is not null).Select(person => person.Number!).ToHashSet(StringComparer.Ordinal), cancellationToken));
+        run.UnitChangesDone = plan.UnitChanges.Count == 0;
+        session.StartRun(CompanyImportJson.Write(plan), CompanyImportJson.Write(run));
+        await db.SaveChangesAsync(cancellationToken);
+        if (transaction is not null) await transaction.CommitAsync(cancellationToken);
+    }
+
+    private static CompanyImportPlan Plan(
+        CompanyImportProposal proposal, CompanyImportSnapshot snapshot, CompanyImportRun run, int newPlaces, CompanyImportSession session,
+        string actor, IReadOnlyList<string> numbers)
+    {
+        var held = snapshot.People.ToDictionary(person => person.Id);
+        var unitFrom = snapshot.Units.ToDictionary(unit => unit.Id, unit => unit.ActiveFrom);
+        var unitsDate = UnitsDate(proposal, snapshot);
+        var generated = new Queue<string>(numbers);
+        var people = new List<PlanPerson>();
+        var assignedOn = new Dictionary<string, DateOnly>(StringComparer.Ordinal);
+
+        // Department by department, the order the bring-in frame fills its faces in.
+        foreach (var person in CompanyImportView.InWallOrder(proposal))
+        {
+            DateOnly on;
+            if (person.ExistingId is { } id)
+            {
+                var had = held[id];
+                if (had.AssignedFrom is { } from) assignedOn[person.Key] = from;
+                if (person.Changes?.Any(change => change.Field is CompanyImportFields.JobTitle or CompanyImportFields.Unit or CompanyImportFields.Place) != true) continue;
+                // A change is dated from the day the person chose, never on or before what it replaces.
+                on = Later(proposal.ApplyFrom, had.AssignedFrom?.AddDays(1));
+            }
+            else
+            {
+                var opens = unitFrom.TryGetValue(run.Units[person.UnitKey], out var from) ? from : unitsDate;
+                on = person.StartDate > opens ? person.StartDate : opens;
+            }
+            assignedOn[person.Key] = on;
+            people.Add(new PlanPerson(person.Key, person.FirstName, person.LastName, person.PreferredName, person.Number ?? generated.Dequeue(),
+                person.Email, person.ExistingId, person.JobKey, person.UnitKey, person.PlaceKey, person.StartDate, on, person.Origin.FileName, person.Origin.Row));
         }
 
-        var manual = proposal.People.Where(person => person.Number is not null).Select(person => person.Number!).ToHashSet(StringComparer.Ordinal);
-        var generated = new Queue<string>(await allocator.AllocateManyAsync(proposal.People.Count(person => person.Number is null), manual, cancellationToken));
-        var employeeIds = new Dictionary<string, Guid>(StringComparer.Ordinal);
-        var assignedOn = new Dictionary<string, DateOnly>(StringComparer.Ordinal);
+        var byKey = proposal.People.ToDictionary(person => person.Key, StringComparer.Ordinal);
+        var lines = new List<PlanLine>();
+        foreach (var person in proposal.People)
+        {
+            var managerKey = person.ManagerKey;
+            var managerId = managerKey is null ? person.ExistingManagerId : null;
+            DateOnly on;
+            if (person.ExistingId is { } id)
+            {
+                if (person.Changes?.Any(change => change.Field == CompanyImportFields.Manager) != true) continue;
+                on = Later(Later(proposal.ApplyFrom, held[id].ManagerFrom?.AddDays(1)), assignedOn.GetValueOrDefault(person.Key));
+            }
+            else
+            {
+                if (managerKey is null && managerId is null) continue;
+                on = assignedOn[person.Key];
+            }
+            // Never before the manager holds a job here.
+            if (managerKey is not null && assignedOn.TryGetValue(managerKey, out var managerOn)) on = Later(on, managerOn);
+            else if (managerId is { } existingManager && held.GetValueOrDefault(existingManager)?.AssignedFrom is { } managerFrom) on = Later(on, managerFrom);
+            lines.Add(new PlanLine(person.Key, managerKey, managerId, on));
+        }
+
+        var unitChanges = proposal.Units.Where(unit => unit.ExistingId is not null && unit.Changes is { Count: > 0 })
+            .Select(unit => new PlanUnitChange(unit.ExistingId!.Value,
+                unit.Changes!.Any(change => change.Field == "name") ? unit.Name : null,
+                unit.Changes!.Any(change => change.Field == "parent") ? unit.ParentKey : null,
+                Later(proposal.ApplyFrom, snapshot.Units.First(item => item.Id == unit.ExistingId).ActiveFrom.AddDays(1))))
+            .ToList();
+
+        var touched = proposal with { People = proposal.People.Where(person => people.Any(item => item.Key == person.Key)).ToList() };
+        var decided = proposal.People.Where(person => person.Fixes.Count > 0).Select(person => person.DisplayName).ToList();
+        var answered = proposal.Checks.Count(check => check.Kind != "notInFile") + session.Decisions.Columns.Count;
+        var newPeople = proposal.People.Where(person => person.IsNew).ToList();
+        var result = new CompanyImportResult(newPeople.Count, proposal.NewUnits, proposal.Jobs.Count(job => job.ExistingId is null), newPlaces,
+            lines.Count(line => line.ManagerKey is not null || line.ManagerId is not null),
+            session.Sources.Where(source => source.Problem is null).Select(source => source.FileName).Distinct().ToList(), answered + decided.Count, decided.Take(3).ToList(),
+            newPeople.Count(person => person.Email is null), newPeople.Count(person => person.PlaceKey is null), actor,
+            CompanyImportView.Wall(touched), CompanyImportView.LeftOut(proposal), proposal.ChangedPeople, proposal.Ends.Count);
+        var counts = new CompanyImportCountsDto(people.Count, proposal.Units.Count, proposal.NewUnits, proposal.Jobs.Count, proposal.Places.Count, lines.Count,
+            proposal.NewPeople, proposal.ChangedPeople, proposal.Ends.Count);
+        var existing = proposal.People.Where(person => person.ExistingId is not null).ToDictionary(person => person.Key, person => person.ExistingId!.Value, StringComparer.Ordinal);
+        return new CompanyImportPlan(people, lines, unitChanges, proposal.Ends, existing, result, counts);
+    }
+
+    // ---------- unit changes: the organization's own dated changes, each checked before it's made ----------
+
+    private async Task UnitChangesAsync(CompanyImportSession session, CompanyImportPlan plan, CompanyImportRun run, CancellationToken cancellationToken)
+    {
+        foreach (var change in plan.UnitChanges)
+        {
+            var at = await StateOnAsync(change.UnitId, change.On, cancellationToken);
+            if (change.Name is not null && at?.Name != change.Name)
+                await organization.ChangeAsync(change.UnitId, await VersionAsync(change.UnitId, cancellationToken),
+                    new ChangeOrganizationUnitRequest(change.Name, null, change.On, "Import"), cancellationToken);
+            if (change.ParentKey is not null && run.Units.TryGetValue(change.ParentKey, out var parent) && at?.ParentOrgUnitId != parent)
+                await organization.MoveAsync(change.UnitId, await VersionAsync(change.UnitId, cancellationToken),
+                    new MoveOrganizationUnitRequest(parent, change.On, "Import"), cancellationToken);
+        }
+        db.ChangeTracker.Clear();
+        session = await db.CompanyImportSessions.SingleAsync(item => item.Id == session.Id, cancellationToken);
+        run.UnitChangesDone = true;
+        session.RecordBatch(CompanyImportJson.Write(run));
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
+    private Task<OrgUnitEffectiveState?> StateOnAsync(Guid unitId, DateOnly on, CancellationToken cancellationToken)
+        => db.OrgUnitEffectiveStates.AsNoTracking()
+            .Where(state => state.OrgUnitId == unitId && state.EffectiveFrom <= on && (state.EffectiveTo == null || state.EffectiveTo > on))
+            .FirstOrDefaultAsync(cancellationToken);
+
+    private async Task<uint> VersionAsync(Guid unitId, CancellationToken cancellationToken)
+        => await db.OrgUnits.AsNoTracking().Where(unit => unit.Id == unitId).Select(unit => unit.Version).SingleAsync(cancellationToken);
+
+    // ---------- people, lines, ends: a batch each ----------
+
+    private async Task PeopleAsync(CompanyImportSession session, CompanyImportPlan plan, CompanyImportRun run, string actor, CancellationToken cancellationToken)
+    {
+        await using var transaction = await OrganizationWriteTransaction.BeginAsync(db, TenantId, cancellationToken);
+        var sourceRef = $"CompanyImport:{session.Id}";
         var autoDetect = db.ChangeTracker.AutoDetectChangesEnabled;
         db.ChangeTracker.AutoDetectChangesEnabled = false;
         try
         {
-            // Department by department, the order the bring-in frame fills its faces in.
-            foreach (var person in CompanyImportView.InWallOrder(proposal))
+            foreach (var person in plan.People.Skip(run.PeopleDone).Take(PeoplePerBatch))
             {
-                var employee = Employee.Create(TenantId, person.FirstName, person.LastName, person.Email, employeeNumber: person.Number ?? generated.Dequeue());
-                if (person.PreferredName is not null) employee.UpdatePreferredName(person.PreferredName);
-                db.Employees.Add(employee);
-                employeeIds[person.Key] = employee.Id;
-                var started = await mutation.StartEmploymentAsync(employee.Id,
-                    new StartEmploymentInput(Utc(person.StartDate), null, WorkforceSourceType.Import, sourceRef, session.Id), actor, cancellationToken);
-                if (started.IsFailure) throw new InvalidOperationException(started.Error.Code);
-                var on = AssignedOn(person);
-                assignedOn[person.Key] = on;
-                var assigned = await mutation.ChangeWorkAssignmentAsync(employee.Id,
-                    new ChangeWorkAssignmentInput(unitIds[person.UnitKey], jobIds[person.JobKey], person.PlaceKey is null ? null : placeIds[person.PlaceKey].Id,
-                        Utc(on), WorkforceSourceType.Import, sourceRef, session.Id), actor, cancellationToken);
-                if (assigned.IsFailure) throw new InvalidOperationException(assigned.Error.Code);
-                counts[2]++;
-                if (counts[2] % 10 == 0 || counts[2] == proposal.People.Count) Report("people");
-            }
-
-            Report("lines");
-            var existingFrom = snapshot.People.Where(person => person.AssignedFrom is not null).ToDictionary(person => person.Id, person => person.AssignedFrom!.Value);
-            foreach (var person in proposal.People)
-            {
-                Guid? managerId = person.ManagerKey is not null ? employeeIds[person.ManagerKey] : person.ExistingManagerId;
-                if (managerId is null) continue;
-                var managerFrom = person.ManagerKey is not null ? assignedOn[person.ManagerKey] : existingFrom.GetValueOrDefault(managerId.Value, assignedOn[person.Key]);
-                var on = assignedOn[person.Key] > managerFrom ? assignedOn[person.Key] : managerFrom;
-                var line = await mutation.ChangeManagerAsync(employeeIds[person.Key],
-                    new ChangeManagerInput(managerId.Value, Utc(on), WorkforceSourceType.Import, sourceRef, session.Id), actor, cancellationToken);
-                if (line.IsFailure) throw new InvalidOperationException(line.Error.Code);
-                counts[3]++;
-                if (counts[3] % 10 == 0) Report("lines");
+                var employeeId = person.ExistingId ?? Guid.Empty;
+                if (person.ExistingId is null)
+                {
+                    var employee = Employee.Create(TenantId, person.FirstName, person.LastName, person.Email, employeeNumber: person.Number);
+                    if (person.PreferredName is not null) employee.UpdatePreferredName(person.PreferredName);
+                    db.Employees.Add(employee);
+                    employeeId = employee.Id;
+                    run.Employees[person.Key] = employee.Id;
+                    Ok(await mutation.StartEmploymentAsync(employee.Id,
+                        new StartEmploymentInput(Utc(person.Start), null, WorkforceSourceType.Import, sourceRef, session.Id), actor, cancellationToken));
+                }
+                Ok(await mutation.ChangeWorkAssignmentAsync(employeeId,
+                    new ChangeWorkAssignmentInput(run.Units[person.UnitKey], run.Jobs[person.JobKey], person.PlaceKey is null ? null : run.Places[person.PlaceKey],
+                        Utc(person.On), WorkforceSourceType.Import, sourceRef, session.Id), actor, cancellationToken));
+                run.PeopleDone++;
             }
         }
         finally
         {
             db.ChangeTracker.AutoDetectChangesEnabled = autoDetect;
         }
-
-        Report("saving");
-        var decided = proposal.People.Where(person => person.Fixes.Count > 0).Select(person => person.DisplayName).ToList();
-        var answered = proposal.Checks.Count + session.Decisions.Columns.Count;
-        var result = new CompanyImportResult(proposal.People.Count, proposal.NewUnits, proposal.Jobs.Count(job => job.ExistingId is null), placeIds.Values.Count(place => place.New),
-            proposal.ReportingLines, session.Sources.Select(source => source.FileName).Distinct().ToList(),
-            answered + decided.Count, decided.Take(3).ToList(), proposal.People.Count(person => person.Email is null),
-            proposal.People.Count(person => person.PlaceKey is null), actor, CompanyImportView.Wall(proposal),
-            CompanyImportView.LeftOut(proposal));
-        var provenance = new
-        {
-            fingerprint = proposal.Fingerprint,
-            files = session.Sources.GroupBy(source => source.FileId).Select(group => new { name = group.First().FileName, sha256 = group.First().Sha256 }),
-            decisions = session.Decisions,
-            units = unitIds.Where(item => proposal.Units.Any(unit => unit.Key == item.Key && unit.ExistingId is null)).ToDictionary(),
-            employees = employeeIds,
-        };
-        session.CompleteBringIn(CompanyImportJson.Write(result), CompanyImportJson.Write(provenance));
+        session.RecordBatch(CompanyImportJson.Write(run));
         await db.SaveChangesAsync(cancellationToken);
         if (transaction is not null) await transaction.CommitAsync(cancellationToken);
-        progress.Clear(session.Id);
     }
+
+    private async Task LinesAsync(CompanyImportSession session, CompanyImportPlan plan, CompanyImportRun run, string actor, CancellationToken cancellationToken)
+    {
+        await using var transaction = await OrganizationWriteTransaction.BeginAsync(db, TenantId, cancellationToken);
+        var sourceRef = $"CompanyImport:{session.Id}";
+        Guid IdOf(string key) => plan.Existing.TryGetValue(key, out var id) ? id : run.Employees[key];
+        foreach (var line in plan.Lines.Skip(run.LinesDone).Take(LinesPerBatch))
+        {
+            var managerId = line.ManagerKey is not null ? IdOf(line.ManagerKey) : line.ManagerId;
+            if (managerId is { } manager)
+                Ok(await mutation.ChangeManagerAsync(IdOf(line.PersonKey),
+                    new ChangeManagerInput(manager, Utc(line.On), WorkforceSourceType.Import, sourceRef, session.Id), actor, cancellationToken));
+            else
+                Ok(await mutation.RemovePrimaryManagerAsync(IdOf(line.PersonKey), Utc(line.On), WorkforceSourceType.Import, sourceRef, session.Id, actor, cancellationToken));
+            // Each line is saved before the next reads the chain, so cycle checks see it.
+            await db.SaveChangesAsync(cancellationToken);
+            run.LinesDone++;
+        }
+        session.RecordBatch(CompanyImportJson.Write(run));
+        await db.SaveChangesAsync(cancellationToken);
+        if (transaction is not null) await transaction.CommitAsync(cancellationToken);
+    }
+
+    private async Task EndsAsync(CompanyImportSession session, CompanyImportPlan plan, CompanyImportRun run, string actor, CancellationToken cancellationToken)
+    {
+        await using var transaction = await OrganizationWriteTransaction.BeginAsync(db, TenantId, cancellationToken);
+        foreach (var end in plan.Ends)
+            Ok(await mutation.EndEmploymentReleasingReportsAsync(end.EmployeeId,
+                new EndEmploymentInput(Utc(end.LastDay), "Not in the import's files", WorkforceSourceType.Import, $"CompanyImport:{session.Id}", session.Id),
+                actor, cancellationToken));
+        run.EndsDone = true;
+        session.RecordBatch(CompanyImportJson.Write(run));
+        await db.SaveChangesAsync(cancellationToken);
+        if (transaction is not null) await transaction.CommitAsync(cancellationToken);
+    }
+
+    private async Task CompleteAsync(CompanyImportSession session, CompanyImportPlan plan, CompanyImportRun run, CancellationToken cancellationToken)
+    {
+        await db.Entry(session).Collection(item => item.Sources).LoadAsync(cancellationToken);
+        var provenance = new
+        {
+            fingerprint = session.RequestedFingerprint,
+            files = session.Sources.GroupBy(source => source.FileId).Select(group => new { name = group.First().FileName, sha256 = group.First().Sha256 }),
+            decisions = session.Decisions,
+            units = run.Units,
+            employees = run.Employees,
+            changed = plan.People.Where(person => person.ExistingId is not null).Select(person => person.ExistingId),
+            ended = plan.Ends.Select(end => end.EmployeeId),
+        };
+        session.CompleteBringIn(CompanyImportJson.Write(plan.Result), CompanyImportJson.Write(provenance));
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
+    // ---------- batch 0's writes ----------
 
     private static DateOnly UnitsDate(CompanyImportProposal proposal, CompanyImportSnapshot snapshot)
     {
@@ -154,7 +342,9 @@ public sealed class CompanyImportBringIn(
         var parents = proposal.Units.Where(unit => unit.ExistingId is null && unit.ParentKey is not null)
             .Select(unit => proposal.Units.FirstOrDefault(parent => parent.Key == unit.ParentKey)?.ExistingId).OfType<Guid>().ToHashSet();
         var latest = snapshot.Units.Where(unit => parents.Contains(unit.Id)).Select(unit => unit.ActiveFrom).DefaultIfEmpty(proposal.UnitsFrom).Max();
-        return latest > proposal.UnitsFrom ? latest : proposal.UnitsFrom;
+        var from = latest > proposal.UnitsFrom ? latest : proposal.UnitsFrom;
+        // In a company already in Fusion, a new unit opens when the changes apply, unless someone starts in it earlier.
+        return proposal.Again && proposal.People.All(person => !person.IsNew) ? Later(from, proposal.ApplyFrom) : from;
     }
 
     private async Task<Dictionary<string, Guid>> BringUnitsAsync(CompanyImportProposal proposal, CompanyImportSnapshot snapshot, CancellationToken cancellationToken)
@@ -209,8 +399,10 @@ public sealed class CompanyImportBringIn(
 
     private async Task<Dictionary<string, Guid>> BringJobsAsync(CompanyImportProposal proposal, string actor, CancellationToken cancellationToken)
     {
-        var levels = await ListValuesAsync(CompanyList.Levels, proposal.Jobs.Where(job => job.ExistingId is null).Select(job => job.Level), actor, cancellationToken);
-        var families = await ListValuesAsync(CompanyList.JobFamilies, proposal.Jobs.Where(job => job.ExistingId is null).Select(job => job.Family), actor, cancellationToken);
+        var touched = proposal.Jobs.Where(job => job.ExistingId is null || job.Changes is not null).ToList();
+        var levels = await ListValuesAsync(CompanyList.Levels, touched.Select(job => job.Level), actor, cancellationToken);
+        var families = await ListValuesAsync(CompanyList.JobFamilies, touched.Select(job => job.Family), actor, cancellationToken);
+        CompanyListValue? Value(Dictionary<string, CompanyListValue> values, string? label) => label is null ? null : values[CatalogName.Normalize(label)];
         var ids = new Dictionary<string, Guid>(StringComparer.Ordinal);
         var existing = await db.Jobs.Where(job => proposal.Jobs.Select(item => item.ExistingId).Contains(job.Id)).ToListAsync(cancellationToken);
         foreach (var job in proposal.Jobs)
@@ -219,12 +411,11 @@ public sealed class CompanyImportBringIn(
             {
                 var held = existing.First(item => item.Id == id);
                 if (held.IsRetired) held.Restore(actor);
+                if (job.Changes is not null) held.Update(held.Title, Value(families, job.Family), Value(levels, job.Level), actor);
                 ids[job.Key] = id;
                 continue;
             }
-            var made = Job.Create(TenantId, job.Title,
-                job.Family is null ? null : families[CatalogName.Normalize(job.Family)],
-                job.Level is null ? null : levels[CatalogName.Normalize(job.Level)], actor);
+            var made = Job.Create(TenantId, job.Title, Value(families, job.Family), Value(levels, job.Level), actor);
             db.Jobs.Add(made);
             ids[job.Key] = made.Id;
         }
@@ -270,16 +461,23 @@ public sealed class CompanyImportBringIn(
         return ids;
     }
 
+    private static void Ok<T>(EY.HRPlatform.SharedKernel.Results.Result<T> result)
+    {
+        if (result.IsFailure) throw new InvalidOperationException(result.Error.Code);
+    }
+
+    private static DateOnly Later(DateOnly a, DateOnly? b) => b is { } other && other > a ? other : a;
+
     private static DateTime Utc(DateOnly date) => date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
 }
 
 /// <summary>
-/// Picks up imports asked to be brought in, one at a time, and brings each in under its tenant. An import whose
-/// bring-in was cut off (the service stopped) is picked up again after a while: nothing of it was written.
+/// Picks up imports asked to be brought in, one at a time, and runs their batches under the tenant. Each batch renews
+/// the lock; a run whose lock went quiet (the service stopped) is picked up again and resumes at its next batch.
 /// </summary>
 public sealed class CompanyImportWorker(IServiceProvider services, ILogger<CompanyImportWorker> logger) : BackgroundService
 {
-    private static readonly TimeSpan Stale = TimeSpan.FromMinutes(10);
+    private static readonly TimeSpan Stale = TimeSpan.FromMinutes(1);
     private static readonly TimeSpan Interval = TimeSpan.FromMilliseconds(700);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -317,11 +515,13 @@ public sealed class CompanyImportWorker(IServiceProvider services, ILogger<Compa
         return true;
     }
 
-    /// <summary>Runs one bring-in; on failure the import opens again with the reason and nothing written.</summary>
+    /// <summary>
+    /// Runs one bring-in. A failure before anything was written opens the import again with the reason; a failure
+    /// after stops it partway, with what's in kept and the rest waiting for Try again.
+    /// </summary>
     public static async Task BringInAsync(IServiceProvider scoped, Guid sessionId, CancellationToken cancellationToken)
     {
         var db = scoped.GetRequiredService<CoreHRDbContext>();
-        var progress = scoped.GetRequiredService<CompanyImportProgress>();
         string? failure = null;
         try { await scoped.GetRequiredService<CompanyImportBringIn>().ExecuteAsync(sessionId, cancellationToken); }
         catch (CompanyImportChangedException) { failure = "changed"; }
@@ -331,10 +531,10 @@ public sealed class CompanyImportWorker(IServiceProvider services, ILogger<Compa
             failure = "failed";
         }
         if (failure is null) return;
-        progress.Clear(sessionId);
         db.ChangeTracker.Clear();
         var session = await db.CompanyImportSessions.SingleAsync(item => item.Id == sessionId, cancellationToken);
-        session.FailBringIn(failure);
+        if (session.PlanJson is null) session.FailBringIn(failure);
+        else session.StopBringIn(failure);
         await db.SaveChangesAsync(cancellationToken);
     }
 }

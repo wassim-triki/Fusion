@@ -149,7 +149,7 @@ export function ChartStep({ data }: { data: CompanyImportDto }) {
   );
 }
 
-function CheckCard({ check, data, change, onShow }: { check: CheckDto; data: CompanyImportDto; change: Change; onShow: () => void }) {
+export function CheckCard({ check, data, change, onShow }: { check: CheckDto; data: CompanyImportDto; change: Change; onShow: () => void }) {
   const t = useTranslations("companyImport.check");
   const format = useFormatter();
   const name = (key: string | null) => data.chart.people.find((person) => person.key === key)?.name ?? check.title ?? "";

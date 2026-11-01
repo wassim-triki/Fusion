@@ -146,15 +146,150 @@ public sealed class CompanyImportRelationalTests(ITestOutputHelper output)
                 Assert.Equal(6, await db.Employees.CountAsync());
             }
 
-            // The same files again: everyone is already in Fusion, so there's nothing to bring in (updates are B-187).
+            // The same file again: everyone is matched by number and nothing changes, so there's nothing to bring in.
             await using (var db = Db(cs, tenant))
             {
-                var again = await Service(db, tenant).StartAsync([Csv("people.csv", People)], "Carthage Digital Group", Amira, default);
-                var second = await Service(db, tenant).GetAsync(again, null, default);
-                Assert.Equal(6, second.LeftOut.Single(item => item.Kind == "already").Count);
-                Assert.Empty(second.Chart.People);
-                Assert.False(second.CanBringIn);
+                var service = Service(db, tenant);
+                var same = await service.StartAsync([Csv("people.csv", People)], "Carthage Digital Group", Amira, default);
+                var read2 = await service.GetAsync(same, null, default);
+                Assert.NotNull(read2.Again);
+                Assert.Equal(("number", 6, 0), (read2.Again!.MatchedBy, read2.Again.Unchanged + read2.Again.Changed.Count, read2.Again.New.Count));
+                await service.DiscardAsync(same, read2.Version, default);
             }
+
+            // A changed file a week later: Mouna moves and takes a new job, Malek joins, Hiba isn't in the file.
+            var applyFrom = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(5);
+            var changed = People.Replace("CDG-005,Mouna Kooli,mouna@carthage.test,QA Automation Eng.,L3,ENG,CDG-003,Ariana", "CDG-005,Mouna Kooli,mouna@carthage.test,QA Lead,L4,PE,CDG-002,Tunis")
+                .Replace("CDG-006,Hiba Messaoudi,hiba@carthage.test,Customer Success Manager,L3,PGC,CDG-001,Tunis,03/03/2023,3000", "CDG-007,Malek Ferjani,malek@carthage.test,Data Engineer,L2,ENG,CDG-003,Tunis,01/12/2026,3000");
+            Guid secondId;
+            await using (var db = Db(cs, tenant))
+                secondId = await Service(db, tenant).StartAsync([Csv("people-december.csv", changed)], "Carthage Digital Group", Amira, default);
+            await using (var db = Db(cs, tenant))
+            {
+                var service = Service(db, tenant);
+                var again = (await service.GetAsync(secondId, null, default)).Again!;
+                Assert.Equal("Malek Ferjani", Assert.Single(again.New).Name);
+                // Houssem's earlier fix said Amira; the file still says Omar, so that's a change too.
+                Assert.Equal(["Houssem Jaziri", "Mouna Kooli"], again.Changed.Select(item => item.Name).Order().ToArray());
+                Assert.Equal(("Amira Khelifi", "Omar Mansour"), again.Changed.Single(item => item.Name == "Houssem Jaziri").Changes.Select(change => (change.From, change.To)).Single());
+                var mouna = again.Changed.Single(item => item.Name == "Mouna Kooli");
+                Assert.Contains(mouna.Changes, change => change.Field == CompanyImportFields.JobTitle && change.To == "QA Lead");
+                Assert.Contains(mouna.Changes, change => change.Field == CompanyImportFields.Unit && change.From == "Engineering" && change.To == "Product & Engineering");
+                Assert.Contains(mouna.Changes, change => change.Field == CompanyImportFields.Manager && change.To == "Amira Khelifi");
+                var hiba = Assert.Single(again.NotInFile);
+                Assert.Equal(("Hiba Messaoudi", (string?)null), (hiba.Name, hiba.Answer));
+                var version = (await service.GetAsync(secondId, null, default)).Version;
+                await service.AnswerAsync(secondId, version, new AnswerRequest(hiba.Key, "end"), default);
+            }
+            await using (var db = Db(cs, tenant))
+            {
+                var service = Service(db, tenant);
+                var version = (await service.GetAsync(secondId, null, default)).Version;
+                await service.AnswerAsync(secondId, version, new AnswerRequest(CompanyImportDerivation.ApplyFromKey, applyFrom.ToString("yyyy-MM-dd")), default);
+                version = (await service.GetAsync(secondId, null, default)).Version;
+                await service.TakeLeansAsync(secondId, version, default);
+                var ready = await service.GetAsync(secondId, null, default);
+                Assert.True(ready.CanBringIn, string.Join(", ", ready.Checks.Where(check => check.Answer is null).Select(check => check.Key)));
+                Assert.Equal((1, 2, 1), (ready.Counts.NewPeople, ready.Counts.Changed, ready.Counts.Ending));
+                await service.BringInAsync(secondId, ready.Version, ready.Fingerprint, Amira, default);
+            }
+            await using (var db = Db(cs, tenant))
+                await BringIn(db, tenant).ExecuteAsync(secondId, default);
+            await using (var db = Db(cs, tenant))
+            {
+                Assert.Equal(CompanyImportStatus.BroughtIn, (await db.CompanyImportSessions.SingleAsync(item => item.Id == secondId)).Status);
+                Assert.Equal(7, await db.Employees.CountAsync());
+                var mouna = await db.Employees.SingleAsync(item => item.EmployeeNumber == "CDG-005");
+                var work = await db.WorkAssignments.Where(item => item.EmployeeId == mouna.Id).OrderBy(item => item.EffectiveFrom).ToListAsync();
+                Assert.Equal(2, work.Count);
+                var on = applyFrom.ToDateTime(TimeOnly.MinValue);
+                Assert.Equal(on, work[0].EffectiveTo);
+                Assert.Equal((on, (await db.OrgUnits.SingleAsync(item => item.Code == "PE")).Id), (work[1].EffectiveFrom, work[1].OrgUnitId));
+                Assert.Equal("QA Lead", (await db.Jobs.SingleAsync(item => item.Id == work[1].JobId)).Title);
+                var amira = await db.Employees.SingleAsync(item => item.EmployeeNumber == "CDG-002");
+                var line = await db.ManagerRelationships.SingleAsync(item => item.SubjectEmployeeId == mouna.Id && item.EffectiveTo == null);
+                Assert.Equal((amira.Id, on), (line.ManagerEmployeeId, line.EffectiveFrom));
+                var hiba = await db.Employees.SingleAsync(item => item.EmployeeNumber == "CDG-006");
+                Assert.Equal(on, (await db.Employments.SingleAsync(item => item.EmployeeId == hiba.Id)).EffectiveTo);
+                Assert.Equal(1, await db.Employees.CountAsync(item => item.EmployeeNumber == "CDG-007"));
+            }
+        });
+    }
+
+    [RelationalDatabaseFact]
+    public async Task A_bring_in_cut_off_or_stopped_partway_resumes_without_doubling_anyone()
+    {
+        await WithDatabaseAsync(async (cs, tenant) =>
+        {
+            const int count = 60;
+            var people = new StringBuilder("Employee number,First name,Last name,Work email,Job title,Unit,Manager,Start date\n");
+            for (var p = 1; p <= count; p++) people.Append($"E{p},First{p},Last{p},p{p}@resume.test,Engineer,Lab,{(p == 1 ? "" : "E1")},2024-01-02\n");
+            Guid id;
+            await using (var db = Db(cs, tenant))
+            {
+                var service = Service(db, tenant);
+                id = await service.StartAsync([Csv("people.csv", people.ToString())], "Resume Co", Amira, default);
+                var read = await service.GetAsync(id, null, default);
+                await service.BringInAsync(id, read.Version, read.Fingerprint, Amira, default);
+            }
+            // The plan and one batch of people, then the run is cut off; a worker picks it up and does one more.
+            await using (var db = Db(cs, tenant))
+                Assert.False(await BringIn(db, tenant).ExecuteAsync(id, default, batches: 2));
+            await using (var db = Db(cs, tenant))
+            {
+                Assert.Equal(CompanyImportBringIn.PeoplePerBatch, await db.Employees.CountAsync());
+                Assert.False(await BringIn(db, tenant).ExecuteAsync(id, default, batches: 1));
+                Assert.Equal(2 * CompanyImportBringIn.PeoplePerBatch, await db.Employees.CountAsync());
+                // Then a batch fails: the import stops partway, with what's in kept.
+                var session = await db.CompanyImportSessions.SingleAsync(item => item.Id == id);
+                session.StopBringIn("failed");
+                await db.SaveChangesAsync();
+            }
+            CompanyImportDto stopped;
+            await using (var db = Db(cs, tenant))
+                stopped = await Service(db, tenant).GetAsync(id, null, default);
+            Assert.Equal("Stopped", stopped.Status);
+            Assert.Equal((50, 10, true, 52), (stopped.Stopped!.People, stopped.Stopped.PeopleLeft, stopped.Stopped.LinesLeft, stopped.Stopped.Row!.Value));
+
+            // Another tenant can't try it again.
+            await using (var db = Db(cs, Guid.NewGuid()))
+                Assert.Equal(404, (await Assert.ThrowsAsync<CompanyImportException>(() => Service(db, Guid.NewGuid()).ResumeAsync(id, stopped.Version, Amira, default))).Status);
+
+            await using (var db = Db(cs, tenant))
+                await Service(db, tenant).ResumeAsync(id, stopped.Version, Amira, default);
+            await using (var db = Db(cs, tenant))
+            {
+                Assert.True(await BringIn(db, tenant).ExecuteAsync(id, default));
+                Assert.True(await BringIn(db, tenant).ExecuteAsync(id, default));
+            }
+            await using (var db = Db(cs, tenant))
+            {
+                Assert.Equal(CompanyImportStatus.BroughtIn, (await db.CompanyImportSessions.SingleAsync(item => item.Id == id)).Status);
+                Assert.Equal(count, await db.Employees.CountAsync());
+                Assert.Equal(count, await db.Employees.Select(item => item.EmployeeNumber).Distinct().CountAsync());
+                Assert.Equal(count, await db.WorkAssignments.CountAsync());
+                Assert.Equal(count - 1, await db.ManagerRelationships.CountAsync());
+            }
+        });
+    }
+
+    [RelationalDatabaseFact]
+    public async Task Files_that_cant_be_used_say_why_and_a_missing_manager_column_is_one_question()
+    {
+        await WithDatabaseAsync(async (cs, tenant) =>
+        {
+            await using var db = Db(cs, tenant);
+            var service = Service(db, tenant);
+            var id = await service.StartAsync([
+                Csv("payroll.pdf", "%PDF-1.4"), Csv("units.csv", "Code,Unit,Parent\n"), Csv("notes.csv", "Topic,Owner\nBudget,Sami\n"),
+                Csv("people.csv", "Name,Email,Title,Department,Start\nNour Ben Ali,nour@x.test,Designer,Design,2024-01-02\nRim Saidi,rim@x.test,Designer,Design,2024-02-03\n"),
+            ], "Acme", Amira, default);
+            var read = await service.GetAsync(id, null, default);
+            Assert.Equal(new string?[] { "format", "empty", "nothing", null }, read.Files.Select(file => file.Problem).ToArray());
+            var question = Assert.Single(read.Questions, item => item.Kind == "noManagers");
+            Assert.False(read.CanBringIn);
+            await service.AnswerAsync(id, read.Version, new AnswerRequest(question.Key, "without"), default);
+            Assert.True((await service.GetAsync(id, null, default)).CanBringIn);
         });
     }
 
@@ -249,13 +384,13 @@ public sealed class CompanyImportRelationalTests(ITestOutputHelper output)
         => new(new MemoryStream(Encoding.UTF8.GetBytes(text.Replace("\r\n", "\n"))), name, "text/csv");
 
     private static CompanyImportService Service(CoreHRDbContext db, Guid tenant)
-        => new(db, TestTenantContext.WithTenant(tenant), new CompanyImportReader(new SafeTabularSourceReader(), new NoAi()), new CompanyImportProgress());
+        => new(db, TestTenantContext.WithTenant(tenant), new CompanyImportReader(new SafeTabularSourceReader(), new NoAi()));
 
     private static CompanyImportBringIn BringIn(CoreHRDbContext db, Guid tenant)
     {
         var context = TestTenantContext.WithTenant(tenant);
         return new CompanyImportBringIn(db, context, new OrganizationService(db, context),
-            new WorkforceMutationService(db, context, new WorkforceCanonicalResolver(db)), new EmployeeNumberAllocatorService(db, context), new CompanyImportProgress());
+            new WorkforceMutationService(db, context, new WorkforceCanonicalResolver(db)), new EmployeeNumberAllocatorService(db, context));
     }
 
     private sealed class NoAi : ICompanyImportAi

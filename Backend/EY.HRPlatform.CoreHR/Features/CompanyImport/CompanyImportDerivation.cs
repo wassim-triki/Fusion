@@ -20,6 +20,9 @@ public static class CompanyImportDerivation
 {
     public const string RootAddedKey = "u:+root";
     public const string NoTitleJob = "Employee";
+    /// <summary>The answer that dates an import's changes: they apply from this day (today unless the person says).</summary>
+    public const string ApplyFromKey = "applyFrom";
+    public const string NoManagersKey = "noManagers";
 
     public static CompanyImportProposal Derive(
         IReadOnlyList<CompanyImportSheetInput> inputs, CompanyImportDecisions decisions, CompanyImportSnapshot snapshot)
@@ -62,6 +65,8 @@ public static class CompanyImportDerivation
         public string? Number { get; set; }
         public string? PersonId { get; set; }
         public string? Email { get; set; }
+        /// <summary>The person already in Fusion this row is, matched by employee number or work email.</summary>
+        public CompanyImportSnapshot.Person? Existing { get; set; }
         public Dictionary<string, (string Value, CompanyImportOrigin Origin)> Values { get; } = new(StringComparer.Ordinal);
         public string Key => Number is not null ? $"p:n:{Number}" : Email is not null ? $"p:e:{Email}" : PersonId is not null ? $"p:i:{PersonId}" : $"p:r:{Origin.FileId:N}:{Origin.Sheet}:{Origin.Row}";
         public string FullName => $"{First} {Last}";
@@ -82,6 +87,12 @@ public static class CompanyImportDerivation
         private string rootKey = RootAddedKey;
         private bool unitsFromFiles;
         private string? unitsFileName;
+        private readonly List<ProposedEnd> ends = [];
+        private bool again;
+        private bool peopleSheets;
+        private bool managerColumn;
+        private readonly DateOnly applyFrom = decisions.Answers.TryGetValue(ApplyFromKey, out var said)
+            && DateOnly.TryParseExact(said, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? date : snapshot.Today;
 
         // ---------- sheets and columns ----------
 
@@ -216,7 +227,11 @@ public static class CompanyImportDerivation
             var parentless = new List<string>();
             foreach (var (row, key) in rows)
             {
-                if (key.StartsWith("x:", StringComparison.Ordinal)) continue;
+                if (key.StartsWith("x:", StringComparison.Ordinal))
+                {
+                    UpdateUnit(row, key, rows, Find);
+                    continue;
+                }
                 string? parent = null;
                 if (row.ParentRef is not null)
                 {
@@ -258,6 +273,27 @@ public static class CompanyImportDerivation
             unitFind = Find;
         }
 
+        /// <summary>A unit already in Fusion that the units file names differently or puts under another parent.</summary>
+        private void UpdateUnit(UnitRow row, string key, List<(UnitRow Row, string Key)> rows, Func<string, string?> find)
+        {
+            var had = units[key];
+            var changes = new List<ProposedChange>();
+            var name = had.Name;
+            if (!string.Equals(CatalogName.Normalize(row.Name), CatalogName.Normalize(had.Name), StringComparison.Ordinal))
+            {
+                changes.Add(new ProposedChange("name", had.Name, row.Name));
+                name = row.Name;
+            }
+            var parent = had.ParentKey;
+            if (row.ParentRef is not null && find(row.ParentRef) is { } found && found != key && found != had.ParentKey && had.ParentKey is not null)
+            {
+                string NameOf(string? unitKey) => rows.FirstOrDefault(item => item.Key == unitKey).Row?.Name ?? (unitKey is null ? null : units.GetValueOrDefault(unitKey)?.Name) ?? string.Empty;
+                changes.Add(new ProposedChange("parent", NameOf(had.ParentKey), NameOf(found)));
+                parent = found;
+            }
+            if (changes.Count > 0) units[key] = had with { Name = name, ParentKey = parent, Origin = row.Origin, Changes = changes };
+        }
+
         private Dictionary<string, string> unitHeadRefs = [];
         private Func<string, string?> unitFind = _ => null;
 
@@ -287,6 +323,8 @@ public static class CompanyImportDerivation
         {
             foreach (var sheet in sheets)
             {
+                peopleSheets = true;
+                managerColumn |= sheet.Columns.ContainsKey(F.Manager);
                 var nameless = 0;
                 var oneName = new List<string>();
                 var left = new List<string>();
@@ -328,18 +366,30 @@ public static class CompanyImportDerivation
         public void ResolvePeople()
         {
             var merged = MergeRows();
-            var already = new List<PersonRow>();
+            var former = new List<PersonRow>();
             var existingByNumber = snapshot.People.Where(p => p.Number is not null).GroupBy(p => p.Number!.ToUpperInvariant()).ToDictionary(g => g.Key, g => g.First());
             var existingByEmail = snapshot.People.Where(p => p.Email is not null).GroupBy(p => p.Email!.ToLowerInvariant()).ToDictionary(g => g.Key, g => g.First());
             var current = new List<PersonRow>();
+            var matched = new Dictionary<Guid, string>();
+            var matchedBy = new Dictionary<string, int>(StringComparer.Ordinal);
+            // Someone already in Fusion is matched by employee number, else work email: updated, never added twice.
             foreach (var person in merged)
             {
-                if (person.Number is not null && existingByNumber.ContainsKey(person.Number) || person.Email is not null && existingByEmail.ContainsKey(person.Email))
-                    already.Add(person);
-                else current.Add(person);
+                var by = person.Number is not null && existingByNumber.ContainsKey(person.Number) ? "number"
+                    : person.Email is not null && existingByEmail.ContainsKey(person.Email) ? "email" : null;
+                var hit = by == "number" ? existingByNumber[person.Number!] : by == "email" ? existingByEmail[person.Email!] : null;
+                if (hit is null) { current.Add(person); continue; }
+                if (!hit.Employed || matched.ContainsKey(hit.Id)) { former.Add(person); continue; }
+                person.Existing = hit;
+                person.Number ??= hit.Number?.ToUpperInvariant();
+                matched[hit.Id] = person.Key;
+                matchedBy[by!] = matchedBy.GetValueOrDefault(by!) + 1;
+                current.Add(person);
             }
-            if (already.Count > 0)
-                leftOut.Add(new LeftOutRows("already", Guid.Empty, string.Empty, string.Empty, already.Count, already.Take(5).Select(p => p.FullName).ToList()));
+            if (former.Count > 0)
+                leftOut.Add(new LeftOutRows("already", Guid.Empty, string.Empty, string.Empty, former.Count, former.Take(5).Select(p => p.FullName).ToList()));
+            again = matched.Count > 0;
+            if (again) facts.Add(new CompanyImportFact("matched", matched.Count, current.Count, matchedBy.OrderByDescending(item => item.Value).First().Key, []));
 
             // Units from the people's own unit column when no file lists units.
             if (!unitsFromFiles)
@@ -417,15 +467,17 @@ public static class CompanyImportDerivation
                         unitKey = answer is null ? null : answer == "add" ? AddUnit(unitValue.Value) : units.ContainsKey(answer) ? answer : null;
                     }
                 }
-                unitKey ??= rootKey;
+                var had = person.Existing;
+                // What the file doesn't say about someone already in Fusion stays as it is.
+                unitKey ??= had?.UnitId is { } heldUnit && units.ContainsKey($"x:{heldUnit:N}") ? $"x:{heldUnit:N}" : rootKey;
 
                 // Job, place
                 person.Values.TryGetValue(F.JobTitle, out var titleValue);
-                var title = Said(F.JobTitle) ?? titleValue.Value;
+                var title = Said(F.JobTitle) ?? titleValue.Value ?? snapshot.Jobs.FirstOrDefault(job => job.Id == had?.JobId)?.Name;
                 if (Said(F.JobTitle) is { } saidTitle) fixes.Add(Fix(F.JobTitle, titleValue.Value, saidTitle));
                 if (title is null) noTitle.Add(person);
                 person.Values.TryGetValue(F.Place, out var placeValue);
-                var place = Said(F.Place) ?? placeValue.Value;
+                var place = Said(F.Place) ?? placeValue.Value ?? snapshot.Places.FirstOrDefault(item => item.Id == had?.PlaceId)?.Name;
                 if (Said(F.Place) is { } saidPlace) fixes.Add(Fix(F.Place, placeValue.Value, saidPlace));
 
                 // Manager: the file's reference, else the head of the person's unit (or of the unit above when they head it).
@@ -454,6 +506,14 @@ public static class CompanyImportDerivation
                         managerKey = answer is null or "none" ? null : answer;
                     }
                 }
+                else if (had is not null)
+                {
+                    if (had.ManagerId is { } heldManager)
+                    {
+                        if (matched.TryGetValue(heldManager, out var managerRow)) managerKey = managerRow;
+                        else existingManager = heldManager;
+                    }
+                }
                 else if (!person.Sheet.Columns.ContainsKey(F.Manager))
                 {
                     var at = unitKey;
@@ -466,7 +526,7 @@ public static class CompanyImportDerivation
                 if (managerKey == person.Key) managerKey = null;
 
                 person.Values.TryGetValue(F.StartDate, out var startValue);
-                var start = ParseDate(startValue.Value, person.Sheet.DateOrder);
+                var start = had is not null ? had.EmployedFrom ?? had.AssignedFrom ?? snapshot.Today : ParseDate(startValue.Value, person.Sheet.DateOrder);
                 if (start is null) noStart.Add(person);
                 resolved.Add((person, unitKey, title ?? NoTitleJob, place, managerKey, existingManager, start, fixes));
             }
@@ -524,10 +584,67 @@ public static class CompanyImportDerivation
                 var managerKey = r.ManagerKey is not null && outKeys.Contains(r.ManagerKey) ? null : r.ManagerKey;
                 people.Add(new ProposedPerson(r.Row.Key, r.Row.First, r.Row.Last, r.Row.Preferred, r.Row.Number, r.Row.Email,
                     jobByTitle[CatalogName.Normalize(r.Title)], r.UnitKey, r.Place is null ? null : placeByName[CatalogName.Normalize(r.Place)],
-                    managerKey, r.ExistingManager, r.Start ?? snapshot.Today, r.Start is null, r.Row.Origin, r.Fixes));
+                    managerKey, r.ExistingManager, r.Start ?? snapshot.Today, r.Start is null, r.Row.Origin, r.Fixes, r.Row.Existing?.Id));
             }
             BreakManagerLoops();
             ManagerFacts(foundBy);
+            Changes();
+            NotInFile(matched);
+            // No column for managers isn't needed to bring people in: one question, never a stop.
+            if (peopleSheets && !again && !managerColumn && people.Count > 1 && people.All(person => person.ManagerKey is null)
+                && personRows.FirstOrDefault()?.Sheet.Input is { } sheet)
+                questions.Add(new ColumnQuestion(NoManagersKey, sheet.FileId, sheet.Sheet, -1, string.Empty, "noManagers", "without", [], 0,
+                    decisions.Answers.GetValueOrDefault(NoManagersKey)));
+        }
+
+        /// <summary>For everyone already in Fusion: what the files change, each with what Fusion has and what the file says.</summary>
+        private void Changes()
+        {
+            var byKey = people.ToDictionary(person => person.Key, StringComparer.Ordinal);
+            var jobById = snapshot.Jobs.ToDictionary(job => job.Id);
+            string? PersonName(Guid? id) => id is null ? null : snapshot.People.FirstOrDefault(person => person.Id == id)?.Name;
+            for (var i = 0; i < people.Count; i++)
+            {
+                var person = people[i];
+                if (person.ExistingId is not { } id) continue;
+                var had = snapshot.People.First(item => item.Id == id);
+                var changes = new List<ProposedChange>();
+                var job = jobs.First(item => item.Key == person.JobKey);
+                if (job.ExistingId is null || job.ExistingId != had.JobId)
+                    changes.Add(new ProposedChange(F.JobTitle, had.JobId is { } jobId && jobById.TryGetValue(jobId, out var held) ? held.Name : null, job.Title));
+                if (had.UnitId is not { } unitId || person.UnitKey != $"x:{unitId:N}")
+                    changes.Add(new ProposedChange(F.Unit, had.UnitId is { } heldUnit ? units.GetValueOrDefault($"x:{heldUnit:N}")?.Name : null, units[person.UnitKey].Name));
+                var place = person.PlaceKey is null ? null : places.First(item => item.Key == person.PlaceKey);
+                if (place is not null && place.ExistingId is null || place?.ExistingId != had.PlaceId)
+                    changes.Add(new ProposedChange(F.Place, snapshot.Places.FirstOrDefault(item => item.Id == had.PlaceId)?.Name, place?.Name));
+                Guid? managerId = person.ManagerKey is { } managerKey ? byKey[managerKey].ExistingId : person.ExistingManagerId;
+                if (person.ManagerKey is not null && managerId is null || managerId != had.ManagerId)
+                    changes.Add(new ProposedChange(F.Manager, PersonName(had.ManagerId),
+                        person.ManagerKey is { } to ? byKey[to].DisplayName : PersonName(managerId)));
+                if (changes.Count > 0) people[i] = person with { Changes = changes };
+            }
+        }
+
+        /// <summary>Everyone employed in Fusion that the files don't list: a question, never an automatic leaver.</summary>
+        private void NotInFile(Dictionary<Guid, string> matched)
+        {
+            if (!again) return;
+            var jobName = snapshot.Jobs.ToDictionary(job => job.Id, job => job.Name);
+            foreach (var person in snapshot.People.Where(person => person.Employed && !matched.ContainsKey(person.Id)).OrderBy(person => person.Name, StringComparer.Ordinal))
+            {
+                var key = $"gone|{person.Id:N}";
+                var answer = decisions.Answers.GetValueOrDefault(key);
+                var title = person.JobId is { } job ? jobName.GetValueOrDefault(job) : null;
+                var since = person.EmployedFrom?.Year.ToString(CultureInfo.InvariantCulture);
+                checks.Add(new ProposedCheck(key, "notInFile", $"x:{person.Id:N}", person.Name,
+                    string.Join(" · ", new[] { title, since }.OfType<string>()),
+                    [new("keep", "keep", null, true), new("end", "end", null, false)], answer));
+                if (answer != "end") continue;
+                // Employed through the day before the changes apply, never before they started.
+                var last = applyFrom.AddDays(-1);
+                if (person.EmployedFrom is { } from && last < from) last = from;
+                ends.Add(new ProposedEnd(person.Id, person.Name, last));
+            }
         }
 
         private List<PersonRow> MergeRows()
@@ -598,10 +715,21 @@ public static class CompanyImportDerivation
                     var title = set.GroupBy(h => h.Title).OrderByDescending(g => g.Count()).ThenByDescending(g => g.Key.Length)
                         .ThenBy(g => g.Key, StringComparer.Ordinal).First().Key;
                     var hit = existing.GetValueOrDefault(CatalogName.Normalize(title));
-                    jobs.Add(new ProposedJob($"j:{CatalogName.Normalize(title)}", hit?.Name ?? title, hit?.Id,
-                        MostCommon(set.Select(h => h.Row.Values.GetValueOrDefault(F.JobLevel).Value)),
-                        MostCommon(set.Select(h => h.Row.Values.GetValueOrDefault(F.JobFamily).Value)),
-                        set.Select(h => h.Title).Distinct(StringComparer.Ordinal).ToList(), set.Count));
+                    var level = MostCommon(set.Select(h => h.Row.Values.GetValueOrDefault(F.JobLevel).Value));
+                    var family = MostCommon(set.Select(h => h.Row.Values.GetValueOrDefault(F.JobFamily).Value));
+                    // A job already in Fusion takes the level and family the files give it, where they give one.
+                    var changes = new List<ProposedChange>();
+                    if (hit is not null)
+                    {
+                        var heldLevel = snapshot.Levels.FirstOrDefault(value => value.Id == hit.LevelId)?.Name;
+                        var heldFamily = snapshot.Families.FirstOrDefault(value => value.Id == hit.FamilyId)?.Name;
+                        if (level is not null && CatalogName.Normalize(level) != CatalogName.Normalize(heldLevel)) changes.Add(new(F.JobLevel, heldLevel, level));
+                        else level = heldLevel;
+                        if (family is not null && CatalogName.Normalize(family) != CatalogName.Normalize(heldFamily)) changes.Add(new(F.JobFamily, heldFamily, family));
+                        else family = heldFamily;
+                    }
+                    jobs.Add(new ProposedJob($"j:{CatalogName.Normalize(title)}", hit?.Name ?? title, hit?.Id, level, family,
+                        set.Select(h => h.Title).Distinct(StringComparer.Ordinal).ToList(), set.Count, changes.Count > 0 ? changes : null));
                 }
             }
         }
@@ -675,15 +803,19 @@ public static class CompanyImportDerivation
                 people = people.Select(person => new
                 {
                     person.Key, person.FirstName, person.LastName, person.PreferredName, person.Number, person.Email, person.JobKey,
-                    person.UnitKey, person.PlaceKey, person.ManagerKey, person.ExistingManagerId, person.StartDate,
+                    person.UnitKey, person.PlaceKey, person.ManagerKey, person.ExistingManagerId, person.StartDate, person.ExistingId, person.Changes,
                 }),
                 existing = snapshot.Units.Select(unit => unit.Id).Concat(snapshot.People.Select(person => person.Id)).Order(),
+                changedUnits = unitList.Where(unit => unit.Changes is not null).Select(unit => new { unit.Key, unit.Changes }),
+                changedJobs = jobs.Where(job => job.Changes is not null).Select(job => new { job.Key, job.Changes }),
+                ends,
+                applyFrom,
                 unitsFrom,
             };
             var readSheets = sheets.Select(sheet => new ReadSheet(sheet.Input.FileId, sheet.Input.FileName, sheet.Input.Sheet, sheet.Kind,
                 sheet.Input.Rows.Count, sheet.Read, sheet.PeopleCount, sheet.LeftCount)).ToList();
             return new CompanyImportProposal(readSheets, questions, unitList, jobs, places, people, checks, leftOut, facts,
-                units.ContainsKey(rootKey) ? rootKey : RootAddedKey, unitsFrom, ImportFingerprint.HashCanonical(plan));
+                units.ContainsKey(rootKey) ? rootKey : RootAddedKey, unitsFrom, ImportFingerprint.HashCanonical(plan), applyFrom, ends, again);
         }
 
         /// <summary>Parents before children; units nobody is in and nothing hangs under are still brought in from a units file.</summary>

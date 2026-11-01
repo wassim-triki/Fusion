@@ -6,7 +6,7 @@ using EY.HRPlatform.SharedKernel.Multitenancy;
 
 namespace EY.HRPlatform.CoreHR.Features.CompanyImport;
 
-public enum CompanyImportStatus { Open, BringingIn, BroughtIn, Discarded }
+public enum CompanyImportStatus { Open, BringingIn, Stopped, BroughtIn, Discarded }
 
 /// <summary>
 /// One import of the company (D-22): any number of files, read together, brought in once. The decisions are the
@@ -38,6 +38,10 @@ public sealed class CompanyImportSession : BaseEntity, ITenantEntity
     public DateTime? BroughtInAt { get; private set; }
     public string? ResultJson { get; private set; }
     public string? ProvenanceJson { get; private set; }
+    /// <summary>What the bring-in will write, frozen by its first batch: later batches run from it, never from the files again.</summary>
+    public string? PlanJson { get; private set; }
+    /// <summary>What the bring-in has written so far, saved with each batch in the batch's own transaction.</summary>
+    public string? RunJson { get; private set; }
     public IReadOnlyList<CompanyImportSource> Sources => sources;
 
     public static CompanyImportSession Start(Guid tenantId, string? companyName, ImportActor actor)
@@ -96,6 +100,8 @@ public sealed class CompanyImportSession : BaseEntity, ITenantEntity
         LockedAt = null;
         LockedBy = null;
         LastFailure = null;
+        PlanJson = null;
+        RunJson = null;
         Touch();
     }
 
@@ -105,10 +111,51 @@ public sealed class CompanyImportSession : BaseEntity, ITenantEntity
         LockedBy = instance;
     }
 
+    /// <summary>The first batch froze the plan and wrote units, jobs and places; the rest follows from the run record.</summary>
+    public void StartRun(string planJson, string runJson)
+    {
+        if (Status != CompanyImportStatus.BringingIn) throw new InvalidOperationException("Only an import being brought in can run.");
+        PlanJson = planJson;
+        RunJson = runJson;
+        LockedAt = DateTime.UtcNow;
+        Touch();
+    }
+
+    /// <summary>A batch is in: its record is saved in the batch's transaction, and the lock is renewed.</summary>
+    public void RecordBatch(string runJson)
+    {
+        if (Status != CompanyImportStatus.BringingIn) throw new InvalidOperationException("Only an import being brought in can run.");
+        RunJson = runJson;
+        LockedAt = DateTime.UtcNow;
+        Touch();
+    }
+
+    /// <summary>Part is in, the rest isn't: the import stops where it was, nobody invited, until the person tries again.</summary>
+    public void StopBringIn(string reason)
+    {
+        if (Status != CompanyImportStatus.BringingIn) return;
+        Status = CompanyImportStatus.Stopped;
+        LastFailure = reason;
+        LockedAt = null;
+        LockedBy = null;
+        Touch();
+    }
+
+    public void Resume(ImportActor actor)
+    {
+        if (Status != CompanyImportStatus.Stopped) throw new CompanyImportException("NotStopped", "This import isn't stopped.", 409);
+        var who = actor.Normalize();
+        Status = CompanyImportStatus.BringingIn;
+        BringInByUserId = who.UserId;
+        BringInByDisplayName = who.DisplayName;
+        LastFailure = null;
+        Touch();
+    }
+
     /// <summary>Nothing was written: the import opens again where the person left it, with the reason.</summary>
     public void FailBringIn(string reason)
     {
-        if (Status != CompanyImportStatus.BringingIn) return;
+        if (Status != CompanyImportStatus.BringingIn || PlanJson is not null) return;
         Status = CompanyImportStatus.Open;
         LastFailure = reason;
         LockedAt = null;
@@ -123,6 +170,7 @@ public sealed class CompanyImportSession : BaseEntity, ITenantEntity
         BroughtInAt = DateTime.UtcNow;
         ResultJson = resultJson;
         ProvenanceJson = provenanceJson;
+        PlanJson = null;
         LockedAt = null;
         LockedBy = null;
         foreach (var source in sources) source.PurgeCells();
@@ -167,6 +215,8 @@ public sealed class CompanyImportSource : BaseEntity, ITenantEntity
     public CompanyImportKind Kind { get; private set; }
     public int RowCount { get; private set; }
     public string ReadingsJson { get; private set; } = "[]";
+    /// <summary>Why Fusion couldn't use the file at all (format, unreadable, empty, tooBig); null when it read.</summary>
+    public string? Problem { get; private set; }
     public string? CellsJson { get; private set; }
     public DateTime? CellsPurgedAt { get; private set; }
 
@@ -189,6 +239,20 @@ public sealed class CompanyImportSource : BaseEntity, ITenantEntity
             RowCount = rowCount,
             ReadingsJson = CompanyImportJson.Write(readings),
             CellsJson = rows is null ? null : CompanyImportJson.Write(rows),
+        };
+
+    /// <summary>A dropped file Fusion couldn't read: kept so the person sees what's wrong and what to do.</summary>
+    public static CompanyImportSource Unusable(Guid tenantId, Guid sessionId, Guid fileId, string fileName, int order, string problem)
+        => new()
+        {
+            TenantId = tenantId,
+            SessionId = sessionId,
+            FileId = fileId,
+            FileName = fileName,
+            Format = Path.GetExtension(fileName).TrimStart('.').ToLowerInvariant() is { Length: > 0 and <= 16 } ext ? ext : "file",
+            Order = order,
+            Kind = CompanyImportKind.Unknown,
+            Problem = problem,
         };
 
     public IReadOnlyList<CompanyImportColumnReading> Readings

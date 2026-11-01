@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState, type DragEvent } from "react";
 import { useRouter } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
 import { Alert, AlertDescription, Button } from "@repo/ds";
-import { PageContainer, PagePermissionNotice, Section } from "@repo/ds/shell";
+import { PageContainer, PagePermissionNotice } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { ApiError, coreImportQueryKeys } from "@repo/api";
 import { useTenantSummary } from "@repo/api/query";
@@ -13,16 +13,16 @@ import { canImportCoreEmployees, canManageCoreOrganization, useAuth } from "@rep
 import { AlertTriangle, Download, FileSpreadsheet, FileText, Upload } from "lucide-react";
 import { downloadBlob } from "@/lib/download";
 import { useActiveImport, useEarlierImports, useImportApi } from "../api/use-company-import";
+import { EarlierImports } from "./again-step";
 import { FileIcon, ImportHeader } from "./import-parts";
 
 export const MAX_FILES = 12;
 const MAX_BYTES = 10 * 1024 * 1024;
 
-/** The files a person dropped that Fusion can take, or the first reason it can't. */
-export function checkFiles(files: File[]): { problem: "format" | "size" | "many"; name?: string } | null {
+/** Files too many or too big to send; any other file goes up and says itself what's wrong with it. */
+export function checkFiles(files: File[]): { problem: "size" | "many"; name?: string } | null {
   if (files.length > MAX_FILES) return { problem: "many" };
   for (const file of files) {
-    if (!/\.(csv|xlsx)$/i.test(file.name)) return { problem: "format", name: file.name };
     if (file.size > MAX_BYTES) return { problem: "size", name: file.name };
   }
   return null;
@@ -37,7 +37,6 @@ export function useCanImport() {
 /** Drop (D-29): only the drop zone, with earlier imports under it once there are some. An open import resumes. */
 export default function ImportDrop() {
   const t = useTranslations("companyImport");
-  const format = useFormatter();
   const router = useRouter();
   const queryClient = useQueryClient();
   const api = useImportApi();
@@ -93,23 +92,7 @@ export default function ImportDrop() {
         </Alert>
       ) : null}
       <DropZone onFiles={(files) => void start(files)} disabled={Boolean(activeId)} />
-      {earlier.data && earlier.data.length > 0 ? (
-        <Section title={t("earlier.title")} flush className="mt-6">
-          <ul>
-            {earlier.data.map((item) => (
-              <li key={item.id} className="flex min-h-14 items-center gap-4 border-b border-border px-5 py-3 last:border-b-0">
-                <span className="grid size-10 place-items-center rounded-control bg-inlay text-muted-foreground"><FileSpreadsheet className="size-4" aria-hidden /></span>
-                <div className="min-w-0 flex-1">
-                  <p className="type-label text-foreground">{t("earlier.by", { date: format.dateTime(new Date(item.broughtInAt), { day: "numeric", month: "short" }), name: item.by })}</p>
-                  <p className="type-meta truncate text-muted-foreground">
-                    {item.fileNames.join(", ")} · {t("earlier.counts", { people: item.people, units: item.units })}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Section>
-      ) : null}
+      {earlier.data && earlier.data.length > 0 ? <EarlierImports items={earlier.data} className="mt-6" /> : null}
     </PageContainer>
   );
 }
@@ -129,7 +112,7 @@ export function DropZone({ onFiles, disabled, slim }: { onFiles: (files: File[])
       ref={input}
       type="file"
       multiple
-      accept=".csv,.xlsx"
+      
       className="sr-only"
       tabIndex={-1}
       aria-hidden

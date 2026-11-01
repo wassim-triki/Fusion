@@ -22,7 +22,9 @@
   "earlier": {
     "title": "Earlier imports",
     "by": "{date} · {name}",
-    "counts": "{people, plural, one {# person} other {# people}}, {units, plural, one {# unit} other {# units}}"
+    "counts": "{people, plural, one {# person} other {# people}}, {units, plural, one {# unit} other {# units}}",
+    "open": "Open",
+    "changed": "{count, plural, one {# change} other {# changes}}"
   },
   "reading": {
     "title": "{count, plural, one {Reading # file} other {Reading # files}}",
@@ -70,7 +72,7 @@
       "oneName": "{count, plural, one {# row with only one name} other {# rows with only one name}}",
       "noName": "{count, plural, one {# row without a name} other {# rows without a name}}",
       "unitNoName": "{count, plural, one {# unit without a name} other {# units without a name}}",
-      "already": "{count, plural, one {# person already in Fusion} other {# people already in Fusion}}",
+      "already": "{count, plural, one {# person who left, already in Fusion} other {# people who left, already in Fusion}}",
       "decided": "{count, plural, one {# person you left out} other {# people you left out}}"
     }
   },
@@ -226,7 +228,7 @@
   "left": {
     "columns": "{count, plural, one {the {names} column} other {the {names} columns}}",
     "left": "{count, plural, one {# person who has left} other {# people who have left}}",
-    "already": "{count, plural, one {# person already in Fusion} other {# people already in Fusion}}",
+    "already": "{count, plural, one {# person who left, already in Fusion} other {# people who left, already in Fusion}}",
     "decided": "{count, plural, one {# person you left out} other {# people you left out}}",
     "oneName": "{count, plural, one {# row with one name} other {# rows with one name}}",
     "noName": "{count, plural, one {# row without a name} other {# rows without a name}}",
@@ -363,6 +365,77 @@
       "noEmailDetail": "They can't be invited until they have one",
       "noPlace": "{count, plural, one {# person has no place} other {# people have no place}}",
       "seeWho": "See who"
-    }
+    },
+    "doneChanged": "{count, plural, one {change} other {changes}}",
+    "doneEnded": "{count, plural, one {leaver} other {leavers}}"
+  },
+  "badFile": {
+    "format": "Fusion reads Excel and CSV files",
+    "unreadable": "Couldn't open it: damaged, or protected by a password",
+    "empty": "No rows in it",
+    "tooBig": "Too big: up to 10 MB and 10,000 rows",
+    "nothing": "No people or units found",
+    "noNames": "No column for people's names",
+    "noUnitNames": "No column for unit names",
+    "remove": "Remove",
+    "replace": "Replace"
+  },
+  "noManagers": {
+    "title": "No column for managers",
+    "detail": "Not needed to bring people in",
+    "without": "Continue without managers",
+    "add": "I'll add a column",
+    "done": "Continuing without managers"
+  },
+  "again": {
+    "crumb": "Changes",
+    "toChanges": "Show the changes",
+    "matchedBy": {
+      "number": "Matched by employee number",
+      "email": "Matched by work email"
+    },
+    "bringIn": "{count, plural, =0 {Nothing to bring in} one {Bring in # change} other {Bring in # changes}}",
+    "back": "What Fusion understood",
+    "new": "New",
+    "changed": "Changed",
+    "notInFile": "Not in this file",
+    "unchanged": "Unchanged",
+    "units": "Units",
+    "jobs": "Jobs",
+    "newLine": "{title} · {unit} · starts {date}",
+    "newManager": "{name}'s team",
+    "field": {
+      "jobTitle": "Job",
+      "unit": "Unit",
+      "place": "Place",
+      "manager": "Manager",
+      "name": "Name",
+      "parent": "Under",
+      "jobLevel": "Level",
+      "jobFamily": "Family"
+    },
+    "none": "None",
+    "keep": "Keep them as they are",
+    "end": "They have left",
+    "kept": "Kept as they are",
+    "ending": "Leaves on {date}",
+    "undo": "Change",
+    "applyFrom": "Changes apply from",
+    "applyHint": "Shown on each person's history, dated",
+    "toCheck": "Also to check",
+    "nothing": "Nothing in these files changes what Fusion has."
+  },
+  "stopped": {
+    "title": "Bringing in stopped at row {row}",
+    "titleLines": "Bringing in stopped partway",
+    "meta": "Fusion lost its connection partway",
+    "in": "In",
+    "inValue": "{units, plural, one {# unit} other {# units}}, {jobs, plural, one {# job} other {# jobs}}, {people, plural, one {# person} other {# people}}",
+    "notYet": "Not yet",
+    "notYetValue": "{count, plural, =0 {Who reports to whom} one {# person, and who reports to whom} other {# people, and who reports to whom}}",
+    "invited": "Invited",
+    "nobody": "Nobody",
+    "retry": "Try again from row {row}",
+    "retryLines": "Try again"
   }
 }

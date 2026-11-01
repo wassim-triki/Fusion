@@ -7,7 +7,7 @@ const file = (name: string, bytes = 10) => new File([new Uint8Array(bytes)], nam
 describe("the import, on the client", () => {
   it("takes Excel and CSV files up to 10 MB, twelve at a time", () => {
     expect(checkFiles([file("people.xlsx"), file("units.csv")])).toBeNull();
-    expect(checkFiles([file("people.pdf")])).toEqual({ problem: "format", name: "people.pdf" });
+    expect(checkFiles([file("people.pdf")])).toBeNull();
     expect(checkFiles([file("big.csv", 10 * 1024 * 1024 + 1)])).toEqual({ problem: "size", name: "big.csv" });
     expect(checkFiles(Array.from({ length: 13 }, (_, i) => file(`f${i}.csv`)))).toEqual({ problem: "many" });
   });

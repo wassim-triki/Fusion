@@ -127,7 +127,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<CompanyImportReader>();
         services.AddScoped<CompanyImportService>();
         services.AddScoped<CompanyImportBringIn>();
-        services.AddSingleton<CompanyImportProgress>();
         services.AddHostedService<CompanyImportWorker>();
 
         services.AddHttpClient<Features.People.Changes.ChangeDrafter>(client =>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -22,7 +22,8 @@ import { PageContainer, Section } from "@repo/ds/shell";
 import { Segmented } from "@repo/ds/choice";
 import { useQueryClient } from "@tanstack/react-query";
 import { coreImportQueryKeys, type ColumnQuestionDto, type CompanyImportDto, type CompanyImportFactDto, type CompanyImportFileDto, type CompanyImportSheetDto } from "@repo/api";
-import { AlertTriangle, ArrowRight, Briefcase, Building2, CheckCircle2, File as FileGlyph, MapPin, Network, UserRound, X } from "lucide-react";
+import { AlertTriangle, ArrowRight, Briefcase, Building2, CheckCircle2, File as FileGlyph, FileX, MapPin, Network, UserRound, X } from "lucide-react";
+import { cn } from "@repo/ds/lib/utils";
 import { useImportChange } from "../api/use-company-import";
 import { checkFiles, DropZone, MAX_FILES } from "./import-drop";
 import { AiMark, FileIcon, ImportHeader, ShareBar, useFieldLabel } from "./import-parts";
@@ -37,6 +38,8 @@ export function Understood({ data }: { data: CompanyImportDto }) {
   const tFiles = useTranslations("companyImport.fileProblem");
   const [problem, setProblem] = useState<string | null>(null);
   const open = data.questions.filter((question) => question.answer === null).length;
+  const tAgain = useTranslations("companyImport.again");
+  const toNext = data.again ? tAgain("toChanges") : t("toChart");
 
   const addFiles = (files: File[]) => {
     if (files.length === 0) return;
@@ -77,7 +80,7 @@ export function Understood({ data }: { data: CompanyImportDto }) {
             </AlertDialog>
             {data.files.length < MAX_FILES ? <DropZone slim onFiles={addFiles} disabled={change.pending !== null} /> : null}
             <Button disabled={open > 0} asChild={open === 0}>
-              {open === 0 ? <Link href={`/import/${data.id}?step=chart`}>{t("toChart")}</Link> : <span>{t("toChart")}</span>}
+              {open === 0 ? <Link href={`/import/${data.id}?step=chart`}>{toNext}</Link> : <span>{toNext}</span>}
             </Button>
           </>
         }
@@ -90,7 +93,13 @@ export function Understood({ data }: { data: CompanyImportDto }) {
       ) : null}
       <div className="grid gap-4">
         {data.files.map((file) => (
-          <FileCard key={file.id} file={file} data={data} onRemove={data.files.length > 1 ? () => void change.run("remove", (api, version) => api.removeFile(data.id, version, file.id)) : undefined} change={change} />
+          <FileCard key={file.id} file={file} data={data} change={change}
+            onRemove={data.files.length > 1 ? () => void change.run("remove", (api, version) => api.removeFile(data.id, version, file.id)) : undefined}
+            onReplace={async (files) => {
+              if (await change.run("files", (api, version) => api.addFiles(data.id, version, files)))
+                await change.run("remove", (api, version) => api.removeFile(data.id, version, file.id));
+            }}
+          />
         ))}
         <Across data={data} />
       </div>
@@ -100,21 +109,57 @@ export function Understood({ data }: { data: CompanyImportDto }) {
 
 type Change = ReturnType<typeof useImportChange>;
 
-function FileCard({ file, data, onRemove, change }: { file: CompanyImportFileDto; data: CompanyImportDto; onRemove?: () => void; change: Change }) {
+function FileCard({ file, data, onRemove, onReplace, change }: {
+  file: CompanyImportFileDto; data: CompanyImportDto; onRemove?: () => void; onReplace: (files: File[]) => Promise<void>; change: Change;
+}) {
   const t = useTranslations("companyImport.understood");
+  const tBad = useTranslations("companyImport.badFile");
   const known = file.sheets.filter((sheet) => sheet.kind !== "Unknown");
   const unknown = file.sheets.filter((sheet) => sheet.kind === "Unknown");
   const csv = file.format === "csv";
+  const replace = useRef<HTMLInputElement>(null);
   const remove = onRemove ? (
     <Button variant="ghost" size="icon" onClick={onRemove} aria-label={t("removeFile", { name: file.name })}>
       <X className="size-4" aria-hidden />
     </Button>
   ) : null;
 
+  // A file Fusion can't use says what's wrong and the one thing to do: replace it, or remove it.
+  const replaceButton = (
+    <>
+      <Button variant="outline" size="sm" onClick={() => replace.current?.click()} disabled={change.pending !== null}>{tBad("replace")}</Button>
+      <input ref={replace} type="file" accept=".csv,.xlsx" className="sr-only" tabIndex={-1} aria-hidden
+        onChange={(event) => {
+          const files = Array.from(event.target.files ?? []);
+          event.target.value = "";
+          if (files.length > 0) void onReplace(files.slice(0, 1));
+        }} />
+    </>
+  );
+
+  if (file.problem && file.sheets.length === 0) {
+    const unusable = file.problem === "format" || file.problem === "unreadable" || file.problem === "tooBig";
+    return (
+      <section className="overflow-hidden rounded-surface bg-card" aria-label={file.name}>
+        <FileHead
+          file={file}
+          meta={tBad(file.problem)}
+          tone={unusable ? "bad" : "warn"}
+          trailing={
+            <span className="flex shrink-0 gap-2">
+              {file.problem !== "format" ? replaceButton : null}
+              {onRemove ? <Button variant="ghost" size="sm" onClick={onRemove} disabled={change.pending !== null}>{tBad("remove")}</Button> : null}
+            </span>
+          }
+        />
+      </section>
+    );
+  }
+
   return (
     <section className="overflow-hidden rounded-surface bg-card" aria-label={file.name}>
       {known.length === 0 ? (
-        <FileHead file={file} meta={t("nothing")} trailing={remove} />
+        <FileHead file={file} meta={tBad("nothing")} tone="warn" trailing={<span className="flex shrink-0 items-center gap-2">{replaceButton}{remove}</span>} />
       ) : (
         known.map((sheet, i) => (
           <div key={sheet.name} className={i > 0 ? "border-t border-border" : undefined}>
@@ -133,6 +178,12 @@ function FileCard({ file, data, onRemove, change }: { file: CompanyImportFileDto
           </div>
         ))
       )}
+      {file.problem && known.length > 0 ? (
+        <Note icon={<AlertTriangle className="size-4 text-warning" aria-hidden />}>
+          <span className="type-body text-foreground">{tBad(file.problem)}</span>
+          <span className="flex gap-2">{replaceButton}</span>
+        </Note>
+      ) : null}
       {unknown.map((sheet) => (
         <Note key={sheet.name} icon={<FileGlyph className="size-4" aria-hidden />}>
           <span className="type-body text-foreground">
@@ -152,16 +203,19 @@ function FileCard({ file, data, onRemove, change }: { file: CompanyImportFileDto
   );
 }
 
-function FileHead({ file, meta, kind, ai, trailing }: { file: CompanyImportFileDto; meta: string; kind?: CompanyImportSheetDto["kind"]; ai?: boolean; trailing?: ReactNode }) {
+function FileHead({ file, meta, kind, ai, tone, trailing }: {
+  file: CompanyImportFileDto; meta: string; kind?: CompanyImportSheetDto["kind"]; ai?: boolean; tone?: "bad" | "warn"; trailing?: ReactNode;
+}) {
   const t = useTranslations("companyImport.understood");
   return (
     <div className="flex items-center gap-3.5 px-5 py-4">
-      <span className="grid size-[2.625rem] shrink-0 place-items-center rounded-control bg-inlay text-muted-foreground">
-        <FileIcon format={file.format} className="size-5" />
+      <span className={cn("grid size-[2.625rem] shrink-0 place-items-center rounded-control bg-inlay",
+        tone === "bad" ? "text-destructive" : tone === "warn" ? "text-warning" : "text-muted-foreground")}>
+        {tone === "bad" ? <FileX className="size-5" aria-hidden /> : <FileIcon format={file.format} className="size-5" />}
       </span>
       <div className="grid min-w-0 flex-1 gap-0.5">
         <p className="type-label truncate text-foreground">{file.name}</p>
-        <p className="type-meta text-muted-foreground">{meta}</p>
+        <p className={cn("type-meta", tone === "bad" ? "text-destructive" : "text-muted-foreground")}>{meta}</p>
       </div>
       {kind ? <span className="inline-flex h-7 items-center rounded-full border border-border bg-inlay px-3 type-meta-strong text-foreground">{t(`kind.${kind}`)}</span> : null}
       {ai ? (
@@ -204,6 +258,26 @@ function QuestionRow({ question, change, id }: { question: ColumnQuestionDto; ch
   const label = useFieldLabel();
   const fieldPhrase = (field: string) => t(`phrase.${field}` as never);
   const answer = (value: string | null) => void change.run("answer", (api, version) => api.answer(id, version, question.key, value));
+  const tNone = useTranslations("companyImport.noManagers");
+
+  // No manager column isn't needed to bring people in: continue without, or replace the file with one that has it.
+  if (question.kind === "noManagers")
+    return question.answer !== null ? (
+      <div className="flex items-center gap-3.5 border-t border-border px-5 py-3.5">
+        <CheckCircle2 className="size-4 text-success" aria-hidden />
+        <p className="type-label flex-1 text-foreground">{tNone("done")}</p>
+        <Button variant="ghost" size="sm" onClick={() => answer(null)} disabled={change.pending !== null}>{t("change")}</Button>
+      </div>
+    ) : (
+      <div className="flex flex-wrap items-center gap-3.5 border-t border-border px-5 py-3.5">
+        <AlertTriangle className="size-4 text-warning" aria-hidden />
+        <div className="grid min-w-0 flex-1 gap-0.5">
+          <p className="type-label text-foreground">{tNone("title")}</p>
+          <p className="type-meta text-muted-foreground">{tNone("detail")}</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => answer("without")} disabled={change.pending !== null}>{tNone("without")}</Button>
+      </div>
+    );
 
   if (question.answer !== null)
     return (

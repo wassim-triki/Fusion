@@ -22,7 +22,9 @@
   "earlier": {
     "title": "عمليات استيراد سابقة",
     "by": "{date} · {name}",
-    "counts": "{people, plural, one {شخص واحد} two {شخصان} few {# أشخاص} many {# شخصًا} other {# شخص}}، {units, plural, one {وحدة واحدة} two {وحدتان} few {# وحدات} many {# وحدة} other {# وحدة}}"
+    "counts": "{people, plural, one {شخص واحد} two {شخصان} few {# أشخاص} many {# شخصًا} other {# شخص}}، {units, plural, one {وحدة واحدة} two {وحدتان} few {# وحدات} many {# وحدة} other {# وحدة}}",
+    "open": "فتح",
+    "changed": "{count, plural, one {تعديل واحد} other {# تعديلات}}"
   },
   "reading": {
     "title": "{count, plural, one {قراءة ملف واحد} two {قراءة ملفين} few {قراءة # ملفات} many {قراءة # ملفًا} other {قراءة # ملف}}",
@@ -70,7 +72,7 @@
       "oneName": "{count, plural, one {صف واحد باسم واحد} two {صفان باسم واحد} few {# صفوف باسم واحد} many {# صفًا باسم واحد} other {# صف باسم واحد}}",
       "noName": "{count, plural, one {صف واحد بلا اسم} two {صفان بلا اسم} few {# صفوف بلا اسم} many {# صفًا بلا اسم} other {# صف بلا اسم}}",
       "unitNoName": "{count, plural, one {وحدة واحدة بلا اسم} two {وحدتان بلا اسم} few {# وحدات بلا اسم} many {# وحدة بلا اسم} other {# وحدة بلا اسم}}",
-      "already": "{count, plural, one {شخص واحد موجود في Fusion} two {شخصان موجودان في Fusion} few {# أشخاص موجودون في Fusion} many {# شخصًا موجودون في Fusion} other {# شخص موجودون في Fusion}}",
+      "already": "{count, plural, one {شخص واحد غادر، موجود في Fusion} other {# أشخاص غادروا، موجودون في Fusion}}",
       "decided": "{count, plural, one {شخص واحد استبعدته} two {شخصان استبعدتهما} few {# أشخاص استبعدتهم} many {# شخصًا استبعدتهم} other {# شخص استبعدتهم}}"
     }
   },
@@ -226,7 +228,7 @@
   "left": {
     "columns": "{count, plural, one {العمود {names}} other {الأعمدة {names}}}",
     "left": "{count, plural, one {شخص واحد غادر} two {شخصان غادرا} few {# أشخاص غادروا} many {# شخصًا غادروا} other {# شخص غادروا}}",
-    "already": "{count, plural, one {شخص واحد موجود في Fusion} two {شخصان موجودان في Fusion} few {# أشخاص موجودون في Fusion} many {# شخصًا موجودون في Fusion} other {# شخص موجودون في Fusion}}",
+    "already": "{count, plural, one {شخص واحد غادر، موجود في Fusion} other {# أشخاص غادروا، موجودون في Fusion}}",
     "decided": "{count, plural, one {شخص واحد استبعدته} two {شخصان استبعدتهما} few {# أشخاص استبعدتهم} many {# شخصًا استبعدتهم} other {# شخص استبعدتهم}}",
     "oneName": "{count, plural, one {صف واحد باسم واحد} two {صفان باسم واحد} few {# صفوف باسم واحد} many {# صفًا باسم واحد} other {# صف باسم واحد}}",
     "noName": "{count, plural, one {صف واحد بلا اسم} two {صفان بلا اسم} few {# صفوف بلا اسم} many {# صفًا بلا اسم} other {# صف بلا اسم}}",
@@ -363,6 +365,77 @@
       "noEmailDetail": "لا يمكن دعوتهم قبل أن يكون لديهم بريد",
       "noPlace": "{count, plural, one {شخص واحد بلا مكان} two {شخصان بلا مكان} few {# أشخاص بلا مكان} many {# شخصًا بلا مكان} other {# شخص بلا مكان}}",
       "seeWho": "عرض من هم"
-    }
+    },
+    "doneChanged": "{count, plural, one {تغيير} other {تغييرات}}",
+    "doneEnded": "{count, plural, one {مغادر} other {مغادرون}}"
+  },
+  "badFile": {
+    "format": "يقرأ Fusion ملفات Excel وCSV",
+    "unreadable": "تعذر فتحه: تالف أو محمي بكلمة مرور",
+    "empty": "لا توجد فيه صفوف",
+    "tooBig": "كبير جدًا: حتى 10 ميغابايت و10000 صف",
+    "nothing": "لم يُعثر على أشخاص ولا وحدات",
+    "noNames": "لا يوجد عمود لأسماء الأشخاص",
+    "noUnitNames": "لا يوجد عمود لأسماء الوحدات",
+    "remove": "إزالة",
+    "replace": "استبدال"
+  },
+  "noManagers": {
+    "title": "لا يوجد عمود للمديرين",
+    "detail": "ليس ضروريًا لإدخال الأشخاص",
+    "without": "المتابعة دون مديرين",
+    "add": "سأضيف عمودًا",
+    "done": "المتابعة دون مديرين"
+  },
+  "again": {
+    "crumb": "التغييرات",
+    "toChanges": "عرض التغييرات",
+    "matchedBy": {
+      "number": "مطابقة برقم الموظف",
+      "email": "مطابقة بالبريد المهني"
+    },
+    "bringIn": "{count, plural, =0 {لا شيء لإدخاله} one {إدخال تغيير واحد} other {إدخال # تغييرات}}",
+    "back": "ما فهمه Fusion",
+    "new": "جدد",
+    "changed": "تغيّروا",
+    "notInFile": "غير موجودين في هذا الملف",
+    "unchanged": "دون تغيير",
+    "units": "الوحدات",
+    "jobs": "الوظائف",
+    "newLine": "{title} · {unit} · يبدأ في {date}",
+    "newManager": "فريق {name}",
+    "field": {
+      "jobTitle": "الوظيفة",
+      "unit": "الوحدة",
+      "place": "المكان",
+      "manager": "المدير",
+      "name": "الاسم",
+      "parent": "تحت",
+      "jobLevel": "المستوى",
+      "jobFamily": "العائلة"
+    },
+    "none": "لا أحد",
+    "keep": "إبقاؤه كما هو",
+    "end": "لقد غادر",
+    "kept": "أُبقي كما هو",
+    "ending": "يغادر في {date}",
+    "undo": "تغيير",
+    "applyFrom": "تسري التغييرات من",
+    "applyHint": "تظهر مؤرخة في سجل كل شخص",
+    "toCheck": "للتحقق أيضًا",
+    "nothing": "لا شيء في هذه الملفات يغيّر ما في Fusion."
+  },
+  "stopped": {
+    "title": "توقف الإدخال عند الصف {row}",
+    "titleLines": "توقف الإدخال في منتصف الطريق",
+    "meta": "فقد Fusion الاتصال في منتصف الطريق",
+    "in": "تم إدخاله",
+    "inValue": "{units, plural, one {وحدة واحدة} other {# وحدات}}، {jobs, plural, one {وظيفة واحدة} other {# وظائف}}، {people, plural, one {شخص واحد} other {# أشخاص}}",
+    "notYet": "لم يُدخل بعد",
+    "notYetValue": "{count, plural, =0 {من يتبع لمن} one {شخص واحد، ومن يتبع لمن} other {# أشخاص، ومن يتبع لمن}}",
+    "invited": "المدعوون",
+    "nobody": "لا أحد",
+    "retry": "إعادة المحاولة من الصف {row}",
+    "retryLines": "إعادة المحاولة"
   }
 }

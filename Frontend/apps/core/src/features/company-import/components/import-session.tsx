@@ -11,6 +11,7 @@ import { useBreadcrumbLabel } from "@/shell/breadcrumb-overrides";
 import { useCompanyImport } from "../api/use-company-import";
 import { useCanImport } from "./import-drop";
 import { BringFrame } from "./bring-frame";
+import { AgainStep } from "./again-step";
 import { ChartStep } from "./chart-step";
 import { Understood } from "./understood";
 
@@ -27,9 +28,9 @@ export default function ImportSession({ id }: { id: string }) {
   const data = query.data;
   const questionsOpen = data?.questions.some((question) => question.answer === null) ?? true;
   const view = !data ? null
-    : data.status === "BringingIn" || data.status === "BroughtIn" ? "bring"
-    : step === "chart" && !questionsOpen ? "chart" : "understood";
-  useBreadcrumbLabel(id, view === "bring" ? data?.companyName : view === "chart" ? t("chart.crumb") : view ? t("understood.title") : undefined);
+    : data.status === "BringingIn" || data.status === "Stopped" || data.status === "BroughtIn" ? "bring"
+    : step === "chart" && !questionsOpen ? (data.again ? "again" : "chart") : "understood";
+  useBreadcrumbLabel(id, view === "bring" ? data?.companyName : view === "chart" ? t("chart.crumb") : view === "again" ? t("again.crumb") : view ? t("understood.title") : undefined);
 
   useEffect(() => {
     if (data?.status === "Discarded") router.replace("/import");
@@ -47,5 +48,6 @@ export default function ImportSession({ id }: { id: string }) {
 
   if (view === "bring") return <BringFrame data={data} />;
   if (view === "chart") return <ChartStep data={data} />;
+  if (view === "again") return <AgainStep data={data} />;
   return <Understood data={data} />;
 }

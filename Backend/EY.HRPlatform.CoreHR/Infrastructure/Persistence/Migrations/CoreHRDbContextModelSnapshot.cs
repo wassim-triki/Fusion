@@ -2249,6 +2249,9 @@ namespace EY.HRPlatform.CoreHR.Infrastructure.Persistence.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
 
+                    b.Property<string>("PlanJson")
+                        .HasColumnType("jsonb");
+
                     b.Property<string>("ProvenanceJson")
                         .HasColumnType("jsonb");
 
@@ -2257,6 +2260,9 @@ namespace EY.HRPlatform.CoreHR.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(64)");
 
                     b.Property<string>("ResultJson")
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("RunJson")
                         .HasColumnType("jsonb");
 
                     b.Property<string>("StartedByDisplayName")
@@ -2337,6 +2343,10 @@ namespace EY.HRPlatform.CoreHR.Infrastructure.Persistence.Migrations
 
                     b.Property<int>("Order")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Problem")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
 
                     b.Property<string>("ReadingsJson")
                         .IsRequired()

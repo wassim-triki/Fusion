@@ -13,6 +13,7 @@ When LOG passes ~150 lines, move the oldest days to `archive/LOG-YYYY-MM*.md`.
 
 ## 2026-11-01
 
+- ✓ **B-185** Team page accepted by the user after round 1 · Claude
 - **B-185** review round 1, as the user asked: the Performance tab's content sits in one titled section ("Your people", the phase line as its meta, the lead action in it), no second "My Team" heading under the band; more room between the band's cards. Evidence: performance type-check, 1 screen retaken · Claude
 - → **B-185** Team page sent to review. One page in the person page's grammar: a band with the team as a small chart (each person's next thing from Core HR dates and Performance 1:1s and plan signals), tabs Overview · Performance · Org chart; Overview has the rail, Coming up for 30 days, the next joiner's first week (the manager's checklist tasks), the team's year. A new self-only Core HR read serves the caller's own team; Performance's My Team became the Performance tab under the same band and left its sidebar. Evidence: CoreHR 670/0/5 (MyTeam 6 incl. a report reading only their own team, another company's id not found, no team view refused), core 5 files / 52, performance 4 files / 19, ds team band 3, cold builds core + performance passed, 4 screens · Claude
 - ✓ **B-184** Joining and leaving accepted by the user, with ✓ B-146 Celebrations · Claude

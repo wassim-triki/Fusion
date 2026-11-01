@@ -2,7 +2,7 @@
 
 Lets any agent resume mid-task (Codex on a usage limit). Update at milestones, kept light. When done: log to `LOG.md`, close the item (○) or send it to In review per the review gate in `AGENTS.md`, reset these sections to None, and update `Last finished`. Accounts and seed scripts: `data/`.
 
-**Last finished:** 2026-11-01: → B-185 Team page (in review). Earlier: ✓ B-184 Joining and leaving; ○ B-243 Leaner logs and checks.
+**Last finished:** 2026-11-01: ✓ B-185 Team page. Earlier: ✓ B-184 Joining and leaving; ○ B-243 Leaner logs and checks.
 
 ## Active work
 

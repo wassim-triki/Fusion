@@ -35,7 +35,7 @@ public class SettingsSectionRegistryTests
     {
         var sections = Registry(TenantA).GetVisibleSections(Principal((CorePermissions.SettingsPeopleDataView, PermissionScopes.Tenant)));
 
-        Assert.Equal([CoreSettingsSectionIds.EmployeeFields, CoreSettingsSectionIds.Lists, CoreSettingsSectionIds.Approvals], sections.Select(section => section.Id));
+        Assert.Equal([CoreSettingsSectionIds.EmployeeFields, CoreSettingsSectionIds.Lists, CoreSettingsSectionIds.Approvals, CoreSettingsSectionIds.Checklists], sections.Select(section => section.Id));
         Assert.All(sections, section => Assert.Equal(FusionSettingsSectionDto.View, section.Access));
         Assert.Equal("/core/settings/employee-fields", sections[0].Path);
         Assert.Equal("/core/settings/lists", sections[1].Path);
@@ -55,16 +55,16 @@ public class SettingsSectionRegistryTests
             (CorePermissions.SettingsManage, PermissionScopes.Tenant),
             (CorePermissions.AccessProfilesManageV2, PermissionScopes.Tenant)));
 
-        Assert.Equal(["brand", "details", "employee-fields", "lists", "jobs", "places", "roles", "approvals", "sign-in", "notifications", "change-history"], sections.Select(section => section.Id));
-        Assert.Equal(["Brand", "Details", "Fields", "Lists", "Jobs", "Places", "Roles", "Changes and approvals", "Sign-in", "Notifications", "Change history"], sections.Select(section => section.Label));
-        Assert.Equal([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], sections.Select(section => section.Order));
+        Assert.Equal(["brand", "details", "employee-fields", "lists", "jobs", "places", "roles", "approvals", "checklists", "sign-in", "notifications", "change-history"], sections.Select(section => section.Id));
+        Assert.Equal(["Brand", "Details", "Fields", "Lists", "Jobs", "Places", "Roles", "Changes and approvals", "Joining and leaving", "Sign-in", "Notifications", "Change history"], sections.Select(section => section.Label));
+        Assert.Equal([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], sections.Select(section => section.Order));
         Assert.Equal(FusionSettingsSectionDto.Manage, sections[0].Access);
         Assert.Equal(FusionSettingsSectionDto.View, sections[1].Access);
         Assert.All(sections.Skip(2).Take(2), section => Assert.Equal(FusionSettingsSectionDto.Manage, section.Access));
         // Jobs and Places are managed by whoever manages the organization, not by settings grants.
         Assert.All(sections.Skip(4).Take(2), section => Assert.Equal(FusionSettingsSectionDto.View, section.Access));
-        Assert.All(sections.Skip(6).Take(4), section => Assert.Equal(FusionSettingsSectionDto.Manage, section.Access));
-        Assert.Equal(FusionSettingsSectionDto.View, sections[10].Access);
+        Assert.All(sections.Skip(6).Take(5), section => Assert.Equal(FusionSettingsSectionDto.Manage, section.Access));
+        Assert.Equal(FusionSettingsSectionDto.View, sections[11].Access);
     }
 
     [Fact]
@@ -132,7 +132,7 @@ public class SettingsSectionRegistryTests
             Principal((CorePermissions.SettingsManage, PermissionScopes.Tenant), (CorePermissions.AccessProfilesManageV2, PermissionScopes.Tenant)),
             CancellationToken.None);
 
-        Assert.Equal(11, sections.Count);
+        Assert.Equal(12, sections.Count);
         Assert.Null(sections.Single(section => section.Id == "roles").LastChange);
     }
 
@@ -144,7 +144,7 @@ public class SettingsSectionRegistryTests
         var sections = await Registry(TenantA, Guid.NewGuid().ToString(), identity.Object).GetSectionsAsync(
             Principal((CorePermissions.SettingsPeopleDataView, PermissionScopes.Tenant)), CancellationToken.None);
 
-        Assert.Equal(["employee-fields", "lists", "approvals"], sections.Select(section => section.Id));
+        Assert.Equal(["employee-fields", "lists", "approvals", "checklists"], sections.Select(section => section.Id));
         identity.VerifyNoOtherCalls();
     }
 

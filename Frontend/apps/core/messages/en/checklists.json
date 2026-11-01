@@ -1,0 +1,65 @@
+{
+  "title": {
+    "Joining": "Joining",
+    "Leaving": "Leaving",
+    "you": {
+      "Joining": "Your first week",
+      "Leaving": "Before your last day"
+    }
+  },
+  "progress": "{done} of {count} done",
+  "day": {
+    "Joining": "First day {date}",
+    "Leaving": "Last day {date}"
+  },
+  "doneBy": "Done by {name} · {date}",
+  "owner": {
+    "hr": "HR",
+    "manager": "Manager",
+    "person": "The person"
+  },
+  "didNotLoad": "The checklist didn't load.",
+  "retry": "Try again",
+  "didNotSave": "That didn't save. Try again.",
+  "settings": {
+    "kind": {
+      "joining": "Joining",
+      "leaving": "Leaving"
+    },
+    "empty": {
+      "joining": "No joining tasks yet",
+      "leaving": "No leaving tasks yet"
+    },
+    "taskName": "Task",
+    "who": "Who does it",
+    "days": "Days",
+    "when": "When",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "remove": "Remove",
+    "add": "Add a task",
+    "addAction": "Add",
+    "addPlaceholder": "Add a task",
+    "saved": "Checklists saved",
+    "didNotSave": "The checklists didn't save. Try again.",
+    "due": {
+      "joining": {
+        "before": "{count, plural, one {day} other {days}} before the first day",
+        "on": "On the first day",
+        "after": "{count, plural, one {day} other {days}} after the first day"
+      },
+      "leaving": {
+        "before": "{count, plural, one {day} other {days}} before the last day",
+        "on": "On the last day",
+        "after": "{count, plural, one {day} other {days}} after the last day"
+      }
+    }
+  },
+  "birthday": {
+    "title": "Birthday",
+    "label": "Show my birthday to my team, day and month only",
+    "shared": "Your team will see your birthday",
+    "hidden": "Your birthday is hidden",
+    "didNotSave": "That didn't save. Try again."
+  }
+}

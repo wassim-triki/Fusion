@@ -3,6 +3,7 @@
 import { use } from "react";
 import { CoreSettingsSectionHost } from "@/features/settings/section-host";
 import { ApprovalsSettings } from "@/features/settings/sections/approvals";
+import { ChecklistsSettings } from "@/features/settings/sections/checklists";
 import { ChangeHistorySettings } from "@/features/settings/sections/change-history";
 import { BrandSettings } from "@/features/settings/sections/brand";
 import { DetailsSettings } from "@/features/settings/sections/details";
@@ -38,6 +39,8 @@ export default function SettingsSectionPage({ params }: { params: Promise<{ sect
             return <RolesSettings section={section} />;
           case "approvals":
             return <ApprovalsSettings section={section} />;
+          case "checklists":
+            return <ChecklistsSettings section={section} />;
           case "sign-in":
             return <SignInSettings section={section} />;
           case "notifications":

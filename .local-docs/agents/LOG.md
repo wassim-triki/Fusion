@@ -13,6 +13,7 @@ When LOG passes ~150 lines, move the oldest days to `archive/LOG-YYYY-MM*.md`.
 
 ## 2026-11-01
 
+- → **B-184** Joining and leaving sent to review (absorbs B-146 Celebrations). Company checklists for joining and leaving in Settings (tasks for HR, the manager, the person, due from the first or last day); a hire, rehire or end of employment copies them onto the person, a cancelled change removes them; HR sees and ticks all, the manager theirs (and sees the person's), the person their own, with who and when; Needs you carries each owner's open tasks, the joiner's own as "Your first week"; Coming up shows work anniversaries and shared birthdays (day and month) of the people around you. Demo: Yasmine Trabelsi joins Mariam's team in 3 days, Aicha's birthday is shared. Evidence: CoreHR 664/0/5 (8 new); core touched 6 files / 60 passed; type-check core clean; journey 22/22; screens `plans/B-184-screens/` 4 · Claude
 - ○ **B-243** Leaner logs and checks, as the user asked: LOG entries shorter (format in LOG's header), tests only for what proves the behavior plus authorization and cross-tenant negatives, no tooling a task doesn't need, screens only one per new surface against its drawing (AGENTS.md › Verification). Days up to 2026-10-27 moved to `archive/LOG-2026-10-mid.md` · Claude
 
 - **B-241** dropped: clicking a unit keeps opening its panel, which links to the unit page (user's call) · Claude

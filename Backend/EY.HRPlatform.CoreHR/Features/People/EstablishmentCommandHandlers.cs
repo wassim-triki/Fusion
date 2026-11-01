@@ -220,6 +220,7 @@ internal static class EstablishmentOrchestrator
                 // The new hire's manager hears who joins their team.
                 if (notifications is not null)
                     await notifications.StageAsync(change, details, cancellationToken);
+                await Checklists.ChecklistService.StageAsync(dbContext, tenantContext.TenantId, change, details, actor, cancellationToken);
             }
 
             await dbContext.SaveChangesAsync(cancellationToken);

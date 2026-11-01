@@ -1,0 +1,65 @@
+{
+  "title": {
+    "Joining": "الانضمام",
+    "Leaving": "المغادرة",
+    "you": {
+      "Joining": "أسبوعك الأول",
+      "Leaving": "قبل يومك الأخير"
+    }
+  },
+  "progress": "{done} من {count} منجزة",
+  "day": {
+    "Joining": "اليوم الأول {date}",
+    "Leaving": "اليوم الأخير {date}"
+  },
+  "doneBy": "أنجزها {name} · {date}",
+  "owner": {
+    "hr": "الموارد البشرية",
+    "manager": "المدير",
+    "person": "الشخص"
+  },
+  "didNotLoad": "تعذّر تحميل القائمة.",
+  "retry": "حاول مجددًا",
+  "didNotSave": "لم يُحفظ. حاول مجددًا.",
+  "settings": {
+    "kind": {
+      "joining": "الانضمام",
+      "leaving": "المغادرة"
+    },
+    "empty": {
+      "joining": "لا مهام انضمام بعد",
+      "leaving": "لا مهام مغادرة بعد"
+    },
+    "taskName": "المهمة",
+    "who": "من يقوم بها",
+    "days": "أيام",
+    "when": "متى",
+    "moveUp": "تحريك لأعلى",
+    "moveDown": "تحريك لأسفل",
+    "remove": "إزالة",
+    "add": "إضافة مهمة",
+    "addAction": "إضافة",
+    "addPlaceholder": "إضافة مهمة",
+    "saved": "حُفظت القوائم",
+    "didNotSave": "لم تُحفظ القوائم. حاول مجددًا.",
+    "due": {
+      "joining": {
+        "before": "{count, plural, one {يوم} other {أيام}} قبل اليوم الأول",
+        "on": "في اليوم الأول",
+        "after": "{count, plural, one {يوم} other {أيام}} بعد اليوم الأول"
+      },
+      "leaving": {
+        "before": "{count, plural, one {يوم} other {أيام}} قبل اليوم الأخير",
+        "on": "في اليوم الأخير",
+        "after": "{count, plural, one {يوم} other {أيام}} بعد اليوم الأخير"
+      }
+    }
+  },
+  "birthday": {
+    "title": "عيد الميلاد",
+    "label": "إظهار عيد ميلادي لفريقي، اليوم والشهر فقط",
+    "shared": "سيرى فريقك عيد ميلادك",
+    "hidden": "عيد ميلادك مخفي",
+    "didNotSave": "لم يُحفظ. حاول مجددًا."
+  }
+}

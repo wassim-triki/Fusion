@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using EY.HRPlatform.CoreHR.Features.Checklists;
 using EY.HRPlatform.CoreHR.Features.People.Changes;
 using EY.HRPlatform.CoreHR.Features.Security;
 using EY.HRPlatform.CoreHR.Infrastructure.Notifications;
@@ -24,7 +25,8 @@ public sealed class WorkController(
     ICoreHRReadinessService readiness,
     IWorkforceContractService workforce,
     ICoreAccessPolicyService accessPolicy,
-    ChangeRequestService? requests = null) : ControllerBase
+    ChangeRequestService? requests = null,
+    ChecklistService? checklists = null) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<FusionWorkItemDto>>>> Get(CancellationToken cancellationToken)
@@ -43,6 +45,8 @@ public sealed class WorkController(
             items.AddRange((await requests.ToDecideAsync(actor, cancellationToken))
                 .Select(request => CoreWorkItems.Decide(request, (key, values) => CoreNotificationRenderer.Catalog.Text(language, key, values) ?? key)));
         }
+        if (checklists is not null)
+            items.AddRange(await checklists.WorkAsync(ChecklistsController.Viewer(User, accessPolicy), FusionRequestLanguage.Of(Request), cancellationToken));
         items.AddRange(CoreWorkItems.Compose(tenantId, setup, access));
         return Ok(ApiResponse<IReadOnlyList<FusionWorkItemDto>>.Success(items));
     }

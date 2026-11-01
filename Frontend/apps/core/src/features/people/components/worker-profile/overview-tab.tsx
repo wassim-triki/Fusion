@@ -123,6 +123,7 @@ export function OverviewTab({
   timeline,
   jobHref,
   performanceHref,
+  checklist,
 }: {
   view: WorkerProfileView;
   /** The person or whoever changes their personal details. */
@@ -138,6 +139,8 @@ export function OverviewTab({
   timeline?: { isLoading: boolean };
   jobHref?: string;
   performanceHref?: string;
+  /** The joining or leaving checklist, shown under About (B-184). */
+  checklist?: ReactNode;
 }) {
   const t = useTranslations("profile.overview");
   const fields = usePeopleFields(view.employeeKey);
@@ -175,6 +178,8 @@ export function OverviewTab({
           fields={(fields.data ?? []).filter((field) => field.area === "About")}
         />
       ) : null}
+
+      {checklist}
 
       {changes.length > 0 || rows.length > 0 ? (
         <Section title={t("comingUp")} flush={rows.length > 0 && changes.length === 0}>

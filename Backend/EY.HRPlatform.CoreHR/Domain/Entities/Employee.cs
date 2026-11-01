@@ -40,6 +40,9 @@ public class Employee : AggregateRoot, ITenantEntity
 
     /// <summary>A few lines the person writes about themselves, shown first on their page (D-01).</summary>
     public string? About { get; private set; }
+
+    /// <summary>The person chose to let colleagues see their birthday (day and month, never the year).</summary>
+    public bool SharesBirthday { get; private set; }
     public string FullName => $"{FirstName} {LastName}";
     public string DisplayName => !string.IsNullOrWhiteSpace(PreferredName)
         ? $"{PreferredName} {LastName}"
@@ -230,6 +233,14 @@ public class Employee : AggregateRoot, ITenantEntity
     }
 
     /// <summary>Sets the person's About; blank clears it. False when nothing changed.</summary>
+    public bool SetBirthdaySharing(bool share)
+    {
+        if (share == SharesBirthday) return false;
+        SharesBirthday = share;
+        UpdatedAt = DateTime.UtcNow;
+        return true;
+    }
+
     public bool SetAbout(string? about)
     {
         var text = string.IsNullOrWhiteSpace(about) ? null : about.Trim().Replace("\r\n", "\n");

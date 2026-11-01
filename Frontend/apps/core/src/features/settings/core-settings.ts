@@ -10,6 +10,7 @@ export const CORE_SETTINGS_SECTIONS = [
   { id: "places", label: "Places" },
   { id: "roles", label: "Roles" },
   { id: "approvals", label: "Changes and approvals" },
+  { id: "checklists", label: "Joining and leaving" },
   { id: "sign-in", label: "Sign-in" },
   { id: "notifications", label: "Notifications" },
   { id: "change-history", label: "Change history" },

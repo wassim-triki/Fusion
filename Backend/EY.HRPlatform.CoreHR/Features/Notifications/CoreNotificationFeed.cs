@@ -98,12 +98,12 @@ public sealed class CoreNotificationFeed(CoreHRDbContext db, TenantContext tenan
             .OrderBy(change => change.EffectiveDate).ThenBy(change => change.CreatedAt)
             .Take(500)
             .ToListAsync(cancellationToken);
-        if (changes.Count == 0) return [];
+        var items = (await Checklists.Celebrations.UpcomingAsync(db, employeeId, today, horizon, language, cancellationToken)).ToList();
+        if (changes.Count == 0) return items.OrderBy(item => item.Date).ThenBy(item => item.Title, StringComparer.Ordinal).ToList();
         var peopleIds = changes.Select(change => change.EmployeeId).Distinct().ToList();
         var people = await db.Employees.AsNoTracking().Where(employee => peopleIds.Contains(employee.Id))
             .ToDictionaryAsync(employee => employee.Id, cancellationToken);
 
-        var items = new List<FusionUpcomingDto>();
         foreach (var change in changes)
         {
             if (!people.TryGetValue(change.EmployeeId, out var employee)) continue;

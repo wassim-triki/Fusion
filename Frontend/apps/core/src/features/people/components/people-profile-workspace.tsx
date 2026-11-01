@@ -83,6 +83,8 @@ import { AccountInspector } from "@/features/workforce-access/components/account
 import { IdentityCorrection } from "@/features/workforce-access/components/identity-correction";
 import { JobTab } from "./worker-profile/job-tab";
 import { PersonalTab, useSeenBy } from "./worker-profile/personal-tab";
+import { BirthdaySharing } from "@/features/checklists/birthday-sharing";
+import { ChecklistSection } from "@/features/checklists/checklist-section";
 import { OverviewTab, performanceUpcoming, useDayParts } from "./worker-profile/overview-tab";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { DocumentsTab } from "./worker-profile/documents-tab";
@@ -312,13 +314,16 @@ export default function PeopleProfileWorkspace({
   const body = !tabsKnown ? (
     <PageListSkeleton rows={4} />
   ) : tab === "personal" ? (
-    <PersonalTab
-      employeeKey={employeeKey}
-      displayName={view.displayName}
-      workEmail={view.workEmail}
-      isSelf={isSelf}
-      selfService={isSelf ? selfService : undefined}
-    />
+    <div className="space-y-5">
+      <PersonalTab
+        employeeKey={employeeKey}
+        displayName={view.displayName}
+        workEmail={view.workEmail}
+        isSelf={isSelf}
+        selfService={isSelf ? selfService : undefined}
+      />
+      {isSelf && !isAsOf ? <BirthdaySharing /> : null}
+    </div>
   ) : tab === "performance" ? (
     <PerformanceRecordView employeeId={employee.identity.employeeId} />
   ) : tab === "documents" ? (
@@ -373,6 +378,7 @@ export default function PeopleProfileWorkspace({
       performanceHref={showPerformance ? tabHref("performance") : undefined}
       timeline={explores && !timelineForbidden ? { isLoading: timeline.isLoading } : undefined}
       jobHref={tabHref("job")}
+      checklist={isAsOf ? undefined : <ChecklistSection employeeKey={employeeKey} isSelf={isSelf} />}
     />
   );
 

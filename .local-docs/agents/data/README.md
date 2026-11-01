@@ -63,6 +63,9 @@ Retired tenants: Fusion has no tenant deletion, so a reset renames the previous 
 
 ## Scripts
 
+- [seed-b184-joining-leaving.cjs](seed-b184-joining-leaving.cjs): B-184 demo data in Carthage: the joining and leaving checklists, Yasmine Trabelsi hired into Mariam's team 3 days ahead (HR's first task ticked), Aicha's birthday 9 days ahead and shared. Re-runnable. Ran 2026-11-01.
+- [journey-b184-joining-leaving.cjs](journey-b184-joining-leaving.cjs): B-184 API journey in Carthage: a hire makes the checklist; who sees and ticks which task (HR, Mariam, Leila), Needs you, Rim and Leila refused the templates, another company refused; cancelling the hire removes it. Re-runnable. Ran 2026-11-01: 22/22.
+- [screens-b184-joining-leaving.cjs](screens-b184-joining-leaving.cjs): B-184 screens (dark, 1440×900) into `plans/B-184-screens/`. Changes no data.
 - [journey-b183-organization-in-time.cjs](journey-b183-organization-in-time.cjs): B-183 API journey in Carthage: every unit's people and head today, on the company's first day and on 1 January; plans Delivery's move under Consulting on 1 January once (the demo's planned unit change); a unit's page; Mariam reads today only, Leila neither, another company can't open a Carthage unit. Re-runnable. Ran 2026-10-31: 16/16.
 - [screens-b183-organization.cjs](screens-b183-organization.cjs): B-183 screens (dark, 1440×900) into `plans/B-183-screens/` (`01`–`08`, pass prefixes to retake some); changes no data.
 - [journey-b182-people-invitations.cjs](journey-b182-people-invitations.cjs): B-182 API journey in Carthage (People views and sign-in, export, the directory as Aicha, invitations planned and cancelled, another company refused, one invitation sent now). Withdrawing the sent invitation doesn't take yet (B-235), so each run leaves one pending invitation.

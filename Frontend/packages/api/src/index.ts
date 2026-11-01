@@ -35,6 +35,7 @@ export * from "./core-organization";
 export * from "./core-organization-import";
 export * from "./core-org-chart";
 export * from "./core-catalog";
+export * from "./core-checklists";
 export * from "./core-workforce-import";
 export * from "./core-people";
 export * from "./core-changes";

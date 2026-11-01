@@ -66,6 +66,9 @@ public class CoreHRDbContext : DbContext
     public DbSet<CoreNotificationPreference> NotificationPreferences => Set<CoreNotificationPreference>();
     public DbSet<CoreNotificationDefaults> NotificationDefaults => Set<CoreNotificationDefaults>();
     public DbSet<OpenRole> OpenRoles => Set<OpenRole>();
+    public DbSet<ChecklistTemplateTask> ChecklistTemplateTasks => Set<ChecklistTemplateTask>();
+    public DbSet<Checklist> Checklists => Set<Checklist>();
+    public DbSet<ChecklistTask> ChecklistTasks => Set<ChecklistTask>();
     public DbSet<EmployeeDocument> EmployeeDocuments => Set<EmployeeDocument>();
     public DbSet<Job> Jobs => Set<Job>();
     public DbSet<Place> Places => Set<Place>();
@@ -178,6 +181,13 @@ public class CoreHRDbContext : DbContext
 
         modelBuilder.Entity<OpenRole>()
             .HasQueryFilter(role => CurrentTenantId != Guid.Empty && role.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<ChecklistTemplateTask>()
+            .HasQueryFilter(task => CurrentTenantId != Guid.Empty && task.TenantId == CurrentTenantId);
+        modelBuilder.Entity<Checklist>()
+            .HasQueryFilter(checklist => CurrentTenantId != Guid.Empty && checklist.TenantId == CurrentTenantId);
+        modelBuilder.Entity<ChecklistTask>()
+            .HasQueryFilter(task => CurrentTenantId != Guid.Empty && task.TenantId == CurrentTenantId);
 
         modelBuilder.Entity<EmployeeDocument>()
             .HasQueryFilter(document => CurrentTenantId != Guid.Empty && document.TenantId == CurrentTenantId);

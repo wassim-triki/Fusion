@@ -334,6 +334,7 @@ public sealed class WorkforceChangeService(
         var change = WorkforceChangeRecorder.Record(
             dbContext, tenantContext.TenantId, subject.Id, WorkforceChangeKind.EndEmployment, boundaryDate, request.Note, details, actor);
         await notifications.StageAsync(change, details, cancellationToken);
+        await Checklists.ChecklistService.StageAsync(dbContext, tenantContext.TenantId, change, details, actor, cancellationToken);
         return Result.Success(change);
     }
 
@@ -376,6 +377,7 @@ public sealed class WorkforceChangeService(
         var change = WorkforceChangeRecorder.Record(
             dbContext, tenantContext.TenantId, subject.Id, WorkforceChangeKind.Join, date, request.Note, details, actor);
         await notifications.StageAsync(change, details, cancellationToken);
+        await Checklists.ChecklistService.StageAsync(dbContext, tenantContext.TenantId, change, details, actor, cancellationToken);
         return Result.Success(change);
     }
 
@@ -424,6 +426,8 @@ public sealed class WorkforceChangeService(
             .FirstOrDefaultAsync(cancellationToken);
         if (later is not null)
             return Fail<WorkforceChange>("Change.NotLatestConflict", $"There is a later change on {later.EffectiveDate:d MMM yyyy}. Cancel that one first.");
+
+        await Checklists.ChecklistService.RemoveForChangeAsync(dbContext, change.Id, cancellationToken);
 
         // Children before parents, so a removed row never leaves a tracked dependent behind.
         string[] order = [WorkforceChangeEffect.ManagerRelationshipEntity, WorkforceChangeEffect.WorkAssignmentEntity,

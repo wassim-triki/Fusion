@@ -1,0 +1,65 @@
+{
+  "title": {
+    "Joining": "Arrivée",
+    "Leaving": "Départ",
+    "you": {
+      "Joining": "Votre première semaine",
+      "Leaving": "Avant votre dernier jour"
+    }
+  },
+  "progress": "{done} sur {count} faites",
+  "day": {
+    "Joining": "Premier jour {date}",
+    "Leaving": "Dernier jour {date}"
+  },
+  "doneBy": "Fait par {name} · {date}",
+  "owner": {
+    "hr": "RH",
+    "manager": "Manager",
+    "person": "La personne"
+  },
+  "didNotLoad": "La checklist n'a pas pu être chargée.",
+  "retry": "Réessayer",
+  "didNotSave": "Ce n'a pas été enregistré. Réessayez.",
+  "settings": {
+    "kind": {
+      "joining": "Arrivée",
+      "leaving": "Départ"
+    },
+    "empty": {
+      "joining": "Aucune tâche d'arrivée",
+      "leaving": "Aucune tâche de départ"
+    },
+    "taskName": "Tâche",
+    "who": "Qui s'en charge",
+    "days": "Jours",
+    "when": "Quand",
+    "moveUp": "Monter",
+    "moveDown": "Descendre",
+    "remove": "Retirer",
+    "add": "Ajouter une tâche",
+    "addAction": "Ajouter",
+    "addPlaceholder": "Ajouter une tâche",
+    "saved": "Checklists enregistrées",
+    "didNotSave": "Les checklists n'ont pas été enregistrées. Réessayez.",
+    "due": {
+      "joining": {
+        "before": "{count, plural, one {jour} other {jours}} avant le premier jour",
+        "on": "Le premier jour",
+        "after": "{count, plural, one {jour} other {jours}} après le premier jour"
+      },
+      "leaving": {
+        "before": "{count, plural, one {jour} other {jours}} avant le dernier jour",
+        "on": "Le dernier jour",
+        "after": "{count, plural, one {jour} other {jours}} après le dernier jour"
+      }
+    }
+  },
+  "birthday": {
+    "title": "Anniversaire",
+    "label": "Montrer mon anniversaire à mon équipe, jour et mois seulement",
+    "shared": "Votre équipe verra votre anniversaire",
+    "hidden": "Votre anniversaire est masqué",
+    "didNotSave": "Ce n'a pas été enregistré. Réessayez."
+  }
+}

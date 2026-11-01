@@ -107,7 +107,7 @@ function PersonNode({ person, picked, focused, onClick }: { person: ChartPersonD
       // eslint-disable-next-line no-restricted-syntax -- a chart node: picking it opens its team below, a one-off toggle
       aria-pressed={picked}
       className={cn(
-        "relative grid w-48 gap-2 rounded-surface border border-transparent bg-card p-3 text-start transition-[border-color,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "relative grid w-48 grid-cols-[minmax(0,1fr)] gap-2 rounded-surface border border-transparent bg-card p-3 text-start transition-[border-color,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         picked && "border-primary/45",
         focused && "ring-2 ring-primary/40",
         flagged && "border-warning/60 shadow-[0_0_0_4px_color-mix(in_oklab,var(--warning)_14%,transparent)]",
@@ -121,7 +121,7 @@ function PersonNode({ person, picked, focused, onClick }: { person: ChartPersonD
           <span className="type-meta truncate text-muted-foreground">{person.title}</span>
         </span>
       </span>
-      <span className="flex items-center justify-between gap-2 border-t border-border pt-2 type-meta text-muted-foreground">
+      <span className="flex min-w-0 items-center justify-between gap-2 border-t border-border pt-2 type-meta text-muted-foreground">
         <span className="min-w-0 truncate">{[person.unit, person.place].filter(Boolean).join(" · ")}</span>
         {person.directCount > 0 ? <span className="shrink-0 tabular-nums text-foreground">{t("direct", { count: person.directCount })}</span> : null}
       </span>

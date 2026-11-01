@@ -116,6 +116,7 @@ try {
   await page.getByRole("heading", { name: "To check" }).waitFor({ timeout: 240_000 });
   await page.getByRole("button", { name: /unit isn't in units.csv/ }).first().click();
   await shot("03-chart-people");
+  if (process.argv[2] === "chart") process.exit(0);
   await page.getByRole("radio", { name: /Jobs/ }).click().catch(async () => page.getByText(/^Jobs · /).click());
   await shot("04-chart-jobs");
 

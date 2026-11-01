@@ -59,7 +59,6 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## Ready
 
-- [ ] **B-241** Clicking a unit opens its page, as drawn (D-17); the panel stays for now (user 2026-11-01: keep clicking as it is, board the note) · Core HR · 2026-11-01
 - [ ] **B-242** Tidy after the Organization refit: drop core's unused `@xyflow/react` dependency (lockfile update) and the now-unused `flattenOrganizationHierarchy` · Core HR · 2026-11-01
 - [ ] **B-240** Directory card as drawn (D-28): initials in Fusion's serif on every face, and the card footer's org chart icon matching the drawing's (Hugeicons Hierarchy; Core's chrome is still Lucide, so pick the match or move this icon). Long names already end in an ellipsis · Core HR · 2026-10-31
       User 2026-10-31 (B-182 review, card compared with `plans/B-182-screens/ref-directory-card.png`).

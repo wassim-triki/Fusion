@@ -43,6 +43,18 @@ public sealed class ChecklistsController(ChecklistService checklists, ICoreAcces
             await checklists.SaveTemplateAsync(parsed, request, User.GetFullName(), cancellationToken)));
     }
 
+    /// <summary>The caller's own checklists (a joiner's first week on Home, D-12): only their record, from their token.</summary>
+    [HttpGet("me/checklists")]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<ChecklistDto>>>> Mine(CancellationToken cancellationToken)
+    {
+        if (User.GetEmployeeId() is not { } employeeId)
+            return Ok(ApiResponse<IReadOnlyList<ChecklistDto>>.Success([]));
+        var key = await db.Employees.AsNoTracking().Where(employee => employee.Id == employeeId)
+            .Select(employee => employee.StableEmployeeKey).FirstOrDefaultAsync(cancellationToken);
+        var result = key is null ? null : await checklists.ForPersonAsync(key, Viewer(User, accessPolicy), cancellationToken);
+        return Ok(ApiResponse<IReadOnlyList<ChecklistDto>>.Success(result ?? []));
+    }
+
     [HttpGet("people/{employeeKey}/checklists")]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<ChecklistDto>>>> ForPerson(string employeeKey, CancellationToken cancellationToken)
     {

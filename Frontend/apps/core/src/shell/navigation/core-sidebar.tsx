@@ -53,7 +53,6 @@ export function CoreSidebar() {
     return true;
   });
   const adminItems = nav.admin.items.filter((item) => {
-    if (item.href === "/getting-started") return canSeeSetup;
     if (item.href === "/settings") return canSeeSettings;
     return canSeeSetup;
   });

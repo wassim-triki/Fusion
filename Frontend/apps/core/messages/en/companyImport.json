@@ -354,7 +354,8 @@
       "title": "Next: invite your people",
       "nobody": "Nobody has been invited yet",
       "orgChart": "Open the org chart",
-      "invite": "Invite your people"
+      "invite": "Invite your people",
+      "progress": "Setup: {done} of {total} done"
     },
     "worth": {
       "title": "Worth a look",

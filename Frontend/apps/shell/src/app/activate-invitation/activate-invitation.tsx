@@ -28,7 +28,8 @@ import {
   InvitationTransactionTerminalFrame,
   PasswordStrengthField,
 } from "@repo/ds/shell";
-import { persistAuth } from "@repo/auth";
+import { login, persistAuth } from "@repo/auth";
+import { createPlatformApiClient, type AccessProfileAssignmentSummaryDto, type EffectivePermissionGrantDto } from "@repo/api";
 import {
   ArrowRight,
   Ban,
@@ -276,6 +277,10 @@ function AccountForm({
   const [revealConfirm, setRevealConfirm] = useState(false);
   const [pending, setPending] = useState(false);
   const [retryable, setRetryable] = useState<string | null>(null);
+  // D-10: the company's first administrator says whether they work there; yes makes them its first person.
+  const asksWorkHere = journey.key === BOOTSTRAP_JOURNEY.key;
+  const [worksHere, setWorksHere] = useState(true);
+  const [jobTitle, setJobTitle] = useState("");
 
   const summaryRef = useRef<HTMLDivElement>(null);
   const checks = passwordChecks(form.password, entry.passwordRequirements, say);
@@ -293,7 +298,8 @@ function AccountForm({
     form.lastName.trim().length > 0 &&
     form.password.length > 0 &&
     checks.every((check) => check.satisfied) &&
-    passwordsMatch;
+    passwordsMatch &&
+    (!asksWorkHere || !worksHere || jobTitle.trim().length > 0);
 
   const update = useCallback(
     (field: keyof ActivationForm, value: string) =>
@@ -328,24 +334,23 @@ function AccountForm({
       const body = await response.json().catch(() => null);
 
       if (response.ok && body?.data?.accessToken) {
-        const session = body.data;
-        persistAuth({
-          accessToken: session.accessToken,
-          refreshToken: session.refreshToken,
-          accessTokenExpiration: session.accessTokenExpiration,
-          user: {
-            userId: session.userId,
-            tenantId: session.tenantId ?? null,
-            tenantMembershipId: session.tenantMembershipId ?? null,
-            moduleEntitlements: session.moduleEntitlements ?? [],
-            email: session.email,
-            fullName: session.fullName,
-            roles: session.roles ?? [],
-            employeeId: session.employeeId ?? null,
-            accessProfiles: session.accessProfiles ?? [],
-            effectivePermissions: session.effectivePermissions ?? [],
-          },
-        });
+        persistSession(body.data);
+
+        if (asksWorkHere && worksHere) {
+          // Their record comes after the account; if it can't be made now, Home still opens on the setup guide.
+          try {
+            await createPlatformApiClient().post("/corehr/me/first-person", {
+              firstName: form.firstName.trim(),
+              lastName: form.lastName.trim(),
+              jobTitle: jobTitle.trim(),
+              companyName: entry.tenantName,
+            });
+            // Linking the record ends the account's sessions (an authority change), so they sign in again here.
+            persistSession(await login({ email: body.data.email, password: form.password }));
+          } catch {
+            // Home's guide carries on without it.
+          }
+        }
 
         // A full document load, so the shell and Core start from the new
         // tenant-scoped session rather than from state this page was holding.
@@ -531,6 +536,16 @@ function AccountForm({
           {confirmError ? <FieldError>{confirmError}</FieldError> : null}
         </Field>
 
+        {asksWorkHere ? (
+          <WorkHere
+            company={tenantName}
+            worksHere={worksHere}
+            jobTitle={jobTitle}
+            onWorksHere={setWorksHere}
+            onJobTitle={setJobTitle}
+          />
+        ) : null}
+
         <Button
           type="submit"
           size="lg"
@@ -565,6 +580,104 @@ function AccountForm({
       </FieldGroup>
     </form>
   );
+}
+
+/** "Do you work at …?" as two choice cards; yes reveals the job title they hold. */
+function WorkHere({
+  company,
+  worksHere,
+  jobTitle,
+  onWorksHere,
+  onJobTitle,
+}: {
+  company: string;
+  worksHere: boolean;
+  jobTitle: string;
+  onWorksHere: (value: boolean) => void;
+  onJobTitle: (value: string) => void;
+}) {
+  const say = useActivationSay();
+  const choice = (value: boolean, label: string) => (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={worksHere === value}
+      onClick={() => onWorksHere(value)}
+      className={cn(
+        "flex min-h-12 items-center gap-2.5 rounded-control border bg-card px-3.5 py-2.5 text-start text-sm font-medium transition-colors",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        worksHere === value ? "border-primary-ring bg-primary-tint" : "border-border hover:bg-muted/50"
+      )}
+    >
+      <span
+        aria-hidden="true"
+        className={cn(
+          "grid size-[18px] shrink-0 place-items-center rounded-full border-[1.5px]",
+          worksHere === value ? "border-primary" : "border-input"
+        )}
+      >
+        {worksHere === value ? <span className="size-2 rounded-full bg-primary" /> : null}
+      </span>
+      {label}
+    </button>
+  );
+  return (
+    <>
+      <Field>
+        <FieldLabel id="worksHere">{say("form.worksHere", { tenant: company })}</FieldLabel>
+        <div role="radiogroup" aria-labelledby="worksHere" className="grid gap-2.5 sm:grid-cols-2">
+          {choice(true, say("form.worksHereYes"))}
+          {choice(false, say("form.worksHereNo"))}
+        </div>
+      </Field>
+      {worksHere ? (
+        <div className="animate-in fade-in slide-in-from-top-1 duration-200">
+          <TextField
+            id="jobTitle"
+            label={say("form.jobTitle")}
+            autoComplete="organization-title"
+            value={jobTitle}
+            onChange={onJobTitle}
+          />
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+/** Keeps a session the service issued, the same shape for activation and sign-in. */
+function persistSession(session: {
+  accessToken: string;
+  refreshToken: string;
+  accessTokenExpiration: string;
+  userId: string;
+  tenantId?: string | null;
+  tenantMembershipId?: string | null;
+  moduleEntitlements?: string[];
+  email: string;
+  fullName: string;
+  roles?: string[];
+  employeeId?: string | null;
+  accessProfiles?: AccessProfileAssignmentSummaryDto[];
+  effectivePermissions?: EffectivePermissionGrantDto[];
+}) {
+  persistAuth({
+    accessToken: session.accessToken,
+    refreshToken: session.refreshToken,
+    accessTokenExpiration: session.accessTokenExpiration,
+    user: {
+      userId: session.userId,
+      tenantId: session.tenantId ?? null,
+      tenantMembershipId: session.tenantMembershipId ?? null,
+      moduleEntitlements: session.moduleEntitlements ?? [],
+      email: session.email,
+      fullName: session.fullName,
+      roles: session.roles ?? [],
+      employeeId: session.employeeId ?? null,
+      accessProfiles: session.accessProfiles ?? [],
+      effectivePermissions: session.effectivePermissions ?? [],
+    },
+  });
 }
 
 function TextField({

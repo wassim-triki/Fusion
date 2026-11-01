@@ -295,11 +295,8 @@ export const BOOTSTRAP_JOURNEY: ActivationJourney = {
   key: "bootstrap",
   inspectPath: "/api/identity/tenant-activation",
   acceptPath: "/api/identity/tenant-activation",
-  // Canonical tenant-foundation orientation, reached only after the
-  // tenant-scoped session exists — this is the handoff, not a success screen.
-  // Getting Started reads canonical Organization readiness and shows the
-  // truthful state; a brand-new tenant is not yet Ready.
-  destination: "/getting-started",
+  // Home, where the company's setup guide opens, reached only after the tenant-scoped session exists.
+  destination: "/",
 };
 
 /** An additional administrator, invited by an existing one. */
@@ -322,7 +319,7 @@ export const RECOVERY_JOURNEY: ActivationJourney = {
   key: "recovery",
   inspectPath: "/api/identity/tenant-access/invitations/inspect",
   acceptPath: "/api/identity/tenant-access/invitations/accept",
-  destination: "/getting-started",
+  destination: "/",
   terminalOverrides: ["expired", "revoked", "already_accepted", "existing_account"],
 };
 

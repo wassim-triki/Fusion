@@ -49,6 +49,16 @@ public sealed class OrganizationChange : BaseEntity, ITenantEntity
         };
     }
 
+    /// <summary>A creation moved earlier: the company's root, made on day one, opens when its imported history starts (B-188).</summary>
+    public void OpenFrom(DateOnly effectiveDate)
+    {
+        if (Kind != OrganizationChangeKind.Create)
+            throw new InvalidOperationException("Only a creation can open earlier.");
+
+        EffectiveDate = effectiveDate;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public void Cancel()
     {
         if (IsCancelled)

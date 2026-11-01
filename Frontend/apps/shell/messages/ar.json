@@ -151,7 +151,11 @@
       "passwordsMatch": "كلمتا المرور متطابقتان",
       "passwordsDoNotMatch": "كلمتا المرور غير متطابقتين بعد",
       "submit": "إعداد الحساب",
-      "haveAccount": "لديك حساب في Fusion؟ <signIn>سجّل الدخول</signIn> للمتابعة"
+      "haveAccount": "لديك حساب في Fusion؟ <signIn>سجّل الدخول</signIn> للمتابعة",
+      "worksHere": "هل تعمل في {tenant}؟",
+      "worksHereYes": "نعم، أعمل هنا",
+      "worksHereNo": "لا، أقوم بالإعداد لهم",
+      "jobTitle": "مسمّاك الوظيفي"
     },
     "journeys": {
       "bootstrap": {
@@ -257,6 +261,83 @@
       "why": "لماذا؟",
       "whyPlaceholder": "قل ما الذي قد يغيّر ردك",
       "failed": "لم ينجح ذلك. أعد المحاولة."
+    },
+    "setup": {
+      "loading": "جارٍ تحميل دليل الإعداد",
+      "title": "إعداد {company}",
+      "progress": "{done} من {total}",
+      "hide": "إخفاء الدليل",
+      "done": "تم",
+      "edit": "تعديل",
+      "open": "فتح",
+      "steps": {
+        "company": {
+          "title": "شركتك",
+          "meta": "الشعار واللون واللغات",
+          "action": "خصّصها"
+        },
+        "organization": {
+          "title": "مؤسستك وموظفوك",
+          "meta": "الوحدات والأشخاص ومن يتبع من",
+          "action": "استوردهم"
+        },
+        "invite": {
+          "title": "ادعُ موظفيك",
+          "meta": "من يسجّل الدخول، ومتى",
+          "action": "دعوة"
+        },
+        "roles": {
+          "title": "حدّد من يفعل ماذا",
+          "meta": "الموارد البشرية والمديرون والمسؤولون",
+          "action": "اختيار الأدوار"
+        },
+        "performance": {
+          "title": "ابدأ الأداء",
+          "meta": "أول دورة لتحديد الأهداف",
+          "action": "بدء دورة"
+        }
+      },
+      "drop": {
+        "title": "أفلت جداولك هنا",
+        "meta": "Excel أو CSV، بأي تنسيق",
+        "choose": "اختيار ملفات",
+        "reading": "{count, plural, one {قراءة جدول واحد} other {قراءة # جداول}}",
+        "underWay": "هناك استيراد قيد التنفيذ",
+        "underWayMeta": "تابع من حيث توقفت",
+        "continue": "متابعة الاستيراد",
+        "tooMany": "اختر {max} ملفات على الأكثر.",
+        "tooBig": "{name} أكبر من 10 ميغابايت.",
+        "failed": "تعذّر إرسال الملفات. حاول مرة أخرى.",
+        "byHand": "أو يدويًا: <link>أضف الوحدة الأولى</link>",
+        "you": "أنت"
+      },
+      "company": {
+        "label": "شركتك",
+        "yours": "شركتك",
+        "edit": "تعديل",
+        "language": "اللغة",
+        "timeZone": "المنطقة الزمنية"
+      },
+      "people": {
+        "title": "الموظفون",
+        "soFar": "{count} حتى الآن",
+        "you": "أنت",
+        "open": "عرض الموظفين"
+      }
+    },
+    "team": {
+      "title": "فريقك",
+      "open": "فتح",
+      "count": "{count, plural, one {شخص واحد} other {# أشخاص}}",
+      "joins": "ينضم {name} يوم {day}"
+    },
+    "firstWeek": {
+      "title": "أسبوعك الأول",
+      "progress": "{done} من {total}",
+      "markDone": "تم",
+      "undo": "تراجع",
+      "doneOn": "تم يوم {day}",
+      "by": "قبل {day}"
     }
   },
   "app": {

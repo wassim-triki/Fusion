@@ -36,6 +36,28 @@ public sealed class MeController(ISender sender, ICoreAccessPolicyService access
     }
 
     /// <summary>
+    /// "Do you work at …? Yes" (D-10): the activating administrator becomes the company's first person. Only for
+    /// someone who can bring the company in, without a person here yet, while the company has nobody.
+    /// </summary>
+    [HttpPost("first-person")]
+    [ProducesResponseType(typeof(ApiResponse<FirstPersonDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> CreateFirstPerson([FromBody] FirstPersonRequest request,
+        [FromServices] FirstPersonService firstPerson, CancellationToken cancellationToken)
+    {
+        if (User.GetTenantId() is null || !accessPolicy.CanManageOrganization(User) || !accessPolicy.CanManageEmployees(User))
+            return Forbid();
+        if (User.GetEmployeeId() is not null)
+            return Conflict(ApiResponse.Failure("You already have a record here."));
+
+        var result = await firstPerson.CreateAsync(request, User.GetEmail(), User.GetFullName(), cancellationToken);
+        if (result.IsSuccess) return Ok(ApiResponse<FirstPersonDto>.Success(result.Value));
+        return result.Error.Code == "FirstPerson.CompanyHasPeople"
+            ? Conflict(ApiResponse.Failure(result.Error.Message))
+            : BadRequest(ApiResponse.Failure(result.Error.Message));
+    }
+
+    /// <summary>
     /// The caller's own team for the Team page (B-185): their reports today and anyone joining them in the next
     /// 30 days, with what is coming for each. Needs the team view (Roles › anyone with a team); never another
     /// manager's team, since the manager is the caller.

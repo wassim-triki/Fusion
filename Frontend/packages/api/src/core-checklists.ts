@@ -51,6 +51,7 @@ export const coreChecklistPaths = {
   templates: () => "/corehr/checklists/templates",
   template: (kind: ChecklistKind) => `/corehr/checklists/templates/${kind}`,
   person: (employeeKey: string) => `/corehr/people/${encodeURIComponent(employeeKey)}/checklists`,
+  mine: () => "/corehr/me/checklists",
   task: (id: string) => `/corehr/checklists/tasks/${encodeURIComponent(id)}`,
   birthday: () => "/corehr/me/birthday",
 } as const;
@@ -59,6 +60,7 @@ export const coreChecklistQueryKeys = {
   all: () => ["core-checklists"] as const,
   templates: () => [...coreChecklistQueryKeys.all(), "templates"] as const,
   person: (employeeKey: string) => [...coreChecklistQueryKeys.all(), "person", employeeKey] as const,
+  mine: () => [...coreChecklistQueryKeys.all(), "mine"] as const,
   birthday: () => [...coreChecklistQueryKeys.all(), "birthday"] as const,
 };
 
@@ -69,6 +71,7 @@ export function createCoreChecklistsApi(client: ApiClient) {
     saveTemplate: (kind: ChecklistKind, tasks: ChecklistTemplateTaskInput[]) =>
       client.put<ChecklistTemplatesDto>(coreChecklistPaths.template(kind), { tasks }),
     person: (employeeKey: string, signal?: AbortSignal) => client.get<ChecklistDto[]>(coreChecklistPaths.person(employeeKey), { signal }),
+    mine: (signal?: AbortSignal) => client.get<ChecklistDto[]>(coreChecklistPaths.mine(), { signal }),
     setDone: (taskId: string, done: boolean) => client.put<ChecklistTaskDto>(coreChecklistPaths.task(taskId), { done }),
     birthday: (signal?: AbortSignal) => client.get<BirthdaySharingDto>(coreChecklistPaths.birthday(), { signal }),
     setBirthday: (share: boolean) => client.put<BirthdaySharingDto>(coreChecklistPaths.birthday(), { share }),

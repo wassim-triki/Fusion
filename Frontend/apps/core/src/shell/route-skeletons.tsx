@@ -243,91 +243,6 @@ export function SettingsPageSkeleton() {
   );
 }
 
-export function SetupPageSkeleton() {
-  const t = useTranslations("frame.skeletons");
-  return (
-    <PageContainer width="wide" className="space-y-5">
-      <PageHeader title={t("setup")} description={t("setupDescription")} />
-
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] xl:items-start">
-        <div className="space-y-4">
-          <Card>
-            <CardContent className="flex flex-col gap-4 px-4 lg:flex-row lg:items-start lg:justify-between">
-              <div className="min-w-0 space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Skeleton className="h-5 w-24 rounded-full" />
-                </div>
-                <div className="space-y-1.5">
-                  <Skeleton className="h-7 w-64" />
-                  <Skeleton className="h-4 w-full max-w-lg" />
-                  <Skeleton className="h-4 w-80" />
-                </div>
-              </div>
-              <div className="flex flex-nowrap gap-2">
-                <Skeleton className="h-9 w-44" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="space-y-4 pb-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="space-y-1">
-                  <Skeleton className="h-5 w-32" />
-                  <Skeleton className="h-4 w-72" />
-                </div>
-                <Skeleton className="h-5 w-28 rounded-full" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                  <Skeleton className="h-3.5 w-48" />
-                  <Skeleton className="h-3.5 w-16" />
-                </div>
-                <Skeleton className="h-2 w-full rounded-full" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-3">
-                {[
-                  "border-primary/20 bg-primary/5",
-                  "border-dashed",
-                  "border-dashed",
-                ].map((borderClass, index) => (
-                  <div
-                    key={index}
-                    className={`flex flex-col items-center gap-4 rounded-surface border p-5 text-center ${borderClass}`}
-                  >
-                    <Skeleton className="size-12 rounded-full" />
-                    <div className="space-y-1">
-                      <Skeleton className="mx-auto h-3 w-16" />
-                      <Skeleton className="mx-auto h-4 w-28" />
-                    </div>
-                    <Skeleton className="h-5 w-20 rounded-full" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="xl:self-stretch">
-          <Card className="flex h-full flex-col">
-            <CardHeader className="pb-3">
-              <Skeleton className="h-5 w-32" />
-            </CardHeader>
-            <CardContent className="flex flex-1 flex-col items-center justify-center py-12">
-              <div className="flex size-8 items-center justify-center rounded-full border bg-inlay text-muted-foreground/60">
-                <Skeleton className="size-3.5 rounded-full" />
-              </div>
-              <Skeleton className="mt-2 h-4 w-28" />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </PageContainer>
-  );
-}
-
 /** The dedicated loading skeleton for a core route (module-relative path). */
 export function getRoutePageSkeleton(corePath: string): ReactNode {
   if (corePath === "/") return <OverviewPageSkeleton />;
@@ -344,8 +259,6 @@ export function getRoutePageSkeleton(corePath: string): ReactNode {
   if (corePath === "/access/profiles") return <AccessProfilesPageSkeleton />;
   if (corePath === "/access/activity") return <ActivityLogPageSkeleton />;
   if (corePath.startsWith("/access")) return <AccessPageSkeleton />;
-  if (corePath === "/getting-started" || corePath === "/setup")
-    return <SetupPageSkeleton />;
   return <PageFallbackSkeleton />;
 }
 

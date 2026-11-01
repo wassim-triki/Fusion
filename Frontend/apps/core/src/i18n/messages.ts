@@ -12,12 +12,11 @@ import overview from "../../messages/en/overview.json";
 import people from "../../messages/en/people.json";
 import profile from "../../messages/en/profile.json";
 import settings from "../../messages/en/settings.json";
-import setup from "../../messages/en/setup.json";
 import team from "../../messages/en/team.json";
 import wfAccess from "../../messages/en/wfAccess.json";
 
 /** Core HR's own catalogue in English, one file per namespace (`messages/<locale>/<namespace>.json`). */
-export const englishMessages = { admins, catalog, changes, checklists, common, companyImport, frame, invite, orgChart, organization, overview, people, profile, settings, setup, team, wfAccess };
+export const englishMessages = { admins, catalog, changes, checklists, common, companyImport, frame, invite, orgChart, organization, overview, people, profile, settings, team, wfAccess };
 
 export type CoreMessages = typeof englishMessages;
 

@@ -4,7 +4,9 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { Button, PersonAvatar } from "@repo/ds";
-import { PageContainer, Section } from "@repo/ds/shell";
+import { PageContainer, ProgressSegments, Section } from "@repo/ds/shell";
+import { useSetupGuide } from "@repo/api/query";
+import { canViewTenantAdministration, useAuth } from "@repo/auth";
 import { cn } from "@repo/ds/lib/utils";
 import type { CompanyImportDto, CompanyImportProgressDto } from "@repo/api";
 import { AlertTriangle, Check, CheckCircle2, Clock, File as FileGlyph, Loader2, Mail, MapPin, Network, PencilLine, RefreshCw } from "lucide-react";
@@ -185,6 +187,13 @@ function Finished({ data }: { data: CompanyImportDto }) {
   const t = useTranslations("companyImport.bring");
   const tLeft = useTranslations("companyImport.left");
   const result = data.result!;
+  const { user } = useAuth();
+  // The company's setup guide (D-09): bringing the company in was its step; the segments say how far setup has come.
+  const guide = useSetupGuide({
+    enabled: canViewTenantAdministration(user),
+    selfEmployeeId: user?.employeeId,
+    performance: Boolean(user?.moduleEntitlements?.includes("Performance")),
+  });
   const left = leftSummary(data, (key, values) => tLeft(key, values));
   const rows: { key: string; icon: ReactNode; title: string; detail?: string; action?: ReactNode }[] = [];
   if (left) rows.push({ key: "left", icon: <FileGlyph className="size-4" aria-hidden />, title: t("worth.left"), detail: left });
@@ -201,6 +210,14 @@ function Finished({ data }: { data: CompanyImportDto }) {
         <div className="grid min-w-0 flex-1 gap-0.5">
           <p className="type-section-title text-foreground">{t("next.title")}</p>
           <p className="type-meta text-muted-foreground">{t("next.nobody")}</p>
+          {canViewTenantAdministration(user) && !guide.pending ? (
+            <ProgressSegments
+              className="mt-2"
+              done={guide.doneCount}
+              total={guide.steps.length}
+              label={t("next.progress", { done: guide.doneCount, total: guide.steps.length })}
+            />
+          ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" asChild>

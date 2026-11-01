@@ -26,7 +26,6 @@ import {
   canAccessCoreAccess,
   canAccessCoreSettings,
   canManageCoreAccessProfiles,
-  canViewTenantAdministration,
   type AuthUser,
   useAuth,
 } from "@repo/auth";
@@ -494,9 +493,6 @@ function WorkforceDashboard({
               <QuickLink href={toHref("/organization")} icon={Network}>
                 {t("admin.openOrganization")}
               </QuickLink>
-              <QuickLink href={toHref("/getting-started")} icon={ClipboardList}>
-                {t("admin.gettingStarted")}
-              </QuickLink>
             </div>
           </DashboardSection>
         </DashboardPanel>
@@ -758,9 +754,6 @@ function CoreOperationsDashboard() {
       : canManageCoreAccessProfiles(user)
         ? { href: moduleHref("/settings?tab=access-permissions"), title: t("workspace.settings"), icon: ShieldCheck }
         : null,
-    canViewTenantAdministration(user)
-      ? { href: moduleHref("/getting-started"), title: t("workspace.gettingStarted"), icon: ClipboardList }
-      : null,
     canAccessCoreSettings(user)
       ? { href: moduleHref("/settings"), title: t("workspace.settings"), icon: Settings2 }
       : null,
@@ -803,13 +796,12 @@ function CoreWorkspaceRedirect({ href, label }: { href: string; label: string })
   );
 }
 
-type WorkspaceKey = "access" | "settings" | "gettingStarted" | "people" | "myTeam" | "myProfile";
+type WorkspaceKey = "access" | "settings" | "people" | "myTeam" | "myProfile";
 
 function getFallbackWorkspace(user: AuthUser | null): { href: string; label: WorkspaceKey } | null {
   if (canAccessCoreAccess(user)) return { href: ADMINISTRATORS_PATH, label: "access" };
   if (canManageCoreAccessProfiles(user))
     return { href: "/settings?tab=access-permissions", label: "settings" };
-  if (canViewTenantAdministration(user)) return { href: "/getting-started", label: "gettingStarted" };
   if (canAccessCoreSettings(user)) return { href: "/settings", label: "settings" };
   if (canAccessEmployeeRoster(user)) return { href: "/people", label: "people" };
   if (canAccessTeamWorkspace(user)) return { href: "/team", label: "myTeam" };

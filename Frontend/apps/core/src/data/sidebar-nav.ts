@@ -25,16 +25,6 @@ export const PEOPLE_NAV: ShellNavSection = {
 export const ADMIN_NAV: ShellNavSection = {
   title: "administration",
   items: [
-    // Temporary tenant-foundation orientation, reached at the shell-canonical
-    // `/getting-started` (it lives outside the Core basePath). Not a permanent
-    // primary destination — offered while administrators establish the tenant.
-    {
-      label: "gettingStarted",
-      href: "/getting-started",
-      navigateHref: "/getting-started",
-      shellRoute: true,
-      icon: ClipboardList,
-    },
     { label: "settings", href: "/settings", icon: Settings2 },
   ],
 };

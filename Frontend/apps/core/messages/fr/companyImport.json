@@ -354,7 +354,8 @@
       "title": "Ensuite : invitez vos collaborateurs",
       "nobody": "Personne n’a encore été invité",
       "orgChart": "Ouvrir l’organigramme",
-      "invite": "Inviter vos collaborateurs"
+      "invite": "Inviter vos collaborateurs",
+      "progress": "Configuration : {done} sur {total}"
     },
     "worth": {
       "title": "À regarder",

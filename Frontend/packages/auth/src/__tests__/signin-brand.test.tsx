@@ -7,11 +7,6 @@ import { AuthProvider } from "../auth-context";
 
 const mockSearchParamGet = vi.fn<(key: string) => string | null>();
 vi.mock("next/navigation", () => ({ useSearchParams: () => ({ get: mockSearchParamGet }) }));
-vi.mock("../organization-ready-landing", () => ({
-  fetchOrganizationReadySignal: vi.fn().mockResolvedValue(false),
-  useOrganizationReadyLanding: () => ({ pending: false, organizationReady: undefined }),
-}));
-
 const fetchMock = vi.fn();
 
 function brandResponse(color: string | null) {

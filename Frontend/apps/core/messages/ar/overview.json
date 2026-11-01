@@ -50,8 +50,7 @@
     "quickActions": "إجراءات سريعة",
     "addEmployee": "إضافة موظف",
     "manageAccess": "إدارة الوصول",
-    "openOrganization": "فتح الهيكل التنظيمي",
-    "gettingStarted": "البدء"
+    "openOrganization": "فتح الهيكل التنظيمي"
   },
   "manager": {
     "description": "فريقك في لمحة، {name}.",
@@ -102,7 +101,6 @@
   "workspace": {
     "access": "الوصول",
     "settings": "الإعدادات",
-    "gettingStarted": "البدء",
     "people": "الموظفون",
     "myTeam": "فريقي",
     "myProfile": "ملفي الشخصي"

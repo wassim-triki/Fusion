@@ -22,13 +22,7 @@ import {
 import { useAuth } from "../auth-context";
 import { loadAuth } from "../auth-service";
 import type { AuthUser, LoginFailure } from "../types";
-import {
-  landingRequiresOrganizationReadiness,
-  resolvePostSignInDestination,
-  sanitizeInternalReturnPath,
-  type OrganizationReadinessSignal,
-} from "../routing";
-import { fetchOrganizationReadySignal } from "../organization-ready-landing";
+import { resolvePostSignInDestination } from "../routing";
 import { useSignInBrand } from "../sign-in-brand";
 import { persistLanguageCookie } from "@repo/api";
 import { LanguageMenu } from "@repo/ds/shell";
@@ -85,10 +79,7 @@ export function SignInPage({
   const [errors, setErrors] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Resolve the landing for the just-authenticated user. A safe callback decides
-  // the destination on its own and needs no readiness read; only the
-  // Tenant Administrator foundation fallback consults canonical Organization
-  // readiness, which fails closed to Getting Started when it cannot be read.
+  // Resolve the landing for the just-authenticated user: a safe callback, else the product's default.
   const finishSignIn = useCallback(
     async (nextUser: AuthUser | null, mode: "push" | "replace") => {
       if (onSuccess) {
@@ -96,19 +87,10 @@ export function SignInPage({
         return;
       }
 
-      let organizationReady: OrganizationReadinessSignal;
-      if (
-        !sanitizeInternalReturnPath(intended) &&
-        landingRequiresOrganizationReadiness(nextUser)
-      ) {
-        organizationReady = await fetchOrganizationReadySignal();
-      }
-
       navigateToRedirectTarget(
         resolvePostSignInDestination({
           intendedDestination: intended,
           user: nextUser,
-          organizationReady,
         }) ?? "/",
         mode
       );

@@ -68,6 +68,16 @@ const SETTINGS_HREF = "/settings";
 const SETTINGS_RETURN_KEY = "fusion.settings.back";
 const SETTINGS_PATH = /^(\/core|\/performance)?\/settings(\/|$|\?)/;
 
+const COLLAPSED_KEY = "fusion.nav.collapsed";
+
+function readCollapsed(): boolean {
+  try {
+    return window.localStorage.getItem(COLLAPSED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
 function rememberReturn() {
   try {
     const path = `${window.location.pathname}${window.location.search}`;
@@ -205,6 +215,8 @@ export function FusionSidebar({
   const t = useTranslations("ds.sidebar");
   const locale = useLocale();
   const [collapsed, setCollapsed] = useState(false);
+  // The width animates only for a click, not when a page opens already collapsed.
+  const [animate, setAnimate] = useState(false);
   useCompanyColor(brandColor);
   const describeModule = (module: FusionSidebarModule) => {
     const key = `moduleDescriptions.${module.key}` as Parameters<typeof t>[0];
@@ -223,11 +235,22 @@ export function FusionSidebar({
     // At tablet widths a full navigation column turns a record into a narrow reading pane; the rail keeps
     // every destination and the brand mark expands it again.
     const query = window.matchMedia("(max-width: 1023px)");
-    if (query.matches) setCollapsed(true);
-    const handleChange = (event: MediaQueryListEvent) => setCollapsed(event.matches);
+    if (query.matches || readCollapsed()) setCollapsed(true);
+    const handleChange = (event: MediaQueryListEvent) => setCollapsed(event.matches || readCollapsed());
     query.addEventListener("change", handleChange);
     return () => query.removeEventListener("change", handleChange);
   }, []);
+
+  // Anyone can keep the navigation as icons (D-04); the choice follows them from page to page and module to module.
+  const choose = (next: boolean) => {
+    setAnimate(true);
+    setCollapsed(next);
+    try {
+      window.localStorage.setItem(COLLAPSED_KEY, next ? "1" : "0");
+    } catch {
+      // Storage off: the choice lasts for this page.
+    }
+  };
 
   const switcher = current ? (
     <DropdownMenu>
@@ -284,7 +307,8 @@ export function FusionSidebar({
         lang={locale}
         aria-label={t("navigation")}
         className={cn(
-          "dark relative flex h-screen shrink-0 flex-col border-e border-border bg-section text-foreground transition-[width] duration-200",
+          "dark relative flex h-screen shrink-0 flex-col border-e border-border bg-section text-foreground",
+          animate && "transition-[width] duration-200",
           collapsed ? "w-[68px]" : "w-[264px]",
         )}
       >
@@ -294,7 +318,7 @@ export function FusionSidebar({
             withTooltip(
               true,
               t("expand"),
-              <button type="button" onClick={() => setCollapsed(false)} aria-label={t("expand")} className={BRAND_MARK}>
+              <button type="button" onClick={() => choose(false)} aria-label={t("expand")} className={BRAND_MARK}>
                 <CompanyMark name={tenantName} logoUrl={tenantLogoUrl} />
               </button>,
             )
@@ -315,7 +339,7 @@ export function FusionSidebar({
               </span>
               <button
                 type="button"
-                onClick={() => setCollapsed(true)}
+                onClick={() => choose(true)}
                 aria-label={t("collapse")}
                 className="grid size-7 shrink-0 place-items-center rounded-detail text-muted-foreground/70 transition-colors hover:bg-inlay hover:text-foreground"
               >

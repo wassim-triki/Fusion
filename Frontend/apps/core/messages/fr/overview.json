@@ -50,8 +50,7 @@
     "quickActions": "Actions rapides",
     "addEmployee": "Ajouter un collaborateur",
     "manageAccess": "Gérer les accès",
-    "openOrganization": "Ouvrir l’organisation",
-    "gettingStarted": "Premiers pas"
+    "openOrganization": "Ouvrir l’organisation"
   },
   "manager": {
     "description": "Votre équipe en un coup d’œil, {name}.",
@@ -102,7 +101,6 @@
   "workspace": {
     "access": "Accès",
     "settings": "Paramètres",
-    "gettingStarted": "Premiers pas",
     "people": "Collaborateurs",
     "myTeam": "Mon équipe",
     "myProfile": "Mon profil"

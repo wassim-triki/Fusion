@@ -61,6 +61,7 @@ export {
 } from "./dashboard";
 export type { KpiStatProps, DashboardSectionProps } from "./dashboard";
 export { Section } from "./section";
+export { ProgressSegments } from "./progress-segments";
 export { LinkTabs } from "./link-tabs";
 export { Said } from "./said";
 export type { SaidProps } from "./said";

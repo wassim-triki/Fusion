@@ -151,7 +151,11 @@
       "passwordsMatch": "Passwords match",
       "passwordsDoNotMatch": "Passwords do not match yet",
       "submit": "Set up account",
-      "haveAccount": "Already have a Fusion account? <signIn>Sign in</signIn> to continue"
+      "haveAccount": "Already have a Fusion account? <signIn>Sign in</signIn> to continue",
+      "worksHere": "Do you work at {tenant}?",
+      "worksHereYes": "Yes, I work here",
+      "worksHereNo": "No, I'm setting it up for them",
+      "jobTitle": "Your job title"
     },
     "journeys": {
       "bootstrap": {
@@ -257,6 +261,83 @@
       "why": "Why not?",
       "whyPlaceholder": "Say what would change your answer",
       "failed": "That didn't work. Try again."
+    },
+    "setup": {
+      "loading": "Loading the setup guide",
+      "title": "Set up {company}",
+      "progress": "{done} of {total} done",
+      "hide": "Hide the guide",
+      "done": "Done",
+      "edit": "Edit",
+      "open": "Open",
+      "steps": {
+        "company": {
+          "title": "Your company",
+          "meta": "Logo, color and languages",
+          "action": "Make it yours"
+        },
+        "organization": {
+          "title": "Your organization and your people",
+          "meta": "Units, people and who reports to whom",
+          "action": "Bring them in"
+        },
+        "invite": {
+          "title": "Invite your people",
+          "meta": "Who signs in, and from when",
+          "action": "Invite people"
+        },
+        "roles": {
+          "title": "Choose who does what",
+          "meta": "HR, managers and administrators",
+          "action": "Choose roles"
+        },
+        "performance": {
+          "title": "Start Performance",
+          "meta": "Your first goal-setting cycle",
+          "action": "Start a cycle"
+        }
+      },
+      "drop": {
+        "title": "Drop your spreadsheets here",
+        "meta": "Excel or CSV, any layout",
+        "choose": "Choose files",
+        "reading": "{count, plural, one {Reading # spreadsheet} other {Reading # spreadsheets}}",
+        "underWay": "An import is under way",
+        "underWayMeta": "Pick it up where you left it",
+        "continue": "Continue the import",
+        "tooMany": "Choose up to {max} files.",
+        "tooBig": "{name} is over 10 MB.",
+        "failed": "The files couldn't be sent. Try again.",
+        "byHand": "Or by hand: <link>add the first unit</link>",
+        "you": "You"
+      },
+      "company": {
+        "label": "Your company",
+        "yours": "Your company",
+        "edit": "Edit",
+        "language": "Language",
+        "timeZone": "Time zone"
+      },
+      "people": {
+        "title": "People",
+        "soFar": "{count} so far",
+        "you": "You",
+        "open": "Open People"
+      }
+    },
+    "team": {
+      "title": "Your team",
+      "open": "Open",
+      "count": "{count, plural, one {# person} other {# people}}",
+      "joins": "{name} joins {day}"
+    },
+    "firstWeek": {
+      "title": "Your first week",
+      "progress": "{done} of {total} done",
+      "markDone": "Done",
+      "undo": "Undo",
+      "doneOn": "Done {day}",
+      "by": "By {day}"
     }
   },
   "app": {

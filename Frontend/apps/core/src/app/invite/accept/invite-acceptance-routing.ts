@@ -3,7 +3,6 @@ import {
   canAccessCoreOverview,
   canAccessCorePeople,
   canAccessCoreSettings,
-  canAccessCoreSetup,
   canAccessCoreTeam,
   canAccessOwnCoreProfile,
   canManageCoreAccessProfiles,
@@ -23,10 +22,6 @@ export function resolveInviteAcceptanceDestination(
 
   if (canManageCoreAccessProfiles(user)) {
     return "/settings?tab=access-permissions";
-  }
-
-  if (canAccessCoreSetup(user)) {
-    return "/getting-started";
   }
 
   if (canAccessCoreSettings(user)) {

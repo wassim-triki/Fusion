@@ -263,6 +263,20 @@ public sealed class OrganizationService(
         return await GetUnitAsync(unit.Id, request.EffectiveDate, cancellationToken);
     }
 
+    public async Task<bool> OpenRootFromInCurrentTransactionAsync(DateOnly from, CancellationToken cancellationToken)
+    {
+        if (dbContext.Database.IsRelational() && dbContext.Database.CurrentTransaction is null)
+            throw new InvalidOperationException("Opening the root earlier requires the caller's write transaction.");
+        var root = await dbContext.OrgUnits.SingleOrDefaultAsync(unit => unit.IsRoot, cancellationToken);
+        if (root is null) return false;
+        var changes = await dbContext.OrganizationChanges.Where(change => change.OrgUnitId == root.Id && !change.IsCancelled).ToListAsync(cancellationToken);
+        if (changes is not [{ Kind: OrganizationChangeKind.Create } creation] || creation.EffectiveDate <= from) return false;
+        creation.OpenFrom(from);
+        await RebuildStatesAsync(root.Id, cancellationToken);
+        await SaveAndValidateAsync(cancellationToken);
+        return true;
+    }
+
     public async Task<IReadOnlyList<OrganizationBatchCreatedNode>> CreateBatchInCurrentTransactionAsync(
         DateOnly effectiveDate,
         IReadOnlyList<OrganizationBatchCreateNode> nodes,

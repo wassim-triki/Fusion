@@ -1,8 +1,8 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useFusionUpcoming, useFusionWork, useMyCard } from "@repo/api/query";
-import { resolveFusionAttentionModules, TopBarPreferences, TopBarSearch, useAuth, ViewingAsBar } from "@repo/auth";
+import { useFusionUpcoming, useFusionWork, useTenantSummary } from "@repo/api/query";
+import { canAccessCoreTeam, resolveFusionAttentionModules, TopBarPreferences, TopBarSearch, useAuth, ViewingAsBar } from "@repo/auth";
 import { Skeleton } from "@repo/ds";
 import {
   AppShell,
@@ -15,6 +15,8 @@ import {
   orderWork,
 } from "@repo/ds/shell";
 import { FusionSidebar } from "./fusion-sidebar";
+import { FirstWeekCard, YourTeamCard } from "./home-cards";
+import { CompanyCard, PeopleCard, SetupGuideCard, useHomeSetup } from "./setup-guide";
 import { HomeDecision } from "./home-decision";
 import { HomePraise } from "./home-praise";
 import { ShellNotificationBell } from "./shell-notification-bell";
@@ -37,18 +39,14 @@ const DAY = { weekday: "long", day: "numeric", month: "long" } as const;
 /** French writes weekdays in lower case; the day line starts the line, so it starts with a capital. */
 const capitalized = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
-/**
- * "Tuesday 20 October · QA Automation Engineer, Consulting A" ("mardi 20 octobre · …"): the day, and the job and unit
- * when Core HR has them.
- */
+/** "Friday 30 October · Carthage Digital Group" ("vendredi 30 octobre · …"): the day and the company (D-09, D-12). */
 function DayLine({ now }: { now: Date }) {
   const locale = useLocale();
-  const card = useMyCard();
-  const job = [card.data?.jobTitle, card.data?.orgUnitName].filter(Boolean).join(", ");
+  const company = useTenantSummary().data?.name;
   return (
     <p className="type-body-secondary text-muted-foreground">
       {capitalized(dateFormatter(DAY, locale).format(now).replace(",", ""))}
-      {job ? ` · ${job}` : ""}
+      {company ? ` · ${company}` : ""}
     </p>
   );
 }
@@ -57,7 +55,7 @@ function DayLine({ now }: { now: Date }) {
  * The work column, as drawn: Needs you (every module's work in the order things are due, yes-or-no answered in the row)
  * and Coming up (the next two weeks across modules), each one section with its title inside.
  */
-export function HomeWork() {
+export function HomeWork({ quietWhenEmpty = false }: { quietWhenEmpty?: boolean } = {}) {
   const t = useTranslations("home");
   const { user } = useAuth();
   const modules = resolveFusionAttentionModules(user);
@@ -67,6 +65,8 @@ export function HomeWork() {
   const today = new Date();
   const workBusy = work.modules.some((module) => module.status === "loading");
   const datesBusy = upcoming.modules.some((module) => module.status === "loading");
+  // Beside the setup guide, empty lists say nothing: day one has no work yet.
+  if (quietWhenEmpty && (workBusy || datesBusy || (work.items.length === 0 && upcoming.items.length === 0))) return null;
 
   return (
     <div className="space-y-6">
@@ -88,9 +88,9 @@ export function HomeWork() {
 }
 
 /**
- * The Fusion home at the shell root (D-31, B-077): the frame, a greeting with the day and the person's job, the work
- * column, and a side column with their year and the company's praise. Without Performance there's no second job, so
- * the work sits in one column.
+ * The Fusion home at the shell root (D-31, B-077), one page for every role (D-12): a greeting with the day and the
+ * company, then the viewer's day. An administrator's Home opens on the company's setup guide (D-09) until it's done or
+ * hidden, with the company and its people beside it; everyone else's side column is their team, year and praise.
  */
 export function FusionHome() {
   const t = useTranslations("home");
@@ -98,6 +98,8 @@ export function FusionHome() {
   const name = firstName(user?.fullName);
   const now = new Date();
   const performance = resolveFusionAttentionModules(user).includes("performance");
+  const team = canAccessCoreTeam(user) && Boolean(user?.employeeId);
+  const setup = useHomeSetup();
   return (
     <ThemeProvider>
       <AppShell
@@ -120,16 +122,34 @@ export function FusionHome() {
             </h1>
             <DayLine now={now} />
           </div>
-          {performance ? (
+          {setup.show ? (
+            <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
+              <div className="space-y-6">
+                <SetupGuideCard guide={setup.guide} onHide={setup.hide} />
+                <HomeWork quietWhenEmpty />
+              </div>
+              <aside aria-label={t("sideColumn")} className="space-y-5">
+                <CompanyCard />
+                <PeopleCard people={setup.guide.people} />
+              </aside>
+            </div>
+          ) : performance || team ? (
             <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-              <HomeWork />
+              <div className="space-y-6">
+                <FirstWeekCard />
+                <HomeWork />
+              </div>
               <aside aria-label={t("sideColumn")} className="space-y-6">
-                <YourYear employeeId={user?.employeeId} enabled={performance} />
-                <HomePraise />
+                {team ? <YourTeamCard /> : null}
+                {performance ? <YourYear employeeId={user?.employeeId} enabled={performance} /> : null}
+                {performance ? <HomePraise /> : null}
               </aside>
             </div>
           ) : (
-            <HomeWork />
+            <div className="space-y-6">
+              <FirstWeekCard />
+              <HomeWork />
+            </div>
           )}
         </PageContainer>
       </AppShell>

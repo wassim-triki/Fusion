@@ -22,6 +22,8 @@ const mocks = vi.hoisted(() => ({
   upcoming: { items: [] as FusionUpcoming[], modules: [] as ModuleState[] },
   card: { jobTitle: "QA Automation Engineer", orgUnitName: "Consulting A" } as { jobTitle: string | null; orgUnitName: string | null } | null,
   summary: null as PersonPerformanceSummaryDto | null,
+  guide: { pending: false, steps: [] as { key: string; done: boolean }[], doneCount: 0, open: null as string | null, people: 1 },
+  guideEnabled: [] as boolean[],
 }));
 
 vi.mock("@repo/api", async (importOriginal) => ({
@@ -83,6 +85,14 @@ vi.mock("@repo/api/query", () => ({
     person: { name: "Nour Ben Ali", detail: "QA Automation Engineer", detailPending: false },
   }),
   usePeoplePhotos: () => new Map(),
+  usePhoto: () => null,
+  useTenantSummary: () => ({ data: { tenantId: "t", name: "Carthage Digital Group", language: "en", timeZone: "Africa/Tunis", logoUrl: null, brandColor: null } }),
+  useMyTeam: () => ({ data: undefined }),
+  useApiQuery: () => ({ data: undefined, isLoading: false }),
+  useSetupGuide: (options: { enabled: boolean }) => {
+    mocks.guideEnabled.push(options.enabled);
+    return mocks.guide;
+  },
   useFusionNotifications: () => ({
     items: [],
     unreadCount: 0,
@@ -122,6 +132,8 @@ describe("FusionHome", () => {
     mocks.react.mockClear();
     mocks.upcoming = { items: [], modules: [{ key: "performance", label: "Performance", status: "ready" }] };
     mocks.summary = null;
+    mocks.guideEnabled = [];
+    mocks.guide = { pending: false, steps: [], doneCount: 0, open: null, people: 1 };
   });
   afterEach(() => cleanup());
 
@@ -158,7 +170,7 @@ describe("FusionHome", () => {
     expect(screen.getByText("Les deux prochaines semaines")).toBeTruthy();
     expect(screen.getByText(/jours restants/)).toBeTruthy();
     expect(screen.getByRole("link", { name: /12 people don't have Fusion access yet/ })).toBeTruthy();
-    expect(screen.getByText(/^[A-Z][a-zé]+ \d{1,2} [a-zéû]+ · QA Automation Engineer, Consulting A$/)).toBeTruthy();
+    expect(screen.getByText(/^[A-Z][a-zé]+ \d{1,2} [a-zéû]+ · Carthage Digital Group$/)).toBeTruthy();
   });
 
   it("says nothing needs the person and nothing is scheduled when there is neither", () => {
@@ -192,10 +204,42 @@ describe("FusionHome", () => {
     expect(coming[0]).toContain("Plans due");
   });
 
-  it("names the day and the person's job and unit under the greeting", () => {
+  it("names the day and the company under the greeting", () => {
     mocks.work = { modules: ready, items: [] };
     render(<FusionHome />);
-    expect(screen.getByText(/· QA Automation Engineer, Consulting A$/)).toBeTruthy();
+    expect(screen.getByText(/· Carthage Digital Group$/)).toBeTruthy();
+  });
+
+  it("opens an administrator's Home on the setup guide, its open step holding the import's drop", () => {
+    mocks.user = { ...employee, effectivePermissions: [...employee.effectivePermissions, grant("access.assignments.view", "Tenant")] };
+    mocks.work = { modules: ready, items: [] };
+    mocks.guide = {
+      pending: false,
+      doneCount: 1,
+      open: "organization",
+      people: 1,
+      steps: [
+        { key: "company", done: true },
+        { key: "organization", done: false },
+        { key: "invite", done: false },
+        { key: "roles", done: false },
+        { key: "performance", done: false },
+      ],
+    };
+    render(<FusionHome />);
+    expect(screen.getByRole("heading", { name: "Set up Carthage Digital Group" })).toBeTruthy();
+    expect(screen.getByRole("progressbar", { name: "1 of 5 done" })).toBeTruthy();
+    expect(screen.getByText("Drop your spreadsheets here")).toBeTruthy();
+    expect(screen.getAllByRole("link", { name: "Edit" })[0]?.getAttribute("href")).toBe("/core/settings/brand");
+    expect(screen.getByText("1 so far")).toBeTruthy();
+    expect(screen.queryByText("Nothing needs you")).toBeNull();
+  });
+
+  it("never reads the guide for someone who doesn't run the company", () => {
+    mocks.work = { modules: ready, items: [] };
+    render(<FusionHome />);
+    expect(mocks.guideEnabled.every((enabled) => !enabled)).toBe(true);
+    expect(screen.queryByText(/^Set up /)).toBeNull();
   });
 
   it("shows the person's year: a draft plan with who approves it", async () => {

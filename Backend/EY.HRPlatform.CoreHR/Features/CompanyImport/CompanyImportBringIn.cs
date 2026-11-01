@@ -117,6 +117,9 @@ public sealed class CompanyImportBringIn(
         var proposal = CompanyImportDerivation.Derive(CompanyImportSnapshotLoader.Inputs(session), session.Decisions, snapshot);
         if (!proposal.CanBringIn || !ImportFingerprint.Matches(proposal.Fingerprint, session.RequestedFingerprint))
             throw new CompanyImportChangedException();
+        // A root made on day one (the administrator's own record) opens when the company's history starts.
+        if (snapshot.RootUnitId is { } rootId && await organization.OpenRootFromInCurrentTransactionAsync(proposal.UnitsFrom, cancellationToken))
+            snapshot = snapshot with { Units = snapshot.Units.Select(unit => unit.Id == rootId ? unit with { ActiveFrom = proposal.UnitsFrom } : unit).ToList() };
 
         var actor = session.BringInByDisplayName ?? session.StartedByDisplayName;
         var run = new CompanyImportRun

@@ -126,6 +126,7 @@ public static class ServiceCollectionExtensions
         }).ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
         services.AddScoped<CompanyImportReader>();
         services.AddScoped<CompanyImportService>();
+        services.AddScoped<Features.People.FirstPersonService>();
         services.AddScoped<CompanyImportBringIn>();
         services.AddHostedService<CompanyImportWorker>();
 

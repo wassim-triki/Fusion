@@ -1,22 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAuth, useOrganizationReadyLanding } from "@repo/auth";
+import { useAuth } from "@repo/auth";
 import { resolveShellEntryState } from "@/lib/shell-entry";
 import { FusionHome } from "@/features/home/fusion-home";
 
 export default function HomePage() {
   const { user, isLoading, logout } = useAuth();
-  const { pending, organizationReady } = useOrganizationReadyLanding({
-    user,
-    isLoading,
-  });
-  const state = resolveShellEntryState({
-    user,
-    isLoading,
-    organizationReady,
-    readinessPending: pending,
-  });
+  const state = resolveShellEntryState({ user, isLoading });
   const destination = state.kind === "redirect" ? state.destination : null;
 
   useEffect(() => {

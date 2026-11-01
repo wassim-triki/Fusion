@@ -151,7 +151,11 @@
       "passwordsMatch": "Les mots de passe correspondent",
       "passwordsDoNotMatch": "Les mots de passe ne correspondent pas encore",
       "submit": "Créer mon compte",
-      "haveAccount": "Vous avez déjà un compte Fusion ? <signIn>Connectez-vous</signIn> pour continuer"
+      "haveAccount": "Vous avez déjà un compte Fusion ? <signIn>Connectez-vous</signIn> pour continuer",
+      "worksHere": "Travaillez-vous chez {tenant} ?",
+      "worksHereYes": "Oui, j’y travaille",
+      "worksHereNo": "Non, je la configure pour eux",
+      "jobTitle": "Votre poste"
     },
     "journeys": {
       "bootstrap": {
@@ -257,6 +261,83 @@
       "why": "Pourquoi ?",
       "whyPlaceholder": "Dites ce qui changerait votre réponse",
       "failed": "Cela n'a pas marché. Réessayez."
+    },
+    "setup": {
+      "loading": "Chargement du guide",
+      "title": "Configurer {company}",
+      "progress": "{done} sur {total}",
+      "hide": "Masquer le guide",
+      "done": "Fait",
+      "edit": "Modifier",
+      "open": "Ouvrir",
+      "steps": {
+        "company": {
+          "title": "Votre entreprise",
+          "meta": "Logo, couleur et langues",
+          "action": "Personnaliser"
+        },
+        "organization": {
+          "title": "Votre organisation et vos collaborateurs",
+          "meta": "Unités, personnes et rattachements",
+          "action": "Les importer"
+        },
+        "invite": {
+          "title": "Invitez vos collaborateurs",
+          "meta": "Qui se connecte, et à partir de quand",
+          "action": "Inviter"
+        },
+        "roles": {
+          "title": "Choisissez qui fait quoi",
+          "meta": "RH, managers et administrateurs",
+          "action": "Choisir les rôles"
+        },
+        "performance": {
+          "title": "Lancez la Performance",
+          "meta": "Votre premier cycle d’objectifs",
+          "action": "Lancer un cycle"
+        }
+      },
+      "drop": {
+        "title": "Déposez vos fichiers ici",
+        "meta": "Excel ou CSV, toute mise en forme",
+        "choose": "Choisir des fichiers",
+        "reading": "{count, plural, one {Lecture de # fichier} other {Lecture de # fichiers}}",
+        "underWay": "Un import est en cours",
+        "underWayMeta": "Reprenez là où vous en étiez",
+        "continue": "Reprendre l’import",
+        "tooMany": "Choisissez {max} fichiers au plus.",
+        "tooBig": "{name} dépasse 10 Mo.",
+        "failed": "Les fichiers n’ont pas pu être envoyés. Réessayez.",
+        "byHand": "Ou à la main : <link>ajouter la première unité</link>",
+        "you": "Vous"
+      },
+      "company": {
+        "label": "Votre entreprise",
+        "yours": "Votre entreprise",
+        "edit": "Modifier",
+        "language": "Langue",
+        "timeZone": "Fuseau horaire"
+      },
+      "people": {
+        "title": "Collaborateurs",
+        "soFar": "{count} pour l’instant",
+        "you": "Vous",
+        "open": "Voir les collaborateurs"
+      }
+    },
+    "team": {
+      "title": "Votre équipe",
+      "open": "Ouvrir",
+      "count": "{count, plural, one {# personne} other {# personnes}}",
+      "joins": "{name} arrive {day}"
+    },
+    "firstWeek": {
+      "title": "Votre première semaine",
+      "progress": "{done} sur {total}",
+      "markDone": "Fait",
+      "undo": "Annuler",
+      "doneOn": "Fait {day}",
+      "by": "Pour le {day}"
     }
   },
   "app": {

@@ -11,6 +11,8 @@ public interface IOrganizationService
     Task<IReadOnlyList<OrganizationalUnitTypeDto>> GetTypesAsync(CancellationToken cancellationToken);
     Task<OrganizationUnitStateDto> CreateRootAsync(CreateOrganizationRootRequest request, CancellationToken cancellationToken);
     Task<OrganizationUnitStateDto> CreateUnitAsync(CreateOrganizationUnitRequest request, CancellationToken cancellationToken);
+    /// <summary>Opens a root nothing has changed since its creation from an earlier date; false when it can't or needn't.</summary>
+    Task<bool> OpenRootFromInCurrentTransactionAsync(DateOnly from, CancellationToken cancellationToken);
     Task<IReadOnlyList<OrganizationBatchCreatedNode>> CreateBatchInCurrentTransactionAsync(
         DateOnly effectiveDate,
         IReadOnlyList<OrganizationBatchCreateNode> nodes,

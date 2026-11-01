@@ -74,28 +74,6 @@ describe("resolveCoreWorkspaceAccessState", () => {
     })).toBe("module-unavailable");
   });
 
-  it("allows tenant-level Getting Started without CoreHR entitlement when authorized", () => {
-    expect(resolveCoreWorkspaceAccessState({
-      isLoading: false,
-      user: createUser(["HRAdmin"], {
-        moduleEntitlements: [],
-        effectivePermissions: [grant("access.assignments.view")],
-      }),
-      pathname: "/getting-started",
-    })).toBe("allowed");
-  });
-
-  it("still honours the legacy /setup tenant-level route when authorized", () => {
-    expect(resolveCoreWorkspaceAccessState({
-      isLoading: false,
-      user: createUser(["HRAdmin"], {
-        moduleEntitlements: [],
-        effectivePermissions: [grant("access.assignments.view")],
-      }),
-      pathname: "/setup",
-    })).toBe("allowed");
-  });
-
   it("allows tenant-level Access without CoreHR entitlement when authorized", () => {
     expect(resolveCoreWorkspaceAccessState({
       isLoading: false,
@@ -107,16 +85,6 @@ describe("resolveCoreWorkspaceAccessState", () => {
     })).toBe("allowed");
   });
 
-  it("denies tenant-level Getting Started when its own permission is absent", () => {
-    expect(resolveCoreWorkspaceAccessState({
-      isLoading: false,
-      user: createUser(["Employee"], { moduleEntitlements: [] }),
-      pathname: "/getting-started",
-    })).toBe("forbidden");
-  });
-});
-
-describe("buildCoreCallbackUrl", () => {
   it("restores the Core base path for a direct root request", () => {
     expect(buildCoreCallbackUrl("/", "")).toBe("/core");
   });
@@ -127,12 +95,4 @@ describe("buildCoreCallbackUrl", () => {
     );
   });
 
-  it("canonicalizes the tenant-level foundation callback to Getting Started", () => {
-    expect(buildCoreCallbackUrl("/getting-started", "section=access")).toBe(
-      "/getting-started?section=access"
-    );
-    expect(buildCoreCallbackUrl("/tenant-setup", "section=access")).toBe(
-      "/getting-started?section=access"
-    );
-  });
 });

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { PageContainer, PageHeader, TeamBand, TeamBandSkeleton } from "@repo/ds/shell";
+import { PageContainer, Section, TeamBand, TeamBandSkeleton } from "@repo/ds/shell";
 import { useTeamBand } from "@repo/api/query";
 import { Button } from "@repo/ds/components/ui/button";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
@@ -95,14 +95,13 @@ function MyTeam() {
   const showObjectives = phase === "Planning" || phase === "Execution";
 
   return (
-    <>
-      <PageHeader className="mb-4"
-        title={t("myTeam")}
-        size="default"
-        description={people.data ? teamSubtitle(people.data, summaryWords, format.locale) : undefined}
-        actions={
+    <div className="space-y-8">
+      <Section
+        title={t("yourPeople")}
+        meta={people.data ? teamSubtitle(people.data, summaryWords, format.locale) : undefined}
+        action={
           lead ? (
-            <Button asChild>
+            <Button asChild size="sm">
               <Link href={lead.href}>
                 {lead.label}
                 <ArrowRight className="size-4" data-icon="inline-end" aria-hidden />
@@ -110,14 +109,15 @@ function MyTeam() {
             </Button>
           ) : null
         }
-      />
-      <div className="mt-8 space-y-8">
-        {people.data ? <TeamSummary data={people.data} /> : null}
-        {results.data ? <TeamResultsPanel results={results.data} /> : null}
-        <YourPeople cycleId={cycle.id} people={people} query={peopleQuery} onQueryChange={setPeopleQuery} />
-        {showObjectives ? <TeamDirection cycle={cycle} canViewOrgDirection={canViewOrgDirection} /> : null}
-      </div>
-    </>
+      >
+        <div className="space-y-6">
+          {people.data ? <TeamSummary data={people.data} /> : null}
+          <YourPeople cycleId={cycle.id} people={people} query={peopleQuery} onQueryChange={setPeopleQuery} />
+        </div>
+      </Section>
+      {results.data ? <TeamResultsPanel results={results.data} /> : null}
+      {showObjectives ? <TeamDirection cycle={cycle} canViewOrgDirection={canViewOrgDirection} /> : null}
+    </div>
   );
 }
 
@@ -126,8 +126,7 @@ function NoReports({ cycleName }: { cycleName: string | null }) {
   const t = useTranslations("team.NoReports");
   return (
     <>
-      <PageHeader className="mb-4" title={t("myTeam")} size="default" />
-      <div className="mt-8 flex flex-col items-center rounded-surface bg-card px-6 py-16 text-center ring-1 ring-inset ring-border">
+      <div className="flex flex-col items-center rounded-surface bg-card px-6 py-16 text-center ring-1 ring-inset ring-border">
         <Users className="size-8 text-muted-foreground" aria-hidden />
         <p className="mt-3 type-section-title text-foreground">
           {cycleName ? t("noOneReportsToYou", { cycleName }) : t("noOneReportsToYou2")}

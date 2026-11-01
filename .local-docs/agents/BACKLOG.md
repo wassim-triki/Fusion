@@ -53,7 +53,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ## In review
 
 - [ ] **B-185** Team page: the team as a small chart with what's next for each, tabs Overview · Performance · Org chart, rail, Coming up, the joiner's first week, the team's year (D-19, D-27, D-31) · Core HR, Performance · 2026-11-01
-      Look at: as Mariam Gharbi (manager), My Team in Core HR; screens in `plans/B-185-screens/` (01–02 Overview, 03 Performance tab, 04 Org chart tab) beside the drawing (`plans/B-185-team-reference.html`). Performance's sidebar no longer has My Team: its tab is `/performance/team` under the same band. 1:1s on the band and in Coming up come from Performance (Aicha's 1:1 on Tue 3 Nov); Carthage seeds no leave, promotion or objective-at-risk today, so those cards don't show.
+      Look at: as Mariam Gharbi (manager), My Team in Core HR; screens in `plans/B-185-screens/` (01–02 Overview, 03 Performance tab, 04 Org chart tab) beside the drawing (`plans/B-185-team-reference.html`). Round 1 (2026-11-01): Performance tab content in one titled section, more room between cards (`r1-*` screens). Performance's sidebar no longer has My Team: its tab is `/performance/team` under the same band. 1:1s on the band and in Coming up come from Performance (Aicha's 1:1 on Tue 3 Nov); Carthage seeds no leave, promotion or objective-at-risk today, so those cards don't show.
 
 ## Ready
 

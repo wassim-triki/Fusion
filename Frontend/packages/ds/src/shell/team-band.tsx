@@ -152,7 +152,7 @@ export function TeamBand({ manager, people, tabs, current, praiseHref, actions }
             <ul
               aria-label={t("chart")}
               className={cn(
-                "relative flex gap-2.5 pt-5",
+                "relative flex gap-4 pt-5",
                 people.length > 1 && "before:absolute before:inset-x-[69px] before:top-0 before:h-px before:bg-input"
               )}
             >
@@ -210,7 +210,7 @@ export function TeamBandSkeleton({ cards = 5 }: { cards?: number }) {
       <Skeleton className="mt-2 h-4 w-40" />
       <div className="mt-2 flex flex-col items-center">
         <Skeleton className="h-14 w-56 rounded-control" />
-        <div className="mt-10 flex gap-2.5">
+        <div className="mt-10 flex gap-4">
           {Array.from({ length: cards }, (_, index) => <Skeleton key={index} className="h-[156px] w-[138px] rounded-control" />)}
         </div>
       </div>

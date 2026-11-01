@@ -2,10 +2,9 @@
   "MyTeamPage": {
     "performanceWorkspace": "Performance workspace",
     "theCycle": "The Cycle",
-    "myTeam": "My Team"
+    "yourPeople": "Your people"
   },
   "NoReports": {
-    "myTeam": "My Team",
     "noOneReportsToYou": "No one reports to you in {cycleName}",
     "noOneReportsToYou2": "No one reports to you",
     "goToOverview": "Go to Overview"

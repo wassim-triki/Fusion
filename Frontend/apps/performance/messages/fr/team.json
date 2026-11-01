@@ -2,10 +2,9 @@
   "MyTeamPage": {
     "performanceWorkspace": "Espace Performance",
     "theCycle": "Le cycle",
-    "myTeam": "Mon équipe"
+    "yourPeople": "Vos collaborateurs"
   },
   "NoReports": {
-    "myTeam": "Mon équipe",
     "noOneReportsToYou": "Personne ne vous est rattaché dans {cycleName}",
     "noOneReportsToYou2": "Personne ne vous est rattaché",
     "goToOverview": "Aller à la vue d’ensemble"

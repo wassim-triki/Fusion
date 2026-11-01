@@ -2,10 +2,9 @@
   "MyTeamPage": {
     "performanceWorkspace": "مساحة عمل الأداء",
     "theCycle": "الدورة",
-    "myTeam": "فريقي"
+    "yourPeople": "فريقك"
   },
   "NoReports": {
-    "myTeam": "فريقي",
     "noOneReportsToYou": "لا أحد يتبعك في {cycleName}",
     "noOneReportsToYou2": "لا أحد يتبعك",
     "goToOverview": "الانتقال إلى النظرة العامة"

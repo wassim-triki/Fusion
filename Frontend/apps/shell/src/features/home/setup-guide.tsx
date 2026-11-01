@@ -289,7 +289,7 @@ export function CompanyCard() {
   return (
     <section aria-label={t("label")} className="grid gap-5 rounded-surface bg-card p-[22px]">
       <div className="flex items-center gap-3.5">
-        <span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-[20px] bg-primary text-[26px] font-bold text-primary-foreground">
+        <span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-control bg-primary font-editorial text-[30px] font-medium text-primary-foreground">
           {data?.logoUrl ? <img src={data.logoUrl} alt="" className="size-full bg-card object-contain" /> : data?.name?.trim().charAt(0).toUpperCase()}
         </span>
         <div className="min-w-0 flex-1">

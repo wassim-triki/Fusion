@@ -847,7 +847,7 @@ export default function OrganizationWorkspace({
       ) : (
         <>
           <div className={cn("flex shrink-0 items-center gap-3 border-b bg-card px-4 py-3", urlState.representation === "outline" && "hidden")}>
-            <div className="relative min-w-[280px] max-w-lg flex-1">
+            <div className="relative w-60 shrink-0">
               <Search className="pointer-events-none absolute inset-s-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 aria-label={t("search.label")}
@@ -975,7 +975,7 @@ export default function OrganizationWorkspace({
                   </DropdownMenuContent>
                 </DropdownMenu>
                 {canManage && !readOnly ? (
-                  <Button variant="outline" onClick={() => patchLocal({ editor: { kind: "unit-form", mode: { kind: "add", parentId: null } } })}>
+                  <Button onClick={() => patchLocal({ editor: { kind: "unit-form", mode: { kind: "add", parentId: null } } })}>
                     <Plus className="h-4 w-4" />
                     {t("toolbar.addUnit")}
                   </Button>

@@ -44,7 +44,7 @@ Functionality and engineering quality come first, without over-engineering: buil
 - Navigation and diagnostics: the TypeScript and C# language servers (Claude: LSP plugins; Codex: `lsp_typescript` / `lsp_csharp`) before broad text search. Subagents only for bounded, independent work; no nesting.
 
 ## Verification
-Run checks once the work settles, scoped to what changed. Report the evidence: each command and its passed/failed/skipped counts. Don't claim something works from reading code when a test or API call can show it.
+Run checks once the work settles, scoped to what changed and no more than proves it. Report the evidence: each command and its passed/failed/skipped counts. Don't claim something works from reading code when a test or API call can show it.
 
 | You changed | Run |
 |---|---|
@@ -55,17 +55,17 @@ Run checks once the work settles, scoped to what changed. Report the evidence: e
 | Routes, layouts or Next config | add a cold `build`: a warm dev server hides route-tree errors |
 | Only visuals | nothing, unless the user asks for rendered QA (then always through the shell) |
 
-- Tests: what the task requires, plus the obvious negatives (unauthorized, invalid input, wrong state, cross-tenant).
+- Tests: only the cases that prove the task's behavior, plus its authorization and cross-tenant negatives. Invalid input or wrong state only where the task adds that rule; nothing for styling, wiring or what the types already guarantee.
 - Frontend (from `Frontend/`): `pnpm --filter <app> type-check|lint|test|build`; never unfiltered at the root. Format only the files you touched.
 - Backend: the `fusion-dev` skill's `test-backend.ps1 <Service>` (sets the relational-test connection, avoids the running service's file lock, prints passed/failed/skipped); cloud: `test-backend.sh`.
 - API journeys: through `http://localhost:3000/api/*` with the `fusion-dev` skill's `api.cjs` (sign-in, calls, Mailpit invites).
 
-### Build speed and memory (user, 2026-10-27; leaner 2026-10-31, B-234)
+### Build speed and memory (user, 2026-10-27; leaner 2026-10-31, B-234; minimal 2026-11-01, B-243)
 - **A slice is one session, one agent, one commit.** A fresh session per slice, Claude end to end at medium effort (high for auth work); Codex takes over only when a usage limit cuts a session, from `STATE.md`. The one commit holds the code and the board files (STATE, BACKLOG, LOG, memory); no separate docs commit. Run it in the background.
-- **While building:** only the touched tests (`pnpm --filter <app> exec vitest run <paths>`, `test-backend.ps1 -Filter`), not again after every small fix; type errors from the language servers.
+- **While building:** only the touched tests (`pnpm --filter <app> exec vitest run <paths>`, `test-backend.ps1 -Filter`), not again after every small fix; type errors from the language servers. No scripts, harnesses or tools the task doesn't need.
 - **Once, at the end:** one full backend suite per service changed and the touched apps' tests. The commit hook lints and type-checks our apps and packages. A cold build, in the background, only if routes, layouts or Next config changed. No other module's tests unless its code or a contract it reads changed.
 - **Journeys:** only for authorization and tenant isolation, with their negatives; the same script sets up the slice's demo data.
-- **Screens:** port the drawing literally the first time, then one screen per new surface (dark, 1440×900), compared with its drawing by the agent before sending, so a review is one look, not rounds. No reference-frame scripts; a review file only for a real manual checklist.
+- **Screens:** port the drawing literally the first time, then one screen per new surface (dark, 1440×900), compared with its agreed drawing by the agent before sending, so a review is one look, not rounds. Those are the only screens: none for small fixes, extra states or retakes. No reference-frame scripts; a review file only for a real manual checklist.
 - **Never cut:** server-side authorization and tenant-isolation tests with their negatives, `security-review` for auth changes, type-check (the hook's, at the latest), and the cold build when routes changed.
 - **Memory (13.9 GB machine):** heavy jobs one at a time. Start, restart or stop the stack only with `stack.ps1` (keep it running; our four apps by default, `-Apps core` for the shell with only the apps a slice touches, `-AllApps` for the rest) and run backend tests only with `test-backend.ps1`: they keep memory in check. A job refused by the memory check or killed for low memory is reported, not retried.
 

@@ -110,7 +110,7 @@
 - [Prettier reflows whole files](prettier-reflows-whole-files.md) — `.prettierrc` is 80 cols, code is ~120+; prettier only new files.
 - [No cosmetic history rewrites](no-cosmetic-history-rewrites.md) — leave commits as they are unless it matters; don't raise cosmetic slips.
 - [Fresh session for applies](fresh-session-for-applies.md) — every apply/coding task starts in a new session; write a cold-pickup recipe into STATE first.
-- [Build speed mode](build-speed-mode.md) — one slice = one session, one agent, one commit (board files included); checks once; journeys only for authz; no backward compat; never cut authz/isolation tests (AGENTS.md › Build speed, B-234).
+- [Build speed mode](build-speed-mode.md) — one slice = one session, one agent, one commit (board files included); only tests that prove the behavior; checks once; journeys only for authz; one screen per new surface; no backward compat; never cut authz/isolation tests (AGENTS.md › Build speed, B-234).
 - [Colleague modules only must not break](colleague-modules-only-must-not-break.md) — don't coordinate with or wait on Learning/Recruitment/Interview/Onboarding; just keep them working; since 2026-10-30 (internship over, fork) product plans may hide or replace them.
 - Deviate from issue wording when the architecture suggests a better fit.
 - [Rewrites acceptable](rewrites-acceptable.md) — don't bias toward refactor-in-place.

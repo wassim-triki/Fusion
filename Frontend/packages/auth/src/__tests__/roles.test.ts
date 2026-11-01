@@ -19,8 +19,23 @@ import {
   canViewCoreOrganization,
   canManageCoreOrganization,
   canSeeCoreOrgChart,
+  canViewCoreReports,
+  canBuildCoreReports,
 } from "../roles";
 import type { AuthUser } from "../types";
+
+it("Reports team reach needs a linked person, and Build also needs Reports access", () => {
+  const grants = [
+    { permissionKey: "core.overview.view", scope: "DirectReports" as const },
+    { permissionKey: "core.reports.build", scope: "DirectReports" as const },
+  ];
+  expect(canViewCoreReports(makeUser([], null, grants))).toBe(false);
+  expect(canViewCoreReports(makeUser([], "manager", grants))).toBe(true);
+  expect(canBuildCoreReports(makeUser([], "manager", grants))).toBe(true);
+  expect(canBuildCoreReports(makeUser([], "manager", grants.slice(1)))).toBe(
+    false
+  );
+});
 
 function makeUser(
   roles: string[],
@@ -55,9 +70,15 @@ function grant(
 
 describe("role helpers", () => {
   it("authorizes Organization only from tenant-scoped canonical grants", () => {
-    const viewer = makeUser([], null, [grant("core.organization.view", "Tenant")]);
-    const manager = makeUser([], null, [grant("core.organization.manage", "Tenant")]);
-    const orgUnitManager = makeUser([], null, [grant("core.organization.manage", "OrgUnit")]);
+    const viewer = makeUser([], null, [
+      grant("core.organization.view", "Tenant"),
+    ]);
+    const manager = makeUser([], null, [
+      grant("core.organization.manage", "Tenant"),
+    ]);
+    const orgUnitManager = makeUser([], null, [
+      grant("core.organization.manage", "OrgUnit"),
+    ]);
     const legacy = makeUser(["HRAdmin"], null, [
       grant("core.structure.manage", "Tenant"),
       grant("core.orgchart.view", "Tenant"),
@@ -260,13 +281,32 @@ describe("role helpers", () => {
 
   it("leaves the org chart to managers and HR when the company says so", () => {
     const chart = grant("core.orgchart.view", "Tenant");
-    const employee = makeUser(["Employee"], "employee-1", [chart, grant("core.employee.view", "Self")]);
-    const manager = makeUser(["Manager"], "employee-2", [chart, grant("core.team.view", "DirectReports")]);
-    const hr = makeUser(["HRAdmin"], "employee-3", [chart, grant("core.employee.view", "Tenant")]);
-    const noChart = makeUser(["HRAdmin"], "employee-4", [grant("core.employee.view", "Tenant")]);
+    const employee = makeUser(["Employee"], "employee-1", [
+      chart,
+      grant("core.employee.view", "Self"),
+    ]);
+    const manager = makeUser(["Manager"], "employee-2", [
+      chart,
+      grant("core.team.view", "DirectReports"),
+    ]);
+    const hr = makeUser(["HRAdmin"], "employee-3", [
+      chart,
+      grant("core.employee.view", "Tenant"),
+    ]);
+    const noChart = makeUser(["HRAdmin"], "employee-4", [
+      grant("core.employee.view", "Tenant"),
+    ]);
 
-    expect([employee, manager, hr, noChart].map((user) => canSeeCoreOrgChart(user, "Everyone"))).toEqual([true, true, true, false]);
-    expect([employee, manager, hr, noChart].map((user) => canSeeCoreOrgChart(user, "ManagersAndHr"))).toEqual([false, true, true, false]);
+    expect(
+      [employee, manager, hr, noChart].map((user) =>
+        canSeeCoreOrgChart(user, "Everyone")
+      )
+    ).toEqual([true, true, true, false]);
+    expect(
+      [employee, manager, hr, noChart].map((user) =>
+        canSeeCoreOrgChart(user, "ManagersAndHr")
+      )
+    ).toEqual([false, true, true, false]);
     expect(canSeeCoreOrgChart(employee, undefined)).toBe(false);
   });
 });

@@ -18,6 +18,7 @@ public static class RoleLevels
     public const string Change = "change";
     public const string Propose = "propose";
     public const string Approve = "approve";
+    public const string Build = "build";
 }
 
 /// <summary>
@@ -103,7 +104,10 @@ public static class RoleAreas
             O(RoleLevels.Approve, RoleReaches.Everyone, [G(CorePermissions.ChangeApprove, T)]),
         ]),
         new("reports", CoreGroup, PermissionModuleKeys.CoreHR, false, [
+            O(RoleLevels.See, RoleReaches.Team, [G(CorePermissions.OverviewView, Dr)]),
             O(RoleLevels.See, RoleReaches.Everyone, [G(CorePermissions.OverviewView, T)], G(CorePermissions.SettingsGovernanceView, T)),
+            O(RoleLevels.Build, RoleReaches.Team, [G(CorePermissions.ReportsBuild, Dr)], G(CorePermissions.OverviewView, Dr)),
+            O(RoleLevels.Build, RoleReaches.Everyone, [G(CorePermissions.ReportsBuild, T)], G(CorePermissions.OverviewView, T), G(CorePermissions.SettingsGovernanceView, T)),
         ]),
         new("signin", CoreGroup, PermissionModuleKeys.CoreHR, false, [
             O(RoleLevels.See, null, [G(CorePermissions.AccessView, T)], G(CorePermissions.SettingsProvisioningView, T)),

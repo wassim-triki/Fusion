@@ -1,6 +1,11 @@
 "use client";
 
-import { Fragment, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
+import {
+  Fragment,
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
 import type { Column, RowData } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -76,6 +81,8 @@ export interface DataTableProps<TData extends RowData> {
   /** Singular and plural for the footer: "1–10 of 14 people". */
   noun?: [string, string];
   pageSizes?: number[];
+  /** Period matrices can omit the pager when every group fits on one page. */
+  showPagination?: boolean;
   /** Makes rows open something. Clicks on links and buttons inside a row keep their own behaviour. */
   onRowClick?: (row: TData) => void;
   /** Which rows `onRowClick` applies to; all of them by default. */
@@ -86,7 +93,9 @@ export interface DataTableProps<TData extends RowData> {
    * Rows arrive already ordered by group; a header band opens each run of rows sharing a group key.
    * Grouping is the data's order, never a client-side regrouping.
    */
-  rowGroup?: (row: TData) => { key: string; label: ReactNode } | null | undefined;
+  rowGroup?: (
+    row: TData
+  ) => { key: string; label: ReactNode } | null | undefined;
   className?: string;
 }
 
@@ -108,6 +117,7 @@ export function DataTable<TData extends RowData>({
   noResults,
   noun,
   pageSizes,
+  showPagination = true,
   onRowClick,
   canClickRow,
   minWidth,
@@ -292,7 +302,9 @@ export function DataTable<TData extends RowData>({
                     colSpan={columns.length}
                     className="px-6 py-14 text-center"
                   >
-                    <p className="text-sm text-muted-foreground">{noResults ?? t("noResults")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {noResults ?? t("noResults")}
+                    </p>
                     {model.isFiltered ? (
                       <Button
                         variant="outline"
@@ -310,59 +322,70 @@ export function DataTable<TData extends RowData>({
                   const isClickable = clickable(row.original);
                   const group = rowGroup?.(row.original);
                   const opensGroup =
-                    group && (index === 0 || rowGroup?.(rows[index - 1]!.original)?.key !== group.key);
+                    group &&
+                    (index === 0 ||
+                      rowGroup?.(rows[index - 1]!.original)?.key !== group.key);
                   return (
                     <Fragment key={row.id}>
-                    {opensGroup ? (
-                      <tr className="border-b border-border bg-inlay">
-                        <th
-                          scope="colgroup"
-                          colSpan={columns.length}
-                          className={cn("h-9 text-start text-xs font-semibold text-foreground", INSET)}
-                        >
-                          {group.label}
-                        </th>
-                      </tr>
-                    ) : null}
-                    <tr
-                      data-clickable={isClickable || undefined}
-                      className={cn(
-                        "group/row border-b border-border transition-colors last:border-0 hover:bg-muted/40",
-                        isClickable &&
-                          "cursor-pointer focus-visible:bg-muted/40 focus-visible:outline-none"
-                      )}
-                      onClick={isClickable ? activate(row.original) : undefined}
-                      tabIndex={isClickable ? 0 : undefined}
-                      onKeyDown={
-                        isClickable
-                          ? (event: KeyboardEvent<HTMLTableRowElement>) => {
-                              if (event.target !== event.currentTarget) return;
-                              if (event.key === "Enter" || event.key === " ") {
-                                event.preventDefault();
-                                onRowClick?.(row.original);
-                              }
-                            }
-                          : undefined
-                      }
-                    >
-                      {row.getVisibleCells().map((cell) => {
-                        const meta = metaOf(cell.column as AnyColumn<TData>);
-                        return (
-                          <td
-                            key={cell.id}
+                      {opensGroup ? (
+                        <tr className="border-b border-border bg-inlay">
+                          <th
+                            scope="colgroup"
+                            colSpan={columns.length}
                             className={cn(
-                              "h-14 align-middle",
-                              INSET,
-                              ALIGN_TEXT[meta.align ?? "start"],
-                              hideClass(meta),
-                              meta.cellClassName
+                              "h-9 text-start text-xs font-semibold text-foreground",
+                              INSET
                             )}
                           >
-                            <table.FlexRender cell={cell} />
-                          </td>
-                        );
-                      })}
-                    </tr>
+                            {group.label}
+                          </th>
+                        </tr>
+                      ) : null}
+                      <tr
+                        data-clickable={isClickable || undefined}
+                        className={cn(
+                          "group/row border-b border-border transition-colors last:border-0 hover:bg-muted/40",
+                          isClickable &&
+                            "cursor-pointer focus-visible:bg-muted/40 focus-visible:outline-none"
+                        )}
+                        onClick={
+                          isClickable ? activate(row.original) : undefined
+                        }
+                        tabIndex={isClickable ? 0 : undefined}
+                        onKeyDown={
+                          isClickable
+                            ? (event: KeyboardEvent<HTMLTableRowElement>) => {
+                                if (event.target !== event.currentTarget)
+                                  return;
+                                if (
+                                  event.key === "Enter" ||
+                                  event.key === " "
+                                ) {
+                                  event.preventDefault();
+                                  onRowClick?.(row.original);
+                                }
+                              }
+                            : undefined
+                        }
+                      >
+                        {row.getVisibleCells().map((cell) => {
+                          const meta = metaOf(cell.column as AnyColumn<TData>);
+                          return (
+                            <td
+                              key={cell.id}
+                              className={cn(
+                                "h-14 align-middle",
+                                INSET,
+                                ALIGN_TEXT[meta.align ?? "start"],
+                                hideClass(meta),
+                                meta.cellClassName
+                              )}
+                            >
+                              <table.FlexRender cell={cell} />
+                            </td>
+                          );
+                        })}
+                      </tr>
                     </Fragment>
                   );
                 })
@@ -372,7 +395,8 @@ export function DataTable<TData extends RowData>({
         </div>
       )}
 
-      {isLoading || (!isEmpty && !error && table.getRowCount() > 0) ? (
+      {showPagination &&
+      (isLoading || (!isEmpty && !error && table.getRowCount() > 0)) ? (
         <div
           className={cn(
             "flex min-h-12 items-center border-t border-border py-2",

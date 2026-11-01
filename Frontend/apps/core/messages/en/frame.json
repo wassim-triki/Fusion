@@ -10,7 +10,8 @@
     "changes": "Changes and approvals",
     "workforceAccess": "Workforce access",
     "administrators": "Administrators",
-    "settings": "Settings"
+    "settings": "Settings",
+    "reports": "Reports"
   },
   "breadcrumb": {
     "import": "Import",

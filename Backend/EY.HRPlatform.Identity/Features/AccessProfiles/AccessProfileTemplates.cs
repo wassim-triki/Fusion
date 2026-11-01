@@ -42,7 +42,7 @@ public static class AccessProfileTemplates
         C("personal", RoleLevels.Change, RoleReaches.Everyone),
         C("org", RoleLevels.Change),
         C("approve", RoleLevels.Approve, RoleReaches.Everyone),
-        C("reports", RoleLevels.See, RoleReaches.Everyone),
+        C("reports", RoleLevels.Build, RoleReaches.Everyone),
         C("signin", RoleLevels.Change),
         C("plans", RoleLevels.See, RoleReaches.Everyone),
         C("cycles", RoleLevels.Change),

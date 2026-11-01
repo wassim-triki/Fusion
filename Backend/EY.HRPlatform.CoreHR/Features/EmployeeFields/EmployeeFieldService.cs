@@ -314,7 +314,7 @@ public sealed class EmployeeFieldService(CoreHRDbContext db, ITenantContext tena
             item.Visible, item.VisibleToEmployee, item.VisibleToManager, item.Required, item.IsBuiltIn,
             item.SortOrder, item.SourceKey, item.GalleryKey);
 
-    private static bool CanSee(EmployeeFieldDefinition field, Guid subject, EmployeeReadAudience audience, Guid? viewer)
+    internal static bool CanSee(EmployeeFieldDefinition field, Guid subject, EmployeeReadAudience audience, Guid? viewer)
     {
         if (!field.Visible) return false;
         if (audience == EmployeeReadAudience.HrAdmin) return true;

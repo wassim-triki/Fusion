@@ -38,6 +38,7 @@ public sealed record IdentityRoleChange(DateTime OccurredAt, string ActorName);
 
 public interface IWorkforceAccessIdentityClient
 {
+    Task<IReadOnlyList<Features.Reports.ReportRoleDto>> ReportRolesAsync(Guid userId, CancellationToken cancellationToken);
     Task<IReadOnlyDictionary<Guid, WorkforceAccessCandidateResult>> ResolveCandidatesAsync(
         IReadOnlyCollection<WorkforceAccessCandidateSubject> subjects,
         CancellationToken cancellationToken);
@@ -92,6 +93,10 @@ public sealed class WorkforceAccessIdentityClient(
     IInternalServiceRequestSigner signer) : IWorkforceAccessIdentityClient
 {
     private const string CandidatesPath = "internal/identity/workforce-access/candidates";
+    public async Task<IReadOnlyList<Features.Reports.ReportRoleDto>> ReportRolesAsync(Guid userId, CancellationToken cancellationToken)
+        => await SendAsync<List<Features.Reports.ReportRoleDto>>("internal/identity/roles/report-audience",
+            new { TenantId = ResolvedTenantId(), UserId = userId }, ResolvedTenantId(), cancellationToken)
+            ?? throw new InvalidOperationException("Identity returned no report audience.");
     private const string MutatePath = "internal/identity/workforce-access/mutate";
     private const string CorrectPath = "internal/identity/workforce-access/correct";
 

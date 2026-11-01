@@ -237,6 +237,8 @@ public class WorkforceControllerAuthorizationTests
 
     private sealed class StubWorkforceAccessIdentityClient : IWorkforceAccessIdentityClient
     {
+        public Task<IReadOnlyList<EY.HRPlatform.CoreHR.Features.Reports.ReportRoleDto>> ReportRolesAsync(Guid userId, CancellationToken cancellationToken)
+            => Task.FromResult<IReadOnlyList<EY.HRPlatform.CoreHR.Features.Reports.ReportRoleDto>>([]);
         public Task<IReadOnlyDictionary<Guid, WorkforceAccessCandidateResult>> ResolveCandidatesAsync(
             IReadOnlyCollection<WorkforceAccessCandidateSubject> subjects,
             CancellationToken cancellationToken)

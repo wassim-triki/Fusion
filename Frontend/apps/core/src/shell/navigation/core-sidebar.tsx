@@ -3,7 +3,11 @@
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { User } from "lucide-react";
-import { useFusionNavigation, useFusionSettings, useSettingsReturn } from "@repo/api/query";
+import {
+  useFusionNavigation,
+  useFusionSettings,
+  useSettingsReturn,
+} from "@repo/api/query";
 import { FusionSidebar, sectionPaths } from "@repo/ds/shell";
 import {
   useAuth,
@@ -13,6 +17,7 @@ import {
   canApproveCoreChanges,
   canProposeCoreChanges,
   canManageCoreEmployees,
+  canViewCoreReports,
 } from "@repo/auth";
 import { useCoreNav } from "@/shell/navigation/use-core-nav";
 import { useOrgChartAccess } from "@/features/org-chart/api/use-org-chart-access";
@@ -43,13 +48,21 @@ export function CoreSidebar() {
   const canSeeMyTeam = canSeeTeamWorkspaceNavigation(user);
 
   const peopleItems = nav.people.items.filter((item) => {
+    if (item.href === "/reports") return canViewCoreReports(user);
     if (item.href === "/profile") return canSeeMyProfile;
     if (item.href === "/team") return canSeeMyTeam;
     // Everyone has People: HR's table, the directory for everyone else (D-28).
-    if (item.href === "/people") return canSeeEmployeeRoster || canAccessEmployeeProfile(user);
+    if (item.href === "/people")
+      return canSeeEmployeeRoster || canAccessEmployeeProfile(user);
     // One place for the organization: its people chart, structure and list (D-17).
-    if (item.href === "/organization") return canSeeOrganization || canSeeOrgChart;
-    if (item.href === "/changes") return canApproveCoreChanges(user) || canProposeCoreChanges(user) || canManageCoreEmployees(user);
+    if (item.href === "/organization")
+      return canSeeOrganization || canSeeOrgChart;
+    if (item.href === "/changes")
+      return (
+        canApproveCoreChanges(user) ||
+        canProposeCoreChanges(user) ||
+        canManageCoreEmployees(user)
+      );
     return true;
   });
   const adminItems = nav.admin.items.filter((item) => {
@@ -64,9 +77,13 @@ export function CoreSidebar() {
       ]
     : [{ ...nav.people, items: peopleItems }];
 
-  const navigation = useFusionNavigation("core", sectionPaths("/core", visibleSections));
+  const navigation = useFusionNavigation(
+    "core",
+    sectionPaths("/core", visibleSections)
+  );
   // Inside Settings the same sidebar switches to settings mode (fusion-settings).
-  const inSettings = activePath === "/settings" || activePath.startsWith("/settings/");
+  const inSettings =
+    activePath === "/settings" || activePath.startsWith("/settings/");
   const settings = useFusionSettings({ enabled: inSettings });
   const back = useSettingsReturn();
 
@@ -90,7 +107,9 @@ export function CoreSidebar() {
         ...navigation.person,
         pending: isAuthLoading,
         // Raw anchor, so the basePath is explicit.
-        links: canSeeMyProfile ? [{ label: t("myProfile"), href: "/core/profile", icon: User }] : [],
+        links: canSeeMyProfile
+          ? [{ label: t("myProfile"), href: "/core/profile", icon: User }]
+          : [],
         onSignOut: async () => {
           await logout();
           window.location.href = "/auth/signin";

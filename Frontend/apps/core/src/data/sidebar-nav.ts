@@ -1,5 +1,5 @@
 import {
-  ClipboardList,
+  ChartNoAxesColumn,
   LayoutDashboard,
   Network,
   Settings2,
@@ -19,12 +19,11 @@ export const PEOPLE_NAV: ShellNavSection = {
     { label: "peopleDirectory", href: "/people", icon: Users },
     { label: "organization", href: "/organization", icon: Network },
     { label: "changes", href: "/changes", icon: Stamp },
+    { label: "reports", href: "/reports", icon: ChartNoAxesColumn },
   ],
 };
 
 export const ADMIN_NAV: ShellNavSection = {
   title: "administration",
-  items: [
-    { label: "settings", href: "/settings", icon: Settings2 },
-  ],
+  items: [{ label: "settings", href: "/settings", icon: Settings2 }],
 };

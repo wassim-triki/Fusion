@@ -82,7 +82,7 @@ public sealed class RoleAreasTests
 
     [Theory]
     [InlineData("job", RoleLevels.Change, RoleReaches.Team)]
-    [InlineData("reports", RoleLevels.See, RoleReaches.Team)]
+    [InlineData("reports", RoleLevels.Build, RoleReaches.Self)]
     [InlineData("job", RoleLevels.See, "unit")]
     [InlineData("nowhere", RoleLevels.See, null)]
     public void An_option_an_area_does_not_offer_is_refused(string area, string level, string? reach)

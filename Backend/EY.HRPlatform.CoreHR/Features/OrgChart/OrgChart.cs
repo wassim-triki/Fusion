@@ -294,7 +294,7 @@ public sealed class OrgChartQueryHandler(
         return words.Length == 0 ? "?" : $"{words[0][0]}{words[^1][0]}".ToUpperInvariant();
     }
 
-    private static bool CanViewField(TenantSettingsDto settings, string field, EmployeeReadAudience audience)
+    internal static bool CanViewField(TenantSettingsDto settings, string field, EmployeeReadAudience audience)
     {
         if (!settings.EmployeeFieldConfig.TryGetValue(field, out var config)) return true;
         return audience switch

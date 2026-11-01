@@ -292,7 +292,8 @@
       "see": "See",
       "change": "Change",
       "propose": "Propose",
-      "approve": "Approve"
+      "approve": "Approve",
+      "build": "Build"
     },
     "reaches": {
       "self": "themselves",

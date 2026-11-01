@@ -137,7 +137,7 @@ public sealed class PeopleExport(CoreHRDbContext dbContext)
         return Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(builder.ToString())).ToArray();
     }
 
-    private static byte[] Xlsx(IReadOnlyList<string> headers, IReadOnlyList<List<string>> rows)
+    internal static byte[] Xlsx(IReadOnlyList<string> headers, IReadOnlyList<List<string>> rows)
     {
         using var stream = new MemoryStream();
         using (var document = SpreadsheetDocument.Create(stream, SpreadsheetDocumentType.Workbook, autoSave: true))

@@ -36,6 +36,7 @@ public class CoreHRDbContext : DbContext
     private Guid CurrentTenantId => _tenantContext?.TenantIdOrDefault ?? Guid.Empty;
 
     public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<SavedReport> SavedReports => Set<SavedReport>();
     public DbSet<EmergencyContact> EmergencyContacts => Set<EmergencyContact>();
 
     // Canonical workforce model (Employee -> Employment -> WorkAssignment -> ManagerRelationship).
@@ -92,6 +93,8 @@ public class CoreHRDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.HasDefaultSchema("corehr");
+        modelBuilder.Entity<SavedReport>().HasQueryFilter(report => CurrentTenantId != Guid.Empty && report.TenantId == CurrentTenantId);
+        modelBuilder.Entity<ReportShare>().HasQueryFilter(share => SavedReports.Any(report => report.Id == share.ReportId));
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CoreHRDbContext).Assembly);
 
         // Global tenant filter: all Employee queries automatically scoped to current tenant.

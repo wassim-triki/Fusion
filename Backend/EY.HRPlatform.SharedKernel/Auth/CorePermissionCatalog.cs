@@ -37,6 +37,7 @@ public static class PermissionScopes
 public static class CorePermissions
 {
     public const string OverviewView = "core.overview.view";
+    public const string ReportsBuild = "core.reports.build";
 
     public const string SetupView = "core.setup.view";
     public const string SetupManage = "core.setup.manage";
@@ -93,6 +94,7 @@ public static class CorePermissions
     public static readonly ReadOnlyCollection<string> All =
         Array.AsReadOnly([
             OverviewView,
+            ReportsBuild,
             SetupView,
             SetupManage,
             StructureView,
@@ -162,7 +164,8 @@ public static class CorePermissionCatalog
 {
     private static readonly ReadOnlyCollection<CorePermissionDefinition> Definitions =
         Array.AsReadOnly<CorePermissionDefinition>([
-            new(CorePermissions.OverviewView, "View overview", "Workspace", [PermissionScopes.Tenant]),
+            new(CorePermissions.OverviewView, "See reports", "Reports", [PermissionScopes.DirectReports, PermissionScopes.Tenant]),
+            new(CorePermissions.ReportsBuild, "Build reports", "Reports", [PermissionScopes.DirectReports, PermissionScopes.Tenant]),
             new(CorePermissions.SetupView, "View setup", "Setup & Structure", [PermissionScopes.Tenant]),
             new(CorePermissions.SetupManage, "Manage setup", "Setup & Structure", [PermissionScopes.Tenant]),
             new(CorePermissions.StructureView, "View structure", "Setup & Structure", [PermissionScopes.Tenant]),

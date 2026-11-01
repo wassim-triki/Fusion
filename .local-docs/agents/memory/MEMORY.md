@@ -39,6 +39,8 @@
 - [Permission-gate: hide, don't deny](permission-gate-hide-not-deny.md) — hide inaccessible nav/actions; gate on operational access.
 
 ## Core HR / Platform work
+
+- [Reports engine](reports-engine.md) — B-189: shared engine for Reports, exports and B-190; current branch before aggregates, viewer field policy, existing read grant extended to team, Build for saved reports.
 - [Tenant record redesign](tenant-record-redesign.md) — `/platform/tenants/{id}` 4 tabs all built (B-120) + tenant archival (B-099).
 - [Auth/invite surface redesign](auth-invite-surface-redesign.md) — forced-dark sign-in + invite acceptance on DS.
 - [Invite surfaces unified](invite-surfaces-unified.md) — workforce invite matches shell activation via shared `@repo/ds/shell` parts.

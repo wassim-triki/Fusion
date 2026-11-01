@@ -1,8 +1,6 @@
 # STATE — live handoff
 
-Lets any agent resume mid-task (Codex on a usage limit). Update at milestones, kept light. When done: log to `LOG.md`, close the item (○) or send it to In review per the review gate in `AGENTS.md`, reset these sections to None, and update `Last finished`. Accounts and seed scripts: `data/`.
-
-**Last finished:** 2026-11-01: ✓ B-188 Day one and Home. Earlier: ✓ B-187 The import again; ✓ B-186 The import, one flow.
+**Last finished:** 2026-11-01: → B-189 Reports, sent to In review. Earlier: ✓ B-188 Day one and Home; ✓ B-187 The import again.
 
 ## Active work
 
@@ -14,7 +12,7 @@ None.
 
 ## Plan & progress
 
-None.
+None. Next rebuild slice: B-190 Core HR’s front page, reusing the Reports engine. B-189 review/evidence: `plans/B-189-reports.md`; durable engine notes: `memory/reports-engine.md`.
 
 ## Decisions & reasoning
 
@@ -22,7 +20,7 @@ None.
 
 ## Where it stands
 
-None.
+B-189 is complete and awaits the user's visual review. CoreHR and Identity suites, final authorization negatives, core/auth touched tests, cold build and the live role journey passed. Three dark 1440×900 surfaces compared with the drawing; final spacing verified through DOM without screenshot retakes. Code and board files belong to the same commit. The local stack uses shell and core; the frontend is stopped for the final hook and restored afterwards.
 
 ## Open questions & blockers
 

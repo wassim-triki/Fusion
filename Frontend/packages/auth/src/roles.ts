@@ -15,6 +15,7 @@ const PLATFORM_SCOPE_RANK = 4;
 
 const CORE_PERMISSION = {
   overviewView: "core.overview.view",
+  reportsBuild: "core.reports.build",
   setupView: "core.setup.view",
   setupManage: "core.setup.manage",
   structureView: "core.structure.view",
@@ -51,7 +52,6 @@ const CORE_PERMISSION = {
   changePropose: "core.change.propose",
   changeApprove: "core.change.approve",
 } as const;
-
 
 export function hasAnyRole(
   user: AuthUser | null,
@@ -218,9 +218,28 @@ export function canManageCoreEmployees(user: AuthUser | null): boolean {
   return hasCorePermission(user, CORE_PERMISSION.employeeManage, "Tenant");
 }
 
+export function canViewCoreReports(user: AuthUser | null): boolean {
+  return (
+    hasCorePermission(user, CORE_PERMISSION.overviewView, "Tenant") ||
+    (!!user?.employeeId &&
+      hasCorePermission(user, CORE_PERMISSION.overviewView, "DirectReports"))
+  );
+}
+
+export function canBuildCoreReports(user: AuthUser | null): boolean {
+  return (
+    canViewCoreReports(user) &&
+    hasCorePermission(user, CORE_PERMISSION.reportsBuild, "DirectReports")
+  );
+}
+
 /** Proposes dated changes for their direct reports (Roles › Approving changes: Propose); the server checks the person. */
 export function canProposeCoreChanges(user: AuthUser | null): boolean {
-  return hasCorePermission(user, CORE_PERMISSION.changePropose, "DirectReports");
+  return hasCorePermission(
+    user,
+    CORE_PERMISSION.changePropose,
+    "DirectReports"
+  );
 }
 
 /** Approves or declines proposed changes, for everyone (Roles › Approving changes: Approve). */
@@ -285,16 +304,28 @@ export function canAccessCoreOrgChart(user: AuthUser | null): boolean {
  * "ManagersAndHr" only people who read the whole workforce and managers (their own line) see it, as Core HR enforces.
  * While the audience is unknown, only they do.
  */
-export function canSeeCoreOrgChart(user: AuthUser | null, audience: OrgChartAudience | null | undefined): boolean {
-  return canAccessCoreOrgChart(user) && (audience === "Everyone" || canAccessCoreTeam(user));
+export function canSeeCoreOrgChart(
+  user: AuthUser | null,
+  audience: OrgChartAudience | null | undefined
+): boolean {
+  return (
+    canAccessCoreOrgChart(user) &&
+    (audience === "Everyone" || canAccessCoreTeam(user))
+  );
 }
 
 /**
  * Whether the user sees the whole company's chart (not only their own branch): unit heads and unit pages need it.
  * People who read the whole workforce keep it; anyone else only while the tenant shows the chart to everyone.
  */
-export function canSeeWholeCoreOrgChart(user: AuthUser | null, audience: OrgChartAudience | null | undefined): boolean {
-  return hasCorePermission(user, CORE_PERMISSION.orgChartView, "Tenant") && (canAccessCorePeople(user) || audience === "Everyone");
+export function canSeeWholeCoreOrgChart(
+  user: AuthUser | null,
+  audience: OrgChartAudience | null | undefined
+): boolean {
+  return (
+    hasCorePermission(user, CORE_PERMISSION.orgChartView, "Tenant") &&
+    (canAccessCorePeople(user) || audience === "Everyone")
+  );
 }
 
 /** Canonical tenant Organization access; intentionally excludes legacy Structure/setup grants. */
@@ -368,7 +399,11 @@ export function canViewTenantAdministration(user: AuthUser | null): boolean {
 
 /** Inviting, suspending, reactivating, and changing Tenant Administrator authority. */
 export function canManageTenantAdministration(user: AuthUser | null): boolean {
-  return hasCorePermission(user, CORE_PERMISSION.accessAssignmentsManage, "Tenant");
+  return hasCorePermission(
+    user,
+    CORE_PERMISSION.accessAssignmentsManage,
+    "Tenant"
+  );
 }
 
 export function canSeeCoreAccessNavigation(user: AuthUser | null): boolean {

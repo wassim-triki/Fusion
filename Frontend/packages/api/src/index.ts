@@ -23,7 +23,11 @@ export {
   UPSTREAM_UNAVAILABLE_STATUS,
   type ApiErrorKind,
 } from "./error-classification";
-export type { PlatformApiClientConfig, RefreshResponse as PlatformSessionDto, ViewAsMarker } from "./platform";
+export type {
+  PlatformApiClientConfig,
+  RefreshResponse as PlatformSessionDto,
+  ViewAsMarker,
+} from "./platform";
 export * from "./view-as";
 export * from "./tenant-settings";
 export * from "./invites";
@@ -47,3 +51,4 @@ export * from "./fusion-feed";
 export * from "./fusion-navigation";
 export * from "./company-brand";
 export * from "./fusion-settings";
+export * from "./core-reports";

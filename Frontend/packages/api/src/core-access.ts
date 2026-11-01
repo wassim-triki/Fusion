@@ -23,8 +23,7 @@ export interface AccessProfileAssignmentSummaryDto {
   isSystemProtected: boolean;
 }
 
-export interface AccessProfileSummaryDto
-  extends AccessProfileAssignmentSummaryDto {
+export interface AccessProfileSummaryDto extends AccessProfileAssignmentSummaryDto {
   description: string | null;
   assignedUserCount: number;
   createdAt: string;
@@ -66,7 +65,13 @@ export type RoleAreaId =
   | "cycles"
   | "brand"
   | "roles";
-export type RoleLevel = "none" | "see" | "change" | "propose" | "approve";
+export type RoleLevel =
+  | "none"
+  | "see"
+  | "change"
+  | "propose"
+  | "approve"
+  | "build";
 export type RoleReach = "self" | "team" | "everyone";
 /** How people come to hold a role besides being chosen. */
 export type RoleHolderKind = "chosen" | "everyone" | "team" | "rule";
@@ -162,7 +167,12 @@ export interface SaveRoleRequest {
   chosenUserIds: string[];
 }
 
-export type PersonRoleReasonKind = "everyone" | "team" | "rule" | "chosen" | "administrator";
+export type PersonRoleReasonKind =
+  | "everyone"
+  | "team"
+  | "rule"
+  | "chosen"
+  | "administrator";
 
 export interface PersonRoleReasonDto {
   kind: PersonRoleReasonKind;

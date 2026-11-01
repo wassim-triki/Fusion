@@ -8,7 +8,6 @@ import {
   SettingsSkeleton,
   TeamBandSkeleton,
 } from "@repo/ds/shell";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WorkerProfileSkeleton } from "@/features/people/components/worker-profile/worker-profile-skeleton";
 
@@ -47,7 +46,10 @@ export function TitledPageLoading({
   return (
     <PageContainer width="wide" className={className}>
       <PageHeader title={title} description={description} />
-      <PageLoading rows={rows} label={label ?? t("loadingTitle", { title: title.toLowerCase() })} />
+      <PageLoading
+        rows={rows}
+        label={label ?? t("loadingTitle", { title: title.toLowerCase() })}
+      />
     </PageContainer>
   );
 }
@@ -177,7 +179,10 @@ function AccessTableSkeleton({ rows }: { rows: number }) {
         <Skeleton className="h-3 w-24" />
       </div>
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="flex items-center gap-3 border-b px-4 py-3.5 last:border-b-0">
+        <div
+          key={i}
+          className="flex items-center gap-3 border-b px-4 py-3.5 last:border-b-0"
+        >
           <Skeleton className="size-9 shrink-0 rounded-full" />
           <div className="flex-1 space-y-1.5">
             <Skeleton className="h-3.5 w-40" />
@@ -216,7 +221,11 @@ export function OrganizationPageSkeleton() {
   const t = useTranslations("frame.skeletons");
   return (
     <div className="grid gap-4 px-6 pt-5">
-      <PageHeader title={t("organization")} className="mb-0" actions={<Skeleton className="h-9 w-64 shrink-0 rounded-control" />} />
+      <PageHeader
+        title={t("organization")}
+        className="mb-0"
+        actions={<Skeleton className="h-9 w-64 shrink-0 rounded-control" />}
+      />
       <Skeleton className="h-20 w-full rounded-surface" />
       <div className="grid h-[clamp(520px,calc(100dvh-21rem),880px)] place-items-center rounded-surface bg-section">
         <div className="grid justify-items-center gap-10">
@@ -245,31 +254,68 @@ export function SettingsPageSkeleton() {
 
 /** The dedicated loading skeleton for a core route (module-relative path). */
 export function getRoutePageSkeleton(corePath: string): ReactNode {
+  if (corePath === "/reports" || corePath.startsWith("/reports/"))
+    return <ReportsPageSkeleton />;
   if (corePath === "/") return <OverviewPageSkeleton />;
   if (corePath === "/people") return <EmployeesPageSkeleton />;
-  if (corePath === "/import" || corePath.startsWith("/import/")) return <PageSkeleton width="wide" />;
+  if (corePath === "/import" || corePath.startsWith("/import/"))
+    return <PageSkeleton width="wide" />;
   if (corePath === "/people/add") return <PersonTaskPageSkeleton />;
   if (corePath.startsWith("/people/")) return <EmployeeProfilePageSkeleton />;
   if (corePath === "/profile") return <MyProfilePageSkeleton />;
-  if (corePath === "/team" || corePath.startsWith("/team/")) return <TeamPageSkeleton />;
+  if (corePath === "/team" || corePath.startsWith("/team/"))
+    return <TeamPageSkeleton />;
   if (corePath === "/organization") return <OrganizationPageSkeleton />;
-  if (corePath.startsWith("/organization/units/")) return <PageFallbackSkeleton />;
+  if (corePath.startsWith("/organization/units/"))
+    return <PageFallbackSkeleton />;
   if (corePath === "/org-chart") return <OrganizationPageSkeleton />;
-  if (corePath === "/settings" || corePath.startsWith("/settings/")) return <SettingsPageSkeleton />;
+  if (corePath === "/settings" || corePath.startsWith("/settings/"))
+    return <SettingsPageSkeleton />;
   if (corePath === "/access/profiles") return <AccessProfilesPageSkeleton />;
   if (corePath === "/access/activity") return <ActivityLogPageSkeleton />;
   if (corePath.startsWith("/access")) return <AccessPageSkeleton />;
   return <PageFallbackSkeleton />;
 }
 
+export function ReportsPageSkeleton() {
+  return (
+    <PageContainer width="wide" className="px-10 pt-9 pb-14">
+      <div className="grid gap-9 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <div className="space-y-2">
+          {Array.from({ length: 9 }, (_, i) => (
+            <Skeleton key={i} className="h-9 rounded-control" />
+          ))}
+        </div>
+        <div className="space-y-4">
+          <Skeleton className="h-16 rounded-control" />
+          <Skeleton className="h-10 rounded-control" />
+          <Skeleton className="h-96 rounded-surface" />
+        </div>
+      </div>
+    </PageContainer>
+  );
+}
+
 function PersonTaskPageSkeleton() {
   const t = useTranslations("frame.skeletons");
-  return <TitledPageLoading title={t("people")} rows={5} label={t("openingPerson")} />;
+  return (
+    <TitledPageLoading
+      title={t("people")}
+      rows={5}
+      label={t("openingPerson")}
+    />
+  );
 }
 
 function AccessProfilesPageSkeleton() {
   const t = useTranslations("frame.skeletons");
-  return <TitledPageLoading title={t("accessProfiles")} rows={4} label={t("openingAccessProfiles")} />;
+  return (
+    <TitledPageLoading
+      title={t("accessProfiles")}
+      rows={4}
+      label={t("openingAccessProfiles")}
+    />
+  );
 }
 
 function PageFallbackSkeleton() {

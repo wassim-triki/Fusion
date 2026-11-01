@@ -170,6 +170,8 @@ public sealed class FirstPersonTests
     /// <summary>Identity's side: records the link and says it's done.</summary>
     private sealed class LinkingIdentity : IWorkforceAccessIdentityClient
     {
+        public Task<IReadOnlyList<EY.HRPlatform.CoreHR.Features.Reports.ReportRoleDto>> ReportRolesAsync(Guid userId, CancellationToken cancellationToken)
+            => Task.FromResult<IReadOnlyList<EY.HRPlatform.CoreHR.Features.Reports.ReportRoleDto>>([]);
         public List<(Guid EmployeeId, string? Email, string Action)> Linked { get; } = [];
 
         public Task<WorkforceAccessMutationOutcomeResult> MutateAsync(Guid employeeId, string? normalizedWorkEmail, string action, string baseline, CancellationToken cancellationToken)

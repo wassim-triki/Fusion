@@ -1,0 +1,368 @@
+{
+  "title": "Importer votre entreprise",
+  "template": "Modèle",
+  "lean": "suggestion de Fusion",
+  "loading": "Chargement de l’import",
+  "error": "L’import n’a pas pu se charger.",
+  "access": {
+    "title": "Vous ne pouvez pas importer l’entreprise",
+    "description": "Il faut gérer l’organisation et importer des personnes."
+  },
+  "gone": {
+    "title": "Cet import n’existe plus",
+    "action": "Commencer un import"
+  },
+  "drop": {
+    "title": "Déposez vos tableurs ici",
+    "hint": "Personnes, unités et postes · Excel ou CSV, toute mise en page, autant de fichiers que vous en avez",
+    "choose": "Choisir des fichiers",
+    "release": "Déposez-les pour les lire",
+    "add": "Ajouter des fichiers"
+  },
+  "earlier": {
+    "title": "Imports précédents",
+    "by": "{date} · {name}",
+    "counts": "{people, plural, one {# personne} other {# personnes}}, {units, plural, one {# unité} other {# unités}}"
+  },
+  "reading": {
+    "title": "{count, plural, one {Lecture de # fichier} other {Lecture de # fichiers}}",
+    "label": "Lecture",
+    "size": "{kb} Ko"
+  },
+  "fileProblem": {
+    "format": "{name} n’est pas un fichier Excel ou CSV.",
+    "size": "{name} dépasse 10 Mo.",
+    "many": "Un import accepte jusqu’à {max} fichiers.",
+    "unreadable": "Fusion n’a pas pu lire ces fichiers. Réessayez."
+  },
+  "understood": {
+    "title": "Ce que Fusion a compris",
+    "questions": "{count, plural, one {# question} other {# questions}}",
+    "startOver": "Recommencer",
+    "startOverTitle": "Recommencer ?",
+    "startOverBody": "Les fichiers et vos réponses sont abandonnés. Rien n’a été importé.",
+    "keep": "Continuer",
+    "toChart": "Voir sur l’organigramme",
+    "removeFile": "Retirer {name}",
+    "nothing": "Ni personnes ni unités",
+    "count": {
+      "People": "{count, plural, one {# personne} other {# personnes}}",
+      "Units": "{count, plural, one {# unité} other {# unités}}"
+    },
+    "sheetCount": {
+      "People": "Feuille {sheet} · {count, plural, one {# personne} other {# personnes}}",
+      "Units": "Feuille {sheet} · {count, plural, one {# unité} other {# unités}}"
+    },
+    "kind": {
+      "People": "Personnes",
+      "Units": "Unités",
+      "Unknown": "Laissée de côté"
+    },
+    "readByFusion": "Lu par Fusion",
+    "unknownSheet": "Feuille <b>{sheet}</b> · {count, plural, one {# ligne} other {# lignes}} que Fusion ne sait pas placer",
+    "leftOut": "laissée de côté",
+    "readAs": {
+      "People": "Ce sont des personnes",
+      "Units": "Ce sont des unités"
+    },
+    "leftRows": {
+      "left": "{count, plural, one {# personne partie} other {# personnes parties}}",
+      "oneName": "{count, plural, one {# ligne avec un seul nom} other {# lignes avec un seul nom}}",
+      "noName": "{count, plural, one {# ligne sans nom} other {# lignes sans nom}}",
+      "unitNoName": "{count, plural, one {# unité sans nom} other {# unités sans nom}}",
+      "already": "{count, plural, one {# personne déjà dans Fusion} other {# personnes déjà dans Fusion}}",
+      "decided": "{count, plural, one {# personne laissée de côté par vous} other {# personnes laissées de côté par vous}}"
+    }
+  },
+  "question": {
+    "title": "{header} est-il {field} ?",
+    "values": "{values} · {count, plural, one {# valeur} other {# valeurs}}",
+    "yes": "Oui, {field}",
+    "out": "Laisser de côté",
+    "change": "Modifier",
+    "fieldDone": "{header} est {field}",
+    "outDone": "{header} est laissé de côté",
+    "phrase": {
+      "employeeNumber": "le matricule",
+      "personId": "une référence pour chaque personne",
+      "firstName": "le prénom",
+      "lastName": "le nom",
+      "fullName": "le nom complet",
+      "preferredName": "le nom d’usage",
+      "workEmail": "l’e-mail professionnel",
+      "jobTitle": "l’intitulé du poste",
+      "jobLevel": "le niveau du poste",
+      "jobFamily": "la famille de postes",
+      "unit": "l’unité",
+      "manager": "le manager",
+      "place": "le lieu",
+      "startDate": "la date d’arrivée",
+      "endDate": "le dernier jour",
+      "status": "le fait d’être encore en poste",
+      "unitCode": "le code de l’unité",
+      "unitName": "le nom de l’unité",
+      "parentUnit": "l’unité au-dessus",
+      "unitType": "le type d’unité",
+      "unitHead": "le responsable de l’unité",
+      "out": "laissé de côté"
+    },
+    "dates": {
+      "title": "{example} commence-t-il par le jour ?",
+      "dayFirst": "Jour d’abord",
+      "monthFirst": "Mois d’abord",
+      "dayFirstDone": "Les dates de {header} commencent par le jour",
+      "monthFirstDone": "Les dates de {header} commencent par le mois"
+    }
+  },
+  "fields": {
+    "out": {
+      "label": "Laissé de côté"
+    },
+    "employeeNumber": {
+      "label": "Matricule"
+    },
+    "personId": {
+      "label": "Référence"
+    },
+    "firstName": {
+      "label": "Prénom"
+    },
+    "lastName": {
+      "label": "Nom"
+    },
+    "fullName": {
+      "label": "Nom complet"
+    },
+    "preferredName": {
+      "label": "Nom d’usage"
+    },
+    "workEmail": {
+      "label": "E-mail professionnel"
+    },
+    "jobTitle": {
+      "label": "Intitulé du poste"
+    },
+    "jobLevel": {
+      "label": "Niveau du poste"
+    },
+    "jobFamily": {
+      "label": "Famille de postes"
+    },
+    "unit": {
+      "label": "Unité"
+    },
+    "manager": {
+      "label": "Manager"
+    },
+    "place": {
+      "label": "Lieu"
+    },
+    "startDate": {
+      "label": "Date d’arrivée"
+    },
+    "endDate": {
+      "label": "Dernier jour"
+    },
+    "status": {
+      "label": "Statut"
+    },
+    "unitCode": {
+      "label": "Code de l’unité"
+    },
+    "unitName": {
+      "label": "Nom"
+    },
+    "parentUnit": {
+      "label": "Unité parente"
+    },
+    "unitType": {
+      "label": "Type d’unité"
+    },
+    "unitHead": {
+      "label": "Responsable"
+    }
+  },
+  "sheet": {
+    "change": "Modifier ce qu’est {header}",
+    "what": "Qu’est-ce que {header} ?",
+    "leaveOut": "Laisser de côté",
+    "fusionsReading": "Revenir à la lecture de Fusion",
+    "noHeader": "Sans en-tête",
+    "more": {
+      "People": "{count, plural, one {# personne de plus} other {# personnes de plus}}",
+      "Units": "{count, plural, one {# unité de plus} other {# unités de plus}}"
+    },
+    "ask": "{field} ?",
+    "leftOut": "Laissée de côté",
+    "empty": "Vide",
+    "aiRead": "Fusion a lu « {header} » comme {field}"
+  },
+  "across": {
+    "title": "D’un fichier à l’autre",
+    "managers": "{count} {of, plural, one {personne sur # a} other {personnes sur # ont}} un manager",
+    "foundBy": {
+      "number": "Trouvés par matricule",
+      "reference": "Trouvés par référence",
+      "email": "Trouvés par e-mail professionnel",
+      "name": "Trouvés par nom",
+      "head": "D’après le responsable de chaque unité"
+    },
+    "top": "{name} est tout en haut",
+    "tops": "{count, plural, one {# personne n’a} other {# personnes n’ont}} pas de manager",
+    "unitsAll": "L’unité de chacun est dans {file}",
+    "unitsBut": "L’unité de chacun est dans {file}, sauf pour {count, plural, one {# personne} other {# personnes}}",
+    "unitsFromPeople": "{count, plural, one {# unité} other {# unités}}, d’après la colonne unité des personnes",
+    "unitsFromPeopleDetail": "Sous {company}",
+    "rootAdded": "{count} unités n’ont rien au-dessus d’elles : Fusion les place sous {company}",
+    "jobs": "{titles, plural, one {# intitulé devient} other {# intitulés deviennent}} {count, plural, one {# poste} other {# postes}}",
+    "jobsFamilies": "{titles, plural, one {# intitulé devient} other {# intitulés deviennent}} {count, plural, one {# poste} other {# postes}} en {families, plural, one {# famille} other {# familles}}",
+    "sameJob": "{count, plural, one {Deux intitulés sont peut-être le même poste} other {# paires d’intitulés sont peut-être le même poste}}",
+    "onChart": "Sur l’organigramme",
+    "you": "{name}, ligne {row}, c’est vous",
+    "youDetail": "Rattaché à votre compte par l’e-mail professionnel",
+    "places": "{count, plural, one {# lieu} other {# lieux}}",
+    "left": "Laissé de côté"
+  },
+  "left": {
+    "columns": "{count, plural, one {la colonne {names}} other {les colonnes {names}}}",
+    "left": "{count, plural, one {# personne partie} other {# personnes parties}}",
+    "already": "{count, plural, one {# personne déjà dans Fusion} other {# personnes déjà dans Fusion}}",
+    "decided": "{count, plural, one {# personne laissée de côté par vous} other {# personnes laissées de côté par vous}}",
+    "oneName": "{count, plural, one {# ligne avec un seul nom} other {# lignes avec un seul nom}}",
+    "noName": "{count, plural, one {# ligne sans nom} other {# lignes sans nom}}",
+    "unitNoName": "{count, plural, one {# unité sans nom} other {# unités sans nom}}",
+    "sheet": "{count, plural, one {# ligne sur une feuille que Fusion ne sait pas placer} other {# lignes sur des feuilles que Fusion ne sait pas placer}}"
+  },
+  "chart": {
+    "back": "Ce que Fusion a compris",
+    "title": "Vérifier {company}",
+    "bringIn": "{count, plural, one {Importer # personne} other {Importer # personnes}}",
+    "bringUnits": "{count, plural, one {Importer # unité} other {Importer # unités}}",
+    "failure": {
+      "changed": "L’entreprise ou les fichiers ont changé depuis l’affichage de l’organigramme. Revérifiez, puis importez.",
+      "failed": "Fusion n’a pas pu importer l’entreprise. Rien n’a été importé. Réessayez."
+    },
+    "views": "Vues",
+    "tab": {
+      "people": "Personnes · {count}",
+      "units": "Unités · {count}",
+      "jobs": "Postes · {count}"
+    },
+    "find": "Trouver une personne",
+    "toCheck": "À vérifier",
+    "left": "{count} restants",
+    "allChecked": "Tout est vérifié",
+    "takeLeans": "Suivre Fusion pour le reste",
+    "noPeople": "Personne de nouveau à importer",
+    "teamOf": "{name} · {count, plural, one {# direct} other {# directs}}",
+    "more": "{count} de plus",
+    "flag": "À vérifier",
+    "you": "Vous",
+    "direct": "{count} directs",
+    "changedByYou": "Modifié par vous",
+    "noUnits": "Aucune unité",
+    "new": "Nouvelle",
+    "inFusion": "Déjà dans Fusion",
+    "unit": "Unité",
+    "noFamily": "Sans famille",
+    "allJobs": "Postes",
+    "jobs": "{count, plural, one {# poste} other {# postes}}",
+    "fromTitles": "à partir de {count} intitulés",
+    "lookAlike": "ressemble à un autre intitulé",
+    "crumb": "Vérification"
+  },
+  "check": {
+    "theFiles": "les fichiers",
+    "unitMissing": {
+      "one": "L’unité de {name} n’est pas dans {file}",
+      "many": "L’unité de {count} personnes n’est pas dans {file}"
+    },
+    "unitParent": "L’unité au-dessus de {unit} n’est pas dans les fichiers",
+    "managerMissing": "Le manager de {name} n’est pas dans les fichiers",
+    "twice": {
+      "manager": "{name} a deux managers",
+      "unit": "{name} a deux unités",
+      "jobTitle": "{name} a deux intitulés de poste",
+      "jobLevel": "{name} a deux niveaux",
+      "jobFamily": "{name} a deux familles de postes",
+      "place": "{name} a deux lieux",
+      "startDate": "{name} a deux dates d’arrivée"
+    },
+    "sameJob": "Deux intitulés ressemblent à un seul poste",
+    "managerLoop": "{names} se rapportent l’un à l’autre",
+    "noStart": {
+      "one": "{name} n’a pas de date d’arrivée",
+      "many": "{count} personnes n’ont pas de date d’arrivée"
+    },
+    "noTitle": {
+      "one": "{name} n’a pas d’intitulé de poste",
+      "many": "{count} personnes n’ont pas d’intitulé de poste"
+    },
+    "says": "{file} indique {value}",
+    "fileSays": "Le fichier indique {value}",
+    "disagree": "Les fichiers ne sont pas d’accord",
+    "option": {
+      "addUnit": "Ajouter {name}",
+      "underRoot": "La placer sous {company}",
+      "noManager": "Pas de manager",
+      "merge": "En faire un seul poste",
+      "keep": "Garder les deux",
+      "cut": "{name} n’a pas de manager",
+      "leaveOut": "Les laisser de côté",
+      "startOn": "Les faire commencer le {date}",
+      "giveJob": "Leur donner le poste {title}"
+    },
+    "from": {
+      "closest": "La plus proche",
+      "new": "Nouvelle unité"
+    }
+  },
+  "say": {
+    "label": "Autre chose ne va pas ? Dites-le",
+    "example": "{name} se rapporte à {manager}",
+    "exampleFallback": "Rania travaille à Tunis",
+    "show": "Voir",
+    "notUnderstood": "Fusion n’a pas su où placer cela. Nommez une personne et ce qui change, par exemple « Rania travaille à Tunis ».",
+    "noManager": "Pas de manager",
+    "nothing": "Rien",
+    "notThat": "Pas ça",
+    "apply": "Appliquer",
+    "changed": "Modifié par vous, pas par le fichier",
+    "undo": "Annuler"
+  },
+  "bring": {
+    "title": "Import de {company}",
+    "doneTitle": "{company} est dans Fusion",
+    "doneMeta": "Aujourd’hui à {time} · depuis {files}",
+    "counts": {
+      "people": "{count, plural, one {personne} other {personnes}}",
+      "units": "{count, plural, one {unité} other {unités}}",
+      "jobs": "{count, plural, one {poste} other {postes}}",
+      "places": "{count, plural, one {lieu} other {lieux}}",
+      "lines": "{count, plural, one {lien hiérarchique} other {liens hiérarchiques}}"
+    },
+    "facts": {
+      "units": "{count, plural, one {# unité} other {# unités}}",
+      "jobs": "{count, plural, one {# poste} other {# postes}}",
+      "people": "{count} sur {of, plural, one {# personne} other {# personnes}}",
+      "lines": "{count} sur {of, plural, one {# lien hiérarchique} other {# liens hiérarchiques}}"
+    },
+    "leave": "Vous pouvez quitter cette page. Fusion continue.",
+    "next": {
+      "title": "Ensuite : invitez vos collaborateurs",
+      "nobody": "Personne n’a encore été invité",
+      "orgChart": "Ouvrir l’organigramme",
+      "invite": "Inviter vos collaborateurs"
+    },
+    "worth": {
+      "title": "À regarder",
+      "left": "Laissé de côté",
+      "decided": "{count, plural, one {# chose décidée par vous à la place des fichiers} other {# choses décidées par vous à la place des fichiers}}",
+      "decidedNames": "Dont {names}",
+      "noEmail": "{count, plural, one {# personne n’a pas d’e-mail professionnel} other {# personnes n’ont pas d’e-mail professionnel}}",
+      "noEmailDetail": "Elles ne peuvent pas être invitées sans e-mail",
+      "noPlace": "{count, plural, one {# personne n’a pas de lieu} other {# personnes n’ont pas de lieu}}",
+      "seeWho": "Voir qui"
+    }
+  }
+}

@@ -86,7 +86,7 @@ describe("RootEstablishment", () => {
     );
     expect(screen.getByRole("link", { name: "Import an existing structure" })).toHaveAttribute(
       "href",
-      "/organization/import"
+      "/import"
     );
     expect(screen.getByRole("button", { name: "Create organization" })).toBeInTheDocument();
     expect(screen.getByLabelText("Name")).toBeInTheDocument();

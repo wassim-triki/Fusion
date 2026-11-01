@@ -390,7 +390,7 @@ export function RootEstablishment({
           </p>
         </div>
         <Link
-          href="/organization/import"
+          href="/import"
           className="group flex items-center gap-4 rounded-surface border bg-card p-4 pe-5 transition-colors hover:border-primary/40 hover:bg-primary/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-control bg-primary-tint text-primary-ink">

@@ -1,12 +1,10 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace EY.HRPlatform.CoreHR.Infrastructure.Imports;
 
-// Concrete primitives shared by the Organization and Workforce import domains. Each is a fact both
-// domains hold identically; domain rules (fields, issues, classifications) stay domain-owned.
+// Primitives of the import: who acted, and fingerprints of what was reviewed.
 
 /// <summary>Who performed an import action, normalized for audit display.</summary>
 public sealed record ImportActor(Guid UserId, string DisplayName)
@@ -16,18 +14,6 @@ public sealed record ImportActor(Guid UserId, string DisplayName)
             ? "Unknown"
             : DisplayName.Trim()[..Math.Min(DisplayName.Trim().Length, 256)]);
 }
-
-/// <summary>Where a Match decision came from. An administrator decision always outranks a suggestion.</summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum ImportResolutionOrigin { Native, Deterministic, Administrator, SemanticSuggestion }
-
-/// <summary>A blocker means Fusion cannot publish; a warning means it can, but something deserves a look.</summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum ImportIssueSeverity { Blocker, Warning }
-
-/// <summary>Automatic when every Match decision is Native/Deterministic; Confirmed when any needed a person or a suggestion.</summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum ImportMatchCompletionKind { Incomplete, Automatic, Confirmed }
 
 /// <summary>Deterministic hashing and comparison for source, plan and proposal fingerprints.</summary>
 public static class ImportFingerprint

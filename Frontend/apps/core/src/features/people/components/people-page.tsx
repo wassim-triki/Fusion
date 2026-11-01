@@ -59,7 +59,7 @@ export default function PeoplePage() {
             </DropdownMenuItem>
             {canImport ? (
               <DropdownMenuItem asChild>
-                <Link href="/people/import"><Upload className="size-4" aria-hidden /> {t("import")}</Link>
+                <Link href="/import"><Upload className="size-4" aria-hidden /> {t("import")}</Link>
               </DropdownMenuItem>
             ) : null}
           </DropdownMenuContent>

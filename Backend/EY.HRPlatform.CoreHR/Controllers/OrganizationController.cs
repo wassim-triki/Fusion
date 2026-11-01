@@ -1,5 +1,6 @@
 using EY.HRPlatform.CoreHR.Features.Organization;
 using EY.HRPlatform.CoreHR.Features.Security;
+using EY.HRPlatform.CoreHR.Infrastructure.Imports;
 using EY.HRPlatform.SharedKernel.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +14,23 @@ public sealed class OrganizationController(
     IOrganizationService organizationService,
     ICoreAccessPolicyService accessPolicy) : ControllerBase
 {
+    /// <summary>The structure on a date as a workbook the import reads back: code, name, type and parent per unit.</summary>
+    [HttpGet("export")]
+    public async Task<IActionResult> Export([FromQuery] DateOnly asOf, CancellationToken cancellationToken)
+    {
+        if (!accessPolicy.CanManageOrganization(User)) return Forbid();
+        var hierarchy = await organizationService.GetHierarchyAsync(asOf, cancellationToken);
+        if (hierarchy.Roots.Count == 0) return NotFound(ApiResponse.Failure("There is no structure on this date."));
+        var units = new List<OrganizationUnitStateDto>();
+        void Walk(OrganizationHierarchyNodeDto node) { units.Add(node.Unit); foreach (var child in node.Children) Walk(child); }
+        foreach (var root in hierarchy.Roots) Walk(root);
+        var codes = units.ToDictionary(unit => unit.Id, unit => unit.Code);
+        var bytes = SimpleWorkbook.Build([new SimpleSheet("Units", ["Code", "Name", "Type", "Parent"],
+            units.Select(unit => (IReadOnlyList<string?>)[unit.Code, unit.Name, unit.TypeName,
+                unit.ParentId is { } parent && codes.TryGetValue(parent, out var code) ? code : null]).ToList())]);
+        return File(bytes, SimpleWorkbook.ContentType, $"Fusion-organization-{asOf:yyyy-MM-dd}.xlsx");
+    }
+
     [HttpGet("hierarchy")]
     public async Task<ActionResult<ApiResponse<OrganizationHierarchyDto>>> GetHierarchy(
         [FromQuery] DateOnly asOf,

@@ -31,7 +31,7 @@ describe("legacy /employees compatibility routes redirect to canonical /people",
   });
 
   it("redirects the import route", async () => {
-    await EmployeeImportRedirect({ searchParams: sp({}) });
-    expect(mockRedirect).toHaveBeenCalledWith("/people/import");
+    EmployeeImportRedirect();
+    expect(mockRedirect).toHaveBeenCalledWith("/import");
   });
 });

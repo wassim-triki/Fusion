@@ -1,10 +1,7 @@
 namespace EY.HRPlatform.CoreHR.Infrastructure.Imports;
 
-// Domain-neutral safe tabular source model. This layer knows nothing about
-// Organization, Employee, Manager, mappings, or business validation. Both
-// Organization Import and Workforce Import adapt these technical results into
-// their own domain source models. Do NOT grow this into a generic import
-// platform (no ImportEngine<TDomain>, no UniversalImportSession).
+// Domain-neutral safe tabular source model. This layer knows nothing about people, units or business
+// validation; the import reads what columns mean on top of it.
 
 public sealed record TabularSourceColumn(int Index, string? Label);
 

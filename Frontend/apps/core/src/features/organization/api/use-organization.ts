@@ -18,7 +18,7 @@ import {
 import { useApiMutation, useApiQuery, useApiQueryClient } from "@repo/api/query";
 import { canViewCoreOrganization, useAuth } from "@repo/auth";
 
-function useOrganizationApi() {
+export function useOrganizationApi() {
   const client = useMemo(() => createPlatformApiClient(), []);
   return useMemo(() => createCoreOrganizationApi(client), [client]);
 }

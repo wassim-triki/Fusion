@@ -11,10 +11,6 @@ import {
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WorkerProfileSkeleton } from "@/features/people/components/worker-profile/worker-profile-skeleton";
-import {
-  ImportAttemptSkeleton,
-  ImportUploadSkeleton,
-} from "@/features/data-import/components/import-skeletons";
 
 // ── Route skeleton registry ─────────────────────────────────────────────────
 // One dedicated loading skeleton per route, shared by every loading surface:
@@ -336,20 +332,11 @@ export function SetupPageSkeleton() {
 export function getRoutePageSkeleton(corePath: string): ReactNode {
   if (corePath === "/") return <OverviewPageSkeleton />;
   if (corePath === "/people") return <EmployeesPageSkeleton />;
-  if (corePath === "/people/import") return <ImportUploadSkeleton domain="workforce" />;
-  if (corePath.startsWith("/people/import/")) {
-    const step = corePath.split("/")[4];
-    return <ImportAttemptSkeleton domain="workforce" stage={step === "match" || step === "review" ? step : null} />;
-  }
+  if (corePath === "/import" || corePath.startsWith("/import/")) return <PageSkeleton width="wide" />;
   if (corePath === "/people/add") return <PersonTaskPageSkeleton />;
   if (corePath.startsWith("/people/")) return <EmployeeProfilePageSkeleton />;
   if (corePath === "/profile") return <MyProfilePageSkeleton />;
   if (corePath === "/team" || corePath.startsWith("/team/")) return <TeamPageSkeleton />;
-  if (corePath === "/organization/import") return <ImportUploadSkeleton />;
-  if (corePath.startsWith("/organization/import/")) {
-    const step = corePath.split("/")[4];
-    return <ImportAttemptSkeleton stage={step === "match" || step === "review" ? step : null} />;
-  }
   if (corePath === "/organization") return <OrganizationPageSkeleton />;
   if (corePath.startsWith("/organization/units/")) return <PageFallbackSkeleton />;
   if (corePath === "/org-chart") return <OrganizationPageSkeleton />;

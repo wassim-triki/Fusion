@@ -1,0 +1,368 @@
+{
+  "title": "Bring in your company",
+  "template": "Template",
+  "lean": "Fusion's lean",
+  "loading": "Loading the import",
+  "error": "The import didn't load.",
+  "access": {
+    "title": "You can't bring the company in",
+    "description": "It takes managing the organization and importing people."
+  },
+  "gone": {
+    "title": "This import isn't here any more",
+    "action": "Start an import"
+  },
+  "drop": {
+    "title": "Drop your spreadsheets here",
+    "hint": "People, units and jobs · Excel or CSV, any layout, as many files as you have",
+    "choose": "Choose files",
+    "release": "Drop them to read them",
+    "add": "Add files"
+  },
+  "earlier": {
+    "title": "Earlier imports",
+    "by": "{date} · {name}",
+    "counts": "{people, plural, one {# person} other {# people}}, {units, plural, one {# unit} other {# units}}"
+  },
+  "reading": {
+    "title": "{count, plural, one {Reading # file} other {Reading # files}}",
+    "label": "Reading",
+    "size": "{kb} KB"
+  },
+  "fileProblem": {
+    "format": "{name} isn't an Excel or CSV file.",
+    "size": "{name} is over 10 MB.",
+    "many": "An import takes up to {max} files.",
+    "unreadable": "Fusion couldn't read these files. Try again."
+  },
+  "understood": {
+    "title": "What Fusion understood",
+    "questions": "{count, plural, one {# question} other {# questions}}",
+    "startOver": "Start over",
+    "startOverTitle": "Start over?",
+    "startOverBody": "The files and your answers are dropped. Nothing has been brought in.",
+    "keep": "Keep going",
+    "toChart": "Show on the chart",
+    "removeFile": "Remove {name}",
+    "nothing": "Neither people nor units",
+    "count": {
+      "People": "{count, plural, one {# person} other {# people}}",
+      "Units": "{count, plural, one {# unit} other {# units}}"
+    },
+    "sheetCount": {
+      "People": "Sheet {sheet} · {count, plural, one {# person} other {# people}}",
+      "Units": "Sheet {sheet} · {count, plural, one {# unit} other {# units}}"
+    },
+    "kind": {
+      "People": "People",
+      "Units": "Units",
+      "Unknown": "Left out"
+    },
+    "readByFusion": "Read by Fusion",
+    "unknownSheet": "Sheet <b>{sheet}</b> · {count, plural, one {# row} other {# rows}} Fusion can't place",
+    "leftOut": "left out",
+    "readAs": {
+      "People": "These are people",
+      "Units": "These are units"
+    },
+    "leftRows": {
+      "left": "{count, plural, one {# person who has left} other {# people who have left}}",
+      "oneName": "{count, plural, one {# row with only one name} other {# rows with only one name}}",
+      "noName": "{count, plural, one {# row without a name} other {# rows without a name}}",
+      "unitNoName": "{count, plural, one {# unit without a name} other {# units without a name}}",
+      "already": "{count, plural, one {# person already in Fusion} other {# people already in Fusion}}",
+      "decided": "{count, plural, one {# person you left out} other {# people you left out}}"
+    }
+  },
+  "question": {
+    "title": "Is {header} {field}?",
+    "values": "{values} · {count, plural, one {# value} other {# values}}",
+    "yes": "Yes, {field}",
+    "out": "Leave it out",
+    "change": "Change",
+    "fieldDone": "{header} is {field}",
+    "outDone": "{header} is left out",
+    "phrase": {
+      "employeeNumber": "the employee number",
+      "personId": "a reference for each person",
+      "firstName": "the first name",
+      "lastName": "the last name",
+      "fullName": "the full name",
+      "preferredName": "the name people go by",
+      "workEmail": "the work email",
+      "jobTitle": "the job title",
+      "jobLevel": "the job's level",
+      "jobFamily": "the job family",
+      "unit": "the unit",
+      "manager": "the manager",
+      "place": "the place",
+      "startDate": "the start date",
+      "endDate": "the last day",
+      "status": "whether people still work here",
+      "unitCode": "the unit's code",
+      "unitName": "the unit's name",
+      "parentUnit": "the unit above",
+      "unitType": "the unit's type",
+      "unitHead": "who leads the unit",
+      "out": "left out"
+    },
+    "dates": {
+      "title": "Is {example} day first?",
+      "dayFirst": "Day first",
+      "monthFirst": "Month first",
+      "dayFirstDone": "Dates in {header} are day first",
+      "monthFirstDone": "Dates in {header} are month first"
+    }
+  },
+  "fields": {
+    "out": {
+      "label": "Left out"
+    },
+    "employeeNumber": {
+      "label": "Employee number"
+    },
+    "personId": {
+      "label": "Reference"
+    },
+    "firstName": {
+      "label": "First name"
+    },
+    "lastName": {
+      "label": "Last name"
+    },
+    "fullName": {
+      "label": "Name"
+    },
+    "preferredName": {
+      "label": "Goes by"
+    },
+    "workEmail": {
+      "label": "Work email"
+    },
+    "jobTitle": {
+      "label": "Job title"
+    },
+    "jobLevel": {
+      "label": "Job level"
+    },
+    "jobFamily": {
+      "label": "Job family"
+    },
+    "unit": {
+      "label": "Unit"
+    },
+    "manager": {
+      "label": "Manager"
+    },
+    "place": {
+      "label": "Place"
+    },
+    "startDate": {
+      "label": "Start date"
+    },
+    "endDate": {
+      "label": "Last day"
+    },
+    "status": {
+      "label": "Status"
+    },
+    "unitCode": {
+      "label": "Unit code"
+    },
+    "unitName": {
+      "label": "Name"
+    },
+    "parentUnit": {
+      "label": "Parent unit"
+    },
+    "unitType": {
+      "label": "Unit type"
+    },
+    "unitHead": {
+      "label": "Unit head"
+    }
+  },
+  "sheet": {
+    "change": "Change what {header} is",
+    "what": "What is {header}?",
+    "leaveOut": "Leave it out",
+    "fusionsReading": "Back to Fusion's reading",
+    "noHeader": "No header",
+    "more": {
+      "People": "{count, plural, one {# more person} other {# more people}}",
+      "Units": "{count, plural, one {# more unit} other {# more units}}"
+    },
+    "ask": "{field}?",
+    "leftOut": "Left out",
+    "empty": "Empty",
+    "aiRead": "Fusion read “{header}” as {field}"
+  },
+  "across": {
+    "title": "Across the files",
+    "managers": "{count} of {of, plural, one {# person has} other {# people have}} a manager",
+    "foundBy": {
+      "number": "Found by employee number",
+      "reference": "Found by reference",
+      "email": "Found by work email",
+      "name": "Found by name",
+      "head": "From who leads each unit"
+    },
+    "top": "{name} is at the top",
+    "tops": "{count, plural, one {# person has} other {# people have}} no manager",
+    "unitsAll": "Everyone's unit is in {file}",
+    "unitsBut": "Everyone's unit is in {file}, but {count, plural, one {# person's} other {# people's}}",
+    "unitsFromPeople": "{count, plural, one {# unit} other {# units}}, from the people's unit column",
+    "unitsFromPeopleDetail": "Under {company}",
+    "rootAdded": "{count} units have nothing above them: Fusion puts them under {company}",
+    "jobs": "{titles, plural, one {# title} other {# titles}} become {count, plural, one {# job} other {# jobs}}",
+    "jobsFamilies": "{titles, plural, one {# title} other {# titles}} become {count, plural, one {# job} other {# jobs}} in {families, plural, one {# family} other {# families}}",
+    "sameJob": "{count, plural, one {Two titles may be the same job} other {# pairs of titles may be the same job}}",
+    "onChart": "On the chart",
+    "you": "{name}, row {row}, is you",
+    "youDetail": "Matched to your account by work email",
+    "places": "{count, plural, one {# place} other {# places}}",
+    "left": "Left out"
+  },
+  "left": {
+    "columns": "{count, plural, one {the {names} column} other {the {names} columns}}",
+    "left": "{count, plural, one {# person who has left} other {# people who have left}}",
+    "already": "{count, plural, one {# person already in Fusion} other {# people already in Fusion}}",
+    "decided": "{count, plural, one {# person you left out} other {# people you left out}}",
+    "oneName": "{count, plural, one {# row with one name} other {# rows with one name}}",
+    "noName": "{count, plural, one {# row without a name} other {# rows without a name}}",
+    "unitNoName": "{count, plural, one {# unit without a name} other {# units without a name}}",
+    "sheet": "{count, plural, one {# row on a sheet Fusion can't place} other {# rows on sheets Fusion can't place}}"
+  },
+  "chart": {
+    "back": "What Fusion understood",
+    "title": "Review {company}",
+    "bringIn": "{count, plural, one {Bring in # person} other {Bring in # people}}",
+    "bringUnits": "{count, plural, one {Bring in # unit} other {Bring in # units}}",
+    "failure": {
+      "changed": "The company or the files changed since the chart was shown. Look again, then bring it in.",
+      "failed": "Fusion couldn't bring the company in. Nothing was brought in. Try again."
+    },
+    "views": "Views",
+    "tab": {
+      "people": "People · {count}",
+      "units": "Units · {count}",
+      "jobs": "Jobs · {count}"
+    },
+    "find": "Find a person",
+    "toCheck": "To check",
+    "left": "{count} left",
+    "allChecked": "All checked",
+    "takeLeans": "Take Fusion's lean on the rest",
+    "noPeople": "Nobody new to bring in",
+    "teamOf": "{name} · {count, plural, one {# direct} other {# direct}}",
+    "more": "{count} more",
+    "flag": "To check",
+    "you": "You",
+    "direct": "{count} direct",
+    "changedByYou": "Changed by you",
+    "noUnits": "No units",
+    "new": "New",
+    "inFusion": "Already in Fusion",
+    "unit": "Unit",
+    "noFamily": "No family",
+    "allJobs": "Jobs",
+    "jobs": "{count, plural, one {# job} other {# jobs}}",
+    "fromTitles": "from {count} titles",
+    "lookAlike": "looks like another title",
+    "crumb": "Review"
+  },
+  "check": {
+    "theFiles": "the files",
+    "unitMissing": {
+      "one": "{name}'s unit isn't in {file}",
+      "many": "{count} people's unit isn't in {file}"
+    },
+    "unitParent": "The unit above {unit} isn't in the files",
+    "managerMissing": "{name}'s manager isn't in the files",
+    "twice": {
+      "manager": "{name} has two managers",
+      "unit": "{name} has two units",
+      "jobTitle": "{name} has two job titles",
+      "jobLevel": "{name} has two levels",
+      "jobFamily": "{name} has two job families",
+      "place": "{name} has two places",
+      "startDate": "{name} has two start dates"
+    },
+    "sameJob": "Two titles look like one job",
+    "managerLoop": "{names} report to each other",
+    "noStart": {
+      "one": "{name} has no start date",
+      "many": "{count} people have no start date"
+    },
+    "noTitle": {
+      "one": "{name} has no job title",
+      "many": "{count} people have no job title"
+    },
+    "says": "{file} says {value}",
+    "fileSays": "The file says {value}",
+    "disagree": "The files disagree",
+    "option": {
+      "addUnit": "Add {name}",
+      "underRoot": "Put it under {company}",
+      "noManager": "No manager",
+      "merge": "Make them one job",
+      "keep": "Keep both",
+      "cut": "{name} has no manager",
+      "leaveOut": "Leave them out",
+      "startOn": "Start them on {date}",
+      "giveJob": "Give them the job {title}"
+    },
+    "from": {
+      "closest": "Closest",
+      "new": "New unit"
+    }
+  },
+  "say": {
+    "label": "Something else wrong? Say it",
+    "example": "{name} reports to {manager}",
+    "exampleFallback": "Rania is based in Tunis",
+    "show": "Show",
+    "notUnderstood": "Fusion couldn't place that. Name a person and what changes, like “Rania is based in Tunis”.",
+    "noManager": "No manager",
+    "nothing": "Nothing",
+    "notThat": "Not that",
+    "apply": "Apply",
+    "changed": "Changed by you, not the file",
+    "undo": "Undo"
+  },
+  "bring": {
+    "title": "Bringing in {company}",
+    "doneTitle": "{company} is in Fusion",
+    "doneMeta": "Today at {time} · from {files}",
+    "counts": {
+      "people": "{count, plural, one {person} other {people}}",
+      "units": "{count, plural, one {unit} other {units}}",
+      "jobs": "{count, plural, one {job} other {jobs}}",
+      "places": "{count, plural, one {place} other {places}}",
+      "lines": "{count, plural, one {reporting line} other {reporting lines}}"
+    },
+    "facts": {
+      "units": "{count, plural, one {# unit} other {# units}}",
+      "jobs": "{count, plural, one {# job} other {# jobs}}",
+      "people": "{count} of {of, plural, one {# person} other {# people}}",
+      "lines": "{count} of {of, plural, one {# reporting line} other {# reporting lines}}"
+    },
+    "leave": "You can leave this page. Fusion keeps going.",
+    "next": {
+      "title": "Next: invite your people",
+      "nobody": "Nobody has been invited yet",
+      "orgChart": "Open the org chart",
+      "invite": "Invite your people"
+    },
+    "worth": {
+      "title": "Worth a look",
+      "left": "Left out",
+      "decided": "{count, plural, one {# thing you decided instead of the files} other {# things you decided instead of the files}}",
+      "decidedNames": "Including {names}",
+      "noEmail": "{count, plural, one {# person has no work email} other {# people have no work email}}",
+      "noEmailDetail": "They can't be invited until they have one",
+      "noPlace": "{count, plural, one {# person has no place} other {# people have no place}}",
+      "seeWho": "See who"
+    }
+  }
+}

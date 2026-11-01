@@ -6,9 +6,9 @@ using EY.HRPlatform.SharedKernel.Notifications;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence.Interceptors;
 using EY.HRPlatform.CoreHR.Features.Employees.Services;
-using EY.HRPlatform.CoreHR.Features.Employees.Import.Services;
 using EY.HRPlatform.CoreHR.Features.Organization;
-using EY.HRPlatform.CoreHR.Features.OrganizationImport;
+using EY.HRPlatform.CoreHR.Features.CompanyImport;
+using EY.HRPlatform.CoreHR.Infrastructure.Ai;
 using EY.HRPlatform.CoreHR.Features.TenantSettings.Services;
 using EY.HRPlatform.CoreHR.Features.EmployeeFields;
 using EY.HRPlatform.CoreHR.Features.Security;
@@ -113,60 +113,26 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IWorkEmailOccupancyService, WorkEmailOccupancyService>();
         services.AddScoped<IOrganizationService, OrganizationService>();
         services.AddSingleton<ISafeTabularSourceReader, SafeTabularSourceReader>();
-        services.AddSingleton<WorkforceImportSourceAdapter>();
-        services.AddSingleton<WorkforceImportInterpreter>();
-        services.AddSingleton<WorkforceImportResolver>();
-        services.AddSingleton<IWorkforceImportTemplateService, WorkforceImportTemplateService>();
-        services.AddSingleton<WorkforceImportSemanticContextBuilder>();
-        var workforceSemantic = configuration
-            .GetSection(WorkforceImportSemanticAssistanceOptions.SectionName)
-            .Get<WorkforceImportSemanticAssistanceOptions>() ?? new WorkforceImportSemanticAssistanceOptions();
-        workforceSemantic.ApiKey = string.IsNullOrWhiteSpace(workforceSemantic.ApiKey)
-            ? configuration["GROQ_API_KEY"]
-            : workforceSemantic.ApiKey;
-        services.AddSingleton(workforceSemantic);
-        services.AddHttpClient<IWorkforceImportSemanticProvider, GroqWorkforceImportSemanticProvider>(client =>
-        {
-            client.BaseAddress = new Uri(EnsureTrailingSlash(workforceSemantic.BaseUrl));
-            client.Timeout = TimeSpan.FromSeconds(Math.Clamp(workforceSemantic.TimeoutSeconds, 5, 60));
-        }).ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
-        services.AddScoped<WorkforceImportSnapshotLoader>();
-        services.AddScoped<WorkforceImportReviewService>();
-        services.AddScoped<WorkforceImportDerivation>();
         services.AddScoped<EY.HRPlatform.CoreHR.Features.Setup.ICoreHRReadinessService, EY.HRPlatform.CoreHR.Features.Setup.CoreHRReadinessService>();
-        services.AddScoped<WorkforceImportSemanticAssistanceService>();
-        services.AddScoped<WorkforceImportApplyOrchestrator>();
-        services.AddScoped<WorkforceImportApplyOperationService>();
-        services.AddSingleton<IWorkforceImportApplyProcessor, WorkforceImportApplyProcessor>();
-        services.AddHostedService<WorkforceImportApplyBackgroundService>();
-        services.AddScoped<IWorkforceImportSessionService, WorkforceImportSessionService>();
-        services.AddScoped<IOrganizationImportSourceInspectionService, OrganizationImportSourceInspectionService>();
-        services.AddScoped<IOrganizationImportWorkbookService, OrganizationImportWorkbookService>();
-        services.AddScoped<IOrganizationImportService, OrganizationImportService>();
-        services.AddScoped<IOrganizationImportMappingService, OrganizationImportMappingService>();
-        services.AddScoped<IOrganizationImportMatchReadinessService, OrganizationImportMatchReadinessService>();
-        services.AddScoped<IOrganizationImportValidator, OrganizationImportValidator>();
-        services.AddScoped<IOrganizationImportInterpreter, OrganizationImportInterpreter>();
-        services.AddScoped<IOrganizationImportPublisher, OrganizationImportPublisher>();
-        var semanticAssistance = configuration
-            .GetSection(OrganizationImportSemanticAssistanceOptions.SectionName)
-            .Get<OrganizationImportSemanticAssistanceOptions>() ?? new OrganizationImportSemanticAssistanceOptions();
-        semanticAssistance.ApiKey = string.IsNullOrWhiteSpace(semanticAssistance.ApiKey)
-            ? configuration["GROQ_API_KEY"]
-            : semanticAssistance.ApiKey;
-        ValidateSemanticAssistance(semanticAssistance);
-        services.AddSingleton(semanticAssistance);
-        services.AddScoped<IOrganizationImportSemanticContextBuilder, OrganizationImportSemanticContextBuilder>();
-        services.AddScoped<IOrganizationImportSemanticAssistanceService, OrganizationImportSemanticAssistanceService>();
-        services.AddHttpClient<IOrganizationImportSemanticProvider, GroqOrganizationImportSemanticProvider>(client =>
+
+        var ai = configuration.GetSection(CoreAiOptions.SectionName).Get<CoreAiOptions>() ?? new CoreAiOptions();
+        ai.ApiKey = string.IsNullOrWhiteSpace(ai.ApiKey) ? configuration["GROQ_API_KEY"] : ai.ApiKey;
+        ai.Validate();
+        services.AddSingleton(ai);
+        services.AddHttpClient<ICompanyImportAi, CompanyImportAi>(client =>
         {
-            client.BaseAddress = new Uri(EnsureTrailingSlash(semanticAssistance.Endpoint));
-            client.Timeout = Timeout.InfiniteTimeSpan;
+            client.BaseAddress = GroqEndpoint.BaseAddress(ai.Endpoint);
+            client.Timeout = TimeSpan.FromSeconds(ai.ImportBudgetSeconds + 5);
         }).ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
+        services.AddScoped<CompanyImportReader>();
+        services.AddScoped<CompanyImportService>();
+        services.AddScoped<CompanyImportBringIn>();
+        services.AddSingleton<CompanyImportProgress>();
+        services.AddHostedService<CompanyImportWorker>();
 
         services.AddHttpClient<Features.People.Changes.ChangeDrafter>(client =>
         {
-            client.BaseAddress = new Uri(EnsureTrailingSlash(semanticAssistance.Endpoint));
+            client.BaseAddress = GroqEndpoint.BaseAddress(ai.Endpoint);
             client.Timeout = TimeSpan.FromSeconds(15);
         }).ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
 
@@ -219,26 +185,6 @@ public static class ServiceCollectionExtensions
 
     private static string EnsureTrailingSlash(string url)
         => url.EndsWith('/') ? url : $"{url}/";
-
-    private static void ValidateSemanticAssistance(OrganizationImportSemanticAssistanceOptions options)
-    {
-        if (!string.Equals(options.Provider, OrganizationImportSemanticAssistanceOptions.DefaultProvider, StringComparison.Ordinal))
-            throw new InvalidOperationException("OrganizationImport:SemanticAssistance:Provider must be Groq.");
-        if (string.IsNullOrWhiteSpace(options.Model))
-            throw new InvalidOperationException("OrganizationImport:SemanticAssistance:Model is required.");
-        if (!GroqEndpoint.IsAllowed(options.Endpoint))
-            throw new InvalidOperationException("OrganizationImport:SemanticAssistance:Endpoint must use api.groq.com over HTTPS or a loopback development URL.");
-        if (options.TimeoutSeconds is < 1 or > 60
-            || options.UploadBudgetSeconds is < 1 or > 60
-            || options.InteractiveBudgetSeconds is < 1 or > 90
-            || options.MaxRetries is < 0 or > 2
-            || options.MaxFields is < 1 or > 32
-            || options.MaxValuesPerField is < 1 or > 5
-            || options.MaxTotalValues is < 1 or > 64
-            || options.MaxValueCharacters is < 16 or > 120
-            || options.MaxPayloadBytes is < 4096 or > 20480)
-            throw new InvalidOperationException("OrganizationImport:SemanticAssistance contains an invalid non-secret limit.");
-    }
 
     public static IServiceCollection AddMultitenancy(this IServiceCollection services)
     {

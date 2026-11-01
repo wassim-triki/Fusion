@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using EY.HRPlatform.CoreHR.Domain.Entities;
-using EY.HRPlatform.CoreHR.Features.OrganizationImport;
+using EY.HRPlatform.CoreHR.Infrastructure.Ai;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence;
 using EY.HRPlatform.SharedKernel.Ai;
 using Microsoft.EntityFrameworkCore;
@@ -40,7 +40,7 @@ public sealed record ChangeDraftDto(
 public sealed class ChangeDrafter(
     CoreHRDbContext db,
     HttpClient httpClient,
-    OrganizationImportSemanticAssistanceOptions options)
+    CoreAiOptions options)
 {
     public const int MaxTextLength = 400;
     private static readonly TimeSpan Budget = TimeSpan.FromSeconds(8);

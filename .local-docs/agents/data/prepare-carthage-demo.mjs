@@ -2,7 +2,6 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
-import { FileBlob, SpreadsheetFile } from "@oai/artifact-tool";
 
 const require = createRequire(import.meta.url);
 const { BASE, MAILPIT, PASSWORD, call, login } = require("../../../.agents/skills/fusion-dev/scripts/api.cjs");
@@ -165,17 +164,6 @@ async function expect(token, method, route, body, label = route) {
   return api(token, method, route, body).catch((error) => { throw new Error(`${label}: ${error.message}`); });
 }
 
-async function uploadWorkbook(token, route, filePath, fields) {
-  const form = new FormData();
-  form.append("file", new Blob([await fs.readFile(filePath)], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), path.basename(filePath));
-  for (const [key, value] of Object.entries(fields)) form.append(key, String(value));
-  const response = await fetch(`${BASE}${route}`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: form });
-  const text = await response.text();
-  let json; try { json = JSON.parse(text); } catch { json = text; }
-  if (response.status >= 400) throw new Error(`Multipart POST ${route} failed (${response.status}): ${JSON.stringify(json).slice(0, 1600)}`);
-  return { data: json?.data ?? json, etag: response.headers.get("etag") };
-}
-
 async function versioned(token, method, route, version, body) {
   const response = await fetch(`${BASE}${route}`, {
     method,
@@ -248,109 +236,47 @@ async function main() {
   ];
   await saveState();
 
-  const orgTemplateResponse = await fetch(`${BASE}/api/corehr/organization/imports/template`, { headers: { Authorization: `Bearer ${tenantAdminToken}` } });
-  ensure(orgTemplateResponse.ok, `Organization template download failed: ${orgTemplateResponse.status}`);
-  const orgTemplate = Buffer.from(await orgTemplateResponse.arrayBuffer());
-  const orgTemplatePath = path.join(here, "carthage-organization-template.xlsx");
-  await fs.writeFile(orgTemplatePath, orgTemplate);
-  const orgWorkbook = await SpreadsheetFile.importXlsx(await FileBlob.load(orgTemplatePath));
-  const orgSheet = orgWorkbook.worksheets.getItem("Organization");
-  const generatedHeaders = orgSheet.getRange("A1:E1").values[0].map((value) => String(value ?? "").trim());
-  ensure(JSON.stringify(generatedHeaders) === JSON.stringify(["Fusion OrgUnit ID", "Business Code", "Name", "Type", "Parent Business Code"]),
-    `Unexpected generated organization headers: ${generatedHeaders.join(" | ")}`);
-  const typeSheet = orgWorkbook.worksheets.getItem("Type values");
-  const rawTypeValues = typeSheet.getRange("A1:A10").values.flat().map((value) => String(value ?? "").trim()).filter(Boolean);
-  const typeValues = rawTypeValues[0] === "Organization type" ? rawTypeValues.slice(1) : rawTypeValues;
-  const allowedTypes = new Set(typeValues);
-  ensure(["Organization", "Business Unit", "Division", "Department", "Team"].every((type) => allowedTypes.has(type)),
-    `Generated organization type list is missing required values: ${typeValues.join(", ")}`);
-  orgSheet.getRange(`A2:E${orgRows.length + 1}`).values = orgRows;
-  orgWorkbook.recalculate();
-  const orgOutput = await SpreadsheetFile.exportXlsx(orgWorkbook);
-  const orgPath = path.join(here, "carthage-organization.xlsx");
-  await orgOutput.save(orgPath);
-
-  const workforceTemplateResponse = await fetch(`${BASE}/api/corehr/employees/import/template`, { headers: { Authorization: `Bearer ${tenantAdminToken}` } });
-  ensure(workforceTemplateResponse.ok, `Workforce template download failed: ${workforceTemplateResponse.status}`);
-  const workforceTemplate = Buffer.from(await workforceTemplateResponse.arrayBuffer());
-  const workforceTemplatePath = path.join(here, "carthage-workforce-template.xlsx");
-  await fs.writeFile(workforceTemplatePath, workforceTemplate);
-  const workforceWorkbook = await SpreadsheetFile.importXlsx(await FileBlob.load(workforceTemplatePath));
-  const workforceSheet = workforceWorkbook.worksheets.getItem("Workforce");
-  const workforceHeaders = workforceSheet.getRange("A1:R1").values[0].map((value) => String(value ?? "").trim());
-  ensure(workforceHeaders.length === 18 && workforceHeaders[0] === "Employee Number" && workforceHeaders[17] === "Fusion Manager Reference",
-    `Unexpected generated workforce headers: ${workforceHeaders.join(" | ")}`);
-  workforceSheet.getRange(`A2:R${people.length + 1}`).values = workforceCells(people);
-  workforceWorkbook.recalculate();
-  const workforceOutput = await SpreadsheetFile.exportXlsx(workforceWorkbook);
-  const workforcePath = path.join(here, "carthage-workforce.xlsx");
-  await workforceOutput.save(workforcePath);
-
-  data.workbooks = { organization: orgPath, workforce: workforcePath, orgTypes: [...allowedTypes], orgHeaders: generatedHeaders, workforceHeaders };
+  // B-186: the two files as CSV in the headers Fusion has always written, brought in through one import.
+  const csv = (rows) => rows.map((cells) => cells.map((cell) => {
+    const text = String(cell ?? "");
+    return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  }).join(",")).join("\n");
+  const workforceHeaders = ["Employee Number", "First Name", "Last Name", "Preferred Name", "Work Email", "Employment Start",
+    "Work Details Effective From", "Organization", "Display Title", "Location", "Manager", "Worker Reference", "Manager Reference",
+    "Lifecycle Status", "Employment End", "Fusion Employee Reference", "Fusion Organization Reference", "Fusion Manager Reference"];
+  const orgPath = path.join(here, "carthage-organization.csv");
+  await fs.writeFile(orgPath, csv([["Fusion OrgUnit ID", "Business Code", "Name", "Type", "Parent Business Code"], ...orgRows]));
+  const workforcePath = path.join(here, "carthage-workforce.csv");
+  await fs.writeFile(workforcePath, csv([workforceHeaders, ...workforceCells(people)]));
+  data.workbooks = { organization: orgPath, workforce: workforcePath, workforceHeaders };
   data.steps.workbooksGenerated = true;
   await saveState();
 
-  if (!data.steps.organizationPublished) {
-    let intake;
-    if (data.organizationImportSessionId) {
-      intake = await api(tenantAdminToken, "GET", `/api/corehr/organization/imports/${data.organizationImportSessionId}`);
-    } else {
-      const uploaded = await uploadWorkbook(tenantAdminToken, "/api/corehr/organization/imports/intake", orgPath, {
-        effectiveDate: data.asOf, creationToken: crypto.randomUUID(), selectedSheetName: "Organization",
-      });
-      intake = uploaded.data.session;
-      data.organizationImportSessionId = intake?.id;
+  if (!data.steps.companyBroughtIn) {
+    let session = data.companyImportSessionId ? await api(tenantAdminToken, "GET", `/api/corehr/imports/${data.companyImportSessionId}`) : null;
+    if (!session) {
+      const form = new FormData();
+      for (const file of [orgPath, workforcePath]) form.append("files", new Blob([await fs.readFile(file)], { type: "text/csv" }), path.basename(file));
+      form.append("companyName", "Carthage Digital Group");
+      const response = await fetch(`${BASE}/api/corehr/imports`, { method: "POST", headers: { Authorization: `Bearer ${tenantAdminToken}` }, body: form });
+      const body = await response.json().catch(() => null);
+      ensure(response.ok, `The import didn't start: ${response.status} ${JSON.stringify(body).slice(0, 800)}`);
+      session = body.data;
+      data.companyImportSessionId = session.id;
       await saveState();
     }
-    const orgSessionId = data.organizationImportSessionId;
-    let orgSession = orgSessionId ? await api(tenantAdminToken, "GET", `/api/corehr/organization/imports/${orgSessionId}`) : intake;
-    ensure(orgSession?.id, "Organization intake did not create a review session.");
-    if (!orgSession.match?.readiness?.canContinue) {
-      throw new Error(`Organization Match needs review: ${JSON.stringify(orgSession.match?.readiness ?? orgSession.match).slice(0, 1800)}`);
+    if (session.status === "Open") {
+      if (session.openCount > 0) session = await versioned(tenantAdminToken, "POST", `/api/corehr/imports/${session.id}/leans`, session.version, {});
+      ensure(session.canBringIn, `The import needs a look: ${JSON.stringify(session.checks.filter((check) => !check.answer)).slice(0, 1600)}`);
+      session = await versioned(tenantAdminToken, "POST", `/api/corehr/imports/${session.id}/bring-in`, session.version, { fingerprint: session.fingerprint });
     }
-    ensure(orgSession.review?.readiness?.canPublish, `Organization Review has blocking issues: ${JSON.stringify(orgSession.review?.issues ?? []).slice(0, 1800)}`);
-    const committed = await versioned(tenantAdminToken, "POST", `/api/corehr/organization/imports/${orgSessionId}/commit`, orgSession.version, {
-      proposalFingerprint: orgSession.review.proposalFingerprint,
-    });
-    data.steps.organizationPublished = true;
-    data.organizationCommit = committed;
-    await saveState();
-  }
-
-  if (!data.steps.workforcePublished) {
-    let workforceSession;
-    if (data.workforceImportSessionId) {
-      workforceSession = await api(tenantAdminToken, "GET", `/api/corehr/employees/import/${data.workforceImportSessionId}`);
-    } else {
-      const uploaded = await uploadWorkbook(tenantAdminToken, "/api/corehr/employees/import/intake", workforcePath, {
-        creationToken: crypto.randomUUID(), baselineDate: data.asOf, selectedSheet: "Workforce",
-      });
-      workforceSession = uploaded.data.session;
-      data.workforceImportSessionId = workforceSession?.id;
-      await saveState();
-    }
-    ensure(workforceSession?.id, "Workforce intake did not create a review session.");
-    workforceSession = await api(tenantAdminToken, "GET", `/api/corehr/employees/import/${data.workforceImportSessionId}`);
-    ensure(workforceSession.matchComplete, `Workforce Match is incomplete: ${JSON.stringify(workforceSession.match).slice(0, 1800)}`);
-    ensure(workforceSession.canPublish, `Workforce Review has blocking issues: ${JSON.stringify(workforceSession.counts).slice(0, 1200)}`);
-    const queued = await versioned(tenantAdminToken, "POST", `/api/corehr/employees/import/${data.workforceImportSessionId}/commit`, workforceSession.version, {
-      proposalFingerprint: workforceSession.proposalFingerprint,
-    });
-    data.workforceCommit = queued;
-    await saveState();
-    for (let attempt = 0; attempt < 40; attempt++) {
-      const status = await api(tenantAdminToken, "GET", `/api/corehr/employees/import/${data.workforceImportSessionId}/commit`);
-      data.workforceCommit = status;
-      await saveState();
-      if (["Committed", "Completed", "Applied", "Succeeded"].includes(status.status)) {
-        data.steps.workforcePublished = true;
-        await saveState();
-        break;
-      }
-      if (["Failed", "ReviewOutdated"].includes(status.status)) throw new Error(`Workforce publication failed: ${JSON.stringify(status).slice(0, 1600)}`);
+    for (let attempt = 0; session.status !== "BroughtIn"; attempt++) {
+      ensure(session.status === "BringingIn" && attempt < 120, `Bring-in did not complete: ${session.lastFailure ?? session.status}`);
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      session = await api(tenantAdminToken, "GET", `/api/corehr/imports/${session.id}`);
     }
-    ensure(data.steps.workforcePublished, `Workforce publication did not complete: ${JSON.stringify(data.workforceCommit).slice(0, 1500)}`);
+    data.steps.companyBroughtIn = true;
+    await saveState();
   }
 
   const accessPage = await api(tenantAdminToken, "GET", "/api/corehr/workforce/access-subjects?page=1&pageSize=200");

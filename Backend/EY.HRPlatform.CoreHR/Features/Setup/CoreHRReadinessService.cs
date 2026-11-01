@@ -1,5 +1,5 @@
 using EY.HRPlatform.CoreHR.Domain.Enums;
-using EY.HRPlatform.CoreHR.Features.Employees.Import;
+using EY.HRPlatform.CoreHR.Features.CompanyImport;
 using EY.HRPlatform.CoreHR.Features.Organization;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -65,8 +65,8 @@ public sealed class CoreHRReadinessService(CoreHRDbContext context, IOrganizatio
         var inactiveUnit = activeEmployeeIds.Count(id => unitByEmployee.TryGetValue(id, out var unit) && !activeUnitIds.Contains(unit));
         var invalidManager = managerEdges.Count(edge => edge.Value == edge.Key || !activeEmployeeIds.Contains(edge.Value));
         var inCycle = CountInCycles(managerEdges);
-        var importInProgress = await context.WorkforceImportSessions.AsNoTracking()
-            .AnyAsync(s => s.Status == WorkforceImportStatus.Active, cancellationToken);
+        var importInProgress = await context.CompanyImportSessions.AsNoTracking()
+            .AnyAsync(s => s.Status == CompanyImportStatus.Open || s.Status == CompanyImportStatus.BringingIn, cancellationToken);
 
         var workforce = new CoreHRWorkforceReadinessDto(
             activeEmployeeIds.Count, withoutAssignment, inactiveUnit, invalidManager, inCycle, importInProgress);

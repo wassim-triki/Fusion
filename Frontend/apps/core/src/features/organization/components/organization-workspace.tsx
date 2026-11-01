@@ -74,6 +74,7 @@ import type {
 } from "@repo/api";
 import { useTenantAccessSummary } from "@/features/tenant-access/api/use-tenant-access";
 import {
+  useOrganizationApi,
   useOrganizationHierarchy,
   useOrganizationHistory,
   useOrganizationMutations,
@@ -95,8 +96,7 @@ import {
   type OrganizationLocalState,
   type OrganizationUrlState,
 } from "../model/workspace-state";
-import { useOrganizationImportApi } from "@/features/organization-import/api/use-organization-import";
-import { downloadBlob } from "@/features/organization-import/model/format";
+import { downloadBlob } from "@/lib/download";
 import { OrganizationList } from "./organization-list";
 import {
   CorrectionPanel,
@@ -565,7 +565,7 @@ export default function OrganizationWorkspace({
   const needTypes = editor !== null || createType;
   const types = useOrganizationTypes(canView && needTypes);
   const mutations = useOrganizationMutations();
-  const importApi = useOrganizationImportApi();
+  const organizationApi = useOrganizationApi();
   const cancelUnit = useOrganizationUnit(
     cancelChange?.orgUnitId ?? null,
     cancelChange?.effectiveDate ?? today,
@@ -774,7 +774,7 @@ export default function OrganizationWorkspace({
 
   async function exportStructure() {
     try {
-      const blob = await importApi.exportStructure(urlState.asOf);
+      const blob = await organizationApi.exportStructure(urlState.asOf);
       downloadBlob(blob, `Fusion-organization-${urlState.asOf}.xlsx`);
     } catch {
       toast.error(t("export.failed"), {
@@ -950,7 +950,7 @@ export default function OrganizationWorkspace({
                   <DropdownMenuContent align="end">
                     {canManage && !readOnly ? (
                       <DropdownMenuItem asChild>
-                        <Link href="/organization/import">
+                        <Link href="/import">
                           <Upload className="h-4 w-4" />
                           {t("toolbar.import")}
                         </Link>

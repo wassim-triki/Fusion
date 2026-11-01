@@ -1,10 +1,9 @@
 // The Carthage foundation for one preset tenant, through the platform and Core HR APIs: provision the tenant, activate
-// Amira from the bootstrap invitation, import the 40-unit organization and the 100-person workforce dated `asOf`, and
+// Amira from the bootstrap invitation, bring in the 40-unit organization and the 100-person workforce in one import, and
 // link Amira to her workforce record. Generalized from prepare-carthage-demo.mjs (which stays as it is for Carthage).
 import fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
-import { FileBlob, SpreadsheetFile } from "@oai/artifact-tool";
 import { BASE, MAILPIT, PASSWORD, as, send, sleep, Refused } from "./client.mjs";
 import { groupJobs } from "./jobs.mjs";
 
@@ -40,7 +39,7 @@ export function emailFor(first, last, domain) {
   return `${slug(first)}.${slug(last)}@${domain}`;
 }
 
-function organization() {
+export function organization() {
   const rows = [];
   const add = (code, name, type, parent = "") => rows.push(["", code, name, type, parent]);
   add("CDG", "Carthage Digital Group", "Organization");
@@ -126,17 +125,6 @@ export function roster(domain, asOf) {
   });
 }
 
-async function upload(token, route, filePath, fields) {
-  const form = new FormData();
-  form.append("file", new Blob([await fs.readFile(filePath)], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), path.basename(filePath));
-  for (const [key, value] of Object.entries(fields)) form.append(key, String(value));
-  const response = await fetch(`${BASE}${route}`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: form });
-  const text = await response.text();
-  let json; try { json = JSON.parse(text); } catch { json = text; }
-  if (response.status >= 400) throw new Refused("POST", route, response.status, json);
-  return json?.data ?? json;
-}
-
 async function versioned(token, method, route, version, body) {
   const response = await fetch(`${BASE}${route}`, {
     method,
@@ -149,18 +137,8 @@ async function versioned(token, method, route, version, body) {
   return json?.data ?? json;
 }
 
-async function workbook(token, templateRoute, templatePath, sheetName, range, cells, outputPath) {
-  const template = await fetch(`${BASE}${templateRoute}`, { headers: { Authorization: `Bearer ${token}` } });
-  ensure(template.ok, `Template download failed: ${templateRoute} ${template.status}`);
-  await fs.writeFile(templatePath, Buffer.from(await template.arrayBuffer()));
-  const book = await SpreadsheetFile.importXlsx(await FileBlob.load(templatePath));
-  book.worksheets.getItem(sheetName).getRange(range).values = cells;
-  book.recalculate();
-  await (await SpreadsheetFile.exportXlsx(book)).save(outputPath);
-}
-
 /** Bootstrap activation from the invitation in Mailpit; returns nothing, Amira signs in with the local password after. */
-async function activateBootstrap(email) {
+export async function activateBootstrap(email) {
   for (let attempt = 0; attempt < 30; attempt++) {
     const list = await (await fetch(`${MAILPIT}/api/v1/search?query=to:${encodeURIComponent(email)}`)).json();
     const message = list.messages?.[0];
@@ -201,38 +179,35 @@ export async function buildFoundation({ name, domain, asOf, work, log, people = 
   const token = await amira.auth();
   log("Amira activated as tenant administrator");
 
+  // B-186: one import of both files, as CSV in the headers Fusion reads; bring-in is fingerprinted and polled.
   const { rows } = organization();
-  const orgPath = path.join(work, "organization.xlsx");
-  await workbook(token, "/api/corehr/organization/imports/template", path.join(work, "organization-template.xlsx"),
-    "Organization", `A2:E${rows.length + 1}`, rows, orgPath);
-  const staffPath = path.join(work, "workforce.xlsx");
-  await workbook(token, "/api/corehr/employees/import/template", path.join(work, "workforce-template.xlsx"),
-    "Workforce", `A2:R${people.length + 1}`, people.map((p) => [p.employeeNumber, p.firstName, p.lastName, "", p.email,
-      p.startDate, "", p.organization, p.title, p.location, "", p.workerReference, p.managerReference, "Active", "", "", "", ""]), staffPath);
+  const csv = (header, lines) => [header, ...lines].map((cells) => cells.map((cell) => {
+    const text = String(cell ?? "");
+    return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  }).join(",")).join("\n");
+  const orgPath = path.join(work, "organization.csv");
+  await fs.writeFile(orgPath, csv(["Code", "Name", "Type", "Parent"], rows.map(([, code, name, type, parent]) => [code, name, type, parent])));
+  const staffPath = path.join(work, "workforce.csv");
+  await fs.writeFile(staffPath, csv(
+    ["Employee Number", "First Name", "Last Name", "Work Email", "Employment Start", "Organization", "Display Title", "Location", "Worker Reference", "Manager Reference"],
+    people.map((p) => [p.employeeNumber, p.firstName, p.lastName, p.email, p.startDate, p.organization, p.title, p.location, p.workerReference, p.managerReference])));
 
-  const orgIntake = await upload(token, "/api/corehr/organization/imports/intake", orgPath,
-    { effectiveDate: asOf, creationToken: crypto.randomUUID(), selectedSheetName: "Organization" });
-  const orgSession = await amira.get(`/api/corehr/organization/imports/${orgIntake.session.id}`);
-  ensure(orgSession.match?.readiness?.canContinue, `Organization match needs review: ${JSON.stringify(orgSession.match?.readiness).slice(0, 800)}`);
-  ensure(orgSession.review?.readiness?.canPublish, `Organization review is blocked: ${JSON.stringify(orgSession.review?.issues ?? []).slice(0, 800)}`);
-  await versioned(token, "POST", `/api/corehr/organization/imports/${orgSession.id}/commit`, orgSession.version,
-    { proposalFingerprint: orgSession.review.proposalFingerprint });
-  log(`organization published as of ${asOf}`);
-
-  const staffIntake = await upload(token, "/api/corehr/employees/import/intake", staffPath,
-    { creationToken: crypto.randomUUID(), baselineDate: asOf, selectedSheet: "Workforce" });
-  const sessionId = staffIntake.session.id;
-  const staffSession = await amira.get(`/api/corehr/employees/import/${sessionId}`);
-  ensure(staffSession.matchComplete && staffSession.canPublish, `Workforce import is blocked: ${JSON.stringify(staffSession.counts).slice(0, 800)}`);
-  await versioned(token, "POST", `/api/corehr/employees/import/${sessionId}/commit`, staffSession.version,
-    { proposalFingerprint: staffSession.proposalFingerprint });
-  for (let attempt = 0; ; attempt++) {
-    const status = await amira.get(`/api/corehr/employees/import/${sessionId}/commit`);
-    if (["Committed", "Completed", "Applied", "Succeeded"].includes(status.status)) break;
-    if (["Failed", "ReviewOutdated"].includes(status.status) || attempt > 60 + people.length / 10) throw new Error(`Workforce publication: ${JSON.stringify(status).slice(0, 800)}`);
+  const form = new FormData();
+  for (const file of [orgPath, staffPath]) form.append("files", new Blob([await fs.readFile(file)], { type: "text/csv" }), path.basename(file));
+  form.append("companyName", name);
+  const started = await fetch(`${BASE}/api/corehr/imports`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: form });
+  const startedJson = await started.json().catch(() => null);
+  if (started.status >= 400) throw new Refused("POST", "/api/corehr/imports", started.status, startedJson);
+  let session = startedJson.data;
+  if (session.openCount > 0) session = await versioned(token, "POST", `/api/corehr/imports/${session.id}/leans`, session.version, {});
+  ensure(session.canBringIn, `The import needs a look: ${JSON.stringify(session.checks.filter((check) => !check.answer)).slice(0, 800)}`);
+  session = await versioned(token, "POST", `/api/corehr/imports/${session.id}/bring-in`, session.version, { fingerprint: session.fingerprint });
+  for (let attempt = 0; session.status !== "BroughtIn"; attempt++) {
+    if (session.status === "Open" || attempt > 120 + people.length / 5) throw new Error(`Bring-in: ${session.lastFailure ?? session.status}`);
     await sleep(1000);
+    session = await amira.get(`/api/corehr/imports/${session.id}`);
   }
-  log(`workforce published (${people.length} people)`);
+  log(`company brought in as of their start dates (${session.result.units} units, ${people.length} people)`);
   await groupJobs(amira, log);
 
   const subjects = [];

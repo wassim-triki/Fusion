@@ -1,7 +1,5 @@
-using EY.HRPlatform.CoreHR.Infrastructure.Imports.Semantic;
 using EY.HRPlatform.CoreHR.Domain.Entities;
-using EY.HRPlatform.CoreHR.Features.Employees.Import;
-using EY.HRPlatform.CoreHR.Features.OrganizationImport;
+using EY.HRPlatform.CoreHR.Features.CompanyImport;
 using EY.HRPlatform.SharedKernel.Multitenancy;
 using EY.HRPlatform.SharedKernel.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -77,15 +75,8 @@ public class CoreHRDbContext : DbContext
     public DbSet<OrganizationalUnitType> OrganizationalUnitTypes => Set<OrganizationalUnitType>();
     public DbSet<OrgUnitCodeReservation> OrgUnitCodeReservations => Set<OrgUnitCodeReservation>();
     public DbSet<SettingsAuditEvent> SettingsAuditEvents => Set<SettingsAuditEvent>();
-    public DbSet<OrganizationImportSession> OrganizationImportSessions => Set<OrganizationImportSession>();
-    public DbSet<OrganizationImportSource> OrganizationImportSources => Set<OrganizationImportSource>();
-    public DbSet<OrganizationImportSemanticAttempt> OrganizationImportSemanticAttempts => Set<OrganizationImportSemanticAttempt>();
-    public DbSet<ImportSemanticConsent> ImportSemanticConsents => Set<ImportSemanticConsent>();
-    public DbSet<WorkforceImportSession> WorkforceImportSessions => Set<WorkforceImportSession>();
-    public DbSet<WorkforceImportSource> WorkforceImportSources => Set<WorkforceImportSource>();
-    public DbSet<WorkforceImportRow> WorkforceImportRows => Set<WorkforceImportRow>();
-    public DbSet<WorkforceImportSemanticAttempt> WorkforceImportSemanticAttempts => Set<WorkforceImportSemanticAttempt>();
-    public DbSet<WorkforceImportApplyOperation> WorkforceImportApplyOperations => Set<WorkforceImportApplyOperation>();
+    public DbSet<CompanyImportSession> CompanyImportSessions => Set<CompanyImportSession>();
+    public DbSet<CompanyImportSource> CompanyImportSources => Set<CompanyImportSource>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -210,31 +201,10 @@ public class CoreHRDbContext : DbContext
         modelBuilder.Entity<SettingsAuditEvent>()
             .HasQueryFilter(auditEvent => CurrentTenantId != Guid.Empty && auditEvent.TenantId == CurrentTenantId);
 
-        modelBuilder.Entity<OrganizationImportSession>()
+        modelBuilder.Entity<CompanyImportSession>()
             .HasQueryFilter(session => CurrentTenantId != Guid.Empty && session.TenantId == CurrentTenantId);
 
-        modelBuilder.Entity<OrganizationImportSource>()
+        modelBuilder.Entity<CompanyImportSource>()
             .HasQueryFilter(source => CurrentTenantId != Guid.Empty && source.TenantId == CurrentTenantId);
-
-        modelBuilder.Entity<OrganizationImportSemanticAttempt>()
-            .HasQueryFilter(attempt => CurrentTenantId != Guid.Empty && attempt.TenantId == CurrentTenantId);
-
-        modelBuilder.Entity<ImportSemanticConsent>()
-            .HasQueryFilter(consent => CurrentTenantId != Guid.Empty && consent.TenantId == CurrentTenantId);
-
-        modelBuilder.Entity<WorkforceImportSession>()
-            .HasQueryFilter(session => CurrentTenantId != Guid.Empty && session.TenantId == CurrentTenantId);
-
-        modelBuilder.Entity<WorkforceImportSource>()
-            .HasQueryFilter(source => CurrentTenantId != Guid.Empty && source.TenantId == CurrentTenantId);
-
-        modelBuilder.Entity<WorkforceImportRow>()
-            .HasQueryFilter(row => CurrentTenantId != Guid.Empty && row.TenantId == CurrentTenantId);
-
-        modelBuilder.Entity<WorkforceImportSemanticAttempt>()
-            .HasQueryFilter(attempt => CurrentTenantId != Guid.Empty && attempt.TenantId == CurrentTenantId);
-
-        modelBuilder.Entity<WorkforceImportApplyOperation>()
-            .HasQueryFilter(op => CurrentTenantId != Guid.Empty && op.TenantId == CurrentTenantId);
     }
 }

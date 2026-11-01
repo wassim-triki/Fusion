@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-245.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-246.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -30,7 +30,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
   - [ ] **B-110** Tenant configurability as a hero: branding (logo, theme/accent, branded sign-in, own address, email branding) and internal configuration (company defaults and whatever the research puts on the ladder), depth chosen on B-163's scope page · Shell, Platform, Core HR, Identity · 2026-10-24
         User 2026-10-30: "I really wanna establish it as a core wow factor"; EY discussed it a lot but never gave specs or how far to take it. Earlier (2026-10-24) brain dump, ideas not requirements. A tenant's default language meets B-105. Context: B-071 removed the unused brand colour from Core's branding settings; Core's branding settings store a `LogoUrl` that no screen sets or shows; Company settings show name and locale.
   - [ ] **B-167** Rebuild: slices in dependency order, each end to end with screens for the taste check ([decisions](plans/B-164-decisions.md), D-01–D-30; [slices](plans/B-167-rebuild.md)) · 2026-10-30
-        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 done (✓ 2026-10-31); B-178 done (✓ 2026-10-31); B-179 done (✓ 2026-10-31); B-180 done (✓ 2026-10-31); B-181 done (✓ 2026-10-31); B-182 done (✓ 2026-10-31); B-183 done (✓ 2026-11-01); B-184 done (✓ 2026-11-01); B-185 done (✓ 2026-11-01); B-186 next, fresh session.
+        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 done (✓ 2026-10-31); B-178 done (✓ 2026-10-31); B-179 done (✓ 2026-10-31); B-180 done (✓ 2026-10-31); B-181 done (✓ 2026-10-31); B-182 done (✓ 2026-10-31); B-183 done (✓ 2026-11-01); B-184 done (✓ 2026-11-01); B-185 done (✓ 2026-11-01); B-186 in review (2026-11-01).
     - [ ] **B-198** One tab and view-switch pattern across Fusion, matching the target design: every tab strip and view switch today is reused old UI (the Organization lenses are the latest example). Define it once in `@repo/ds` from the accepted grammar (D-01 band tabs, D-17 views), first where a slice draws tabs (B-180's person page or B-183's Organization, whichever comes first), then replace every other use; B-192 checks none is left · All · 2026-10-30
           2026-10-31: defined as `LinkTabs` in `@repo/ds/shell` (active = company color, outline + subtle fill) and used on the person page (B-180); every other tab strip and view switch still to move.
     - [ ] **B-212** Reach "their unit" for roles (D-25 draws it): Core HR's record reads and Performance resolve the viewer's unit and the units under it, then the Jobs, Personal and Plans areas offer it. Not offered in B-177 because nothing enforces it yet (`performance.cycle.view@OrgUnit` is unseeded and treated as a team) · Core HR, Performance, Identity · 2026-10-30
@@ -38,10 +38,9 @@ Open work only. Agents keep it current from the conversation; closed items leave
     - [ ] **B-229** On leave: dates and a type on a person, shown wherever the person appears (Performance included); slice 6's row, not in this session's ask · Core HR, Performance · 2026-10-31
     - [ ] **B-230** Demo photos for Carthage's people (slice 6's row); every page draws initials today · Core HR · 2026-10-31
     - [ ] **B-231** Access tab › History (the drawn account story: invited by, accepted, signed in); Identity has no per-person account history read yet · Identity, Core HR · 2026-10-31
-    - [ ] **B-186** The import, one flow: any number of files, What Fusion understood, the chart, bringing in (D-22–D-24, D-29) · Core HR · 2026-10-30
     - [ ] **B-187** The import again and when it goes wrong: create or update, resumable, bad files (D-22, D-23, D-29) · Core HR · 2026-10-30
     - [ ] **B-188** Day one and Home: activation, the setup guide (the tour's admin track), Home every day (D-09, D-10, D-12) · Shell, Core HR, Identity · 2026-10-30
-          Also: the brand studio's Home preview is a stand-in; once Home is rebuilt the preview draws the real Home (user 2026-10-30 found it lacking). Activation keeps the password strength meter (ReUI) already on invitation acceptance.
+          Also: Brought in (B-186) shows "Next: invite your people" without the guide's progress segments; draw them once the guide exists. The brand studio's Home preview is a stand-in; once Home is rebuilt the preview draws the real Home (user 2026-10-30 found it lacking). Activation keeps the password strength meter (ReUI) already on invitation acceptance.
     - [ ] **B-189** Reports: (roles' Reports area offers only "See for everyone" today, the Core HR overview and change history; add Build and team reach here) standard and your own, on a date or between two, run as the viewer (D-14) · Core HR · 2026-10-30
     - [ ] **B-190** Core HR's front page: Growth and People on one time slider, department cards (D-30) · Core HR · 2026-10-30
     - [ ] **B-191** Single sign-on: Microsoft, Google, a company's own provider, required per domain · Identity, Shell · 2026-10-30
@@ -52,9 +51,12 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In review
 
+- [ ] **B-186** The import, one flow: any number of files, What Fusion understood, the chart, bringing in (D-22–D-24, D-29) · Core HR · 2026-10-30
+      Look at (Core HR › People › Add › Import a file, or `/core/import`; screens in `plans/B-186-screens/`, a fresh company "Carthage Digital Group mvxrrol1", sign in as its Amira `amira.khelifi@carthage-mvxrrol1.example.test`): the drop page (01); What Fusion understood with the labelled sheet, the Grade question and its lean, the leavers note (02); the chart's People view with the flagged person, To check, a fix said in words (03) and the Jobs view (04); Bringing in filling by department (05) and Brought in (06). Fixed after the screens: the missing-unit check now names the people file ("people.csv says PGC"), the breadcrumb names the step, person cards no longer clip "6 direct". Deviations to judge: Fusion's leans say "Fusion's lean" in words (the sparkle is kept for the AI's own reading); the People view is a focus path (top, then the picked person's team, level by level) rather than a free canvas; Brought in shows the next step without the setup guide's progress segments (B-188 builds the guide); job families come only from a file's family column (no AI grouping).
 
 ## Ready
 
+- [ ] **B-245** The import groups titles into job families when the files have no family column (D-23 widened the AI to it): suggestions marked with the sparkle, each family changeable on the chart's Jobs view · Core HR · 2026-11-01
 - [ ] **B-244** `@repo/ds` settings sidebar test fails 3 cases ("Employee fields" link not found, EN and FR); seen 2026-11-01 during B-185, which doesn't touch settings · Shared · 2026-11-01
 - [ ] **B-242** Tidy after the Organization refit: drop core's unused `@xyflow/react` dependency (lockfile update) and the now-unused `flattenOrganizationHierarchy` · Core HR · 2026-11-01
 - [ ] **B-240** Directory card as drawn (D-28): initials in Fusion's serif on every face, and the card footer's org chart icon matching the drawing's (Hugeicons Hierarchy; Core's chrome is still Lucide, so pick the match or move this icon). Long names already end in an ellipsis · Core HR · 2026-10-31

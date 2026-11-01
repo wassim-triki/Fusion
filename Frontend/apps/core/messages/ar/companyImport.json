@@ -1,0 +1,368 @@
+{
+  "title": "استيراد شركتك",
+  "template": "نموذج",
+  "lean": "اقتراح Fusion",
+  "loading": "جارٍ تحميل الاستيراد",
+  "error": "تعذّر تحميل الاستيراد.",
+  "access": {
+    "title": "لا يمكنك استيراد الشركة",
+    "description": "يتطلب ذلك إدارة الهيكل التنظيمي واستيراد الأشخاص."
+  },
+  "gone": {
+    "title": "هذا الاستيراد لم يعد موجودًا",
+    "action": "بدء استيراد"
+  },
+  "drop": {
+    "title": "أفلت جداولك هنا",
+    "hint": "الأشخاص والوحدات والوظائف · Excel أو CSV، بأي تنسيق، وبعدد ما لديك من ملفات",
+    "choose": "اختيار ملفات",
+    "release": "أفلتها لقراءتها",
+    "add": "إضافة ملفات"
+  },
+  "earlier": {
+    "title": "عمليات استيراد سابقة",
+    "by": "{date} · {name}",
+    "counts": "{people, plural, one {شخص واحد} two {شخصان} few {# أشخاص} many {# شخصًا} other {# شخص}}، {units, plural, one {وحدة واحدة} two {وحدتان} few {# وحدات} many {# وحدة} other {# وحدة}}"
+  },
+  "reading": {
+    "title": "{count, plural, one {قراءة ملف واحد} two {قراءة ملفين} few {قراءة # ملفات} many {قراءة # ملفًا} other {قراءة # ملف}}",
+    "label": "قراءة",
+    "size": "{kb} ك.ب"
+  },
+  "fileProblem": {
+    "format": "{name} ليس ملف Excel أو CSV.",
+    "size": "{name} يتجاوز 10 م.ب.",
+    "many": "يقبل الاستيراد حتى {max} ملفًا.",
+    "unreadable": "تعذّر على Fusion قراءة هذه الملفات. حاول مرة أخرى."
+  },
+  "understood": {
+    "title": "ما فهمه Fusion",
+    "questions": "{count, plural, one {سؤال واحد} two {سؤالان} few {# أسئلة} many {# سؤالًا} other {# سؤال}}",
+    "startOver": "البدء من جديد",
+    "startOverTitle": "البدء من جديد؟",
+    "startOverBody": "سيتم التخلي عن الملفات وإجاباتك. لم يُستورد أي شيء.",
+    "keep": "المتابعة",
+    "toChart": "العرض على المخطط",
+    "removeFile": "إزالة {name}",
+    "nothing": "لا أشخاص ولا وحدات",
+    "count": {
+      "People": "{count, plural, one {شخص واحد} two {شخصان} few {# أشخاص} many {# شخصًا} other {# شخص}}",
+      "Units": "{count, plural, one {وحدة واحدة} two {وحدتان} few {# وحدات} many {# وحدة} other {# وحدة}}"
+    },
+    "sheetCount": {
+      "People": "الورقة {sheet} · {count, plural, one {شخص واحد} two {شخصان} few {# أشخاص} many {# شخصًا} other {# شخص}}",
+      "Units": "الورقة {sheet} · {count, plural, one {وحدة واحدة} two {وحدتان} few {# وحدات} many {# وحدة} other {# وحدة}}"
+    },
+    "kind": {
+      "People": "أشخاص",
+      "Units": "وحدات",
+      "Unknown": "مستبعدة"
+    },
+    "readByFusion": "قرأه Fusion",
+    "unknownSheet": "الورقة <b>{sheet}</b> · {count, plural, one {صف واحد} two {صفان} few {# صفوف} many {# صفًا} other {# صف}} لا يعرف Fusion موضعها",
+    "leftOut": "مستبعدة",
+    "readAs": {
+      "People": "هؤلاء أشخاص",
+      "Units": "هذه وحدات"
+    },
+    "leftRows": {
+      "left": "{count, plural, one {شخص واحد غادر} two {شخصان غادرا} few {# أشخاص غادروا} many {# شخصًا غادروا} other {# شخص غادروا}}",
+      "oneName": "{count, plural, one {صف واحد باسم واحد} two {صفان باسم واحد} few {# صفوف باسم واحد} many {# صفًا باسم واحد} other {# صف باسم واحد}}",
+      "noName": "{count, plural, one {صف واحد بلا اسم} two {صفان بلا اسم} few {# صفوف بلا اسم} many {# صفًا بلا اسم} other {# صف بلا اسم}}",
+      "unitNoName": "{count, plural, one {وحدة واحدة بلا اسم} two {وحدتان بلا اسم} few {# وحدات بلا اسم} many {# وحدة بلا اسم} other {# وحدة بلا اسم}}",
+      "already": "{count, plural, one {شخص واحد موجود في Fusion} two {شخصان موجودان في Fusion} few {# أشخاص موجودون في Fusion} many {# شخصًا موجودون في Fusion} other {# شخص موجودون في Fusion}}",
+      "decided": "{count, plural, one {شخص واحد استبعدته} two {شخصان استبعدتهما} few {# أشخاص استبعدتهم} many {# شخصًا استبعدتهم} other {# شخص استبعدتهم}}"
+    }
+  },
+  "question": {
+    "title": "هل {header} هو {field}؟",
+    "values": "{values} · {count, plural, one {قيمة واحدة} two {قيمتان} few {# قيم} many {# قيمة} other {# قيمة}}",
+    "yes": "نعم، {field}",
+    "out": "استبعاده",
+    "change": "تغيير",
+    "fieldDone": "{header} هو {field}",
+    "outDone": "{header} مستبعد",
+    "phrase": {
+      "employeeNumber": "الرقم الوظيفي",
+      "personId": "مرجع لكل شخص",
+      "firstName": "الاسم الأول",
+      "lastName": "اسم العائلة",
+      "fullName": "الاسم الكامل",
+      "preferredName": "الاسم المتداول",
+      "workEmail": "البريد الإلكتروني للعمل",
+      "jobTitle": "المسمى الوظيفي",
+      "jobLevel": "مستوى الوظيفة",
+      "jobFamily": "عائلة الوظيفة",
+      "unit": "الوحدة",
+      "manager": "المدير",
+      "place": "المكان",
+      "startDate": "تاريخ الالتحاق",
+      "endDate": "آخر يوم",
+      "status": "ما إذا كان الشخص لا يزال يعمل",
+      "unitCode": "رمز الوحدة",
+      "unitName": "اسم الوحدة",
+      "parentUnit": "الوحدة الأعلى",
+      "unitType": "نوع الوحدة",
+      "unitHead": "مسؤول الوحدة",
+      "out": "مستبعد"
+    },
+    "dates": {
+      "title": "هل يبدأ {example} باليوم؟",
+      "dayFirst": "اليوم أولًا",
+      "monthFirst": "الشهر أولًا",
+      "dayFirstDone": "تواريخ {header} تبدأ باليوم",
+      "monthFirstDone": "تواريخ {header} تبدأ بالشهر"
+    }
+  },
+  "fields": {
+    "out": {
+      "label": "مستبعد"
+    },
+    "employeeNumber": {
+      "label": "الرقم الوظيفي"
+    },
+    "personId": {
+      "label": "المرجع"
+    },
+    "firstName": {
+      "label": "الاسم الأول"
+    },
+    "lastName": {
+      "label": "اسم العائلة"
+    },
+    "fullName": {
+      "label": "الاسم"
+    },
+    "preferredName": {
+      "label": "الاسم المتداول"
+    },
+    "workEmail": {
+      "label": "بريد العمل"
+    },
+    "jobTitle": {
+      "label": "المسمى الوظيفي"
+    },
+    "jobLevel": {
+      "label": "مستوى الوظيفة"
+    },
+    "jobFamily": {
+      "label": "عائلة الوظيفة"
+    },
+    "unit": {
+      "label": "الوحدة"
+    },
+    "manager": {
+      "label": "المدير"
+    },
+    "place": {
+      "label": "المكان"
+    },
+    "startDate": {
+      "label": "تاريخ الالتحاق"
+    },
+    "endDate": {
+      "label": "آخر يوم"
+    },
+    "status": {
+      "label": "الحالة"
+    },
+    "unitCode": {
+      "label": "رمز الوحدة"
+    },
+    "unitName": {
+      "label": "الاسم"
+    },
+    "parentUnit": {
+      "label": "الوحدة الأعلى"
+    },
+    "unitType": {
+      "label": "نوع الوحدة"
+    },
+    "unitHead": {
+      "label": "المسؤول"
+    }
+  },
+  "sheet": {
+    "change": "تغيير معنى {header}",
+    "what": "ما هو {header}؟",
+    "leaveOut": "استبعاده",
+    "fusionsReading": "العودة إلى قراءة Fusion",
+    "noHeader": "بلا عنوان",
+    "more": {
+      "People": "{count, plural, one {شخص آخر} two {شخصان آخران} few {# أشخاص آخرين} many {# شخصًا آخرين} other {# شخص آخرين}}",
+      "Units": "{count, plural, one {وحدة أخرى} two {وحدتان أخريان} few {# وحدات أخرى} many {# وحدة أخرى} other {# وحدة أخرى}}"
+    },
+    "ask": "{field}؟",
+    "leftOut": "مستبعد",
+    "empty": "فارغ",
+    "aiRead": "قرأ Fusion «{header}» على أنه {field}"
+  },
+  "across": {
+    "title": "بين الملفات",
+    "managers": "{count} من {of, plural, one {شخص واحد} two {شخصين} few {# أشخاص} many {# شخصًا} other {# شخص}} لديهم مدير",
+    "foundBy": {
+      "number": "عُثر عليهم بالرقم الوظيفي",
+      "reference": "عُثر عليهم بالمرجع",
+      "email": "عُثر عليهم ببريد العمل",
+      "name": "عُثر عليهم بالاسم",
+      "head": "من مسؤول كل وحدة"
+    },
+    "top": "{name} في القمة",
+    "tops": "{count, plural, one {شخص واحد بلا مدير} two {شخصان بلا مدير} few {# أشخاص بلا مدير} many {# شخصًا بلا مدير} other {# شخص بلا مدير}}",
+    "unitsAll": "وحدة كل شخص موجودة في {file}",
+    "unitsBut": "وحدة كل شخص موجودة في {file}، باستثناء {count, plural, one {شخص واحد} two {شخصين} few {# أشخاص} many {# شخصًا} other {# شخص}}",
+    "unitsFromPeople": "{count, plural, one {وحدة واحدة} two {وحدتان} few {# وحدات} many {# وحدة} other {# وحدة}}، من عمود الوحدة لدى الأشخاص",
+    "unitsFromPeopleDetail": "تحت {company}",
+    "rootAdded": "{count} وحدات بلا وحدة أعلى: يضعها Fusion تحت {company}",
+    "jobs": "{titles, plural, one {مسمى واحد يصبح} two {مسميان يصبحان} few {# مسميات تصبح} many {# مسمى تصبح} other {# مسمى تصبح}} {count, plural, one {وظيفة واحدة} two {وظيفتين} few {# وظائف} many {# وظيفة} other {# وظيفة}}",
+    "jobsFamilies": "{titles, plural, one {مسمى واحد يصبح} two {مسميان يصبحان} few {# مسميات تصبح} many {# مسمى تصبح} other {# مسمى تصبح}} {count, plural, one {وظيفة واحدة} two {وظيفتين} few {# وظائف} many {# وظيفة} other {# وظيفة}} في {families, plural, one {عائلة واحدة} two {عائلتين} few {# عائلات} many {# عائلة} other {# عائلة}}",
+    "sameJob": "{count, plural, one {قد يكون مسميان الوظيفة نفسها} other {قد تكون # أزواج من المسميات الوظيفة نفسها}}",
+    "onChart": "على المخطط",
+    "you": "{name}، الصف {row}، هو أنت",
+    "youDetail": "رُبط بحسابك عبر بريد العمل",
+    "places": "{count, plural, one {مكان واحد} two {مكانان} few {# أماكن} many {# مكانًا} other {# مكان}}",
+    "left": "مستبعد"
+  },
+  "left": {
+    "columns": "{count, plural, one {العمود {names}} other {الأعمدة {names}}}",
+    "left": "{count, plural, one {شخص واحد غادر} two {شخصان غادرا} few {# أشخاص غادروا} many {# شخصًا غادروا} other {# شخص غادروا}}",
+    "already": "{count, plural, one {شخص واحد موجود في Fusion} two {شخصان موجودان في Fusion} few {# أشخاص موجودون في Fusion} many {# شخصًا موجودون في Fusion} other {# شخص موجودون في Fusion}}",
+    "decided": "{count, plural, one {شخص واحد استبعدته} two {شخصان استبعدتهما} few {# أشخاص استبعدتهم} many {# شخصًا استبعدتهم} other {# شخص استبعدتهم}}",
+    "oneName": "{count, plural, one {صف واحد باسم واحد} two {صفان باسم واحد} few {# صفوف باسم واحد} many {# صفًا باسم واحد} other {# صف باسم واحد}}",
+    "noName": "{count, plural, one {صف واحد بلا اسم} two {صفان بلا اسم} few {# صفوف بلا اسم} many {# صفًا بلا اسم} other {# صف بلا اسم}}",
+    "unitNoName": "{count, plural, one {وحدة واحدة بلا اسم} two {وحدتان بلا اسم} few {# وحدات بلا اسم} many {# وحدة بلا اسم} other {# وحدة بلا اسم}}",
+    "sheet": "{count, plural, one {صف واحد في ورقة لا يعرف Fusion موضعها} other {# صفوف في أوراق لا يعرف Fusion موضعها}}"
+  },
+  "chart": {
+    "back": "ما فهمه Fusion",
+    "title": "مراجعة {company}",
+    "bringIn": "{count, plural, one {استيراد شخص واحد} two {استيراد شخصين} few {استيراد # أشخاص} many {استيراد # شخصًا} other {استيراد # شخص}}",
+    "bringUnits": "{count, plural, one {استيراد وحدة واحدة} two {استيراد وحدتين} few {استيراد # وحدات} many {استيراد # وحدة} other {استيراد # وحدة}}",
+    "failure": {
+      "changed": "تغيّرت الشركة أو الملفات منذ عرض المخطط. راجعه مجددًا ثم استورد.",
+      "failed": "تعذّر على Fusion استيراد الشركة. لم يُستورد أي شيء. حاول مرة أخرى."
+    },
+    "views": "طرق العرض",
+    "tab": {
+      "people": "الأشخاص · {count}",
+      "units": "الوحدات · {count}",
+      "jobs": "الوظائف · {count}"
+    },
+    "find": "البحث عن شخص",
+    "toCheck": "للتحقق",
+    "left": "متبقٍ {count}",
+    "allChecked": "تم التحقق من الكل",
+    "takeLeans": "اتباع اقتراح Fusion في الباقي",
+    "noPeople": "لا أحد جديد لاستيراده",
+    "teamOf": "{name} · {count, plural, one {مرؤوس مباشر واحد} two {مرؤوسان مباشران} few {# مرؤوسين مباشرين} many {# مرؤوسًا مباشرًا} other {# مرؤوس مباشر}}",
+    "more": "{count} آخرون",
+    "flag": "للتحقق",
+    "you": "أنت",
+    "direct": "{count} مباشرون",
+    "changedByYou": "غيّرته أنت",
+    "noUnits": "لا وحدات",
+    "new": "جديدة",
+    "inFusion": "موجودة في Fusion",
+    "unit": "وحدة",
+    "noFamily": "بلا عائلة",
+    "allJobs": "الوظائف",
+    "jobs": "{count, plural, one {وظيفة واحدة} two {وظيفتان} few {# وظائف} many {# وظيفة} other {# وظيفة}}",
+    "fromTitles": "من {count} مسميات",
+    "lookAlike": "يشبه مسمى آخر",
+    "crumb": "المراجعة"
+  },
+  "check": {
+    "theFiles": "الملفات",
+    "unitMissing": {
+      "one": "وحدة {name} ليست في {file}",
+      "many": "وحدة {count} أشخاص ليست في {file}"
+    },
+    "unitParent": "الوحدة الأعلى من {unit} ليست في الملفات",
+    "managerMissing": "مدير {name} ليس في الملفات",
+    "twice": {
+      "manager": "لدى {name} مديران",
+      "unit": "لدى {name} وحدتان",
+      "jobTitle": "لدى {name} مسميان وظيفيان",
+      "jobLevel": "لدى {name} مستويان",
+      "jobFamily": "لدى {name} عائلتا وظائف",
+      "place": "لدى {name} مكانان",
+      "startDate": "لدى {name} تاريخا التحاق"
+    },
+    "sameJob": "مسميان يبدوان وظيفة واحدة",
+    "managerLoop": "{names} يتبع كل منهم الآخر",
+    "noStart": {
+      "one": "ليس لدى {name} تاريخ التحاق",
+      "many": "ليس لدى {count} أشخاص تاريخ التحاق"
+    },
+    "noTitle": {
+      "one": "ليس لدى {name} مسمى وظيفي",
+      "many": "ليس لدى {count} أشخاص مسمى وظيفي"
+    },
+    "says": "يذكر {file} القيمة {value}",
+    "fileSays": "يذكر الملف {value}",
+    "disagree": "الملفات غير متفقة",
+    "option": {
+      "addUnit": "إضافة {name}",
+      "underRoot": "وضعها تحت {company}",
+      "noManager": "بلا مدير",
+      "merge": "جعلهما وظيفة واحدة",
+      "keep": "الإبقاء على الاثنين",
+      "cut": "{name} بلا مدير",
+      "leaveOut": "استبعادهم",
+      "startOn": "بدء عملهم في {date}",
+      "giveJob": "منحهم وظيفة {title}"
+    },
+    "from": {
+      "closest": "الأقرب",
+      "new": "وحدة جديدة"
+    }
+  },
+  "say": {
+    "label": "هل هناك خطأ آخر؟ قله",
+    "example": "{name} يتبع {manager}",
+    "exampleFallback": "رانية تعمل في تونس",
+    "show": "عرض",
+    "notUnderstood": "لم يعرف Fusion أين يضع ذلك. اذكر شخصًا وما يتغيّر، مثل «رانية تعمل في تونس».",
+    "noManager": "بلا مدير",
+    "nothing": "لا شيء",
+    "notThat": "ليس هذا",
+    "apply": "تطبيق",
+    "changed": "غيّرته أنت، لا الملف",
+    "undo": "تراجع"
+  },
+  "bring": {
+    "title": "جارٍ استيراد {company}",
+    "doneTitle": "{company} في Fusion",
+    "doneMeta": "اليوم الساعة {time} · من {files}",
+    "counts": {
+      "people": "{count, plural, one {شخص} two {شخصان} few {أشخاص} many {شخصًا} other {شخص}}",
+      "units": "{count, plural, one {وحدة} two {وحدتان} few {وحدات} many {وحدة} other {وحدة}}",
+      "jobs": "{count, plural, one {وظيفة} two {وظيفتان} few {وظائف} many {وظيفة} other {وظيفة}}",
+      "places": "{count, plural, one {مكان} two {مكانان} few {أماكن} many {مكانًا} other {مكان}}",
+      "lines": "{count, plural, one {علاقة تبعية} two {علاقتا تبعية} few {علاقات تبعية} many {علاقة تبعية} other {علاقة تبعية}}"
+    },
+    "facts": {
+      "units": "{count, plural, one {وحدة واحدة} two {وحدتان} few {# وحدات} many {# وحدة} other {# وحدة}}",
+      "jobs": "{count, plural, one {وظيفة واحدة} two {وظيفتان} few {# وظائف} many {# وظيفة} other {# وظيفة}}",
+      "people": "{count} من {of, plural, one {شخص واحد} two {شخصين} few {# أشخاص} many {# شخصًا} other {# شخص}}",
+      "lines": "{count} من {of, plural, one {علاقة تبعية واحدة} two {علاقتي تبعية} few {# علاقات تبعية} many {# علاقة تبعية} other {# علاقة تبعية}}"
+    },
+    "leave": "يمكنك مغادرة هذه الصفحة. يواصل Fusion العمل.",
+    "next": {
+      "title": "التالي: دعوة موظفيك",
+      "nobody": "لم تُرسل أي دعوة بعد",
+      "orgChart": "فتح المخطط التنظيمي",
+      "invite": "دعوة موظفيك"
+    },
+    "worth": {
+      "title": "يستحق نظرة",
+      "left": "مستبعد",
+      "decided": "{count, plural, one {أمر واحد قررته بدل الملفات} two {أمران قررتهما بدل الملفات} few {# أمور قررتها بدل الملفات} many {# أمرًا قررتها بدل الملفات} other {# أمر قررتها بدل الملفات}}",
+      "decidedNames": "منها {names}",
+      "noEmail": "{count, plural, one {شخص واحد بلا بريد عمل} two {شخصان بلا بريد عمل} few {# أشخاص بلا بريد عمل} many {# شخصًا بلا بريد عمل} other {# شخص بلا بريد عمل}}",
+      "noEmailDetail": "لا يمكن دعوتهم قبل أن يكون لديهم بريد",
+      "noPlace": "{count, plural, one {شخص واحد بلا مكان} two {شخصان بلا مكان} few {# أشخاص بلا مكان} many {# شخصًا بلا مكان} other {# شخص بلا مكان}}",
+      "seeWho": "عرض من هم"
+    }
+  }
+}

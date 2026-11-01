@@ -2203,22 +2203,29 @@ namespace EY.HRPlatform.CoreHR.Infrastructure.Persistence.Migrations
                     b.ToTable("WorkforceChangeRequests", "corehr");
                 });
 
-            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.Employees.Import.WorkforceImportApplyOperation", b =>
+            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.CompanyImport.CompanyImportSession", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ActorDisplayName")
-                        .IsRequired()
+                    b.Property<string>("BringInByDisplayName")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
-                    b.Property<Guid>("ActorUserId")
+                    b.Property<Guid?>("BringInByUserId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("CompletedAt")
+                    b.Property<DateTime?>("BringInRequestedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("BroughtInAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -2227,812 +2234,31 @@ namespace EY.HRPlatform.CoreHR.Infrastructure.Persistence.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
-                    b.Property<string>("FailureReason")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
+                    b.Property<string>("DecisionsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("LastFailure")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
 
                     b.Property<DateTime?>("LockedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("LockedBy")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("ProvenanceJson")
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("RequestedFingerprint")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
-
-                    b.Property<string>("Phase")
-                        .IsRequired()
-                        .HasMaxLength(24)
-                        .HasColumnType("character varying(24)");
-
-                    b.Property<int>("ProcessedCount")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("QueuedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ResultJson")
                         .HasColumnType("jsonb");
 
-                    b.Property<string>("ReviewOutdatedJson")
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("ReviewedProposalFingerprint")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasDefaultValue("");
-
-                    b.Property<Guid>("SessionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("StartedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("TotalCount")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<uint>("Version")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("xid")
-                        .HasColumnName("xmin");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Status")
-                        .HasDatabaseName("IX_WorkforceImportApplyOperations_Status");
-
-                    b.HasIndex("TenantId", "SessionId")
-                        .IsUnique()
-                        .HasDatabaseName("UX_WorkforceImportApplyOperations_Tenant_Session");
-
-                    b.ToTable("WorkforceImportApplyOperations", "corehr");
-                });
-
-            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.Employees.Import.WorkforceImportRow", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("CandidateEmployeeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Classification")
-                        .IsRequired()
-                        .HasMaxLength(24)
-                        .HasColumnType("character varying(24)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<bool>("HasWarning")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("IssueStateJson")
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("NormalizedProposalJson")
-                        .HasColumnType("jsonb");
-
-                    b.Property<DateTime?>("PayloadPurgedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ResolvedManagerKey")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<Guid?>("ResolvedOrgUnitId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("SearchText")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("SessionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("SourceCellsJson")
-                        .HasColumnType("jsonb");
-
-                    b.Property<int>("SourceRowNumber")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SessionId");
-
-                    b.HasIndex("TenantId", "SessionId", "Classification")
-                        .HasDatabaseName("IX_WorkforceImportRows_Tenant_Session_Classification");
-
-                    b.HasIndex("TenantId", "SessionId", "SourceRowNumber")
-                        .IsUnique()
-                        .HasDatabaseName("UX_WorkforceImportRows_Tenant_Session_SourceRowNumber");
-
-                    b.ToTable("WorkforceImportRows", "corehr");
-                });
-
-            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.Employees.Import.WorkforceImportSemanticAttempt", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Abstentions")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("AttemptOrdinal")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("DataContractVersion")
-                        .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)");
-
-                    b.Property<string>("DiagnosticCode")
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)");
-
-                    b.Property<string>("EligibleIssueKeysJson")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("FailureCategory")
-                        .HasMaxLength(24)
-                        .HasColumnType("character varying(24)");
-
-                    b.Property<string>("InputFingerprint")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<int?>("InputTokens")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("LatencyMilliseconds")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Model")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<int?>("OutputTokens")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("PromptVersion")
-                        .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)");
-
-                    b.Property<string>("Provider")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<string>("ProviderResponseId")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<string>("ProviderSystemFingerprint")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<int>("QuestionsSubmitted")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("RequestedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ResultContractVersion")
-                        .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)");
-
-                    b.Property<DateTime?>("RetryAfter")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("RetryCount")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid?>("ReusedFromAttemptId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("SessionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("SourceFingerprint")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
-
-                    b.Property<int>("SuggestionsAccepted")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("SuggestionsApplied")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("SuggestionsJson")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<int>("SuggestionsOverridden")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("SuggestionsRejected")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("SuggestionsReturned")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Trigger")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<int>("Version")
-                        .IsConcurrencyToken()
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SessionId");
-
-                    b.HasIndex("TenantId", "InputFingerprint", "Status")
-                        .HasDatabaseName("IX_WorkforceImportSemanticAttempts_Tenant_Input_Status");
-
-                    b.HasIndex("TenantId", "SessionId", "Status")
-                        .HasDatabaseName("IX_WorkforceImportSemanticAttempts_Tenant_Session_Status");
-
-                    b.HasIndex("TenantId", "SessionId", "InputFingerprint", "AttemptOrdinal")
-                        .IsUnique()
-                        .HasDatabaseName("UX_WorkforceImportSemanticAttempts_Tenant_Session_Fingerprint_Ordinal");
-
-                    b.ToTable("WorkforceImportSemanticAttempts", "corehr");
-                });
-
-            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.Employees.Import.WorkforceImportSession", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateOnly>("BaselineDate")
-                        .HasColumnType("date");
-
-                    b.Property<int>("BlockedCount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("CommitResultJson")
-                        .HasColumnType("jsonb");
-
-                    b.Property<DateTime?>("CommittedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CommittedByDisplayName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<Guid?>("CommittedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("CreateCount")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("CreationFingerprint")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<Guid>("CreationToken")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("DecisionRevision")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("DecisionsUpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("DecisionsUpdatedByDisplayName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<Guid?>("DecisionsUpdatedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("DiscardedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("DiscardedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("ExistingCount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("FinalProposalFingerprint")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<string>("FinalProvenanceJson")
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("LastUpdatedByDisplayName")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<Guid>("LastUpdatedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("MappingPlanJson")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("jsonb")
-                        .HasDefaultValueSql("'{}'::jsonb");
-
-                    b.Property<bool>("MatchComplete")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("NotImportedCount")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("PayloadPurgedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ProposalFingerprint")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<DateTime?>("PublishingStartedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ResolutionsJson")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("jsonb")
-                        .HasDefaultValueSql("'{}'::jsonb");
-
-                    b.Property<string>("SelectedSheetName")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<string>("StartedByDisplayName")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<Guid>("StartedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<uint>("Version")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("xid")
-                        .HasColumnName("xmin");
-
-                    b.Property<int>("WarningCount")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TenantId", "CreationToken")
-                        .IsUnique()
-                        .HasDatabaseName("UX_WorkforceImportSessions_Tenant_CreationToken");
-
-                    b.HasIndex("TenantId", "Status", "UpdatedAt")
-                        .HasDatabaseName("IX_WorkforceImportSessions_Tenant_Status_UpdatedAt");
-
-                    b.ToTable("WorkforceImportSessions", "corehr");
-                });
-
-            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.Employees.Import.WorkforceImportSource", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<long>("ByteLength")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("ColumnCount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ColumnsJson")
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("OriginalFileName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<DateTime?>("PayloadPurgedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<byte[]>("RawBytes")
-                        .HasColumnType("bytea");
-
-                    b.Property<int>("RowCount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("SelectedRange")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<string>("SelectedSheetName")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<Guid>("SessionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Sha256")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<string>("SourceFormat")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SessionId")
-                        .IsUnique();
-
-                    b.HasIndex("TenantId")
-                        .HasDatabaseName("IX_WorkforceImportSources_TenantId");
-
-                    b.ToTable("WorkforceImportSources", "corehr");
-                });
-
-            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.OrganizationImport.OrganizationImportSemanticAttempt", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Abstentions")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("AttemptOrdinal")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("DataContractVersion")
-                        .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)");
-
-                    b.Property<string>("DiagnosticCode")
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)");
-
-                    b.Property<string>("EligibleIssueKeysJson")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("FailureCategory")
-                        .HasMaxLength(24)
-                        .HasColumnType("character varying(24)");
-
-                    b.Property<string>("InputFingerprint")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<int?>("InputTokens")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("LatencyMilliseconds")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Model")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<int?>("OutputTokens")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("PromptVersion")
-                        .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)");
-
-                    b.Property<string>("Provider")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<string>("ProviderResponseId")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<string>("ProviderSystemFingerprint")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<int>("QuestionsSubmitted")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("RequestedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ResultContractVersion")
-                        .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)");
-
-                    b.Property<DateTime?>("RetryAfter")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("RetryCount")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid?>("ReusedFromAttemptId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("SessionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("SourceFingerprint")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
-
-                    b.Property<int>("SuggestionsAccepted")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("SuggestionsApplied")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("SuggestionsJson")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<int>("SuggestionsOverridden")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("SuggestionsRejected")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("SuggestionsReturned")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Trigger")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<int>("Version")
-                        .IsConcurrencyToken()
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SessionId");
-
-                    b.HasIndex("TenantId", "InputFingerprint", "Status")
-                        .HasDatabaseName("IX_OrganizationImportSemanticAttempts_Tenant_Input_Status");
-
-                    b.HasIndex("TenantId", "SessionId", "Status")
-                        .HasDatabaseName("IX_OrganizationImportSemanticAttempts_Tenant_Session_Status");
-
-                    b.HasIndex("TenantId", "SessionId", "InputFingerprint", "AttemptOrdinal")
-                        .IsUnique()
-                        .HasDatabaseName("UX_OrganizationImportSemanticAttempts_Tenant_Session_Fingerprint_Ordinal");
-
-                    b.ToTable("OrganizationImportSemanticAttempts", "corehr");
-                });
-
-            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.OrganizationImport.OrganizationImportSession", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AppliedMappingPlanJson")
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("CommitResultJson")
-                        .HasColumnType("jsonb");
-
-                    b.Property<DateTime?>("CommittedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CommittedByDisplayName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<Guid?>("CommittedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("CreationFingerprint")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<Guid>("CreationToken")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("DecisionRevision")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("DecisionsJson")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("jsonb")
-                        .HasDefaultValueSql("'{}'::jsonb");
-
-                    b.Property<DateTime?>("DecisionsUpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("DecisionsUpdatedByDisplayName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<Guid?>("DecisionsUpdatedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("DiscardedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("DiscardedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateOnly>("EffectiveDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("FinalProvenanceJson")
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("FinalSemanticDigest")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<string>("LastUpdatedByDisplayName")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<Guid>("LastUpdatedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("MappingConfirmationJson")
-                        .HasColumnType("jsonb");
-
                     b.Property<string>("StartedByDisplayName")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -3064,17 +2290,12 @@ namespace EY.HRPlatform.CoreHR.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TenantId", "CreationToken")
-                        .IsUnique()
-                        .HasDatabaseName("UX_OrganizationImportSessions_Tenant_CreationToken");
+                    b.HasIndex("TenantId", "Status");
 
-                    b.HasIndex("TenantId", "Status", "UpdatedAt")
-                        .HasDatabaseName("IX_OrganizationImportSessions_Tenant_Status_UpdatedAt");
-
-                    b.ToTable("OrganizationImportSessions", "corehr");
+                    b.ToTable("CompanyImportSessions", "corehr");
                 });
 
-            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.OrganizationImport.OrganizationImportSource", b =>
+            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.CompanyImport.CompanyImportSource", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -3083,13 +2304,11 @@ namespace EY.HRPlatform.CoreHR.Infrastructure.Persistence.Migrations
                     b.Property<long>("ByteLength")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("ColumnCount")
-                        .HasColumnType("integer");
+                    b.Property<string>("CellsJson")
+                        .HasColumnType("jsonb");
 
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
+                    b.Property<DateTime?>("CellsPurgedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -3098,29 +2317,33 @@ namespace EY.HRPlatform.CoreHR.Infrastructure.Persistence.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
-                    b.Property<string>("OriginalFileName")
+                    b.Property<Guid>("FileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FileName")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<DateTime?>("PayloadPurgedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("Format")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
 
-                    b.Property<byte[]>("RawBytes")
-                        .HasColumnType("bytea");
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ReadingsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
 
                     b.Property<int>("RowCount")
                         .HasColumnType("integer");
-
-                    b.Property<string>("SelectedRange")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<string>("SelectedSheetName")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
 
                     b.Property<Guid>("SessionId")
                         .HasColumnType("uuid");
@@ -3130,13 +2353,10 @@ namespace EY.HRPlatform.CoreHR.Infrastructure.Persistence.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
-                    b.Property<string>("SourceFormat")
+                    b.Property<string>("SheetName")
                         .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
-
-                    b.Property<string>("SourceTableJson")
-                        .HasColumnType("jsonb");
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
@@ -3150,78 +2370,11 @@ namespace EY.HRPlatform.CoreHR.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SessionId")
-                        .IsUnique();
+                    b.HasIndex("SessionId");
 
-                    b.HasIndex("TenantId")
-                        .HasDatabaseName("IX_OrganizationImportSources_TenantId");
+                    b.HasIndex("TenantId", "SessionId");
 
-                    b.ToTable("OrganizationImportSources", "corehr");
-                });
-
-            modelBuilder.Entity("EY.HRPlatform.CoreHR.Infrastructure.Imports.Semantic.ImportSemanticConsent", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("DataContractVersion")
-                        .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)");
-
-                    b.Property<DateTime>("GrantedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("GrantedByDisplayName")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<Guid>("GrantedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Provider")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<DateTime?>("RevokedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("SessionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TenantId", "Provider", "DataContractVersion")
-                        .IsUnique()
-                        .HasDatabaseName("UX_ImportSemanticConsents_Tenant_Provider_Contract_Active")
-                        .HasFilter("\"RevokedAt\" IS NULL AND \"SessionId\" IS NULL");
-
-                    b.HasIndex("TenantId", "SessionId", "Provider", "DataContractVersion")
-                        .IsUnique()
-                        .HasDatabaseName("UX_ImportSemanticConsents_Session_Provider_Contract_Active")
-                        .HasFilter("\"RevokedAt\" IS NULL AND \"SessionId\" IS NOT NULL");
-
-                    b.ToTable("ImportSemanticConsents", "corehr");
+                    b.ToTable("CompanyImportSources", "corehr");
                 });
 
             modelBuilder.Entity("EY.HRPlatform.CoreHR.Domain.Entities.Checklist", b =>
@@ -3519,53 +2672,13 @@ namespace EY.HRPlatform.CoreHR.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.Employees.Import.WorkforceImportRow", b =>
+            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.CompanyImport.CompanyImportSource", b =>
                 {
-                    b.HasOne("EY.HRPlatform.CoreHR.Features.Employees.Import.WorkforceImportSession", null)
-                        .WithMany("Rows")
+                    b.HasOne("EY.HRPlatform.CoreHR.Features.CompanyImport.CompanyImportSession", null)
+                        .WithMany("Sources")
                         .HasForeignKey("SessionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.Employees.Import.WorkforceImportSemanticAttempt", b =>
-                {
-                    b.HasOne("EY.HRPlatform.CoreHR.Features.Employees.Import.WorkforceImportSession", null)
-                        .WithMany()
-                        .HasForeignKey("SessionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.Employees.Import.WorkforceImportSource", b =>
-                {
-                    b.HasOne("EY.HRPlatform.CoreHR.Features.Employees.Import.WorkforceImportSession", "Session")
-                        .WithOne("Source")
-                        .HasForeignKey("EY.HRPlatform.CoreHR.Features.Employees.Import.WorkforceImportSource", "SessionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Session");
-                });
-
-            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.OrganizationImport.OrganizationImportSemanticAttempt", b =>
-                {
-                    b.HasOne("EY.HRPlatform.CoreHR.Features.OrganizationImport.OrganizationImportSession", null)
-                        .WithMany()
-                        .HasForeignKey("SessionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.OrganizationImport.OrganizationImportSource", b =>
-                {
-                    b.HasOne("EY.HRPlatform.CoreHR.Features.OrganizationImport.OrganizationImportSession", "Session")
-                        .WithOne("Source")
-                        .HasForeignKey("EY.HRPlatform.CoreHR.Features.OrganizationImport.OrganizationImportSource", "SessionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Session");
                 });
 
             modelBuilder.Entity("EY.HRPlatform.CoreHR.Domain.Entities.Checklist", b =>
@@ -3592,18 +2705,9 @@ namespace EY.HRPlatform.CoreHR.Infrastructure.Persistence.Migrations
                     b.Navigation("Effects");
                 });
 
-            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.Employees.Import.WorkforceImportSession", b =>
+            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.CompanyImport.CompanyImportSession", b =>
                 {
-                    b.Navigation("Rows");
-
-                    b.Navigation("Source")
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("EY.HRPlatform.CoreHR.Features.OrganizationImport.OrganizationImportSession", b =>
-                {
-                    b.Navigation("Source")
-                        .IsRequired();
+                    b.Navigation("Sources");
                 });
 #pragma warning restore 612, 618
         }

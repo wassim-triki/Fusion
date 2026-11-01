@@ -231,6 +231,7 @@ export function translateOrganizationError(error: unknown): OrganizationProblem 
 
 export const coreOrganizationPaths = {
   hierarchy: () => "/corehr/organization/hierarchy",
+  export: () => "/corehr/organization/export",
   unit: (id: string) => `/corehr/organization/units/${id}`,
   search: () => "/corehr/organization/search",
   history: (id: string) => `/corehr/organization/units/${id}/history`,
@@ -271,6 +272,13 @@ function withIfMatch(version: number) {
 /** Canonical Organization transport. UI state and cache behavior remain feature-owned. */
 export function createCoreOrganizationApi(client: ApiClient) {
   return {
+    /** The structure on a date as a workbook the import reads back. */
+    exportStructure: (asOf: string, signal?: AbortSignal) =>
+      client.get<Blob>(coreOrganizationPaths.export(), {
+        params: { asOf: organizationCalendarDate(asOf) },
+        responseType: "blob",
+        signal,
+      }),
     hierarchy: (asOf: string, signal?: AbortSignal) =>
       client.get<OrganizationHierarchyDto>(coreOrganizationPaths.hierarchy(), {
         params: { asOf: organizationCalendarDate(asOf) },

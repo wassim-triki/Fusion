@@ -238,6 +238,35 @@
     },
     "datePicker": {
       "pick": "اختر تاريخًا"
+    },
+    "team": {
+      "title": "فريقك",
+      "people": "{count, plural, =0 {لا أحد بعد} one {شخص واحد} two {شخصان} few {# أشخاص} many {# شخصًا} other {# شخص}}",
+      "withJoiner": "{people}، و{name} ابتداءً من {date}",
+      "withJoiners": "{people}، و{count} ينضمون",
+      "you": "أنت",
+      "chart": "فريقك",
+      "tabsLabel": "صفحة فريقك",
+      "next": {
+        "Joins": "يبدأ {date}",
+        "MovesIn": "ينضم {date}",
+        "Leaves": "آخر يوم {date}",
+        "MovesOut": "ينتقل {date}",
+        "NewJob": "وظيفة جديدة {date}",
+        "Anniversary": "{count, plural, one {سنة} two {سنتان} few {# سنوات} many {# سنة} other {# سنة}} {date}",
+        "Birthday": "عيد ميلاد {date}",
+        "oneOnOne": "لقاء فردي {date}",
+        "oneOnOneToday": "لقاء فردي اليوم {time}",
+        "atRisk": "هدف معرّض للخطر",
+        "offTrack": "هدف متأخر",
+        "none": "لا شيء قادم"
+      },
+      "givePraise": "قدّم ثناءً",
+      "tabs": {
+        "overview": "نظرة عامة",
+        "performance": "الأداء",
+        "orgChart": "الهيكل التنظيمي"
+      }
     }
   }
 }

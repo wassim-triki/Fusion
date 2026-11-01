@@ -9,6 +9,8 @@ export interface LinkTab {
   href: string;
   /** How many the tab holds, said after its label (People's views). */
   count?: number;
+  /** In another module (another app): a full navigation instead of a client-side one. */
+  external?: boolean;
 }
 
 export interface LinkTabsProps {
@@ -28,11 +30,12 @@ export function LinkTabs({ label, tabs, current, className }: LinkTabsProps) {
     <nav aria-label={label} className={cn("flex gap-1 overflow-x-auto", className)}>
       {tabs.map((tab) => {
         const active = tab.key === current;
+        const Anchor = tab.external ? "a" : Link;
         return (
-          <Link
+          <Anchor
             key={tab.key}
             href={tab.href}
-            scroll={false}
+            {...(tab.external ? {} : { scroll: false })}
             aria-current={active ? "page" : undefined}
             className={cn(
               "inline-flex h-9 shrink-0 items-center rounded-full border px-3.5 type-label whitespace-nowrap outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
@@ -45,7 +48,7 @@ export function LinkTabs({ label, tabs, current, className }: LinkTabsProps) {
             {tab.count !== undefined ? (
               <span className={cn("ms-1.5 tabular-nums", active ? "text-primary-ink" : "text-muted-foreground/80")}>{tab.count}</span>
             ) : null}
-          </Link>
+          </Anchor>
         );
       })}
     </nav>

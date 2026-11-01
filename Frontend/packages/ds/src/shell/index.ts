@@ -128,3 +128,5 @@ export type {
   SettingsRowProps,
   SettingsSaveBarProps,
 } from "./settings";
+export { TeamBand, TeamBandSkeleton, teamNext } from "./team-band";
+export type { TeamBandEventKind, TeamBandPerson, TeamBandProps, TeamBandTab, TeamNext } from "./team-band";

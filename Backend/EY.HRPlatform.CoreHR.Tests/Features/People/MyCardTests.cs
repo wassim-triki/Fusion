@@ -101,7 +101,7 @@ public sealed class MyCardTests
         return new ClaimsPrincipal(new ClaimsIdentity(claims, "Test"));
     }
 
-    private static MeController Controller(ClaimsPrincipal caller, Mock<ISender> sender) => new(sender.Object)
+    private static MeController Controller(ClaimsPrincipal caller, Mock<ISender> sender) => new(sender.Object, Mock.Of<EY.HRPlatform.CoreHR.Features.Security.ICoreAccessPolicyService>())
     {
         ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = caller } },
     };

@@ -317,7 +317,8 @@ function AboutSection({
 
 const SOURCE_ICON: Record<Source, typeof Users> = { performance: BarChart3, core: Users };
 
-function UpcomingRow({ item }: { item: UpcomingItem }) {
+/** One Coming up row: when, what, and the module it comes from (the person page and the Team page). */
+export function UpcomingRow({ item }: { item: UpcomingItem }) {
   const t = useTranslations("profile.overview");
   const Icon = SOURCE_ICON[item.source];
   const body = (

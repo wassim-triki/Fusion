@@ -65,3 +65,4 @@ export {
   type SettingsConflictSaver,
   type UseFusionSettingsOptions,
 } from "./useFusionSettings";
+export { useMyTeam, useTeamBand, useTeamPerformance, type TeamBandMember } from "./useTeam";

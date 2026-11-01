@@ -6,6 +6,7 @@ import {
   PageLoading,
   PageSkeleton,
   SettingsSkeleton,
+  TeamBandSkeleton,
 } from "@repo/ds/shell";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -95,11 +96,9 @@ export function MyProfilePageSkeleton() {
 }
 
 export function TeamPageSkeleton() {
-  const t = useTranslations("frame.skeletons");
   return (
-    <PageContainer className="space-y-6">
-      <PageHeader title={t("myTeam")} description={t("loadingTeam")} />
-      <PageLoading rows={6} label={t("loadingYourTeam")} />
+    <PageContainer width="wide" className="max-w-6xl pb-16">
+      <TeamBandSkeleton />
     </PageContainer>
   );
 }
@@ -345,7 +344,7 @@ export function getRoutePageSkeleton(corePath: string): ReactNode {
   if (corePath === "/people/add") return <PersonTaskPageSkeleton />;
   if (corePath.startsWith("/people/")) return <EmployeeProfilePageSkeleton />;
   if (corePath === "/profile") return <MyProfilePageSkeleton />;
-  if (corePath === "/team") return <TeamPageSkeleton />;
+  if (corePath === "/team" || corePath.startsWith("/team/")) return <TeamPageSkeleton />;
   if (corePath === "/organization/import") return <ImportUploadSkeleton />;
   if (corePath.startsWith("/organization/import/")) {
     const step = corePath.split("/")[4];

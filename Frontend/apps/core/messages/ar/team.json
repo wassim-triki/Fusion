@@ -1,21 +1,42 @@
 {
-  "title": "فريقي",
-  "description": "المرؤوسون المباشرون.",
-  "goToProfile": "الانتقال إلى ملفك",
-  "goToOverview": "الانتقال إلى النظرة العامة",
-  "noTeam": {
-    "title": "لا فريق لإدارته",
-    "description": "تعرض مساحة الفريق الأشخاص الذين يتبعونك. ليس لديك مرؤوسون مباشرون حاليًا."
+  "error": "تعذّر تحميل فريقك",
+  "retry": "حاول مجددًا",
+  "noTeam": "لا أحد يتبع لك بعد",
+  "firstWeek": "الأسبوع الأول لـ{name}",
+  "rail": {
+    "label": "عن فريقك",
+    "yourManager": "مديرك",
+    "places": "المواقع",
+    "openRoles": "الوظائف الشاغرة",
+    "none": "لا شيء",
+    "from": "ابتداءً من {date}",
+    "showOnChart": "اعرض في الهيكل التنظيمي"
   },
-  "error": {
-    "title": "تعذّر تحميل الفريق",
-    "description": "تعذّر تحميل فريقك الآن. أعد المحاولة بعد قليل."
+  "comingUp": {
+    "title": "قريبًا",
+    "window": "الأيام الثلاثون القادمة",
+    "empty": "لا شيء في الأيام الثلاثين القادمة",
+    "today": "اليوم",
+    "joins": "ينضم {name}",
+    "joinsMeta": "{job} · الأسبوع الأول أدناه",
+    "movesIn": "ينضم {name} إلى الفريق",
+    "leaves": "آخر يوم لـ{name}",
+    "movesOut": "ينتقل {name} إلى فريق آخر",
+    "newJob": "يبدأ {name} بوظيفة {job}",
+    "anniversary": "{name}: {count, plural, one {سنة} two {سنتان} few {# سنوات} many {# سنة} other {# سنة}} هنا",
+    "anniversaryMeta": "ذكرى الانضمام",
+    "birthday": "عيد ميلاد {name}",
+    "oneOnOne": "لقاء فردي مع {name}",
+    "agenda": "{count, plural, =0 {لا شيء على جدول الأعمال بعد} one {بند واحد على جدول الأعمال} two {بندان على جدول الأعمال} few {# بنود على جدول الأعمال} many {# بندًا على جدول الأعمال} other {# بند على جدول الأعمال}}"
   },
-  "directReports": "المرؤوسون المباشرون",
-  "count": "{count, plural, one {مرؤوس مباشر واحد} two {مرؤوسان مباشران} other {# مرؤوسين مباشرين}}",
-  "empty": {
-    "title": "لا مرؤوسين مباشرين",
-    "description": "لا يتبعك أي موظف حاليًا."
-  },
-  "showInChart": "عرض في الهيكل التنظيمي"
+  "year": {
+    "title": "عام الفريق",
+    "performanceTab": "تبويب الأداء",
+    "objectives": "{count, plural, one {هدف} two {هدفان} few {أهداف} many {هدفًا} other {هدف}}",
+    "updated": "{updated} من {people} حُدّثت خلال آخر 30 يومًا",
+    "onTrack": "{count} على المسار",
+    "atRisk": "{count} معرّض للخطر",
+    "offTrack": "{count} متأخر",
+    "noStatus": "{count} بلا حالة"
+  }
 }

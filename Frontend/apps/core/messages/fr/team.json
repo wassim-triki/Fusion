@@ -1,21 +1,42 @@
 {
-  "title": "Mon équipe",
-  "description": "Collaborateurs directs.",
-  "goToProfile": "Aller à votre profil",
-  "goToOverview": "Aller à la vue d’ensemble",
-  "noTeam": {
-    "title": "Aucune équipe à gérer",
-    "description": "Cet espace présente les collaborateurs qui vous sont rattachés. Aucun collaborateur ne vous est rattaché pour l’instant."
+  "error": "Votre équipe ne s'est pas chargée",
+  "retry": "Réessayer",
+  "noTeam": "Personne ne vous est encore rattaché",
+  "firstWeek": "La première semaine de {name}",
+  "rail": {
+    "label": "À propos de votre équipe",
+    "yourManager": "Votre manager",
+    "places": "Lieux",
+    "openRoles": "Postes ouverts",
+    "none": "Aucun",
+    "from": "à partir du {date}",
+    "showOnChart": "Voir dans l'organigramme"
   },
-  "error": {
-    "title": "Échec du chargement de l’équipe",
-    "description": "Votre équipe n’a pas pu être chargée. Réessayez dans un instant."
+  "comingUp": {
+    "title": "À venir",
+    "window": "30 prochains jours",
+    "empty": "Rien dans les 30 prochains jours",
+    "today": "Aujourd'hui",
+    "joins": "{name} arrive",
+    "joinsMeta": "{job} · première semaine ci-dessous",
+    "movesIn": "{name} rejoint l'équipe",
+    "leaves": "Dernier jour de {name}",
+    "movesOut": "{name} part dans une autre équipe",
+    "newJob": "{name} devient {job}",
+    "anniversary": "{name} : {count, plural, one {# an} other {# ans}} ici",
+    "anniversaryMeta": "Anniversaire d'entrée",
+    "birthday": "Anniversaire de {name}",
+    "oneOnOne": "1:1 avec {name}",
+    "agenda": "{count, plural, =0 {Rien à l'ordre du jour} one {# point à l'ordre du jour} other {# points à l'ordre du jour}}"
   },
-  "directReports": "Collaborateurs directs",
-  "count": "{count, plural, one {# collaborateur direct} other {# collaborateurs directs}}",
-  "empty": {
-    "title": "Aucun collaborateur direct",
-    "description": "Aucun collaborateur ne vous est rattaché pour l’instant."
-  },
-  "showInChart": "Voir dans l'organigramme"
+  "year": {
+    "title": "L'année de l'équipe",
+    "performanceTab": "Onglet Performance",
+    "objectives": "{count, plural, one {objectif} other {objectifs}}",
+    "updated": "{updated} sur {people} mis à jour ces 30 derniers jours",
+    "onTrack": "{count} en bonne voie",
+    "atRisk": "{count} à risque",
+    "offTrack": "{count} en retard",
+    "noStatus": "{count} sans statut"
+  }
 }

@@ -1,21 +1,42 @@
 {
-  "title": "My Team",
-  "description": "Direct reports.",
-  "goToProfile": "Go to your profile",
-  "goToOverview": "Go to overview",
-  "noTeam": {
-    "title": "No team to manage",
-    "description": "The team workspace shows people who report to you. You don’t have any direct reports right now."
+  "error": "Your team didn't load",
+  "retry": "Try again",
+  "noTeam": "No one reports to you yet",
+  "firstWeek": "{name}'s first week",
+  "rail": {
+    "label": "About your team",
+    "yourManager": "Your manager",
+    "places": "Places",
+    "openRoles": "Open roles",
+    "none": "None",
+    "from": "from {date}",
+    "showOnChart": "Show on the org chart"
   },
-  "error": {
-    "title": "Team couldn’t load",
-    "description": "Your team didn’t load just now. Try again in a moment."
+  "comingUp": {
+    "title": "Coming up",
+    "window": "Next 30 days",
+    "empty": "Nothing in the next 30 days",
+    "today": "Today",
+    "joins": "{name} joins",
+    "joinsMeta": "{job} · first week below",
+    "movesIn": "{name} joins the team",
+    "leaves": "{name}'s last day",
+    "movesOut": "{name} moves to another team",
+    "newJob": "{name} starts as {job}",
+    "anniversary": "{name}: {count, plural, one {# year} other {# years}} here",
+    "anniversaryMeta": "Work anniversary",
+    "birthday": "{name}'s birthday",
+    "oneOnOne": "1:1 with {name}",
+    "agenda": "{count, plural, =0 {Nothing on the agenda yet} one {# item on the agenda} other {# items on the agenda}}"
   },
-  "directReports": "Direct reports",
-  "count": "{count, plural, one {# direct report} other {# direct reports}}",
-  "empty": {
-    "title": "No direct reports",
-    "description": "No employees report to you right now."
-  },
-  "showInChart": "Show in org chart"
+  "year": {
+    "title": "The team's year",
+    "performanceTab": "Performance tab",
+    "objectives": "{count, plural, one {objective} other {objectives}}",
+    "updated": "{updated} of {people} updated in the last 30 days",
+    "onTrack": "{count} on track",
+    "atRisk": "{count} at risk",
+    "offTrack": "{count} off track",
+    "noStatus": "{count} without a status"
+  }
 }

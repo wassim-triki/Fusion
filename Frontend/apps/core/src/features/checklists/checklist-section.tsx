@@ -21,7 +21,19 @@ const todayIso = () => {
  * the manager theirs and the person's, the person their own (for a joiner, their first week, D-27). Shows only when
  * there is one.
  */
-export function ChecklistSection({ employeeKey, isSelf }: { employeeKey: string; isSelf: boolean }) {
+export function ChecklistSection({
+  employeeKey,
+  isSelf,
+  title,
+  owner,
+}: {
+  employeeKey: string;
+  isSelf: boolean;
+  /** Replaces the kind's title (the Team page's "Yasmine's first week"). */
+  title?: string;
+  /** Only this owner's tasks (the Team page shows the manager's own). */
+  owner?: ChecklistTaskDto["owner"];
+}) {
   const t = useTranslations("checklists");
   const query = usePersonChecklists(employeeKey);
 
@@ -37,15 +49,17 @@ export function ChecklistSection({ employeeKey, isSelf }: { employeeKey: string;
   }
   const current = query.data?.[0];
   if (!current) return null;
-  return <ChecklistCard checklist={current} isSelf={isSelf} />;
+  const checklist = owner ? { ...current, tasks: current.tasks.filter((task) => task.owner === owner) } : current;
+  if (checklist.tasks.length === 0) return null;
+  return <ChecklistCard checklist={checklist} isSelf={isSelf} title={title} />;
 }
 
-function ChecklistCard({ checklist, isSelf }: { checklist: ChecklistDto; isSelf: boolean }) {
+function ChecklistCard({ checklist, isSelf, title: titled }: { checklist: ChecklistDto; isSelf: boolean; title?: string }) {
   const t = useTranslations("checklists");
   const locale = useLocale();
   const day = (iso: string) => dateFormatter(DAY, locale).format(at(iso));
   const done = checklist.tasks.filter((task) => task.doneAt).length;
-  const title = isSelf ? t(`title.you.${checklist.kind}`) : t(`title.${checklist.kind}`);
+  const title = titled ?? (isSelf ? t(`title.you.${checklist.kind}`) : t(`title.${checklist.kind}`));
   return (
     <Section
       id="checklist"

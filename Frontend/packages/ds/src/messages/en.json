@@ -238,6 +238,35 @@
     },
     "datePicker": {
       "pick": "Pick a date"
+    },
+    "team": {
+      "title": "Your team",
+      "people": "{count, plural, =0 {No one yet} one {# person} other {# people}}",
+      "withJoiner": "{people}, and {name} from {date}",
+      "withJoiners": "{people}, and {count} joining",
+      "you": "You",
+      "chart": "Your team",
+      "tabsLabel": "Your team's page",
+      "next": {
+        "Joins": "Starts {date}",
+        "MovesIn": "Joins {date}",
+        "Leaves": "Last day {date}",
+        "MovesOut": "Moves {date}",
+        "NewJob": "New job {date}",
+        "Anniversary": "{count, plural, one {# year} other {# years}} {date}",
+        "Birthday": "Birthday {date}",
+        "oneOnOne": "1:1 {date}",
+        "oneOnOneToday": "1:1 today {time}",
+        "atRisk": "Objective at risk",
+        "offTrack": "Objective off track",
+        "none": "Nothing coming up"
+      },
+      "givePraise": "Give praise",
+      "tabs": {
+        "overview": "Overview",
+        "performance": "Performance",
+        "orgChart": "Org chart"
+      }
     }
   }
 }

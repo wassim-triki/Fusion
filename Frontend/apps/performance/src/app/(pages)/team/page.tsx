@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { PageContainer, PageHeader } from "@repo/ds/shell";
+import { PageContainer, PageHeader, TeamBand, TeamBandSkeleton } from "@repo/ds/shell";
+import { useTeamBand } from "@repo/api/query";
 import { Button } from "@repo/ds/components/ui/button";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { ArrowRight, Users } from "@/lib/icons";
@@ -24,11 +25,42 @@ import { useSay } from "@repo/ds/lib/say";
 import { useFormat } from "@repo/ds/lib/use-format";
 
 /**
+ * The Team page's Performance tab (B-185, D-19): the shared band over My Team, unchanged inside. Overview and Org chart
+ * are Core HR's tabs, a full navigation away.
+ */
+export default function TeamPerformancePage() {
+  const band = useTeamBand();
+  const team = band.team.data;
+  return (
+    <PageContainer width="wide" className="max-w-6xl pb-16">
+      {team ? (
+        <TeamBand
+          manager={{ name: team.manager.displayName, jobTitle: team.manager.jobTitle, photo: band.managerPhoto }}
+          people={band.members.map((person) => ({ ...person, href: `/people/${person.employeeId}` }))}
+          tabs={[
+            { key: "overview", href: "/core/team", external: true },
+            { key: "performance", href: "/team" },
+            { key: "orgChart", href: "/core/team/org-chart", external: true },
+          ]}
+          current="performance"
+          praiseHref={band.members.length > 0 ? "/performance/feedback?compose=praise" : undefined}
+        />
+      ) : band.team.isLoading ? (
+        <TeamBandSkeleton />
+      ) : null}
+      <div className="mt-8">
+        <MyTeam />
+      </div>
+    </PageContainer>
+  );
+}
+
+/**
  * My Team: the people the user is the recorded reviewer of in the selected Cycle, grouped by what needs them in
  * the phase, with the phase's facts above. Once a round's results are released, the team's results lead the page.
  * Team objectives follow while plans are made and executed.
  */
-export default function MyTeamPage() {
+function MyTeam() {
   const t = useTranslations("team.MyTeamPage");
   const peopleWords = useSay("team.people");
   const summaryWords = useSay("team.summary");
@@ -63,10 +95,10 @@ export default function MyTeamPage() {
   const showObjectives = phase === "Planning" || phase === "Execution";
 
   return (
-    <PageContainer width="wide">
+    <>
       <PageHeader className="mb-4"
         title={t("myTeam")}
-        size="display"
+        size="default"
         description={people.data ? teamSubtitle(people.data, summaryWords, format.locale) : undefined}
         actions={
           lead ? (
@@ -85,7 +117,7 @@ export default function MyTeamPage() {
         <YourPeople cycleId={cycle.id} people={people} query={peopleQuery} onQueryChange={setPeopleQuery} />
         {showObjectives ? <TeamDirection cycle={cycle} canViewOrgDirection={canViewOrgDirection} /> : null}
       </div>
-    </PageContainer>
+    </>
   );
 }
 
@@ -93,8 +125,8 @@ export default function MyTeamPage() {
 function NoReports({ cycleName }: { cycleName: string | null }) {
   const t = useTranslations("team.NoReports");
   return (
-    <PageContainer width="wide">
-      <PageHeader className="mb-4" title={t("myTeam")} size="display" />
+    <>
+      <PageHeader className="mb-4" title={t("myTeam")} size="default" />
       <div className="mt-8 flex flex-col items-center rounded-surface bg-card px-6 py-16 text-center ring-1 ring-inset ring-border">
         <Users className="size-8 text-muted-foreground" aria-hidden />
         <p className="mt-3 type-section-title text-foreground">
@@ -104,7 +136,7 @@ function NoReports({ cycleName }: { cycleName: string | null }) {
           <Link href="/">{t("goToOverview")}</Link>
         </Button>
       </div>
-    </PageContainer>
+    </>
   );
 }
 
@@ -112,7 +144,7 @@ function NoReports({ cycleName }: { cycleName: string | null }) {
 function TeamPageSkeleton() {
   const t = useTranslations("team.TeamPageSkeleton");
   return (
-    <PageContainer width="wide">
+    <>
       <div role="status" aria-label={t("loadingMyTeam")}>
         <Skeleton className="h-9 w-72 max-w-full" />
         <Skeleton className="mt-2 h-4 w-48" />
@@ -122,6 +154,6 @@ function TeamPageSkeleton() {
           <TeamDirectionSkeleton />
         </div>
       </div>
-    </PageContainer>
+    </>
   );
 }

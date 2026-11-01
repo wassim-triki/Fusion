@@ -7,10 +7,10 @@ const none: WorkspaceDestinationsDto = {
 };
 
 describe("primary navigation", () => {
-  it("shows 1:1s and Feedback only when the workspace offers them, after My Plan and Team", () => {
+  it("shows 1:1s and Feedback only when the workspace offers them, after My Plan (a team is Core HR's Team page)", () => {
     expect(visiblePrimaryItems(none).map((i) => i.label)).toEqual(["overview"]);
     const manager = visiblePrimaryItems({ ...none, myPlan: true, team: true, oneOnOnes: true, feedback: true, reviews: true });
-    expect(manager.map((i) => i.label)).toEqual(["overview", "myPlan", "myTeam", "oneOnOnes", "feedback", "reviews"]);
+    expect(manager.map((i) => i.label)).toEqual(["overview", "myPlan", "oneOnOnes", "feedback", "reviews"]);
   });
 
   it("keeps Feedback without 1:1s for someone with no manager and no reports", () => {

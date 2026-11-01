@@ -63,6 +63,7 @@ Retired tenants: Fusion has no tenant deletion, so a reset renames the previous 
 
 ## Scripts
 
+- [screens-b185-team.cjs](screens-b185-team.cjs): B-185 screens (dark, 1440×900) as Mariam into `plans/B-185-screens/`: Overview (two), the Performance tab, the Org chart tab (`chart` retakes only that). Changes no data. Ran 2026-11-01.
 - [seed-b184-joining-leaving.cjs](seed-b184-joining-leaving.cjs): B-184 demo data in Carthage: the joining and leaving checklists, Yasmine Trabelsi hired into Mariam's team 3 days ahead (HR's first task ticked), Aicha's birthday 9 days ahead and shared. Re-runnable. Ran 2026-11-01.
 - [journey-b184-joining-leaving.cjs](journey-b184-joining-leaving.cjs): B-184 API journey in Carthage: a hire makes the checklist; who sees and ticks which task (HR, Mariam, Leila), Needs you, Rim and Leila refused the templates, another company refused; cancelling the hire removes it. Re-runnable. Ran 2026-11-01: 22/22.
 - [screens-b184-joining-leaving.cjs](screens-b184-joining-leaving.cjs): B-184 screens (dark, 1440×900) into `plans/B-184-screens/`. Changes no data.

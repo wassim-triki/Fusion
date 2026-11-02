@@ -15,26 +15,29 @@ export interface ReportDefinition {
   from: string;
   to: string;
   interval: "month" | "quarter" | "year";
-  filters: { field: string; values: string[] }[];
+  filters: { field: string; values: string[]; from?: string; to?: string }[];
   fields: string[];
 }
 export interface ReportFieldDto {
   key: string;
   label: string;
+  kind: "person" | "choice" | "date" | "number" | "tags";
 }
 export interface ReportSeriesDto {
   key: string;
   label: string;
-  values: number[];
-  change: number;
+  values: (number | null)[];
+  change: number | null;
 }
 export interface ReportRunDto {
   periods: { from: string; to: string }[];
   series: ReportSeriesDto[];
-  totals: number[];
+  totals: (number | null)[];
   fields: ReportFieldDto[];
   people: { employeeKey: string; values: Record<string, string | null> }[];
   unit: "people" | "years" | "percent";
+  filterOptions: Record<string, string[]>;
+  personOptions: { key: string; name: string; detail: string | null }[];
 }
 export interface SavedReportDto {
   id: string;

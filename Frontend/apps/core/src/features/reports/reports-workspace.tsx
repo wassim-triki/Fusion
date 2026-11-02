@@ -16,13 +16,17 @@ import {
   type ReportSummaryDto,
   type ReportFieldDto,
 } from "@repo/api";
-import { formatDate, formatDateParts } from "@repo/ds/lib/dates";
+import { formatDateParts } from "@repo/ds/lib/dates";
 import { useApiQuery } from "@repo/api/query";
 import { canBuildCoreReports, canViewCoreReports, useAuth } from "@repo/auth";
 import {
   Button,
+  ButtonGroup,
+  ButtonGroupSeparator,
   Checkbox,
   DatePicker,
+  DateRangePicker,
+  type DateRangeValue,
   Dialog,
   DialogContent,
   DialogFooter,
@@ -37,6 +41,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  PersonAvatar,
   Select,
   SelectContent,
   SelectItem,
@@ -51,23 +56,31 @@ import {
   createDataTableColumnHelper,
   DataTable,
   useDataTable,
+  FilterFieldChip,
+  type DataTableFilterField,
 } from "@repo/ds/data-table";
 import {
-  CalendarDays,
+  Bookmark,
+  BriefcaseBusiness,
+  CirclePlus,
+  ChevronDown,
   Download,
-  Filter,
-  Plus,
+  Hourglass,
+  MapPin,
+  Percent,
+  UserRoundPlus,
+  UsersRound,
   Save,
   Share2,
   SlidersHorizontal,
   Trash2,
-  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { downloadBlob } from "@/lib/download";
 import { useBreadcrumbLabel } from "@/shell/breadcrumb-overrides";
-import { ReportChart, seriesColor } from "./report-chart";
-import { ReportsPageSkeleton } from "@/shell/route-skeletons";
+import { ReportNumberFilter } from "./report-number-filter";
+import { ReportChart } from "./report-chart";
+import { PeopleResultsSkeleton, ReportResultsSkeleton, ReportsPageSkeleton } from "@/shell/route-skeletons";
 
 const standards: ReportMeasure[] = [
   "headcount",
@@ -78,6 +91,15 @@ const standards: ReportMeasure[] = [
   "jobs",
   "open-roles",
 ];
+const reportMarks: Record<ReportMeasure, { icon: typeof UsersRound; color: string }> = {
+  headcount: { icon: UsersRound, color: "bg-identity-1/15 text-identity-1" },
+  "joiners-leavers": { icon: UserRoundPlus, color: "bg-identity-2/15 text-identity-2" },
+  turnover: { icon: Percent, color: "bg-identity-5/15 text-identity-5" },
+  tenure: { icon: Hourglass, color: "bg-identity-4/15 text-identity-4" },
+  places: { icon: MapPin, color: "bg-identity-3/15 text-identity-3" },
+  jobs: { icon: BriefcaseBusiness, color: "bg-identity-1/15 text-identity-1" },
+  "open-roles": { icon: CirclePlus, color: "bg-identity-2/15 text-identity-2" },
+};
 const column = createDataTableColumnHelper<ReportSeriesDto>();
 
 function todayDate() {
@@ -87,7 +109,8 @@ function todayDate() {
 
 export function defaultDefinition(
   measure: ReportMeasure,
-  today: string
+  today: string,
+  availableFields: ReportFieldDto[]
 ): ReportDefinition {
   return {
     measure,
@@ -102,7 +125,7 @@ export function defaultDefinition(
     to: today,
     interval: "year",
     filters: [],
-    fields: [],
+    fields: measure === "open-roles" ? [] : ["name", "job", "division", "place"].filter((key) => availableFields.some((field) => field.key === key)),
   };
 }
 
@@ -112,7 +135,6 @@ export function ReportsWorkspace({ reportId }: { reportId: string }) {
   const canSee = canViewCoreReports(user),
     build = canBuildCoreReports(user);
   const standard = standards.includes(reportId as ReportMeasure);
-  const fresh = reportId === "new";
   const api = useMemo(
     () => createCoreReportsApi(createPlatformApiClient()),
     []
@@ -120,7 +142,7 @@ export function ReportsWorkspace({ reportId }: { reportId: string }) {
   const saved = useApiQuery(
     ["reports", "saved", reportId],
     useCallback((signal) => api.get(reportId, signal), [api, reportId]),
-    { enabled: canSee && !standard && !fresh }
+    { enabled: canSee && !standard }
   );
   const list = useApiQuery(
     ["reports", "list"],
@@ -134,16 +156,14 @@ export function ReportsWorkspace({ reportId }: { reportId: string }) {
   );
   const title = standard
     ? t(`standard.${reportId as ReportMeasure}`)
-    : fresh
-      ? t("new")
-      : saved.data?.name;
+    : saved.data?.name;
   useBreadcrumbLabel(reportId, title);
   if (isLoading) return <ReportsPageSkeleton />;
   if (!canSee)
     return (
       <PagePermissionNotice title={t("title")} description={t("noAccess")} />
     );
-  if ((!standard && !fresh && saved.isLoading) || fields.isLoading)
+  if ((!standard && saved.isLoading) || fields.isLoading)
     return <ReportsPageSkeleton />;
   if (saved.error || fields.error || list.error)
     return (
@@ -169,7 +189,8 @@ export function ReportsWorkspace({ reportId }: { reportId: string }) {
         saved.data?.definition ??
         defaultDefinition(
           standard ? (reportId as ReportMeasure) : "headcount",
-          todayDate()
+          todayDate(),
+          fields.data ?? []
         )
       }
       title={title ?? t("title")}
@@ -209,19 +230,37 @@ function ReportEditor({
     () => createCoreReportsApi(createPlatformApiClient()),
     []
   );
-  const [definition, setDefinition] = useState(initial);
+  const [definition, setDefinition] = useState(() => initial.measure === "open-roles" ? { ...initial, mode: "date" as const, from: todayDate(), to: todayDate() } : initial);
+  const [selectedSeries, setSelectedSeries] = useState<string[] | null>(null);
   const [dialog, setDialog] = useState<"save" | "share" | "delete" | null>(
     null
   );
   const [name, setName] = useState(saved?.name ?? "");
   const [roleIds, setRoleIds] = useState(saved?.roleIds ?? []);
   const [busy, setBusy] = useState(false);
-  const [filterField, setFilterField] = useState("unit");
-  const [filterValue, setFilterValue] = useState("");
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [rangeDraft, setRangeDraft] = useState<DateRangeValue | null>(null);
+  const [rememberedRange, setRememberedRange] = useState({ from: initial.from, to: initial.to });
+  const [fieldSearch, setFieldSearch] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(initial.filters.length > 0);
+  const [legendLimit, setLegendLimit] = useState(8);
+  const spanDays = (Date.parse(definition.to) - Date.parse(definition.from)) / 86400000;
+  const dateError = definition.mode === "range" && (spanDays < 0 || spanDays > 366 * 30);
+  const periodCount = (interval: ReportDefinition["interval"], from = definition.from, to = definition.to) => {
+    const monthIndex = (date: string) => Number(date.slice(0, 4)) * 12 + Number(date.slice(5, 7)) - 1;
+    const step = { month: 1, quarter: 3, year: 12 }[interval];
+    return Math.floor(monthIndex(to) / step) - Math.floor(monthIndex(from) / step) + 1;
+  };
+  const [persisted, setPersisted] = useState(saved);
+  const ownsReport = persisted?.canEdit ?? canEdit;
+  const dirty =
+    JSON.stringify(definition) !==
+    JSON.stringify(persisted?.definition ?? initial);
+  const canSaveChanges = !!persisted && ownsReport && dirty;
   const run = useApiQuery(
     ["reports", "run", definition],
     useCallback((signal) => api.run(definition, signal), [api, definition]),
-    { enabled: definition.from <= definition.to }
+    { enabled: !dateError && definition.from <= definition.to, placeholderData: (previous) => previous }
   );
   const roles = useApiQuery(
     ["reports", "roles"],
@@ -229,7 +268,12 @@ function ReportEditor({
     { enabled: build && dialog === "share" }
   );
   function update(patch: Partial<ReportDefinition>) {
-    setDefinition((d) => ({ ...d, ...patch }));
+    setDefinition((d) => {
+      const next = { ...d, ...patch };
+      if (next.mode === "range" && periodCount(next.interval, next.from, next.to) > 120)
+        next.interval = periodCount("quarter", next.from, next.to) <= 120 ? "quarter" : "year";
+      return next;
+    });
   }
   const fieldLabel = (key: string) =>
     key.startsWith("field:")
@@ -240,8 +284,8 @@ function ReportEditor({
       / · (joiners|leavers)$/,
       (_, event: "joiners" | "leavers") => ` · ${t(event)}`
     );
-  const number = (value: number) =>
-    `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(value)}${run.data?.unit === "percent" ? "%" : run.data?.unit === "years" ? ` ${t("years")}` : ""}`;
+  const tableNumber = (value: number | null | undefined) =>
+    value == null ? "–" : `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(value)}${run.data?.unit === "percent" ? "%" : ""}`;
   const periodLabel = (period: { to: string }) =>
     period.to === todayDate()
       ? t("today")
@@ -264,13 +308,13 @@ function ReportEditor({
     () =>
       run.data
         ? [
-            ...run.data.series,
             {
               key: "__total",
               label: t("everyone"),
               values: run.data.totals,
-              change: run.data.totals.at(-1)! - run.data.totals[0]!,
+              change: run.data.totals.at(-1) != null && run.data.totals[0] != null ? run.data.totals.at(-1)! - run.data.totals[0]! : null,
             },
+            ...run.data.series,
           ]
         : [],
     [run.data, t]
@@ -280,12 +324,10 @@ function ReportEditor({
       column.accessor("label", {
         header: "",
         cell: ({ row }) => (
-          <span
-            className={
-              row.original.key === "__total" ? "type-label" : "type-body"
-            }
-          >
-            {seriesLabel(row.original.label) || t("unspecified")}
+          <span className="inline-flex min-w-0 items-center gap-2">
+            <span className={row.original.key === "__total" ? "type-label" : "type-body"}>
+              {seriesLabel(row.original.label) || t("unspecified")}
+            </span>
           </span>
         ),
         meta: {
@@ -299,29 +341,29 @@ function ReportEditor({
           id: period.to,
           header: periodLabel(period),
           cell: ({ getValue }) => (
-            <span className="tabular-nums">{number(getValue() ?? 0)}</span>
+            <span className="tabular-nums">{tableNumber(getValue())}</span>
           ),
           meta: {
             align: "end" as const,
             headerClassName: "px-2",
-            cellClassName: "h-11 px-2",
+            cellClassName: "h-11 whitespace-nowrap px-2",
           },
         })
       ),
-      column.accessor("change", {
-        header: t("change"),
+      ...(run.data && run.data.periods.length > 1 ? [column.accessor("change", {
+        header: t(run.data?.unit === "percent" ? "changePoints" : "change"),
         cell: ({ getValue }) => (
           <span className="tabular-nums">
-            {getValue() > 0 ? "+" : ""}
-            {number(getValue())}
+            {getValue() != null && getValue()! > 0 ? "+" : ""}
+            {run.data?.unit === "percent" && getValue() != null ? `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(getValue()!)} ${t("points")}` : tableNumber(getValue())}
           </span>
         ),
         meta: {
           align: "end" as const,
           headerClassName: "px-2",
-          cellClassName: "h-11 px-2",
+          cellClassName: "h-11 whitespace-nowrap px-2",
         },
-      }),
+      })] : []),
     ],
     // Labels and number formatting follow the viewer's language.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -331,20 +373,46 @@ function ReportEditor({
     data: rows,
     columns,
     getRowId: (row) => row.key,
-    pageSize: 100,
+    pageSize: 10,
   });
 
-  async function act(work: () => Promise<unknown>) {
+  async function act(
+    work: () => Promise<unknown>,
+    errorKey: "saveFailed" | "shareFailed" = "saveFailed"
+  ) {
+    setActionError(null);
     setBusy(true);
     try {
       await work();
       setDialog(null);
       await cache.invalidateQueries({ queryKey: ["reports", "list"] });
     } catch {
-      toast.error(t("saveFailed"));
+      setActionError(t(errorKey));
+      toast.error(t(errorKey));
     } finally {
       setBusy(false);
     }
+  }
+  function remember(report: SavedReportDto) {
+    setPersisted(report);
+    cache.setQueryData(["reports", "saved", report.id], report);
+    cache.setQueryData<ReportSummaryDto[]>(["reports", "list"], (items = []) =>
+      [
+        ...items.filter((item) => item.id !== report.id),
+        { id: report.id, name: report.name, canEdit: report.canEdit },
+      ].sort((a, b) => a.name.localeCompare(b.name))
+    );
+  }
+  async function saveCurrent() {
+    if (!persisted) {
+      setName(title === t("new") ? "" : title);
+      setDialog("save");
+      return;
+    }
+    await act(async () => {
+      remember(await api.save(persisted.name, definition, persisted.id));
+      toast.success(t("saved"));
+    });
   }
   async function exportFile(format: "csv" | "xlsx") {
     setBusy(true);
@@ -359,59 +427,69 @@ function ReportEditor({
 
   return (
     <PageContainer width="wide" className="px-10 pt-9 pb-14">
-      <div className="grid items-start gap-9 lg:grid-cols-[220px_minmax(0,1fr)]">
-        <nav aria-label={t("title")} className="grid gap-0.5">
-          <p className="type-eyebrow px-2.5 pb-1.5 text-muted-foreground">
-            {t("standardTitle")}
-          </p>
-          {standards.map((id) => (
-            <Link
-              key={id}
-              href={`/reports/${id}`}
-              className={cn(
-                "rounded-control px-2.5 py-2 transition-colors hover:bg-section",
-                reportId === id
-                  ? "bg-secondary type-label text-foreground"
-                  : "type-body text-muted-foreground"
-              )}
-            >
-              {t(`standard.${id}`)}
-            </Link>
-          ))}
-          <p className="type-eyebrow px-2.5 pb-1.5 pt-3.5 text-muted-foreground">
-            {t("yours")}
-          </p>
-          {list.map((item) => (
-            <Link
-              key={item.id}
-              href={`/reports/${item.id}`}
-              className={cn(
-                "rounded-control px-2.5 py-2 hover:bg-section",
-                reportId === item.id
-                  ? "bg-secondary type-label text-foreground"
-                  : "type-body text-muted-foreground"
-              )}
-            >
-              {item.name}
-            </Link>
-          ))}
-          {build && (
-            <Link
-              href="/reports/new"
-              className="flex items-center gap-2 rounded-control px-2.5 py-2 type-body text-muted-foreground hover:bg-section"
-            >
-              <Plus className="size-4" />
-              {t("new")}
-            </Link>
-          )}
+      <div className="grid items-start gap-9 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <nav aria-label={t("title")} className="rounded-surface bg-section p-4">
+          <div className="px-2 pb-5 pt-1">
+            <h2 className="type-section-title">{t("title")}</h2>
+            <p className="mt-1 type-meta text-muted-foreground">{t("libraryHint")}</p>
+          </div>
+          <div className="px-2 pb-2 type-label text-muted-foreground">{t("explore")}</div>
+          <div className="grid gap-0.5">
+            {standards.map((id) => {
+              const Mark = reportMarks[id].icon;
+              return <Link
+                key={id}
+                href={`/reports/${id}`}
+                aria-current={reportId === id ? "page" : undefined}
+                className={cn(
+                  "flex min-w-0 items-center justify-between gap-2 rounded-control px-2.5 py-1.5 transition-colors",
+                  reportId === id
+                    ? "bg-primary-tint type-label text-primary-ink ring-1 ring-primary/30"
+                    : "type-body text-foreground hover:bg-card"
+                )}
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className={cn("grid size-8 shrink-0 place-items-center rounded-control-sm", reportMarks[id].color)}><Mark aria-hidden="true" className="size-4" /></span>
+                  <span>{t(`standard.${id}`)}</span>
+                </span>
+                {reportId === id && <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-primary" />}
+              </Link>;
+            })}
+          </div>
+          <div className="mx-2 mt-5 flex items-center justify-between border-t border-border pb-2 pt-4">
+            <h3 className="type-label text-muted-foreground">{t("savedReports")}</h3>
+            {list.length > 0 && <span className="type-meta tabular-nums text-muted-foreground">{list.length}</span>}
+          </div>
+          <div className="grid gap-0.5">
+            {list.map((item) => (
+              <Link
+                key={item.id}
+                href={`/reports/${item.id}`}
+                aria-current={reportId === item.id ? "page" : undefined}
+                className={cn(
+                  "flex min-w-0 items-center justify-between gap-2 rounded-control px-2.5 py-1.5 transition-colors",
+                  reportId === item.id
+                    ? "bg-primary-tint type-label text-primary-ink ring-1 ring-primary/30"
+                    : "type-body text-foreground hover:bg-card"
+                )}
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className={cn("grid size-8 shrink-0 place-items-center rounded-control-sm", reportId === item.id ? "bg-primary/15 text-primary-ink" : "bg-card text-muted-foreground")}><Bookmark aria-hidden="true" className="size-4" /></span>
+                  <span className="min-w-0 break-words">{item.name}</span>
+                </span>
+                {reportId === item.id && <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-primary" />}
+              </Link>
+            ))}
+            {list.length === 0 && <p className="px-2.5 py-2 type-meta text-muted-foreground">{t(build ? "saveHint" : "noSavedReports")}</p>}
+          </div>
         </nav>
         <div className="grid min-w-0 gap-[18px]">
           <header className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h1 className="type-page-title">{title}</h1>
               <p className="mt-1 type-body text-muted-foreground">
-                {t(
-                  definition.mode === "date"
+                {t(`standardDescription.${definition.measure}`)} · {t(
+                  definition.measure === "open-roles" ? "currentDescription" : definition.mode === "date"
                     ? "onDescription"
                     : "rangeDescription",
                   {
@@ -428,45 +506,15 @@ function ReportEditor({
               </p>
             </div>
             <div className="flex items-center gap-1">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" aria-label={t("fields")}>
-                    <SlidersHorizontal />
-                    {t("fields")}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="grid max-h-96 gap-3 overflow-y-auto"
-                  align="end"
-                >
-                  <p className="type-label">{t("fields")}</p>
-                  {fields.map((f) => (
-                    <label
-                      key={f.key}
-                      className="flex items-center gap-2 type-body"
-                    >
-                      <Checkbox
-                        checked={definition.fields.includes(f.key)}
-                        onCheckedChange={(checked) =>
-                          update({
-                            fields: checked
-                              ? [...definition.fields, f.key]
-                              : definition.fields.filter((k) => k !== f.key),
-                          })
-                        }
-                      />
-                      {fieldLabel(f.key)}
-                    </label>
-                  ))}
-                </PopoverContent>
-              </Popover>
-              {build && (!saved || canEdit) && (
+              {build && (!persisted || ownsReport) && (
                 <Button
                   variant="ghost"
+                  disabled={busy || dateError}
                   onClick={() => {
-                    if (!saved) {
-                      setDialog("save");
-                    } else setDialog("share");
+                    setActionError(null);
+                    setName(persisted?.name ?? title);
+                    setRoleIds(persisted?.roleIds ?? []);
+                    setDialog("share");
                   }}
                 >
                   <Share2 />
@@ -474,16 +522,45 @@ function ReportEditor({
                 </Button>
               )}
               {build && (
-                <Button variant="ghost" onClick={() => setDialog("save")}>
-                  <Save />
-                  {t("saveAs")}
-                </Button>
+                <ButtonGroup aria-label={t("saveOptions")}>
+                  <Button
+                    disabled={busy || dateError}
+                    onClick={() => {
+                      if (persisted && !canSaveChanges) {
+                        setName(persisted.name);
+                        setDialog("save");
+                      } else {
+                        void saveCurrent();
+                      }
+                    }}
+                  >
+                    <Save />
+                    {t(canSaveChanges ? "saveChanges" : "saveAs")}
+                  </Button>
+                  {persisted && canSaveChanges && (
+                    <>
+                      <ButtonGroupSeparator className="bg-primary-foreground/25" />
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="icon" aria-label={t("saveOptions")} disabled={busy || dateError}>
+                            <ChevronDown />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onSelect={() => { setName(persisted.name); setDialog("save"); }}>
+                            {t("saveAs")}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </>
+                  )}
+                </ButtonGroup>
               )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
-                    disabled={busy || !run.data || run.isFetching}
+                    disabled={busy || dateError || !run.data || run.isFetching}
                   >
                     <Download />
                     {t("export")}
@@ -498,63 +575,76 @@ function ReportEditor({
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              {ownsReport && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t("delete")}
+                  onClick={() => setDialog("delete")}
+                >
+                  <Trash2 />
+                </Button>
+              )}
             </div>
           </header>
+          <div>
           <div className="flex flex-wrap items-center gap-2">
+            {definition.measure === "open-roles" ? <span className="type-label text-muted-foreground">{t("currentOpenRoles")}</span> : <>
             <Segmented
+              className="bg-secondary"
               label={t("dates")}
               value={definition.mode}
-              onChange={(mode) => update({ mode })}
+              onChange={(mode) => {
+                setRangeDraft(null);
+                if (definition.mode === "range") setRememberedRange({ from: definition.from, to: definition.to });
+                update(mode === "range" ? { mode, ...rememberedRange } : { mode, from: definition.to });
+              }}
               options={[
                 { value: "date", label: t("onDate") },
                 { value: "range", label: t("between") },
               ]}
             />
             {definition.mode === "range" ? (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline">
-                    <CalendarDays />
-                    {formatDate(definition.from, {
-                      locale,
-                      year: "always",
-                    })}{" "}
-                    –{" "}
-                    {definition.to === todayDate()
-                      ? t("today")
-                      : formatDate(definition.to, { locale, year: "always" })}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="grid gap-3">
-                  <Label>{t("from")}</Label>
-                  <DatePicker
-                    aria-label={t("from")}
-                    value={definition.from}
-                    max={definition.to}
-                    onChange={(from) => update({ from })}
-                  />
-                  <Label>{t("to")}</Label>
-                  <DatePicker
-                    aria-label={t("to")}
-                    value={definition.to}
-                    min={definition.from}
-                    onChange={(to) => update({ to })}
-                  />
-                </PopoverContent>
-              </Popover>
+              <DateRangePicker
+                value={
+                  rangeDraft ?? { from: definition.from, to: definition.to }
+                }
+                min="1900-01-01"
+                max="2200-12-31"
+                placeholder={t("between")}
+                aria-label={t("between")}
+                className="bg-secondary dark:bg-secondary"
+                onOpenChange={(open) => {
+                  if (!open) setRangeDraft(null);
+                }}
+                onChange={(range) => {
+                  setRangeDraft(range);
+                  if (range.from && range.to) {
+                    update({ from: range.from, to: range.to });
+                    setRangeDraft(null);
+                  }
+                }}
+              />
             ) : (
               <DatePicker
+                min="1900-01-01"
+                max="2200-12-31"
+                captionLayout="dropdown"
                 aria-label={t("to")}
                 value={definition.to}
                 onChange={(to) => update({ to, from: to })}
-                className="w-auto"
+                className="w-auto bg-secondary dark:bg-secondary"
               />
             )}
+            </>}
             <Select
               value={definition.groupBy}
               onValueChange={(groupBy) => update({ groupBy })}
             >
-              <SelectTrigger className="w-auto gap-2" aria-label={t("groupBy")}>
+              <SelectTrigger
+                className="w-auto gap-2 bg-secondary"
+                aria-label={t("groupBy")}
+              >
                 <span className="text-muted-foreground">{t("groupBy")}</span>
                 <SelectValue />
               </SelectTrigger>
@@ -566,129 +656,94 @@ function ReportEditor({
                 ))}
               </SelectContent>
             </Select>
-            {definition.mode === "range" && (
+            {definition.measure !== "open-roles" && definition.mode === "range" && (
               <Select
                 value={definition.interval}
                 onValueChange={(interval) =>
                   update({ interval: interval as ReportDefinition["interval"] })
                 }
               >
-                <SelectTrigger className="w-auto gap-2" aria-label={t("every")}>
+                <SelectTrigger
+                  className="w-auto gap-2 bg-secondary"
+                  aria-label={t("every")}
+                >
                   <span className="text-muted-foreground">{t("every")}</span>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {(["month", "quarter", "year"] as const).map((i) => (
-                    <SelectItem key={i} value={i}>
+                    <SelectItem key={i} value={i} disabled={periodCount(i) > 120}>
                       {t(`interval.${i}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             )}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline">
-                  <Filter />
-                  {t("filter")}
-                  {definition.filters.length > 0 &&
-                    ` (${definition.filters.length})`}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="grid gap-3" align="end">
-                <Label>{t("fieldTitle")}</Label>
-                <Select value={filterField} onValueChange={setFilterField}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {fields.map((f) => (
-                      <SelectItem key={f.key} value={f.key}>
-                        {fieldLabel(f.key)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Label htmlFor="report-filter">{t("equals")}</Label>
-                <Input
-                  id="report-filter"
-                  value={filterValue}
-                  onChange={(e) => setFilterValue(e.target.value)}
-                />
-                <Button
-                  disabled={!filterValue.trim()}
-                  onClick={() => {
-                    update({
-                      filters: [
-                        ...definition.filters.filter(
-                          (f) => f.field !== filterField
-                        ),
-                        { field: filterField, values: [filterValue.trim()] },
-                      ],
-                    });
-                    setFilterValue("");
-                  }}
-                >
-                  {t("apply")}
-                </Button>
-              </PopoverContent>
-            </Popover>
-
-            {canEdit && (
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={t("delete")}
-                onClick={() => setDialog("delete")}
-              >
-                <Trash2 />
-              </Button>
-            )}
+            <Button variant="secondary" aria-expanded={filtersOpen} aria-controls="report-filters" onClick={() => setFiltersOpen((open) => !open)}>
+              <SlidersHorizontal />
+              {t("filters")}{definition.filters.length > 0 && ` · ${definition.filters.length}`}
+            </Button>
           </div>
-          {(reportId === "new" || canEdit) && (
-            <Select
-              value={definition.measure}
-              onValueChange={(measure) =>
-                update({ measure: measure as ReportMeasure })
-              }
-            >
-              <SelectTrigger aria-label={t("measure")} className="w-64">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {standards.map((id) => (
-                  <SelectItem key={id} value={id}>
-                    {t(`standard.${id}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          {definition.filters.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {definition.filters.map((f) => (
-                <Button
-                  key={f.field}
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    update({
-                      filters: definition.filters.filter((item) => item !== f),
-                    })
-                  }
-                >
-                  {fieldLabel(f.field)}: {f.values.join(", ")}
-                  <X />
-                </Button>
-              ))}
-            </div>
-          )}
-          <section
-            className="min-w-0 rounded-surface bg-card p-6"
+          {dateError && <p role="alert" className="mt-2 type-body text-destructive">{t("dateLimit")}</p>}
+
+          <div id="report-filters" className={cn("grid transition-[grid-template-rows] duration-[var(--duration-reveal)] ease-emphasized", filtersOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]")} aria-hidden={!filtersOpen} inert={!filtersOpen}>
+          <div className="overflow-hidden">
+          <div
+            className="flex flex-wrap items-center gap-2 pt-4"
+            aria-label={t("filter")}
             aria-busy={run.isFetching}
           >
-            {run.isLoading ? (
-              <Skeleton className="h-96 rounded-control" />
+            {definition.filters.length > 0 && <Button variant="ghost" size="sm" onClick={() => update({ filters: [] })}>{t("clearFilters")}</Button>}
+            {fields.map((f) => {
+              const active = definition.filters.find((item) => item.field === f.key);
+              const change = (next?: { values: string[]; from?: string; to?: string }) =>
+                update({ filters: [...definition.filters.filter((item) => item.field !== f.key),
+                  ...(next ? [{ field: f.key, ...next }] : [])] });
+              const disabled = run.isLoading || (!active && definition.filters.length >= 20);
+              if (f.kind === "number" && !active?.values.length) return (
+                <ReportNumberFilter key={f.key} label={fieldLabel(f.key)} disabled={disabled}
+                  from={active?.from} to={active?.to}
+                  onChange={(range) => change(range ? { values: [], ...range } : undefined)} />
+              );
+              const personField = f.kind === "person" && definition.measure !== "open-roles";
+              const people = run.data?.personOptions ?? [];
+              const nameCounts = new Map<string, number>();
+              const detailCounts = new Map<string, number>();
+              for (const person of people) {
+                nameCounts.set(person.name, (nameCounts.get(person.name) ?? 0) + 1);
+                const pair = JSON.stringify([person.name, person.detail]);
+                detailCounts.set(pair, (detailCounts.get(pair) ?? 0) + 1);
+              }
+              const values = [...new Set([...(run.data?.filterOptions?.[f.key] ?? []), ...(active?.values ?? [])])].sort();
+              const options = personField ? [
+                ...people.map((person) => ({
+                  value: person.key,
+                  label: (nameCounts.get(person.name) ?? 0) > 1
+                    ? [person.name, person.detail, (detailCounts.get(JSON.stringify([person.name, person.detail])) ?? 0) > 1 || !person.detail ? person.key : null].filter(Boolean).join(" · ") : person.name,
+                })),
+                ...(active?.values ?? []).filter((key) => !people.some((person) => person.key === key)).map((key) => ({ value: key, label: key })),
+              ] : values.map((value) => ({ value, label: value }));
+              const field: DataTableFilterField<unknown> = f.kind === "date" && !active?.values.length
+                ? { id: f.key, label: fieldLabel(f.key), type: "dateRange" }
+                : { id: f.key, label: fieldLabel(f.key), type: "options", maxSelections: 100,
+                    searchable: f.kind === "person", options };
+              const value = field.type === "dateRange" ? (active && { from: active.from, to: active.to }) : active?.values;
+              return (
+                <FilterFieldChip key={f.key} disabled={disabled} field={field} value={value}
+                  onChange={(next) => change(Array.isArray(next) ? (next.length ? { values: next } : undefined) :
+                    next && (next.from || next.to) ? { values: [], from: next.from, to: next.to } : undefined)} />
+              );
+            })}
+          </div>
+          </div>
+          </div>
+          </div>
+          <section
+            className={cn("min-w-0 rounded-surface bg-card p-6", rows.length > 10 && "pb-0")}
+            aria-busy={run.isFetching}
+          >
+            {dateError ? <p className="py-16 type-body text-muted-foreground">{t("dateLimit")}</p> : run.isLoading ? (
+              <div role="status" aria-label={t("loadingReport")}><ReportResultsSkeleton /></div>
             ) : run.error ? (
               <div className="grid justify-items-start gap-3 py-16">
                 <p role="alert">{t("runFailed")}</p>
@@ -699,46 +754,82 @@ function ReportEditor({
             ) : (
               run.data && (
                 <>
-                  <div className="mb-4 flex flex-wrap gap-x-[18px] gap-y-2">
-                    {run.data.series.map((s, i) => (
-                      <span
-                        key={s.key}
-                        className="flex items-center gap-2 type-meta text-muted-foreground"
-                      >
-                        <i
-                          className="size-2.5 rounded-detail"
-                          style={{ background: seriesColor(i) }}
-                        />
-                        {seriesLabel(s.label) || t("unspecified")}
-                      </span>
-                    ))}
-                  </div>
-                  {run.data.series.length ? (
-                    <ReportChart run={run.data} labels={labels} title={title} />
-                  ) : (
-                    <p className="py-16 text-center type-body text-muted-foreground">
-                      {t("empty")}
-                    </p>
-                  )}
+                  {run.data.series.length || run.data.totals.some((value) => value != null) ? (
+                    <ReportChart run={run.data} labels={labels} title={title} measure={definition.measure} locale={locale}
+                      selectedSeries={selectedSeries} onSelectedSeriesChange={setSelectedSeries}
+                      seriesLabel={seriesLabel} texts={{ overall: t("overall"), joiners: t("joiners"), leavers: t("leavers"),
+                        compare: t("compareGroups"), more: (count) => t("showMoreLegend", { count }),
+                        less: t("showLess"), noData: t("unavailable"), empty: t("empty"), limit: t("compareLimit"),
+                        years: t("years"), people: t("peopleResults"), other: t("otherGroups"), reset: t("resetComparison"),
+                        topGroups: t("topGroups") }} legendLimit={legendLimit} onLegendLimitChange={setLegendLimit} />
+                  ) : <p className="py-16 text-center type-body text-muted-foreground">{t(definition.filters.length ? "noMatches" : "empty")}</p>}
+                  {run.data.unit === "years" && <p className="mt-4 text-end type-meta text-muted-foreground">{t("years")}</p>}
                   <DataTable
                     model={model}
-                    showPagination={rows.length > 100}
-                    minWidth={run.data.periods.length > 6 ? "720px" : undefined}
+                    showPagination={rows.length > 10}
+                    minWidth={`${Math.max(420, 230 + run.data.periods.length * 64 + (run.data.periods.length > 1 ? 72 : 0))}px`}
                     className="mt-3"
                   />
                 </>
               )
             )}
           </section>
-          {run.data && run.data.fields.length > 0 && (
-            <PeopleFields run={run.data} />
-          )}
+          <section className="min-w-0 rounded-surface bg-card p-4" aria-busy={run.isFetching}>
+            <div className="flex flex-wrap items-center justify-between gap-3 px-4 pb-3">
+              <div>
+                <h2 className="type-section-title">{t("peopleResults")}</h2>
+                {definition.mode === "range" && <p className="type-meta text-muted-foreground">{t("latestPeriod")}</p>}
+              </div>
+            <Popover onOpenChange={(open) => { if (!open) setFieldSearch(""); }}>
+              <PopoverTrigger asChild>
+                <Button variant="secondary" aria-label={t("columns")}>
+                  <SlidersHorizontal />
+                  {t("columns")}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="grid max-h-96 gap-3 overflow-y-auto"
+                align="end"
+              >
+                <p className="type-label">{t("fieldCount", { count: definition.fields.length })}</p>
+                <Input aria-label={t("searchFields")} placeholder={t("searchFields")} value={fieldSearch} onChange={(event) => setFieldSearch(event.target.value)} />
+                {fields.filter((f) => fieldLabel(f.key).toLocaleLowerCase(locale).includes(fieldSearch.trim().toLocaleLowerCase(locale))).map((f) => (
+                  <label
+                    key={f.key}
+                    className="flex items-center gap-2 type-body"
+                  >
+                    <Checkbox
+                      disabled={!definition.fields.includes(f.key) && definition.fields.length >= 30}
+                      checked={definition.fields.includes(f.key)}
+                      onCheckedChange={(checked) =>
+                        update({
+                          fields: checked
+                            ? [...definition.fields, f.key]
+                            : definition.fields.filter((k) => k !== f.key),
+                        })
+                      }
+                    />
+                    {fieldLabel(f.key)}
+                  </label>
+                ))}
+              </PopoverContent>
+            </Popover>
+            </div>
+            {dateError ? <p className="px-4 pb-2 type-body text-muted-foreground">{t("dateLimit")}</p> :
+              run.isLoading ? <div role="status" aria-label={t("loadingPeople")}><PeopleResultsSkeleton /></div> :
+              run.error ? <p className="px-4 pb-2 type-body text-muted-foreground">{t("runFailed")}</p> :
+              run.data && run.data.fields.length > 0 ? <PeopleFields run={run.data} /> :
+              run.data ? <p className="px-4 pb-2 type-body text-muted-foreground">{t("chooseColumnsHint")}</p> : null}
+          </section>
         </div>
       </div>
       <Dialog
         open={dialog !== null}
         onOpenChange={(open) => {
-          if (!open) setDialog(null);
+          if (!open) {
+            setDialog(null);
+            setActionError(null);
+          }
         }}
       >
         <DialogContent aria-describedby={undefined}>
@@ -749,39 +840,34 @@ function ReportEditor({
                   ? "share"
                   : dialog === "delete"
                     ? "delete"
-                    : "saveAs"
+                    : persisted
+                      ? "saveAs"
+                      : "save"
               )}
             </DialogTitle>
           </DialogHeader>
+          {actionError && (
+            <p role="alert" className="type-body text-destructive">
+              {actionError}
+            </p>
+          )}
           {dialog === "save" && (
             <>
               <Label htmlFor="report-name">{t("name")}</Label>
               <Input
+                disabled={busy}
                 id="report-name"
                 value={name}
                 maxLength={120}
                 onChange={(e) => setName(e.target.value)}
               />
               <DialogFooter>
-                {canEdit && (
-                  <Button
-                    variant="outline"
-                    disabled={busy || !name.trim()}
-                    onClick={() =>
-                      void act(async () => {
-                        await api.save(name, definition, saved!.id);
-                        toast.success(t("saved"));
-                      })
-                    }
-                  >
-                    {t("saveChanges")}
-                  </Button>
-                )}
                 <Button
                   disabled={busy || !name.trim()}
                   onClick={() =>
                     void act(async () => {
-                      const result = await api.save(name, definition);
+                      const result = await api.save(name.trim(), definition);
+                      remember(result);
                       router.push(`/reports/${result.id}`);
                       toast.success(t("saved"));
                     })
@@ -794,6 +880,27 @@ function ReportEditor({
           )}
           {dialog === "share" && (
             <>
+              {persisted && <p className="type-label">{persisted.name}</p>}
+              {!persisted && (
+                <>
+                  <Label htmlFor="shared-report-name">{t("name")}</Label>
+                  <Input
+                    disabled={busy}
+                    id="shared-report-name"
+                    value={name}
+                    maxLength={120}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </>
+              )}
+              <p className="type-body text-muted-foreground">
+                {t("viewerReach")}
+              </p>
+              {persisted && dirty && (
+                <p className="type-body text-muted-foreground">
+                  {t("saveBeforeShare")}
+                </p>
+              )}
               {roles.isLoading ? (
                 <Skeleton className="h-24" />
               ) : roles.error ? (
@@ -806,6 +913,7 @@ function ReportEditor({
                       className="flex items-center gap-3 type-body"
                     >
                       <Checkbox
+                        disabled={busy}
                         checked={roleIds.includes(role.id)}
                         onCheckedChange={(checked) =>
                           setRoleIds((ids) =>
@@ -822,15 +930,42 @@ function ReportEditor({
               )}
               <DialogFooter>
                 <Button
-                  disabled={busy || roles.isLoading || !!roles.error}
+                  disabled={
+                    busy ||
+                    roles.isLoading ||
+                    !!roles.error ||
+                    (!persisted && !name.trim()) ||
+                    (roleIds.length === 0 &&
+                      (persisted?.roleIds.length ?? 0) === 0)
+                  }
                   onClick={() =>
                     void act(async () => {
-                      await api.share(saved!.id, roleIds);
+                      const report = persisted
+                        ? dirty
+                          ? await api.save(
+                              persisted.name,
+                              definition,
+                              persisted.id
+                            )
+                          : persisted
+                        : await api.save(name.trim(), definition);
+                      // Keep a successful save if sharing fails, so retrying never creates a duplicate.
+                      remember(report);
+                      const chosen = roleIds.filter((id) =>
+                        roles.data?.some((role) => role.id === id)
+                      );
+                      await api.share(report.id, chosen);
+                      remember({ ...report, roleIds: chosen });
+                      if (!persisted) router.push(`/reports/${report.id}`);
                       toast.success(t("shared"));
-                    })
+                    }, "shareFailed")
                   }
                 >
-                  {t("saveChanges")}
+                  {t(
+                    roleIds.length === 0 && (persisted?.roleIds.length ?? 0) > 0
+                      ? "stopSharing"
+                      : "share"
+                  )}
                 </Button>
               </DialogFooter>
             </>
@@ -838,7 +973,7 @@ function ReportEditor({
           {dialog === "delete" && (
             <>
               <p className="type-body">
-                {t("deleteQuestion", { name: title })}
+                {t("deleteQuestion", { name: persisted?.name ?? title })}
               </p>
               <DialogFooter>
                 <Button
@@ -846,7 +981,7 @@ function ReportEditor({
                   disabled={busy}
                   onClick={() =>
                     void act(async () => {
-                      await api.remove(saved!.id);
+                      await api.remove(persisted!.id);
                       router.push("/reports");
                     })
                   }
@@ -868,6 +1003,10 @@ function PeopleFields({ run }: { run: ReportRunDto }) {
   const columns = run.fields.map((f) =>
     helper.accessor((row) => row.values[f.key] ?? "", {
       id: f.key,
+      ...(f.key === "name" ? { cell: ({ getValue }: { getValue: () => unknown }) => {
+        const name = getValue();
+        return typeof name === "string" && name ? <span className="flex items-center gap-2"><PersonAvatar name={name} size="xs" /><span>{name}</span></span> : null;
+      } } : {}),
       header: f.key.startsWith("field:")
         ? f.label
         : t(`field.${f.key as "name"}`),
@@ -879,9 +1018,6 @@ function PeopleFields({ run }: { run: ReportRunDto }) {
     getRowId: (row) => row.employeeKey,
   });
   return (
-    <section className="min-w-0 rounded-surface bg-card p-4">
-      <h2 className="type-section-title px-4 pb-3">{t("fields")}</h2>
-      <DataTable model={model} />
-    </section>
+    <DataTable model={model} />
   );
 }

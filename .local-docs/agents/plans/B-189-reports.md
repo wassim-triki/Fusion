@@ -29,3 +29,37 @@ The chart, page and both exports use one reporting engine, ready for the Core HR
 - Three dark **1440×900** captures, one per new surface: Reports, Save as, Share, in `B-189-screens/`. Compared with the original explorer Reports frame. The comparison captures precede the final spacing corrections (no retakes): the group column no longer wraps, Change fits, Fields is in the header, compact matrix rows and no unnecessary pager. Final DOM measurements: table/frame/scroll width **792/792/792px**, group column **200px**, row **43px**, table bottom **776px**, page width **1440px**. Tenant colour, real data (including the person in the root unit), and existing shell navigation differ from the drawing.
 - The existing report read grant is extended to team reach; configured HR roles retain their read access. Build is a separate grant. Jobs and Personal details each keep their own field audience.
 - The single commit's hook runs lint and type checks for our apps and packages; result recorded in the completion reply.
+
+## Review fixes — B-251 (2026-11-01)
+
+User notes: no clear CTA theming; use the earlier rebuild's filters; Fields should not sit with Share/Save/Export; date/group controls need the reference's lighter fills; use the existing range calendar; save/share need complete flows.
+
+Addressed with shared FilterFieldChip value menus (options come from the same viewer-scoped reporting engine), Fields in the configuration row, secondary fills on date/group/interval controls, and the shared two-month DateRangePicker with month/year dropdowns and locale support. Incomplete ranges are not run and are discarded on dismissal. Save is the primary themed action; Save changes updates the record, Save as makes a private copy, and standard Share saves and shares in one submission. Pending edits are saved before sharing; a successful save is kept if sharing fails, so retrying does not create another report. Sharing shows the recipient reach consequence and requires recipients for a private report; clearing existing recipients says Stop sharing. Saved definitions and sharing state update the local cache immediately.
+
+Look at the same Reports page: configuration separate from header operations, chip filters rather than text entry, the range calendar, Save versus Save as, standard Share and its retry state. No clarification was needed; these were Reports-specific gaps rather than work already waiting elsewhere on the board.
+
+Checks: `pnpm --filter core exec vitest run src/features/reports/reports-workspace.test.tsx --maxWorkers=2` **6 passed / 0 failed**; `pnpm --filter core type-check` passed; `pnpm --filter core lint` passed (existing Brand warnings); `pnpm --filter @repo/ds lint` passed with zero warnings; catalogue parity passed. No backend/auth/route changes, so no backend rerun, journey, cold build or screenshot retakes. Follow-up changes left uncommitted.
+
+## Filter interaction follow-up (2026-11-01)
+
+Look at the Reports page: select several units or skills, search within a filter, use the keyboard, remove the last choice, clear filters, search Fields, and switch between one date and a range. Choices come from all periods of the report and the viewer's permitted people and fields; tag fields offer individual tags. The date and field limits are enforced before a report is submitted.
+
+Evidence: Core frontend full suite 173/0; shared suite 97/0 after correcting stale Settings test expectations. Shared filter tests 4/0 and date range tests 2/0. Reports backend tests 12/0/0 (relational enabled), including tenant, branch and hidden-field negatives; read-only live viewer journey 6/0/0. Core and shared type checks passed; Core and shared lint passed (existing Core Brand warnings). Security review found no high-confidence issues. Live Skills multi-select, results, clearing and field search checked as Amira; the page is left open.
+
+The full CoreHR suite was refused by its memory guard with 1.8 GB available against 2 GB required; it was not retried. The changed Reports tests and the live authorization journey passed, but the full suite is not claimed. Changes remain uncommitted.
+
+## Data-aware filters — B-252
+
+Review Name, First day, Time with the company, and company date and tag fields on Reports. Names search people and distinguish duplicates; dates use a calendar range; tenure uses a numeric range. Saved person filters respect the viewer's current reach.
+
+Checks: CoreHR full suite 450/0/0 before the final label-retention refinement; focused duplicate-name and sharing tests 2/0/0 and final label-retention test 1/0/0. Core frontend 174/0, shared filter tests 6/0, core type check and core/shared lint passed (existing Brand warnings); viewer journeys 5/0/0 and 4/0/0. The earlier targeted backend attempt was memory-refused and not retried. Live date, tenure and person filters were checked. Changes remain uncommitted.
+
+## Report table cleanup — B-256
+
+Review the matrix beneath the chart, particularly Time with the company and a single-date report. Years are labeled once, numbers stay on one line, row colors match the chart, and Change is omitted for a single period. Longer matrices scroll inside their frame. Reports tests 11/0, core type check passed, core lint passed with existing Brand warnings. Live table inspected through the shell.
+
+## Chart interpretation overhaul — B-271
+
+Review Jobs on one date (ranked bars) and over time (overall line and up to four selected groups); Joiners and leavers (separate period bars); Turnover (percentage and unavailable gaps); and Open roles (today only). All groups remain in the table and exports.
+
+Evidence: report backend 15 passed, 0 failed, 0 skipped; full CoreHR 450 passed, 1 failed, 0 skipped (company import scale, B-272; runner omitted reason). Report frontend 19 passed; core type-check and lint passed with existing Brand warnings. CoreHR restarted and live Open roles and Turnover requests returned 200.

@@ -82,7 +82,7 @@ describe("FusionSidebar in settings mode", () => {
 
   it("marks the open section, links within the app by path and across apps by document", () => {
     renderSettings();
-    const fields = screen.getByRole("link", { name: "Employee fields" });
+    const fields = screen.getByRole("link", { name: "Fields" });
     expect(fields).toHaveAttribute("aria-current", "page");
     expect(fields).toHaveAttribute("href", "/settings/employee-fields");
     expect(screen.getByRole("link", { name: "Preferences" })).toHaveAttribute("href", "/settings");
@@ -93,7 +93,7 @@ describe("FusionSidebar in settings mode", () => {
     expect(screen.getByText("Didn't load")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
     expect(settings.groups[2]!.retry).toHaveBeenCalledOnce();
-    expect(screen.getByRole("link", { name: "Employee fields" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Fields" })).toBeInTheDocument();
   });
 
   it("speaks French when the person's language is French, naming known sections from the catalogue", () => {
@@ -106,7 +106,7 @@ describe("FusionSidebar in settings mode", () => {
       "Performance",
     ]);
     expect(screen.getByRole("link", { name: "Préférences" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Champs collaborateur" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Champs" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Payroll export" })).toBeInTheDocument();
     expect(screen.getByText("Échec du chargement")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Réessayer" })).toBeInTheDocument();

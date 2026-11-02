@@ -277,19 +277,71 @@ export function getRoutePageSkeleton(corePath: string): ReactNode {
   return <PageFallbackSkeleton />;
 }
 
+export function ReportResultsSkeleton() {
+  return (
+    <div aria-hidden="true">
+      <div className="mb-6 flex flex-wrap gap-4">
+        {[88, 112, 96, 76].map((width, i) => <Skeleton key={i} className="h-3" style={{ width }} />)}
+      </div>
+      <div className="flex h-56 items-end justify-around gap-3 border-b border-border px-8 pb-1">
+        {[45, 68, 54, 78, 61, 85, 72, 92].map((height, i) => (
+          <Skeleton key={i} className="w-10 max-w-[9%] rounded-t-control rounded-b-none" style={{ height: `${height}%` }} />
+        ))}
+      </div>
+      <div className="mt-3 flex justify-around px-8">
+        {Array.from({ length: 8 }, (_, i) => <Skeleton key={i} className="h-3 w-9" />)}
+      </div>
+      <div className="mt-7 overflow-hidden rounded-control bg-inlay">
+        <div className="flex items-center justify-between gap-4 px-4 py-3">
+          {[112, 48, 48, 48, 48].map((width, i) => <Skeleton key={i} className="h-3" style={{ width }} />)}
+        </div>
+        {Array.from({ length: 3 }, (_, i) => (
+          <div key={i} className="flex items-center justify-between gap-4 border-t border-border bg-card px-4 py-4">
+            {[132, 32, 32, 32, 32].map((width, j) => <Skeleton key={j} className="h-3" style={{ width }} />)}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function PeopleResultsSkeleton() {
+  return (
+    <div aria-hidden="true" className="overflow-hidden rounded-control">
+      <div className="flex gap-8 bg-inlay px-4 py-3">{[120, 100, 90, 90].map((width, i) => <Skeleton key={i} className="h-3" style={{ width }} />)}</div>
+      {Array.from({ length: 3 }, (_, i) => (
+        <div key={i} className="flex items-center gap-8 border-t border-border px-4 py-4">
+          <Skeleton className="size-6 shrink-0 rounded-full" />
+          {[96, 100, 90, 90].map((width, j) => <Skeleton key={j} className="h-3" style={{ width }} />)}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ReportsPageSkeleton() {
+  const t = useTranslations("reports");
   return (
     <PageContainer width="wide" className="px-10 pt-9 pb-14">
-      <div className="grid gap-9 lg:grid-cols-[220px_minmax(0,1fr)]">
-        <div className="space-y-2">
-          {Array.from({ length: 9 }, (_, i) => (
-            <Skeleton key={i} className="h-9 rounded-control" />
-          ))}
+      <div role="status" aria-label={t("loadingReport")} className="grid items-start gap-9 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <div aria-hidden="true" className="rounded-surface bg-section p-4">
+          <div className="space-y-2 px-2 pb-6 pt-1"><Skeleton className="h-6 w-24" /><Skeleton className="h-3 w-40 max-w-full" /></div>
+          <Skeleton className="mx-2 mb-3 h-3 w-16" />
+          <div className="space-y-1">
+            {Array.from({ length: 7 }, (_, i) => (
+              <div key={i} className="flex items-center gap-3 px-2.5 py-1.5"><Skeleton className="size-8 shrink-0 rounded-control-sm" /><Skeleton className="h-4 w-28" /></div>
+            ))}
+          </div>
+          <div className="mx-2 mt-5 border-t border-border pt-4"><Skeleton className="h-4 w-24" /><Skeleton className="mt-4 h-3 w-36 max-w-full" /></div>
         </div>
-        <div className="space-y-4">
-          <Skeleton className="h-16 rounded-control" />
-          <Skeleton className="h-10 rounded-control" />
-          <Skeleton className="h-96 rounded-surface" />
+        <div aria-hidden="true" className="grid min-w-0 gap-[18px]">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="space-y-2"><Skeleton className="h-9 w-48" /><Skeleton className="h-4 w-64 max-w-full" /></div>
+            <div className="flex gap-2"><Skeleton className="h-8 w-20" /><Skeleton className="h-8 w-24" /><Skeleton className="h-8 w-20" /></div>
+          </div>
+          <div className="flex flex-wrap gap-2">{[180, 180, 130, 90].map((width, i) => <Skeleton key={i} className="h-8" style={{ width }} />)}</div>
+          <div className="min-w-0 rounded-surface bg-card p-6"><ReportResultsSkeleton /></div>
+          <div className="min-w-0 rounded-surface bg-card p-4"><Skeleton className="h-6 w-20" /><div className="mt-4"><PeopleResultsSkeleton /></div></div>
         </div>
       </div>
     </PageContainer>

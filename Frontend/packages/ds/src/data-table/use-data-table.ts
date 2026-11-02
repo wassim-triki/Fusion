@@ -51,6 +51,8 @@ export type DataTableFilterField<TData = unknown> =
       options: DataTableFilterOption<TData>[];
       /** One value at a time instead of any of several. */
       single?: boolean;
+      maxSelections?: number;
+      searchable?: boolean;
       /** Client mode: the row's value(s) for this field, when options have no `match`. */
       value?: (row: TData) => string | string[] | null | undefined;
     })

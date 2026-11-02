@@ -7,3 +7,5 @@ Current manager branch is resolved by `ChangeSupport.BranchAsync` before loading
 Never bypass `FieldsAsync`'s whitelist, including for grouping and filters. A saved definition may itself hold sensitive filter literals: lists return summaries; opening a definition checks visibility before returning it. Saved reports carry owner and role shares, never authority or cached results. Role audience is read live over the signed Identity channel; sharing does not grant Reports access.
 
 `data/journey-b189-reports.cjs` sets Managers to See their team and keeps the shared Engineering by place demo in Carthage.
+
+Reports review (B-251): configuration stays separate from operations; Fields is beside grouping/dates, Save is primary in the tenant theme, lighter toolbar controls per the user. Reuse FilterFieldChip (Organization/People pattern) and the shared DateRangePicker, not text filters or nested single-date pickers. Standard Share saves and shares in one flow; partial-success retry retains the saved report.

@@ -45,6 +45,7 @@ type Field = DataTableFilterField<unknown>;
 
 /** Lists longer than this get a search field. */
 const SEARCH_THRESHOLD = 7;
+const VISIBLE_OPTIONS = 8;
 
 export function DataTableFilters<TData extends RowData>({
   model,
@@ -71,24 +72,10 @@ export function DataTableFilters<TData extends RowData>({
           onChange={(next) => set({ [field.id]: next })}
         />
       ))}
-      {addable.map((field) =>
-        isFilterActive(state[field.id]) ? (
-          <FilterChip
-            key={field.id}
-            field={field}
-            value={state[field.id]}
-            counts={counts[field.id]}
-            onChange={(next) => set({ [field.id]: next })}
-          />
-        ) : (
-          <AddFieldChip
-            key={field.id}
-            field={field}
-            counts={counts[field.id]}
-            onChange={(next) => set({ [field.id]: next })}
-          />
-        )
-      )}
+      {addable.map((field) => (
+        <FilterChip key={field.id} field={field} value={state[field.id]}
+          counts={counts[field.id]} onChange={(next) => set({ [field.id]: next })} />
+      ))}
       {anyActive &&
       fields.filter((f) => isFilterActive(state[f.id])).length > 1 ? (
         <Button
@@ -115,77 +102,16 @@ export function FilterFieldChip({
   value,
   counts,
   onChange,
+  disabled,
 }: {
   field: DataTableFilterField<unknown>;
   value: DataTableFilterValue | undefined;
   counts?: Record<string, number>;
+  disabled?: boolean;
   onChange: (next: DataTableFilterValue | undefined) => void;
 }) {
-  return isFilterActive(value) ? (
-    <FilterChip field={field} value={value} counts={counts} onChange={onChange} />
-  ) : (
-    <AddFieldChip field={field} counts={counts} onChange={onChange} />
-  );
+  return <FilterChip field={field} value={value} counts={counts} onChange={onChange} disabled={disabled} />;
 }
-
-// ── A field not filtering yet: "+ Unit", opening that field's values ───────────────
-
-function AddFieldChip({
-  field,
-  counts,
-  onChange,
-}: {
-  field: Field;
-  counts?: Record<string, number>;
-  onChange: (next: DataTableFilterValue | undefined) => void;
-}) {
-  const t = useTranslations("ds.table");
-  const [open, setOpen] = useState(false);
-  // A choice is held until the menu closes, so the chip doesn't turn into a filter under its own open menu.
-  const draft = useRef<DataTableFilterValue | undefined>(undefined);
-  const close = () => {
-    if (draft.current !== undefined) onChange(draft.current);
-    draft.current = undefined;
-    setOpen(false);
-  };
-  const trigger = (
-    <button
-      type="button"
-      aria-label={t("addFilterFor", { field: field.label })}
-      className="inline-flex h-8 items-center gap-1.5 rounded-control border border-dashed border-input px-2.5 text-sm text-muted-foreground outline-none transition-colors hover:border-foreground/30 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:border-foreground/30 data-[state=open]:text-foreground"
-    >
-      <Plus className="size-3.5" aria-hidden />
-      {field.label}
-    </button>
-  );
-  return field.type === "dateRange" ? (
-    <Popover open={open} onOpenChange={(next) => (next ? setOpen(true) : close())}>
-      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-      <PopoverContent align="start" className="w-auto p-1">
-        <DateRangeEditor
-          value={(draft.current as DataTableDateRange | undefined) ?? {}}
-          onChange={(next) => { draft.current = next; }}
-          onDone={(final) => { if (final) draft.current = final; close(); }}
-        />
-      </PopoverContent>
-    </Popover>
-  ) : (
-    <DropdownMenu open={open} onOpenChange={(next) => (next ? setOpen(true) : close())}>
-      <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
-      <DropdownMenuContent align="start">
-        <ValueMenu
-          field={field}
-          value={draft.current}
-          counts={counts}
-          onChange={(next) => { draft.current = next; }}
-          onDone={(final) => { if (final !== undefined) draft.current = final; close(); }}
-        />
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-// ── An active filter, as a sentence ─────────────────────────────────────────────
 
 const DATE_FORMAT = { month: "short", day: "numeric", year: "numeric" } as const;
 const DATE_FORMAT_SHORT = { month: "short", day: "numeric" } as const;
@@ -243,10 +169,12 @@ function FilterChip({
   value,
   counts,
   onChange,
+  disabled,
 }: {
   field: Field;
   value: DataTableFilterValue | undefined;
   counts?: Record<string, number>;
+  disabled?: boolean;
   onChange: (next: DataTableFilterValue | undefined) => void;
 }) {
   const t = useTranslations("ds.table");
@@ -254,25 +182,27 @@ function FilterChip({
   const [open, setOpen] = useState(false);
   const { operator, text } = describe(field, value, t, locale);
   const FieldIcon = field.icon;
+  const active = field.pinned || isFilterActive(value);
   const valueButton = (
     <button
       type="button"
-      aria-label={t("editFilter", { field: field.label, operator, value: text })}
-      className="min-w-0 truncate px-1.5 last:pe-2.5 font-medium text-foreground outline-none transition-colors hover:bg-muted focus-visible:bg-muted data-[state=open]:bg-muted"
+      disabled={disabled}
+      aria-label={active ? t("editFilter", { field: field.label, operator, value: text }) : t("addFilterFor", { field: field.label })}
+      className="disabled:cursor-not-allowed disabled:opacity-50 min-w-0 truncate px-1.5 last:pe-2.5 font-medium text-foreground outline-none transition-colors hover:bg-muted focus-visible:bg-muted data-[state=open]:bg-muted"
     >
-      {text}
+      {active ? text : <span className="inline-flex items-center gap-1.5"><Plus className="size-3.5" aria-hidden />{field.label}</span>}
     </button>
   );
 
   return (
-    <div className="inline-flex h-8 max-w-full items-stretch overflow-hidden rounded-control border border-border bg-inlay text-sm">
-      <span className="flex items-center gap-1.5 ps-2.5 pe-1.5 text-muted-foreground">
+    <div className={active ? "inline-flex h-8 max-w-full items-stretch overflow-hidden rounded-control border border-border bg-inlay text-sm" : "inline-flex h-8 max-w-full items-stretch rounded-control border border-dashed border-input text-sm text-muted-foreground"}>
+      {active && <span className="flex items-center gap-1.5 ps-2.5 pe-1.5 text-muted-foreground">
         {FieldIcon ? <FieldIcon className="size-3.5 text-primary-ink" /> : null}
         {field.label}
         <span className="hidden text-muted-foreground/70 sm:inline">
           {operator}
         </span>
-      </span>
+      </span>}
       {/* The chip sits still while its value changes, so editing applies live. */}
       {field.type === "dateRange" ? (
         <Popover open={open} onOpenChange={setOpen}>
@@ -299,7 +229,7 @@ function FilterChip({
           </DropdownMenuContent>
         </DropdownMenu>
       )}
-      {field.pinned ? null : (
+      {!active || field.pinned ? null : (
         <button
           type="button"
           aria-label={t("removeFilter", { field: field.label })}
@@ -335,9 +265,18 @@ function ValueMenu({
 
   const selected = (value as string[] | undefined) ?? [];
   const term = query.trim().toLowerCase();
-  const options = term
-    ? field.options.filter((o) => o.label.toLowerCase().includes(term))
+  const matches = term
+    ? field.options.filter((o) => o.label.toLocaleLowerCase().includes(term))
     : field.options;
+  // Keep the first choices in place as they are checked. Selected values outside that
+  // window replace unselected ones, so clearing a search does not hide the choice.
+  const options = matches.slice(0, VISIBLE_OPTIONS);
+  for (const option of matches.slice(VISIBLE_OPTIONS)) {
+    if (!selected.includes(option.value)) continue;
+    const replace = options.map((item) => selected.includes(item.value)).lastIndexOf(false);
+    if (replace < 0) break;
+    options.splice(replace, 1, option);
+  }
   // With counts, a row keeps no empty gutter: the count sits at the edge, and a checked row shows its
   // check mark there instead.
   const itemClass = counts
@@ -352,7 +291,7 @@ function ValueMenu({
 
   return (
     <>
-      {field.options.length > SEARCH_THRESHOLD ? (
+      {field.searchable || field.options.length > SEARCH_THRESHOLD ? (
         <MenuSearch
           value={query}
           onChange={setQuery}
@@ -394,6 +333,7 @@ function ValueMenu({
             <DropdownMenuCheckboxItem
               key={option.value}
               className={itemClass}
+              disabled={!checked && field.maxSelections !== undefined && selected.length >= field.maxSelections}
               checked={checked}
               // Several values are picked in one visit, so choosing one keeps the menu open.
               onSelect={(event) => event.preventDefault()}
@@ -416,6 +356,8 @@ function ValueMenu({
       )}
       {options.length === 0 ? (
         <p className="px-2.5 py-2 text-sm text-muted-foreground">{t("noOptions")}</p>
+      ) : matches.length > options.length ? (
+        <p className="px-2.5 py-2 text-sm text-muted-foreground">{t("refineOptions", { shown: options.length, total: matches.length })}</p>
       ) : null}
     </>
   );
@@ -439,7 +381,15 @@ function MenuSearch({
           autoFocus
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          onKeyDown={(event) => event.stopPropagation()}
+          onKeyDown={(event) => {
+            if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+              event.preventDefault();
+              const items = event.currentTarget.closest('[role="menu"]')?.querySelectorAll<HTMLElement>('[role^="menuitem"]:not([data-disabled])');
+              const target = event.key === "ArrowDown" ? items?.[0] : items?.[items.length - 1];
+              target?.focus();
+            }
+            if (event.key !== "Escape" && event.key !== "Tab") event.stopPropagation();
+          }}
           placeholder={placeholder}
           aria-label={placeholder}
           className="h-7 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
@@ -465,7 +415,7 @@ function DateRangeEditor({
   onDone: (final?: DataTableFilterValue) => void;
 }) {
   const locale = useLocale();
-  const clicks = useRef(0);
+  const anchor = useRef<Date | null>(null);
   const from = parseDate(value.from);
   const to = parseDate(value.to);
   const selected: DateRange | undefined = from ? { from, to } : undefined;
@@ -473,22 +423,26 @@ function DateRangeEditor({
   return (
     <Calendar
       mode="range"
+      captionLayout="dropdown"
+      startMonth={new Date(1900, 0, 1)}
+      endMonth={new Date(2200, 11, 31)}
       locale={locale === "fr" ? fr : locale === "ar" ? ar : undefined}
       numberOfMonths={1}
       selected={selected}
       defaultMonth={from}
-      onSelect={(next: DateRange | undefined, day: Date) => {
-        clicks.current += 1;
-        if (clicks.current === 1) {
+      onSelect={(_next: DateRange | undefined, day: Date) => {
+        if (!anchor.current) {
+          anchor.current = day;
           onChange({ from: isoDate(day), to: undefined });
           return;
         }
+        const first = anchor.current;
         const range = {
-          from: next?.from ? isoDate(next.from) : isoDate(day),
-          to: next?.to ? isoDate(next.to) : undefined,
+          from: isoDate(first <= day ? first : day),
+          to: isoDate(first <= day ? day : first),
         };
         onChange(range);
-        if (range.from && range.to) onDone(range);
+        onDone(range);
       }}
     />
   );

@@ -2,6 +2,8 @@ using System.Globalization;
 using System.Text.Json;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Features.People;
+using EY.HRPlatform.CoreHR.Features.People.Changes;
+using EY.HRPlatform.SharedKernel.Auth;
 using EY.HRPlatform.CoreHR.Features.Workforce.Services;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence;
 using EY.HRPlatform.SharedKernel.Multitenancy;
@@ -36,6 +38,21 @@ public sealed class ReportService(CoreHRDbContext db, ITenantContext tenant, Rep
         // A definition can contain sensitive filter literals. Never send those to a viewer who cannot see the field.
         if (!allowed.Contains(dto.Definition.GroupBy) || dto.Definition.Fields.Any(f => !allowed.Contains(f))
             || dto.Definition.Filters.Any(f => !allowed.Contains(f.Field))) throw new UnauthorizedAccessException();
+        var peopleFilters = dto.Definition.Filters.Where(f => f.Field == "name").SelectMany(f => f.Values).ToList();
+        if (peopleFilters.Count > 0 && dto.Definition.Measure != "open-roles")
+        {
+            var people = db.Employees.AsNoTracking();
+            if (viewer.Scope == PermissionScopes.DirectReports)
+            {
+                var branch = await ChangeSupport.BranchAsync(db, viewer.EmployeeId!.Value, ct);
+                people = people.Where(person => branch.Contains(person.Id));
+            }
+            var visiblePeople = await people.ToListAsync(ct);
+            var visible = visiblePeople.Select(p => p.StableEmployeeKey).ToHashSet();
+            var names = visiblePeople.Select(p => p.DisplayName).ToHashSet();
+            if (peopleFilters.Any(value => !visible.Contains(value) && !names.Contains(value)))
+                throw new UnauthorizedAccessException();
+        }
         return dto;
     }
 
@@ -101,7 +118,7 @@ public sealed class ReportService(CoreHRDbContext db, ITenantContext tenant, Rep
             : new(PeopleExport.Csv(headers, rows), "text/csv; charset=utf-8", "Report.csv");
     }
 
-    private static string Number(decimal n) => n.ToString(CultureInfo.InvariantCulture);
+    private static string Number(decimal? n) => n?.ToString(CultureInfo.InvariantCulture) ?? "";
     private static SavedReportDto Dto(SavedReport r, ReportViewer v) => new(r.Id, r.Name, JsonSerializer.Deserialize<ReportDefinition>(r.DefinitionJson)!,
         v.Build && r.OwnerId == v.UserId, r.OwnerId == v.UserId ? r.Shares.Select(s => s.RoleId).ToList() : []);
     private static void DemandSee(ReportViewer v) { if (!v.CanSee) throw new UnauthorizedAccessException(); }

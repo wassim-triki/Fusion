@@ -16,8 +16,8 @@ namespace EY.HRPlatform.CoreHR.Features.Reports;
 public sealed class ReportEngine(CoreHRDbContext db, ITenantSettingsReadService settings)
 {
     public static readonly string[] Measures = ["headcount", "joiners-leavers", "turnover", "tenure", "places", "jobs", "open-roles"];
-    private static readonly ReportFieldDto[] BuiltIns = [new("name", "Name"), new("unit", "Unit"), new("division", "Division"),
-        new("job", "Job"), new("place", "Place"), new("first-day", "First day"), new("tenure", "Time with the company")];
+    private static readonly ReportFieldDto[] BuiltIns = [new("name", "Name", "person"), new("unit", "Unit"), new("division", "Division"),
+        new("job", "Job"), new("place", "Place"), new("first-day", "First day", "date"), new("tenure", "Time with the company", "number")];
 
     public static void Validate(ReportDefinition d)
     {
@@ -45,7 +45,7 @@ public sealed class ReportEngine(CoreHRDbContext db, ITenantSettingsReadService 
             _ => true,
         }).ToList();
         var custom = await db.EmployeeFieldDefinitions.AsNoTracking().Where(f => f.IsActive && f.SourceKey == null && f.Type != EmployeeFieldType.Section).ToListAsync(ct);
-        built.AddRange(custom.Where(f => EmployeeFieldService.CanSee(f, Guid.Empty, f.Area == EmployeeFieldArea.Job ? jobAudience : audience, null)).Select(f => new ReportFieldDto("field:" + f.Key, f.Label)));
+        built.AddRange(custom.Where(f => EmployeeFieldService.CanSee(f, Guid.Empty, f.Area == EmployeeFieldArea.Job ? jobAudience : audience, null)).Select(f => new ReportFieldDto("field:" + f.Key, f.Label, f.Type == EmployeeFieldType.Date ? "date" : f.Type == EmployeeFieldType.Tags ? "tags" : "choice")));
         return built;
     }
 
@@ -53,6 +53,11 @@ public sealed class ReportEngine(CoreHRDbContext db, ITenantSettingsReadService 
     {
         if (!viewer.CanSee) throw new UnauthorizedAccessException();
         Validate(d);
+        if (d.Measure == "open-roles")
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            d = d with { Mode = "date", From = today, To = today };
+        }
         var fields = await FieldsAsync(viewer, ct);
         var allowed = fields.Select(f => f.Key).ToHashSet();
         // Refuse hidden fields even in filters: aggregates must not become a visibility oracle.
@@ -60,23 +65,83 @@ public sealed class ReportEngine(CoreHRDbContext db, ITenantSettingsReadService 
             || d.Measure == "tenure" && !allowed.Contains("tenure"))
             throw new UnauthorizedAccessException("A field is not visible to this viewer.");
 
+        var kinds = fields.ToDictionary(f => f.Key, f => f.Kind);
+        foreach (var filter in d.Filters.Where(f => f.From is not null || f.To is not null))
+        {
+            var kind = kinds[filter.Field];
+            if (filter.Values.Count != 0 || kind is not ("date" or "number")) throw new ArgumentException("Invalid filter range.");
+            bool Valid(string? value) => value is null || (kind == "date"
+                ? DateOnly.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _)
+                : decimal.TryParse(value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out _));
+            if (!Valid(filter.From) || !Valid(filter.To)) throw new ArgumentException("Invalid filter range.");
+            if (filter.From is not null && filter.To is not null &&
+                (kind == "date" ? string.CompareOrdinal(filter.From, filter.To) > 0 :
+                    decimal.Parse(filter.From, CultureInfo.InvariantCulture) > decimal.Parse(filter.To, CultureInfo.InvariantCulture)))
+                throw new ArgumentException("Invalid filter range.");
+        }
+
         HashSet<Guid>? branch = viewer.Scope == PermissionScopes.DirectReports
             ? await ChangeSupport.BranchAsync(db, viewer.EmployeeId!.Value, ct) : null;
         var peopleQuery = db.Employees.AsNoTracking();
         if (branch is not null) peopleQuery = peopleQuery.Where(p => branch.Contains(p.Id));
         var people = await peopleQuery.ToDictionaryAsync(p => p.Id, ct);
         var ids = people.Keys.ToList();
+        var personKeys = people.Values.Select(p => p.StableEmployeeKey).ToHashSet();
         var employments = await db.Employments.AsNoTracking().Where(e => ids.Contains(e.EmployeeId)).ToListAsync(ct);
         var assignments = await db.WorkAssignments.AsNoTracking().Where(a => ids.Contains(a.EmployeeId) && a.IsPrimary).ToListAsync(ct);
         var custom = await db.EmployeeFieldDefinitions.AsNoTracking().Where(f => f.IsActive && f.SourceKey == null).ToDictionaryAsync(f => f.Id, ct);
         var customValues = await db.EmployeeFieldValues.AsNoTracking().Where(v => ids.Contains(v.EmployeeId)).ToListAsync(ct);
         var values = customValues.Where(v => custom.ContainsKey(v.FieldId) && allowed.Contains("field:" + custom[v.FieldId].Key))
             .ToDictionary(v => (v.EmployeeId, "field:" + custom[v.FieldId].Key), v => Value(v.ValueJson));
+        var tagFields = custom.Values.Where(f => f.Type == EmployeeFieldType.Tags).Select(f => "field:" + f.Key).ToHashSet();
+        IEnumerable<string> CellValues(string key, string? value)
+        {
+            if (string.IsNullOrEmpty(value)) return [];
+            if (!tagFields.Contains(key)) return [value];
+            using var document = JsonDocument.Parse(value);
+            return document.RootElement.ValueKind == JsonValueKind.Array
+                ? document.RootElement.EnumerateArray().Where(item => item.ValueKind == JsonValueKind.String)
+                    .Select(item => item.GetString() ?? "").Where(item => item.Length > 0).ToList()
+                : [];
+        }
+        bool Matches(ReportFilter filter, Dictionary<string, string?> cells, string? personKey = null)
+        {
+            if (filter.From is null && filter.To is null)
+            {
+                if (filter.Values.Count == 0) return true;
+                if (filter.Field == "name" && personKey is not null)
+                    return filter.Values.Contains(personKey) || filter.Values.Any(value =>
+                        !personKeys.Contains(value) && value == cells.GetValueOrDefault("name"));
+                return CellValues(filter.Field, cells.GetValueOrDefault(filter.Field)).Any(filter.Values.Contains);
+            }
+            var value = cells.GetValueOrDefault(filter.Field);
+            if (value is null) return false;
+            if (kinds[filter.Field] == "date")
+                return DateOnly.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _) &&
+                    (filter.From is null || string.CompareOrdinal(value, filter.From) >= 0) &&
+                    (filter.To is null || string.CompareOrdinal(value, filter.To) <= 0);
+            return decimal.TryParse(value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var number) &&
+                (filter.From is null || number >= decimal.Parse(filter.From, CultureInfo.InvariantCulture)) &&
+                (filter.To is null || number <= decimal.Parse(filter.To, CultureInfo.InvariantCulture));
+        }
         var unitStates = await OrgChartQueryHandler.LoadUnitStatesAsync(db, d.From.AddDays(-1), ct);
         var periods = Periods(d);
-        var series = new Dictionary<string, decimal[]>();
-        var totals = new decimal[periods.Count];
+        var series = new Dictionary<string, decimal?[]>();
+        var totals = new decimal?[periods.Count];
         var details = new List<ReportPersonDto>();
+        var personOptions = new Dictionary<string, ReportPersonOptionDto>();
+        var selectedPeople = d.Filters.Where(f => f.Field == "name").SelectMany(f => f.Values).ToHashSet();
+        if (d.Measure != "open-roles")
+            foreach (var person in people.Values.Where(p => selectedPeople.Contains(p.StableEmployeeKey)))
+                personOptions[person.StableEmployeeKey] = new(person.StableEmployeeKey, person.DisplayName, null);
+        var filterOptions = allowed.ToDictionary(key => key, _ => new HashSet<string>());
+        void CollectOptions(Dictionary<string, string?> cells)
+        {
+            foreach (var (key, value) in cells)
+                if (allowed.Contains(key))
+                    foreach (var option in CellValues(key, value).Where(option => option.Length <= 500))
+                        filterOptions[key].Add(option);
+        }
         var openRoles = await db.OpenRoles.AsNoTracking().Where(r => r.Status == OpenRoleStatus.Open
             && (branch == null || branch.Contains(r.ManagerEmployeeId) || r.ManagerEmployeeId == viewer.EmployeeId)).ToListAsync(ct);
 
@@ -123,7 +188,9 @@ public sealed class ReportEngine(CoreHRDbContext db, ITenantSettingsReadService 
                         ["tenure"] = Math.Max(0, (day - employment.EffectiveFrom).TotalDays / 365.25).ToString("0.0", CultureInfo.InvariantCulture),
                     };
                     foreach (var key in allowed.Where(k => k.StartsWith("field:", StringComparison.Ordinal))) cells[key] = values.GetValueOrDefault((person.Id, key));
-                    if (d.Filters.Any(f => f.Values.Count > 0 && !f.Values.Contains(cells.GetValueOrDefault(f.Field) ?? ""))) continue;
+                    CollectOptions(cells);
+                    personOptions[person.StableEmployeeKey] = new(person.StableEmployeeKey, person.DisplayName, allowed.Contains("job") ? assignment?.JobTitle : null);
+                    if (d.Filters.Any(f => !Matches(f, cells, person.StableEmployeeKey))) continue;
                     rows.Add((cells.GetValueOrDefault(d.GroupBy) ?? "", kind, person.Id, cells,
                         d.Measure == "tenure" ? decimal.Parse(cells["tenure"]!, CultureInfo.InvariantCulture) : 1));
                 }
@@ -135,11 +202,12 @@ public sealed class ReportEngine(CoreHRDbContext db, ITenantSettingsReadService 
                     var unit = units.GetValueOrDefault(role.OrgUnitId);
                     var cells = new Dictionary<string, string?> { ["name"] = role.JobTitle, ["job"] = role.JobTitle, ["place"] = role.PlaceName,
                         ["unit"] = unit?.Name, ["division"] = unit?.DivisionName ?? unit?.Name };
-                    if (!d.Filters.Any(f => f.Values.Count > 0 && !f.Values.Contains(cells.GetValueOrDefault(f.Field) ?? "")))
+                    CollectOptions(cells);
+                    if (!d.Filters.Any(f => !Matches(f, cells)))
                         rows.Add((cells.GetValueOrDefault(d.GroupBy) ?? "", "", Guid.Empty, cells, 1));
                 }
 
-            decimal Metric(IEnumerable<(string Group, string Event, Guid Person, Dictionary<string, string?> Cells, decimal Value)> source)
+            decimal? Metric(IEnumerable<(string Group, string Event, Guid Person, Dictionary<string, string?> Cells, decimal Value)> source)
             {
                 var list = source.ToList();
                 if (d.Measure == "tenure") return list.Count == 0 ? 0 : decimal.Round(list.Average(r => r.Value), 1);
@@ -148,7 +216,7 @@ public sealed class ReportEngine(CoreHRDbContext db, ITenantSettingsReadService 
                     var opening = list.Count(r => r.Event == "opening");
                     var closing = list.Count(r => r.Event == "closing");
                     var leavers = list.Count(r => r.Event == "exit");
-                    return opening + closing == 0 ? 0 : decimal.Round(leavers * 200m / (opening + closing), 1);
+                    return opening + closing == 0 ? null : decimal.Round(leavers * 200m / (opening + closing), 1);
                 }
                 return list.Sum(r => r.Value);
             }
@@ -156,7 +224,7 @@ public sealed class ReportEngine(CoreHRDbContext db, ITenantSettingsReadService 
             foreach (var group in rows.GroupBy(r => (r.Group, Event: d.Measure == "joiners-leavers" ? r.Event : "")))
             {
                 var key = group.Key.Group + (group.Key.Event.Length > 0 ? " · " + group.Key.Event : "");
-                if (!series.TryGetValue(key, out var numbers)) series[key] = numbers = new decimal[periods.Count];
+                if (!series.TryGetValue(key, out var numbers)) series[key] = numbers = d.Measure == "turnover" ? new decimal?[periods.Count] : Enumerable.Repeat<decimal?>(0m, periods.Count).ToArray();
                 numbers[index] = Metric(group);
             }
             totals[index] = Metric(rows);
@@ -165,7 +233,9 @@ public sealed class ReportEngine(CoreHRDbContext db, ITenantSettingsReadService 
                     people[r.Person].StableEmployeeKey, d.Fields.Distinct().ToDictionary(f => f, f => r.Cells.GetValueOrDefault(f)))));
         }
         return new(periods, series.OrderBy(pair => pair.Key).Select(pair => new ReportSeriesDto(pair.Key, pair.Key, pair.Value, pair.Value[^1] - pair.Value[0])).ToList(),
-            totals, fields.Where(f => d.Fields.Contains(f.Key)).ToList(), details, d.Measure == "tenure" ? "years" : d.Measure == "turnover" ? "percent" : "people");
+            totals, fields.Where(f => d.Fields.Contains(f.Key)).ToList(), details, d.Measure == "tenure" ? "years" : d.Measure == "turnover" ? "percent" : "people",
+            filterOptions.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)pair.Value.Order().ToList()),
+            personOptions.Values.OrderBy(option => option.Name).ThenBy(option => option.Key).ToList());
     }
 
     public static List<ReportPeriodDto> Periods(ReportDefinition d)

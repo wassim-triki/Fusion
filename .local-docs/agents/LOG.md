@@ -1,5 +1,49 @@
 # LOG — the one history
 
+- ✓ **B-189** Reports accepted and closed by the user, 2026-11-03, including review work B-251, B-252, B-260–B-266, B-268–B-269, B-271 and B-273. The separate import scale-test failure remains B-272; server-side filter search remains B-255.
+
+- **B-273** Report chart visual treatment sent for review, 2026-11-02. Workspace tests 16/0, chart tests 4/0, core type-check passed; live Headcount inspected.
+
+- **B-271** Report chart interpretation sent for review, 2026-11-02. Reports backend 15/0/0; full CoreHR 450/1/0 (unrelated import scale B-272); frontend 19/0; core type-check and lint passed; live open roles and turnover calls 200.
+
+- ○ **B-270** Removed excess spacing under report pagination, 2026-11-02. Visual-only change; no tests run.
+
+- **B-269** People report loading state sent for review, 2026-11-02. Reports tests 16/0; core type-check passed.
+
+- **B-268** Reports loading skeleton sent for review, 2026-11-02. Core type-check passed; visual-only change.
+
+- ✓ **B-267** Compact report legend and summary accepted by the user, 2026-11-02.
+
+- **B-267** Compact report legend and summary sent for review, 2026-11-02. Reports tests 15/0 after a mock-data correction; core type-check passed.
+
+- **B-266** Available default save action sent for review, 2026-11-02. Reports tests 14/0; core type-check passed.
+
+- **B-265** Combined report save actions sent for review, 2026-11-02. Reports tests 14/0; core type-check passed.
+
+- **B-264** Saved report icon color sent for review, 2026-11-02. Visual-only change; no tests run.
+
+- **B-263** Report library color sent for review, 2026-11-02. Core type-check passed; visual-only change.
+
+- **B-262** Report library identity sent for review, 2026-11-02. Reports tests 13/0; core type-check passed.
+
+- **B-261** Reports navigation and filter spacing sent for review, 2026-11-02. Reports tests 13/0; core type-check passed.
+
+- **B-260** Clear standard report starting points sent for review, 2026-11-02. Reports tests 13/0; core production build passed including types, with existing Brand warnings.
+
+- ✓ **B-259** Compact report avatars accepted by the user, 2026-11-02.
+
+- **B-259** Compact report avatars sent for review, 2026-11-02. Reports tests 12/0; core type-check passed after correcting the cell type.
+
+- ✓ **B-258** Default people columns in Reports accepted by the user, 2026-11-02.
+
+- **B-258** Default people columns sent for review, 2026-11-02. Reports tests 12/0 with 15-second timeout (initially 11/1 timeout); core type-check passed.
+
+- ✓ **B-257** Reports filters and contextual people columns accepted by the user, 2026-11-02.
+
+- **B-257** Reports filters and people columns sent for review, 2026-11-02. Touched tests 11/0; core type-check passed.
+
+- ✓ **B-256** Reports chart table cleanup accepted by the user, 2026-11-02.
+
 Newest first, grouped by day. Every closed board item ends here. Detail lives in the commit and `plans/`; older history and the pre-reformat verbatim log are in `archive/`.
 
 ```md
@@ -11,7 +55,18 @@ Keep each entry to what a later reader needs: the outcome, the user's call when 
 ✓ accepted by the user · ○ closed on evidence · → sent to review · ↻ board reshaped · no symbol = note or decision.
 When LOG passes ~150 lines, move the oldest days to `archive/LOG-YYYY-MM*.md`.
 
+## 2026-11-02
+
+- B-256 -> In review: cleaned up the Reports chart table; Reports tests 11/0. B-254 compact filters accepted by the user.
+
+- B-254 -> In review: compact searchable filter menus with selected values retained; shared tests 5/0. Full option retrieval remains B-255.
+
 ## 2026-11-01
+
+- B-252 -> In review: data-aware report filters, duplicate-name identity and viewer-scoped sharing. Core 174/0; CoreHR 450/0/0 before final refinement, focused checks 3/0/0; journeys 9/0/0.
+
+- `22:43` → **B-251** Reports filter interactions: live multi-select, keyboard and date/field behavior, viewer-scoped period choices and individual tags. Core 173/0; Reports 12/0/0; journey 6/0/0; full CoreHR suite memory-refused; shared suite 97/0. In review.
+- → **B-251** Reports review fixes, under B-189: restored the existing shared filter chips and range calendar, moved Fields into configuration and gave Save the tenant theme. Save changes and Save as are separate, Share saves a standard report directly and retries a failed share without duplicating the saved report; sharing state and the saved definition update together. Evidence: Reports 6/0; core type check, core/DS lint and language parity passed; backend and routes unchanged · Codex
 
 - → **B-189** Reports sent to review: standard reports and company definitions, dates/ranges, grouping/filtering/fields, owner saves, role sharing and CSV/Excel from one viewer-scoped engine for B-190 to reuse. Reports gains Build and team reach without replacing the existing read grant; Jobs and Personal fields keep separate audiences, hidden filter literals are withheld. Evidence: CoreHR 446/0/0, Identity 571/0/0 (relational on); final Reports 10/0/0, roles 17/0/0; core touched 9, auth 18; cold build passed; journey 18/18; three dark comparison captures with final spacing verified by DOM · Codex
 
@@ -30,6 +85,7 @@ When LOG passes ~150 lines, move the oldest days to `archive/LOG-YYYY-MM*.md`.
 
 - **B-241** dropped: clicking a unit keeps opening its panel, which links to the unit page (user's call) · Claude
 - ✓ **B-183** Organization in time accepted by the user after round 2 (plus themed Add unit, narrower Structure search), with ✓ B-237 (filters spread as chips); B-241 and B-242 stay on the board · Claude
+
 - `02:30` → **B-183** review round 2: filters spread as "+ Field" chips in `DataTableFilters` (the Filter button and its menu are gone; covers **B-237**, People's filters as drawn, so it leaves Ready); `FilterFieldChip` and `matchesField` exported for views without a table; Structure toolbar gets Top levels / Everything and + Type, + Head, + People (non-matches dim, the camera frames the matches). Evidence: type-check core and @repo/ds clean; lint clean; tests ds data-table 2/2, core organization views + catalog + people 56/56; screens `r2-10-structure-filtered.png`, `r2-04-list-today.png` · Claude
 - `01:30` → **B-183** review round 1 refit (user: two tab strips in the header, the surface not designed as one, the import buttons; "handle the rest now, cleanly, compatible with the rebuild"; clicking a unit stays the panel, boarded as B-241). One header: People · Structure · List as a Segmented (representation, like People's table/cards), Add unit and a ⋯ menu (Import, Export, unit types, planned unit changes) beside it; the Jobs · Places strip is gone. Jobs and Places are Settings sections (server-listed: view with organization settings or organization manage, manage with organization manage; `/organization/jobs|places` redirect; Settings nav for organization managers). Structure now draws on the people chart's canvas: `useChartCamera` + `ChartZoomControls` extracted and used by both charts; fold, add child, drag to a new parent (move review), selection and reveal kept; React Flow and its minimap retired from Organization. List rebuilt on `@repo/ds/data-table` (hierarchy order, indented, search, type filter, row opens the panel). Organization viewers without settings or organization manage no longer reach the catalogue pages (forms still pick jobs and places). Evidence: CoreHR 656 passed / 0 failed / 5 skipped (registry tests updated, one new); core touched tests 20 files / 167 passed (new Structure and List view tests); type-check core and @repo/ds clean; lint clean on touched files; cold build passed; screens `plans/B-183-screens/r1-*.png`. Boarded B-241, B-242 · Claude
 

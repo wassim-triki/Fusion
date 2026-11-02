@@ -69,15 +69,115 @@ public sealed class ReportTests
         foreach (var mode in new[] { "date", "range" })
         {
             var run = await engine.RunAsync(Definition(measure) with { Mode = mode }, Hr, default);
-            Assert.Equal(mode == "date" ? 1 : 2, run.Periods.Count);
+            Assert.Equal(measure == "open-roles" || mode == "date" ? 1 : 2, run.Periods.Count);
             Assert.DoesNotContain(run.Series, s => s.Label.Contains("Secret"));
+            Assert.DoesNotContain(run.FilterOptions.Values.SelectMany(values => values), value => value.Contains("Other") || value.Contains("Secret"));
+            if (measure == "open-roles") Assert.Contains("Analyst", run.FilterOptions["job"]);
             Assert.DoesNotContain(run.People, p => p.Values.Values.Any(v => v?.Contains("Other") == true));
             if (measure is "headcount" or "places" or "jobs") Assert.Equal(2m, run.Totals[^1]);
             if (measure == "open-roles") Assert.Equal(1m, run.Totals[^1]);
-            if (measure == "tenure") Assert.InRange(run.Totals[^1], 1.4m, 1.6m);
+            if (measure == "tenure") Assert.InRange(run.Totals[^1]!.Value, 1.4m, 1.6m);
             if (measure == "joiners-leavers" && mode == "range") Assert.Equal(2m, run.Totals.Sum());
             if (measure == "turnover" && mode == "range") Assert.Contains(run.Totals, value => value > 0);
         }
+    }
+
+    [Fact]
+    public async Task Turnover_without_population_is_unavailable_and_open_roles_are_current()
+    {
+        var world = await Seed();
+        await using var db = TestDbContextFactory.Create(TestTenantContext.WithTenant(Tenant), world.Db);
+        var engine = new ReportEngine(db, Settings().Object);
+        var empty = await engine.RunAsync(Definition("turnover") with { Filters = [new("name", ["no match"])] }, Hr, default);
+        Assert.All(empty.Totals, Assert.Null);
+        var roles = await engine.RunAsync(Definition("open-roles") with { To = Today.AddYears(2) }, Hr, default);
+        Assert.Single(roles.Periods);
+        Assert.Equal(Today, roles.Periods[0].To);
+        Assert.Equal(1m, roles.Totals[0]);
+    }
+
+    [Fact]
+    public async Task Filter_choices_include_earlier_periods_and_survive_an_empty_filtered_result()
+    {
+        var world = await Seed();
+        await using var db = TestDbContextFactory.Create(TestTenantContext.WithTenant(Tenant), world.Db);
+        var engine = new ReportEngine(db, Settings().Object);
+        var run = await engine.RunAsync(Definition() with { Filters = [new("name", ["no match"])] }, Hr, default);
+        Assert.All(run.Totals, total => Assert.Equal(0m, total));
+        Assert.Contains(run.FilterOptions["name"], name => name.Contains("Person2"));
+        Assert.Contains(run.FilterOptions["name"], name => name.Contains("Person1"));
+    }
+
+    [Fact]
+    public async Task Tag_filters_match_individual_tags()
+    {
+        var world = await Seed();
+        await using var db = TestDbContextFactory.Create(TestTenantContext.WithTenant(Tenant), world.Db);
+        var field = EmployeeFieldDefinition.Create(Tenant, Guid.NewGuid(), "skills", "Skills", EmployeeFieldArea.About,
+            EmployeeFieldType.Tags, EmployeeFieldEditor.Employee, true, true, true, false, false, 1, null, null, "test");
+        var employee = db.Employees.ToList().Single(person => person.DisplayName.Contains("Person1"));
+        db.EmployeeFieldDefinitions.Add(field);
+        db.EmployeeFieldValues.Add(EmployeeFieldValue.Create(Tenant, employee.Id, field.Id, "[\"React\",\"SQL\"]", "test"));
+        await db.SaveChangesAsync();
+        var engine = new ReportEngine(db, Settings().Object);
+        var run = await engine.RunAsync(Definition() with { Filters = [new("field:skills", ["SQL"])] }, Hr, default);
+        Assert.Equal(1m, run.Totals[^1]);
+        Assert.Contains("SQL", run.FilterOptions["field:skills"]);
+        Assert.Contains("React", run.FilterOptions["field:skills"]);
+    }
+
+    [Fact]
+    public async Task Person_filters_select_one_identity_when_names_match()
+    {
+        var world = await Seed();
+        await using var db = TestDbContextFactory.Create(TestTenantContext.WithTenant(Tenant), world.Db);
+        foreach (var employee in db.Employees.ToList().Where(p => p.DisplayName.Contains("Person0") || p.DisplayName.Contains("Person1")))
+            employee.UpdatePreferredName("Same name");
+        await db.SaveChangesAsync();
+        var engine = new ReportEngine(db, Settings().Object);
+        var all = await engine.RunAsync(Definition() with { Mode = "date" }, Hr, default);
+        Assert.Equal(2, all.PersonOptions.Count(option => option.Name == "Same name Test"));
+        var person = all.People.First();
+        var selected = await engine.RunAsync(Definition() with { Mode = "date", Filters = [new("name", [person.EmployeeKey])] }, Hr, default);
+        Assert.Single(selected.People);
+        Assert.Equal(person.EmployeeKey, selected.People[0].EmployeeKey);
+        var viewer = new ReportViewer(Guid.NewGuid(), world.Manager, PermissionScopes.DirectReports, false, false);
+        var visible = await engine.RunAsync(Definition() with { Mode = "date" }, viewer, default);
+        Assert.All(visible.PersonOptions, option => Assert.Contains(visible.People, p => p.EmployeeKey == option.Key));
+        Assert.DoesNotContain(all.PersonOptions, option => option.Name.Contains("Other"));
+        var past = await engine.RunAsync(Definition(), Hr, default);
+        var departed = past.PersonOptions.First(option => option.Name.Contains("Person2"));
+        var absent = await engine.RunAsync(Definition() with { Mode = "date", Filters = [new("name", [departed.Key])] }, Hr, default);
+        Assert.Empty(absent.People);
+        Assert.Contains(absent.PersonOptions, option => option.Key == departed.Key && option.Name == departed.Name);
+        var config = TenantSettingsDto.DefaultEmployeeFieldConfig;
+        config["jobTitle"] = new FieldConfig(Visible: true, Required: false, VisibleToEmployee: false, VisibleToManager: false);
+        var settings = Settings();
+        settings.Setup(s => s.GetCurrentAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new TenantSettingsDto { EmployeeFieldConfig = config });
+        var restricted = await new ReportEngine(db, settings.Object).RunAsync(Definition() with { Mode = "date", Fields = ["name"] }, viewer, default);
+        Assert.All(restricted.PersonOptions, option => Assert.Null(option.Detail));
+    }
+
+    [Fact]
+    public async Task Date_and_tenure_ranges_are_inclusive_and_obey_viewer_reach()
+    {
+        var world = await Seed();
+        await using var db = TestDbContextFactory.Create(TestTenantContext.WithTenant(Tenant), world.Db);
+        var engine = new ReportEngine(db, Settings().Object);
+        var first = Today.AddYears(-1).AddDays(5).ToString("yyyy-MM-dd");
+        var definition = Definition() with { Mode = "date", Filters = [new("first-day", [], first, first)] };
+        var hr = await engine.RunAsync(definition, Hr, default);
+        Assert.Equal(1m, hr.Totals[0]);
+        Assert.Contains(hr.People, p => p.Values["name"]!.Contains("Person1"));
+        var team = new ReportViewer(Guid.NewGuid(), world.Manager, PermissionScopes.DirectReports, false, false);
+        Assert.Equal(1m, (await engine.RunAsync(definition, team, default)).Totals[0]);
+        var old = definition with { Filters = [new("first-day", [], null, Today.AddYears(-2).ToString("yyyy-MM-dd"))] };
+        Assert.Equal(0m, (await engine.RunAsync(old, team, default)).Totals[0]);
+        var tenure = definition with { Filters = [new("tenure", [], "1.5", "3")] };
+        Assert.Equal(1m, (await engine.RunAsync(tenure, Hr, default)).Totals[0]);
+        Assert.Equal(0m, (await engine.RunAsync(tenure, team, default)).Totals[0]);
+        await Assert.ThrowsAsync<ArgumentException>(() => engine.RunAsync(definition with { Filters = [new("first-day", [], "not-a-date", null)] }, Hr, default));
+        await Assert.ThrowsAsync<ArgumentException>(() => engine.RunAsync(definition with { Filters = [new("name", [], "A", "Z")] }, Hr, default));
     }
 
     [Fact]
@@ -96,11 +196,17 @@ public sealed class ReportTests
         Assert.NotNull(shared); Assert.False(shared.CanEdit);
         var run = await engine.RunAsync(shared.Definition, viewer, default);
         Assert.Equal(1m, run.Totals[^1]); Assert.Single(run.People);
+        Assert.All(run.FilterOptions["name"], name => Assert.Contains("Person1", name));
         var csv = System.Text.Encoding.UTF8.GetString(ReportService.Export(run, false).Bytes);
         Assert.Contains("Person1", csv); Assert.DoesNotContain("Person2", csv); Assert.DoesNotContain("Other", csv);
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.SaveAsync(null, new("No", Definition()), viewer, default));
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.ShareAsync(saved.Id, [], viewer, default));
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.DeleteAsync(saved.Id, viewer, default));
+        var adminRun = await engine.RunAsync(Definition() with { Mode = "date" }, Hr, default);
+        var outside = adminRun.PersonOptions.First(p => !run.PersonOptions.Any(member => member.Key == p.Key));
+        var restricted = await service.SaveAsync(null, new("Outside", Definition() with { Filters = [new("name", [outside.Key])] }), Hr, default);
+        Assert.True(await service.ShareAsync(restricted!.Id, [Role], Hr, default));
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetAsync(restricted.Id, viewer, default));
         Assert.True(await service.ShareAsync(saved.Id, [], Hr, default));
         Assert.Null(await service.GetAsync(saved.Id, viewer, default));
     }
@@ -116,6 +222,7 @@ public sealed class ReportTests
         var engine = new ReportEngine(db, Settings().Object);
         var viewer = new ReportViewer(Guid.NewGuid(), world.Manager, PermissionScopes.DirectReports, false, false);
         Assert.DoesNotContain(await engine.FieldsAsync(viewer, default), f => f.Key == "field:private");
+        Assert.DoesNotContain("field:private", (await engine.RunAsync(Definition(), viewer, default)).FilterOptions.Keys);
         var jobsAdmin = ReportViewer.From(new ClaimsPrincipal(new ClaimsIdentity([
             new Claim(ClaimTypes.NameIdentifier, Owner.ToString()),
             new Claim(CustomClaimTypes.CorePermission, CorePermissionClaimValue.Encode(CorePermissions.OverviewView, PermissionScopes.Tenant)),
@@ -125,7 +232,8 @@ public sealed class ReportTests
         Assert.DoesNotContain(await engine.FieldsAsync(jobsAdmin, default), f => f.Key == "field:private");
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => engine.RunAsync(Definition() with { Fields = ["field:private"] }, jobsAdmin, default));
         foreach (var d in new[] { Definition() with { Fields = ["field:private"] }, Definition() with { GroupBy = "field:private" },
-                     Definition() with { Filters = [new("field:private", ["secret"])] } })
+                     Definition() with { Filters = [new("field:private", ["secret"])] },
+                     Definition() with { Filters = [new("field:private", [], "2020-01-01", null)] } })
             await Assert.ThrowsAsync<UnauthorizedAccessException>(() => engine.RunAsync(d, viewer, default));
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => engine.RunAsync(Definition(), viewer with { Scope = null }, default));
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => engine.RunAsync(Definition(), viewer with { EmployeeId = null }, default));

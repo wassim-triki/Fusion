@@ -287,7 +287,7 @@ function useInviteLifecycleMutation(pathFor: (employeeId: string) => string) {
   >(
     ({ employeeId }) =>
       client.post<WorkforceAccessCommandResultDto>(pathFor(employeeId), {}),
-    { invalidateQueries: MUTATION_INVALIDATIONS }
+    { invalidateQueries: [...MUTATION_INVALIDATIONS, { queryKey: corePeopleQueryKeys.all() }] }
   );
 }
 

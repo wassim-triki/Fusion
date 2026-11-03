@@ -410,6 +410,25 @@ public sealed class WorkforceAccountsController(
         if (!TryGetTenantId(out var tenantId, out var tenantError))
             return BadRequest(ApiResponse<WorkforceAccountStatusDto>.Failure(tenantError));
 
+        await using var transaction = dbContext.Database.IsRelational()
+            ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
+            : null;
+        if (transaction is not null)
+        {
+            // Acceptance locks this row before checking its lifecycle. Serialize with it
+            // so withdrawal either retires a pending link or refuses an accepted one.
+            await dbContext.Database.ExecuteSqlRawAsync(
+                """
+                SELECT 1 FROM identity."InviteTokens"
+                 WHERE "Id" = (
+                     SELECT "Id" FROM identity."InviteTokens"
+                      WHERE "TenantId" = {0} AND "EmployeeId" = {1}
+                      ORDER BY "CreatedAt" DESC LIMIT 1)
+                 FOR UPDATE
+                """,
+                [tenantId, employeeId], cancellationToken);
+        }
+
         var invite = await FindLatestInviteByEmployeeAsync(tenantId, employeeId, cancellationToken);
         if (invite is null)
             return NotFound(ApiResponse<WorkforceAccountStatusDto>.Failure("Invitation not found."));
@@ -432,6 +451,8 @@ public sealed class WorkforceAccountsController(
             "Workforce invitation withdrawn.",
             beforeJson: null, afterJson: null, correlationId: employeeId.ToString()));
         await dbContext.SaveChangesAsync(cancellationToken);
+        if (transaction is not null)
+            await transaction.CommitAsync(cancellationToken);
 
         return Ok(ApiResponse<WorkforceAccountStatusDto>.Success(await BuildInviteStatusAsync(employeeId, invite, cancellationToken)));
     }
@@ -1156,7 +1177,7 @@ public sealed class WorkforceAccountsController(
         CancellationToken cancellationToken)
         => await dbContext.InviteTokens
             .IgnoreQueryFilters()
-            .AsNoTracking()
+            // Command callers mutate lifecycle/credentials; those changes must persist.
             .Where(invite => invite.TenantId == tenantId && invite.EmployeeId == employeeId)
             .OrderByDescending(invite => invite.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken);

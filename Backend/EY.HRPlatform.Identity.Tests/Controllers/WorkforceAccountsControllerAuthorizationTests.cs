@@ -63,6 +63,9 @@ public class WorkforceAccountsControllerAuthorizationTests
             new WorkforceAccountStatusesRequest { Subjects = [] }, CancellationToken.None);
 
         Assert.IsType<UnauthorizedResult>(result.Result);
+
+        var withdrawal = await controller.WithdrawInvite(Guid.NewGuid(), CancellationToken.None);
+        Assert.IsType<UnauthorizedResult>(withdrawal.Result);
     }
 
     [Theory]

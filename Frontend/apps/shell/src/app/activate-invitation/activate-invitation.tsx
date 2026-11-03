@@ -29,6 +29,7 @@ import {
   PasswordStrengthField,
 } from "@repo/ds/shell";
 import { login, persistAuth } from "@repo/auth";
+import { OptionCards } from "@repo/ds/choice";
 import { createPlatformApiClient, type AccessProfileAssignmentSummaryDto, type EffectivePermissionGrantDto } from "@repo/api";
 import {
   ArrowRight,
@@ -597,38 +598,20 @@ function WorkHere({
   onJobTitle: (value: string) => void;
 }) {
   const say = useActivationSay();
-  const choice = (value: boolean, label: string) => (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={worksHere === value}
-      onClick={() => onWorksHere(value)}
-      className={cn(
-        "flex min-h-12 items-center gap-2.5 rounded-control border bg-card px-3.5 py-2.5 text-start text-sm font-medium transition-colors",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        worksHere === value ? "border-primary-ring bg-primary-tint" : "border-border hover:bg-muted/50"
-      )}
-    >
-      <span
-        aria-hidden="true"
-        className={cn(
-          "grid size-[18px] shrink-0 place-items-center rounded-full border-[1.5px]",
-          worksHere === value ? "border-primary" : "border-input"
-        )}
-      >
-        {worksHere === value ? <span className="size-2 rounded-full bg-primary" /> : null}
-      </span>
-      {label}
-    </button>
-  );
   return (
     <>
       <Field>
         <FieldLabel id="worksHere">{say("form.worksHere", { tenant: company })}</FieldLabel>
-        <div role="radiogroup" aria-labelledby="worksHere" className="grid gap-2.5 sm:grid-cols-2">
-          {choice(true, say("form.worksHereYes"))}
-          {choice(false, say("form.worksHereNo"))}
-        </div>
+        <OptionCards
+          label={say("form.worksHere", { tenant: company })}
+          value={worksHere ? "yes" : "no"}
+          onChange={(value) => onWorksHere(value === "yes")}
+          columns={2}
+          options={[
+            { value: "yes", label: say("form.worksHereYes") },
+            { value: "no", label: say("form.worksHereNo") },
+          ]}
+        />
       </Field>
       {worksHere ? (
         <div className="animate-in fade-in slide-in-from-top-1 duration-200">

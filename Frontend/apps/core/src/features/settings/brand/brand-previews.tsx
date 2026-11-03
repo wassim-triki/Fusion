@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { useLocale } from "next-intl";
 import { Home, LayoutGrid, Settings, TrendingUp, Users } from "lucide-react";
@@ -71,7 +73,7 @@ function ScaledScreen({ draft, label, children }: { draft: BrandDraftView; label
 
 function Mark({ draft, className }: { draft: BrandDraftView; className?: string }) {
   return draft.logoSrc ? (
-    <img src={draft.logoSrc} alt="" className={cn("bg-card object-contain", className)} />
+    <Image src={draft.logoSrc} alt="" width={64} height={64} unoptimized className={cn("bg-card object-contain", className)} />
   ) : (
     <span className={cn("grid place-items-center bg-primary font-bold text-primary-foreground", className)}>
       {draft.name.trim().charAt(0).toUpperCase() || "F"}

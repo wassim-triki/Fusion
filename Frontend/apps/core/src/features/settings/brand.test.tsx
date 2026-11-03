@@ -4,6 +4,9 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { FusionSettingsSection, FusionTenantSummaryDto } from "@repo/api";
+import type * as Api from "@repo/api";
+import type * as ApiQuery from "@repo/api/query";
+import type * as ApiReact from "@repo/api/react";
 
 const mocks = vi.hoisted(() => ({
   summary: undefined as FusionTenantSummaryDto | undefined,
@@ -11,24 +14,24 @@ const mocks = vi.hoisted(() => ({
   emailPreview: vi.fn(),
 }));
 
-vi.mock("@repo/api/query", async () => {
-  const actual = await vi.importActual<typeof import("@repo/api/query")>("@repo/api/query");
+vi.mock("@repo/api/query", async (importOriginal) => {
+  const actual = await importOriginal<typeof ApiQuery>();
   return {
     ...actual,
     useTenantSummary: () => ({ data: mocks.summary, error: null, refetch: vi.fn() }),
   };
 });
 
-vi.mock("@repo/api", async () => {
-  const actual = await vi.importActual<typeof import("@repo/api")>("@repo/api");
+vi.mock("@repo/api", async (importOriginal) => {
+  const actual = await importOriginal<typeof Api>();
   return {
     ...actual,
     createCompanyBrandApi: () => ({ save: mocks.save, emailPreview: mocks.emailPreview, company: vi.fn() }),
   };
 });
 
-vi.mock("@repo/api/react", async () => {
-  const actual = await vi.importActual<typeof import("@repo/api/react")>("@repo/api/react");
+vi.mock("@repo/api/react", async (importOriginal) => {
+  const actual = await importOriginal<typeof ApiReact>();
   return { ...actual, useFusionViewer: () => ({ viewer: { fullName: "Amira Khelifi" }, isLoading: false }) };
 });
 

@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
@@ -75,6 +77,7 @@ function Swatch({
     <button
       type="button"
       aria-label={label}
+      // eslint-disable-next-line no-restricted-syntax -- Brand swatches carry their own colour meaning (DESIGN.md choices exception).
       aria-pressed={selected}
       title={label}
       disabled={disabled}
@@ -215,7 +218,7 @@ export function BrandSettings({ section }: { section: FusionSettingsSection }) {
               <Control label={t("logo")} hint={logoError ?? t("logoHint")}>
                 <div className="flex items-center gap-4">
                   {draft.logo ? (
-                    <img src={draft.logo} alt={t("logo")} className="size-16 rounded-control border border-border bg-card object-contain" />
+                    <Image src={draft.logo} alt={t("logo")} width={64} height={64} unoptimized className="size-16 rounded-control border border-border bg-card object-contain" />
                   ) : (
                     <span className="grid size-16 place-items-center rounded-control bg-primary text-2xl font-bold text-primary-foreground">
                       {draft.name.trim().charAt(0).toUpperCase() || "F"}

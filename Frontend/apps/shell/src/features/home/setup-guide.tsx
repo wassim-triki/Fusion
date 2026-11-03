@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { useEffect, useMemo, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Check, FileSpreadsheet, Upload } from "lucide-react";
@@ -290,7 +292,7 @@ export function CompanyCard() {
     <section aria-label={t("label")} className="grid gap-5 rounded-surface bg-card p-[22px]">
       <div className="flex items-center gap-3.5">
         <span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-control bg-primary font-editorial text-[30px] font-medium text-primary-foreground">
-          {data?.logoUrl ? <img src={data.logoUrl} alt="" className="size-full bg-card object-contain" /> : data?.name?.trim().charAt(0).toUpperCase()}
+          {data?.logoUrl ? <Image src={data.logoUrl} alt="" width={64} height={64} unoptimized className="size-full bg-card object-contain" /> : data?.name?.trim().charAt(0).toUpperCase()}
         </span>
         <div className="min-w-0 flex-1">
           {data ? <p className="line-clamp-2 break-words type-panel-title">{data.name}</p> : <Skeleton className="h-4 w-32" />}

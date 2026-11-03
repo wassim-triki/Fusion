@@ -5,8 +5,8 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Check, FileSpreadsheet, Upload } from "lucide-react";
-import { ApiError, createCoreImportApi, createPlatformApiClient, coreImportQueryKeys } from "@repo/api";
-import { useApiQuery, useMyCard, usePhoto, useSetupGuide, useTenantSummary, type SetupGuide, type SetupStepKey } from "@repo/api/query";
+import { formatWorkWeek, ApiError, createCoreImportApi, createPlatformApiClient, coreImportQueryKeys } from "@repo/api";
+import { useCompanyWorkWeek, useApiQuery, useMyCard, usePhoto, useSetupGuide, useTenantSummary, type SetupGuide, type SetupStepKey } from "@repo/api/query";
 import { canImportCoreEmployees, canManageCoreOrganization, canViewTenantAdministration, useAuth } from "@repo/auth";
 import { Button, PersonAvatar, Skeleton, cn } from "@repo/ds";
 import { ProgressSegments } from "@repo/ds/shell";
@@ -284,6 +284,7 @@ function GhostChart() {
 /** The company beside the guide: its mark large, its name, and its defaults as label over value. */
 export function CompanyCard() {
   const t = useTranslations("home.setup.company");
+  const week = useCompanyWorkWeek();
   const locale = useLocale();
   const tenant = useTenantSummary();
   const data = tenant.data;
@@ -303,8 +304,13 @@ export function CompanyCard() {
         </Button>
       </div>
       <div className="grid grid-cols-2 gap-x-[18px] gap-y-3.5">
-        <Fact label={t("language")} value={language} />
+        <div className="col-span-2"><Fact label={t("language")} value={language} /></div>
         <Fact label={t("timeZone")} value={data?.timeZone?.split("/").pop()?.replace(/_/g, " ") ?? null} />
+        <div>
+          {week.isLoading ? <Skeleton aria-label={t("loadingWorkWeek")} className="h-9 w-32" /> : week.error ?
+            <div className="type-meta text-muted-foreground"><p>{t("workWeekFailed")}</p><Button variant="ghost" size="sm" onClick={() => void week.refetch()}>{t("retry")}</Button></div> :
+            <Fact label={t("workWeek")} value={week.data ? formatWorkWeek(week.data.workingDays, locale) : null} />}
+        </div>
       </div>
     </section>
   );

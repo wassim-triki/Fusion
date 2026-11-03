@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useFusionUpcoming, useFusionWork, useTenantSummary } from "@repo/api/query";
+import { useFusionUpcoming, useFusionWork, useMyManager, useTenantSummary } from "@repo/api/query";
 import { canAccessCoreTeam, resolveFusionAttentionModules, TopBarPreferences, TopBarSearch, useAuth, ViewingAsBar } from "@repo/auth";
 import { Skeleton } from "@repo/ds";
 import {
@@ -15,7 +15,7 @@ import {
   orderWork,
 } from "@repo/ds/shell";
 import { FusionSidebar } from "./fusion-sidebar";
-import { FirstWeekCard, YourTeamCard } from "./home-cards";
+import { FirstWeekCard, YourManagerCard, YourTeamCard } from "./home-cards";
 import { CompanyCard, PeopleCard, SetupGuideCard, useHomeSetup } from "./setup-guide";
 import { HomeDecision } from "./home-decision";
 import { HomePraise } from "./home-praise";
@@ -100,6 +100,8 @@ export function FusionHome() {
   const performance = resolveFusionAttentionModules(user).includes("performance");
   const team = canAccessCoreTeam(user) && Boolean(user?.employeeId);
   const setup = useHomeSetup();
+  const manager = useMyManager();
+  const showManager = Boolean(user?.employeeId && (manager.isLoading || manager.error || manager.data?.isFirstWeek));
   return (
     <ThemeProvider>
       <AppShell
@@ -133,13 +135,14 @@ export function FusionHome() {
                 <PeopleCard people={setup.guide.people} />
               </aside>
             </div>
-          ) : performance || team ? (
+          ) : performance || team || showManager ? (
             <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
               <div className="space-y-6">
                 <FirstWeekCard />
                 <HomeWork />
               </div>
               <aside aria-label={t("sideColumn")} className="space-y-6">
+                {showManager ? <YourManagerCard query={manager} /> : null}
                 {team ? <YourTeamCard /> : null}
                 {performance ? <YourYear employeeId={user?.employeeId} enabled={performance} /> : null}
                 {performance ? <HomePraise /> : null}

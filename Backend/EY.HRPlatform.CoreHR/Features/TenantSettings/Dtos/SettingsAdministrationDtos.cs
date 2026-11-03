@@ -45,7 +45,11 @@ public sealed record OrganizationSettingsDto(
     string Locale,
     string TimeZone,
     BrandingSettings Branding,
-    bool UsesDefaultBranding);
+    bool UsesDefaultBranding,
+    int[] WorkingDays);
+
+/// <summary>Only the company’s work week, safe for any signed-in tenant member.</summary>
+public sealed record CompanyWorkWeekDto(int[] WorkingDays);
 
 public sealed record PeopleDataSettingsDto(
     uint? Version,

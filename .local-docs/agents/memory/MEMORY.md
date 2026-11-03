@@ -40,10 +40,12 @@
 
 ## Core HR / Platform work
 
-- [Reports engine](reports-engine.md) — B-189: shared engine for Reports, exports and B-190; current branch before aggregates, viewer field policy, existing read grant extended to team, Build for saved reports.
+- [Reports engine](reports-engine.md) — B-189/B-190: shared engine for Reports, exports and the front page; scoped dated snapshots, local Replay, required-field completion, current branch before aggregates, viewer field policy.
 - [Tenant record redesign](tenant-record-redesign.md) — `/platform/tenants/{id}` 4 tabs all built (B-120) + tenant archival (B-099).
 - [Auth/invite surface redesign](auth-invite-surface-redesign.md) — forced-dark sign-in + invite acceptance on DS.
 - [Invite surfaces unified](invite-surfaces-unified.md) — workforce invite matches shell activation via shared `@repo/ds/shell` parts.
+- [Home company and manager contracts](home-company-manager.md) — B-247/B-248: authoritative work week, self-only canonical manager and first-week Home card.
+- [Workforce invitation lifecycle](workforce-invitation-lifecycle.md) — B-235: tracked command lookup, withdrawal/acceptance row locking, credential rotation, People cache refresh and live regression journey.
 - [Administrators page redesign](administrators-page-redesign.md) — `/core/access` tabbed master-detail + provenance + removed admins.
 - [Worker profile consolidation](worker-profile-consolidation.md) — one `WorkerProfile` behind `/core/profile` + `/core/people/{id}`.
 - [Workforce foundation hardening](workforce-foundation-hardening.md) — OpenSpec Employee→Employment→WorkAssignment→Manager; resume `/opsx:apply`.

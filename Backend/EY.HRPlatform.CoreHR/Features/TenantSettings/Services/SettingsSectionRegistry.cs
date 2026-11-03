@@ -42,7 +42,7 @@ public sealed class SettingsSectionRegistry(
         new(CoreSettingsSectionIds.Brand, "Brand", null,
             (policy, user) => policy.CanViewOrganizationSettings(user), (policy, user) => policy.CanManageOrganizationSettings(user)),
         new(CoreSettingsSectionIds.Details, "Details", SettingsSectionIds.Organization,
-            (policy, user) => policy.CanViewOrganizationSettings(user), null),
+            (policy, user) => policy.CanViewOrganizationSettings(user), (policy, user) => policy.CanManageOrganizationSettings(user)),
         new(CoreSettingsSectionIds.EmployeeFields, "Fields", SettingsSectionIds.PeopleData,
             (policy, user) => policy.CanViewPeopleDataSettings(user), (policy, user) => policy.CanManagePeopleDataSettings(user)),
         new(CoreSettingsSectionIds.Lists, "Lists", SettingsSectionIds.Lists,

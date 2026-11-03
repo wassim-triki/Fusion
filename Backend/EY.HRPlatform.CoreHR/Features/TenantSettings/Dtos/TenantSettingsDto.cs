@@ -12,6 +12,9 @@ public sealed record TenantSettingsDto
     /// </summary>
     public uint? Version { get; init; }
 
+    /// <summary>ISO weekdays, Monday = 1 through Sunday = 7. Default: Monday–Friday.</summary>
+    public int[] WorkingDays { get; init; } = [1, 2, 3, 4, 5];
+
     /// <summary>
     /// Field visibility and requirement configuration for employee records.
     /// </summary>

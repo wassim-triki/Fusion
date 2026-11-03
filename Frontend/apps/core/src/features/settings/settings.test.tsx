@@ -14,6 +14,8 @@ vi.mock("@repo/api/query", () => ({
 }));
 
 vi.mock("@/features/settings/api/use-tenant-settings", () => ({
+  useOrganizationSettings: () => ({ data: undefined, error: null }),
+  useUpdateOrganizationSettings: () => ({ mutateAsync: vi.fn() }),
   useEmployeeFields: () => ({ data: mocks.fields, error: null, refetch: vi.fn() }),
   useUpdateEmployeeFields: () => ({ mutateAsync: vi.fn(), isLoading: false }),
 }));

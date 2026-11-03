@@ -316,7 +316,11 @@
         "yours": "Your company",
         "edit": "Edit",
         "language": "Language",
-        "timeZone": "Time zone"
+        "timeZone": "Time zone",
+        "workWeek": "Work week",
+        "loadingWorkWeek": "Loading work week",
+        "workWeekFailed": "Work week did not load",
+        "retry": "Try again"
       },
       "people": {
         "title": "People",
@@ -338,6 +342,13 @@
       "undo": "Undo",
       "doneOn": "Done {day}",
       "by": "By {day}"
+    },
+    "manager": {
+      "title": "Your manager",
+      "loading": "Loading your manager",
+      "failed": "Your manager did not load",
+      "retry": "Try again",
+      "none": "No manager assigned"
     }
   },
   "app": {

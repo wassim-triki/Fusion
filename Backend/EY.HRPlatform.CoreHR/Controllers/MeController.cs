@@ -35,6 +35,18 @@ public sealed class MeController(ISender sender, ICoreAccessPolicyService access
             : Ok(ApiResponse<MyCardDto>.Success(result.Value));
     }
 
+    /// <summary>The caller’s current primary manager for Home. Any linked tenant member may read their own.</summary>
+    [HttpGet("manager")]
+    public async Task<IActionResult> GetManager(CancellationToken cancellationToken)
+    {
+        if (User.GetTenantId() is null || User.GetEmployeeId() is not { } employeeId)
+            return NotFound(ApiResponse.Failure("No linked employee record."));
+        var result = await sender.Send(new MyManagerQuery(employeeId, DateTime.UtcNow), cancellationToken);
+        return result.IsFailure
+            ? NotFound(ApiResponse.Failure(result.Error.Message))
+            : Ok(ApiResponse<MyManagerDto>.Success(result.Value));
+    }
+
     /// <summary>
     /// "Do you work at …? Yes" (D-10): the activating administrator becomes the company's first person. Only for
     /// someone who can bring the company in, without a person here yet, while the company has nobody.

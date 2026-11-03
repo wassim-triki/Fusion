@@ -9,7 +9,8 @@ public sealed record UpdateTenantSettingsRequest(
     BrandingSettingsInput? Branding,
     SelfServiceSettingsInput? SelfService,
     ProvisioningSettingsInput? Provisioning,
-    OrgChartSettingsInput? OrgChart = null
+    OrgChartSettingsInput? OrgChart = null,
+    int[]? WorkingDays = null
 );
 
 /// <summary>

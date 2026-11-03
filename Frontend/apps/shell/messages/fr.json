@@ -316,7 +316,11 @@
         "yours": "Votre entreprise",
         "edit": "Modifier",
         "language": "Langue",
-        "timeZone": "Fuseau horaire"
+        "timeZone": "Fuseau horaire",
+        "workWeek": "Semaine de travail",
+        "loadingWorkWeek": "Chargement de la semaine de travail",
+        "workWeekFailed": "La semaine de travail n’a pas été chargée",
+        "retry": "Réessayer"
       },
       "people": {
         "title": "Collaborateurs",
@@ -338,6 +342,13 @@
       "undo": "Annuler",
       "doneOn": "Fait {day}",
       "by": "Pour le {day}"
+    },
+    "manager": {
+      "title": "Votre responsable",
+      "loading": "Chargement de votre responsable",
+      "failed": "Votre responsable n’a pas été chargé",
+      "retry": "Réessayer",
+      "none": "Aucun responsable attribué"
     }
   },
   "app": {

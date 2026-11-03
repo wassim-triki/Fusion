@@ -63,6 +63,15 @@ Retired tenants: Fusion has no tenant deletion, so a reset renames the previous 
 
 ## Scripts
 
+B-278 accepted and closed 2026-11-03. Reusable shell verification remains below. Its standalone preview probes are preserved locally under `archive/data/`; the plan, wrappers and captures are in `archive/plans/`. Those local design artifacts are not committed. Acceptance and commands are in LOG.
+
+- [screens-b278-working-days.cjs](screens-b278-working-days.cjs): live Settings-only save/discard/preset/reload/restore through shell :3000, **8/0/0**, 2026-11-03. Restores the original work week. `--capture-only` then **3/0/0** for settled/enabled controls, sizing and no browser errors, without data mutations; fixes the first capture catching saving state. Final dark 1440×900 image `B-278-screens/settings-working-days-live.png`; no Home/B-190 captures. [Review](../LOG.md). Authentication/API reads use fusion-dev; exact commands in LOG. Future full runs include the new settled-state assertion (nine checks).
+
+
+
+- [journey-b247-b248.cjs](journey-b247-b248.cjs): work-week saves/validation/concurrency and self-manager authorization through shell :3000. Signed-out, ordinary employee, other-person/date and cross-tenant selector/header negatives. Restores Carthage’s starting work week, confirms invitation defaults unchanged, and provisions one fictional current joiner through hire/invite/accept. Final 2026-11-03: **30/0/0**; fixture in `b247-b248.local.json` (local only), Ons Khemiri at `ons.b248.mw0k6p5z@example.test`, Employee/self permissions only. Use within the first seven calendar days to review the Home manager card; after that it correctly recedes.
+- [screens-b247-b248.cjs](screens-b247-b248.cjs): only Settings › Details (Carthage administrator), Home’s company card (existing Fresh preset administrator, setup guide still open) and joiner Home (the above fixture), dark 1440×900 via :3000. Saves in `plans/B-247-screens/` and `plans/B-248-screens/`; changes no product data.
+
 - [screens-b185-team.cjs](screens-b185-team.cjs): B-185 screens (dark, 1440×900) as Mariam into `plans/B-185-screens/`: Overview (two), the Performance tab, the Org chart tab (`chart` retakes only that). Changes no data. Ran 2026-11-01.
 - [seed-b184-joining-leaving.cjs](seed-b184-joining-leaving.cjs): B-184 demo data in Carthage: the joining and leaving checklists, Yasmine Trabelsi hired into Mariam's team 3 days ahead (HR's first task ticked), Aicha's birthday 9 days ahead and shared. Re-runnable. Ran 2026-11-01.
 - [journey-b184-joining-leaving.cjs](journey-b184-joining-leaving.cjs): B-184 API journey in Carthage: a hire makes the checklist; who sees and ticks which task (HR, Mariam, Leila), Needs you, Rim and Leila refused the templates, another company refused; cancelling the hire removes it. Re-runnable. Ran 2026-11-01: 22/22.
@@ -154,3 +163,17 @@ Retired tenants: Fusion has no tenant deletion, so a reset renames the previous 
 ## Reports (B-189)
 
 `node .local-docs/agents/data/journey-b189-reports.cjs` gives Managers Reports See for their team, saves "Engineering by place" in Carthage, shares it with Managers, and verifies HR/manager/employee and cross-tenant refusals through the shell. It keeps the report and role access for review. `B189_OTHER` optionally selects another tenant administrator for the isolation checks.
+
+## Core HR front page (B-190)
+
+`node .local-docs/agents/data/journey-b190-front-page.cjs`: read-only authorization/isolation journey through the shell (HR, manager’s current branch for every date, employee without Reports, another tenant, count parity with Reports). Uses B-189’s existing Managers Reports grant; changes no data. `B190_OTHER` optionally selects another tenant administrator.
+
+`node .local-docs/agents/data/screens-b190-front-page.cjs`: Growth, People and the supporting sections, dark 1440×900 through `http://localhost:3000/core`, into `plans/B-190-screens/`; exercises grouping, date scrubbing, Today and Replay. Changes no application data.
+
+B-190 ran 2026-11-03: live journey 10/0/0; browser interactions 8/0/0. Final Growth, People and coming-up/records screens inspected; no application data changed.
+
+## Invitation withdrawal (B-235)
+
+`node .local-docs/agents/data/journey-b235-invitation-withdrawal.cjs`: through shell :3000, uses Carthage's administrator and employee plus the Mid-year administrator (`B235_OTHER` overrides). Reproduces the recorded person's lifecycle with resend, duplicate-pending invitation, withdrawal, blocked link validation/acceptance, fresh re-invitation, signed-out/employee/cross-tenant negatives, and a later invitation plan that it cancels. Leaves fictional Ala Bouzgarrou Not invited with the final invitation withdrawn; creates no account. Credentials stay in memory only.
+
+Ran 2026-11-03: **29 passed / 0 failed / 0 skipped**. Original B-182 invitation is now revoked; the fresh invitation issued during this journey was also withdrawn. No outstanding journey schedule or new account.

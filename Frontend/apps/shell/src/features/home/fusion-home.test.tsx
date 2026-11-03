@@ -14,6 +14,7 @@ type ModuleState = { key: string; label: string; status: "loading" | "ready" | "
 
 const mocks = vi.hoisted(() => ({
   user: null as AuthUser | null,
+  manager: { manager: null, isFirstWeek: false } as { manager: { displayName: string; jobTitle: string } | null; isFirstWeek: boolean },
   work: { items: [] as FusionWorkItem[], modules: [] as ModuleState[] },
   requested: [] as string[],
   praise: { data: undefined as unknown, error: null as Error | null },
@@ -87,6 +88,8 @@ vi.mock("@repo/api/query", () => ({
   usePeoplePhotos: () => new Map(),
   usePhoto: () => null,
   useTenantSummary: () => ({ data: { tenantId: "t", name: "Carthage Digital Group", language: "en", timeZone: "Africa/Tunis", logoUrl: null, brandColor: null } }),
+  useCompanyWorkWeek: () => ({ data: { workingDays: [1, 2, 3, 4, 5] }, error: null }),
+  useMyManager: () => ({ data: mocks.manager }),
   useMyTeam: () => ({ data: undefined }),
   useApiQuery: () => ({ data: undefined, isLoading: false }),
   useSetupGuide: (options: { enabled: boolean }) => {
@@ -127,6 +130,7 @@ const ready: ModuleState[] = [
 describe("FusionHome", () => {
   beforeEach(() => {
     mocks.user = employee;
+    mocks.manager = { manager: null, isFirstWeek: false };
     mocks.praise = { data: { items: [], next: null }, error: null };
     mocks.praiseEnabled = [];
     mocks.react.mockClear();
@@ -361,6 +365,16 @@ describe("FusionHome", () => {
     expect(screen.getByText("Praise couldn't be loaded")).toBeTruthy();
   });
 
+  it("gives an ordinary Core HR joiner their manager beside their day without Performance", () => {
+    mocks.user = { ...employee, moduleEntitlements: ["CoreHR"] };
+    mocks.manager = { manager: { displayName: "Mariam Gharbi", jobTitle: "VP, Product" }, isFirstWeek: true };
+    mocks.work = { modules: [ready[0]!], items: [] };
+    render(<FusionHome />);
+    expect(screen.getByRole("heading", { name: "Your manager" })).toBeTruthy();
+    expect(screen.getByText("Mariam Gharbi")).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Praise" })).toBeNull();
+  });
+
   it("has no praise and asks for none without Performance", () => {
     mocks.user = { ...employee, moduleEntitlements: ["CoreHR"] };
     mocks.work = { modules: [ready[0]!], items: [] };
@@ -373,6 +387,7 @@ describe("FusionHome", () => {
 
   it("lists the person's modules with their waiting work in the sidebar, Home first", () => {
     mocks.user = employee;
+    mocks.manager = { manager: null, isFirstWeek: false };
     mocks.work = { modules: ready, items: [] };
     render(<FusionHome />);
     const nav = screen.getByRole("complementary", { name: "Fusion navigation" });

@@ -230,6 +230,8 @@ interface FilterChipOption<T extends string> extends ChoiceOption<T> {
 interface FilterChipsBase<T extends string> {
   options: readonly FilterChipOption<T>[];
   label: string;
+  /** Larger choices for configuration fields; compact chips remain the default for filters. */
+  size?: "sm" | "lg";
   /** Chips over a canvas (a chart's legend) sit on the overlay tone so they stay readable. */
   overlay?: boolean;
   disabled?: boolean;
@@ -254,7 +256,7 @@ export type FilterChipsProps<T extends string> = FilterChipsBase<T> &
   );
 
 const chipClass = cn(
-  "inline-flex h-7 items-center gap-1.5 rounded-full border border-border px-3 type-label text-muted-foreground transition-colors outline-none hover:border-foreground/25 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-3.5 [&_svg]:shrink-0",
+  "inline-flex items-center gap-1.5 border border-border type-label text-muted-foreground transition-colors outline-none hover:border-foreground/25 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-3.5 [&_svg]:shrink-0",
   "data-[state=on]:border-primary/45 data-[state=on]:bg-primary-tint data-[state=on]:text-primary-ink"
 );
 
@@ -288,14 +290,19 @@ export function FilterChips<T extends string>(
 export function FilterChips<T extends string>(
   props: FilterChipsProps<T>
 ): ReactNode {
-  const { options, label, overlay, disabled, className } = props;
+  const { options, label, size = "sm", overlay, disabled, className } = props;
   const items = options.map((option) => (
     <ToggleGroupPrimitive.Item
       key={option.value}
       value={option.value}
       disabled={option.disabled}
       title={option.hint}
-      className={cn(chipClass, "group/chip", overlay && "bg-popover")}
+      className={cn(
+        chipClass,
+        "group/chip",
+        size === "lg" ? "h-12 min-w-0 justify-center rounded-control px-2" : "h-7 rounded-full px-3",
+        overlay && "bg-popover"
+      )}
     >
       {props.type === "multiple" ? (
         <Check

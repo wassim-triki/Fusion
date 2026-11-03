@@ -20,4 +20,5 @@ public sealed record UpdateTenantSettingsCommand(
     BrandingSettingsInput? Branding,
     SelfServiceSettingsInput? SelfService = null,
     ProvisioningSettingsInput? Provisioning = null,
-    OrgChartSettingsInput? OrgChart = null) : ICommand<Result<TenantSettingsDto>>;
+    OrgChartSettingsInput? OrgChart = null,
+    int[]? WorkingDays = null) : ICommand<Result<TenantSettingsDto>>;

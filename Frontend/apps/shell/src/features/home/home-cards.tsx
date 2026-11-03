@@ -4,9 +4,9 @@ import { useMemo, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Check } from "lucide-react";
-import { coreChecklistQueryKeys, createCoreChecklistsApi, createPlatformApiClient, type ChecklistTaskDto } from "@repo/api";
-import { useApiQuery, useMyTeam, usePeoplePhotos } from "@repo/api/query";
-import { Button, PersonAvatar, cn } from "@repo/ds";
+import { coreChecklistQueryKeys, createCoreChecklistsApi, createPlatformApiClient, type MyManagerDto, type ChecklistTaskDto } from "@repo/api";
+import { useApiQuery, useMyTeam, usePeoplePhotos, type UseApiQueryResult } from "@repo/api/query";
+import { Button, PersonAvatar, Skeleton, cn } from "@repo/ds";
 import { ProgressSegments } from "@repo/ds/shell";
 
 const DAY_MS = 86_400_000;
@@ -115,6 +115,37 @@ export function FirstWeekCard() {
           </li>
         ))}
       </ol>
+    </section>
+  );
+}
+
+/** D-12's joiner card, from a self-only read; no profile link or additional workforce access. */
+export function YourManagerCard({ query }: {
+  query: Pick<UseApiQueryResult<MyManagerDto>, "data" | "isLoading" | "error" | "refetch">;
+}) {
+  const t = useTranslations("home.manager");
+  if (query.data && !query.data.isFirstWeek) return null;
+  return (
+    <section aria-labelledby="manager-title" className="grid gap-3.5 rounded-surface bg-card px-[22px] py-5">
+      <h3 id="manager-title" className="type-subsection-title">{t("title")}</h3>
+      {query.isLoading ? (
+        <Skeleton aria-label={t("loading")} className="h-11 w-full" />
+      ) : query.error ? (
+        <div>
+          <p role="alert" className="type-meta text-muted-foreground">{t("failed")}</p>
+          <Button variant="ghost" size="sm" onClick={() => void query.refetch()}>{t("retry")}</Button>
+        </div>
+      ) : query.data?.manager ? (
+        <div className="flex items-center gap-3">
+          <PersonAvatar name={query.data.manager.displayName} size="lg" />
+          <div className="min-w-0">
+            <p className="type-label break-words">{query.data.manager.displayName}</p>
+            <p className="type-meta text-muted-foreground break-words">{query.data.manager.jobTitle}</p>
+          </div>
+        </div>
+      ) : (
+        <p className="type-meta text-muted-foreground">{t("none")}</p>
+      )}
     </section>
   );
 }

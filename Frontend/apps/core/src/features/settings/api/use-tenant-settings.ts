@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 import {
+  companyHomeKeys,
   createPlatformApiClient,
   fusionSettingsQueryKeys,
   tenantSettingsQueryKeys,
@@ -197,5 +198,21 @@ export function useUpdateProvisioningSettings() {
         await afterSave();
       },
     }
+  );
+}
+
+export function useUpdateOrganizationSettings() {
+  const client = useMemo(() => createPlatformApiClient(), []);
+  const queryClient = useApiQueryClient();
+  const afterSave = useAfterSave();
+  const { user } = useAuth();
+  return useApiMutation<OrganizationSettingsDto, { expectedVersion: number | null; workingDays: number[] }>(
+    ({ expectedVersion, workingDays }) => client.patch<OrganizationSettingsDto>(tenantSettingsPaths.organization(),
+      { workingDays }, { headers: buildIfMatchHeaders(expectedVersion) }),
+    { onSuccess: async (data) => {
+      queryClient.setQueryData(tenantSettingsQueryKeys.organization(), data);
+      await queryClient.invalidateQueries({ queryKey: companyHomeKeys.workWeek(user?.tenantId ?? "none") });
+      await afterSave();
+    } },
   );
 }

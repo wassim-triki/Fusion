@@ -60,7 +60,12 @@ export interface ProvisioningSettingsInputDto {
   inviteJoinersOnFirstDay?: boolean | null;
 }
 
-export interface TenantSettingsDto {
+export interface CompanyWorkWeekDto {
+  /** ISO weekdays: Monday = 1, Sunday = 7. */
+  workingDays: number[];
+}
+
+export interface TenantSettingsDto extends CompanyWorkWeekDto {
   version: number | null;
   employeeFieldConfig: Record<string, FieldConfigDto>;
   branding: BrandingSettingsDto;
@@ -70,6 +75,7 @@ export interface TenantSettingsDto {
 }
 
 export interface UpdateTenantSettingsRequest {
+  workingDays?: number[] | null;
   employeeFieldConfig?: Record<string, FieldConfigInputDto> | null;
   branding?: BrandingSettingsInputDto | null;
   selfService?: SelfServiceSettingsInputDto | null;
@@ -92,7 +98,7 @@ export interface SettingsAuditEventDto {
   correlationId: string | null;
 }
 
-export interface OrganizationSettingsDto {
+export interface OrganizationSettingsDto extends CompanyWorkWeekDto {
   version: number | null;
   displayName: string;
   locale: string;

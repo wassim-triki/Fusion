@@ -19,12 +19,14 @@ public sealed partial class UpdateTenantSettingsCommandHandler(
 
     public async Task<Result<TenantSettingsDto>> Handle(UpdateTenantSettingsCommand request, CancellationToken cancellationToken)
     {
+        if (!tenantContext.IsResolved || tenantContext.TenantId == Guid.Empty)
+            throw new UnauthorizedAccessException("A company is required.");
         ValidateRequest(request);
         var settings = await dbContext.TenantSettings.FirstOrDefaultAsync(cancellationToken);
         if (settings is null)
         {
             var overrides = TenantSettingsOverrideBuilder.Build(null, request.EmployeeFieldConfig, request.Branding, request.SelfService, request.Provisioning,
-                request.OrgChart);
+                request.OrgChart, request.WorkingDays);
             settings = Domain.Entities.TenantSettings.Create(tenantContext.TenantId, overrides);
             dbContext.TenantSettings.Add(settings);
         }
@@ -38,7 +40,7 @@ public sealed partial class UpdateTenantSettingsCommandHandler(
                 request.Branding,
                 request.SelfService,
                 request.Provisioning,
-                request.OrgChart));
+                request.OrgChart, request.WorkingDays));
         }
 
         try
@@ -54,6 +56,9 @@ public sealed partial class UpdateTenantSettingsCommandHandler(
 
     private static void ValidateRequest(UpdateTenantSettingsCommand request)
     {
+        if (request.WorkingDays is { } days && (days.Length == 0 || days.Length > 7
+            || days.Any(day => day is < 1 or > 7) || days.Distinct().Count() != days.Length))
+            throw new ArgumentException("Choose at least one working day, with each day listed once (Monday = 1 through Sunday = 7).");
         if (request.EmployeeFieldConfig is not null)
         {
             var unknown = request.EmployeeFieldConfig.Keys.Where(key => !KnownFieldNames.Contains(key)).ToList();

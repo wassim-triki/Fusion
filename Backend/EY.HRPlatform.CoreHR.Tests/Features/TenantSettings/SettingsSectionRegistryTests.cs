@@ -59,7 +59,7 @@ public class SettingsSectionRegistryTests
         Assert.Equal(["Brand", "Details", "Fields", "Lists", "Jobs", "Places", "Roles", "Changes and approvals", "Joining and leaving", "Sign-in", "Notifications", "Change history"], sections.Select(section => section.Label));
         Assert.Equal([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], sections.Select(section => section.Order));
         Assert.Equal(FusionSettingsSectionDto.Manage, sections[0].Access);
-        Assert.Equal(FusionSettingsSectionDto.View, sections[1].Access);
+        Assert.Equal(FusionSettingsSectionDto.Manage, sections[1].Access);
         Assert.All(sections.Skip(2).Take(2), section => Assert.Equal(FusionSettingsSectionDto.Manage, section.Access));
         // Jobs and Places are managed by whoever manages the organization, not by settings grants.
         Assert.All(sections.Skip(4).Take(2), section => Assert.Equal(FusionSettingsSectionDto.View, section.Access));

@@ -52,3 +52,5 @@ export * from "./fusion-navigation";
 export * from "./company-brand";
 export * from "./fusion-settings";
 export * from "./core-reports";
+
+export * from "./company-home";

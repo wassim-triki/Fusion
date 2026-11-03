@@ -18,7 +18,8 @@ public static class TenantSettingsOverrideBuilder
         BrandingSettingsInput? branding,
         SelfServiceSettingsInput? selfService = null,
         ProvisioningSettingsInput? provisioning = null,
-        OrgChartSettingsInput? orgChart = null)
+        OrgChartSettingsInput? orgChart = null,
+        int[]? workingDays = null)
     {
         var root = string.IsNullOrWhiteSpace(existingOverridesJson)
             ? new JsonObject()
@@ -80,6 +81,9 @@ public static class TenantSettingsOverrideBuilder
             existing["audience"] = orgChart.Audience;
             root["orgChart"] = existing;
         }
+
+        if (workingDays is not null)
+            root["workingDays"] = JsonSerializer.SerializeToNode(workingDays.Order().ToArray());
 
         return root.Count == 0 ? null : root.ToJsonString(JsonOptions);
     }

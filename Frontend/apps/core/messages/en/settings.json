@@ -38,7 +38,20 @@
     "timeZone": "Time zone",
     "timeZoneDetail": "Deadlines and reminders follow it",
     "modules": "Modules",
-    "modulesOn": "{count} on"
+    "modulesOn": "{count} on",
+    "workWeek": "Work week",
+    "commonWeeks": "Common work weeks",
+    "weekdays": "Monday–Friday",
+    "sundayWeek": "Sunday–Thursday",
+    "everyDay": "Every day",
+    "customWeek": "Custom week",
+    "workingDays": "{count, plural, one {# working day} other {# working days}}",
+    "daysOff": "{days} off",
+    "noDaysOff": "No days off",
+    "saveChanges": "Save changes",
+    "chooseDay": "Choose at least one working day.",
+    "leave": "Leave without saving the work week?",
+    "notSaved": "The work week was not saved."
   },
   "employeeFields": {
     "didNotLoad": "Employee fields didn't load",

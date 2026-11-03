@@ -38,7 +38,20 @@
     "timeZone": "Fuseau horaire",
     "timeZoneDetail": "Les échéances et rappels le suivent",
     "modules": "Modules",
-    "modulesOn": "{count, plural, one {# activé} other {# activés}}"
+    "modulesOn": "{count, plural, one {# activé} other {# activés}}",
+    "workWeek": "Semaine de travail",
+    "commonWeeks": "Semaines courantes",
+    "weekdays": "Lundi–vendredi",
+    "sundayWeek": "Dimanche–jeudi",
+    "everyDay": "Tous les jours",
+    "customWeek": "Semaine personnalisée",
+    "workingDays": "{count, plural, one {# jour travaillé} other {# jours travaillés}}",
+    "daysOff": "{days} non travaillés",
+    "noDaysOff": "Aucun jour non travaillé",
+    "saveChanges": "Enregistrer",
+    "chooseDay": "Choisissez au moins un jour travaillé.",
+    "leave": "Quitter sans enregistrer la semaine de travail ?",
+    "notSaved": "La semaine de travail n’a pas été enregistrée."
   },
   "employeeFields": {
     "didNotLoad": "Impossible de charger les champs collaborateur",

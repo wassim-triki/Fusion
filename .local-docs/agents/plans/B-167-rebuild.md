@@ -1,6 +1,6 @@
 # B-167 — The rebuild, in slices
 
-**Status:** Proposed 2026-10-30, waiting on the user's go before slice 1. Authority: `plans/B-164-decisions.md` (D-01–D-30), then the brief's §6b (scope), `DESIGN.md`, and the map (§4–§6) as evidence of what exists.
+**Status:** Order accepted 2026-10-30. Slices 1–15 accepted and closed; slice 16 (B-190) In review, not accepted; slice 17 (B-191) next; slice 18 (B-192) follows the preceding slices. No implementation task active. The backlog separates these numbered slices from other work and follow-ups. Authority: `plans/B-164-decisions.md` (D-01–D-30), then the brief's §6b (scope), `DESIGN.md`, and the map (§4–§6) as evidence of what exists.
 
 ## Rules for every slice
 

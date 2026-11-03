@@ -24,6 +24,7 @@ public static class TenantSettingsMerger
         return new TenantSettingsDto
         {
             Version = version,
+            WorkingDays = overrides.WorkingDays ?? defaults.WorkingDays,
             EmployeeFieldConfig = MergeFieldConfig(defaults.EmployeeFieldConfig, overrides.EmployeeFieldConfig),
             Branding = new BrandingSettings
             {
@@ -70,6 +71,7 @@ public static class TenantSettingsMerger
         public SelfServiceSettingsOverrides? SelfService { get; init; }
         public ProvisioningSettingsOverrides? Provisioning { get; init; }
         public OrgChartSettingsOverrides? OrgChart { get; init; }
+        public int[]? WorkingDays { get; init; }
     }
 
     private sealed record FieldConfigOverrides(bool? Visible, bool? Required, bool? VisibleToEmployee, bool? VisibleToManager);

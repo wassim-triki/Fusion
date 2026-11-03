@@ -38,7 +38,20 @@
     "timeZone": "المنطقة الزمنية",
     "timeZoneDetail": "تتبعها المواعيد النهائية والتذكيرات",
     "modules": "الوحدات",
-    "modulesOn": "{count} مفعّلة"
+    "modulesOn": "{count} مفعّلة",
+    "workWeek": "أسبوع العمل",
+    "commonWeeks": "أسابيع العمل الشائعة",
+    "weekdays": "الاثنين–الجمعة",
+    "sundayWeek": "الأحد–الخميس",
+    "everyDay": "كل يوم",
+    "customWeek": "أسبوع مخصص",
+    "workingDays": "{count, plural, one {يوم عمل واحد} two {يوما عمل} few {# أيام عمل} other {# يوم عمل}}",
+    "daysOff": "{days} عطلة",
+    "noDaysOff": "لا توجد أيام عطلة",
+    "saveChanges": "حفظ التغييرات",
+    "chooseDay": "اختر يوم عمل واحدًا على الأقل.",
+    "leave": "المغادرة دون حفظ أسبوع العمل؟",
+    "notSaved": "لم يتم حفظ أسبوع العمل."
   },
   "employeeFields": {
     "didNotLoad": "تعذّر تحميل حقول الموظفين",

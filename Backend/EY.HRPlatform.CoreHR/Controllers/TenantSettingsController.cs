@@ -75,6 +75,15 @@ public class TenantSettingsController(
         return Ok(ApiResponse<TenantSettingsDto>.Success(settings));
     }
 
+    /// <summary>Home’s company card: no other settings or tenant selector are exposed.</summary>
+    [HttpGet("work-week")]
+    public async Task<IActionResult> GetWorkWeek(CancellationToken cancellationToken)
+    {
+        if (!tenantContext.IsResolved || tenantContext.TenantId == Guid.Empty) return Forbid();
+        var settings = await GetSettingsAsync(cancellationToken);
+        return Ok(ApiResponse<CompanyWorkWeekDto>.Success(new(settings.WorkingDays)));
+    }
+
     [HttpGet("organization")]
     [ProducesResponseType(typeof(ApiResponse<OrganizationSettingsDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetOrganization(CancellationToken cancellationToken)
@@ -96,7 +105,7 @@ public class TenantSettingsController(
         [FromHeader(Name = "If-Match")] string? ifMatch,
         CancellationToken cancellationToken)
     {
-        if (!accessPolicy.CanManageOrganizationSettings(User))
+        if (!tenantContext.IsResolved || tenantContext.TenantId == Guid.Empty || !accessPolicy.CanManageOrganizationSettings(User))
         {
             return Forbid();
         }
@@ -104,7 +113,7 @@ public class TenantSettingsController(
         var before = await GetSettingsAsync(cancellationToken);
         var updated = await UpdateSettingsAsync(
             ifMatch,
-            new UpdateTenantSettingsRequest(null, request.Branding, null, null),
+            new UpdateTenantSettingsRequest(null, request.Branding, null, null, WorkingDays: request.WorkingDays),
             cancellationToken);
 
         await auditService.RecordAsync(
@@ -325,6 +334,8 @@ public class TenantSettingsController(
             return Forbid();
         }
 
+        if (request.WorkingDays is not null && (!tenantContext.IsResolved || tenantContext.TenantId == Guid.Empty
+            || !accessPolicy.CanManageOrganizationSettings(User))) return Forbid();
         if (request.EmployeeFieldConfig is not null) return BadRequest(ApiResponse.Failure(FieldsMovedMessage));
 
         // Parse If-Match header (optional for creation, required for updates)
@@ -336,7 +347,7 @@ public class TenantSettingsController(
             request.Branding,
             request.SelfService,
             request.Provisioning,
-            request.OrgChart);
+            request.OrgChart, request.WorkingDays);
 
         var before = await sender.Send(new GetTenantSettingsQuery(), cancellationToken);
         var result = await sender.Send(command, cancellationToken);
@@ -379,7 +390,7 @@ public class TenantSettingsController(
             request.Branding,
             request.SelfService,
             request.Provisioning,
-            request.OrgChart), cancellationToken);
+            request.OrgChart, request.WorkingDays), cancellationToken);
 
         return result.Value;
     }
@@ -391,7 +402,8 @@ public class TenantSettingsController(
             "en-US",
             "UTC",
             settings.Branding,
-            settings.Branding.LogoUrl is null);
+            settings.Branding.LogoUrl is null,
+            settings.WorkingDays);
 
     private static PeopleDataSettingsDto MapPeopleData(TenantSettingsDto settings)
         => new(
@@ -409,7 +421,7 @@ public class TenantSettingsController(
 
     private static IEnumerable<string> ResolveMutatedSections(UpdateTenantSettingsRequest request)
     {
-        if (request.Branding is not null)
+        if (request.Branding is not null || request.WorkingDays is not null)
             yield return SettingsSectionIds.Organization;
         if (request.EmployeeFieldConfig is not null || request.SelfService is not null || request.OrgChart is not null)
             yield return SettingsSectionIds.PeopleData;
@@ -437,7 +449,7 @@ public class TenantSettingsController(
     }
 }
 
-public sealed record UpdateOrganizationSettingsRequest(BrandingSettingsInput? Branding);
+public sealed record UpdateOrganizationSettingsRequest(BrandingSettingsInput? Branding, int[]? WorkingDays = null);
 
 public sealed record UpdatePeopleDataSettingsRequest(
     Dictionary<string, FieldConfigInput>? EmployeeFieldConfig,

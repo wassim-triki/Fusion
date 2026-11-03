@@ -1,6 +1,6 @@
-# Reports engine (B-189)
+# Reports engine (B-189 / B-190)
 
-`CoreHR/Features/Reports/ReportEngine` serves standard reports, the builder and both exports; reuse it for B-190's front page. `ReportViewer.From` takes authority only from claims. The existing `core.overview.view` read grant now permits Tenant or DirectReports (keeps existing roles working); `core.reports.build` controls saved-definition writes. Reports area's See/Build × team/everyone maps to those grants.
+`CoreHR/Features/Reports/ReportEngine` serves standard reports, the builder, both exports and B-190’s front page. `ReportViewer.From` takes authority only from claims. The existing `core.overview.view` read grant now permits Tenant or DirectReports (keeps existing roles working); `core.reports.build` controls saved-definition writes. Reports area's See/Build × team/everyone maps to those grants.
 
 Current manager branch is resolved by `ChangeSupport.BranchAsync` before loading report people or aggregating. That same allowed branch applies to past dates. Dated employment, assignments and unit states supply historical snapshots; custom Fields values are current, since the Fields feature stores current values. Open roles follow Organization's current-plan/from-today rule.
 
@@ -9,3 +9,11 @@ Never bypass `FieldsAsync`'s whitelist, including for grouping and filters. A sa
 `data/journey-b189-reports.cjs` sets Managers to See their team and keeps the shared Engineering by place demo in Carthage.
 
 Reports review (B-251): configuration stays separate from operations; Fields is beside grouping/dates, Save is primary in the tenant theme, lighter toolbar controls per the user. Reuse FilterFieldChip (Organization/People pattern) and the shared DateRangePicker, not text filters or nested single-date pickers. Standard Share saves and shares in one flow; partial-success retry retains the saved report.
+
+B-190 adds `GET /corehr/reports/front-page` through `ReportEngine.FrontPageAsync` / private `RunCoreAsync`: the same scoped row evaluation, with monthly points plus actual employment, assignment, manager and unit boundaries. The internal front-page projection is not a builder/export and is not capped at 120 periods. `FrontPageProjection` stays private; callers cannot choose a scope or bypass field policy. Frontend scrubbing and Replay evaluate these permitted snapshots locally; the lower next-30-days, required details and open roles stay anchored to today.
+
+D-30’s company departments use the nearest dated Division ancestor where that level exists (Carthage’s six groups, above Department A/B). Companies without Divisions use Department; without either level they fall back to Reports’ grouping. Company-level people outside that grouping remain Unassigned. Reports’ existing `division` field still means the top ancestor under the organization root; the front page intentionally uses D-30’s middle tier for its company departments. Card leads use dated in-scope manager links (team-only views label them as in scope). Optional job/place/start dates are omitted by the engine whitelist; the People grouping controls follow those fields. `EmployeeFieldService.VisibleRecordsAsync` accepts only the engine’s active allowed ids and visible definitions, with separate Personal/Job audiences, and shares the required-field checker with Settings. Required source Personal details now count there too.
+
+`data/journey-b190-front-page.cjs` is read-only (HR, current manager branch across all dates, no access, other tenant, standard-report count parity). `data/screens-b190-front-page.cjs` captures Growth, People and the supporting sections and exercises grouping, the slider, Today and Replay, dark 1440×900 via the shell.
+
+The People wall owns its `TooltipProvider`; keep the real `people-view.test.tsx` rendering test. A mocked wall alone missed that context requirement in initial UI tests. Final B-190 verification: backend 454/0/0, frontend 8/0/0, live API 10/0/0, browser 8/0/0; cold build passed.

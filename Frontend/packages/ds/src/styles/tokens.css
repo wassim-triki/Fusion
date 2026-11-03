@@ -450,6 +450,21 @@
     font-weight: 600;
     font-variant-numeric: tabular-nums;
 }
+/* Company history: the selected population and the department counts beneath it. */
+@utility type-metric-lg {
+    font-size: 3.25rem;
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+}
+@utility type-metric-md {
+    font-size: 2.125rem;
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
 @utility type-code {
     font-family: var(--font-mono);
     font-size: 0.8125rem;

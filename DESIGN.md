@@ -79,6 +79,7 @@ Rule: **sans for the system, serif for the human,** visible but scarce. If unsur
 | `type-mark` | a character or figure inside a small mark (initials or a number in a 24px circle) |
 | `type-eyebrow` | a short, meaningful overline, sparingly |
 | `type-metric` | counts, percentages, scores (tabular numerals) |
+| `type-metric-lg` / `type-metric-md` | company population / department counts on the company history page |
 | `type-code` (Mono) | IDs, codes, technical strings |
 
 - Exactly one page title per page; it must be unmistakable from section titles.

@@ -1,4 +1,5 @@
 using EY.HRPlatform.CoreHR.Features.Reports;
+using EY.HRPlatform.CoreHR.Features.EmployeeFields;
 using EY.HRPlatform.CoreHR.Features.Workforce.Services;
 using EY.HRPlatform.SharedKernel.Api;
 using Microsoft.AspNetCore.Authorization;
@@ -12,6 +13,10 @@ namespace EY.HRPlatform.CoreHR.Controllers;
 public sealed class ReportsController(ReportService reports, ReportEngine engine, IWorkforceAccessIdentityClient identity) : ControllerBase
 {
     private ReportViewer Viewer => ReportViewer.From(User);
+    [HttpGet("front-page")]
+    public async Task<IActionResult> FrontPage([FromServices] EmployeeFieldService fields, CancellationToken ct)
+        => !Viewer.CanSee ? Forbid() : Ok(ApiResponse<FrontPageDto>.Success(await engine.FrontPageAsync(Viewer, fields, ct)));
+
     [HttpGet]
     public async Task<IActionResult> List(CancellationToken ct) => !Viewer.CanSee ? Forbid()
         : Ok(ApiResponse<IReadOnlyList<ReportSummaryDto>>.Success(await reports.ListAsync(Viewer, ct)));

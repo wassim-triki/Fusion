@@ -57,9 +57,33 @@ export interface ReportRoleDto {
   held: boolean;
 }
 
+export interface FrontPagePersonDto {
+  employeeKey: string;
+  name: string;
+  photoUrl: string | null;
+  job: string | null;
+  place: string | null;
+  firstDay: string | null;
+  departmentId: string | null;
+  department: string | null;
+  parent: string | null;
+  managerKey: string | null;
+}
+export interface FrontPageDto {
+  today: string;
+  firstDate: string;
+  lastDate: string;
+  teamOnly: boolean;
+  fields: string[];
+  snapshots: { date: string; people: FrontPagePersonDto[] }[];
+  openRoles: { id: string; job: string | null; place: string | null; unit: string | null; targetStartDate: string | null }[];
+  recordsToComplete: { employeeKey: string; displayName: string; jobTitle: string | null; missing: string[] }[];
+}
+
 export function createCoreReportsApi(client: ApiClient) {
   const path = "/corehr/reports";
   return {
+    frontPage: (signal?: AbortSignal) => client.get<FrontPageDto>(`${path}/front-page`, { signal }),
     list: (signal?: AbortSignal) =>
       client.get<ReportSummaryDto[]>(path, { signal }),
     get: (id: string, signal?: AbortSignal) =>

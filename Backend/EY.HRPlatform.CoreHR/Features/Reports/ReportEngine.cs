@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 namespace EY.HRPlatform.CoreHR.Features.Reports;
 
 /// <summary>One tenant-filtered engine for Reports, export and the Core HR front page. Reach precedes every aggregation.</summary>
-public sealed class ReportEngine(CoreHRDbContext db, ITenantSettingsReadService settings)
+public sealed partial class ReportEngine(CoreHRDbContext db, ITenantSettingsReadService settings)
 {
     public static readonly string[] Measures = ["headcount", "joiners-leavers", "turnover", "tenure", "places", "jobs", "open-roles"];
     private static readonly ReportFieldDto[] BuiltIns = [new("name", "Name", "person"), new("unit", "Unit"), new("division", "Division"),
@@ -49,16 +49,20 @@ public sealed class ReportEngine(CoreHRDbContext db, ITenantSettingsReadService 
         return built;
     }
 
-    public async Task<ReportRunDto> RunAsync(ReportDefinition d, ReportViewer viewer, CancellationToken ct)
+    public Task<ReportRunDto> RunAsync(ReportDefinition d, ReportViewer viewer, CancellationToken ct)
+        => RunCoreAsync(d, viewer, ct);
+
+    private async Task<ReportRunDto> RunCoreAsync(ReportDefinition d, ReportViewer viewer, CancellationToken ct, FrontPageProjection? frontPage = null)
     {
         if (!viewer.CanSee) throw new UnauthorizedAccessException();
-        Validate(d);
+        if (frontPage is null) Validate(d);
         if (d.Measure == "open-roles")
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
             d = d with { Mode = "date", From = today, To = today };
         }
         var fields = await FieldsAsync(viewer, ct);
+        if (frontPage is not null) d = d with { Fields = fields.Where(f => !f.Key.StartsWith("field:", StringComparison.Ordinal)).Select(f => f.Key).ToList() };
         var allowed = fields.Select(f => f.Key).ToHashSet();
         // Refuse hidden fields even in filters: aggregates must not become a visibility oracle.
         if (!allowed.Contains(d.GroupBy) || d.Fields.Any(f => !allowed.Contains(f)) || d.Filters.Any(f => !allowed.Contains(f.Field))
@@ -125,7 +129,7 @@ public sealed class ReportEngine(CoreHRDbContext db, ITenantSettingsReadService 
                 (filter.To is null || number <= decimal.Parse(filter.To, CultureInfo.InvariantCulture));
         }
         var unitStates = await OrgChartQueryHandler.LoadUnitStatesAsync(db, d.From.AddDays(-1), ct);
-        var periods = Periods(d);
+        var periods = frontPage is null ? Periods(d) : await frontPage.InitializeAsync(db, people, employments, assignments, fields, ct);
         var series = new Dictionary<string, decimal?[]>();
         var totals = new decimal?[periods.Count];
         var details = new List<ReportPersonDto>();
@@ -228,6 +232,8 @@ public sealed class ReportEngine(CoreHRDbContext db, ITenantSettingsReadService 
                 numbers[index] = Metric(group);
             }
             totals[index] = Metric(rows);
+            frontPage?.Capture(period.To, rows.Where(r => r.Person != Guid.Empty).DistinctBy(r => r.Person).Select(r => new ReportPersonDto(
+                people[r.Person].StableEmployeeKey, d.Fields.Distinct().ToDictionary(f => f, f => r.Cells.GetValueOrDefault(f)))).ToList());
             if (index == periods.Count - 1)
                 details.AddRange(rows.Where(r => r.Person != Guid.Empty).DistinctBy(r => r.Person).Select(r => new ReportPersonDto(
                     people[r.Person].StableEmployeeKey, d.Fields.Distinct().ToDictionary(f => f, f => r.Cells.GetValueOrDefault(f)))));

@@ -244,9 +244,20 @@ public sealed class EmployeeFieldService(CoreHRDbContext db, ITenantContext tena
     private async Task<List<EmployeeFieldDefinition>> ActiveDefinitionsAsync(CancellationToken cancellationToken)
         => await db.EmployeeFieldDefinitions.AsNoTracking().Where(item => item.IsActive).ToListAsync(cancellationToken);
 
+    public async Task<IReadOnlyList<EmployeeFieldMissingPersonDto>> VisibleRecordsAsync(
+        IReadOnlyList<Guid> employeeIds, EmployeeReadAudience audience, EmployeeReadAudience jobAudience, CancellationToken ct)
+    {
+        var definitions = await ActiveDefinitionsAsync(ct);
+        var visible = definitions.Where(f => CanSee(f, Guid.Empty, f.Area == EmployeeFieldArea.Job ? jobAudience : audience, null)).ToList();
+        if (visible.Count == 0) return [];
+        var records = await RecordsToCompleteAsync(visible, ct, employeeIds);
+        var jobVisible = visible.Any(f => f.SourceKey == "jobTitle");
+        return records.Select(r => jobVisible ? r : r with { JobTitle = null }).ToList();
+    }
+
     private async Task<IReadOnlyList<EmployeeFieldMissingPersonDto>> RecordsToCompleteAsync(
         IReadOnlyList<EmployeeFieldDefinition> storedDefinitions,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, IReadOnlyList<Guid>? employeeIds = null)
     {
         var required = (storedDefinitions.Count == 0
                 ? DefaultDtos().Where(item => item.Required).Select(item => item.SourceKey).Where(item => item is not null).ToHashSet()
@@ -254,7 +265,10 @@ public sealed class EmployeeFieldService(CoreHRDbContext db, ITenantContext tena
         var customRequired = storedDefinitions.Where(item => item.Required && item.SourceKey is null).ToList();
         if (required.Count == 0 && customRequired.Count == 0) return [];
 
-        var people = await db.Employees.AsNoTracking().OrderBy(item => item.LastName).ThenBy(item => item.FirstName).Take(250).ToListAsync(cancellationToken);
+        var query = db.Employees.AsNoTracking().Include(item => item.EmergencyContacts).AsQueryable();
+        if (employeeIds is not null) query = query.Where(item => employeeIds.Contains(item.Id));
+        var ordered = query.OrderBy(item => item.LastName).ThenBy(item => item.FirstName);
+        var people = await (employeeIds is null ? ordered.Take(250) : ordered).ToListAsync(cancellationToken);
         var ids = people.Select(item => item.Id).ToList();
         var employments = await db.Employments.AsNoTracking().Where(item => ids.Contains(item.EmployeeId))
             .GroupBy(item => item.EmployeeId).Select(group => group.OrderByDescending(item => item.EffectiveFrom).First()).ToListAsync(cancellationToken);
@@ -286,6 +300,13 @@ public sealed class EmployeeFieldService(CoreHRDbContext db, ITenantContext tena
             if (required.Contains("lastName") && string.IsNullOrWhiteSpace(person.LastName)) missing.Add("Last name");
             if (required.Contains("email") && string.IsNullOrWhiteSpace(person.Email)) missing.Add("Work email");
             if (required.Contains("phone") && string.IsNullOrWhiteSpace(person.Phone)) missing.Add("Phone");
+            if (required.Contains("preferredName") && string.IsNullOrWhiteSpace(person.PreferredName)) missing.Add("Preferred name");
+            if (required.Contains("personalEmail") && string.IsNullOrWhiteSpace(person.PersonalEmail)) missing.Add("Personal email");
+            if (required.Contains("dateOfBirth") && person.DateOfBirth is null) missing.Add("Date of birth");
+            if (required.Contains("homeAddress") && string.IsNullOrWhiteSpace(person.HomeStreet) && string.IsNullOrWhiteSpace(person.HomeCity)
+                && string.IsNullOrWhiteSpace(person.HomePostalCode) && string.IsNullOrWhiteSpace(person.HomeCountry)) missing.Add("Home address");
+            if (required.Contains("emergencyContacts") && person.EmergencyContacts.Count == 0) missing.Add("Emergency contact");
+            if (required.Contains("about") && string.IsNullOrWhiteSpace(person.About)) missing.Add("About me");
             if (required.Contains("hireDate") && employment is null) missing.Add("Hire date");
             employmentTypeByPerson.TryGetValue(person.Id, out var employmentType);
             if (required.Contains("employmentType") && string.IsNullOrWhiteSpace(employmentType?.EmploymentType ?? employment?.EmploymentType)) missing.Add("Employment type");
@@ -295,7 +316,7 @@ public sealed class EmployeeFieldService(CoreHRDbContext db, ITenantContext tena
             if (missing.Count > 0)
                 result.Add(new EmployeeFieldMissingPersonDto(person.StableEmployeeKey, person.DisplayName, assignment?.JobTitle, missing));
         }
-        return result.Take(50).ToList();
+        return employeeIds is null ? result.Take(50).ToList() : result;
     }
 
     private EmployeeFieldDefinition FromSpec(Guid catalogId, Spec spec, FieldConfig? legacy, string? actor)

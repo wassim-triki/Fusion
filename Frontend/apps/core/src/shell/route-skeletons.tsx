@@ -58,21 +58,22 @@ export function OverviewPageSkeleton() {
   const t = useTranslations("frame.skeletons");
   return (
     <PageContainer width="wide" className="space-y-6">
-      <PageHeader
-        title={t("dashboard")}
-        description={<Skeleton className="h-4 w-80 max-w-full" />}
-      />
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-24 rounded-surface" />
-        ))}
+      <div className="flex items-center gap-4" role="status" aria-label={t("loadingTitle", { title: t("dashboard") })}>
+        <Skeleton className="size-14 shrink-0 rounded-control" />
+        <div className="grid gap-2"><Skeleton className="h-8 w-80 max-w-full" /><Skeleton className="h-4 w-64 max-w-full" /></div>
       </div>
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Skeleton className="h-64 rounded-surface lg:col-span-2" />
-        <Skeleton className="h-64 rounded-surface" />
-      </div>
+      <OverviewContentSkeleton />
     </PageContainer>
   );
+}
+
+export function OverviewContentSkeleton() {
+  return <>
+    <Skeleton className="h-[420px] w-full rounded-surface" />
+    <div className="grid gap-3.5 md:grid-cols-2 xl:grid-cols-3">
+      {[0, 1, 2].map(i => <Skeleton key={i} className="h-60 rounded-surface" />)}
+    </div>
+  </>;
 }
 
 export function EmployeesPageSkeleton({ label }: { label?: string }) {

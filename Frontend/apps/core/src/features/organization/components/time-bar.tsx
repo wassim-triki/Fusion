@@ -14,7 +14,7 @@ const pct = (fraction: number) => `${fraction * 100}%`;
  * months after today (dashed), each planned change marked on it. Replay walks from the first day to today.
  */
 export function TimeBar({
-  span, date, planned, people, replaying, onDate, onReplay,
+  span, date, planned, people, replaying, onDate, onReplay, embedded = false,
 }: {
   span: TimeSpan;
   date: string;
@@ -25,6 +25,8 @@ export function TimeBar({
   replaying: boolean;
   onDate: (date: string) => void;
   onReplay: () => void;
+  /** The front page shares its chart's frame with the slider underneath it. */
+  embedded?: boolean;
 }) {
   const t = useTranslations("organization.time");
   const format = useFormat();
@@ -33,7 +35,7 @@ export function TimeBar({
   const shown = format.date(date, { year: "always" });
   const when = date === span.today ? t("today") : date < span.today ? t("past") : t("planned");
   return (
-    <div className="grid grid-cols-[auto_minmax(0,1fr)_200px] items-center gap-5 rounded-surface bg-card px-5 pt-4 pb-3 max-lg:grid-cols-1">
+    <div className={cn("grid grid-cols-[auto_minmax(0,1fr)_150px] items-center gap-5 pt-4 pb-3 max-lg:grid-cols-1", embedded ? "border-t border-border" : "rounded-surface bg-card px-5")}>
       <div className="flex items-center gap-1.5">
         <Button
           type="button"

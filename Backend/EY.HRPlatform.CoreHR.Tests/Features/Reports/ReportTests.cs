@@ -58,6 +58,105 @@ public sealed class ReportTests
         return (name, people[0].Id);
     }
 
+    [Fact]
+    public async Task Front_page_reuses_report_history_and_never_mixes_tenants_or_viewer_branches()
+    {
+        var world = await Seed();
+        await using var db = TestDbContextFactory.Create(TestTenantContext.WithTenant(Tenant), world.Db);
+        var unit = db.OrgUnits.Single();
+        var division = OrgUnit.Create(Tenant, "ENG-DIV", "Engineering", "Division", null);
+        db.OrgUnits.Add(division);
+        db.OrgUnitEffectiveStates.Add(OrgUnitEffectiveState.Create(Tenant, division.Id, OrganizationalUnitTypeCatalog.DivisionId, null,
+            division.Name, OrgUnitLifecycleState.Active, Today.AddYears(-2)));
+        db.OrgUnitEffectiveStates.Single().CloseAt(Today.AddDays(-10));
+        db.OrgUnitEffectiveStates.Add(OrgUnitEffectiveState.Create(Tenant, unit.Id, OrganizationalUnitTypeCatalog.DepartmentId, division.Id,
+            "Engineering A", OrgUnitLifecycleState.Active, Today.AddDays(-10)));
+        await db.SaveChangesAsync();
+        var engine = new ReportEngine(db, Settings().Object);
+        var fields = new EY.HRPlatform.CoreHR.Features.EmployeeFields.EmployeeFieldService(db, TestTenantContext.WithTenant(Tenant));
+        var front = await engine.FrontPageAsync(Hr, fields, default);
+        Assert.Equal(Today.AddYears(-2), front.FirstDate);
+        Assert.Equal(2, front.Snapshots.Single(s => s.Date == Today).People.Count);
+        Assert.All(front.Snapshots.Single(s => s.Date == Today).People, p => { Assert.Equal(division.Id, p.DepartmentId); Assert.Equal("Engineering", p.Department); });
+        Assert.Equal(3, front.Snapshots.Last(s => s.Date < Today.AddDays(-19)).People.Count);
+        Assert.All(front.Snapshots.SelectMany(s => s.People), p => Assert.DoesNotContain("Other", p.Name));
+        Assert.Single(front.OpenRoles);
+        var viewer = new ReportViewer(Guid.NewGuid(), world.Manager, PermissionScopes.DirectReports, false, false);
+        var team = await engine.FrontPageAsync(viewer, fields, default);
+        Assert.True(team.TeamOnly);
+        Assert.All(team.Snapshots.SelectMany(s => s.People), p => Assert.Contains("Person1", p.Name));
+        Assert.Equal(Today.AddYears(-1).AddDays(5), team.FirstDate);
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => engine.FrontPageAsync(viewer with { Scope = null }, fields, default));
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => engine.FrontPageAsync(viewer with { EmployeeId = null }, fields, default));
+    }
+
+    [Fact]
+    public async Task Front_page_keeps_the_whole_monthly_history_and_future_boundaries()
+    {
+        var world = await Seed();
+        await using var db = TestDbContextFactory.Create(TestTenantContext.WithTenant(Tenant), world.Db);
+        var unit = db.OrgUnits.Single();
+        var person = Employee.Create(Tenant, "Future", "Joiner", "future@example.test", employeeNumber: "FUTURE");
+        var first = Today.AddDays(7).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var employment = Employment.Start(Tenant, person.Id, first, null, WorkforceSourceType.Manual);
+        db.Employees.Add(person); db.Employments.Add(employment);
+        db.WorkAssignments.Add(WorkAssignment.Create(Tenant, employment.Id, person.Id, unit.Id, TestCatalog.Job(Tenant, "Engineer"),
+            TestCatalog.Place(Tenant, "Tunis"), true, first, null, WorkforceSourceType.Manual));
+        var company = OrgUnit.Create(Tenant, "COMPANY", "Company", "Organization", null);
+        db.OrgUnits.Add(company);
+        db.OrgUnitEffectiveStates.Add(OrgUnitEffectiveState.Create(Tenant, company.Id, OrganizationalUnitTypeCatalog.OrganizationId, null,
+            company.Name, OrgUnitLifecycleState.Active, Today.AddYears(-15)));
+        var old = Employee.Create(Tenant, "First", "Person", "first@example.test", employeeNumber: "FIRST");
+        db.Employees.Add(old);
+        var oldEmployment = Employment.Start(Tenant, old.Id, Today.AddYears(-15).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), null, WorkforceSourceType.Manual);
+        db.Employments.Add(oldEmployment);
+        db.WorkAssignments.Add(WorkAssignment.Create(Tenant, oldEmployment.Id, old.Id, company.Id, TestCatalog.Job(Tenant, "CEO"), null,
+            true, oldEmployment.EffectiveFrom, null, WorkforceSourceType.Manual));
+        await db.SaveChangesAsync();
+        var engine = new ReportEngine(db, Settings().Object);
+        var fields = new EY.HRPlatform.CoreHR.Features.EmployeeFields.EmployeeFieldService(db, TestTenantContext.WithTenant(Tenant));
+        var front = await engine.FrontPageAsync(Hr, fields, default);
+        Assert.Equal(Today.AddYears(-15), front.FirstDate);
+        Assert.True(front.Snapshots.Count > 180);
+        Assert.Null(front.Snapshots.Single(s => s.Date == Today).People.Single(p => p.Name == "First Person").Department);
+        Assert.DoesNotContain(front.Snapshots.Single(s => s.Date == Today).People, p => p.Name == "Future Joiner");
+        Assert.Contains(front.Snapshots.Single(s => s.Date == Today.AddDays(7)).People, p => p.Name == "Future Joiner");
+        var report = await engine.RunAsync(Definition() with { Mode = "date" }, Hr, default);
+        Assert.Equal(report.Totals[0], front.Snapshots.Single(s => s.Date == Today).People.Count);
+    }
+
+    [Fact]
+    public async Task Front_page_omits_hidden_job_fields_and_missing_details_before_serializing()
+    {
+        var world = await Seed();
+        await using var db = TestDbContextFactory.Create(TestTenantContext.WithTenant(Tenant), world.Db);
+        var config = TenantSettingsDto.DefaultEmployeeFieldConfig;
+        foreach (var key in new[] { "jobTitle", "workLocation", "hireDate" })
+            config[key] = new FieldConfig(Visible: true, Required: false, VisibleToEmployee: false, VisibleToManager: false);
+        var policy = Settings();
+        policy.Setup(s => s.GetCurrentAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new TenantSettingsDto { EmployeeFieldConfig = config });
+        db.EmployeeFieldDefinitions.Add(EmployeeFieldDefinition.Create(Tenant, Guid.NewGuid(), "private-detail", "Private detail", EmployeeFieldArea.Personal,
+            EmployeeFieldType.Text, EmployeeFieldEditor.Hr, true, false, false, true, false, 1, null, null, "test"));
+        db.EmployeeFieldDefinitions.Add(EmployeeFieldDefinition.Create(Tenant, Guid.NewGuid(), "shared-detail", "Shared detail", EmployeeFieldArea.Personal,
+            EmployeeFieldType.Text, EmployeeFieldEditor.Employee, true, true, true, true, false, 2, null, null, "test"));
+        db.EmployeeFieldDefinitions.Add(EmployeeFieldDefinition.Create(Tenant, Guid.NewGuid(), "home-address", "Home address", EmployeeFieldArea.Personal,
+            EmployeeFieldType.Address, EmployeeFieldEditor.EmployeeWithApproval, true, true, false, true, true, 3, "homeAddress", null, "test"));
+        await db.SaveChangesAsync();
+        var engine = new ReportEngine(db, policy.Object);
+        var fields = new EY.HRPlatform.CoreHR.Features.EmployeeFields.EmployeeFieldService(db, TestTenantContext.WithTenant(Tenant));
+        var front = await engine.FrontPageAsync(new(Guid.NewGuid(), world.Manager, PermissionScopes.DirectReports, false, false), fields, default);
+        Assert.DoesNotContain("job", front.Fields); Assert.DoesNotContain("place", front.Fields); Assert.DoesNotContain("first-day", front.Fields);
+        Assert.All(front.Snapshots.SelectMany(s => s.People), p => { Assert.Null(p.Job); Assert.Null(p.Place); Assert.Null(p.FirstDay); });
+        var missing = Assert.Single(front.RecordsToComplete);
+        Assert.Contains("Person1", missing.DisplayName);
+        Assert.Equal(new[] { "Shared detail" }, missing.Missing);
+        Assert.Null(missing.JobTitle);
+        var hr = await engine.FrontPageAsync(Hr, fields, default);
+        Assert.Equal(2, hr.RecordsToComplete.Count);
+        Assert.All(hr.RecordsToComplete, p => Assert.Contains("Private detail", p.Missing));
+        Assert.All(hr.RecordsToComplete, p => Assert.Contains("Home address", p.Missing));
+    }
+
     [Theory]
     [InlineData("headcount")][InlineData("joiners-leavers")][InlineData("turnover")][InlineData("tenure")]
     [InlineData("places")][InlineData("jobs")][InlineData("open-roles")]

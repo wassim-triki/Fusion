@@ -22,7 +22,8 @@ import {
   Mail,
   MessageSquare,
   MessageSquareText,
-  PanelLeftClose,
+  ChevronsLeft,
+  ChevronsRight,
   Settings,
   ShieldCheck,
   SlidersHorizontal,
@@ -233,7 +234,7 @@ export function FusionSidebar({
 
   useEffect(() => {
     // At tablet widths a full navigation column turns a record into a narrow reading pane; the rail keeps
-    // every destination and the brand mark expands it again.
+    // every destination with a dedicated expand control.
     const query = window.matchMedia("(max-width: 1023px)");
     if (query.matches || readCollapsed()) setCollapsed(true);
     const handleChange = (event: MediaQueryListEvent) => setCollapsed(event.matches || readCollapsed());
@@ -313,20 +314,10 @@ export function FusionSidebar({
         )}
       >
         {/* Brand: the company's logo and name */}
-        <div className={cn("flex items-center gap-2.5 px-4 pt-4 pb-3", collapsed && "justify-center px-0")}>
-          {collapsed ? (
-            withTooltip(
-              true,
-              t("expand"),
-              <button type="button" onClick={() => choose(false)} aria-label={t("expand")} className={BRAND_MARK}>
-                <CompanyMark name={tenantName} logoUrl={tenantLogoUrl} />
-              </button>,
-            )
-          ) : (
-            <span aria-hidden className={BRAND_MARK}>
-              <CompanyMark name={tenantName} logoUrl={tenantLogoUrl} />
-            </span>
-          )}
+        <div className={cn("flex items-center gap-2.5 px-4 pt-4 pb-3", collapsed && "flex-col justify-center px-0")}>
+          <span aria-hidden className={BRAND_MARK}>
+            <CompanyMark name={tenantName} logoUrl={tenantLogoUrl} />
+          </span>
           {!collapsed ? (
             <>
               <span className="flex min-w-0 flex-1 flex-col">
@@ -337,16 +328,22 @@ export function FusionSidebar({
                 )}
                 <span className="truncate text-xs text-muted-foreground">Fusion</span>
               </span>
-              <button
-                type="button"
-                onClick={() => choose(true)}
-                aria-label={t("collapse")}
-                className="grid size-7 shrink-0 place-items-center rounded-detail text-muted-foreground/70 transition-colors hover:bg-inlay hover:text-foreground"
-              >
-                <PanelLeftClose className="size-4" />
-              </button>
             </>
           ) : null}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={() => choose(!collapsed)}
+                aria-label={t(collapsed ? "expand" : "collapse")}
+                aria-expanded={!collapsed}
+                className="grid size-8 shrink-0 place-items-center rounded-control text-muted-foreground transition-colors hover:bg-inlay hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {collapsed ? <ChevronsRight aria-hidden className="size-4 rtl:rotate-180" /> : <ChevronsLeft aria-hidden className="size-4 rtl:rotate-180" />}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side={collapsed ? "right" : "bottom"}>{t(collapsed ? "expand" : "collapse")}</TooltipContent>
+          </Tooltip>
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 pb-3">

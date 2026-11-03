@@ -18,11 +18,13 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-274.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-277.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
 ## In progress
+
+
 
 
 
@@ -68,13 +70,21 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## Ready
 
+- [ ] **B-276** Resolve existing frontend lint warnings · Performance · 2026-11-03
+      Commit hook: unused Input in Performance reviews/round-page.tsx; choice controls in shell activate-invitation and core brand section; img warnings in shell setup-guide and core brand/previews; import-type annotations in core brand.test.tsx. Unrelated to this pass; no lint failures.
+
+- [ ] **B-250** Sidebar collapse/expand affordance still unresolved; revisit in a later UI pass · Shared · 2026-11-03
+      User rejected both the wide toggle and the compact-chevron revision. Explicitly deferred 2026-11-03: leave the current UI as-is; do not treat it as accepted or continue this session.
+  - [ ] **B-274** Redesign the sidebar toggle after rejected review attempts · Shared · 2026-11-03
+        Deferred with B-250. Compact header chevrons did not resolve the user's concern.
+
+
 - [ ] **B-272** Investigate the 2,000-person company import scale test failure · Core HR · 2026-11-02
       Full CoreHR suite during B-271: 450 passed, 1 failed in Scale_two_thousand_people_in_eighty_units (3m50s); test runner omitted failure detail.
 
 - [ ] **B-255** Scale Reports filter values with viewer-scoped server search when company data grows; report runs currently return the complete allowed value set.
 
 
-- [ ] **B-250** The sidebar's collapse and expand control needs a better icon and affordance (user 2026-11-01: today's panel icon and the brand-mark-to-expand read badly) · Shared · 2026-11-01
 - [ ] **B-246** The first person's start date: the administrator's record starts on activation day, so an import that matches them keeps that start and dates the lines under them (their reports' manager lines) from it; offer the file's earlier start for a record nobody has changed since day one · Core HR · 2026-11-01
 - [ ] **B-247** A company work week (days worked) in Settings › Details, shown on Home's company card as drawn (D-09) · Core HR, Identity · 2026-11-01
 - [ ] **B-248** "Your manager" on a joiner's Home as drawn (D-12): a self read of the viewer's manager for anyone, not only managers · Core HR, Shell · 2026-11-01
@@ -85,8 +95,6 @@ Open work only. Agents keep it current from the conversation; closed items leave
 - [ ] **B-240** Directory card as drawn (D-28): initials in Fusion's serif on every face, and the card footer's org chart icon matching the drawing's (Hugeicons Hierarchy; Core's chrome is still Lucide, so pick the match or move this icon). Long names already end in an ellipsis · Core HR · 2026-10-31
       User 2026-10-31 (B-182 review, card compared with `plans/B-182-screens/ref-directory-card.png`).
 
-- [ ] **B-238** Invite sheet › When › Later on one line, with one date-and-time picker (a shadcn or ReUI component that combines both) instead of a date picker beside a time select · Core HR, Shared · 2026-10-31
-      User 2026-10-31 (B-182 review): the sheet "looks great"; only this note.
 - [ ] **B-239** Restyle the Add a person page (B-199's `/core/people/add`) · Core HR · 2026-10-31
       User 2026-10-31 (B-182 review): "mark add person screen for restyling later".
 

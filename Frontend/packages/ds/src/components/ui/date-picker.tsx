@@ -9,6 +9,7 @@ import { cn } from "../../lib/utils"
 import { Button } from "./button"
 import { Calendar } from "./calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "./popover"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select"
 import { formatDateParts } from "../../lib/dates"
 
 /**
@@ -29,6 +30,10 @@ function DatePicker({
   disabled,
   className,
   captionLayout,
+  time,
+  onTimeChange,
+  timeLabel,
+  times,
   ...aria
 }: {
   /** Selected date as `YYYY-MM-DD`, or empty for none. */
@@ -44,6 +49,11 @@ function DatePicker({
   className?: string
   /** "dropdown" for dates far away, such as a birthday: month and year as menus. */
   captionLayout?: "label" | "dropdown"
+  /** Supplying time composes a single date-and-time field. */
+  time?: string
+  onTimeChange?: (value: string) => void
+  timeLabel?: string
+  times?: readonly string[]
   "aria-label"?: string
   "aria-invalid"?: boolean
 }) {
@@ -76,7 +86,7 @@ function DatePicker({
           )}
         >
           <CalendarIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-          {selected ? formatDisplay(selected, locale) : (placeholder ?? t("pick"))}
+          {selected ? `${formatDisplay(selected, locale)}${time ? ` · ${time}` : ""}` : (placeholder ?? t("pick"))}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
@@ -92,10 +102,19 @@ function DatePicker({
           onSelect={(date) => {
             if (date) {
               onChange(formatISODate(date))
-              setOpen(false)
+              if (!onTimeChange) setOpen(false)
             }
           }}
         />
+        {onTimeChange ? (
+          <div className="flex items-center justify-between gap-4 border-t border-border p-3">
+            <span className="type-label">{timeLabel}</span>
+            <Select value={time} onValueChange={onTimeChange}>
+              <SelectTrigger aria-label={timeLabel} className="w-28"><SelectValue /></SelectTrigger>
+              <SelectContent>{times?.map((value) => <SelectItem key={value} value={value}>{value}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+        ) : null}
       </PopoverContent>
     </Popover>
   )

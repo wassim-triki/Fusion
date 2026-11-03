@@ -7,11 +7,6 @@ import {
   Checkbox,
   DatePicker,
   Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Sheet,
   SheetContent,
   SheetTitle,
@@ -113,7 +108,7 @@ export function InviteSheet({ open, onClose }: { open: boolean; onClose: () => v
   const sendAt = when === "later" && date ? new Date(`${date}T${time}:00`) : null;
   const atWords = (value: Date) =>
     new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(value);
-  const laterInvalid = when === "later" && (!sendAt || sendAt.getTime() <= Date.now());
+  const laterInvalid = when === "later" && (!sendAt || !Number.isFinite(sendAt.getTime()) || sendAt.getTime() <= Date.now());
 
   const settings = provisioning.data?.provisioning;
   const saveSetting = async (change: Partial<ProvisioningSettingsDto>) => {
@@ -199,22 +194,23 @@ export function InviteSheet({ open, onClose }: { open: boolean; onClose: () => v
           </Block>
 
           <Block title={t("when")}>
-            <Segmented
-              label={t("when")}
-              value={when}
-              onChange={setWhen}
-              options={[{ value: "now", label: t("now") }, { value: "later", label: t("later") }]}
-              className="justify-self-start"
-            />
-            {when === "later" ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <DatePicker value={date} onChange={setDate} min={new Date().toISOString().slice(0, 10)} aria-label={t("day")} className="w-48" />
-                <Select value={time} onValueChange={setTime}>
-                  <SelectTrigger className="w-28" aria-label={t("time")}><SelectValue /></SelectTrigger>
-                  <SelectContent>{TIMES.map((value) => <SelectItem key={value} value={value}>{value}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-            ) : null}
+            <div className="flex flex-wrap items-center gap-3">
+              <Segmented
+                label={t("when")}
+                value={when}
+                onChange={setWhen}
+                options={[{ value: "now", label: t("now") }, { value: "later", label: t("later") }]}
+                className="justify-self-start"
+              />
+              {when === "later" ? (
+                <DatePicker
+                  value={date} onChange={setDate}
+                  min={`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}`}
+                  time={time} onTimeChange={setTime} timeLabel={t("time")} times={TIMES}
+                  aria-label={t("dateAndTime")} className="min-w-0 flex-1"
+                />
+              ) : null}
+            </div>
             {counts?.scheduled.length ? (
               <ul className="grid gap-1.5">
                 {counts.scheduled.map((item) => (

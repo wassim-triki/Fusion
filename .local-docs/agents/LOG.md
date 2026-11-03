@@ -1,5 +1,13 @@
 # LOG — the one history
 
+- ✓ **B-238 / B-275** Combined invitation date-and-time picker accepted by the user, 2026-11-03, including placement beside Now/Later. EN/FR/AR labels; local-time scheduling preserved. Uncommitted.
+
+- **B-250 / B-274** Sidebar revisions rejected and explicitly deferred by the user, 2026-11-03. Current UI left as-is; returned to Ready for a later pass, not accepted.
+
+- **B-274 / B-275** Review corrections sent for review, 2026-11-03: removed rejected wide sidebar toggle, compact chevrons in header/rail; combined date-time field moved beside Now/Later. Dark 1440x900 shell review; collapse/expand exercised, diff check passed. Visual-only, no test rerun. No commit.
+
+- **B-250 / B-238** Sidebar affordance and combined invitation scheduling sent for review, 2026-11-03. Shared DS controls; EN/FR/AR label; permissions and scheduling contract retained. Sidebar tests 7/0/0, combined picker 1/0/0, core/DS type-check and scoped lint passed. Dark 1440x900 shell screenshots inspected. No commit; B-239 deferred.
+
 - ✓ **B-189** Reports accepted and closed by the user, 2026-11-03, including review work B-251, B-252, B-260–B-266, B-268–B-269, B-271 and B-273. The separate import scale-test failure remains B-272; server-side filter search remains B-255.
 
 - **B-273** Report chart visual treatment sent for review, 2026-11-02. Workspace tests 16/0, chart tests 4/0, core type-check passed; live Headcount inspected.

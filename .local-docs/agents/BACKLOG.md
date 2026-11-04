@@ -32,7 +32,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In progress
 
-None. Waiting on the user's verdict on B-246 (batch 3 of B-286).
+None. Next: B-191 single sign-on (next planned slice).
 
 ### Rebuild program tracking
 
@@ -53,21 +53,9 @@ None waiting.
 
 ### Other reviews
 
-B-246 (batch 3 of B-286).
-
-- [ ] **B-246** The first person's imported start date: an explicit choice between activation day and the earlier file date · Core HR · 2026-11-04
-      In review. Look at the import review's Also to check card "Amira Khelifi has two start dates" (Keep, Fusion's lean, from In Fusion; Use, from people.csv) and the Start date row it adds to Changed. [Guide and capture](plans/B-246-first-person-start.md). Reviewed live 2026-11-04 (B-286 batch 3): two-sentence activation caption removed, source under each date, wrapped check titles no longer cramped. Server-side provenance, publish-time revalidation, atomic correction and frozen-plan retry unchanged.
+None waiting.
 
 ## Ready
-
-- [ ] **B-286** Review and close what Codex left In review, in batches that share a surface: design-first live check against the agreed drawings, fixes in the same pass, one look per batch · All · 2026-11-04
-      User 2026-11-04, after the usage-limit break. Items keep their own lanes; this tracks the pass. Plan and progress in STATE.
-  - [x] **Batch 1** Core HR front page (B-190 ✓) + B-280 loading in Core, Performance, Platform (accepted). Fixes in 2b5cd9c4.
-  - [x] **Front page follow-ups** B-284 (payload 5.5 MB → 120 KB) and B-285 (faces on Next 30 days and open roles) closed ○.
-  - [x] **Batch 2** Home: redesign the company card (B-247) and manager card (B-248), rejected 11-03, then review them with B-280's Home part; commit B-280.
-        2026-11-04: B-280 Home loading checked, sidebar module flicker fixed. User picked company C and manager A+B on the [canvas](https://claude.ai/artifact/BvgCaYiseSdKQ31Vzj5bPp); built and committed with B-280. Accepted 2026-11-04 (user: "that's great").
-  - [ ] **Batch 3** B-246, the first person's imported start date. 2026-11-04: reviewed live, wording and card fixed, screenshot sent; waiting on the verdict.
-
 
 ### Rebuild slices
 

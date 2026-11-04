@@ -1,11 +1,12 @@
 "use client";
 
+import { RequestSkeleton } from "@/shell/workspace-skeletons";
+
 import { useState } from "react";
 import { newClientId, type FeedbackInviteeDto, type FeedbackRequestDto } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
 import { Input } from "@repo/ds/components/ui/input";
 import { Label } from "@repo/ds/components/ui/label";
-import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { Textarea } from "@repo/ds/components/ui/textarea";
 import { AsyncButton, PageContainer, PageHeader, StatusBadge, Said } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
@@ -231,18 +232,5 @@ function InviteeView({ request }: { request: FeedbackRequestDto }) {
         </div>
       ) : null}
     </section>
-  );
-}
-
-function RequestSkeleton() {
-  const t = useTranslations("conversations.RequestSkeleton");
-  return (
-    <PageContainer>
-      <div role="status" aria-label={t("loadingThisRequest")} className="mx-auto max-w-3xl space-y-4">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="mt-8 h-48 w-full rounded-surface" />
-      </div>
-    </PageContainer>
   );
 }

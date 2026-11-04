@@ -2,24 +2,20 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useFusionUpcoming, useFusionWork, useMyManager, useTenantSummary } from "@repo/api/query";
-import { canAccessCoreTeam, resolveFusionAttentionModules, TopBarPreferences, TopBarSearch, useAuth, ViewingAsBar } from "@repo/auth";
+import { canAccessCoreTeam, resolveFusionAttentionModules, useAuth } from "@repo/auth";
 import { Skeleton } from "@repo/ds";
 import {
-  AppShell,
   HomeAgenda,
   PageContainer,
   Section,
-  ThemeProvider,
-  TopBar,
   WorkList,
   orderWork,
 } from "@repo/ds/shell";
-import { FusionSidebar } from "./fusion-sidebar";
+import { HomeSkeleton } from "./home-skeleton";
 import { FirstWeekCard, YourManagerCard, YourTeamCard } from "./home-cards";
-import { CompanyCard, PeopleCard, SetupGuideCard, useHomeSetup } from "./setup-guide";
+import { CompanyCard, SetupGuideCard, useHomeSetup } from "./setup-guide";
 import { HomeDecision } from "./home-decision";
 import { HomePraise } from "./home-praise";
-import { ShellNotificationBell } from "./shell-notification-bell";
 import { YourYear } from "./your-year";
 import { dateFormatter } from "@repo/ds/lib/dates";
 
@@ -55,13 +51,12 @@ function DayLine({ now }: { now: Date }) {
  * The work column, as drawn: Needs you (every module's work in the order things are due, yes-or-no answered in the row)
  * and Coming up (the next two weeks across modules), each one section with its title inside.
  */
-export function HomeWork({ quietWhenEmpty = false }: { quietWhenEmpty?: boolean } = {}) {
+function HomeWork({ quietWhenEmpty = false, work, upcoming }: {
+  quietWhenEmpty?: boolean;
+  work: ReturnType<typeof useFusionWork>;
+  upcoming: ReturnType<typeof useFusionUpcoming>;
+}) {
   const t = useTranslations("home");
-  const { user } = useAuth();
-  const modules = resolveFusionAttentionModules(user);
-  const enabled = Boolean(user?.tenantId);
-  const work = useFusionWork(modules, { enabled });
-  const upcoming = useFusionUpcoming(modules, { enabled });
   const today = new Date();
   const workBusy = work.modules.some((module) => module.status === "loading");
   const datesBusy = upcoming.modules.some((module) => module.status === "loading");
@@ -92,70 +87,59 @@ export function HomeWork({ quietWhenEmpty = false }: { quietWhenEmpty?: boolean 
  * company, then the viewer's day. An administrator's Home opens on the company's setup guide (D-09) until it's done or
  * hidden, with the company and its people beside it; everyone else's side column is their team, year and praise.
  */
-export function FusionHome() {
+export function FusionHomeContent() {
   const t = useTranslations("home");
   const { user } = useAuth();
   const name = firstName(user?.fullName);
   const now = new Date();
-  const performance = resolveFusionAttentionModules(user).includes("performance");
+  const modules = resolveFusionAttentionModules(user);
+  const performance = modules.includes("performance");
+  const work = useFusionWork(modules, { enabled: Boolean(user?.tenantId) });
+  const upcoming = useFusionUpcoming(modules, { enabled: Boolean(user?.tenantId) });
   const team = canAccessCoreTeam(user) && Boolean(user?.employeeId);
   const setup = useHomeSetup();
   const manager = useMyManager();
   const showManager = Boolean(user?.employeeId && (manager.isLoading || manager.error || manager.data?.isFirstWeek));
+  if (setup.guide.pending) return <HomeSkeleton />;
   return (
-    <ThemeProvider>
-      <AppShell
-        sidebar={<FusionSidebar />}
-        notice={<ViewingAsBar />}
-        header={
-          <TopBar>
-            <TopBarSearch />
-            <ShellNotificationBell />
-            <TopBarPreferences />
-          </TopBar>
-        }
-      >
-        <PageContainer className="space-y-8">
-          <div className="space-y-2">
-            <h1 className="type-display text-foreground">
-              {name
-                ? t("greetingNamed", { greeting: t(`greeting.${greeting(now)}`), name })
-                : t(`greeting.${greeting(now)}`)}
-            </h1>
-            <DayLine now={now} />
+    <PageContainer className="space-y-8">
+      <div className="space-y-2">
+        <h1 className="type-display text-foreground">
+          {name
+            ? t("greetingNamed", { greeting: t(`greeting.${greeting(now)}`), name })
+            : t(`greeting.${greeting(now)}`)}
+        </h1>
+        <DayLine now={now} />
+      </div>
+      {setup.show ? (
+        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="space-y-6">
+            <SetupGuideCard guide={setup.guide} onHide={setup.hide} />
+            <HomeWork work={work} upcoming={upcoming} quietWhenEmpty />
           </div>
-          {setup.show ? (
-            <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
-              <div className="space-y-6">
-                <SetupGuideCard guide={setup.guide} onHide={setup.hide} />
-                <HomeWork quietWhenEmpty />
-              </div>
-              <aside aria-label={t("sideColumn")} className="space-y-5">
-                <CompanyCard />
-                <PeopleCard people={setup.guide.people} />
-              </aside>
-            </div>
-          ) : performance || team || showManager ? (
-            <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-              <div className="space-y-6">
-                <FirstWeekCard />
-                <HomeWork />
-              </div>
-              <aside aria-label={t("sideColumn")} className="space-y-6">
-                {showManager ? <YourManagerCard query={manager} /> : null}
-                {team ? <YourTeamCard /> : null}
-                {performance ? <YourYear employeeId={user?.employeeId} enabled={performance} /> : null}
-                {performance ? <HomePraise /> : null}
-              </aside>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <FirstWeekCard />
-              <HomeWork />
-            </div>
-          )}
-        </PageContainer>
-      </AppShell>
-    </ThemeProvider>
+          <aside aria-label={t("sideColumn")} className="space-y-5">
+            <CompanyCard guide={setup.guide} />
+          </aside>
+        </div>
+      ) : performance || team || showManager ? (
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="space-y-6">
+            <FirstWeekCard />
+            <HomeWork work={work} upcoming={upcoming} />
+          </div>
+          <aside aria-label={t("sideColumn")} className="space-y-6">
+            {showManager ? <YourManagerCard query={manager} /> : null}
+            {team ? <YourTeamCard /> : null}
+            {performance ? <YourYear employeeId={user?.employeeId} enabled={performance} /> : null}
+            {performance ? <HomePraise /> : null}
+          </aside>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <FirstWeekCard />
+          <HomeWork work={work} upcoming={upcoming} />
+        </div>
+      )}
+    </PageContainer>
   );
 }

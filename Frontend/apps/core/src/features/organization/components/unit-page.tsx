@@ -1,5 +1,7 @@
 "use client";
 
+import { UnitPageSkeleton as UnitSkeleton } from "@/shell/route-skeletons";
+
 import { useMemo } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -7,7 +9,7 @@ import { useTranslations } from "next-intl";
 import { AlertTriangle, ArrowLeft, Network } from "lucide-react";
 import type { OrgChartOpenRoleDto, OrgChartPersonDto } from "@repo/api";
 import { useAuth } from "@repo/auth";
-import { Alert, AlertDescription, AlertTitle, Button, Skeleton } from "@repo/ds";
+import { Alert, AlertDescription, AlertTitle, Button } from "@repo/ds";
 import { PageContainer, PagePermissionNotice } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { canAccessEmployeeRoster } from "@/lib/employee-roster-access";
@@ -239,14 +241,3 @@ function groupByUnit(people: OrgChartPersonDto[], unitId: string, units?: Map<st
   }
   return [...groups.values()].sort((a, b) => (a.unitId === unitId ? -1 : b.unitId === unitId ? 1 : a.name.localeCompare(b.name)));
 }
-
-function UnitSkeleton() {
-  return (
-    <PageContainer width="wide" className="max-w-6xl">
-      <Skeleton className="mb-4 h-5 w-32 rounded-detail" />
-      <Skeleton className="h-44 w-full rounded-surface" />
-      <Skeleton className="mt-8 h-64 w-full rounded-surface" />
-    </PageContainer>
-  );
-}
-

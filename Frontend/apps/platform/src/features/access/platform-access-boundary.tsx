@@ -3,8 +3,8 @@
 import { useEffect, type ReactNode } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useAuth } from "@repo/auth";
-import { PageSkeleton } from "@repo/ds/shell";
+import { useHydratedWorkspaceAccess } from "@repo/auth";
+import { PlatformRouteSkeleton } from "@/shell/route-page-skeleton";
 import { buildShellUrl } from "@/lib/shell-url";
 import { PlatformPageState } from "@/features/states/platform-page-state";
 import {
@@ -19,8 +19,7 @@ export function PlatformAccessBoundary({
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { user, isLoading } = useAuth();
-  const state = resolvePlatformAccessState({ user, isLoading });
+  const { state } = useHydratedWorkspaceAccess(resolvePlatformAccessState);
   const t = useTranslations("frame");
 
   useEffect(() => {
@@ -38,7 +37,7 @@ export function PlatformAccessBoundary({
   }, [pathname, searchParams, state]);
 
   if (state === "loading" || state === "sign-in-required") {
-    return <PageSkeleton rows={3} label={t("checkingAccess")} />;
+    return <PlatformRouteSkeleton label={t("checkingAccess")} />;
   }
 
   if (state === "forbidden") {

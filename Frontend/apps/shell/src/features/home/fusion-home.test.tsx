@@ -1,4 +1,5 @@
 // @vitest-environment happy-dom
+import type { MyManagerDto } from "@repo/api";
 import { render as baseRender, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactElement } from "react";
@@ -8,13 +9,14 @@ import type { AuthUser } from "@repo/auth";
 import type { FusionUpcoming, FusionWorkItem, PersonPerformanceSummaryDto } from "@repo/api";
 import { IntlTestProvider } from "@repo/ds/testing";
 import { shellMessages } from "@/test/intl";
-import { FusionHome } from "./fusion-home";
+import { FusionHomeContent as FusionHome } from "./fusion-home";
+import { HomeFrame } from "./home-frame";
 
 type ModuleState = { key: string; label: string; status: "loading" | "ready" | "error" };
 
 const mocks = vi.hoisted(() => ({
   user: null as AuthUser | null,
-  manager: { manager: null, isFirstWeek: false } as { manager: { displayName: string; jobTitle: string } | null; isFirstWeek: boolean },
+  manager: { manager: null, isFirstWeek: false, teammates: [], teammateCount: 0 } as MyManagerDto,
   work: { items: [] as FusionWorkItem[], modules: [] as ModuleState[] },
   requested: [] as string[],
   praise: { data: undefined as unknown, error: null as Error | null },
@@ -23,7 +25,7 @@ const mocks = vi.hoisted(() => ({
   upcoming: { items: [] as FusionUpcoming[], modules: [] as ModuleState[] },
   card: { jobTitle: "QA Automation Engineer", orgUnitName: "Consulting A" } as { jobTitle: string | null; orgUnitName: string | null } | null,
   summary: null as PersonPerformanceSummaryDto | null,
-  guide: { pending: false, steps: [] as { key: string; done: boolean }[], doneCount: 0, open: null as string | null, people: 1 },
+  guide: { pending: false, steps: [] as { key: string; done: boolean }[], doneCount: 0, open: null as string | null, people: 1, faces: [] as { key: string; name: string; photoUrl: string | null }[] },
   guideEnabled: [] as boolean[],
 }));
 
@@ -36,7 +38,7 @@ function render(ui: ReactElement, locale: "en" | "fr" = "en") {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return baseRender(
     <IntlTestProvider locale={locale} messages={shellMessages[locale]}>
-      <QueryClientProvider client={client}>{ui}</QueryClientProvider>
+      <QueryClientProvider client={client}><HomeFrame>{ui}</HomeFrame></QueryClientProvider>
     </IntlTestProvider>,
   );
 }
@@ -130,14 +132,14 @@ const ready: ModuleState[] = [
 describe("FusionHome", () => {
   beforeEach(() => {
     mocks.user = employee;
-    mocks.manager = { manager: null, isFirstWeek: false };
+    mocks.manager = { manager: null, isFirstWeek: false, teammates: [], teammateCount: 0 };
     mocks.praise = { data: { items: [], next: null }, error: null };
     mocks.praiseEnabled = [];
     mocks.react.mockClear();
     mocks.upcoming = { items: [], modules: [{ key: "performance", label: "Performance", status: "ready" }] };
     mocks.summary = null;
     mocks.guideEnabled = [];
-    mocks.guide = { pending: false, steps: [], doneCount: 0, open: null, people: 1 };
+    mocks.guide = { pending: false, steps: [], doneCount: 0, open: null, people: 1, faces: [] };
   });
   afterEach(() => cleanup());
 
@@ -222,6 +224,7 @@ describe("FusionHome", () => {
       doneCount: 1,
       open: "organization",
       people: 1,
+      faces: [],
       steps: [
         { key: "company", done: true },
         { key: "organization", done: false },
@@ -235,7 +238,7 @@ describe("FusionHome", () => {
     expect(screen.getByRole("progressbar", { name: "1 of 5 done" })).toBeTruthy();
     expect(screen.getByText("Drop your spreadsheets here")).toBeTruthy();
     expect(screen.getAllByRole("link", { name: "Edit" })[0]?.getAttribute("href")).toBe("/core/settings/brand");
-    expect(screen.getByText("1 so far")).toBeTruthy();
+    expect(screen.getByText("1 person")).toBeTruthy();
     expect(screen.queryByText("Nothing needs you")).toBeNull();
   });
 
@@ -367,7 +370,7 @@ describe("FusionHome", () => {
 
   it("gives an ordinary Core HR joiner their manager beside their day without Performance", () => {
     mocks.user = { ...employee, moduleEntitlements: ["CoreHR"] };
-    mocks.manager = { manager: { displayName: "Mariam Gharbi", jobTitle: "VP, Product" }, isFirstWeek: true };
+    mocks.manager = { manager: { employeeKey: "E-MG", displayName: "Mariam Gharbi", jobTitle: "VP, Product", photoUrl: null, unit: "Product", place: null }, isFirstWeek: true, teammates: [], teammateCount: 0 };
     mocks.work = { modules: [ready[0]!], items: [] };
     render(<FusionHome />);
     expect(screen.getByRole("heading", { name: "Your manager" })).toBeTruthy();
@@ -387,7 +390,7 @@ describe("FusionHome", () => {
 
   it("lists the person's modules with their waiting work in the sidebar, Home first", () => {
     mocks.user = employee;
-    mocks.manager = { manager: null, isFirstWeek: false };
+    mocks.manager = { manager: null, isFirstWeek: false, teammates: [], teammateCount: 0 };
     mocks.work = { modules: ready, items: [] };
     render(<FusionHome />);
     const nav = screen.getByRole("complementary", { name: "Fusion navigation" });

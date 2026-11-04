@@ -8,9 +8,9 @@ import {
   PageContainer,
   PageHeader,
   PagePermissionNotice,
-  PageSkeleton,
 } from "@repo/ds/shell";
 import { Button } from "@/components/ui/button";
+import { CoreRouteSkeleton } from "./route-page-skeleton";
 import { buildShellUrl } from "@/lib/shell-url";
 import {
   buildCoreCallbackUrl,
@@ -45,7 +45,7 @@ export function CoreWorkspaceAccessBoundary({
   }, [pathname, searchParams, state]);
 
   if (state === "loading" || state === "sign-in-required") {
-    return <PageSkeleton rows={4} label={t("checkingAccess")} />;
+    return <CoreRouteSkeleton label={t("checkingAccess")} />;
   }
 
   if (state === "forbidden") {
@@ -109,5 +109,5 @@ export function CoreWorkspaceAccessBoundary({
 
   if (state === "allowed") return children;
 
-  return <PageSkeleton rows={4} label={t("checkingAccess")} />;
+  return <CoreRouteSkeleton label={t("checkingAccess")} />;
 }

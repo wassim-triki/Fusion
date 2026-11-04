@@ -313,20 +313,12 @@
       },
       "company": {
         "label": "Your company",
-        "yours": "Your company",
-        "edit": "Edit",
-        "language": "Language",
-        "timeZone": "Time zone",
-        "workWeek": "Work week",
+        "edit": "Edit your company",
         "loadingWorkWeek": "Loading work week",
         "workWeekFailed": "Work week did not load",
-        "retry": "Try again"
-      },
-      "people": {
-        "title": "People",
-        "soFar": "{count} so far",
-        "you": "You",
-        "open": "Open People"
+        "retry": "Try again",
+        "people": "{count, plural, one {# person} other {# people}}",
+        "openPeople": "Open People"
       }
     },
     "team": {
@@ -348,7 +340,10 @@
       "loading": "Loading your manager",
       "failed": "Your manager did not load",
       "retry": "Try again",
-      "none": "No manager assigned"
+      "none": "No manager assigned",
+      "openProfile": "Open profile",
+      "alsoReporting": "Also reporting to {name}",
+      "more": "and {count} more"
     }
   },
   "app": {

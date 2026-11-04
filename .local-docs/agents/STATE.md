@@ -6,6 +6,8 @@
 
 **B-286 Review batches (Claude, 2026-11-04).** Batch 1 done: B-190 ✓, B-280 Core/Performance/Platform accepted, fixes committed. Next: batch 2 = Home (B-247 company card + B-248 manager card need a redesign, the user rejected their look 11-03; plus B-280 Home, then commit B-280); batch 3 = B-246. B-284/B-285 closed ○ after batch 1 (user: "Go").
 
+Batch 2 built and committed (company C, manager A+B, B-280 incl. Home sidebar fix). Waiting on the user's one look at Home: the Fresh administrator (company card) and Ons Khemiri, the joiner (manager card). Then batch 3 = B-246.
+
 ## Next
 
 Human look at B-280: refresh Home and the investigated Core People/worker, Performance 1:1 list/series and Platform Tenants/record routes. One canonical pending shape now spans access and primary data loading; Home retains its frame. Readiness/auth decisions remain fail closed; no artificial delays, early protected pages, cache widening or domain/API changes. Targeted tests **160/0/0**, four cold builds including lint/types, production browser **41/0/0**, development **19/0/0**, read-only API **8/0/0** plus anonymous header context401. Scoped security-review: no high-confidence vulnerabilities.

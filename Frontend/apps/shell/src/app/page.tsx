@@ -1,13 +1,18 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAuth } from "@repo/auth";
+import { useAuth, useHydratedWorkspaceAccess } from "@repo/auth";
 import { resolveShellEntryState } from "@/lib/shell-entry";
-import { FusionHome } from "@/features/home/fusion-home";
+import { FusionHomeContent } from "@/features/home/fusion-home";
+import { HomeFrame } from "@/features/home/home-frame";
+import { HomeSkeleton } from "@/features/home/home-skeleton";
 
 export default function HomePage() {
-  const { user, isLoading, logout } = useAuth();
-  const state = resolveShellEntryState({ user, isLoading });
+  const { logout } = useAuth();
+  const { user, state: readiness } = useHydratedWorkspaceAccess(({ user, isLoading }) =>
+    resolveShellEntryState({ user, isLoading }).kind,
+  );
+  const state = resolveShellEntryState({ user, isLoading: readiness === "loading" });
   const destination = state.kind === "redirect" ? state.destination : null;
 
   useEffect(() => {
@@ -17,15 +22,15 @@ export default function HomePage() {
   }, [destination]);
 
   if (state.kind === "home") {
-    return <FusionHome />;
+    return <HomeFrame><FusionHomeContent /></HomeFrame>;
   }
 
   if (state.kind !== "no-usable-context") {
-    return <ShellEntrySkeleton />;
+    return <HomeFrame><HomeSkeleton /></HomeFrame>;
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-xl items-center px-6 py-16">
+    <HomeFrame><div className="mx-auto flex max-w-xl items-center px-6 py-16">
       <section className="w-full rounded-surface bg-card p-8 text-card-foreground">
         <p className="text-sm font-medium text-muted-foreground">Fusion account</p>
         <h1 className="mt-2 text-2xl font-semibold">No workspace is available</h1>
@@ -44,18 +49,6 @@ export default function HomePage() {
           Sign out
         </button>
       </section>
-    </main>
-  );
-}
-
-function ShellEntrySkeleton() {
-  return (
-    <main
-      className="mx-auto flex min-h-screen max-w-xl items-center px-6 py-16"
-      aria-busy="true"
-      aria-label="Opening your Fusion workspace"
-    >
-      <div className="h-48 w-full animate-pulse rounded-surface bg-muted" />
-    </main>
+    </div></HomeFrame>
   );
 }

@@ -313,20 +313,12 @@
       },
       "company": {
         "label": "Votre entreprise",
-        "yours": "Votre entreprise",
-        "edit": "Modifier",
-        "language": "Langue",
-        "timeZone": "Fuseau horaire",
-        "workWeek": "Semaine de travail",
+        "edit": "Modifier votre entreprise",
         "loadingWorkWeek": "Chargement de la semaine de travail",
         "workWeekFailed": "La semaine de travail n’a pas été chargée",
-        "retry": "Réessayer"
-      },
-      "people": {
-        "title": "Collaborateurs",
-        "soFar": "{count} pour l’instant",
-        "you": "Vous",
-        "open": "Voir les collaborateurs"
+        "retry": "Réessayer",
+        "people": "{count, plural, one {# collaborateur} other {# collaborateurs}}",
+        "openPeople": "Voir les collaborateurs"
       }
     },
     "team": {
@@ -348,7 +340,10 @@
       "loading": "Chargement de votre responsable",
       "failed": "Votre responsable n’a pas été chargé",
       "retry": "Réessayer",
-      "none": "Aucun responsable attribué"
+      "none": "Aucun responsable attribué",
+      "openProfile": "Voir le profil",
+      "alsoReporting": "Rattachés aussi à {name}",
+      "more": "et {count} de plus"
     }
   },
   "app": {

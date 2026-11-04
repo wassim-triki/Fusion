@@ -1,5 +1,7 @@
 "use client";
 
+import { FeedSkeleton } from "@/shell/workspace-skeletons";
+
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -8,7 +10,6 @@ import type { FeedbackDto, FeedbackRequestRowDto, FeedbackSummaryDto, FeedbackVi
 import { useReactToPraise } from "@repo/api/query";
 import { Button } from "@repo/ds/components/ui/button";
 import { FilterChips } from "@repo/ds/choice";
-import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@repo/ds/components/ui/tabs";
 import { PageContainer, PageHeader, StatusBadge, Said } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
@@ -721,14 +722,6 @@ function PraisePage({
   );
 }
 
-function FeedSkeleton() {
-  return (
-    <div className="space-y-3" aria-hidden>
-      <Skeleton className="h-32 w-full rounded-surface" />
-      <Skeleton className="h-32 w-full rounded-surface" />
-    </div>
-  );
-}
 
 /** Feedback for one named person, once their name is known; someone the viewer can't see opens an empty composer. */
 function FeedbackTo({ employeeId, onClose }: { employeeId: string; onClose: () => void }) {

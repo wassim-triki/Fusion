@@ -1,7 +1,5 @@
-import { getTranslations } from "next-intl/server";
-import { PageSkeleton } from "@repo/ds/shell";
+import { PlatformRouteSkeleton } from "@/shell/route-page-skeleton";
 
 export default async function Loading() {
-  const t = await getTranslations("frame");
-  return <PageSkeleton rows={3} label={t("loading")} />;
+  return <PlatformRouteSkeleton />;
 }

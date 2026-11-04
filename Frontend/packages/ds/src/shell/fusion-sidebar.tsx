@@ -376,6 +376,17 @@ export function FusionSidebar({
               {!collapsed ? (
                 <p className="px-2.5 pt-1.5 pb-1.5 type-eyebrow text-muted-foreground/70">{t("modules")}</p>
               ) : null}
+              {pending ? (
+                // Which modules the person may enter isn't known yet: placeholders, not a list that grows.
+                <div aria-busy aria-label={t("loadingNavigation")} className="flex flex-col gap-0.5">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className={cn("flex items-center gap-3 px-2.5 py-2", collapsed && "justify-center")}>
+                      <Skeleton className="size-4 shrink-0 rounded-detail" />
+                      {!collapsed ? <Skeleton className="h-4 flex-1" /> : null}
+                    </div>
+                  ))}
+                </div>
+              ) : (
               <ul className="flex flex-col gap-0.5">
                 {modules.map((module) => {
                   const Icon = moduleIcon(module);
@@ -394,6 +405,7 @@ export function FusionSidebar({
                   );
                 })}
               </ul>
+              )}
             </div>
           ) : (
             <>

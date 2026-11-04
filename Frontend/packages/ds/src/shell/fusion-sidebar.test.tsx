@@ -112,6 +112,12 @@ describe("FusionSidebar", () => {
     expect(screen.queryByText("Employee")).not.toBeInTheDocument();
   });
 
+  it("on Home, holds placeholders instead of a module list that grows once access is known", () => {
+    renderSidebar({ currentModuleKey: undefined, sections: undefined, basePath: undefined, pending: true });
+    expect(screen.getByLabelText("Loading navigation")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Performance/ })).not.toBeInTheDocument();
+  });
+
   it("renders the frame at once while sections resolve", () => {
     renderSidebar({ pending: true });
     expect(screen.getByLabelText("Loading navigation")).toBeInTheDocument();

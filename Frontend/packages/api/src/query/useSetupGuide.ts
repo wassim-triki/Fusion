@@ -25,9 +25,12 @@ export interface SetupGuide {
   open: SetupStepKey | null;
   /** Everyone in the company today, the viewer included. */
   people: number;
+  /** A few of them, for faces. */
+  faces: { key: string; name: string; photoUrl: string | null }[];
 }
 
-const ONE_PERSON = { page: 1, pageSize: 1 } as const;
+/** The count, and the newest few faces for the company card. */
+const FIRST_PEOPLE = { page: 1, pageSize: 4, sort: "EmploymentDate", direction: "Desc" } as const;
 
 /**
  * The company's setup guide (D-09, B-188), the product tour's administrator track: five steps, each done from what the
@@ -52,7 +55,7 @@ export function useSetupGuide({
     return { client: api, people: createCorePeopleApi(api), perf: createPerformanceApi(api) };
   }, []);
   const tenant = useTenantSummary();
-  const roster = useApiQuery(corePeopleQueryKeys.list(ONE_PERSON), (signal) => people.people(ONE_PERSON, signal), { enabled });
+  const roster = useApiQuery(corePeopleQueryKeys.list(FIRST_PEOPLE), (signal) => people.people(FIRST_PEOPLE, signal), { enabled });
   const access = useApiQuery(
     coreWorkforceQueryKeys.accessSubjectsSummary(),
     (signal) => client.get<WorkforceAccessRosterSummaryDto>(coreWorkforcePaths.accessSubjectsSummary(), { signal }),
@@ -83,5 +86,6 @@ export function useSetupGuide({
     doneCount: steps.filter((step) => step.done).length,
     open: steps.find((step) => !step.done)?.key ?? null,
     people: total,
+    faces: (roster.data?.items ?? []).map((p) => ({ key: p.employeeKey, name: p.displayName, photoUrl: p.photoUrl })),
   };
 }

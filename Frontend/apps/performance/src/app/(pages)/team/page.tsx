@@ -6,14 +6,13 @@ import { useSearchParams } from "next/navigation";
 import { PageContainer, Section, TeamBand, TeamBandSkeleton } from "@repo/ds/shell";
 import { useTeamBand } from "@repo/api/query";
 import { Button } from "@repo/ds/components/ui/button";
-import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { ArrowRight, Users } from "@/lib/icons";
 import { ContentUnavailable } from "@/features/performance/components/content-unavailable";
-import { TeamDirection, TeamDirectionSkeleton } from "@/features/performance/components/team/team-direction";
+import { TeamDirection } from "@/features/performance/components/team/team-direction";
+import { TeamWorkspaceSkeleton } from "@/shell/workspace-skeletons";
 import type { YourPeopleQuery } from "@repo/api";
 import {
   DEFAULT_PEOPLE_QUERY,
-  RosterSkeleton,
   YourPeople,
   leadAction,
 } from "@/features/performance/components/team/your-people";
@@ -30,7 +29,10 @@ import { useFormat } from "@repo/ds/lib/use-format";
  */
 export default function TeamPerformancePage() {
   const band = useTeamBand();
+  const context = useWorkspaceContext();
+  const detail = useCurrentCycle(Boolean(context.data));
   const team = band.team.data;
+  if (context.isLoading || detail.isLoading) return <TeamWorkspaceSkeleton />;
   return (
     <PageContainer width="wide" className="max-w-6xl pb-16">
       {team ? (
@@ -49,7 +51,7 @@ export default function TeamPerformancePage() {
         <TeamBandSkeleton />
       ) : null}
       <div className="mt-8">
-        <MyTeam />
+        <MyTeam context={context} detail={detail} />
       </div>
     </PageContainer>
   );
@@ -60,17 +62,15 @@ export default function TeamPerformancePage() {
  * the phase, with the phase's facts above. Once a round's results are released, the team's results lead the page.
  * Team objectives follow while plans are made and executed.
  */
-function MyTeam() {
+function MyTeam({ context, detail }: { context: ReturnType<typeof useWorkspaceContext>; detail: ReturnType<typeof useCurrentCycle> }) {
   const t = useTranslations("team.MyTeamPage");
   const peopleWords = useSay("team.people");
   const summaryWords = useSay("team.summary");
   const format = useFormat();
-  const context = useWorkspaceContext();
   const canReview = context.data?.destinations.team ?? false;
   // The organization-direction link is offered only to actors who can enter that workspace.
   const canViewOrgDirection = context.data?.capabilities.canViewOrgDirection ?? false;
 
-  const detail = useCurrentCycle(Boolean(context.data));
   const cycle = detail.data?.cycle ?? null;
   // Overview's "Review plans" lands here already on the view that needs the manager.
   const opensOnReview = useSearchParams().get("view") === "needs-review";
@@ -86,7 +86,6 @@ function MyTeam() {
     if (filterHidden && peopleQuery.filter !== DEFAULT_PEOPLE_QUERY.filter) setPeopleQuery((query) => ({ ...query, filter: DEFAULT_PEOPLE_QUERY.filter }));
   }, [filterHidden, peopleQuery.filter]);
 
-  if (context.isLoading || detail.isLoading) return <TeamPageSkeleton />;
   if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} subject={t("performanceWorkspace")} />;
   if (detail.error) return <ContentUnavailable error={detail.error} onRetry={detail.refetch} subject={t("theCycle")} />;
   if (!canReview || !cycle) return <NoReports cycleName={cycle?.name ?? null} />;
@@ -134,24 +133,6 @@ function NoReports({ cycleName }: { cycleName: string | null }) {
         <Button asChild variant="outline" className="mt-5">
           <Link href="/">{t("goToOverview")}</Link>
         </Button>
-      </div>
-    </>
-  );
-}
-
-/** Shape-matched page loading: display title, the phase facts and the roster. */
-function TeamPageSkeleton() {
-  const t = useTranslations("team.TeamPageSkeleton");
-  return (
-    <>
-      <div role="status" aria-label={t("loadingMyTeam")}>
-        <Skeleton className="h-9 w-72 max-w-full" />
-        <Skeleton className="mt-2 h-4 w-48" />
-        <div className="mt-8 space-y-8">
-          <Skeleton className="h-5 w-[32rem] max-w-full" />
-          <RosterSkeleton />
-          <TeamDirectionSkeleton />
-        </div>
       </div>
     </>
   );

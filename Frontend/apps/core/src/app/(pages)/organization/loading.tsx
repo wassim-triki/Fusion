@@ -1,11 +1,5 @@
-import { Skeleton } from "@repo/ds";
+import { OrganizationPageSkeleton } from "@/shell/route-skeletons";
 
 export default function OrganizationLoading() {
-  return (
-    <div className="grid gap-4 px-6 pt-5">
-      <Skeleton className="h-9 w-56 rounded-control" />
-      <Skeleton className="h-20 w-full rounded-surface" />
-      <Skeleton className="h-[520px] w-full rounded-surface" />
-    </div>
-  );
+  return <OrganizationPageSkeleton />;
 }

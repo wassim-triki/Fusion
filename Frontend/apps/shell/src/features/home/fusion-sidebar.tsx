@@ -20,6 +20,7 @@ export function FusionSidebar() {
       brandColor={navigation.brandColor}
       homeCount={navigation.homeCount}
       modules={navigation.modules}
+      pending={isLoading}
       activePath="/"
       person={{
         ...navigation.person,

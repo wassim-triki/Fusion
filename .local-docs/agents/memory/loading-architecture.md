@@ -1,11 +1,25 @@
 ---
 name: loading-architecture
-description: Core/Performance MFE loading model — app-shell frame renders unconditionally; loading only ever happens inside the content area; fail-closed via guard + inert pending nav
+description: Owned MFEs and Shell Home — persistent frame, canonical static content pending UI, fail-closed hydration-safe admission
 metadata: 
   node_type: memory
   type: project
   originSessionId: f3b172c2-b066-416b-a43c-779b9408966c
 ---
+
+## Current contract — 2026-11-04, B-280 In review
+
+The July account below is historical, **not today's as-built contract**. [B-280 diagnosis and implementation evidence](../plans/B-280-loading-investigation.md) establishes two independent problems: owned MFE access holds used generic skeletons before page-specific query skeletons; Shell Home mounted its entire frame after session resolution. Neither was caused by the old setup-query gate. Cold compilation amplified duration but did not create the mismatch.
+
+The implemented correction shares static pending components through access/outer/route/page boundaries. Core People has one role-neutral initial composition for table/cards; WorkerProfileSkeleton's registry/page options agree. Organization/unit pending components are shared too. Performance extracts lightweight 1:1 list/series/reviews/request helpers, reuses plan/cycle/setup helpers and provides team/feedback pending compositions. Platform shares Tenants/record pending and uses the existing hydration hold. Unknown/unverified routes retain fallback behavior; do not infer exhaustive route parity from the representative browser checks.
+
+HomeFrame now surrounds every Home readiness branch; HomeSkeleton covers session/setup pending, and the root loader selects Home/settings-shaped pending. Protected Home children remain unmounted until admission. Attention reads and Platform activity still start concurrently with their primary setup/list reads. Core/Performance retain the existing useHydratedWorkspaceAccess; Home/Platform now use it too. Never remove readiness checks, read storage synchronously to guess SSR identity, mount protected pages early, widen caches or add minimum-duration delays to hide switches.
+
+Evidence: targeted tests **160/0/0**, four cold builds with lint/types, security-review no high-confidence findings. Production **41** and development **19** final browser cases pass through :3000. Eight production controls hold scripts then primary APIs: identical pending classes/absolute rectangles, actual main DOM retained through zero skeletons, main [264,49,1176,851], no page/hydration errors. Dev Core/Home confirms parity despite process-cold compilation. Normal warm list/detail/history and actual Shell crossings pass. Only three new temporal frames captured, all from one production Core record.
+
+Cross-MFE anchors still create a new document/AuthProvider/QueryClient; Shell's React root fallback does not wrap proxied MFE HTML. Delayed chunks can retain old content; an actually painted target-path registry fallback, genuine BFCache restoration and exhaustive other-route/persona parity remain unverified. Initial Core registry drift was repaired for the scoped components, not assumed correct from history. Known photo404s are B-281 (six paths after employee coverage). Stale hint without storage remains fail closed but lands Home/no-workspace instead of sign-in (B-282); Performance's unchanged header starts a canceled context read before access even on cycle-free routes, anonymous API401 (B-283). These are separate follow-ups, not reasons to weaken page admission.
+
+## Historical July rework
 
 Established 2026-07-05 (5 commits d275be7c..af61c93d on the core loading rework):
 

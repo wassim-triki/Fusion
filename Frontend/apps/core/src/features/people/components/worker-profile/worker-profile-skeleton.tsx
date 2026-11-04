@@ -10,22 +10,22 @@ export function WorkerProfileSkeleton({ showBackLink = false }: { showBackLink?:
     <PageContainer width="wide" className="max-w-6xl pb-16" aria-busy>
       {showBackLink ? <Skeleton className="mb-4 h-5 w-20" /> : null}
 
-      <section className="relative rounded-surface bg-section px-6 pt-6 sm:grid sm:grid-cols-[9.5rem_minmax(0,1fr)] sm:gap-x-8 sm:px-8 sm:pt-7">
-        <Skeleton className="mb-4 size-24 rounded-full border-[6px] border-background sm:row-span-2 sm:-mb-16 sm:size-[9.5rem] sm:self-end" />
+      <section className="relative rounded-surface bg-section px-6 pt-6 sm:grid sm:grid-cols-[10.5rem_minmax(0,1fr)] sm:gap-x-8 sm:px-8 sm:pt-8">
+        <Skeleton className="mb-4 size-24 rounded-full sm:row-span-3 sm:mb-0 sm:size-[10.5rem] sm:self-start" />
         <div className="space-y-2.5 sm:col-start-2">
           <Skeleton className="h-8 w-64 max-w-full" />
           <Skeleton className="h-4 w-48" />
           <Skeleton className="h-3.5 w-32" />
         </div>
-        <div className="mt-5 flex gap-4 pb-3 sm:col-start-2">
+        <div className="mt-5 flex gap-4 pb-5 sm:col-start-2">
           <Skeleton className="h-5 w-12" />
           <Skeleton className="h-5 w-16" />
           <Skeleton className="h-5 w-20" />
         </div>
       </section>
 
-      <div className="mt-6 flex flex-col gap-10 lg:flex-row lg:items-start">
-        <div className="w-full shrink-0 space-y-5 lg:w-64 lg:pt-12">
+      <div className="mt-8 flex flex-col gap-10 lg:flex-row lg:items-start">
+        <div className="w-full shrink-0 space-y-5 lg:w-64">
           {Array.from({ length: 4 }).map((_, index) => (
             <div key={index} className="space-y-2">
               <Skeleton className="h-3.5 w-20" />

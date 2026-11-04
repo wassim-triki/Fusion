@@ -40,7 +40,8 @@ import type {
 } from "../api";
 import { failureKind, listAllMatchingTenants, TENANT_PAGE_SIZES } from "../api";
 import { useTenantWords, type TenantWords } from "../language";
-import { useTenantOverview } from "../queries";
+import { useTenantActivity, useTenantOverview } from "../queries";
+import { TenantsPageSkeleton } from "./tenants-page-skeleton";
 import { RecoveryFailure } from "../recovery-dialog";
 import { activationSummary } from "./tenant-activation";
 import { TenantActivitySection } from "./tenant-activity";
@@ -108,6 +109,7 @@ export function TenantsWorkspace() {
 
   const { data, error, isLoading, isFetching, refetch } =
     useTenantOverview(query);
+  const activity = useTenantActivity();
   const [actionError, setActionError] = useState<Error | null>(null);
   const t = useTranslations("tenants.overview");
   const words = useTenantWords();
@@ -153,6 +155,8 @@ export function TenantsWorkspace() {
       ? `/tenants/${id}?from=${encodeURIComponent(serialized)}`
       : `/tenants/${id}`;
 
+  if (isLoading && !data) return <TenantsPageSkeleton />;
+
   return (
     <PageContainer width="wide">
       <PageHeader
@@ -197,7 +201,7 @@ export function TenantsWorkspace() {
         minWidth="560px"
       />
 
-      <TenantActivitySection />
+      <TenantActivitySection query={activity} />
     </PageContainer>
   );
 }

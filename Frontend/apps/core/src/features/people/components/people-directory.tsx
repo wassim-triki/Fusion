@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { Button, Skeleton, cn } from "@repo/ds";
+import { Button, cn } from "@repo/ds";
 import { DataTableFilters, DataTableSearch, useDataTable, type DataTableFilterField } from "@repo/ds/data-table";
 import type { PeopleDirectoryPersonDto } from "@repo/api";
 import { Building2, Briefcase, Mail, MapPin, Workflow } from "lucide-react";
 import { usePeopleDirectory } from "../api/use-people-directory";
 import { Monogram } from "./workforce-ui";
 import { LayoutSwitch } from "./people-layout";
+import { PeoplePendingContent } from "./people-page-skeleton";
 
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const NO_COLUMNS: never[] = [];
@@ -85,20 +86,6 @@ function PersonCard({ person, tag, mine }: { person: PeopleDirectoryPersonDto; t
 
 function CardGrid({ children }: { children: ReactNode }) {
   return <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{children}</div>;
-}
-
-function CardsSkeleton() {
-  return (
-    <CardGrid>
-      {Array.from({ length: 8 }, (_, index) => (
-        <div key={index} className="flex flex-col items-center gap-2 rounded-surface bg-card px-4 pb-12 pt-6">
-          <Skeleton className="size-16 rounded-full" />
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-3 w-24" />
-        </div>
-      ))}
-    </CardGrid>
-  );
 }
 
 /** People as cards with an A–Z rail (D-28): your team first, then everyone by letter. */
@@ -185,6 +172,8 @@ export function PeopleDirectory({ canSwitch, header }: { canSwitch: boolean; hea
   const has = new Set(groups.map(([letter]) => letter));
   const narrowed = model.isFiltered;
 
+  if (directory.isLoading && !people) return <PeoplePendingContent />;
+
   return (
     <>
       {header(people?.length ?? null)}
@@ -195,9 +184,7 @@ export function PeopleDirectory({ canSwitch, header }: { canSwitch: boolean; hea
         {canSwitch ? <LayoutSwitch value="cards" /> : null}
       </div>
 
-      {directory.isLoading && !people ? (
-        <CardsSkeleton />
-      ) : directory.error && !people ? (
+      {directory.error && !people ? (
         <div className="flex flex-col items-center gap-3 rounded-surface bg-card py-14">
           <p className="type-body text-muted-foreground">{t("error")}</p>
           <Button variant="outline" size="sm" onClick={() => void directory.refetch()}>{t("retry")}</Button>

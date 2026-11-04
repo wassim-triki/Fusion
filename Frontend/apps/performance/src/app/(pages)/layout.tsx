@@ -1,11 +1,10 @@
 import { Suspense, type ReactNode } from "react";
 import { AuthProvider } from "@repo/auth";
-import { PageSkeleton } from "@repo/ds/shell";
+import { PerformanceRouteSkeleton } from "@/shell/route-page-skeleton";
 import { Toaster } from "@repo/ds/components/ui/sonner";
 import { PerformancePagesShell } from "@/shell/performance-pages-shell";
 import { PerformanceWorkspaceAccessBoundary } from "@/shell/performance-workspace-access-boundary";
 import { LegacyRecordRedirect } from "@/features/performance/components/objective-record/legacy-record-redirect";
-import { useTranslations } from "next-intl";
 
 // The module frame (sidebar, top bar) renders unconditionally and stays present
 // while the session restores. Auth/access resolution and route data loading are
@@ -18,11 +17,10 @@ import { useTranslations } from "next-intl";
 export const dynamic = "force-dynamic";
 
 export default function PagesLayout({ children, record }: { children: ReactNode; record: ReactNode }) {
-  const t = useTranslations("common.PagesLayout");
   return (
     <AuthProvider>
       <PerformancePagesShell>
-        <Suspense fallback={<PageSkeleton rows={4} label={t("loadingPerformance")} />}>
+        <Suspense fallback={<PerformanceRouteSkeleton />}>
           <PerformanceWorkspaceAccessBoundary>
             {children}
             {record}

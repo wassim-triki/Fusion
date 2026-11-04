@@ -1,5 +1,7 @@
 "use client";
 
+import { OneOnOnesSkeleton } from "./one-on-one-skeletons";
+
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useAuth } from "@repo/auth";
@@ -397,26 +399,5 @@ function ThisWeek({ rows, managerSeriesId }: { rows: OneOnOneRowDto[]; managerSe
         );
       })}
     </ol>
-  );
-}
-
-function OneOnOnesSkeleton() {
-  const t = useTranslations("oneOnOnes.OneOnOnesSkeleton");
-  return (
-    <PageContainer width="wide">
-      <div role="status" aria-label={t("loadingYour11s")}>
-        <Skeleton className="h-9 w-24" />
-        <div className="mt-6 grid gap-10 lg:grid-cols-[minmax(0,1fr)_21rem]">
-          <div className="space-y-10">
-            <Skeleton className="h-56 w-full rounded-surface" />
-            <Skeleton className="h-72 w-full rounded-surface" />
-          </div>
-          <div className="space-y-4">
-            <Skeleton className="h-20 w-full rounded-surface" />
-            <Skeleton className="h-32 w-full" />
-          </div>
-        </div>
-      </div>
-    </PageContainer>
   );
 }

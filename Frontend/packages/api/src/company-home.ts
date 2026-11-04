@@ -1,9 +1,27 @@
 import type { ApiClient } from "./types";
 import type { CompanyWorkWeekDto } from "./tenant-settings";
 
+/** As any colleague sees them in the directory; never contact details. */
+export interface MyManagerCardDto {
+  employeeKey: string;
+  displayName: string;
+  jobTitle: string | null;
+  photoUrl: string | null;
+  unit: string | null;
+  place: string | null;
+}
+export interface MyTeammateDto {
+  employeeKey: string;
+  displayName: string;
+  jobTitle: string | null;
+  photoUrl: string | null;
+}
 export interface MyManagerDto {
-  manager: { displayName: string; jobTitle: string | null } | null;
+  manager: MyManagerCardDto | null;
   isFirstWeek: boolean;
+  /** Filled only during the first week: up to three, plus how many in all. */
+  teammates: MyTeammateDto[];
+  teammateCount: number;
 }
 
 export const companyHomeKeys = {

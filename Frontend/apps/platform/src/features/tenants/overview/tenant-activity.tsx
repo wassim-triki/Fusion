@@ -22,7 +22,7 @@ import type { TenantActivityEntry } from "../api";
 import { ACTIVITY_PREVIEW_LIMIT, failureKind } from "../api";
 import { UnavailableAction } from "../availability";
 import { useTenantWords } from "../language";
-import { useTenantActivity } from "../queries";
+import type { useTenantActivity } from "../queries";
 import {
   activityActor,
   activityNarrative,
@@ -64,8 +64,8 @@ function iconFor(entry: TenantActivityEntry): LucideIcon {
   return EVENT_ICON[entry.eventType] ?? ScrollText;
 }
 
-export function TenantActivitySection() {
-  const { data, error, isLoading, refetch } = useTenantActivity();
+export function TenantActivitySection({ query }: { query: ReturnType<typeof useTenantActivity> }) {
+  const { data, error, isLoading, refetch } = query;
   const entries = data ?? [];
   const t = useTranslations("tenants.activity");
   const words = useTenantWords();

@@ -8,6 +8,7 @@ import { List, Network, Users } from "lucide-react";
 import { coreOrgChartQueryKeys, coreOrganizationQueryKeys, createCoreOrgChartApi, createCoreOrganizationApi, createPlatformApiClient } from "@repo/api";
 import { canAccessCorePeople, canViewCoreOrganization, useAuth } from "@repo/auth";
 import { Skeleton } from "@repo/ds";
+import { OrganizationPageSkeleton as PlaceSkeleton } from "@/shell/route-skeletons";
 import { Segmented } from "@repo/ds/choice";
 import { PageHeader, PagePermissionNotice } from "@repo/ds/shell";
 import OrgChartWorkspace from "@/features/org-chart/components/org-chart-workspace";
@@ -186,16 +187,6 @@ export default function OrganizationPlace() {
       {canMoveTime && established ? (
         <PlannedChanges items={planned} date={date} loading={timeLoading} onOpen={(day) => { stop(); navigate({ asOf: day }); }} />
       ) : null}
-    </div>
-  );
-}
-
-function PlaceSkeleton() {
-  return (
-    <div className="grid gap-4 px-6 pt-5">
-      <Skeleton className="h-9 w-56 rounded-control" />
-      <Skeleton className="h-20 w-full rounded-surface" />
-      <Skeleton className="h-[520px] w-full rounded-surface" />
     </div>
   );
 }

@@ -7,9 +7,9 @@ import {
   PageContainer,
   PageHeader,
   PagePermissionNotice,
-  PageSkeleton,
 } from "@repo/ds/shell";
 import { Button } from "@repo/ds/components/ui/button";
+import { PerformanceRouteSkeleton } from "./route-page-skeleton";
 import { buildShellUrl } from "@/lib/shell-url";
 import {
   buildPerformanceCallbackUrl,
@@ -49,7 +49,7 @@ export function PerformanceWorkspaceAccessBoundary({
   }, [pathname, searchParams, state]);
 
   if (state === "loading" || state === "sign-in-required") {
-    return <PageSkeleton rows={4} label={t("checkingPerformanceAccess")} />;
+    return <PerformanceRouteSkeleton label={t("checkingPerformanceAccess")} />;
   }
 
   if (state === "forbidden") {

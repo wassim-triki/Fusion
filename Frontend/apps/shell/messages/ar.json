@@ -313,20 +313,12 @@
       },
       "company": {
         "label": "شركتك",
-        "yours": "شركتك",
-        "edit": "تعديل",
-        "language": "اللغة",
-        "timeZone": "المنطقة الزمنية",
-        "workWeek": "أسبوع العمل",
+        "edit": "تعديل شركتك",
         "loadingWorkWeek": "جارٍ تحميل أسبوع العمل",
         "workWeekFailed": "تعذر تحميل أسبوع العمل",
-        "retry": "إعادة المحاولة"
-      },
-      "people": {
-        "title": "الموظفون",
-        "soFar": "{count} حتى الآن",
-        "you": "أنت",
-        "open": "عرض الموظفين"
+        "retry": "إعادة المحاولة",
+        "people": "{count, plural, one {شخص واحد} two {شخصان} few {# أشخاص} many {# شخصًا} other {# شخص}}",
+        "openPeople": "فتح الأشخاص"
       }
     },
     "team": {
@@ -348,7 +340,10 @@
       "loading": "جارٍ تحميل مديرك",
       "failed": "تعذر تحميل مديرك",
       "retry": "إعادة المحاولة",
-      "none": "لم يتم تعيين مدير"
+      "none": "لم يتم تعيين مدير",
+      "openProfile": "فتح الملف الشخصي",
+      "alsoReporting": "يتبعون أيضًا {name}",
+      "more": "و{count} آخرون"
     }
   },
   "app": {

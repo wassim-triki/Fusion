@@ -5,7 +5,8 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Check } from "lucide-react";
 import { coreChecklistQueryKeys, createCoreChecklistsApi, createPlatformApiClient, type MyManagerDto, type ChecklistTaskDto } from "@repo/api";
-import { useApiQuery, useMyTeam, usePeoplePhotos, type UseApiQueryResult } from "@repo/api/query";
+import { useApiQuery, useMyTeam, usePeoplePhotos, usePhoto, type UseApiQueryResult } from "@repo/api/query";
+import { canAccessCorePeople, useAuth } from "@repo/auth";
 import { Button, PersonAvatar, Skeleton, cn } from "@repo/ds";
 import { ProgressSegments } from "@repo/ds/shell";
 
@@ -119,33 +120,77 @@ export function FirstWeekCard() {
   );
 }
 
-/** D-12's joiner card, from a self-only read; no profile link or additional workforce access. */
+/**
+ * The joiner's manager (D-12, B-248; A+B of the 2026-11-04 canvas): a person card (photo, name, job, unit and place,
+ * their page when the joiner may open People), then who else reports to them. From a self-only read.
+ */
 export function YourManagerCard({ query }: {
   query: Pick<UseApiQueryResult<MyManagerDto>, "data" | "isLoading" | "error" | "refetch">;
 }) {
   const t = useTranslations("home.manager");
+  const { user } = useAuth();
   if (query.data && !query.data.isFirstWeek) return null;
+  const manager = query.data?.manager;
+  const teammates = query.data?.teammates ?? [];
+  const more = (query.data?.teammateCount ?? 0) - teammates.length;
   return (
-    <section aria-labelledby="manager-title" className="grid gap-3.5 rounded-surface bg-card px-[22px] py-5">
-      <h3 id="manager-title" className="type-subsection-title">{t("title")}</h3>
+    <section aria-labelledby="manager-title" className="grid gap-[18px] rounded-surface bg-card p-[22px]">
+      <h3 id="manager-title" className="type-meta text-muted-foreground">{t("title")}</h3>
       {query.isLoading ? (
-        <Skeleton aria-label={t("loading")} className="h-11 w-full" />
+        <div aria-label={t("loading")} className="flex items-center gap-4">
+          <Skeleton className="size-16 shrink-0 rounded-full" />
+          <div className="grid flex-1 gap-2"><Skeleton className="h-5 w-36" /><Skeleton className="h-4 w-24" /></div>
+        </div>
       ) : query.error ? (
         <div>
           <p role="alert" className="type-meta text-muted-foreground">{t("failed")}</p>
           <Button variant="ghost" size="sm" onClick={() => void query.refetch()}>{t("retry")}</Button>
         </div>
-      ) : query.data?.manager ? (
-        <div className="flex items-center gap-3">
-          <PersonAvatar name={query.data.manager.displayName} size="lg" />
-          <div className="min-w-0">
-            <p className="type-label break-words">{query.data.manager.displayName}</p>
-            <p className="type-meta text-muted-foreground break-words">{query.data.manager.jobTitle}</p>
+      ) : manager ? (
+        <>
+          <div className="flex items-center gap-4">
+            <Photo name={manager.displayName} photoUrl={manager.photoUrl} size="xl" />
+            <div className="min-w-0">
+              <p className="break-words font-editorial text-[21px] leading-tight font-semibold">{manager.displayName}</p>
+              {manager.jobTitle ? <p className="mt-1 type-body text-foreground/85">{manager.jobTitle}</p> : null}
+              {manager.unit || manager.place ? (
+                <p className="type-meta text-muted-foreground">{[manager.unit, manager.place].filter(Boolean).join(" · ")}</p>
+              ) : null}
+            </div>
           </div>
-        </div>
+          {canAccessCorePeople(user) ? (
+            <a href={`/core/people/${encodeURIComponent(manager.employeeKey)}`}
+              className="flex h-10 items-center justify-center gap-2 rounded-control bg-inlay type-label text-foreground hover:bg-inlay/80">
+              {t("openProfile")}
+              <ArrowRight className="size-3.5 rtl:rotate-180" aria-hidden />
+            </a>
+          ) : null}
+          {teammates.length ? (
+            <div className="grid gap-2.5 border-t border-border pt-4">
+              <p className="type-meta text-muted-foreground">{t("alsoReporting", { name: manager.displayName.split(" ")[0] ?? "" })}</p>
+              <ul className="grid gap-2.5">
+                {teammates.map((person) => (
+                  <li key={person.employeeKey} className="flex min-w-0 items-center gap-3">
+                    <Photo name={person.displayName} photoUrl={person.photoUrl} size="sm" />
+                    <p className="min-w-0 truncate type-body">
+                      {person.displayName}
+                      {person.jobTitle ? <span className="text-muted-foreground"> · {person.jobTitle}</span> : null}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              {more > 0 ? <p className="type-meta text-muted-foreground">{t("more", { count: more })}</p> : null}
+            </div>
+          ) : null}
+        </>
       ) : (
         <p className="type-meta text-muted-foreground">{t("none")}</p>
       )}
     </section>
   );
+}
+
+function Photo({ name, photoUrl, size }: { name: string; photoUrl: string | null; size: "sm" | "xl" }) {
+  const photo = usePhoto(photoUrl);
+  return <PersonAvatar name={name} photo={photo} size={size} />;
 }

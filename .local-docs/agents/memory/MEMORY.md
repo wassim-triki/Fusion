@@ -33,7 +33,7 @@
 - [No useEffectEvent under Next 15.5](next-bundled-react-no-useeffectevent.md) — Next's bundled React lacks it; type-check passes, page crashes; use a ref.
 - [DS Spinner animation](ds-spinner-animation.md) — custom keyframes tree-shaken in TW4 prod; use built-in `animate-spin`.
 - [@repo/ui consolidation](repo-ui-consolidation.md) — owned apps moved to `@repo/ds`; interns' modules still on `@repo/ui`.
-- [Loading architecture](loading-architecture.md) — frame always renders; loading only in content area; no shell gates.
+- [Loading architecture](loading-architecture.md) — B-280 verified pending contract and stable Home frame; scoped production/dev evidence, retained hydration guards, independent auth/header follow-ups. July notes are historical.
 - [Roles model](roles-model.md) — B-177: areas over access profiles, holders by rule recomputed from Core HR, chosen = user ids, Personal on its own keys since B-214.
 - [Section titles inside sections](section-titles-inside-sections.md) — title + actions in the container; fields darker than surface; DS pickers only; icon row actions (B-179 review).
 - [Permission-gate: hide, don't deny](permission-gate-hide-not-deny.md) — hide inaccessible nav/actions; gate on operational access.

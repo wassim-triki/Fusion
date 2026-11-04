@@ -10,19 +10,19 @@ import {
 } from "@repo/ds/shell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WorkerProfileSkeleton } from "@/features/people/components/worker-profile/worker-profile-skeleton";
+import { PeoplePendingContent } from "@/features/people/components/people-page-skeleton";
 
 // ── Route skeleton registry ─────────────────────────────────────────────────
 // One dedicated loading skeleton per route, shared by every loading surface:
-// the (pages) route loading boundary, CoreSetupRouteGuard's fail-closed hold,
+// the (pages) route loading boundary, the workspace access hold,
 // and the pages' own loading branches. All three render the SAME component for
 // a given route, so the user sees exactly one skeleton from first paint to
 // content — never a generic phase swapping into a dedicated one.
 //
-// Keep this module light: ds/ui primitives only, no feature imports (it loads
-// with the route loading boundary).
+// Import static presentation only, never feature queries or page modules.
 
 export function getCorePathname(pathname: string): string {
-  const nextPath = pathname.replace(/^\/core/, "");
+  const nextPath = pathname.replace(/^\/core(?=\/|$)/, "");
   return nextPath || "/";
 }
 
@@ -77,17 +77,15 @@ export function OverviewContentSkeleton() {
 }
 
 export function EmployeesPageSkeleton({ label }: { label?: string }) {
-  const t = useTranslations("frame.skeletons");
   return (
-    <PageContainer width="wide" className="space-y-5">
-      <PageHeader title={t("people")} />
-      <PageLoading rows={8} label={label ?? t("loadingPeople")} />
+    <PageContainer width="wide" className="pb-12" aria-label={label}>
+      <PeoplePendingContent />
     </PageContainer>
   );
 }
 
 export function EmployeeProfilePageSkeleton() {
-  return <WorkerProfileSkeleton showBackLink />;
+  return <WorkerProfileSkeleton />;
 }
 
 export function MyProfilePageSkeleton() {
@@ -261,14 +259,14 @@ export function getRoutePageSkeleton(corePath: string): ReactNode {
   if (corePath === "/people") return <EmployeesPageSkeleton />;
   if (corePath === "/import" || corePath.startsWith("/import/"))
     return <PageSkeleton width="wide" />;
-  if (corePath === "/people/add") return <PersonTaskPageSkeleton />;
+  if (["/people/add", "/people/hire", "/people/add-existing"].includes(corePath)) return <PersonTaskPageSkeleton />;
   if (corePath.startsWith("/people/")) return <EmployeeProfilePageSkeleton />;
   if (corePath === "/profile") return <MyProfilePageSkeleton />;
   if (corePath === "/team" || corePath.startsWith("/team/"))
     return <TeamPageSkeleton />;
   if (corePath === "/organization") return <OrganizationPageSkeleton />;
   if (corePath.startsWith("/organization/units/"))
-    return <PageFallbackSkeleton />;
+    return <UnitPageSkeleton />;
   if (corePath === "/org-chart") return <OrganizationPageSkeleton />;
   if (corePath === "/settings" || corePath.startsWith("/settings/"))
     return <SettingsPageSkeleton />;
@@ -276,6 +274,16 @@ export function getRoutePageSkeleton(corePath: string): ReactNode {
   if (corePath === "/access/activity") return <ActivityLogPageSkeleton />;
   if (corePath.startsWith("/access")) return <AccessPageSkeleton />;
   return <PageFallbackSkeleton />;
+}
+
+export function UnitPageSkeleton() {
+  return (
+    <PageContainer width="wide" className="max-w-6xl">
+      <Skeleton className="mb-4 h-5 w-32 rounded-detail" />
+      <Skeleton className="h-44 w-full rounded-surface" />
+      <Skeleton className="mt-8 h-64 w-full rounded-surface" />
+    </PageContainer>
+  );
 }
 
 export function ReportResultsSkeleton() {

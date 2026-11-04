@@ -45,6 +45,7 @@ import { ChangeBadge } from "../changes/coming-up";
 import { useChangeRights, useUpcomingChanges } from "../changes/use-changes";
 import { Monogram, useWorkforceDate } from "./workforce-ui";
 import { LayoutSwitch } from "./people-layout";
+import { PeoplePendingContent } from "./people-page-skeleton";
 
 const PAGE_SIZES = [10, 25, 50];
 
@@ -441,6 +442,8 @@ export function PeopleTable({ header }: { header: (count: number | null) => Reac
       count: typeof count === "number" ? count : undefined,
     };
   });
+
+  if (people.isLoading && !data) return <PeoplePendingContent />;
 
   return (
     <>

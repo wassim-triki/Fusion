@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-288.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-291.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -32,13 +32,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In progress
 
-- [ ] **B-286** Review and close what Codex left In review, in batches that share a surface: design-first live check against the agreed drawings, fixes in the same pass, one look per batch · All · 2026-11-04
-      User 2026-11-04, after the usage-limit break. Items keep their own lanes; this tracks the pass. Plan and progress in STATE.
-  - [x] **Batch 1** Core HR front page (B-190 ✓) + B-280 loading in Core, Performance, Platform (accepted). Fixes in 2b5cd9c4.
-  - [x] **Front page follow-ups** B-284 (payload 5.5 MB → 120 KB) and B-285 (faces on Next 30 days and open roles) closed ○.
-  - [ ] **Batch 2** Home: redesign the company card (B-247) and manager card (B-248), rejected 11-03, then review them with B-280's Home part; commit B-280.
-        2026-11-04: B-280 Home loading checked, sidebar module flicker fixed. User picked company C and manager A+B on the [canvas](https://claude.ai/artifact/BvgCaYiseSdKQ31Vzj5bPp); built and committed with B-280. Waiting on one look at Home (B-247, B-248, B-280).
-  - [ ] **Batch 3** B-246, the first person's imported start date.
+None. Next session: B-286 batch 3 (B-246).
 
 ### Rebuild program tracking
 
@@ -59,21 +53,21 @@ None waiting.
 
 ### Other reviews
 
-- [ ] **B-280** Consistent loading placeholders across owned MFEs, with Shell Home's frame retained · Shell, Core HR, Performance, Platform · 2026-11-04
-      2026-11-04: Core, Performance and Platform loading accepted with batch 1 (user: "looks good enough"); Home part reviewed with batch 2 (B-247/B-248). Batch 1 also fixed the record breadcrumb showing the raw employee key while loading.
-      Implemented and verified, including Shell Home. Look at initial entry/refresh on Home, Core People/worker record, Performance 1:1 list/series and Platform Tenants/record: one content-pending shape through access/data loading, stable frame. Canonical static loaders, real hydration hold, no artificial waits or early protected pages. Targeted tests160/0/0; four cold builds with lint/types; production browser41/0/0 plus dev19/0/0; read-only API negatives8/0/0 plus anonymous context401; security-review clear. [Diagnosis, timed before/after evidence, scope and review guide](plans/B-280-loading-investigation.md). Genuine BFCache/actually painted target-route fallback and exhaustive other-route parity unclaimed. Existing photo, stale-hint recovery and early header-read follow-ups queued separately as B-281/B-282/B-283. Committed 2026-11-04 with the Home cards; Home part waits on the same look as B-247/B-248.
+B-246 (batch 3 of B-286).
 
 - [ ] **B-246** The first person's imported start date: an explicit choice between activation day and the earlier file date · Core HR · 2026-11-04
       In review. Look at the dated choices in Also to check and the corresponding Start date row in Changed; Keep is the default, including Take leans. [Inspection guide and one dark capture](plans/B-246-first-person-start.md). Positive server-side activation provenance/history, publish-time row locks/revalidation, atomic employment/assignment correction and frozen-plan retry. Older unproven records remain ineligible. EN/FR/AR. Final CoreHR 470/0/0, focused 13/0/0, touched frontend 9/0/0, resumed live API 17/0/0, capture 1/0/0; four lint/types and catalogue parity pass. User requested committing on 2026-11-04 while explicitly keeping this In review. Other reviews/deferrals preserved.
 
-- [ ] **B-247** Company work week in Settings › Details and Home’s company card · Core HR, Shell · 2026-11-03
-      2026-11-04: redesigned as option C (company and people in one card), committed; look at the Fresh administrator's Home.
-      Settings selector accepted and B-278 closed 2026-11-03 (“good, can be closed”). Remaining review is Home’s company card; it was not accepted or changed by the Settings verdict. Look at Home’s label-over-value work-week fact (D-09). Existing settings defaults/versioned saves, company permissions and tenant isolation; EN/FR/AR. [Review guide](plans/B-247-company-work-week.md). Original shared verification with B-248: CoreHR 464/0/0, frontend 42/0/0, API 30/0/0; accepted selector checks in LOG. Implementation committed; review remains open.
-- [ ] **B-248** Your manager on a joiner’s Home, from an ordinary employee’s self-only canonical read · Core HR, Shell · 2026-11-03
-      2026-11-04: redesigned as A+B (person card + who else reports to the manager), committed; look at Ons Khemiri's Home.
-      Remains In review, not accepted. B-278's approved implementation is Settings-only; Home/manager visuals were set aside and remain unchanged. Look at the top-right manager card during the joiner’s first seven calendar days: initials, name and current job (D-12); no manager/loading/failure states covered. [Review guide, fixture sign-in and dark screen](plans/B-248-joiner-manager.md). No management permission needed; other-person/date/tenant selectors cannot redirect it. Security-review: no high-confidence findings. Original shared evidence in LOG. Implementation committed; review remains open.
-
 ## Ready
+
+- [ ] **B-286** Review and close what Codex left In review, in batches that share a surface: design-first live check against the agreed drawings, fixes in the same pass, one look per batch · All · 2026-11-04
+      User 2026-11-04, after the usage-limit break. Items keep their own lanes; this tracks the pass. Plan and progress in STATE.
+  - [x] **Batch 1** Core HR front page (B-190 ✓) + B-280 loading in Core, Performance, Platform (accepted). Fixes in 2b5cd9c4.
+  - [x] **Front page follow-ups** B-284 (payload 5.5 MB → 120 KB) and B-285 (faces on Next 30 days and open roles) closed ○.
+  - [x] **Batch 2** Home: redesign the company card (B-247) and manager card (B-248), rejected 11-03, then review them with B-280's Home part; commit B-280.
+        2026-11-04: B-280 Home loading checked, sidebar module flicker fixed. User picked company C and manager A+B on the [canvas](https://claude.ai/artifact/BvgCaYiseSdKQ31Vzj5bPp); built and committed with B-280. Accepted 2026-11-04 (user: "that's great").
+  - [ ] **Batch 3** B-246, the first person's imported start date.
+
 
 ### Rebuild slices
 
@@ -166,6 +160,11 @@ None waiting.
 
 - [ ] **B-210** Sign-in's company column feels empty (logo and name on a wash); give it more, canvas first · Shell · 2026-10-30
       User 2026-10-30 on the Arabic sign-in: "looks clean, still lacking … especially the empty column holding the title of the organization". Revisit later, not urgent (user, same day).
+
+- [ ] **B-288** Visual pass: friendlier, BambooHR-like surfaces, with more of the company colour and icons where they help · Core HR, Shell, Performance · 2026-11-04
+      User 2026-11-04, notes for a later pass (no manual UI testing now); design choices are the agent's.
+  - [ ] **B-289** Person page band: the "with the company since … / N years, M months" fact in the glance row ends in an ellipsis instead of growing and pushing the place column · Core HR · 2026-11-04
+  - [ ] **B-290** Person page › Job: the four facts (job, team, place, manager) read bland; give them a cleaner layout with icons, in the company colour where it fits · Core HR · 2026-11-04
 
 ### Other work — follow-ups from earlier rebuild slices
 

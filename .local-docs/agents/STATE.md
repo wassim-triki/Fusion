@@ -1,18 +1,14 @@
 # STATE - live handoff
 
-**Last finished:** B-190 Core HR front page ✓ 2026-11-04 (batch 1). Earlier: B-280 loading repair, including Shell Home, 2026-11-04; Home part still **In review**. [Diagnosis, implementation, timed evidence and review guide](plans/B-280-loading-investigation.md). Uncommitted on wassim/develop, last product commit remains local 97209af5 (B-246, In review). Initial handoff changes preserved.
+**Last finished:** B-286 batch 2 ✓ 2026-11-04: Home company/people card, joiner manager card, B-280 loading, filled work-week chips (commits 9c2fde0d, c0b5c26d). Batch 1 (B-190, B-284, B-285) done earlier the same day.
 
 ## Active work
 
-**B-286 Review batches (Claude, 2026-11-04).** Batch 1 done: B-190 ✓, B-280 Core/Performance/Platform accepted, fixes committed. Next: batch 2 = Home (B-247 company card + B-248 manager card need a redesign, the user rejected their look 11-03; plus B-280 Home, then commit B-280); batch 3 = B-246. B-284/B-285 closed ○ after batch 1 (user: "Go").
-
-Batch 2 built and committed (company C, manager A+B, B-280 incl. Home sidebar fix). Waiting on the user's one look at Home: the Fresh administrator (company card) and Ons Khemiri, the joiner (manager card). Then batch 3 = B-246.
+None.
 
 ## Next
 
-Human look at B-280: refresh Home and the investigated Core People/worker, Performance 1:1 list/series and Platform Tenants/record routes. One canonical pending shape now spans access and primary data loading; Home retains its frame. Readiness/auth decisions remain fail closed; no artificial delays, early protected pages, cache widening or domain/API changes. Targeted tests **160/0/0**, four cold builds including lint/types, production browser **41/0/0**, development **19/0/0**, read-only API **8/0/0** plus anonymous header context401. Scoped security-review: no high-confidence vulnerabilities.
-
-Eight production controls confirm exact skeleton geometry and actual main DOM through SSR→hydration/data pending→zero skeletons, main [264,49,1176,851]. Dev Core/Home confirms the same despite cold compilation. BFCache restoration, an actually painted target-path automatic fallback and exhaustive other-route/persona parity remain unclaimed. Known photo404s remain B-281 (six paths); existing stale-hint sign-in recovery queued B-282 and early Performance header context request queued B-283. Do not fold those into accepted loading evidence. Other reviews and queued work below retain their verdicts.
+B-286 batch 3, in a fresh session: review B-246 (the first person's imported start date: Keep vs the file's earlier date in the import review's Also to check, and the Start date row in Changed). Same method: read commit 97209af5, open the prepared review as the fictional administrator in local `data/b246.local.json` (password: `FUSION_LOCAL_PASSWORD`), compare with D-22/D-23, fix in the same pass, then send the user screenshots or sign-in details. Then B-286 closes.
 
 ## B-246 review
 [Guide and capture](plans/B-246-first-person-start.md): use the fictional administrator and session in local `data/b246.local.json`. Also to check shows activation day versus the earlier file date; Keep is the default, Take leans keeps it, and choosing the file date appears in Changed. Fixture currently selects the file date without publishing. A second fictional tenant's import is published and proves historical tenure, assignment and reporting dates.

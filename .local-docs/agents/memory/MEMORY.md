@@ -111,6 +111,7 @@
 - [i18n speed mode](i18n-speed-mode.md) — after B-118: FR+AR just working, few demo screens, no polish; B-119 then B-115 lean.
 - [Name items, not just IDs](name-items-not-just-ids.md) — in replies say what B-NNN / a change is in plain words; bare IDs lose the user.
 - [Name people with their roles](name-people-with-roles.md) — "Amira Khelifi, the administrator", never a bare demo name; Carthage cast listed.
+- [Review handoff: screens or credentials](review-handoff-screens-or-credentials.md) — send screenshots inline, or give email + password with every localhost link.
 - [Commit hook + message shape](commit-hook-and-message-shape.md) — pre-commit = lint+type-check of our apps only since B-234 (minutes, background it); blank line after the subject.
 - [Prettier reflows whole files](prettier-reflows-whole-files.md) — `.prettierrc` is 80 cols, code is ~120+; prettier only new files.
 - [No cosmetic history rewrites](no-cosmetic-history-rewrites.md) — leave commits as they are unless it matters; don't raise cosmetic slips.

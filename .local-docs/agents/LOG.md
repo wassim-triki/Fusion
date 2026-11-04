@@ -1,5 +1,7 @@
 # LOG — the one history
 
+- ✓ **B-247 / B-248 / B-280** accepted, 2026-11-04 (user, after screenshots: "that's great"): company + people card (C), manager person card with teammates (A+B), one loading shape per page incl. Home, filled work-week chips. Batch 2 of B-286 closed. User's later-pass notes boarded as B-288 (visual pass) with B-289 (tenure line ellipsis) and B-290 (Job tab facts with icons).
+
 - ○ **B-278 follow-up** Work-week chips filled as drawn, 2026-11-04. User asked why the selector looked unlike what they approved: layout matched the approved drawing (`archive/plans/B-278-screens/working-days-selector.png`), but selected large chips used the compact filters' faint tint and read as outlined boxes in Carthage blue. `@repo/ds` choice: `size="lg"` chips now fill when on (border primary/70, bg primary/35); compact filters unchanged. Choice tests pass; live Settings › Details checked dark 1440×900.
 
 - **B-247 / B-248 / B-280** Home redesigned and committed, still **In review**, 2026-11-04. Canvas of three options per card ([Home cards](https://claude.ai/artifact/BvgCaYiseSdKQ31Vzj5bPp)); user: "manager, mix a + b, company C is fine". Company + People are one card (newest four faces via the setup guide's people read, sorted by start date). Manager card: person card + up to three teammates; `GET /corehr/me/manager` adds key/photo/unit/place and first-week teammates (same manager, employed today, tenant-filtered). B-280's Home loading checked live for three people; Home's sidebar now holds placeholders instead of growing its module list.

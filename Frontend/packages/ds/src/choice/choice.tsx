@@ -300,7 +300,10 @@ export function FilterChips<T extends string>(
       className={cn(
         chipClass,
         "group/chip",
-        size === "lg" ? "h-12 min-w-0 justify-center rounded-control px-2" : "h-7 rounded-full px-3",
+        size === "lg"
+          ? // Large choices (the work week) read as filled when on, as drawn in B-278; compact filters keep the light tint.
+            "h-12 min-w-0 justify-center rounded-control px-2 data-[state=on]:border-primary/70 data-[state=on]:bg-primary/35 data-[state=on]:text-foreground"
+          : "h-7 rounded-full px-3",
         overlay && "bg-popover"
       )}
     >

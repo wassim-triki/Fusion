@@ -93,6 +93,13 @@ public sealed class Employment : AggregateRoot, ITenantEntity
         UpdatedAt = DateTime.UtcNow;
     }
 
+    internal void ExtendStart(DateTime effectiveFrom)
+    {
+        if (effectiveFrom >= EffectiveFrom) throw new ArgumentException("The start must be earlier.", nameof(effectiveFrom));
+        EffectiveFrom = EffectiveDateRange.Create(effectiveFrom, EffectiveTo).EffectiveFrom;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public void UpdateEmploymentType(CompanyListValue? employmentType)
     {
         RequireEmploymentType(TenantId, employmentType);

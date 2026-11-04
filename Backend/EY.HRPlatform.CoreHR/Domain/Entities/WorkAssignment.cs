@@ -110,6 +110,13 @@ public sealed class WorkAssignment : AggregateRoot, ITenantEntity
         UpdatedAt = DateTime.UtcNow;
     }
 
+    internal void ExtendStart(DateTime effectiveFrom)
+    {
+        if (effectiveFrom >= EffectiveFrom) throw new ArgumentException("The start must be earlier.", nameof(effectiveFrom));
+        EffectiveFrom = EffectiveDateRange.Create(effectiveFrom, EffectiveTo).EffectiveFrom;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public void UpdateDetails(Guid orgUnitId, Job job, Place? place)
     {
         if (orgUnitId == Guid.Empty)

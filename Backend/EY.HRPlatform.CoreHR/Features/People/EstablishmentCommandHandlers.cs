@@ -70,7 +70,8 @@ internal sealed record EstablishmentInput(
     Guid JobId,
     Guid? PlaceId,
     Guid? ManagerEmployeeId,
-    WorkforceAuditAction EstablishmentAction)
+    WorkforceAuditAction EstablishmentAction,
+    string? SourceReference = null)
 {
     public static EstablishmentInput FromHire(HireEmployeeRequest request) => new(
         request.FirstName, request.LastName, request.PreferredName, request.WorkEmail, request.Phone,
@@ -151,7 +152,7 @@ internal static class EstablishmentOrchestrator
 
             var employmentResult = await mutationService.StartEmploymentAsync(
                 employee.Id,
-                new StartEmploymentInput(employmentStart, input.EmploymentTypeId, WorkforceSourceType.Manual),
+                new StartEmploymentInput(employmentStart, input.EmploymentTypeId, WorkforceSourceType.Manual, input.SourceReference),
                 actor,
                 cancellationToken);
             if (employmentResult.IsFailure)
@@ -164,7 +165,7 @@ internal static class EstablishmentOrchestrator
                     input.JobId,
                     input.PlaceId,
                     workEffectiveFrom,
-                    WorkforceSourceType.Manual),
+                    WorkforceSourceType.Manual, input.SourceReference),
                 actor,
                 cancellationToken);
             if (assignmentResult.IsFailure)
@@ -202,6 +203,7 @@ internal static class EstablishmentOrchestrator
                 WorkforceSourceType.Manual,
                 actor,
                 employmentStart,
+                sourceReference: input.SourceReference,
                 changeDetails: input.EstablishmentAction == WorkforceAuditAction.Hire
                     ? $"Hire established Employment and work from {employmentStart:yyyy-MM-dd}."
                     : $"Employee established with Employment from {employmentStart:yyyy-MM-dd} and work from {workEffectiveFrom:yyyy-MM-dd}."));

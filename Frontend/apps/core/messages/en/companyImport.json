@@ -312,12 +312,16 @@
       "cut": "{name} has no manager",
       "leaveOut": "Leave them out",
       "startOn": "Start them on {date}",
-      "giveJob": "Give them the job {title}"
+      "giveJob": "Give them the job {title}",
+      "keepStart": "Keep {date}",
+      "fileStart": "Use {date} from the file"
     },
     "from": {
       "closest": "Closest",
       "new": "New unit"
-    }
+    },
+    "firstPersonStart": "{name} started before activation",
+    "firstPersonStartDetail": "The original record starts on activation day. This also dates their original job and reporting lines."
   },
   "say": {
     "label": "Something else wrong? Say it",
@@ -413,7 +417,8 @@
       "name": "Name",
       "parent": "Under",
       "jobLevel": "Level",
-      "jobFamily": "Family"
+      "jobFamily": "Family",
+      "startDate": "Start date"
     },
     "none": "None",
     "keep": "Keep them as they are",

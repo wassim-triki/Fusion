@@ -165,6 +165,7 @@ export function CheckCard({ check, data, change, onShow }: { check: CheckDto; da
       : check.kind === "sameJob" ? t("sameJob")
       : check.kind === "managerLoop" ? t("managerLoop", { names: check.title ?? "" })
       : check.kind === "noStart" ? (check.count === 1 ? t("noStart.one", { name: check.title ?? "" }) : t("noStart.many", { count: check.count }))
+      : check.kind === "firstPersonStart" ? t("firstPersonStart", { name: check.title ?? "" })
       : check.count === 1 ? t("noTitle.one", { name: check.title ?? "" }) : t("noTitle.many", { count: check.count });
   const saidIn = data.chart.people.find((person) => person.key === check.subject)?.from.split(" · ")[0] ?? t("theFiles");
   const meta =
@@ -172,10 +173,14 @@ export function CheckCard({ check, data, change, onShow }: { check: CheckDto; da
       : check.kind === "unitParent" || check.kind === "managerMissing" ? t("fileSays", { value: check.detail ?? "" })
       : check.kind === "twice" ? t("disagree")
       : check.kind === "sameJob" ? check.title
+      : check.kind === "firstPersonStart" ? t("firstPersonStartDetail")
       : null;
 
   const optionLabel = (key: string, text: string) => {
     switch (check.kind) {
+      case "firstPersonStart": return t(key === "keep" ? "option.keepStart" : "option.fileStart", {
+        date: format.dateTime(new Date(`${text}T00:00:00`), { day: "numeric", month: "long", year: "numeric" }),
+      });
       case "unitMissing": return key === "add" ? t("option.addUnit", { name: text }) : text;
       case "unitParent": return key === "root" ? t("option.underRoot", { company: data.companyName }) : unit(key);
       case "managerMissing": return key === "none" ? t("option.noManager") : text;
@@ -211,7 +216,7 @@ export function CheckCard({ check, data, change, onShow }: { check: CheckDto; da
               {option.lean ? <Lean /> : null}
             </span>
           ),
-          description: from(option.from) ?? undefined,
+          description: check.kind === "firstPersonStart" ? undefined : from(option.from) ?? undefined,
         }))}
       />
     </section>

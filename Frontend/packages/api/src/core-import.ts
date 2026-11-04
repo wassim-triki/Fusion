@@ -162,7 +162,7 @@ export interface CompanyImportChartDto {
   places: string[];
 }
 
-export type CheckKind = "unitMissing" | "unitParent" | "managerMissing" | "twice" | "sameJob" | "managerLoop" | "noStart" | "noTitle" | "notInFile";
+export type CheckKind = "unitMissing" | "unitParent" | "managerMissing" | "twice" | "sameJob" | "managerLoop" | "noStart" | "noTitle" | "notInFile" | "firstPersonStart";
 
 export interface CheckOptionDto {
   key: string;

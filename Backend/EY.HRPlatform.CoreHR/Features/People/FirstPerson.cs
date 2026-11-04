@@ -52,9 +52,10 @@ public sealed class FirstPersonService(
         await db.SaveChangesAsync(cancellationToken);
 
         var start = today.ToDateTime(TimeOnly.MinValue);
-        var made = await new AddExistingEmployeeCommandHandler(db, tenant, numbers, mutation, organization).Handle(new AddExistingEmployeeCommand(new AddExistingEmployeeRequest(
-            first, last, null, email, null, EmployeeNumberMode.Generated, null, start, start, null, root.Value, job.Id, null, null), actor),
-            cancellationToken);
+        var input = EstablishmentInput.FromAddExisting(new AddExistingEmployeeRequest(
+            first, last, null, email, null, EmployeeNumberMode.Generated, null, start, start, null, root.Value, job.Id, null, null))
+            with { SourceReference = FirstPersonHistory.SourceReference };
+        var made = await EstablishmentOrchestrator.ExecuteAsync(db, tenant, numbers, mutation, organization, input, actor, cancellationToken);
         if (made.IsFailure) return Result.Failure<FirstPersonDto>(made.Error);
 
         var employeeId = await db.Employees.AsNoTracking().Where(employee => employee.StableEmployeeKey == made.Value.EmployeeKey)

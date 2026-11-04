@@ -16,7 +16,8 @@ public sealed record CompanyImportSnapshot(
     /// <summary>A person in Fusion with what they hold today; Employed is false once their employment has ended.</summary>
     public sealed record Person(
         Guid Id, string? Number, string? Email, string Name, DateOnly? AssignedFrom, bool Employed = false, DateOnly? EmployedFrom = null,
-        Guid? UnitId = null, Guid? JobId = null, Guid? PlaceId = null, Guid? ManagerId = null, DateOnly? ManagerFrom = null);
+        Guid? UnitId = null, Guid? JobId = null, Guid? PlaceId = null, Guid? ManagerId = null, DateOnly? ManagerFrom = null,
+        bool UntouchedFirstPerson = false);
     public sealed record Named(Guid Id, string Name);
     public sealed record Job(Guid Id, string Name, Guid? LevelId = null, Guid? FamilyId = null);
 

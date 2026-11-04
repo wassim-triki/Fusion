@@ -100,6 +100,10 @@ public sealed record EndEmploymentPreview(
 /// </summary>
 public interface IWorkforceMutationService
 {
+    /// <summary>Extends the activation-created person's original tenure and assignment together, while still untouched.</summary>
+    Task<Result<Employment>> ImportFirstPersonStartAsync(
+        Guid employeeId, DateTime effectiveFrom, Guid importBatchId, string? actor, CancellationToken cancellationToken);
+
     /// <summary>Updates Core-owned identity/profile fields; audited as <c>EmployeeProfileUpdated</c>.</summary>
     Task<Result<Employee>> UpdateEmployeeProfileAsync(
         Guid employeeId, UpdateEmployeeProfileInput input, string? actor, CancellationToken cancellationToken);
@@ -177,6 +181,42 @@ public sealed class WorkforceMutationService(
     private readonly IWorkEmailOccupancyService _workEmailOccupancyService =
         workEmailOccupancyService ?? new WorkEmailOccupancyService(dbContext, tenantContext);
     private readonly CatalogReferences _catalog = new(dbContext, tenantContext);
+
+    public async Task<Result<Employment>> ImportFirstPersonStartAsync(
+        Guid employeeId, DateTime effectiveFrom, Guid importBatchId, string? actor, CancellationToken cancellationToken)
+    {
+        // The caller owns the import plan transaction. Lock the actual rows before re-reading provenance/history;
+        // concurrent profile, employment and assignment edits must finish first or follow this transaction.
+        if (dbContext.Database.IsRelational() && dbContext.Database.CurrentTransaction is null)
+            throw new InvalidOperationException("The import plan transaction is required.");
+        if (dbContext.Database.IsNpgsql())
+        {
+            var tenantId = tenantContext.TenantId;
+            await dbContext.Employees.FromSqlInterpolated($"SELECT *, xmin FROM corehr.\"Employees\" WHERE \"TenantId\" = {tenantId} AND \"Id\" = {employeeId} FOR UPDATE").LoadAsync(cancellationToken);
+            await dbContext.Employments.FromSqlInterpolated($"SELECT * FROM corehr.\"Employments\" WHERE \"TenantId\" = {tenantId} AND \"EmployeeId\" = {employeeId} FOR UPDATE").LoadAsync(cancellationToken);
+            await dbContext.WorkAssignments.FromSqlInterpolated($"SELECT * FROM corehr.\"WorkAssignments\" WHERE \"TenantId\" = {tenantId} AND \"EmployeeId\" = {employeeId} FOR UPDATE").LoadAsync(cancellationToken);
+        }
+        if (!(await FirstPersonHistory.UntouchedAsync(dbContext, cancellationToken)).Contains(employeeId))
+            return Result.Failure<Employment>(Error.Conflict("FirstPerson.Changed", "This person's record has changed since activation. Review the import again."));
+        var employment = await dbContext.Employments.SingleAsync(row => row.EmployeeId == employeeId, cancellationToken);
+        var work = await dbContext.WorkAssignments.SingleAsync(row => row.EmployeeId == employeeId, cancellationToken);
+        var from = NormalizeDate(effectiveFrom);
+        if (from >= employment.EffectiveFrom)
+            return Result.Failure<Employment>(Error.Validation("FirstPerson.StartNotEarlier", "The file's start must be earlier than the existing start."));
+        // Like canonical import establishment, historical work requires a valid current organization target.
+        var unit = await FindOrgUnitAsync(work.OrgUnitId, cancellationToken);
+        if (unit is null || !await IsOrgUnitActiveOnAsync(unit.Id, DateOnly.FromDateTime(DateTime.UtcNow), unit.IsActive, cancellationToken))
+            return Result.Failure<Employment>(Error.Validation("WorkAssignment.OrgUnitInactive", "Cannot assign an inactive organization unit."));
+        var previous = employment.EffectiveFrom;
+        employment.ExtendStart(from);
+        work.ExtendStart(from);
+        var sourceRef = $"CompanyImport:{importBatchId}";
+        StageAudit("Employment", employment.Id, WorkforceAuditAction.ImportCorrectionPublished, WorkforceSourceType.Import,
+            actor, from, sourceRef, importBatchId, $"Activation start corrected from {previous:yyyy-MM-dd} to {from:yyyy-MM-dd}.");
+        StageAudit("WorkAssignment", work.Id, WorkforceAuditAction.ImportCorrectionPublished, WorkforceSourceType.Import,
+            actor, from, sourceRef, importBatchId, "Original primary assignment extended with the activation start correction.");
+        return Result.Success(employment);
+    }
 
     public async Task<Result<Employee>> UpdateEmployeeProfileAsync(
         Guid employeeId, UpdateEmployeeProfileInput input, string? actor, CancellationToken cancellationToken)

@@ -184,14 +184,18 @@ function Row({ lead, title, end, children }: { lead: ReactNode; title: string; e
 /** "Job Product Manager → Senior Product Manager": what Fusion has, struck, then what the file says. */
 function Changes({ changes }: { changes: ImportChangeDto[] }) {
   const t = useTranslations("companyImport.again");
+  const format = useFormatter();
+  const value = (item: ImportChangeDto, text: string | null) => item.field === "startDate" && text
+    ? format.dateTime(new Date(`${text}T00:00:00`), { day: "numeric", month: "short", year: "numeric" })
+    : text ?? t("none");
   return (
     <span className="grid gap-0.5">
       {changes.map((item) => (
         <span key={item.field} className="inline-flex flex-wrap items-center gap-1.5">
           <span>{t(`field.${item.field}` as "field.unit")}</span>
-          {item.from ? <s>{item.from}</s> : null}
+          {item.from ? <s>{value(item, item.from)}</s> : null}
           <ArrowRight className={cn("size-3.5 rtl:rotate-180")} aria-hidden />
-          <b className="font-medium text-foreground">{item.to ?? t("none")}</b>
+          <b className="font-medium text-foreground">{value(item, item.to)}</b>
         </span>
       ))}
     </span>

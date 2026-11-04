@@ -312,12 +312,16 @@
       "cut": "{name} n’a pas de manager",
       "leaveOut": "Les laisser de côté",
       "startOn": "Les faire commencer le {date}",
-      "giveJob": "Leur donner le poste {title}"
+      "giveJob": "Leur donner le poste {title}",
+      "keepStart": "Garder le {date}",
+      "fileStart": "Utiliser le {date} du fichier"
     },
     "from": {
       "closest": "La plus proche",
       "new": "Nouvelle unité"
-    }
+    },
+    "firstPersonStart": "{name} a commencé avant l’activation",
+    "firstPersonStartDetail": "La fiche initiale commence le jour de l’activation. Ce choix date aussi le poste initial et les liens hiérarchiques."
   },
   "say": {
     "label": "Autre chose ne va pas ? Dites-le",
@@ -413,7 +417,8 @@
       "name": "Nom",
       "parent": "Rattachée à",
       "jobLevel": "Niveau",
-      "jobFamily": "Famille"
+      "jobFamily": "Famille",
+      "startDate": "Date de début"
     },
     "none": "Aucun",
     "keep": "Le garder tel quel",

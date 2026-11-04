@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-279.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-281.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -53,6 +53,9 @@ No implementation task is active. These are umbrella outcomes, not additional sl
 
 ### Other reviews
 
+- [ ] **B-246** The first person's imported start date: an explicit choice between activation day and the earlier file date · Core HR · 2026-11-04
+      In review. Look at the dated choices in Also to check and the corresponding Start date row in Changed; Keep is the default, including Take leans. [Inspection guide and one dark capture](plans/B-246-first-person-start.md). Positive server-side activation provenance/history, publish-time row locks/revalidation, atomic employment/assignment correction and frozen-plan retry. Older unproven records remain ineligible. EN/FR/AR. Final CoreHR 470/0/0, focused 13/0/0, touched frontend 9/0/0, resumed live API 17/0/0, capture 1/0/0; four lint/types and catalogue parity pass. User requested committing on 2026-11-04 while explicitly keeping this In review. Other reviews/deferrals preserved.
+
 - [ ] **B-247** Company work week in Settings › Details and Home’s company card · Core HR, Shell · 2026-11-03
       Settings selector accepted and B-278 closed 2026-11-03 (“good, can be closed”). Remaining review is Home’s company card; it was not accepted or changed by the Settings verdict. Look at Home’s label-over-value work-week fact (D-09). Existing settings defaults/versioned saves, company permissions and tenant isolation; EN/FR/AR. [Review guide](plans/B-247-company-work-week.md). Original shared verification with B-248: CoreHR 464/0/0, frontend 42/0/0, API 30/0/0; accepted selector checks in LOG. Implementation committed; review remains open.
 - [ ] **B-248** Your manager on a joiner’s Home, from an ordinary employee’s self-only canonical read · Core HR, Shell · 2026-11-03
@@ -68,16 +71,19 @@ No implementation task is active. These are umbrella outcomes, not additional sl
 
 ### Other work
 
+- [ ] **B-280** Keep one page-shaped skeleton from initial MFE load to content · Shell, Core HR, Performance, Platform · 2026-11-04
+      User recalled the initial generic/odd skeleton that switches to the actual page's skeleton across MFEs. This exact generic→dedicated flash is recorded in [loading architecture](memory/loading-architecture.md), including an older Performance parity follow-up, but had no current open board item. Inspect cold entry, refresh and MFE crossings; preserve the shell frame and use the target page's canonical skeleton throughout. Verify today's implementation before treating the old parity notes as current facts. Queued only; no loading changes made with B-246.
+
 - [ ] **B-277** Resolve archive collisions for completed review plans · Tooling · 2026-11-03
       Stack startup repeatedly reports `archive/plans/B-189-reports.md exists; left B-189-reports.md in plans/`. Compare and preserve both copies’ information before clearing the completed plan from the active folder.
+
+- [ ] **B-279** Capture and diagnose an intermittent first dated-profile response after historical import · Core HR · 2026-11-04
+      During B-246's first live publication, the dated-manager assertion failed; that harness did not retain the response status/body. The immediate direct read was 200 with the correct historical manager, and the resumed journey passed 17/0/0. No cause established. The journey now reports non-200 responses and manager mismatches explicitly and reuses fixtures with --resume. Reproduce with response evidence before attributing it to the domain, gateway or environment; remains queued separately from the completed start-date correction.
 
 - [ ] **B-272** Investigate the 2,000-person company import scale test failure · Core HR · 2026-11-02
       Full CoreHR suite during B-271: 450 passed, 1 failed in Scale_two_thousand_people_in_eighty_units (3m50s); test runner omitted failure detail. B-190, 2026-11-03: repeated full relational suites pass 454/0/0, including scale; original failure not reproduced, no import code changed.
 
 - [ ] **B-255** Scale Reports filter values with viewer-scoped server search when company data grows; report runs currently return the complete allowed value set.
-
-- [ ] **B-246** The first person's start date: the administrator's record starts on activation day, so an import that matches them keeps that start and dates the lines under them (their reports' manager lines) from it; offer the file's earlier start for a record nobody has changed since day one · Core HR · 2026-11-01
-      Next follow-up for a fresh session (2026-11-03); pickup in STATE, recommended effort xhigh. No implementation started. Remaining numbered slices stay queued separately.
 
 - [ ] **B-249** The brand studio's Home preview draws the real Home (day one's guide, the company card) instead of its stand-in (from B-188's notes) · Core HR · 2026-11-01
 

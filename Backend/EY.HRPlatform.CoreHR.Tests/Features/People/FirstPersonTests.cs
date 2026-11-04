@@ -24,7 +24,7 @@ namespace EY.HRPlatform.CoreHR.Tests.Features.People;
 /// B-188 (D-10): "Do you work at …? Yes" makes the activating administrator the company's first person, once, inside
 /// their tenant; the company's history brought in afterwards opens the day-one root from when it started.
 /// </summary>
-public sealed class FirstPersonTests
+public sealed partial class FirstPersonTests
 {
     [RelationalDatabaseFact]
     public async Task The_administrator_becomes_the_first_person_once_and_the_import_opens_the_root_from_its_history()

@@ -59,6 +59,7 @@
 - [Org import stage architecture](org-import-stage-architecture.md) — Upload→Match→Review; stage from product readiness.
 - [Org import semantic assistance](org-import-semantic-assistance.md) — implicit AI matching at upload, auto-apply + abstain.
 - [Org import Review Phase 1](org-import-review-phase1.md) — read-only Review, bounded resolutions, fingerprinted publish.
+- [First person's imported start](first-person-import-start.md) — B-246: authoritative activation provenance, keep-by-default earlier-date offer, atomic canonical correction in the frozen import plan.
 - [Import on-ramp unified](import-onramp-unified.md) — shared `features/data-import/` entry for org + workforce imports.
 - [Workforce Import establishment](workforce-import-establishment-proposed.md) — archived; create-only XLSX/CSV establishment.
 - [Workforce Import demo-readiness pass](workforce-import-demo-readiness-pass.md) — 7 UI fixes; demo CSV + tenant10 reset recipe.

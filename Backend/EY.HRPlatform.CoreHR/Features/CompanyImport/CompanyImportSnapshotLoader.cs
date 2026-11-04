@@ -1,6 +1,7 @@
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence;
+using EY.HRPlatform.CoreHR.Features.Workforce.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace EY.HRPlatform.CoreHR.Features.CompanyImport;
@@ -11,6 +12,7 @@ public static class CompanyImportSnapshotLoader
     public static async Task<CompanyImportSnapshot> LoadAsync(CoreHRDbContext db, string companyName, CancellationToken cancellationToken)
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var firstPeople = await FirstPersonHistory.UntouchedAsync(db, cancellationToken);
         var root = await db.OrgUnits.AsNoTracking().Where(unit => unit.IsRoot).Select(unit => (Guid?)unit.Id).FirstOrDefaultAsync(cancellationToken);
         var states = await db.OrgUnitEffectiveStates.AsNoTracking()
             .Where(state => state.LifecycleState == OrgUnitLifecycleState.Active)
@@ -45,7 +47,7 @@ public static class CompanyImportSnapshotLoader
                 return new CompanyImportSnapshot.Person(employee.Id, employee.EmployeeNumber, employee.Email, $"{employee.FirstName} {employee.LastName}",
                     work is null ? null : DateOnly.FromDateTime(work.EffectiveFrom), employed.ContainsKey(employee.Id),
                     employed.TryGetValue(employee.Id, out var from) ? from : null, work?.OrgUnitId, work?.JobId, work?.PlaceId,
-                    line?.ManagerEmployeeId, line is null ? null : DateOnly.FromDateTime(line.EffectiveFrom));
+                    line?.ManagerEmployeeId, line is null ? null : DateOnly.FromDateTime(line.EffectiveFrom), firstPeople.Contains(employee.Id));
             })
             .ToList();
         var jobs = await db.Jobs.AsNoTracking().Select(job => new CompanyImportSnapshot.Job(job.Id, job.Title, job.LevelId, job.FamilyId)).ToListAsync(cancellationToken);

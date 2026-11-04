@@ -527,6 +527,18 @@ public static class CompanyImportDerivation
 
                 person.Values.TryGetValue(F.StartDate, out var startValue);
                 var start = had is not null ? had.EmployedFrom ?? had.AssignedFrom ?? snapshot.Today : ParseDate(startValue.Value, person.Sheet.DateOrder);
+                // This is a bounded, server-proven offer. An unanswered offer keeps the established start;
+                // Take leans also keeps it. The file date is never an ordinary matched-person update.
+                var fileStart = ParseDate(startValue.Value, person.Sheet.DateOrder);
+                if (had is { UntouchedFirstPerson: true } && fileStart is { } earlier && earlier < start)
+                {
+                    var key = $"firstStart|{person.Key}";
+                    var answer = decisions.Answers.GetValueOrDefault(key) ?? "keep";
+                    checks.Add(new ProposedCheck(key, "firstPersonStart", person.Key, person.FullName, null,
+                        [new("keep", start!.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), "current", true),
+                         new("file", earlier.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), "file", false)], answer));
+                    if (answer == "file") start = earlier;
+                }
                 if (start is null) noStart.Add(person);
                 resolved.Add((person, unitKey, title ?? NoTitleJob, place, managerKey, existingManager, start, fixes));
             }
@@ -609,6 +621,9 @@ public static class CompanyImportDerivation
                 if (person.ExistingId is not { } id) continue;
                 var had = snapshot.People.First(item => item.Id == id);
                 var changes = new List<ProposedChange>();
+                if (had.UntouchedFirstPerson && person.StartDate < had.EmployedFrom)
+                    changes.Add(new ProposedChange(F.StartDate, had.EmployedFrom?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                        person.StartDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)));
                 var job = jobs.First(item => item.Key == person.JobKey);
                 if (job.ExistingId is null || job.ExistingId != had.JobId)
                     changes.Add(new ProposedChange(F.JobTitle, had.JobId is { } jobId && jobById.TryGetValue(jobId, out var held) ? held.Name : null, job.Title));
@@ -811,6 +826,8 @@ public static class CompanyImportDerivation
                 ends,
                 applyFrom,
                 unitsFrom,
+                firstPersonOffers = checks.Where(check => check.Kind == "firstPersonStart")
+                    .Select(check => new { check.Key, check.Answer, check.Options }),
             };
             var readSheets = sheets.Select(sheet => new ReadSheet(sheet.Input.FileId, sheet.Input.FileName, sheet.Input.Sheet, sheet.Kind,
                 sheet.Input.Rows.Count, sheet.Read, sheet.PeopleCount, sheet.LeftCount)).ToList();

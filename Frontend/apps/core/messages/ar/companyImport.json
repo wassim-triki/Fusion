@@ -312,12 +312,16 @@
       "cut": "{name} بلا مدير",
       "leaveOut": "استبعادهم",
       "startOn": "بدء عملهم في {date}",
-      "giveJob": "منحهم وظيفة {title}"
+      "giveJob": "منحهم وظيفة {title}",
+      "keepStart": "الإبقاء على {date}",
+      "fileStart": "استخدام {date} من الملف"
     },
     "from": {
       "closest": "الأقرب",
       "new": "وحدة جديدة"
-    }
+    },
+    "firstPersonStart": "بدأ {name} العمل قبل التفعيل",
+    "firstPersonStartDetail": "يبدأ السجل الأصلي يوم التفعيل. يحدد هذا الاختيار أيضًا تاريخ الوظيفة الأصلية والعلاقات الإدارية."
   },
   "say": {
     "label": "هل هناك خطأ آخر؟ قله",
@@ -413,7 +417,8 @@
       "name": "الاسم",
       "parent": "تحت",
       "jobLevel": "المستوى",
-      "jobFamily": "العائلة"
+      "jobFamily": "العائلة",
+      "startDate": "تاريخ البدء"
     },
     "none": "لا أحد",
     "keep": "إبقاؤه كما هو",

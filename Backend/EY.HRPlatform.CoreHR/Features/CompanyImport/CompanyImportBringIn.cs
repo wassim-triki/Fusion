@@ -117,11 +117,21 @@ public sealed class CompanyImportBringIn(
         var proposal = CompanyImportDerivation.Derive(CompanyImportSnapshotLoader.Inputs(session), session.Decisions, snapshot);
         if (!proposal.CanBringIn || !ImportFingerprint.Matches(proposal.Fingerprint, session.RequestedFingerprint))
             throw new CompanyImportChangedException();
+        var actor = session.BringInByDisplayName ?? session.StartedByDisplayName;
+        // Correct inside batch zero, atomically with its frozen plan, before any dependent line can be written.
+        // A resumed run skips this batch; a failed batch rolls both the correction and plan back.
+        foreach (var person in proposal.People.Where(person => person.ExistingId != null
+                     && person.Changes?.Any(change => change.Field == CompanyImportFields.StartDate) == true))
+        {
+            var corrected = await mutation.ImportFirstPersonStartAsync(person.ExistingId!.Value, Utc(person.StartDate), session.Id, actor, cancellationToken);
+            if (corrected.IsFailure) throw new CompanyImportChangedException();
+            snapshot = snapshot with { People = snapshot.People.Select(held => held.Id == person.ExistingId
+                ? held with { AssignedFrom = person.StartDate, EmployedFrom = person.StartDate } : held).ToList() };
+        }
         // A root made on day one (the administrator's own record) opens when the company's history starts.
         if (snapshot.RootUnitId is { } rootId && await organization.OpenRootFromInCurrentTransactionAsync(proposal.UnitsFrom, cancellationToken))
             snapshot = snapshot with { Units = snapshot.Units.Select(unit => unit.Id == rootId ? unit with { ActiveFrom = proposal.UnitsFrom } : unit).ToList() };
 
-        var actor = session.BringInByDisplayName ?? session.StartedByDisplayName;
         var run = new CompanyImportRun
         {
             Units = await BringUnitsAsync(proposal, snapshot, cancellationToken),

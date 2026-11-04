@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-286.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-288.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -32,7 +32,12 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In progress
 
-No active implementation task.
+- [ ] **B-286** Review and close what Codex left In review, in batches that share a surface: design-first live check against the agreed drawings, fixes in the same pass, one look per batch · All · 2026-11-04
+      User 2026-11-04, after the usage-limit break. Items keep their own lanes; this tracks the pass. Plan and progress in STATE.
+  - [x] **Batch 1** Core HR front page (B-190 ✓) + B-280 loading in Core, Performance, Platform (accepted). Fixes in 2b5cd9c4.
+  - [x] **Front page follow-ups** B-284 (payload 5.5 MB → 120 KB) and B-285 (faces on Next 30 days and open roles) closed ○.
+  - [ ] **Batch 2** Home: redesign the company card (B-247) and manager card (B-248), rejected 11-03, then review them with B-280's Home part; commit B-280.
+  - [ ] **Batch 3** B-246, the first person's imported start date.
 
 ### Rebuild program tracking
 
@@ -78,11 +83,8 @@ None waiting.
 - [ ] **B-282** Recover sign-in when a stale compatibility hint has no stored session · Shell, shared authentication · 2026-11-04
       B-280's production negatives confirm fail-closed behavior (zero protected page reads or successful protected responses), but `ey_hr_authenticated=true` with no real session redirects an MFE to sign-in, middleware sends sign-in to Home, and Home ends at No workspace is available. Without the hint, sign-in opens normally. Existing middleware/entry behavior, independent of skeleton presentation; remove the stale hint or otherwise recover sign-in without trusting the cookie as authority. Keep separate from B-280; no authentication flow fix attempted here.
 
-- [ ] **B-284** Core HR's front page sends every boundary's full people list (Carthage: 214 snapshots, 5.5 MB); send the people once plus their dated changes · Core HR · 2026-11-04
-      Found in B-190's review. Fine at 100 people, not at a few thousand.
-
-- [ ] **B-285** Front page parity with the D-30 drawing: a face on each Next 30 days row, and Open roles with the hiring manager and Open/Filled · Core HR · 2026-11-04
-      Found in B-190's review; small gaps, not defects.
+- [ ] **B-287** Open roles remember who filled them, so the front page can show "Filled · Ons Khemiri, Monday" as drawn (D-30); today a filled role keeps no link to the hire or date · Core HR · 2026-11-04
+      From B-285: the open roles model has Open/OnHold/Filled/Closed only.
 
 - [ ] **B-283** Gate Performance header cycle queries on workspace readiness and route relevance · Performance · 2026-11-04
       B-280's stale-hint production control starts `/api/performance/context` from the unchanged PerformanceCycleContext before redirect; navigation cancels it before a response. Both useCurrentCycle/useWorkspaceContext run before the cycle-free-route return, without auth readiness. Protected 1:1 page never mounts/queries; anonymous context API refuses access. Existing source (last changed c7402cbb), not introduced by B-280; keep frame mounted while disabling unnecessary header reads until permitted and on cycle-free routes. No fix attempted here.

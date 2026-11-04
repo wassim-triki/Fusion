@@ -81,6 +81,7 @@
     },
     "placeChange": "{name} passe à {place}",
     "managerChange": "{name} change de responsable",
+    "hiringFor": "Équipe de {name}",
     "outsideDepartments": "Hors département"
   }
 }

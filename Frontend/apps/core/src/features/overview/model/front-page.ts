@@ -1,15 +1,23 @@
-import type { FrontPageDto, FrontPagePersonDto } from "@repo/api";
+import type {
+  FrontPageDto,
+  FrontPagePersonDto,
+  FrontPageSpanDto,
+} from "@repo/api";
 
-export type Snapshot = FrontPageDto["snapshots"][number];
+/** A person as they were on one date: their identity plus that date's details. */
+export type FrontPerson = Omit<FrontPagePersonDto, "spans"> &
+  Omit<FrontPageSpanDto, "from" | "to">;
 export type Grouping = "department" | "place" | "time";
 export type FrontEvent = {
   date: string;
   kind: "joins" | "leaves" | "moves" | "job" | "placeChange" | "managerChange";
-  person: FrontPagePersonDto;
-  before?: FrontPagePersonDto;
+  person: FrontPerson;
+  before?: FrontPerson;
 };
 export const OUTSIDE_DEPARTMENTS = "__none";
-export const departmentKey = (person: FrontPagePersonDto) =>
+export const departmentKey = (
+  person: Pick<FrontPerson, "departmentId" | "department">
+) =>
   person.departmentId ?? person.department ?? OUTSIDE_DEPARTMENTS;
 /** Six distinct hues so no two departments share one; people outside every department stay neutral. */
 export const departmentColor = (index: number, key: string) =>
@@ -33,59 +41,53 @@ export const dayNumber = (date: string) =>
 export const addDays = (date: string, days: number) =>
   new Date((dayNumber(date) + days) * 86400000).toISOString().slice(0, 10);
 
-/** Every boundary is supplied by Reports; between boundaries the same people and work remain in force. */
+const flat = (
+  { spans: _spans, ...person }: FrontPagePersonDto,
+  { from: _from, to: _to, ...details }: FrontPageSpanDto
+): FrontPerson => ({ ...person, ...details });
+
+/** Who was here on a date: each person's stretch that covers it (`to` is exclusive). */
 export function peopleOn(
-  snapshots: Snapshot[],
+  people: FrontPagePersonDto[],
   date: string
-): FrontPagePersonDto[] {
-  let lo = 0,
-    hi = snapshots.length - 1,
-    found = -1;
-  while (lo <= hi) {
-    const mid = Math.floor((lo + hi) / 2);
-    if (snapshots[mid]!.date <= date) {
-      found = mid;
-      lo = mid + 1;
-    } else hi = mid - 1;
+): FrontPerson[] {
+  const result: FrontPerson[] = [];
+  for (const person of people) {
+    const span = person.spans.find(
+      (s) => s.from <= date && (s.to === null || date < s.to)
+    );
+    if (span) result.push(flat(person, span));
   }
-  return found < 0 ? [] : snapshots[found]!.people;
+  return result;
 }
 
-export function frontEvents(snapshots: Snapshot[]): FrontEvent[] {
+/** Joins, leaves and changes, read off where one stretch ends and the next begins. */
+export function frontEvents(people: FrontPagePersonDto[]): FrontEvent[] {
   const result: FrontEvent[] = [];
-  let previous = new Map<string, FrontPagePersonDto>();
-  for (const snapshot of snapshots) {
-    const next = new Map(snapshot.people.map((p) => [p.employeeKey, p]));
-    for (const person of snapshot.people) {
-      const before = previous.get(person.employeeKey);
-      if (!before) result.push({ date: snapshot.date, kind: "joins", person });
-      else if (departmentKey(before) !== departmentKey(person))
-        result.push({ date: snapshot.date, kind: "moves", person, before });
-      else if (before.job !== person.job)
-        result.push({ date: snapshot.date, kind: "job", person, before });
-      else if (before.place !== person.place)
-        result.push({
-          date: snapshot.date,
-          kind: "placeChange",
-          person,
-          before,
-        });
-      else if (before.managerKey !== person.managerKey)
-        result.push({
-          date: snapshot.date,
-          kind: "managerChange",
-          person,
-          before,
-        });
-    }
-    for (const person of previous.values())
-      if (!next.has(person.employeeKey))
-        result.push({
-          date: addDays(snapshot.date, -1),
-          kind: "leaves",
-          person,
-        });
-    previous = next;
+  for (const person of people) {
+    person.spans.forEach((span, i) => {
+      const now = flat(person, span);
+      const previous = person.spans[i - 1];
+      const next = person.spans[i + 1];
+      if (!previous || previous.to !== span.from)
+        result.push({ date: span.from, kind: "joins", person: now });
+      else {
+        const before = flat(person, previous);
+        const kind =
+          departmentKey(before) !== departmentKey(now)
+            ? "moves"
+            : before.job !== now.job
+              ? "job"
+              : before.place !== now.place
+                ? "placeChange"
+                : before.managerKey !== now.managerKey
+                  ? "managerChange"
+                  : null;
+        if (kind) result.push({ date: span.from, kind, person: now, before });
+      }
+      if (span.to && (!next || next.from !== span.to))
+        result.push({ date: addDays(span.to, -1), kind: "leaves", person: now });
+    });
   }
   return result.sort(
     (a, b) =>
@@ -102,13 +104,13 @@ export function yearBefore(date: string) {
 }
 
 export function groupPeople(
-  people: FrontPagePersonDto[],
+  people: FrontPerson[],
   by: Grouping,
   date: string
 ) {
   const groups = new Map<
     string,
-    { key: string; label: string | null; people: FrontPagePersonDto[] }
+    { key: string; label: string | null; people: FrontPerson[] }
   >();
   for (const person of people) {
     const years = person.firstDay
@@ -158,7 +160,7 @@ export function groupPeople(
 }
 
 /** A department head reports outside the department; ties go to the largest internal branch. */
-export function departmentLead(people: FrontPagePersonDto[]) {
+export function departmentLead(people: FrontPerson[]) {
   const keys = new Set(people.map((p) => p.employeeKey));
   const total = (key: string) => {
     const seen = new Set<string>();
@@ -197,5 +199,5 @@ export function growthMonths(data: FrontPageDto) {
     dates.add(month.toISOString().slice(0, 10));
   return [...dates]
     .sort()
-    .map((date) => ({ date, people: peopleOn(data.snapshots, date) }));
+    .map((date) => ({ date, people: peopleOn(data.people, date) }));
 }

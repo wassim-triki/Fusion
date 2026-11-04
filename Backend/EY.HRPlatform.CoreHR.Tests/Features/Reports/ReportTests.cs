@@ -18,6 +18,9 @@ public sealed class ReportTests
     private static readonly DateOnly Today = DateOnly.FromDateTime(DateTime.UtcNow);
     private static ReportDefinition Definition(string measure = "headcount") => new(measure, "division", "range", Today.AddYears(-1), Today, "year", [], ["name", "job"]);
     private static ReportViewer Hr => new(Owner, null, PermissionScopes.Tenant, true, true);
+    /// <summary>Who the front page has on a date, with their details then.</summary>
+    private static List<(FrontPagePersonDto Person, FrontPageSpanDto Span)> On(FrontPageDto front, DateOnly date) => front.People
+        .SelectMany(p => p.Spans.Where(s => s.From <= date && (s.To is null || date < s.To)).Select(s => (p, s))).ToList();
     private static Mock<ITenantSettingsReadService> Settings()
     {
         var mock = new Mock<ITenantSettingsReadService>();
@@ -76,15 +79,16 @@ public sealed class ReportTests
         var fields = new EY.HRPlatform.CoreHR.Features.EmployeeFields.EmployeeFieldService(db, TestTenantContext.WithTenant(Tenant));
         var front = await engine.FrontPageAsync(Hr, fields, default);
         Assert.Equal(Today.AddYears(-2), front.FirstDate);
-        Assert.Equal(2, front.Snapshots.Single(s => s.Date == Today).People.Count);
-        Assert.All(front.Snapshots.Single(s => s.Date == Today).People, p => { Assert.Equal(division.Id, p.DepartmentId); Assert.Equal("Engineering", p.Department); });
-        Assert.Equal(3, front.Snapshots.Last(s => s.Date < Today.AddDays(-19)).People.Count);
-        Assert.All(front.Snapshots.SelectMany(s => s.People), p => Assert.DoesNotContain("Other", p.Name));
-        Assert.Single(front.OpenRoles);
+        Assert.Equal(2, On(front, Today).Count);
+        Assert.All(On(front, Today), p => { Assert.Equal(division.Id, p.Span.DepartmentId); Assert.Equal("Engineering", p.Span.Department); });
+        Assert.Equal(3, On(front, Today.AddDays(-20)).Count);
+        Assert.All(front.People, p => Assert.DoesNotContain("Other", p.Name));
+        var role = Assert.Single(front.OpenRoles);
+        Assert.Contains(front.People, p => p.EmployeeKey == role.ManagerKey);
         var viewer = new ReportViewer(Guid.NewGuid(), world.Manager, PermissionScopes.DirectReports, false, false);
         var team = await engine.FrontPageAsync(viewer, fields, default);
         Assert.True(team.TeamOnly);
-        Assert.All(team.Snapshots.SelectMany(s => s.People), p => Assert.Contains("Person1", p.Name));
+        Assert.All(team.People, p => Assert.Contains("Person1", p.Name));
         Assert.Equal(Today.AddYears(-1).AddDays(5), team.FirstDate);
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => engine.FrontPageAsync(viewer with { Scope = null }, fields, default));
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => engine.FrontPageAsync(viewer with { EmployeeId = null }, fields, default));
@@ -117,14 +121,15 @@ public sealed class ReportTests
         var fields = new EY.HRPlatform.CoreHR.Features.EmployeeFields.EmployeeFieldService(db, TestTenantContext.WithTenant(Tenant));
         var front = await engine.FrontPageAsync(Hr, fields, default);
         Assert.Equal(Today.AddYears(-15), front.FirstDate);
-        Assert.True(front.Snapshots.Count > 180);
-        var ceo = front.Snapshots.Single(s => s.Date == Today).People.Single(p => p.Name == "First Person");
+        // Fifteen unchanged years travel as one stretch, not one copy per month.
+        var ceo = Assert.Single(front.People.Single(p => p.Name == "First Person").Spans);
+        Assert.Equal((Today.AddYears(-15), (DateOnly?)null), (ceo.From, ceo.To));
         Assert.Null(ceo.Department);
         Assert.Equal("Company", ceo.Parent);
-        Assert.DoesNotContain(front.Snapshots.Single(s => s.Date == Today).People, p => p.Name == "Future Joiner");
-        Assert.Contains(front.Snapshots.Single(s => s.Date == Today.AddDays(7)).People, p => p.Name == "Future Joiner");
+        Assert.DoesNotContain(On(front, Today), p => p.Person.Name == "Future Joiner");
+        Assert.Contains(On(front, Today.AddDays(7)), p => p.Person.Name == "Future Joiner");
         var report = await engine.RunAsync(Definition() with { Mode = "date" }, Hr, default);
-        Assert.Equal(report.Totals[0], front.Snapshots.Single(s => s.Date == Today).People.Count);
+        Assert.Equal(report.Totals[0], On(front, Today).Count);
     }
 
     [Fact]
@@ -148,7 +153,7 @@ public sealed class ReportTests
         var fields = new EY.HRPlatform.CoreHR.Features.EmployeeFields.EmployeeFieldService(db, TestTenantContext.WithTenant(Tenant));
         var front = await engine.FrontPageAsync(new(Guid.NewGuid(), world.Manager, PermissionScopes.DirectReports, false, false), fields, default);
         Assert.DoesNotContain("job", front.Fields); Assert.DoesNotContain("place", front.Fields); Assert.DoesNotContain("first-day", front.Fields);
-        Assert.All(front.Snapshots.SelectMany(s => s.People), p => { Assert.Null(p.Job); Assert.Null(p.Place); Assert.Null(p.FirstDay); });
+        Assert.All(front.People.SelectMany(p => p.Spans), p => { Assert.Null(p.Job); Assert.Null(p.Place); Assert.Null(p.FirstDay); });
         var missing = Assert.Single(front.RecordsToComplete);
         Assert.Contains("Person1", missing.DisplayName);
         Assert.Equal(new[] { "Shared detail" }, missing.Missing);

@@ -1,5 +1,9 @@
 # LOG — the one history
 
+- ○ **B-284** Core HR's front page sends each person once with their dated stretches instead of everyone at every boundary, 2026-11-04: Carthage 5.5 MB → 120 KB, identical headcounts on 4 checked dates, warm server time under a second. Frontend rebuilds who was here and the events from the stretches.
+- ○ **B-285** Front page closer to the D-30 drawing, 2026-11-04: a face on each Next 30 days row; open roles show the hiring manager (face + "<name>'s team"), sent only when the viewer already sees them. "Filled · who" isn't modelled → B-287.
+  - `test-backend.ps1 CoreHR`: **470/0/0** (one assertion now proves 15 unchanged years travel as one stretch; open role names its manager). Core touched tests **16/0/0**, type-check pass, EN/FR/AR match. Live: Replay ends on 102, no page errors.
+
 - ✓ **B-190** Core HR's front page accepted, 2026-11-04 (user: "looks good enough"), after a review pass against the D-30 drawing. Fixed: people in a division's own team or at company level showed as "Unassigned", first, in a shared colour → **Not in a department**, last, neutral (API `parent` = their own unit); six distinct department hues (`--identity-6`); Time here label width; Next 30 days rows drop the redundant source. Same batch: B-280's Core/Performance/Platform loading accepted; record breadcrumb no longer shows the raw employee key while loading (`@repo/ds` app-breadcrumb). Follow-ups B-284 (5.5 MB payload), B-285 (drawing parity).
   - `test-backend.ps1 CoreHR`: **470/0/0** (relational on; first attempt refused by the memory check, frontend stopped for it). `pnpm --filter core exec vitest run src/features/overview …/worker-profile.test.tsx`: **16/0/0**. `pnpm --filter core type-check` pass; `check-messages.cjs` EN/FR/AR match.
 

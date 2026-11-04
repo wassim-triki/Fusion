@@ -81,6 +81,7 @@
     },
     "placeChange": "{name} ينتقل إلى {place}",
     "managerChange": "{name} يغيّر المدير",
+    "hiringFor": "فريق {name}",
     "outsideDepartments": "خارج الأقسام"
   }
 }

@@ -9,13 +9,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EY.HRPlatform.CoreHR.Features.Reports;
 
-/// <summary>Parent: the unit above the person's department, or, outside every department, the unit they sit in.</summary>
-public sealed record FrontPagePersonDto(string EmployeeKey, string Name, string? PhotoUrl, string? Job, string? Place, string? FirstDay,
+/// <summary>
+/// One stretch of time over which a person's details stay the same; To is exclusive, null when it runs past LastDate.
+/// Parent: the unit above the person's department, or, outside every department, the unit they sit in.
+/// </summary>
+public sealed record FrontPageSpanDto(DateOnly From, DateOnly? To, string? Job, string? Place, string? FirstDay,
     Guid? DepartmentId, string? Department, string? Parent, string? ManagerKey);
-public sealed record FrontPageSnapshotDto(DateOnly Date, IReadOnlyList<FrontPagePersonDto> People);
-public sealed record FrontPageRoleDto(Guid Id, string? Job, string? Place, string? Unit, DateOnly? TargetStartDate);
+/// <summary>Each person once, with their dated stretches, instead of everyone at every boundary.</summary>
+public sealed record FrontPagePersonDto(string EmployeeKey, string Name, string? PhotoUrl, IReadOnlyList<FrontPageSpanDto> Spans);
+/// <summary>ManagerKey: the hiring manager, only when the viewer can already see them on this page.</summary>
+public sealed record FrontPageRoleDto(Guid Id, string? Job, string? Place, string? Unit, DateOnly? TargetStartDate, string? ManagerKey);
 public sealed record FrontPageDto(DateOnly Today, DateOnly FirstDate, DateOnly LastDate, bool TeamOnly,
-    IReadOnlyList<string> Fields, IReadOnlyList<FrontPageSnapshotDto> Snapshots, IReadOnlyList<FrontPageRoleDto> OpenRoles,
+    IReadOnlyList<string> Fields, IReadOnlyList<FrontPagePersonDto> People, IReadOnlyList<FrontPageRoleDto> OpenRoles,
     IReadOnlyList<EmployeeFieldMissingPersonDto> RecordsToComplete);
 
 public sealed partial class ReportEngine
@@ -28,7 +33,7 @@ public sealed partial class ReportEngine
         // This internal projection uses the very same reach, field whitelist and dated rows as Reports.
         // Its event dates are not subject to the report builder's 120-column export limit.
         await RunCoreAsync(new("headcount", "division", "range", new(1900, 1, 1), today, "month", [], []), viewer, ct, projection);
-        var currentKeys = projection.Snapshots.Single(s => s.Date == today).People.Select(p => p.EmployeeKey).ToList();
+        var currentKeys = projection.Snapshots.Single(s => s.Date == today).People.Select(p => p.Key).ToList();
         var currentIds = projection.People.Values.Where(p => currentKeys.Contains(p.StableEmployeeKey)).Select(p => p.Id).ToList();
         var audience = viewer.Hr ? EmployeeReadAudience.HrAdmin : viewer.Scope == PermissionScopes.DirectReports
             ? EmployeeReadAudience.Manager : EmployeeReadAudience.Employee;
@@ -38,15 +43,50 @@ public sealed partial class ReportEngine
             && (viewer.Scope == PermissionScopes.Tenant || currentIds.Contains(r.ManagerEmployeeId) || r.ManagerEmployeeId == viewer.EmployeeId)).ToListAsync(ct);
         var units = projection.UnitsOn(today);
         return new(today, projection.First, projection.Last, viewer.Scope == PermissionScopes.DirectReports,
-            projection.Fields, projection.Snapshots,
+            projection.Fields, projection.Spans(),
             roles.Select(r => new FrontPageRoleDto(r.Id, projection.Fields.Contains("job") ? r.JobTitle : null,
-                projection.Fields.Contains("place") ? r.PlaceName : null, units.GetValueOrDefault(r.OrgUnitId)?.Name, r.TargetStartDate)).ToList(), missing);
+                projection.Fields.Contains("place") ? r.PlaceName : null, units.GetValueOrDefault(r.OrgUnitId)?.Name, r.TargetStartDate,
+                projection.People.GetValueOrDefault(r.ManagerEmployeeId)?.StableEmployeeKey)).ToList(), missing);
     }
 
     private sealed class FrontPageProjection
     {
         public Dictionary<Guid, Employee> People { get; private set; } = [];
-        public List<FrontPageSnapshotDto> Snapshots { get; } = [];
+        public List<Snapshot> Snapshots { get; } = [];
+
+        public sealed record State(string Key, string Name, string? PhotoUrl, string? Job, string? Place, string? FirstDay,
+            Guid? DepartmentId, string? Department, string? Parent, string? ManagerKey);
+        public sealed record Snapshot(DateOnly Date, IReadOnlyList<State> People);
+
+        /// <summary>Every snapshot sits at a boundary, so between two of them nobody's details change.</summary>
+        public List<FrontPagePersonDto> Spans()
+        {
+            var people = new Dictionary<string, (State First, List<FrontPageSpanDto> Spans)>();
+            var open = new Dictionary<string, (State State, DateOnly From)>();
+            void Close(string key, DateOnly to)
+            {
+                var (state, from) = open[key];
+                people[key].Spans.Add(new(from, to, state.Job, state.Place, state.FirstDay, state.DepartmentId, state.Department, state.Parent, state.ManagerKey));
+                open.Remove(key);
+            }
+            foreach (var snapshot in Snapshots)
+            {
+                var present = snapshot.People.ToDictionary(p => p.Key);
+                foreach (var key in open.Keys.ToList())
+                    if (!present.TryGetValue(key, out var now) || Changed(open[key].State, now)) Close(key, snapshot.Date);
+                foreach (var state in snapshot.People)
+                {
+                    if (!people.ContainsKey(state.Key)) people[state.Key] = (state, []);
+                    if (!open.ContainsKey(state.Key)) open[state.Key] = (state, snapshot.Date);
+                }
+            }
+            foreach (var (key, (state, from)) in open)
+                people[key].Spans.Add(new(from, null, state.Job, state.Place, state.FirstDay, state.DepartmentId, state.Department, state.Parent, state.ManagerKey));
+            return people.Values.OrderBy(p => p.First.Name)
+                .Select(p => new FrontPagePersonDto(p.First.Key, p.First.Name, p.First.PhotoUrl, p.Spans.OrderBy(s => s.From).ToList())).ToList();
+        }
+
+        private static bool Changed(State a, State b) => a with { Name = b.Name, PhotoUrl = b.PhotoUrl } != b;
         public IReadOnlyList<string> Fields { get; private set; } = [];
         public DateOnly First { get; private set; }
         public DateOnly Last { get; private set; }
@@ -136,7 +176,7 @@ public sealed partial class ReportEngine
                     ? department.ParentOrgUnitId is { } parentId ? units.GetValueOrDefault(parentId)?.Name : null
                     : departmentType is not null ? ownUnit?.Name : null;
                 var manager = managerOf.TryGetValue(id, out var managerId) ? People[managerId].StableEmployeeKey : null;
-                return new FrontPagePersonDto(row.EmployeeKey, row.Values["name"] ?? "", EmployeePhotos.UrlFor(row.EmployeeKey, People[id].PhotoKey), row.Values.GetValueOrDefault("job"),
+                return new State(row.EmployeeKey, row.Values["name"] ?? "", EmployeePhotos.UrlFor(row.EmployeeKey, People[id].PhotoKey), row.Values.GetValueOrDefault("job"),
                     row.Values.GetValueOrDefault("place"), row.Values.GetValueOrDefault("first-day"), department?.OrgUnitId,
                     department?.Name ?? (departmentType is null ? row.Values.GetValueOrDefault("division") : null), parentName, manager is not null && visible.Contains(manager) ? manager : null);
             }).OrderBy(p => p.Name).ToList()));

@@ -8,7 +8,8 @@ import {
   screen,
   within,
 } from "@testing-library/react";
-import type { FrontPageDto, FrontPagePersonDto } from "@repo/api";
+import type { FrontPageDto } from "@repo/api";
+import type { FrontPerson } from "../model/front-page";
 import { FrontPageContent } from "./front-page";
 
 vi.mock("@repo/auth", () => ({
@@ -23,13 +24,13 @@ vi.mock("./growth-view", () => ({
   ),
 }));
 vi.mock("./people-view", () => ({
-  PeopleView: ({ people }: { people: FrontPagePersonDto[] }) => (
+  PeopleView: ({ people }: { people: FrontPerson[] }) => (
     <div aria-label="People wall">{people.map((p) => p.name).join(", ")}</div>
   ),
   FrontFace: () => <span />,
 }));
 
-const ada: FrontPagePersonDto = {
+const ada: FrontPerson = {
   employeeKey: "ada",
   name: "Ada Lee",
   photoUrl: null,
@@ -41,7 +42,7 @@ const ada: FrontPagePersonDto = {
   parent: "Technology",
   managerKey: null,
 };
-const bo: FrontPagePersonDto = {
+const bo: FrontPerson = {
   ...ada,
   employeeKey: "bo",
   name: "Bo Kim",
@@ -54,11 +55,12 @@ const data: FrontPageDto = {
   lastDate: "2026-04-01",
   teamOnly: false,
   fields: ["name", "job", "place", "first-day"],
-  snapshots: [
-    { date: "2020-01-01", people: [ada] },
-    { date: "2026-01-01", people: [ada] },
-    { date: "2026-01-08", people: [ada, bo] },
-  ],
+  people: [ada, bo].map(({ employeeKey, name, photoUrl, ...details }) => ({
+    employeeKey,
+    name,
+    photoUrl,
+    spans: [{ from: details.firstDay!, to: null, ...details }],
+  })),
   openRoles: [
     {
       id: "r",
@@ -66,6 +68,7 @@ const data: FrontPageDto = {
       place: "Tunis",
       unit: "Engineering",
       targetStartDate: null,
+      managerKey: null,
     },
   ],
   recordsToComplete: [
@@ -118,7 +121,7 @@ describe("Core HR's front page", () => {
         data={{
           ...data,
           fields: ["name"],
-          snapshots: [{ date: data.today, people: [] }],
+          people: [],
           recordsToComplete: [],
           openRoles: [],
         }}

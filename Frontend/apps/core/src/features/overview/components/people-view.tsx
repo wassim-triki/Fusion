@@ -2,7 +2,6 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import type { FrontPagePersonDto } from "@repo/api";
 import { usePhoto } from "@repo/api/query";
 import {
   PersonAvatar,
@@ -11,14 +10,18 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@repo/ds";
-import { groupPeople, type Grouping } from "../model/front-page";
+import {
+  groupPeople,
+  type Grouping,
+  type FrontPerson,
+} from "../model/front-page";
 
 export function FrontFace({
   person,
   size = "sm",
   label = false,
 }: {
-  person: FrontPagePersonDto;
+  person: FrontPerson;
   size?: "xs" | "sm" | "md";
   label?: boolean;
 }) {
@@ -39,7 +42,7 @@ export function PeopleView({
   by,
   date,
 }: {
-  people: FrontPagePersonDto[];
+  people: FrontPerson[];
   by: Grouping;
   date: string;
 }) {
@@ -71,7 +74,7 @@ export function PeopleView({
     y: number;
     width: number;
   }[] = [];
-  const faces: { person: FrontPagePersonDto; x: number; y: number }[] = [];
+  const faces: { person: FrontPerson; x: number; y: number }[] = [];
   let y = 0;
   for (let row = 0; row < Math.ceil(groups.length / columns); row++) {
     let height = 0;

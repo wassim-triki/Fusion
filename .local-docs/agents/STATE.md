@@ -4,7 +4,7 @@
 
 ## Active work
 
-**Review batches (Claude, 2026-11-04).** Batch 1 done: B-190 ✓, B-280 Core/Performance/Platform accepted, fixes committed. Next: batch 2 = Home (B-247 company card + B-248 manager card need a redesign, the user rejected their look 11-03; plus B-280 Home, then commit B-280); batch 3 = B-246. User also wants B-284/B-285 closed (order to confirm).
+**B-286 Review batches (Claude, 2026-11-04).** Batch 1 done: B-190 ✓, B-280 Core/Performance/Platform accepted, fixes committed. Next: batch 2 = Home (B-247 company card + B-248 manager card need a redesign, the user rejected their look 11-03; plus B-280 Home, then commit B-280); batch 3 = B-246. B-284/B-285 closed ○ after batch 1 (user: "Go").
 
 ## Next
 

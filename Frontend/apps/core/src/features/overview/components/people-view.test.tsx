@@ -2,12 +2,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import type { FrontPagePersonDto } from "@repo/api";
+import type { FrontPerson } from "../model/front-page";
 import { PeopleView } from "./people-view";
 
 vi.mock("@repo/api/query", () => ({ usePhoto: () => null }));
 afterEach(cleanup);
-const person: FrontPagePersonDto = {
+const person: FrontPerson = {
   employeeKey: "ada",
   name: "Ada Lee",
   photoUrl: null,

@@ -46,6 +46,8 @@ export interface UpcomingItem {
   /** Null where every row comes from the same module, as on Core HR's front page. */
   source: Source | null;
   href?: string;
+  /** The person the row is about, after the date (Core HR's front page). */
+  face?: ReactNode;
 }
 
 /** Coming up from Performance's summary: the viewer's next 1:1 with the person, open asks, the review step due. */
@@ -328,6 +330,7 @@ export function UpcomingRow({ item }: { item: UpcomingItem }) {
         <small className="type-eyebrow text-muted-foreground">{item.when.top}</small>
         <b className="type-label">{item.when.main}</b>
       </span>
+      {item.face}
       <span className="min-w-0 flex-1">
         <span className="block truncate type-label text-foreground">{item.title}</span>
         {item.meta ? <span className="block truncate type-meta text-muted-foreground">{item.meta}</span> : null}

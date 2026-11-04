@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { FrontPageDto, FrontPagePersonDto } from "@repo/api";
+import type {
+  FrontPageDto,
+  FrontPagePersonDto,
+  FrontPageSpanDto,
+} from "@repo/api";
 import {
   departmentColor,
   departmentLead,
@@ -8,12 +12,13 @@ import {
   growthMonths,
   peopleOn,
   yearBefore,
+  type FrontPerson,
 } from "./front-page";
 
 const person = (
   key: string,
   department = "Engineering"
-): FrontPagePersonDto => ({
+): FrontPerson => ({
   employeeKey: key,
   name: key,
   photoUrl: null,
@@ -28,27 +33,41 @@ const person = (
 const a = person("Ada"),
   b = { ...person("Bo"), managerKey: "Ada" },
   c = person("Cy", "People");
-const snapshots = [
-  { date: "2010-02-01", people: [a] },
-  { date: "2025-01-15", people: [a, b] },
-  {
-    date: "2026-01-03",
-    people: [a, { ...b, departmentId: "People", department: "People" }, c],
-  },
-  { date: "2026-01-10", people: [a, c] },
+const stretch = (
+  { employeeKey: _k, name: _n, photoUrl: _p, ...details }: FrontPerson,
+  from: string,
+  to: string | null = null
+): FrontPageSpanDto => ({ from, to, ...details });
+const dto = (p: FrontPerson, spans: FrontPageSpanDto[]): FrontPagePersonDto => ({
+  employeeKey: p.employeeKey,
+  name: p.name,
+  photoUrl: p.photoUrl,
+  spans,
+});
+const people = [
+  dto(a, [stretch(a, "2010-02-01")]),
+  dto(b, [
+    stretch(b, "2025-01-15", "2026-01-03"),
+    stretch(
+      { ...b, departmentId: "People", department: "People" },
+      "2026-01-03",
+      "2026-01-10"
+    ),
+  ]),
+  dto(c, [stretch(c, "2026-01-03")]),
 ];
 
 describe("Front-page history", () => {
   it("scrubs exact boundaries and does not invent people before the first day", () => {
-    expect(peopleOn(snapshots, "2010-01-31")).toEqual([]);
-    expect(peopleOn(snapshots, "2025-01-14")).toEqual([a]);
-    expect(peopleOn(snapshots, "2025-01-15")).toEqual([a, b]);
-    expect(peopleOn(snapshots, "2026-01-10")).toEqual([a, c]);
+    expect(peopleOn(people, "2010-01-31")).toEqual([]);
+    expect(peopleOn(people, "2025-01-14")).toEqual([a]);
+    expect(peopleOn(people, "2025-01-15")).toEqual([a, b]);
+    expect(peopleOn(people, "2026-01-10")).toEqual([a, c]);
     expect(yearBefore("2024-02-29")).toBe("2023-02-28");
   });
   it("derives joins, department moves and exclusive-end last days without duplicating unchanged months", () => {
     expect(
-      frontEvents(snapshots).map((e) => [e.person.name, e.kind, e.date])
+      frontEvents(people).map((e) => [e.person.name, e.kind, e.date])
     ).toEqual([
       ["Ada", "joins", "2010-02-01"],
       ["Bo", "joins", "2025-01-15"],
@@ -84,7 +103,7 @@ describe("Front-page history", () => {
       firstDate: "2010-02-01",
       today: "2026-01-05",
       lastDate: "2026-04-05",
-      snapshots,
+      people,
     } as FrontPageDto;
     const months = growthMonths(data);
     expect(months.length).toBeGreaterThan(190);

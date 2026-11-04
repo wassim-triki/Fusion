@@ -81,6 +81,7 @@
     },
     "placeChange": "{name} moves to {place}",
     "managerChange": "{name} changes manager",
+    "hiringFor": "{name}'s team",
     "outsideDepartments": "Not in a department"
   }
 }

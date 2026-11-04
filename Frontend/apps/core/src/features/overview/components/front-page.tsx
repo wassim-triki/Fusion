@@ -145,7 +145,7 @@ export default function FrontPage() {
 function CompanyMeta({ data }: { data: FrontPageDto }) {
   const t = useTranslations("overview.front");
   const format = useFormat();
-  const people = peopleOn(data.snapshots, data.today);
+  const people = peopleOn(data.people, data.today);
   const departments = new Set(
     people.filter((person) => person.department !== null).map(departmentKey)
   ).size;
@@ -217,24 +217,24 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
     frame.current = requestAnimationFrame(step);
   };
   const people = useMemo(
-    () => peopleOn(data.snapshots, date),
-    [data.snapshots, date]
+    () => peopleOn(data.people, date),
+    [data.people, date]
   );
-  const events = useMemo(() => frontEvents(data.snapshots), [data.snapshots]);
+  const events = useMemo(() => frontEvents(data.people), [data.people]);
   const allGroups = useMemo(() => {
     const groups = new Map<string, { key: string; label: string | null }>();
-    data.snapshots.forEach((snapshot) =>
-      snapshot.people.forEach((person) =>
-        groups.set(departmentKey(person), {
-          key: departmentKey(person),
-          label: person.department,
+    data.people.forEach((person) =>
+      person.spans.forEach((span) =>
+        groups.set(departmentKey(span), {
+          key: departmentKey(span),
+          label: span.department,
         })
       )
     );
     return [...groups.values()].sort(byLabel);
-  }, [data.snapshots]);
+  }, [data.people]);
   const departments = groupPeople(people, "department", date);
-  const before = peopleOn(data.snapshots, yearBefore(date));
+  const before = peopleOn(data.people, yearBefore(date));
   const upcoming = events.filter(
     (event) => event.date >= data.today && event.date <= addDays(data.today, 30)
   );
@@ -243,6 +243,9 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
     .filter((event) => event.kind === "joins" && event.date <= date)
     .at(-1);
   const canOpenUnit = canViewCoreOrganization(user);
+  const managers = new Map(
+    peopleOn(data.people, data.today).map((p) => [p.employeeKey, p])
+  );
   const canOpenPeople = canAccessCorePeople(user);
   const eventTitle = (event: FrontEvent) =>
     t(event.kind, {
@@ -528,6 +531,7 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
                   href: canOpenPeople
                     ? `/core/people/${event.person.employeeKey}`
                     : undefined,
+                  face: <FrontFace person={event.person} size="sm" />,
                 }}
               />
             ))}
@@ -597,7 +601,14 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
             <ul className="divide-y divide-border">
               {data.openRoles.map((role) => (
                 <li key={role.id} className="flex items-center gap-3 px-5 py-4">
-                  <BriefcaseBusiness className="size-5 shrink-0 text-muted-foreground" />
+                  {managers.get(role.managerKey ?? "") ? (
+                    <FrontFace
+                      person={managers.get(role.managerKey ?? "")!}
+                      size="sm"
+                    />
+                  ) : (
+                    <BriefcaseBusiness className="size-5 shrink-0 text-muted-foreground" />
+                  )}
                   <div className="min-w-0">
                     <p className="truncate type-label">
                       {role.job ?? t("openRole")}
@@ -605,6 +616,11 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
                     <p className="truncate type-meta text-muted-foreground">
                       {[
                         role.unit,
+                        managers.get(role.managerKey ?? "")
+                          ? t("hiringFor", {
+                              name: managers.get(role.managerKey ?? "")!.name,
+                            })
+                          : null,
                         role.place,
                         role.targetStartDate
                           ? t("from", {

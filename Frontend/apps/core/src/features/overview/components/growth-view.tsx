@@ -39,7 +39,7 @@ export function GrowthView({
   const locale = useLocale();
   const [hover, setHover] = useState<string | null>(null);
   const months = useMemo(() => growthMonths(data), [data]);
-  const events = useMemo(() => frontEvents(data.snapshots), [data.snapshots]);
+  const events = useMemo(() => frontEvents(data.people), [data.people]);
   const range = Math.max(
     1,
     dayNumber(data.lastDate) - dayNumber(data.firstDate)

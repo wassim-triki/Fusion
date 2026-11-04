@@ -25,10 +25,10 @@ async function main() {
     await submit.click();
     await page.waitForURL((url) => !url.pathname.startsWith("/auth"), { timeout: 180000 });
     await page.goto(`${BASE}/core/import/${fixture.session}?step=chart`, { waitUntil: "domcontentloaded", timeout: 180000 });
-    const offer = page.getByRole("region", { name: "Amira Khelifi started before activation" });
+    const offer = page.getByRole("region", { name: "Amira Khelifi has two start dates" });
     // A named section is a region. Wait for both choices and the changed row before capturing.
     await offer.waitFor({ timeout: 180000 });
-    await page.getByRole("radio", { name: /Use .*2020.*from the file/ }).waitFor();
+    await page.getByRole("radio", { name: /Use .*2020/ }).waitFor();
     await page.getByText("Start date", { exact: true }).waitFor();
     await page.evaluate(() => document.fonts.ready);
     await page.mouse.move(0, 0);

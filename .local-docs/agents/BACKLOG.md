@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-291.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-292.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -32,7 +32,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In progress
 
-None. Next session: B-286 batch 3 (B-246).
+None. Waiting on the user's verdict on B-246 (batch 3 of B-286).
 
 ### Rebuild program tracking
 
@@ -56,7 +56,7 @@ None waiting.
 B-246 (batch 3 of B-286).
 
 - [ ] **B-246** The first person's imported start date: an explicit choice between activation day and the earlier file date · Core HR · 2026-11-04
-      In review. Look at the dated choices in Also to check and the corresponding Start date row in Changed; Keep is the default, including Take leans. [Inspection guide and one dark capture](plans/B-246-first-person-start.md). Positive server-side activation provenance/history, publish-time row locks/revalidation, atomic employment/assignment correction and frozen-plan retry. Older unproven records remain ineligible. EN/FR/AR. Final CoreHR 470/0/0, focused 13/0/0, touched frontend 9/0/0, resumed live API 17/0/0, capture 1/0/0; four lint/types and catalogue parity pass. User requested committing on 2026-11-04 while explicitly keeping this In review. Other reviews/deferrals preserved.
+      In review. Look at the import review's Also to check card "Amira Khelifi has two start dates" (Keep, Fusion's lean, from In Fusion; Use, from people.csv) and the Start date row it adds to Changed. [Guide and capture](plans/B-246-first-person-start.md). Reviewed live 2026-11-04 (B-286 batch 3): two-sentence activation caption removed, source under each date, wrapped check titles no longer cramped. Server-side provenance, publish-time revalidation, atomic correction and frozen-plan retry unchanged.
 
 ## Ready
 
@@ -66,7 +66,7 @@ B-246 (batch 3 of B-286).
   - [x] **Front page follow-ups** B-284 (payload 5.5 MB → 120 KB) and B-285 (faces on Next 30 days and open roles) closed ○.
   - [x] **Batch 2** Home: redesign the company card (B-247) and manager card (B-248), rejected 11-03, then review them with B-280's Home part; commit B-280.
         2026-11-04: B-280 Home loading checked, sidebar module flicker fixed. User picked company C and manager A+B on the [canvas](https://claude.ai/artifact/BvgCaYiseSdKQ31Vzj5bPp); built and committed with B-280. Accepted 2026-11-04 (user: "that's great").
-  - [ ] **Batch 3** B-246, the first person's imported start date.
+  - [ ] **Batch 3** B-246, the first person's imported start date. 2026-11-04: reviewed live, wording and card fixed, screenshot sent; waiting on the verdict.
 
 
 ### Rebuild slices
@@ -76,6 +76,9 @@ B-246 (batch 3 of B-286).
       Vocabulary seam from B-190: D-30’s six company departments are the Division-level units above Department A/B; Reports’ existing division field is the top ancestor under the root. Keep the accepted grouping while aligning the words.
 
 ### Other work
+
+- [ ] **B-291** Import review loading matches the page it loads · Core HR · 2026-11-04
+      Seen in B-286 batch 3: `/core/import/{id}` loads as full-width bars under a "Details" breadcrumb, then renders the two-column Changes page (New/Changed panel + Changes apply from / Also to check rail) under "Changes". One loading shape per page (B-280).
 
 - [ ] **B-282** Recover sign-in when a stale compatibility hint has no stored session · Shell, shared authentication · 2026-11-04
       B-280's production negatives confirm fail-closed behavior (zero protected page reads or successful protected responses), but `ey_hr_authenticated=true` with no real session redirects an MFE to sign-in, middleware sends sign-in to Home, and Home ends at No workspace is available. Without the hint, sign-in opens normally. Existing middleware/entry behavior, independent of skeleton presentation; remove the stale hint or otherwise recover sign-in without trusting the cookie as authority. Keep separate from B-280; no authentication flow fix attempted here.

@@ -165,7 +165,7 @@ export function CheckCard({ check, data, change, onShow }: { check: CheckDto; da
       : check.kind === "sameJob" ? t("sameJob")
       : check.kind === "managerLoop" ? t("managerLoop", { names: check.title ?? "" })
       : check.kind === "noStart" ? (check.count === 1 ? t("noStart.one", { name: check.title ?? "" }) : t("noStart.many", { count: check.count }))
-      : check.kind === "firstPersonStart" ? t("firstPersonStart", { name: check.title ?? "" })
+      : check.kind === "firstPersonStart" ? t("twice.startDate", { name: check.title ?? "" })
       : check.count === 1 ? t("noTitle.one", { name: check.title ?? "" }) : t("noTitle.many", { count: check.count });
   const saidIn = data.chart.people.find((person) => person.key === check.subject)?.from.split(" · ")[0] ?? t("theFiles");
   const meta =
@@ -173,7 +173,6 @@ export function CheckCard({ check, data, change, onShow }: { check: CheckDto; da
       : check.kind === "unitParent" || check.kind === "managerMissing" ? t("fileSays", { value: check.detail ?? "" })
       : check.kind === "twice" ? t("disagree")
       : check.kind === "sameJob" ? check.title
-      : check.kind === "firstPersonStart" ? t("firstPersonStartDetail")
       : null;
 
   const optionLabel = (key: string, text: string) => {
@@ -191,14 +190,16 @@ export function CheckCard({ check, data, change, onShow }: { check: CheckDto; da
       default: return text;
     }
   };
-  const from = (value: string | null) => (value === "closest" ? t("from.closest") : value === "new" ? t("from.new") : value);
+  const from = (value: string | null) =>
+    check.kind === "firstPersonStart" ? (value === "file" ? saidIn : t("from.current"))
+      : value === "closest" ? t("from.closest") : value === "new" ? t("from.new") : value;
 
   return (
     <section className="grid gap-3 rounded-surface bg-card p-[1.125rem]" aria-label={title}>
       <div className="flex items-start gap-2.5">
         {done ? <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" aria-hidden /> : <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />}
         <div className="grid min-w-0 flex-1 gap-0.5">
-          <button type="button" onClick={onShow} className="text-start type-label text-foreground hover:underline">{title}</button>
+          <button type="button" onClick={onShow} className="text-start type-label leading-snug text-foreground hover:underline">{title}</button>
           {meta ? <p className="type-meta text-muted-foreground">{meta}</p> : null}
         </div>
       </div>
@@ -216,7 +217,7 @@ export function CheckCard({ check, data, change, onShow }: { check: CheckDto; da
               {option.lean ? <Lean /> : null}
             </span>
           ),
-          description: check.kind === "firstPersonStart" ? undefined : from(option.from) ?? undefined,
+          description: from(option.from) ?? undefined,
         }))}
       />
     </section>

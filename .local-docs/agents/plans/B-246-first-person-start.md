@@ -8,8 +8,8 @@ Two fictional companies are prepared. `node .local-docs/agents/data/journey-b246
 
 Open [the prepared review](http://localhost:3000/core/import/9bfb1b49-458c-4ec5-8e54-633dc31ec6a0?step=chart) as that administrator. The prepared review selects the file date, without publishing it.
 
-1. In **Also to check**, Amira Khelifi's start-date choice shows the activation date and **2 January 2020** from the file. Both choices stay visible.
-2. Select **Keep …**: the start-date change disappears from Changed. Select **Use … from the file**: Changed lists the old and new dates. The file date is applied only by **Bring in … changes**. Fresh reviews and Take Fusion's lean retain the existing date.
+1. In **Also to check**, "Amira Khelifi has two start dates" shows **Keep** the activation date (In Fusion, Fusion's lean) and **Use 2 January 2020** (people.csv). Both choices stay visible.
+2. Select **Keep …**: the start-date change disappears from Changed. Select **Use …**: Changed lists the old and new dates. The file date is applied only by **Bring in … changes**. Fresh reviews and Take Fusion's lean retain the existing date.
 3. Inspect the wording, dated choices and change row together. The choice follows the existing import review's layout and controls (D-22/D-23); no new route or flow.
 
 Required capture: [first-person start choice](B-246-screens/01-first-person-start.png), dark 1440×900. One touched surface only; no B-190, Home or invitation captures.

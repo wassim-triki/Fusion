@@ -314,14 +314,13 @@
       "startOn": "Les faire commencer le {date}",
       "giveJob": "Leur donner le poste {title}",
       "keepStart": "Garder le {date}",
-      "fileStart": "Utiliser le {date} du fichier"
+      "fileStart": "Utiliser le {date}"
     },
     "from": {
       "closest": "La plus proche",
+      "current": "Dans Fusion",
       "new": "Nouvelle unité"
-    },
-    "firstPersonStart": "{name} a commencé avant l’activation",
-    "firstPersonStartDetail": "La fiche initiale commence le jour de l’activation. Ce choix date aussi le poste initial et les liens hiérarchiques."
+    }
   },
   "say": {
     "label": "Autre chose ne va pas ? Dites-le",

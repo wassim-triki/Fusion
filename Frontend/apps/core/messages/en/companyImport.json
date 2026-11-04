@@ -314,14 +314,13 @@
       "startOn": "Start them on {date}",
       "giveJob": "Give them the job {title}",
       "keepStart": "Keep {date}",
-      "fileStart": "Use {date} from the file"
+      "fileStart": "Use {date}"
     },
     "from": {
       "closest": "Closest",
+      "current": "In Fusion",
       "new": "New unit"
-    },
-    "firstPersonStart": "{name} started before activation",
-    "firstPersonStartDetail": "The original record starts on activation day. This also dates their original job and reporting lines."
+    }
   },
   "say": {
     "label": "Something else wrong? Say it",

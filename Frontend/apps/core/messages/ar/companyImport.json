@@ -314,14 +314,13 @@
       "startOn": "بدء عملهم في {date}",
       "giveJob": "منحهم وظيفة {title}",
       "keepStart": "الإبقاء على {date}",
-      "fileStart": "استخدام {date} من الملف"
+      "fileStart": "استخدام {date}"
     },
     "from": {
       "closest": "الأقرب",
+      "current": "في Fusion",
       "new": "وحدة جديدة"
-    },
-    "firstPersonStart": "بدأ {name} العمل قبل التفعيل",
-    "firstPersonStartDetail": "يبدأ السجل الأصلي يوم التفعيل. يحدد هذا الاختيار أيضًا تاريخ الوظيفة الأصلية والعلاقات الإدارية."
+    }
   },
   "say": {
     "label": "هل هناك خطأ آخر؟ قله",

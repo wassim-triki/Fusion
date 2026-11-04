@@ -81,6 +81,6 @@
     },
     "placeChange": "{name} passe à {place}",
     "managerChange": "{name} change de responsable",
-    "noDepartment": "Aucun département affecté"
+    "outsideDepartments": "Hors département"
   }
 }

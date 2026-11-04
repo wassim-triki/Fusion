@@ -4,9 +4,9 @@ import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { FrontPageDto } from "@repo/api";
 import { useFormat } from "@repo/ds/lib/use-format";
-import { seriesColor } from "@/features/reports/report-chart";
 import {
   dayNumber,
+  departmentColor,
   departmentKey,
   frontEvents,
   growthMonths,
@@ -191,14 +191,14 @@ export function GrowthView({
               >
                 <polygon
                   points={polygon(i)}
-                  fill={seriesColor(i)}
+                  fill={departmentColor(i, group.key)}
                   stroke="var(--section)"
                   strokeWidth={1}
                   clipPath="url(#growth-past)"
                 />
                 <polygon
                   points={polygon(i)}
-                  fill={seriesColor(i)}
+                  fill={departmentColor(i, group.key)}
                   stroke="var(--section)"
                   strokeWidth={1}
                   opacity={0.42}
@@ -256,13 +256,14 @@ export function GrowthView({
                 <i
                   className="size-2.5 shrink-0 rounded-detail"
                   style={{
-                    background: seriesColor(
-                      groups.findIndex((g) => g.key === group.key)
+                    background: departmentColor(
+                      groups.findIndex((g) => g.key === group.key),
+                      group.key
                     ),
                   }}
                 />
                 <span className="min-w-0 flex-1 truncate">
-                  {group.label ?? t("unassigned")}
+                  {group.label ?? t("outsideDepartments")}
                 </span>
                 {number(
                   shown.people.filter((p) => departmentKey(p) === group.key)

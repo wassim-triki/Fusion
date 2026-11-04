@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EY.HRPlatform.CoreHR.Features.Reports;
 
+/// <summary>Parent: the unit above the person's department, or, outside every department, the unit they sit in.</summary>
 public sealed record FrontPagePersonDto(string EmployeeKey, string Name, string? PhotoUrl, string? Job, string? Place, string? FirstDay,
     Guid? DepartmentId, string? Department, string? Parent, string? ManagerKey);
 public sealed record FrontPageSnapshotDto(DateOnly Date, IReadOnlyList<FrontPagePersonDto> People);
@@ -120,6 +121,7 @@ public sealed partial class ReportEngine
             {
                 var id = ids[row.EmployeeKey];
                 var unit = assignmentOf.TryGetValue(id, out var assignment) ? units.GetValueOrDefault(assignment.OrgUnitId) : null;
+                var ownUnit = unit;
                 OrgUnitEffectiveState? department = null;
                 var seen = new HashSet<Guid>();
                 while (unit is not null && seen.Add(unit.OrgUnitId))
@@ -128,8 +130,11 @@ public sealed partial class ReportEngine
                     unit = unit.ParentOrgUnitId is { } parent ? units.GetValueOrDefault(parent) : null;
                 }
                 // Only companies without either company grouping use Reports' division grouping.
-                // A company-level person is not themselves a department.
-                var parentName = department?.ParentOrgUnitId is { } parentId ? units.GetValueOrDefault(parentId)?.Name : null;
+                // Someone above the department level (a division's own team, the company itself) is in no
+                // department; Parent then names the unit they sit in, so the page can say where they are.
+                var parentName = department is not null
+                    ? department.ParentOrgUnitId is { } parentId ? units.GetValueOrDefault(parentId)?.Name : null
+                    : departmentType is not null ? ownUnit?.Name : null;
                 var manager = managerOf.TryGetValue(id, out var managerId) ? People[managerId].StableEmployeeKey : null;
                 return new FrontPagePersonDto(row.EmployeeKey, row.Values["name"] ?? "", EmployeePhotos.UrlFor(row.EmployeeKey, People[id].PhotoKey), row.Values.GetValueOrDefault("job"),
                     row.Values.GetValueOrDefault("place"), row.Values.GetValueOrDefault("first-day"), department?.OrgUnitId,

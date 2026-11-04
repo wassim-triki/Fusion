@@ -81,6 +81,6 @@
     },
     "placeChange": "{name} ينتقل إلى {place}",
     "managerChange": "{name} يغيّر المدير",
-    "noDepartment": "لا يوجد قسم معيّن"
+    "outsideDepartments": "خارج الأقسام"
   }
 }

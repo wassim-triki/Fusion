@@ -8,8 +8,26 @@ export type FrontEvent = {
   person: FrontPagePersonDto;
   before?: FrontPagePersonDto;
 };
+export const OUTSIDE_DEPARTMENTS = "__none";
 export const departmentKey = (person: FrontPagePersonDto) =>
-  person.departmentId ?? person.department ?? "__none";
+  person.departmentId ?? person.department ?? OUTSIDE_DEPARTMENTS;
+/** Six distinct hues so no two departments share one; people outside every department stay neutral. */
+export const departmentColor = (index: number, key: string) =>
+  key === OUTSIDE_DEPARTMENTS
+    ? "var(--muted-foreground)"
+    : `var(--identity-${[1, 2, 4, 3, 5, 6][index % 6]})`;
+/** Named groups alphabetically; the unnamed group (no department, no place) last. */
+export const byLabel = (
+  a: { label: string | null },
+  b: { label: string | null }
+) =>
+  a.label === null
+    ? b.label === null
+      ? 0
+      : 1
+    : b.label === null
+      ? -1
+      : a.label.localeCompare(b.label);
 export const dayNumber = (date: string) =>
   Date.parse(`${date}T00:00:00Z`) / 86400000;
 export const addDays = (date: string, days: number) =>
@@ -135,7 +153,7 @@ export function groupPeople(
           "fivePlus",
           "unknown",
         ].indexOf(b.key)
-      : (a.label ?? "").localeCompare(b.label ?? "")
+      : byLabel(a, b)
   );
 }
 

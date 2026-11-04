@@ -118,7 +118,9 @@ public sealed class ReportTests
         var front = await engine.FrontPageAsync(Hr, fields, default);
         Assert.Equal(Today.AddYears(-15), front.FirstDate);
         Assert.True(front.Snapshots.Count > 180);
-        Assert.Null(front.Snapshots.Single(s => s.Date == Today).People.Single(p => p.Name == "First Person").Department);
+        var ceo = front.Snapshots.Single(s => s.Date == Today).People.Single(p => p.Name == "First Person");
+        Assert.Null(ceo.Department);
+        Assert.Equal("Company", ceo.Parent);
         Assert.DoesNotContain(front.Snapshots.Single(s => s.Date == Today).People, p => p.Name == "Future Joiner");
         Assert.Contains(front.Snapshots.Single(s => s.Date == Today.AddDays(7)).People, p => p.Name == "Future Joiner");
         var report = await engine.RunAsync(Definition() with { Mode = "date" }, Hr, default);

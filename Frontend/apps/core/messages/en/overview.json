@@ -81,6 +81,6 @@
     },
     "placeChange": "{name} moves to {place}",
     "managerChange": "{name} changes manager",
-    "noDepartment": "No department assigned"
+    "outsideDepartments": "Not in a department"
   }
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { FrontPageDto, FrontPagePersonDto } from "@repo/api";
 import {
+  departmentColor,
   departmentLead,
   frontEvents,
   groupPeople,
@@ -90,5 +91,21 @@ describe("Front-page history", () => {
     expect(months[0]?.date).toBe("2010-02-01");
     expect(months.find((m) => m.date === data.today)?.people).toHaveLength(3);
     expect(months.at(-1)?.date).toBe(data.lastDate);
+  });
+});
+
+describe("people outside every department", () => {
+  it("sit in their own group, after every department, in a neutral colour", () => {
+    const division = {
+      ...person("Dee"),
+      departmentId: null,
+      department: null,
+      parent: "Corporate Services",
+    };
+    const groups = groupPeople([division, c, a], "department", "2026-01-01");
+    expect(groups.map((g) => g.label)).toEqual(["Engineering", "People", null]);
+    expect(departmentColor(0, groups[2]!.key)).toBe("var(--muted-foreground)");
+    const hues = [0, 1, 2, 3, 4, 5].map((i) => departmentColor(i, `d${i}`));
+    expect(new Set(hues).size).toBe(6);
   });
 });

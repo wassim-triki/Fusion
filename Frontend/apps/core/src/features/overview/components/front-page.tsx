@@ -32,14 +32,16 @@ import {
 } from "lucide-react";
 import { TimeBar } from "@/features/organization/components/time-bar";
 import { UpcomingRow } from "@/features/people/components/worker-profile/overview-tab";
-import { seriesColor } from "@/features/reports/report-chart";
 import {
   addDays,
+  byLabel,
   dayNumber,
+  departmentColor,
   departmentKey,
   departmentLead,
   frontEvents,
   groupPeople,
+  OUTSIDE_DEPARTMENTS,
   peopleOn,
   yearBefore,
   type FrontEvent,
@@ -229,9 +231,7 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
         })
       )
     );
-    return [...groups.values()].sort((a, b) =>
-      (a.label ?? "").localeCompare(b.label ?? "")
-    );
+    return [...groups.values()].sort(byLabel);
   }, [data.snapshots]);
   const departments = groupPeople(people, "department", date);
   const before = peopleOn(data.snapshots, yearBefore(date));
@@ -247,7 +247,10 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
   const eventTitle = (event: FrontEvent) =>
     t(event.kind, {
       name: event.person.name,
-      department: event.person.department ?? t("unassigned"),
+      department:
+        event.person.department ??
+        event.person.parent ??
+        t("outsideDepartments"),
       job: event.person.job ?? "",
       place: event.person.place ?? t("unassigned"),
     });
@@ -360,8 +363,8 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
           aria-label={t("departmentCards")}
         >
           {departments.map((group) => {
-            const lead =
-              group.key === "__none" ? undefined : departmentLead(group.people);
+            const outside = group.key === OUTSIDE_DEPARTMENTS;
+            const lead = outside ? undefined : departmentLead(group.people);
             const first = group.people[0]!;
             const delta =
               group.people.length -
@@ -376,13 +379,19 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
             const members = group.people.filter(
               (person) => person.employeeKey !== lead?.employeeKey
             );
-            const hue = seriesColor(
-              allGroups.findIndex((g) => g.key === group.key)
+            const hue = departmentColor(
+              allGroups.findIndex((g) => g.key === group.key),
+              group.key
             );
+            const subtitle = outside
+              ? [...new Set(group.people.map((p) => p.parent).filter(Boolean))]
+                  .sort()
+                  .join(" · ")
+              : (first.parent ?? (data.teamOnly ? t("yourTeam") : ""));
             return (
               <article
                 key={group.key}
-                className="grid gap-4 rounded-surface bg-card px-5 pt-5"
+                className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 rounded-surface bg-card px-5 pt-5"
                 onMouseEnter={() => setHighlighted(group.key)}
                 onMouseLeave={() => setHighlighted(null)}
                 onFocus={() => setHighlighted(group.key)}
@@ -401,14 +410,17 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
                           href={`/organization/units/${first.departmentId}?asOf=${date}`}
                           className="hover:underline"
                         >
-                          {group.label ?? t("unassigned")}
+                          {group.label ?? t("outsideDepartments")}
                         </Link>
                       ) : (
-                        (group.label ?? t("unassigned"))
+                        (group.label ?? t("outsideDepartments"))
                       )}
                     </h2>
-                    <p className="mt-1 type-meta text-muted-foreground">
-                      {first.parent ?? (data.teamOnly ? t("yourTeam") : "")}
+                    <p
+                      className="mt-1 truncate type-meta text-muted-foreground"
+                      title={subtitle}
+                    >
+                      {subtitle}
                     </p>
                   </div>
                   <div className="shrink-0 text-end">
@@ -434,16 +446,12 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
                         {data.teamOnly
                           ? t("inScope")
                           : t("leads", {
-                              department: group.label ?? t("unassigned"),
+                              department: group.label ?? "",
                             })}
                       </p>
                     </div>
                   </div>
-                ) : (
-                  <p className="flex h-11 items-center type-body text-muted-foreground">
-                    {t("noDepartment")}
-                  </p>
-                )}
+                ) : null}
                 <div className="flex h-7 items-center">
                   <div className="flex -space-x-1.5 rtl:space-x-reverse">
                     {members.slice(0, 6).map((person) => (
@@ -510,10 +518,13 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
                     main: format.parts(event.date, { day: "numeric" }),
                   },
                   title: eventTitle(event),
-                  meta: [event.person.job, event.person.department]
+                  meta: [
+                    event.person.job,
+                    event.person.department ?? event.person.parent,
+                  ]
                     .filter(Boolean)
                     .join(" · "),
-                  source: "core",
+                  source: null,
                   href: canOpenPeople
                     ? `/core/people/${event.person.employeeKey}`
                     : undefined,

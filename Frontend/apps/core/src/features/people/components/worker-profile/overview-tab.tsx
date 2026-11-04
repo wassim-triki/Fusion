@@ -43,7 +43,8 @@ export interface UpcomingItem {
   when: { top: string; main: ReactNode; today?: boolean };
   title: string;
   meta?: string;
-  source: Source;
+  /** Null where every row comes from the same module, as on Core HR's front page. */
+  source: Source | null;
   href?: string;
 }
 
@@ -320,7 +321,7 @@ const SOURCE_ICON: Record<Source, typeof Users> = { performance: BarChart3, core
 /** One Coming up row: when, what, and the module it comes from (the person page and the Team page). */
 export function UpcomingRow({ item }: { item: UpcomingItem }) {
   const t = useTranslations("profile.overview");
-  const Icon = SOURCE_ICON[item.source];
+  const Icon = item.source ? SOURCE_ICON[item.source] : null;
   const body = (
     <>
       <span className={cn("grid w-14 shrink-0 place-items-center rounded-control py-1.5 text-center", item.when.today ? "bg-primary-tint text-primary-ink" : "bg-inlay text-foreground")}>
@@ -331,10 +332,12 @@ export function UpcomingRow({ item }: { item: UpcomingItem }) {
         <span className="block truncate type-label text-foreground">{item.title}</span>
         {item.meta ? <span className="block truncate type-meta text-muted-foreground">{item.meta}</span> : null}
       </span>
-      <span className="inline-flex shrink-0 items-center gap-1.5 type-meta text-muted-foreground">
-        <Icon className="size-3.5" aria-hidden />
-        {item.source === "performance" ? t("fromPerformance") : t("fromCoreHr")}
-      </span>
+      {Icon ? (
+        <span className="inline-flex shrink-0 items-center gap-1.5 type-meta text-muted-foreground">
+          <Icon className="size-3.5" aria-hidden />
+          {item.source === "performance" ? t("fromPerformance") : t("fromCoreHr")}
+        </span>
+      ) : null}
     </>
   );
   const className = "flex items-center gap-4 px-5 py-3";

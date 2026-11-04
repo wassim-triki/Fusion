@@ -69,6 +69,7 @@
     --identity-3: oklch(0.53 0.14 140);
     --identity-4: oklch(0.52 0.17 295);
     --identity-5: oklch(0.55 0.18 340);
+    --identity-6: oklch(0.58 0.15 50);
     --radius: 0.75rem;
     --sidebar: oklch(0.985 0 0);
     --sidebar-foreground: oklch(0.141 0.005 285.823);
@@ -137,6 +138,7 @@
     --identity-3: oklch(0.8 0.15 140);
     --identity-4: oklch(0.75 0.14 295);
     --identity-5: oklch(0.76 0.15 340);
+    --identity-6: oklch(0.78 0.13 60);
     --sidebar: oklch(0.21 0.006 285.885);
     --sidebar-foreground: oklch(0.985 0 0);
     --sidebar-primary: oklch(0.795 0.184 86.047);
@@ -172,6 +174,7 @@
     --color-identity-3: var(--identity-3);
     --color-identity-4: var(--identity-4);
     --color-identity-5: var(--identity-5);
+    --color-identity-6: var(--identity-6);
     --color-ring: var(--ring);
     --color-input: var(--input);
     --color-field: var(--field);

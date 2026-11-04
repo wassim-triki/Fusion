@@ -78,7 +78,7 @@ export function PeopleView({
     let x = 0;
     const rowGroups = groups.slice(row * columns, (row + 1) * columns);
     const weights = rowGroups.map((group) =>
-      Math.max(1.6, Math.sqrt(group.people.length))
+      Math.max(3, Math.sqrt(group.people.length))
     );
     const weight = weights.reduce((sum, value) => sum + value, 0);
     rowGroups.forEach((group, column) => {
@@ -90,7 +90,8 @@ export function PeopleView({
       const name =
         by === "time"
           ? t(`tenure.${group.key as "underOne"}`)
-          : (group.label ?? t("unassigned"));
+          : (group.label ??
+            t(by === "department" ? "outsideDepartments" : "unassigned"));
       labels.push({
         key: group.key,
         name,
@@ -155,7 +156,9 @@ export function PeopleView({
               <TooltipContent>
                 <p>{person.name}</p>
                 <p className="type-meta text-muted-foreground">
-                  {[person.job, person.department].filter(Boolean).join(" · ")}
+                  {[person.job, person.department ?? person.parent]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </p>
               </TooltipContent>
             </Tooltip>

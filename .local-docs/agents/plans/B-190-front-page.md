@@ -1,6 +1,8 @@
 # B-190 — Core HR’s front page
 
-**Status:** In review, 2026-11-03. Slice 16 of B-167. Implementation committed on `wassim/develop`; this does not accept the review.
+**Status:** Accepted ✓ 2026-11-04 (user: "looks good enough"), after the review pass below. Slice 16 of B-167.
+
+**Review pass, 2026-11-04 (batch 1):** compared live with the D-30 drawing and fixed: the 16 people who sit in a division's own team or at company level showed as "Unassigned" first, with a colour shared with another department. They now form **Not in a department**, last, neutral grey in the chart, the card listing the units they sit in (the API sends their own unit as `parent`). Six distinct department hues (new `--identity-6`). Time here no longer cuts "Less than a year". Next 30 days rows drop the redundant "Core HR" source. Consulting −11 and Product −8 "in a year" are real: the 27 Oct reseed (B-125) moved those teams into their division's own unit. CoreHR 470/0/0, core touched tests 16/0/0, type-check pass.
 
 Authority: D-30 / D-20 in [accepted decisions](B-164-decisions.md), drawing in `B-164-explorer-3c.html`.
 

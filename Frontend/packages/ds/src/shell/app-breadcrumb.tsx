@@ -13,8 +13,9 @@ import {
 } from "../components/ui/breadcrumb";
 import type { ShellNavItem } from "./types";
 
+// Record ids: UUIDs and Core HR's stable employee keys (E-<32 hex>), never shown raw.
 const UUID_SEGMENT_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|E-[0-9a-f]{32})$/i;
 
 function humanize(segment: string): string {
   return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");

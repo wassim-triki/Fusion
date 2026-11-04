@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-281.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-286.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -26,32 +26,36 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 | Rebuild slice | Task | Status |
 | --- | --- | --- |
-| 1–15 | Jobs/places/lists through Reports | Accepted and closed |
-| 16 · B-190 | Core HR front page | In review, not accepted |
+| 1–16 | Jobs/places/lists through the Core HR front page | Accepted and closed |
 | 17 · B-191 | Single sign-on | Ready; next planned slice |
 | 18 · B-192 | Seams and finish | Queued after the preceding slices |
 
 ## In progress
 
+No active implementation task.
+
 ### Rebuild program tracking
 
-No implementation task is active. These are umbrella outcomes, not additional slices.
+These are umbrella outcomes, not additional slices.
 
 - [ ] **B-164** The tenant experience, rebuilt from first principles: from a new tenant administrator's first sign-in to everyday use by every role, design-first, coherent and demo-ready; Core HR reworked deepest, Performance checked at its seams · Core HR, Shell, Performance · 2026-10-30
       User 2026-10-30, before any other task: Core HR was winged without specs and feels dated; clean it up, remove/merge/redesign/re-architect, BambooHR-like, no vibe-code feel, the same way as the Performance rework (research, recommendations, an interactive artifact, taste questions). Platform admin out. Order: thin map → independent target → the audit is the diff, in one explorer → decisions → rebuild → tour. [plan](plans/B-164-tenant-experience-overhaul.md)
   - [ ] **B-110** Tenant configurability as a hero: branding (logo, theme/accent, branded sign-in, own address, email branding) and internal configuration (company defaults and whatever the research puts on the ladder), depth chosen on B-163's scope page · Shell, Platform, Core HR, Identity · 2026-10-24
         User 2026-10-30: "I really wanna establish it as a core wow factor"; EY discussed it a lot but never gave specs or how far to take it. Earlier (2026-10-24) brain dump, ideas not requirements. A tenant's default language meets B-105. Context: B-071 removed the unused brand colour from Core's branding settings; Core's branding settings store a `LogoUrl` that no screen sets or shows; Company settings show name and locale.
   - [ ] **B-167** Rebuild: slices in dependency order, each end to end with screens for the taste check ([decisions](plans/B-164-decisions.md), D-01–D-30; [slices](plans/B-167-rebuild.md)) · 2026-10-30
-        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 done (✓ 2026-10-31); B-178 done (✓ 2026-10-31); B-179 done (✓ 2026-10-31); B-180 done (✓ 2026-10-31); B-181 done (✓ 2026-10-31); B-182 done (✓ 2026-10-31); B-183 done (✓ 2026-11-01); B-184 done (✓ 2026-11-01); B-185 done (✓ 2026-11-01); B-186 done (✓ 2026-11-01); B-187 done (✓ 2026-11-01); B-188 done (✓ 2026-11-01); B-189 Reports done (✓ 2026-11-03); B-190 Core HR’s front page In review.
+        Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 done (✓ 2026-10-31); B-178 done (✓ 2026-10-31); B-179 done (✓ 2026-10-31); B-180 done (✓ 2026-10-31); B-181 done (✓ 2026-10-31); B-182 done (✓ 2026-10-31); B-183 done (✓ 2026-11-01); B-184 done (✓ 2026-11-01); B-185 done (✓ 2026-11-01); B-186 done (✓ 2026-11-01); B-187 done (✓ 2026-11-01); B-188 done (✓ 2026-11-01); B-189 Reports done (✓ 2026-11-03); B-190 Core HR’s front page done (✓ 2026-11-04).
 
 ## In review
 
 ### Rebuild slices
 
-- [ ] **B-190** Core HR’s front page: Growth and People, shared date and Replay, dated department cards and upcoming work · Core HR · 2026-11-03
-      Slice 16 of B-167. Look at [Core HR](http://localhost:3000/core): Growth/People, month hover, date slider, Replay, department layers, next 30 days, records and roles. [Review guide and screenshots](plans/B-190-front-page.md). Reports’ viewer scope and field policy retained; EN/FR/AR. Final backend 454/0/0, frontend 8/0/0, live API 10/0/0, browser 8/0/0; types/lint/cold build pass; B-276 warnings cleared 2026-11-03. Committed in 90e596b4; still In review, not accepted. Sidebar B-250/B-274 and Add a person B-239 untouched.
+None waiting.
 
 ### Other reviews
+
+- [ ] **B-280** Consistent loading placeholders across owned MFEs, with Shell Home's frame retained · Shell, Core HR, Performance, Platform · 2026-11-04
+      2026-11-04: Core, Performance and Platform loading accepted with batch 1 (user: "looks good enough"); Home part reviewed with batch 2 (B-247/B-248). Batch 1 also fixed the record breadcrumb showing the raw employee key while loading.
+      Implemented and verified, including Shell Home. Look at initial entry/refresh on Home, Core People/worker record, Performance 1:1 list/series and Platform Tenants/record: one content-pending shape through access/data loading, stable frame. Canonical static loaders, real hydration hold, no artificial waits or early protected pages. Targeted tests160/0/0; four cold builds with lint/types; production browser41/0/0 plus dev19/0/0; read-only API negatives8/0/0 plus anonymous context401; security-review clear. [Diagnosis, timed before/after evidence, scope and review guide](plans/B-280-loading-investigation.md). Genuine BFCache/actually painted target-route fallback and exhaustive other-route parity unclaimed. Existing photo, stale-hint recovery and early header-read follow-ups queued separately as B-281/B-282/B-283. Uncommitted on wassim/develop, stack running; other reviews/deferrals preserved.
 
 - [ ] **B-246** The first person's imported start date: an explicit choice between activation day and the earlier file date · Core HR · 2026-11-04
       In review. Look at the dated choices in Also to check and the corresponding Start date row in Changed; Keep is the default, including Take leans. [Inspection guide and one dark capture](plans/B-246-first-person-start.md). Positive server-side activation provenance/history, publish-time row locks/revalidation, atomic employment/assignment correction and frozen-plan retry. Older unproven records remain ineligible. EN/FR/AR. Final CoreHR 470/0/0, focused 13/0/0, touched frontend 9/0/0, resumed live API 17/0/0, capture 1/0/0; four lint/types and catalogue parity pass. User requested committing on 2026-11-04 while explicitly keeping this In review. Other reviews/deferrals preserved.
@@ -71,8 +75,20 @@ No implementation task is active. These are umbrella outcomes, not additional sl
 
 ### Other work
 
-- [ ] **B-280** Keep one page-shaped skeleton from initial MFE load to content · Shell, Core HR, Performance, Platform · 2026-11-04
-      User recalled the initial generic/odd skeleton that switches to the actual page's skeleton across MFEs. This exact generic→dedicated flash is recorded in [loading architecture](memory/loading-architecture.md), including an older Performance parity follow-up, but had no current open board item. Inspect cold entry, refresh and MFE crossings; preserve the shell frame and use the target page's canonical skeleton throughout. Verify today's implementation before treating the old parity notes as current facts. Queued only; no loading changes made with B-246.
+- [ ] **B-282** Recover sign-in when a stale compatibility hint has no stored session · Shell, shared authentication · 2026-11-04
+      B-280's production negatives confirm fail-closed behavior (zero protected page reads or successful protected responses), but `ey_hr_authenticated=true` with no real session redirects an MFE to sign-in, middleware sends sign-in to Home, and Home ends at No workspace is available. Without the hint, sign-in opens normally. Existing middleware/entry behavior, independent of skeleton presentation; remove the stale hint or otherwise recover sign-in without trusting the cookie as authority. Keep separate from B-280; no authentication flow fix attempted here.
+
+- [ ] **B-284** Core HR's front page sends every boundary's full people list (Carthage: 214 snapshots, 5.5 MB); send the people once plus their dated changes · Core HR · 2026-11-04
+      Found in B-190's review. Fine at 100 people, not at a few thousand.
+
+- [ ] **B-285** Front page parity with the D-30 drawing: a face on each Next 30 days row, and Open roles with the hiring manager and Open/Filled · Core HR · 2026-11-04
+      Found in B-190's review; small gaps, not defects.
+
+- [ ] **B-283** Gate Performance header cycle queries on workspace readiness and route relevance · Performance · 2026-11-04
+      B-280's stale-hint production control starts `/api/performance/context` from the unchanged PerformanceCycleContext before redirect; navigation cancels it before a response. Both useCurrentCycle/useWorkspaceContext run before the cycle-free-route return, without auth readiness. Protected 1:1 page never mounts/queries; anonymous context API refuses access. Existing source (last changed c7402cbb), not introduced by B-280; keep frame mounted while disabling unnecessary header reads until permitted and on cycle-free routes. No fix attempted here.
+
+- [ ] **B-281** Diagnose missing Carthage photo responses seen during loading investigation · Core HR, shared navigation · 2026-11-04
+      B-280 investigation repeatedly reported five `/api/corehr/employees/people/{id}/photo` 404s across Core and Performance; implementation verification including the employee's cards adds one more (six unique photo paths). Initials render and page data succeeds; no hydration/page errors observed. Not the skeleton-switch cause (the SSR access placeholder predates these requests). Keep separate; no data or photo repair attempted. Exact response paths remain in ignored B-280 evidence.
 
 - [ ] **B-277** Resolve archive collisions for completed review plans · Tooling · 2026-11-03
       Stack startup repeatedly reports `archive/plans/B-189-reports.md exists; left B-189-reports.md in plans/`. Compare and preserve both copies’ information before clearing the completed plan from the active folder.

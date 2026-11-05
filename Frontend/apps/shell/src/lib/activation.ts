@@ -1,3 +1,4 @@
+import type { SsoWaysInDto } from "@repo/api";
 import { formatDateTime } from "@repo/ds/lib/dates";
 import { englishSay, useSay, type Say } from "@repo/ds/lib/say";
 import en from "../../messages/en.json";
@@ -52,6 +53,8 @@ export interface ActivationEntry {
   /** The access this invitation grants, for the context panel. */
   role?: string | null;
   passwordRequirements: PasswordRequirements | null;
+  /** The providers the invited address can accept with (B-191); administrators always keep the password too. */
+  waysIn?: SsoWaysInDto | null;
 }
 
 export interface ActivationFieldError {

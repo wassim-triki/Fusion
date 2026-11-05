@@ -22,6 +22,7 @@ import {
   useUpdateProvisioningSettings,
 } from "@/features/settings/api/use-tenant-settings";
 import { sayInEnglish, useSaveFailure, useSettingsSay, type Say } from "@/features/settings/say";
+import { SingleSignOnBlock } from "@/features/settings/sso/single-sign-on";
 
 /** Each choice's words are `invitations.reinvite.<value>` in the catalogue. */
 const REINVITE = ["RefreshExisting", "KeepExisting"] as const;
@@ -135,6 +136,9 @@ export function SignInSettings({ section }: { section: FusionSettingsSection }) 
     >
       {draft ? (
         <>
+          <SingleSignOnBlock />
+
+          <SettingsBlock title={say("invitations.title")}>
           <SettingsRows>
             <SettingsRow label={say("invitations.expiresAfter")} htmlFor={editable ? "invite-expiry" : undefined}>
               {editable ? (
@@ -214,6 +218,7 @@ export function SignInSettings({ section }: { section: FusionSettingsSection }) 
               )}
             </SettingsRow>
           </SettingsRows>
+          </SettingsBlock>
 
           <SettingsBlock title={say("invitations.reinviteTitle")}>
             {editable ? (

@@ -498,7 +498,7 @@ public sealed class TenantAccessProjection(AppIdentityDbContext dbContext) : ITe
                 membership.EmployeeId,
                 (membership.User!.FirstName + " " + membership.User!.LastName).Trim(),
                 membership.User!.JobTitle,
-                membership.User!.PasswordHash != null))
+                membership.User!.PasswordHash != null || dbContext.ExternalLogins.Any(link => link.UserId == membership.UserId)))
             .ToListAsync(cancellationToken);
 
         // People invited to sign in who haven't yet: shown so the person adding sees why they can't be chosen.

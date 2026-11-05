@@ -1,6 +1,7 @@
 using EY.HRPlatform.Identity.Domain.Entities;
 using EY.HRPlatform.Identity.Domain.Enums;
 using EY.HRPlatform.Identity.Features.AccessProfiles;
+using EY.HRPlatform.Identity.Features.SingleSignOn;
 using EY.HRPlatform.Identity.Features.TenantProvisioning;
 using EY.HRPlatform.Identity.Features.WorkforceAccess;
 using EY.HRPlatform.Identity.Infrastructure.Persistence;
@@ -41,7 +42,9 @@ public sealed record WorkforceAcceptanceRequest(
     string? Email,
     string? FirstName,
     string? LastName,
-    string Password);
+    string Password,
+    /// <summary>Accept through a provider instead of a password (B-191): no password is set, and the link is made in the same transaction.</summary>
+    ExternalLoginGrant? External = null);
 
 public sealed record WorkforceAcceptanceResult(
     WorkforceAcceptanceOutcome Outcome,
@@ -330,7 +333,7 @@ public sealed class WorkforceInvitationAcceptanceService(
             errors.Add(new WorkforceAcceptanceFieldError("lastName", "Last name is required."));
         }
 
-        if (string.IsNullOrWhiteSpace(request.Password))
+        if (request.External is null && string.IsNullOrWhiteSpace(request.Password))
         {
             errors.Add(new WorkforceAcceptanceFieldError("password", "A password is required."));
         }
@@ -356,10 +359,18 @@ public sealed class WorkforceInvitationAcceptanceService(
             // dates live on the bound CoreHR employee record (EmployeeId above).
         };
 
-        var created = await userManager.CreateAsync(account, request.Password!);
+        var created = request.External is null
+            ? await userManager.CreateAsync(account, request.Password!)
+            : await userManager.CreateAsync(account);
 
         if (created.Succeeded)
         {
+            if (request.External is { } external)
+            {
+                dbContext.ExternalLogins.Add(ExternalLogin.Create(
+                    account.Id, external.Provider, external.ConnectionId, external.Issuer, external.Subject, external.Email, DateTime.UtcNow));
+            }
+
             return new AccountCreation(account, [], false);
         }
 

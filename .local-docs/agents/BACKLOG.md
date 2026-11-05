@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-296.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-298.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -27,12 +27,12 @@ Open work only. Agents keep it current from the conversation; closed items leave
 | Rebuild slice | Task | Status |
 | --- | --- | --- |
 | 1–16 | Jobs/places/lists through the Core HR front page | Accepted and closed |
-| 17 · B-191 | Single sign-on | Ready to build; plan and screens agreed |
+| 17 · B-191 | Single sign-on | In review (built 2026-11-05) |
 | 18 · B-192 | Seams and finish | Queued after the preceding slices |
 
 ## In progress
 
-None. Next: build B-191 single sign-on (plan and screens agreed).
+None.
 
 ### Rebuild program tracking
 
@@ -49,7 +49,8 @@ These are umbrella outcomes, not additional slices.
 
 ### Rebuild slices
 
-None waiting.
+- [ ] **B-191** Single sign-on: Microsoft, Google, a company's own provider, required per domain · Identity, Shell, Core HR · 2026-10-30
+      Built 2026-11-05 ([plan](plans/B-191-single-sign-on.md), [explorer](https://claude.ai/artifact/Efx5HUDsdRqTsCH3wQzRXJ)). Look at: `plans/B-191-screens/` — 01 sign-in step 2 for an address at a company's proved domain (its provider leads, then Microsoft, Google, the password); 02 an invitation with the providers above "or create a password"; 03 Settings › Sign-in connected and required. One difference from the drawing: invitation pages keep their accepted split frame, with the providers at the top of the form. Try it on localhost with the "SSO Journey mw3qfmtb" company (`data/README.md` › Single sign-on); the test provider page asks which made-up person to be.
 
 ### Other reviews
 
@@ -59,8 +60,6 @@ None waiting.
 
 ### Rebuild slices
 
-- [ ] **B-191** Single sign-on: Microsoft, Google, a company's own provider, required per domain · Identity, Shell · 2026-10-30
-      Re-planned 2026-11-05 at xhigh: [plan](plans/B-191-single-sign-on.md). Screens agreed 2026-11-05 in the [explorer](https://claude.ai/artifact/Efx5HUDsdRqTsCH3wQzRXJ) (sign-in, invitation, Settings › Sign-in). Built and proven locally with a Development-only test provider; real Microsoft/Google apps optional via `FUSION_SSO_*` user variables.
 - [ ] **B-192** Seams and finish: colleague modules only when on, their lint and type-check once (the hook skips them since B-234), one vocabulary, replaced surfaces gone, demo presets for the tour · All · 2026-10-30
       Vocabulary seam from B-190: D-30’s six company departments are the Division-level units above Department A/B; Reports’ existing division field is the top ancestor under the root. Keep the accepted grouping while aligning the words.
 
@@ -70,6 +69,10 @@ None waiting.
       Found while re-planning B-191. Small, backend only; a migration invalidates existing sessions (acceptable, no backward compatibility).
 - [ ] **B-295** Password reset: there is none, and sign-in shows a dead "Forgot password" link (B-191 removes the link) · Identity, Shell · 2026-11-05
       Found while re-planning B-191. A reset by emailed one-time link (Mailpit locally), refused for addresses whose company requires its provider, unless the person is an administrator.
+- [ ] **B-296** Prove a single sign-on domain by DNS before Fusion is hosted: today the first company to pass a test sign-in from a domain proves it, so a company running its own provider could claim another company's unclaimed domain and show its button on that domain's sign-in page · Identity, Core HR · 2026-11-05
+      Found in the B-191 security review (accepted rung 2 in the plan, D9). A claim never signs anyone in across companies; the risk is the sign-in page steering another company's people to that provider. Fix: a DNS TXT record per domain, checked before it counts as proved.
+- [ ] **B-297** Rate limits trust a client-sent `X-Forwarded-For` (shell proxy forwards it), so single sign-on's discover and flow-start limits can be dodged by changing the header · Shell, Gateway, Identity · 2026-11-05
+      Found in the B-191 security review. Local only today; before hosting, the edge sets the client address and the shell proxy drops any incoming value.
 - [ ] **B-287** Open roles remember who filled them, so the front page can show "Filled · Ons Khemiri, Monday" as drawn (D-30); today a filled role keeps no link to the hire or date · Core HR · 2026-11-04
       From B-285: the open roles model has Open/OnHold/Filled/Closed only.
 

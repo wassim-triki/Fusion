@@ -211,7 +211,7 @@ public sealed class AdministratorsAndViewAsTests : IAsyncLifetime
             new TenantAccessProjection(world.Db),
             new TenantAdministratorLifecycleService(world.Db, new TenantContinuityCommandExecutor(world.Db)),
             world.Db,
-            RelationalTestDatabase.CreateUserManager(world.Db),
+            new EY.HRPlatform.Identity.Features.SingleSignOn.SsoStepUp(RelationalTestDatabase.CreateUserManager(world.Db), world.Db),
             TestTenantContext.WithTenant(world.TenantId))
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = user } },

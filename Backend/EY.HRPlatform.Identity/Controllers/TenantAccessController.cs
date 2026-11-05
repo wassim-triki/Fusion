@@ -1,6 +1,7 @@
 using EY.HRPlatform.Identity.Domain.Entities;
 using EY.HRPlatform.Identity.Domain.Enums;
 using EY.HRPlatform.Identity.Infrastructure.Persistence;
+using EY.HRPlatform.Identity.Features.SingleSignOn;
 using EY.HRPlatform.Identity.Features.TenantAdministration;
 using EY.HRPlatform.Identity.Models.Responses;
 using EY.HRPlatform.SharedKernel.Auth;
@@ -16,7 +17,8 @@ public sealed record AdministratorActionRequest(string? Reason);
 
 /// <param name="UserId">Someone in this company who already signs in.</param>
 /// <param name="Password">The caller's own password, asked again for every administrator they add.</param>
-public sealed record AddAdministratorRequest(Guid UserId, string? Password);
+/// <param name="Sso">Instead of the password, a fresh sign-in through the caller's provider (B-191).</param>
+public sealed record AddAdministratorRequest(Guid UserId, string? Password, bool Sso = false);
 
 /// <summary>
 /// The customer Access Management surface: who administers this tenant, who has
@@ -34,7 +36,7 @@ public sealed class TenantAccessController(
     ITenantAccessProjection projection,
     ITenantAdministratorLifecycleService lifecycle,
     AppIdentityDbContext dbContext,
-    UserManager<ApplicationUser> userManager,
+    SsoStepUp stepUp,
     ITenantContext tenantContext) : ControllerBase
 {
     // ── Reads ────────────────────────────────────────────
@@ -139,26 +141,20 @@ public sealed class TenantAccessController(
             return Problem("permission-denied", "You do not have permission to perform this action.", StatusCodes.Status403Forbidden);
         }
 
-        if (await userManager.IsLockedOutAsync(actor))
+        var confirmed = await stepUp.VerifyAsync(actor, new StepUpProof(request.Password, request.Sso), cancellationToken);
+        if (confirmed != StepUpOutcome.Confirmed)
         {
-            return Problem("password-locked", "Too many wrong passwords. Try again in a few minutes.", StatusCodes.Status429TooManyRequests);
+            var (status, code, message) = SsoStepUp.Refusal(confirmed);
+            return Problem(code, message, status);
         }
-
-        if (string.IsNullOrEmpty(request.Password) || string.IsNullOrEmpty(actor.PasswordHash)
-            || userManager.PasswordHasher.VerifyHashedPassword(actor, actor.PasswordHash, request.Password) == PasswordVerificationResult.Failed)
-        {
-            await userManager.AccessFailedAsync(actor);
-            return Problem("password-incorrect", "That isn't your password.", StatusCodes.Status403Forbidden);
-        }
-
-        await userManager.ResetAccessFailedCountAsync(actor);
 
         // Only someone who already signs in to this company: an Active membership on an active account with a
-        // password. Fusion's own staff hold no membership, and are refused here even if one existed.
+        // password or a provider link. Fusion's own staff hold no membership, and are refused here even if one existed.
         var membership = await dbContext.TenantMemberships.IgnoreQueryFilters()
             .Where(item => item.TenantId == tenantId && item.UserId == request.UserId
                 && item.Status == TenantMembershipStatus.Active
-                && item.User!.IsActive && item.User!.PasswordHash != null)
+                && item.User!.IsActive
+                && (item.User!.PasswordHash != null || dbContext.ExternalLogins.Any(link => link.UserId == item.UserId)))
             .Select(item => new { item.Id, item.UserId })
             .FirstOrDefaultAsync(cancellationToken);
         var isOperator = membership is not null && await (

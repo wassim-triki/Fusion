@@ -155,7 +155,8 @@
       "worksHere": "Travaillez-vous chez {tenant} ?",
       "worksHereYes": "Oui, j’y travaille",
       "worksHereNo": "Non, je la configure pour eux",
-      "jobTitle": "Votre poste"
+      "jobTitle": "Votre poste",
+      "orCreatePassword": "ou créez un mot de passe"
     },
     "journeys": {
       "bootstrap": {

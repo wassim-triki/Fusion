@@ -24,7 +24,8 @@ namespace EY.HRPlatform.Identity.Controllers;
 public sealed class TenantActivationController(
     IBootstrapActivationService activation,
     AppIdentityDbContext dbContext,
-    IAuthSessionFactory sessions) : ControllerBase
+    IAuthSessionFactory sessions,
+    Features.SingleSignOn.SsoPolicy ssoPolicy) : ControllerBase
 {
     /// <summary>
     /// What the link opens onto. Read-only: inspecting an invitation never
@@ -51,6 +52,9 @@ public sealed class TenantActivationController(
             Role = entry.Role,
             PasswordRequirements = entry.State == BootstrapEntryState.AccountCreation
                 ? AccountPasswordPolicy.Describe()
+                : null,
+            WaysIn = entry.State == BootstrapEntryState.AccountCreation
+                ? await ssoPolicy.WaysInForAdministrativeCredentialAsync(credential, entry.InvitedEmail, cancellationToken)
                 : null,
         }));
     }
@@ -194,6 +198,9 @@ public sealed class ActivationEntryDto
     /// requirements from one source instead of a second copy that can drift.
     /// </summary>
     public AccountPasswordRequirements? PasswordRequirements { get; set; }
+
+    /// <summary>How the invited address can accept: providers, and the password (B-191).</summary>
+    public Features.SingleSignOn.SsoWaysIn? WaysIn { get; set; }
 }
 
 public sealed class ActivationRefusalDto

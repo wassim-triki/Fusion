@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { ApiError, type AccountPasswordRequirementsDto } from "@repo/api";
-import { login as apiLogin, persistAuth } from "@repo/auth";
+import { ApiError, type AccountPasswordRequirementsDto, type SsoProviderKey, type SsoRefusalDto } from "@repo/api";
+import { login as apiLogin, persistAuth, ProviderButton, startSsoFlow, takeSsoRefusal, useSsoRefusalText } from "@repo/auth";
 import type { AuthUser, StoredAuth } from "@repo/auth";
 import {
   Alert,
@@ -13,6 +13,7 @@ import {
   Field,
   FieldGroup,
   FieldLabel,
+  FieldSeparator,
   Input,
   InputGroup,
   InputGroupAddon,
@@ -306,6 +307,28 @@ function AcceptanceForm({
 
   const pending = progress !== "idle";
 
+  // B-191: the providers the invited address can accept with; where the company requires its own, only that.
+  const refusalText = useSsoRefusalText();
+  const [refusal, setRefusal] = useState<SsoRefusalDto | null>(null);
+  const [leaving, setLeaving] = useState(false);
+  useEffect(() => setRefusal(takeSsoRefusal()), []);
+  const providers = invite.waysIn?.providers ?? [];
+  const passwordOffered = invite.waysIn?.password !== false;
+  const refusalMessage = refusal ? refusalText(refusal, { invitedEmail: invite.email }) : null;
+
+  async function continueWith(provider: SsoProviderKey) {
+    setRefusal(null);
+    setLeaving(true);
+    const refused = await startSsoFlow(
+      { purpose: "invitation", provider, invitation: { kind: "workforce", credential: token } },
+      { origin: `${window.location.pathname}?token=${encodeURIComponent(token)}` },
+    );
+    if (refused) {
+      setLeaving(false);
+      setRefusal({ code: refused as SsoRefusalDto["code"], provider, company: null, email: null });
+    }
+  }
+
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (pending || !canSubmit) return;
@@ -411,7 +434,7 @@ function AcceptanceForm({
           </h2>
           <p className="mt-2 text-[0.9375rem] leading-6 text-muted-foreground">
             {isWorkforce
-              ? t("workforce.formLead", { tenant: tenantName })
+              ? t(passwordOffered ? "workforce.formLead" : "workforce.formLeadProvider", { tenant: tenantName })
               : t("administrator.formLead", { tenant: tenantName })}
           </p>
         </header>
@@ -430,6 +453,36 @@ function AcceptanceForm({
           </Alert>
         ) : null}
 
+        {refusalMessage ? (
+          <Alert variant="destructive" className="mt-6 border-destructive/30 bg-destructive/10">
+            <TriangleAlert aria-hidden="true" />
+            <AlertDescription className="text-destructive">
+              <p className="font-medium">{refusalMessage.title}</p>
+              {refusalMessage.more ? <p className="text-foreground">{refusalMessage.more}</p> : null}
+            </AlertDescription>
+          </Alert>
+        ) : null}
+
+        {providers.length > 0 ? (
+          <div className="mt-6 grid gap-2.5">
+            {providers.map((way) => (
+              <ProviderButton
+                key={way.key}
+                way={way}
+                primary={way.key === "company"}
+                disabled={leaving || pending}
+                onClick={() => void continueWith(way.key)}
+              />
+            ))}
+            {passwordOffered ? (
+              <FieldSeparator className="mt-2 [&_[data-slot=field-separator-content]]:bg-background">
+                {t("orCreatePassword")}
+              </FieldSeparator>
+            ) : null}
+          </div>
+        ) : null}
+
+        {passwordOffered ? (
         <FieldGroup className="mt-6 gap-4">
           {!isWorkforce ? (
             <div className="grid gap-4 sm:grid-cols-2">
@@ -571,6 +624,7 @@ function AcceptanceForm({
             })}
           </p>
         </FieldGroup>
+        ) : null}
       </form>
     </InvitationTransactionFrame>
   );

@@ -247,7 +247,8 @@
     "never": "Jamais",
     "firstDay": "Inviter les nouveaux le jour de leur arrivée",
     "on": "Activé",
-    "off": "Désactivé"
+    "off": "Désactivé",
+    "title": "Invitations"
   },
   "roles": {
     "didNotLoad": "Les rôles ne se sont pas chargés",
@@ -571,6 +572,110 @@
       "required": "obligatoires",
       "on": "activés",
       "off": "désactivés"
+    }
+  },
+  "sso": {
+    "title": "Authentification unique",
+    "didNotLoad": "L’authentification unique n’a pas pu être chargée.",
+    "requiredSince": "Obligatoire depuis le {date}",
+    "microsoft": "Connexion avec Microsoft",
+    "google": "Connexion avec Google",
+    "provider": "Fournisseur de votre entreprise",
+    "notConnected": "Non connecté",
+    "connect": "Connecter",
+    "kind": {
+      "MicrosoftEntra": "Microsoft Entra ID",
+      "OpenIdConnect": "Autre (OpenID Connect)"
+    },
+    "form": {
+      "name": "Nom sur le bouton",
+      "directory": "ID de l’annuaire (locataire)",
+      "issuer": "Adresse de l’émetteur",
+      "clientId": "ID de l’application (client)",
+      "secret": "Secret client",
+      "secretKept": "Défini le {date}. Laissez vide pour le garder.",
+      "redirect": "Adresse de redirection",
+      "redirectHintEntra": "Ajoutez-la à l’inscription de l’application dans Entra ID.",
+      "redirectHint": "Ajoutez-la à l’application chez votre fournisseur.",
+      "copy": "Copier",
+      "copied": "Copié",
+      "saveAndTest": "Enregistrer et tester",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "confirmed": "Confirmé. Saisissez à nouveau le secret client, puis enregistrez."
+    },
+    "summary": {
+      "entra": "Microsoft Entra ID · annuaire {directory}",
+      "oidc": "OpenID Connect · {host}"
+    },
+    "tested": "Testé {when} : {email} connecté",
+    "testFailed": "Échec du test {when} : {message}",
+    "notTested": "Pas encore testé",
+    "secretSet": "Secret défini le {date}",
+    "lastSignIn": "dernière connexion {when}",
+    "test": "Tester",
+    "testAgain": "Tester à nouveau",
+    "edit": "Modifier",
+    "replaceSecret": "Remplacer le secret",
+    "remove": "Retirer",
+    "domains": "Domaines e-mail",
+    "proved": "Prouvé le {date}",
+    "unproved": "Prouvé au prochain test depuis une adresse de ce domaine",
+    "addDomain": "Ajouter un domaine",
+    "add": "Ajouter",
+    "passwordAdmins": "Administrateurs avec mot de passe",
+    "nobodyHasPassword": "Aucun administrateur n’a de mot de passe",
+    "noPassword": "Sans mot de passe : {names}.",
+    "setPassword": "Définir un mot de passe",
+    "require": "Exiger {name}",
+    "requireExplain": "Les personnes de {domains} se connectent uniquement avec {name}. Leurs sessions par mot de passe prennent fin. Les administrateurs gardent leur mot de passe.",
+    "check": {
+      "tested": "Testé",
+      "domain": "Un domaine prouvé",
+      "fresh": "Vous vous êtes connecté avec lui dans les 15 dernières minutes",
+      "admin": "Un administrateur a un mot de passe"
+    },
+    "availableAfterTest": "Disponible après un test réussi.",
+    "requiredOn": "Actif pour {domains}, par {name} le {date}. {count, plural, one {# session par mot de passe terminée.} other {# sessions par mot de passe terminées.}}",
+    "requiredLocked": "Désactivez-le pour changer l’annuaire ou l’application.",
+    "confirm": {
+      "requirementOff": {
+        "title": "Désactiver l’exigence ?",
+        "body": "Les personnes de {domains} pourront à nouveau utiliser leur mot de passe, Microsoft ou Google.",
+        "action": "Désactiver"
+      },
+      "removeConnection": {
+        "title": "Retirer {name} ?",
+        "body": "Plus personne ne pourra se connecter avec lui, et ses domaines ne seront plus prouvés.",
+        "action": "Retirer"
+      },
+      "removeDomain": {
+        "title": "Retirer {domain} ?",
+        "body": "Il ne sera plus prouvé ; un test depuis une adresse de ce domaine le prouvera à nouveau.",
+        "action": "Retirer"
+      },
+      "saveConnection": {
+        "title": "Confirmez votre identité",
+        "body": "Modifier les réglages du fournisseur demande votre confirmation.",
+        "action": "Enregistrer"
+      },
+      "yourPassword": "Votre mot de passe",
+      "or": "ou",
+      "with": "Confirmer avec {provider}"
+    },
+    "password": {
+      "title": "Définir un mot de passe",
+      "body": "Choisissez un mot de passe pour garder un accès de secours.",
+      "confirmFirst": "Confirmez d’abord votre identité avec votre fournisseur.",
+      "new": "Nouveau mot de passe",
+      "set": "Définir"
+    },
+    "errors": {
+      "password-incorrect": "Ce n’est pas votre mot de passe.",
+      "password-locked": "Trop d’essais. Réessayez dans quelques minutes.",
+      "confirmation-required": "Confirmez votre identité avec votre fournisseur, puis réessayez.",
+      "confirmFailed": "Votre fournisseur n’a pas confirmé votre identité.",
+      "generic": "Cela n’a pas fonctionné. Réessayez."
     }
   }
 }

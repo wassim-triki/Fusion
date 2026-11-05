@@ -178,10 +178,7 @@ export function SignInPreview({ draft, label }: { draft: BrandDraftView; label: 
             <p className="type-body text-muted-foreground">{text.to.replace("{company}", draft.name)}</p>
           </div>
           {field(text.email)}
-          {field(text.password)}
-          <Button size="lg" className="h-11 w-full">{text.submit}</Button>
-          <p className="text-center type-meta text-muted-foreground">{text.or}</p>
-          <Button size="lg" variant="outline" className="h-11 w-full">{text.sso}</Button>
+          <Button size="lg" className="h-11 w-full">{text.continue}</Button>
         </div>
       </SignInFrame>
     </ScaledScreen>

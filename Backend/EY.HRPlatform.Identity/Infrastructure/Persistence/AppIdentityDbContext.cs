@@ -1,9 +1,10 @@
-﻿using EY.HRPlatform.Identity.Domain.Entities;
+using EY.HRPlatform.Identity.Domain.Entities;
 using EY.HRPlatform.Identity.Domain.Enums;
 using EY.HRPlatform.Identity.Infrastructure.Persistence.Configurations;
 using EY.HRPlatform.SharedKernel.Localization;
 using EY.HRPlatform.SharedKernel.Multitenancy;
 using EY.HRPlatform.SharedKernel.Persistence;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EY.HRPlatform.Identity.Infrastructure.Persistence;
 
-public class AppIdentityDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
+public class AppIdentityDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>, IDataProtectionKeyContext
 {
     private readonly ITenantContext? _tenantContext;
 
@@ -33,6 +34,13 @@ public class AppIdentityDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<InvitationDeliveryAttempt> InvitationDeliveryAttempts => Set<InvitationDeliveryAttempt>();
     public DbSet<TenantBootstrapAuditEvent> TenantBootstrapAuditEvents => Set<TenantBootstrapAuditEvent>();
     public DbSet<ViewAsSession> ViewAsSessions => Set<ViewAsSession>();
+    public DbSet<SsoConnection> SsoConnections => Set<SsoConnection>();
+    public DbSet<SsoDomain> SsoDomains => Set<SsoDomain>();
+    public DbSet<ExternalLogin> ExternalLogins => Set<ExternalLogin>();
+    public DbSet<SsoFlow> SsoFlows => Set<SsoFlow>();
+
+    /// <summary>The Data Protection key ring (company client secrets, flow verifiers); see B-191.</summary>
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     /// <summary>
     /// Runtime constructor with tenant context for production use.
@@ -121,6 +129,11 @@ public class AppIdentityDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .IsUnique();
 
             entity.HasIndex(rt => rt.UserId);
+
+            entity.Property(rt => rt.Method)
+                .HasMaxLength(64)
+                .IsRequired()
+                .HasDefaultValue(SessionMethods.Password);
         });
 
         // Tenant table configuration
@@ -142,6 +155,10 @@ public class AppIdentityDbContext : IdentityDbContext<ApplicationUser, IdentityR
         builder.ApplyConfiguration(new InvitationDeliveryAttemptConfiguration());
         builder.ApplyConfiguration(new TenantBootstrapAuditEventConfiguration());
         builder.ApplyConfiguration(new ViewAsSessionConfiguration());
+        builder.ApplyConfiguration(new SsoConnectionConfiguration());
+        builder.ApplyConfiguration(new SsoDomainConfiguration());
+        builder.ApplyConfiguration(new ExternalLoginConfiguration());
+        builder.ApplyConfiguration(new SsoFlowConfiguration());
 
         // Global tenant query filters: automatically scope queries to the current tenant.
         // When CurrentTenantId is Empty (design-time/startup/no context), filters are disabled (fail-open).
@@ -193,5 +210,11 @@ public class AppIdentityDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
         builder.Entity<ViewAsSession>()
             .HasQueryFilter(session => CurrentTenantId == Guid.Empty || session.TenantId == CurrentTenantId);
+
+        builder.Entity<SsoConnection>()
+            .HasQueryFilter(connection => CurrentTenantId == Guid.Empty || connection.TenantId == CurrentTenantId);
+
+        builder.Entity<SsoDomain>()
+            .HasQueryFilter(domain => CurrentTenantId == Guid.Empty || domain.TenantId == CurrentTenantId);
     }
 }

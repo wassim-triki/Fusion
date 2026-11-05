@@ -2,13 +2,12 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight, Eye, EyeOff, Landmark, Lock, Mail } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import {
   Alert,
   AlertDescription,
   Button,
-  Checkbox,
   Field,
   FieldGroup,
   FieldLabel,
@@ -17,16 +16,25 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-  Label,
 } from "@repo/ds";
 import { useAuth } from "../auth-context";
 import { loadAuth } from "../auth-service";
 import type { AuthUser, LoginFailure } from "../types";
 import { resolvePostSignInDestination } from "../routing";
 import { useSignInBrand } from "../sign-in-brand";
-import { persistLanguageCookie } from "@repo/api";
+import { ProviderButton, startSsoFlow, takeSsoRefusal, useSsoRefusalText } from "../sso";
+import {
+  createPlatformApiClient,
+  persistLanguageCookie,
+  ssoPaths,
+  type SsoProviderKey,
+  type SsoRefusalDto,
+  type SsoWaysInDto,
+} from "@repo/api";
 import { LanguageMenu } from "@repo/ds/shell";
 import { isLocale } from "@repo/i18n/config";
+
+const client = createPlatformApiClient();
 
 export interface SignInPageProps {
   /** Called after successful login or when already authenticated. Defaults to callbackUrl/next or "/" */
@@ -62,22 +70,32 @@ function navigateToRedirectTarget(target: string, mode: "push" | "replace") {
   }
 }
 
-export function SignInPage({
-  onSuccess,
-}: SignInPageProps) {
+const PASSWORD_ONLY: SsoWaysInDto = { password: true, passwordForAdministratorsOnly: false, providers: [] };
+
+/**
+ * Sign-in, email first (B-191): step 1 asks for the address; step 2 offers only the ways in for it, decided by its
+ * domain (the company's own provider, Microsoft, Google, the password), never by whether an account exists.
+ */
+export function SignInPage({ onSuccess }: SignInPageProps) {
   const t = useTranslations("auth.signIn");
+  const ts = useTranslations("auth.sso");
+  const refusalText = useSsoRefusalText();
   const locale = useLocale();
   const searchParams = useSearchParams();
   const { login, user, isLoading: authLoading, isAuthenticated } = useAuth();
   const intended = intendedDestination(searchParams);
-  const brand = useSignInBrand(searchParams.get("company"), locale);
+  const companySlug = searchParams.get("company");
+  const brand = useSignInBrand(companySlug, locale);
 
   const [email, setEmail] = useState("");
+  const [ways, setWays] = useState<SsoWaysInDto | null>(null);
+  const [passwordOpen, setPasswordOpen] = useState(false);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
   const [errors, setErrors] = useState<string[]>([]);
+  const [refusal, setRefusal] = useState<SsoRefusalDto | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [leaving, setLeaving] = useState(false);
 
   // Resolve the landing for the just-authenticated user: a safe callback, else the product's default.
   const finishSignIn = useCallback(
@@ -105,13 +123,50 @@ export function SignInPage({
     }
   }, [authLoading, isAuthenticated, user, finishSignIn]);
 
+  const discover = useCallback(
+    async (address: string): Promise<SsoWaysInDto> => {
+      try {
+        return await client.get<SsoWaysInDto>(ssoPaths.discover(address, companySlug), { skipAuth: true });
+      } catch {
+        // Without an answer the password still works.
+        return PASSWORD_ONLY;
+      }
+    },
+    [companySlug],
+  );
+
+  // Back from a provider that refused: step 2 for the same address, saying why.
+  useEffect(() => {
+    const returned = takeSsoRefusal();
+    if (!returned) return;
+    setRefusal(returned);
+    if (returned.email) {
+      setEmail(returned.email);
+      void discover(returned.email).then(setWays);
+    }
+  }, [discover]);
+
+  const handleContinue = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors([]);
+    setRefusal(null);
+    setIsSubmitting(true);
+    try {
+      setWays(await discover(email.trim()));
+      setPasswordOpen(false);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors([]);
+    setRefusal(null);
     setIsSubmitting(true);
 
     try {
-      const result = await login({ email, password });
+      const result = await login({ email: email.trim(), password });
       if (result) {
         setErrors(failureMessages(result, locale, t));
       } else {
@@ -121,6 +176,29 @@ export function SignInPage({
       setIsSubmitting(false);
     }
   };
+
+  const continueWith = async (provider: SsoProviderKey) => {
+    setErrors([]);
+    setRefusal(null);
+    setLeaving(true);
+    const refused = await startSsoFlow({ purpose: "signIn", provider, email: email.trim() }, { next: intended });
+    if (refused) {
+      setLeaving(false);
+      setRefusal({ code: refused as SsoRefusalDto["code"], provider, company: null, email: email.trim() });
+    }
+  };
+
+  const changeAddress = () => {
+    setWays(null);
+    setPassword("");
+    setErrors([]);
+    setRefusal(null);
+  };
+
+  const companyWay = ways?.providers.find((way) => way.key === "company") ?? null;
+  const otherWays = ways?.providers.filter((way) => way.key !== "company") ?? [];
+  const showPasswordForm = ways !== null && (ways.password || passwordOpen);
+  const message = refusal ? refusalText(refusal) : null;
 
   return (
     <SignInFrame
@@ -142,137 +220,161 @@ export function SignInPage({
           {brand.value ? t("to", { company: brand.value.name }) : t("subtitle")}
         </p>
       </div>
-          <form onSubmit={handleSubmit} className="mt-8">
-            <FieldGroup>
-              {errors.length > 0 && (
-                <Alert
-                  variant="destructive"
-                  className="border-destructive/30 bg-destructive/10"
-                >
-                  <AlertDescription className="text-destructive">
-                    {errors.map((err, i) => (
-                      <p key={i}>{err}</p>
-                    ))}
-                  </AlertDescription>
-                </Alert>
-              )}
 
-              <Field>
-                <FieldLabel htmlFor="email" className="text-card-foreground">
-                  {t("email")}
-                </FieldLabel>
-                <InputGroup className="h-11">
-                  <InputGroupAddon>
-                    <Mail />
-                  </InputGroupAddon>
-                  <InputGroupInput
-                    id="email"
-                    type="email"
-                    placeholder={t("emailPlaceholder")}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    autoComplete="email"
-                  />
-                </InputGroup>
-              </Field>
+      {ways === null ? (
+        <form onSubmit={handleContinue} className="mt-8">
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="email" className="text-card-foreground">
+                {t("email")}
+              </FieldLabel>
+              <InputGroup className="h-11">
+                <InputGroupAddon>
+                  <Mail />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="email"
+                  type="email"
+                  placeholder={t("emailPlaceholder")}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoFocus
+                  autoComplete="username"
+                />
+              </InputGroup>
+            </Field>
+            <Button type="submit" size="lg" className="h-11 w-full text-sm" disabled={isSubmitting || authLoading}>
+              {t("continue")}
+              <ArrowRight />
+            </Button>
+          </FieldGroup>
+          <p className="mt-6 type-meta text-muted-foreground">
+            {t.rich("agreement", {
+              terms: (chunks) => (
+                <a href="#" className="text-primary-ink hover:underline">
+                  {chunks}
+                </a>
+              ),
+              privacy: (chunks) => (
+                <a href="#" className="text-primary-ink hover:underline">
+                  {chunks}
+                </a>
+              ),
+            })}
+          </p>
+        </form>
+      ) : (
+        <form onSubmit={handleSubmit} className="mt-8">
+          <FieldGroup>
+            <div className="flex h-12 items-center gap-3 rounded-control border border-border bg-card ps-3.5 pe-1.5">
+              <Mail className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <span className="min-w-0 flex-1 truncate type-label">{email.trim()}</span>
+              <Button type="button" variant="ghost" size="sm" onClick={changeAddress}>
+                {t("change")}
+              </Button>
+            </div>
 
-              <Field>
-                <FieldLabel htmlFor="password" className="text-card-foreground">
-                  {t("password")}
-                </FieldLabel>
-                <InputGroup className="h-11">
-                  <InputGroupAddon>
-                    <Lock />
-                  </InputGroupAddon>
-                  <InputGroupInput
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    autoComplete="current-password"
-                  />
-                  <InputGroupAddon align="inline-end">
-                    <InputGroupButton
-                      size="icon-sm"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                      aria-label={
-                        showPassword ? t("hideCharacters") : t("showCharacters")
-                      }
-                    >
-                      {showPassword ? <EyeOff /> : <Eye />}
-                    </InputGroupButton>
-                  </InputGroupAddon>
-                </InputGroup>
-              </Field>
+            {message ? (
+              <Alert variant="destructive" className="border-destructive/30 bg-destructive/10">
+                <AlertDescription className="text-destructive">
+                  <p className="font-medium">{message.title}</p>
+                  {message.more ? <p className="text-foreground">{message.more}</p> : null}
+                </AlertDescription>
+              </Alert>
+            ) : null}
 
-              <div className="flex items-center justify-between">
-                <Label
-                  htmlFor="remember-me"
-                  className="flex items-center gap-2 font-normal text-muted-foreground"
-                >
-                  <Checkbox
-                    id="remember-me"
-                    checked={rememberMe}
-                    onCheckedChange={(value) => setRememberMe(value === true)}
-                  />
-                  {t("rememberMe")}
-                </Label>
+            {errors.length > 0 && (
+              <Alert variant="destructive" className="border-destructive/30 bg-destructive/10">
+                <AlertDescription className="text-destructive">
+                  {errors.map((err, i) => (
+                    <p key={i}>{err}</p>
+                  ))}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {companyWay || otherWays.length > 0 ? (
+              <div className="grid gap-2.5">
+                {companyWay ? (
+                  <ProviderButton way={companyWay} primary disabled={leaving} onClick={() => void continueWith("company")} />
+                ) : null}
+                {otherWays.map((way) => (
+                  <ProviderButton key={way.key} way={way} disabled={leaving} onClick={() => void continueWith(way.key)} />
+                ))}
+              </div>
+            ) : null}
+
+            {ways.passwordForAdministratorsOnly && !passwordOpen ? (
+              <p className="text-center type-meta text-muted-foreground">
+                {ts("administrator")}{" "}
                 <button
                   type="button"
-                  className="type-label text-primary transition-colors hover:text-primary/80 focus-visible:underline focus-visible:outline-none"
+                  className="font-medium text-primary-ink hover:underline focus-visible:underline focus-visible:outline-none"
+                  onClick={() => setPasswordOpen(true)}
                 >
-                  {t("forgotPassword")}
+                  {ts("usePassword")}
                 </button>
-              </div>
+              </p>
+            ) : null}
 
-              <Button
-                type="submit"
-                size="lg"
-                className="h-11 w-full text-sm"
-                disabled={isSubmitting || authLoading}
-              >
-                {isSubmitting ? (
-                  t("submitting")
-                ) : (
-                  <>
-                    {t("submit")}
-                    <ArrowRight />
-                  </>
-                )}
-              </Button>
-
-              <FieldSeparator className="[&_[data-slot=field-separator-content]]:bg-card">
-                {t("or")}
-              </FieldSeparator>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                className="h-11 w-full text-sm"
-              >
-                <Landmark />
-                {t("sso")}
-              </Button>
-            </FieldGroup>
-          </form>
-      <p className="mt-6 type-meta text-muted-foreground">
-        {t.rich("agreement", {
-          terms: (chunks) => (
-            <a href="#" className="text-primary-ink hover:underline">
-              {chunks}
-            </a>
-          ),
-          privacy: (chunks) => (
-            <a href="#" className="text-primary-ink hover:underline">
-              {chunks}
-            </a>
-          ),
-        })}
-      </p>
+            {showPasswordForm ? (
+              <>
+                {ways.providers.length > 0 ? (
+                  <FieldSeparator className="[&_[data-slot=field-separator-content]]:bg-background">
+                    {t("or")}
+                  </FieldSeparator>
+                ) : null}
+                <Field>
+                  <FieldLabel htmlFor="password" className="text-card-foreground">
+                    {t("password")}
+                  </FieldLabel>
+                  <InputGroup className="h-11">
+                    <InputGroupAddon>
+                      <Lock />
+                    </InputGroupAddon>
+                    <InputGroupInput
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      autoFocus={ways.providers.length === 0 || passwordOpen}
+                      autoComplete="current-password"
+                    />
+                    <InputGroupAddon align="inline-end">
+                      <InputGroupButton
+                        size="icon-sm"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        aria-label={showPassword ? t("hideCharacters") : t("showCharacters")}
+                      >
+                        {showPassword ? <EyeOff /> : <Eye />}
+                      </InputGroupButton>
+                    </InputGroupAddon>
+                  </InputGroup>
+                </Field>
+                <Button
+                  type="submit"
+                  variant={companyWay ? "outline" : "default"}
+                  size="lg"
+                  className="h-11 w-full text-sm"
+                  disabled={isSubmitting || authLoading}
+                >
+                  {isSubmitting ? (
+                    t("submitting")
+                  ) : (
+                    <>
+                      {t("submit")}
+                      <ArrowRight />
+                    </>
+                  )}
+                </Button>
+              </>
+            ) : null}
+          </FieldGroup>
+        </form>
+      )}
     </SignInFrame>
   );
 }

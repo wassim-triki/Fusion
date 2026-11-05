@@ -155,7 +155,8 @@
       "worksHere": "هل تعمل في {tenant}؟",
       "worksHereYes": "نعم، أعمل هنا",
       "worksHereNo": "لا، أقوم بالإعداد لهم",
-      "jobTitle": "مسمّاك الوظيفي"
+      "jobTitle": "مسمّاك الوظيفي",
+      "orCreatePassword": "أو أنشئ كلمة مرور"
     },
     "journeys": {
       "bootstrap": {

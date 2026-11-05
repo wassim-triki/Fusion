@@ -247,7 +247,8 @@
     "never": "أبدًا",
     "firstDay": "دعوة المنضمين في يومهم الأول",
     "on": "مفعّل",
-    "off": "معطّل"
+    "off": "معطّل",
+    "title": "الدعوات"
   },
   "roles": {
     "didNotLoad": "لم يتم تحميل الأدوار",
@@ -571,6 +572,110 @@
       "required": "إلزامي",
       "on": "مفعّل",
       "off": "متوقف"
+    }
+  },
+  "sso": {
+    "title": "تسجيل الدخول الموحّد",
+    "didNotLoad": "تعذّر تحميل تسجيل الدخول الموحّد.",
+    "requiredSince": "إلزامي منذ {date}",
+    "microsoft": "تسجيل الدخول عبر Microsoft",
+    "google": "تسجيل الدخول عبر Google",
+    "provider": "مزوّد شركتك",
+    "notConnected": "غير مربوط",
+    "connect": "ربط",
+    "kind": {
+      "MicrosoftEntra": "Microsoft Entra ID",
+      "OpenIdConnect": "آخر (OpenID Connect)"
+    },
+    "form": {
+      "name": "الاسم على الزر",
+      "directory": "معرّف الدليل (المستأجر)",
+      "issuer": "عنوان المُصدِر",
+      "clientId": "معرّف التطبيق (العميل)",
+      "secret": "سرّ العميل",
+      "secretKept": "عُيّن في {date}. اتركه فارغًا للإبقاء عليه.",
+      "redirect": "عنوان إعادة التوجيه",
+      "redirectHintEntra": "أضفه إلى تسجيل التطبيق في Entra ID.",
+      "redirectHint": "أضفه إلى التطبيق لدى مزوّدك.",
+      "copy": "نسخ",
+      "copied": "تم النسخ",
+      "saveAndTest": "حفظ واختبار",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "confirmed": "تم التأكيد. أدخل سرّ العميل مجددًا ثم احفظ."
+    },
+    "summary": {
+      "entra": "Microsoft Entra ID · الدليل {directory}",
+      "oidc": "OpenID Connect · {host}"
+    },
+    "tested": "اختُبر {when}: سجّل دخول {email}",
+    "testFailed": "فشل الاختبار {when}: {message}",
+    "notTested": "لم يُختبر بعد",
+    "secretSet": "عُيّن السرّ في {date}",
+    "lastSignIn": "آخر تسجيل دخول عبره {when}",
+    "test": "اختبار",
+    "testAgain": "اختبار مجددًا",
+    "edit": "تعديل",
+    "replaceSecret": "استبدال السرّ",
+    "remove": "إزالة",
+    "domains": "نطاقات البريد",
+    "proved": "مُثبت في {date}",
+    "unproved": "يُثبت في الاختبار التالي من عنوان فيه",
+    "addDomain": "إضافة نطاق",
+    "add": "إضافة",
+    "passwordAdmins": "مسؤولون لديهم كلمة مرور",
+    "nobodyHasPassword": "لا يملك أي مسؤول كلمة مرور",
+    "noPassword": "بلا كلمة مرور: {names}.",
+    "setPassword": "تعيين كلمة مرور",
+    "require": "إلزام {name}",
+    "requireExplain": "يسجّل الأشخاص في {domains} الدخول عبر {name} فقط. تنتهي جلساتهم بكلمة المرور الآن. يحتفظ المسؤولون بكلمات مرورهم.",
+    "check": {
+      "tested": "مُختبر",
+      "domain": "نطاق مُثبت",
+      "fresh": "سجّلت الدخول عبره خلال آخر 15 دقيقة",
+      "admin": "لدى أحد المسؤولين كلمة مرور"
+    },
+    "availableAfterTest": "متاح بعد نجاح اختبار.",
+    "requiredOn": "مفعّل لـ {domains}، بواسطة {name} في {date}. انتهت {count} من جلسات كلمة المرور.",
+    "requiredLocked": "أوقفه لتغيير الدليل أو التطبيق.",
+    "confirm": {
+      "requirementOff": {
+        "title": "إيقاف الإلزام؟",
+        "body": "يمكن للأشخاص في {domains} استخدام كلمة المرور أو Microsoft أو Google مجددًا.",
+        "action": "إيقاف"
+      },
+      "removeConnection": {
+        "title": "إزالة {name}؟",
+        "body": "لن يتمكن أحد من تسجيل الدخول عبره، ولن تبقى نطاقاته مُثبتة.",
+        "action": "إزالة"
+      },
+      "removeDomain": {
+        "title": "إزالة {domain}؟",
+        "body": "لن يبقى مُثبتًا؛ يثبته اختبار من عنوان فيه مجددًا.",
+        "action": "إزالة"
+      },
+      "saveConnection": {
+        "title": "أكّد هويتك",
+        "body": "يتطلب تغيير إعدادات المزوّد تأكيدك.",
+        "action": "حفظ"
+      },
+      "yourPassword": "كلمة مرورك",
+      "or": "أو",
+      "with": "التأكيد عبر {provider}"
+    },
+    "password": {
+      "title": "تعيين كلمة مرور",
+      "body": "اختر كلمة مرور تحتفظ بها للعودة.",
+      "confirmFirst": "أكّد هويتك عبر مزوّدك أولًا.",
+      "new": "كلمة مرور جديدة",
+      "set": "تعيين"
+    },
+    "errors": {
+      "password-incorrect": "هذه ليست كلمة مرورك.",
+      "password-locked": "محاولات خاطئة كثيرة. حاول بعد دقائق.",
+      "confirmation-required": "أكّد هويتك عبر مزوّدك ثم حاول مجددًا.",
+      "confirmFailed": "لم يؤكّد مزوّدك هويتك.",
+      "generic": "لم ينجح ذلك. حاول مجددًا."
     }
   }
 }

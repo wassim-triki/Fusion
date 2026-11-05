@@ -284,7 +284,7 @@ public sealed class AdministrativeInvitationAcceptanceService(
             errors.Add(new AdministrativeAcceptanceFieldError("lastName", "Last name is required."));
         }
 
-        if (string.IsNullOrWhiteSpace(request.Password))
+        if (request.External is null && string.IsNullOrWhiteSpace(request.Password))
         {
             errors.Add(new AdministrativeAcceptanceFieldError("password", "A password is required."));
         }
@@ -305,10 +305,18 @@ public sealed class AdministrativeInvitationAcceptanceService(
             EmailConfirmed = true,
         };
 
-        var created = await userManager.CreateAsync(account, request.Password!);
+        var created = request.External is null
+            ? await userManager.CreateAsync(account, request.Password!)
+            : await userManager.CreateAsync(account);
 
         if (created.Succeeded)
         {
+            if (request.External is { } external)
+            {
+                dbContext.ExternalLogins.Add(ExternalLogin.Create(
+                    account.Id, external.Provider, external.ConnectionId, external.Issuer, external.Subject, external.Email, DateTime.UtcNow));
+            }
+
             return new AccountCreation(account, [], false);
         }
 

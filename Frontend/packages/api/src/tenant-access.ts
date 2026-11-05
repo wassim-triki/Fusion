@@ -85,7 +85,9 @@ export interface AdministratorCandidateDto {
 export interface AddAdministratorRequest {
   userId: string;
   /** The caller's own password, asked for every administrator they add. */
-  password: string;
+  password?: string;
+  /** Instead of the password: a fresh sign-in through the caller's provider (B-191). */
+  sso?: boolean;
 }
 
 /** An administrator whose authority was revoked and not re-granted. */

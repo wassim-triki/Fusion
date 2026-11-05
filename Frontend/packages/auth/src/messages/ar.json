@@ -8,16 +8,15 @@
       "password": "كلمة المرور",
       "showCharacters": "إظهار الأحرف",
       "hideCharacters": "إخفاء الأحرف",
-      "rememberMe": "تذكرني",
-      "forgotPassword": "نسيت كلمة المرور؟",
       "submit": "تسجيل الدخول",
       "submitting": "جارٍ تسجيل الدخول…",
       "or": "أو",
-      "sso": "تسجيل الدخول عبر SSO",
       "agreement": "بتسجيل الدخول، فإنك توافق على <terms>الشروط</terms> و<privacy>سياسة الخصوصية</privacy>.",
       "invalidCredentials": "بيانات الدخول غير صحيحة.",
       "failed": "تعذّر تسجيل الدخول. أعد المحاولة.",
-      "to": "إلى {company}"
+      "to": "إلى {company}",
+      "continue": "متابعة",
+      "change": "تغيير"
     },
     "search": {
       "label": "بحث",
@@ -32,6 +31,62 @@
       "administrators": "المسؤولون",
       "readOnly": "لا يمكن تغيير أي شيء",
       "back": "العودة إلى الأدوار"
+    },
+    "sso": {
+      "continueWith": "المتابعة باستخدام {provider}",
+      "confirmWith": "التأكيد باستخدام {provider}",
+      "administrator": "مسؤول؟",
+      "usePassword": "استخدم كلمة المرور",
+      "yourProvider": "مزوّد شركتك",
+      "yourCompany": "شركتك",
+      "signingIn": "جارٍ تسجيل دخولك",
+      "confirmed": "أكّد {provider} العنوان {email}.",
+      "refusals": {
+        "no_account": {
+          "title": "لا يوجد حساب Fusion للعنوان {email}.",
+          "more": "إن تمت دعوتك، افتح الرابط في بريد الدعوة."
+        },
+        "email_not_verified": {
+          "title": "يقول {provider} إن هذا العنوان غير موثَّق.",
+          "more": "استخدم حسابًا وثّقت شركتك عنوانه."
+        },
+        "linked_to_someone_else": {
+          "title": "هذا العنوان مرتبط بحساب {provider} آخر.",
+          "more": "تواصل مع المسؤول."
+        },
+        "company_requires": {
+          "title": "تسجّل شركتك الدخول عبر {company}.",
+          "more": "استخدم الزر أدناه."
+        },
+        "provider_off": {
+          "title": "لا تستخدم شركتك {provider} لتسجيل الدخول."
+        },
+        "invitation_mismatch": {
+          "title": "سجّلك {provider} بالعنوان {email}.",
+          "more": "هذه الدعوة للعنوان {invited}. اختر ذلك الحساب أو أنشئ كلمة مرور."
+        },
+        "invitation_closed": {
+          "title": "لم يعد بالإمكان استخدام هذه الدعوة.",
+          "more": "اطلب دعوة جديدة."
+        },
+        "existing_account": {
+          "title": "لهذا العنوان حساب Fusion بالفعل.",
+          "more": "سجّل الدخول أو تواصل مع المسؤول."
+        },
+        "operator": {
+          "title": "يسجّل فريق Fusion الدخول بكلمة مرور."
+        },
+        "access_paused": {
+          "title": "وصولك إلى Fusion متوقف.",
+          "more": "تواصل مع المسؤول."
+        },
+        "expired": {
+          "title": "استغرق تسجيل الدخول وقتًا طويلًا. حاول مجددًا."
+        },
+        "provider_failed": {
+          "title": "تعذّر على {provider} تسجيل دخولك. حاول مجددًا."
+        }
+      }
     }
   }
 }

@@ -246,7 +246,7 @@ public sealed class PeopleQueryHandler(
 
     internal static PeopleSignInDto SignInOf(WorkforceAccountStatusDto? account) => account?.ProvisioningState switch
     {
-        "Active" or "InviteAccepted" => new PeopleSignInDto(PeopleSignInState.SignsIn, account.LastLoginAt),
+        "Active" or "InviteAccepted" => new PeopleSignInDto(PeopleSignInState.SignsIn, account.LastLoginAt, account.SignInMethods ?? []),
         "InvitePending" => new PeopleSignInDto(PeopleSignInState.Invited, account.InviteCreatedAt),
         "InviteExpired" => new PeopleSignInDto(PeopleSignInState.Expired, account.InviteExpiresAt),
         "Inactive" => new PeopleSignInDto(PeopleSignInState.Suspended, null),

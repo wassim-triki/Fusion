@@ -84,11 +84,16 @@ app.MapHealthChecks("/health").AllowAnonymous();
 app.UseInternalServiceBodyBuffering();
 
 app.UseCors("AllowFrontend");
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseMiddleware<EY.HRPlatform.SharedKernel.Auth.ReadOnlyViewMiddleware>(); // seeing Fusion as someone is read-only
 app.UseMiddleware<TenantAuthorityRevisionMiddleware>();
 app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
+
+// The made-up sign-in provider exists only in Development and Testing (B-191); nowhere else is it mapped.
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
+    EY.HRPlatform.Identity.Features.SingleSignOn.DevOidcProvider.Map(app);
 
 app.Run();

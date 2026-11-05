@@ -43,7 +43,9 @@ public sealed record WorkforceAccountStatusDto(
     string? DeliveryStatus,
     string? DeliveryMessage,
     DateTime? DeliveryRecordedAt,
-    WorkforceAccountConflictDto? Conflict);
+    WorkforceAccountConflictDto? Conflict,
+    /// <summary>How the person signs in: password, microsoft, google, company (B-191).</summary>
+    IReadOnlyList<string>? SignInMethods = null);
 
 public interface IWorkforceAccountStatusReader
 {

@@ -57,6 +57,9 @@ public sealed class WorkforceAccountStatusDto
     public Guid? UserId { get; set; }
     public bool? IsActive { get; set; }
     public DateTime? LastLoginAt { get; set; }
+
+    /// <summary>How the person signs in: <c>password</c>, <c>microsoft</c>, <c>google</c>, <c>company</c> (B-191).</summary>
+    public List<string> SignInMethods { get; set; } = [];
     public Guid? InviteId { get; set; }
     public DateTime? InviteCreatedAt { get; set; }
     public DateTime? InviteExpiresAt { get; set; }

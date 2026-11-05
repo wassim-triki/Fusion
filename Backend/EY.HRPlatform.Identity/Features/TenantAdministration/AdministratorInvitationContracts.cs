@@ -128,6 +128,9 @@ public sealed record AdministrativeAcceptanceRequest
     public string? Password { get; init; }
     public string? FirstName { get; init; }
     public string? LastName { get; init; }
+
+    /// <summary>Accept through a provider instead of a password (B-191).</summary>
+    public SingleSignOn.ExternalLoginGrant? External { get; init; }
 }
 
 public sealed record AdministrativeAcceptanceResult(

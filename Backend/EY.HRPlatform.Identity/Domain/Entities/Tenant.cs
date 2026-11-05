@@ -48,6 +48,19 @@ public class Tenant
     /// <summary>The stored logo's version (a content hash, part of its address); null when the company has no logo.</summary>
     public string? LogoVersion { get; private set; }
 
+    /// <summary>Whether people here may sign in with Microsoft work or school accounts (B-191); on by default.</summary>
+    public bool AllowMicrosoftSignIn { get; private set; } = true;
+
+    /// <summary>Whether people here may sign in with Google; on by default.</summary>
+    public bool AllowGoogleSignIn { get; private set; } = true;
+
+    public void SetFusionSignIn(bool allowMicrosoft, bool allowGoogle)
+    {
+        AllowMicrosoftSignIn = allowMicrosoft;
+        AllowGoogleSignIn = allowGoogle;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     /// <summary>Applied when a caller does not choose a locale.</summary>
     public const string DefaultLocale = "en-US";
 

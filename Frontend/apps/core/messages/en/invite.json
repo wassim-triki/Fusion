@@ -60,7 +60,8 @@
     "formLead": "{tenant} has set up your Fusion access. Choose a password to activate your account.",
     "submit": "Activate account",
     "submitting": "Activating your account…",
-    "email": "Work email"
+    "email": "Work email",
+    "formLeadProvider": "{tenant} has set up your Fusion access. Continue with your company's account to activate it."
   },
   "administrator": {
     "eyebrow": "You're invited",
@@ -89,5 +90,6 @@
   "passwordsDoNotMatch": "Passwords do not match yet",
   "signingIn": "Signing you in…",
   "opening": "Opening Fusion…",
-  "haveAccount": "Already have a Fusion account? <signIn>Sign in</signIn> to continue"
+  "haveAccount": "Already have a Fusion account? <signIn>Sign in</signIn> to continue",
+  "orCreatePassword": "or create a password"
 }

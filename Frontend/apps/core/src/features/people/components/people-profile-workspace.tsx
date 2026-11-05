@@ -79,6 +79,7 @@ import { WorkerProfileSkeleton } from "./worker-profile/worker-profile-skeleton"
 import { fromPeopleProfile } from "./worker-profile/worker-profile-view";
 import { PersonRoles } from "@/features/settings/roles/person-roles";
 import { AccessTab } from "./worker-profile/access-tab";
+import { PersonSignInLinks } from "@/features/settings/sso/person-sign-in";
 import { AccountInspector } from "@/features/workforce-access/components/account-inspector";
 import { IdentityCorrection } from "@/features/workforce-access/components/identity-correction";
 import { JobTab } from "./worker-profile/job-tab";
@@ -336,6 +337,7 @@ export default function PeopleProfileWorkspace({
       accessAction={accessAction}
       workEmailAction={workEmailAction}
       roles={<PersonRoles employeeId={employee.identity.employeeId} />}
+      signInWith={<PersonSignInLinks userId={access.data?.userId} />}
     />
   ) : tab === "job" ? (
     <JobTab

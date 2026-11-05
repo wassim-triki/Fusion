@@ -12,7 +12,9 @@ public sealed record PeopleAccessStatusQuery(string EmployeeKey)
 public sealed record PeopleAccessStatusDto(
     string State,
     string Label,
-    string? Detail);
+    string? Detail,
+    /// <summary>The person's Fusion account, when they have one; Person › Access lists how it signs in (B-191).</summary>
+    Guid? UserId = null);
 
 public sealed class PeopleAccessStatusQueryHandler(
     CoreHRDbContext dbContext,
@@ -54,7 +56,7 @@ public sealed class PeopleAccessStatusQueryHandler(
         {
             // What the person can do is their roles, listed with why beside this (B-177); the old token role
             // ("Manager access") contradicted them.
-            "Active" => new PeopleAccessStatusDto("Active", "Active", null),
+            "Active" => new PeopleAccessStatusDto("Active", "Active", null, status.UserId),
             "Inactive" => new PeopleAccessStatusDto(
                 "Suspended",
                 "Suspended",

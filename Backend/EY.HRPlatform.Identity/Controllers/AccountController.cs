@@ -17,7 +17,11 @@ namespace EY.HRPlatform.Identity.Controllers;
 [ApiController]
 [Route("api/identity/account")]
 [Authorize]
-public class AccountController(AppIdentityDbContext dbContext) : ControllerBase
+public class AccountController(
+    AppIdentityDbContext dbContext,
+    Microsoft.AspNetCore.Identity.UserManager<Domain.Entities.ApplicationUser> userManager,
+    Features.SingleSignOn.SsoStepUp stepUp,
+    Features.SingleSignOn.SsoPolicy ssoPolicy) : ControllerBase
 {
     public const string UnsupportedLanguageCode = "unsupported-language";
     public const string NothingToChangeCode = "nothing-to-change";
@@ -84,4 +88,48 @@ public class AccountController(AppIdentityDbContext dbContext) : ControllerBase
         return Ok(ApiResponse<AccountAlertsResponse>.Success(
             new AccountAlertsResponse(user.NotificationPopups, user.NotificationSound)));
     }
+
+    /// <summary>
+    /// Sets the person's password (B-191): someone who signs in only through a provider sets a first one after
+    /// confirming through it; someone with a password changes it with the current one.
+    /// </summary>
+    [HttpPost("password")]
+    public async Task<IActionResult> SetPassword([FromBody] SetAccountPasswordRequest request, CancellationToken cancellationToken)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            return Unauthorized();
+        var user = await dbContext.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == userId && u.IsActive, cancellationToken);
+        if (user is null)
+            return Unauthorized();
+
+        var outcome = await stepUp.VerifyAsync(user,
+            new Features.SingleSignOn.StepUpProof(request.CurrentPassword, request.Sso && string.IsNullOrEmpty(user.PasswordHash)),
+            cancellationToken);
+        if (outcome != Features.SingleSignOn.StepUpOutcome.Confirmed)
+        {
+            var (status, code, message) = Features.SingleSignOn.SsoStepUp.Refusal(outcome);
+            return StatusCode(status, ApiResponse<object>.Failure(message, new { code }));
+        }
+
+        var result = string.IsNullOrEmpty(user.PasswordHash)
+            ? await userManager.AddPasswordAsync(user, request.NewPassword ?? string.Empty)
+            : await userManager.ChangePasswordAsync(user, request.CurrentPassword!, request.NewPassword ?? string.Empty);
+        if (!result.Succeeded)
+            return BadRequest(ApiResponse<object>.Failure(
+                result.Errors.Select(error => error.Description).FirstOrDefault() ?? "That password can't be used.", new { code = "invalid-password" }));
+
+        var membership = await ssoPolicy.ActiveMembershipAsync(user.Id, cancellationToken);
+        if (membership is not null)
+        {
+            dbContext.AccessAuditEvents.Add(Domain.Entities.AccessAuditEvent.Create(
+                membership.TenantId, user.Id, string.Empty, string.Empty, Features.SingleSignOn.SsoAuditActions.PasswordSet,
+                Features.SingleSignOn.SsoAuditActions.ResourceType, membership.Id.ToString(), $"{user.FullName} set their password.",
+                null, null, HttpContext.TraceIdentifier));
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        return Ok(ApiResponse<object>.Success(new { hasPassword = true }));
+    }
 }
+
+public sealed record SetAccountPasswordRequest(string? NewPassword, string? CurrentPassword, bool Sso);

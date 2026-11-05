@@ -12,6 +12,10 @@ const PUBLIC_ROUTES = [
   // surfaces authenticate on the invitation credential alone.
   { path: "/activate-invitation", descendants: false },
 
+  // Where a sign-in provider sends the browser back (B-191): it collects the
+  // session, so it can't require one.
+  { path: "/auth/sso/complete", descendants: false },
+
   // An additional administrator invited by an existing one, and a Platform
   // recovery for a tenant that has lost every administrator. Both establish the
   // account they sign in with, so requiring a session first would make them

@@ -8,16 +8,15 @@
       "password": "Mot de passe",
       "showCharacters": "Afficher les caractères",
       "hideCharacters": "Masquer les caractères",
-      "rememberMe": "Se souvenir de moi",
-      "forgotPassword": "Mot de passe oublié ?",
       "submit": "Se connecter",
       "submitting": "Connexion…",
       "or": "ou",
-      "sso": "Se connecter avec le SSO",
       "agreement": "En vous connectant, vous acceptez nos <terms>Conditions d’utilisation</terms> et notre <privacy>Politique de confidentialité</privacy>.",
       "invalidCredentials": "Adresse e-mail ou mot de passe incorrect.",
       "failed": "Connexion impossible. Réessayez.",
-      "to": "à {company}"
+      "to": "à {company}",
+      "continue": "Continuer",
+      "change": "Modifier"
     },
     "search": {
       "label": "Rechercher",
@@ -32,6 +31,62 @@
       "administrators": "Administrateurs",
       "readOnly": "Rien ne peut être modifié",
       "back": "Retour aux rôles"
+    },
+    "sso": {
+      "continueWith": "Continuer avec {provider}",
+      "confirmWith": "Confirmer avec {provider}",
+      "administrator": "Administrateur ?",
+      "usePassword": "Utiliser votre mot de passe",
+      "yourProvider": "le fournisseur de votre entreprise",
+      "yourCompany": "Votre entreprise",
+      "signingIn": "Connexion en cours",
+      "confirmed": "{provider} a confirmé {email}.",
+      "refusals": {
+        "no_account": {
+          "title": "Aucun compte Fusion pour {email}.",
+          "more": "Si vous avez été invité, ouvrez le lien de votre e-mail d’invitation."
+        },
+        "email_not_verified": {
+          "title": "{provider} indique que cette adresse n’est pas vérifiée.",
+          "more": "Utilisez un compte dont l’adresse est vérifiée par votre entreprise."
+        },
+        "linked_to_someone_else": {
+          "title": "Cette adresse est liée à un autre compte {provider}.",
+          "more": "Contactez votre administrateur."
+        },
+        "company_requires": {
+          "title": "Votre entreprise se connecte avec {company}.",
+          "more": "Utilisez le bouton ci-dessous."
+        },
+        "provider_off": {
+          "title": "Votre entreprise n’utilise pas {provider} pour se connecter."
+        },
+        "invitation_mismatch": {
+          "title": "{provider} vous a connecté en tant que {email}.",
+          "more": "Cette invitation est pour {invited}. Choisissez ce compte ou créez un mot de passe."
+        },
+        "invitation_closed": {
+          "title": "Cette invitation ne peut plus être utilisée.",
+          "more": "Demandez une nouvelle invitation."
+        },
+        "existing_account": {
+          "title": "Cette adresse a déjà un compte Fusion.",
+          "more": "Connectez-vous ou contactez votre administrateur."
+        },
+        "operator": {
+          "title": "L’équipe Fusion se connecte avec un mot de passe."
+        },
+        "access_paused": {
+          "title": "Votre accès à Fusion est suspendu.",
+          "more": "Contactez votre administrateur."
+        },
+        "expired": {
+          "title": "La connexion a pris trop de temps. Réessayez."
+        },
+        "provider_failed": {
+          "title": "{provider} n’a pas pu vous connecter. Réessayez."
+        }
+      }
     }
   }
 }

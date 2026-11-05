@@ -54,7 +54,9 @@ public enum PeopleSignInState
 public sealed record PeopleSignInDto(
     PeopleSignInState State,
     /// <summary>Last sign-in, when the invitation was sent, or when it expired.</summary>
-    DateTime? At);
+    DateTime? At,
+    /// <summary>For someone who signs in: <c>password</c>, <c>microsoft</c>, <c>google</c>, <c>company</c> (B-191).</summary>
+    IReadOnlyList<string>? Methods = null);
 
 /// <summary>A company Tags field People can filter on, with the values people hold.</summary>
 public sealed record PeopleFieldFacetDto(string Key, string Label, IReadOnlyList<string> Values);

@@ -35,6 +35,9 @@ public class TenantConfiguration : IEntityTypeConfiguration<Tenant>
         builder.Property(t => t.InternalNotes)
             .HasMaxLength(4000);
 
+        builder.Property(t => t.AllowMicrosoftSignIn).IsRequired().HasDefaultValue(true);
+        builder.Property(t => t.AllowGoogleSignIn).IsRequired().HasDefaultValue(true);
+
         builder.Property(t => t.AdministratorActivationStatus)
             .HasConversion<string>()
             .HasMaxLength(48)

@@ -13,7 +13,11 @@ namespace EY.HRPlatform.Identity.Features.Accounts;
 
 public interface IAuthSessionFactory
 {
-    Task<AuthResponse> CreateAsync(ApplicationUser user, CancellationToken cancellationToken = default);
+    Task<AuthResponse> CreateAsync(ApplicationUser user, CancellationToken cancellationToken = default)
+        => CreateAsync(user, SessionMethods.Password, cancellationToken);
+
+    /// <summary>A session that started with <paramref name="method"/>, which its refresh tokens carry (B-191).</summary>
+    Task<AuthResponse> CreateAsync(ApplicationUser user, string method, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// A session for seeing Fusion as <paramref name="user"/>: their own authority in a token marked with the view,
@@ -40,8 +44,11 @@ public sealed class AuthSessionFactory(
     IConfiguration configuration,
     ICustomerContextResolver customerContextResolver) : IAuthSessionFactory
 {
+    public Task<AuthResponse> CreateAsync(ApplicationUser user, CancellationToken cancellationToken = default)
+        => CreateAsync(user, SessionMethods.Password, cancellationToken);
+
     public async Task<AuthResponse> CreateAsync(
-        ApplicationUser user, CancellationToken cancellationToken = default)
+        ApplicationUser user, string method, CancellationToken cancellationToken = default)
     {
         var accessToken = await tokenService.GenerateAccessTokenAsync(user);
         var refreshTokenString = tokenService.GenerateRefreshToken();
@@ -50,6 +57,7 @@ public sealed class AuthSessionFactory(
         {
             UserId = user.Id,
             Token = refreshTokenString,
+            Method = method,
             ExpiresAt = DateTime.UtcNow.AddDays(
                 int.Parse(configuration["Jwt:RefreshTokenExpirationInDays"]!)),
         });

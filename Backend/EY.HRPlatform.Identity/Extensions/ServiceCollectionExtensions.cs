@@ -14,6 +14,8 @@ using EY.HRPlatform.Identity.Infrastructure.Services;
 using EY.HRPlatform.SharedKernel.Multitenancy;
 using EY.HRPlatform.SharedKernel.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -237,6 +239,38 @@ public static class ServiceCollectionExtensions
             services.AddScoped<IWorkforceInvitationEmailSender, CapturedWorkforceInvitationEmailSender>();
         }
         services.AddScoped<IWorkforceInvitationAcceptanceService, WorkforceInvitationAcceptanceService>();
+
+        // 5. Single sign-on (B-191). Company client secrets and flow verifiers are protected with Data Protection,
+        // its key ring kept in Identity's database; hosting must protect that ring with a certificate or key vault.
+        services.AddDataProtection()
+            .SetApplicationName("Fusion.Identity")
+            .PersistKeysToDbContext<AppIdentityDbContext>();
+        services.AddSingleton(sp => Features.SingleSignOn.SsoOptions.From(configuration, sp.GetRequiredService<IHostEnvironment>()));
+        services.AddSingleton<Features.SingleSignOn.ISsoLoopbackChannel, Features.SingleSignOn.SocketsLoopbackChannel>();
+        services.AddSingleton(sp => new Features.SingleSignOn.SsoBackchannel(
+            sp.GetRequiredService<Features.SingleSignOn.SsoOptions>(),
+            sp.GetRequiredService<Features.SingleSignOn.ISsoLoopbackChannel>()));
+        services.AddSingleton<Features.SingleSignOn.SsoOidcClient>();
+        services.AddScoped<Features.SingleSignOn.SsoProviderCatalog>();
+        services.AddScoped<Features.SingleSignOn.SsoPolicy>();
+        services.AddScoped<Features.SingleSignOn.SsoFlowService>();
+        services.AddScoped<Features.SingleSignOn.SsoStepUp>();
+        var ssoPermitsPerMinute = configuration.GetValue("Sso:RateLimitPerMinute", 30);
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.AddPolicy(Controllers.SsoController.RateLimitPolicy, context => System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
+                // Browser traffic arrives through the gateway, which names the caller first in X-Forwarded-For.
+                context.Request.Headers["X-Forwarded-For"].ToString().Split(',')[0].Trim() is { Length: > 0 } forwarded
+                    ? forwarded
+                    : context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = ssoPermitsPerMinute,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 0,
+                }));
+        });
 
         // 6. Training service client (service-to-service)
         // This integration is fire-and-forget only. When local config is blank,

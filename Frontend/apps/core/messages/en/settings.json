@@ -247,7 +247,8 @@
     "never": "Never",
     "firstDay": "Invite joiners on their first day",
     "on": "On",
-    "off": "Off"
+    "off": "Off",
+    "title": "Invitations"
   },
   "roles": {
     "didNotLoad": "Roles didn't load",
@@ -571,6 +572,110 @@
       "required": "required",
       "on": "on",
       "off": "off"
+    }
+  },
+  "sso": {
+    "title": "Single sign-on",
+    "didNotLoad": "Single sign-on didn't load.",
+    "requiredSince": "Required since {date}",
+    "microsoft": "Sign in with Microsoft",
+    "google": "Sign in with Google",
+    "provider": "Your company's provider",
+    "notConnected": "Not connected",
+    "connect": "Connect",
+    "kind": {
+      "MicrosoftEntra": "Microsoft Entra ID",
+      "OpenIdConnect": "Other (OpenID Connect)"
+    },
+    "form": {
+      "name": "Name on the button",
+      "directory": "Directory (tenant) ID",
+      "issuer": "Issuer address",
+      "clientId": "Application (client) ID",
+      "secret": "Client secret",
+      "secretKept": "Set on {date}. Leave it empty to keep it.",
+      "redirect": "Redirect address",
+      "redirectHintEntra": "Add it to the app registration in Entra ID.",
+      "redirectHint": "Add it to the application at your provider.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "saveAndTest": "Save and test",
+      "save": "Save",
+      "cancel": "Cancel",
+      "confirmed": "Confirmed. Enter the client secret again, then save."
+    },
+    "summary": {
+      "entra": "Microsoft Entra ID · directory {directory}",
+      "oidc": "OpenID Connect · {host}"
+    },
+    "tested": "Tested {when}: signed in {email}",
+    "testFailed": "Test failed {when}: {message}",
+    "notTested": "Not tested yet",
+    "secretSet": "Secret set {date}",
+    "lastSignIn": "last sign-in through it {when}",
+    "test": "Test",
+    "testAgain": "Test again",
+    "edit": "Edit",
+    "replaceSecret": "Replace secret",
+    "remove": "Remove",
+    "domains": "Email domains",
+    "proved": "Proved {date}",
+    "unproved": "Proved at the next test from an address here",
+    "addDomain": "Add a domain",
+    "add": "Add",
+    "passwordAdmins": "Administrators with a password",
+    "nobodyHasPassword": "No administrator has a password",
+    "noPassword": "No password: {names}.",
+    "setPassword": "Set a password",
+    "require": "Require {name}",
+    "requireExplain": "People at {domains} sign in only with {name}. Their password sessions end now. Administrators keep their password.",
+    "check": {
+      "tested": "Tested",
+      "domain": "A domain proved",
+      "fresh": "You signed in with it in the last 15 minutes",
+      "admin": "An administrator has a password"
+    },
+    "availableAfterTest": "Available once a test succeeds.",
+    "requiredOn": "On for {domains}, by {name} on {date}. {count, plural, one {# password session ended.} other {# password sessions ended.}}",
+    "requiredLocked": "Turn it off to change the directory or the application.",
+    "confirm": {
+      "requirementOff": {
+        "title": "Turn off the requirement?",
+        "body": "People at {domains} can use their password, Microsoft or Google again.",
+        "action": "Turn off"
+      },
+      "removeConnection": {
+        "title": "Remove {name}?",
+        "body": "Nobody can sign in with it any more, and its domains stop being proved.",
+        "action": "Remove"
+      },
+      "removeDomain": {
+        "title": "Remove {domain}?",
+        "body": "It stops being proved; a test from an address there proves it again.",
+        "action": "Remove"
+      },
+      "saveConnection": {
+        "title": "Confirm it's you",
+        "body": "Changing the provider's settings needs your confirmation.",
+        "action": "Save"
+      },
+      "yourPassword": "Your password",
+      "or": "or",
+      "with": "Confirm with {provider}"
+    },
+    "password": {
+      "title": "Set a password",
+      "body": "Choose a password to keep as your way back in.",
+      "confirmFirst": "Confirm it's you with your provider first.",
+      "new": "New password",
+      "set": "Set password"
+    },
+    "errors": {
+      "password-incorrect": "That isn't your password.",
+      "password-locked": "Too many wrong passwords. Try again in a few minutes.",
+      "confirmation-required": "Confirm it's you with your provider, then try again.",
+      "confirmFailed": "Your provider didn't confirm it's you.",
+      "generic": "That didn't work. Try again."
     }
   }
 }

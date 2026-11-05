@@ -61,6 +61,9 @@ public sealed record BootstrapActivationRequest
 
     public string? FirstName { get; init; }
     public string? LastName { get; init; }
+
+    /// <summary>Activate through a provider instead of a password (B-191).</summary>
+    public SingleSignOn.ExternalLoginGrant? External { get; init; }
 }
 
 public sealed record BootstrapActivationResult(
@@ -424,7 +427,7 @@ public sealed class BootstrapActivationService(
             errors.Add(new BootstrapActivationFieldError("lastName", "Enter a last name."));
         }
 
-        if (string.IsNullOrWhiteSpace(request.Password))
+        if (request.External is null && string.IsNullOrWhiteSpace(request.Password))
         {
             errors.Add(new BootstrapActivationFieldError("password", "Enter a password."));
         }
@@ -451,7 +454,9 @@ public sealed class BootstrapActivationService(
         IdentityResult result;
         try
         {
-            result = await userManager.CreateAsync(account, request.Password!);
+            result = request.External is null
+                ? await userManager.CreateAsync(account, request.Password!)
+                : await userManager.CreateAsync(account);
         }
         catch (DbUpdateException exception)
             when (exception.Entries.Any(entry => entry.Entity is ApplicationUser))
@@ -471,6 +476,12 @@ public sealed class BootstrapActivationService(
 
         if (result.Succeeded)
         {
+            if (request.External is { } external)
+            {
+                dbContext.ExternalLogins.Add(ExternalLogin.Create(
+                    account.Id, external.Provider, external.ConnectionId, external.Issuer, external.Subject, external.Email, DateTime.UtcNow));
+            }
+
             return new AccountCreation(account, [], false);
         }
 

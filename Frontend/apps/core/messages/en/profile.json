@@ -40,7 +40,10 @@
     "title": "Fusion access",
     "unavailable": "Status unavailable",
     "retry": "Retry",
-    "status": "Account status"
+    "status": "Account status",
+    "signsInWith": "Signs in with",
+    "passwordOnly": "Only a password",
+    "removeLink": "Remove link"
   },
   "contact": {
     "emailRequired": "Required before Fusion access can be set up."

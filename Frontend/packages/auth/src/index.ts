@@ -110,5 +110,13 @@ export {
   type SignInBrand,
 } from "./components/signin-page";
 export type { SignInPageProps } from "./components/signin-page";
+export {
+  finishSsoFlow,
+  ProviderButton,
+  ProviderMark,
+  startSsoFlow,
+  takeSsoRefusal,
+  useSsoRefusalText,
+} from "./sso";
 export { SignUpPage } from "./components/signup-page";
 export type { SignUpPageProps } from "./components/signup-page";

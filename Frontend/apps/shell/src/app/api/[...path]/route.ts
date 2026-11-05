@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { buildResponseHeaders } from "@/lib/proxy-headers";
 
 // The shell owns the single `/api/*` choke point in front of the Gateway. It was
 // an implicit Next rewrite that, when the Gateway was unreachable, surfaced a bare
@@ -23,14 +24,6 @@ const UPSTREAM_UNAVAILABLE_CODE = "upstream_unavailable";
 // Hop-by-hop and length/encoding headers are per-connection: forwarding them
 // corrupts the proxied message (fetch recomputes length and decodes the body).
 const STRIPPED_REQUEST_HEADERS = new Set(["host", "connection", "content-length"]);
-const STRIPPED_RESPONSE_HEADERS = new Set([
-  "connection",
-  "keep-alive",
-  "transfer-encoding",
-  "content-encoding",
-  "content-length",
-]);
-
 function buildUpstreamUrl(request: NextRequest): string {
   // Preserve the full path after the shell origin and the exact query string.
   const { pathname, search } = request.nextUrl;
@@ -41,16 +34,6 @@ function forwardRequestHeaders(request: NextRequest): Headers {
   const headers = new Headers();
   request.headers.forEach((value, key) => {
     if (!STRIPPED_REQUEST_HEADERS.has(key.toLowerCase())) {
-      headers.set(key, value);
-    }
-  });
-  return headers;
-}
-
-function buildResponseHeaders(upstream: Response): Headers {
-  const headers = new Headers();
-  upstream.headers.forEach((value, key) => {
-    if (!STRIPPED_RESPONSE_HEADERS.has(key.toLowerCase())) {
       headers.set(key, value);
     }
   });

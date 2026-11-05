@@ -60,7 +60,8 @@
     "formLead": "أعدّت {tenant} وصولك إلى Fusion. اختر كلمة مرور لتفعيل حسابك.",
     "submit": "تفعيل الحساب",
     "submitting": "جارٍ تفعيل حسابك…",
-    "email": "البريد المهني"
+    "email": "البريد المهني",
+    "formLeadProvider": "أعدّت {tenant} وصولك إلى Fusion. تابع بحساب شركتك لتفعيله."
   },
   "administrator": {
     "eyebrow": "أنت مدعو",
@@ -89,5 +90,6 @@
   "passwordsDoNotMatch": "كلمتا المرور غير متطابقتين بعد",
   "signingIn": "جارٍ تسجيل دخولك…",
   "opening": "جارٍ فتح Fusion…",
-  "haveAccount": "لديك حساب في Fusion؟ <signIn>سجّل الدخول</signIn> للمتابعة"
+  "haveAccount": "لديك حساب في Fusion؟ <signIn>سجّل الدخول</signIn> للمتابعة",
+  "orCreatePassword": "أو أنشئ كلمة مرور"
 }

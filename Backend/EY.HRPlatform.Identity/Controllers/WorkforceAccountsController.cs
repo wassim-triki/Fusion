@@ -880,6 +880,25 @@ public sealed class WorkforceAccountsController(
             .GroupBy(profile => profile.UserId)
             .ToDictionary(group => group.Key, group => group.Select(profile => profile.ProfileId).Distinct().ToList());
 
+        // How each person signs in (B-191): a password and/or their provider links.
+        var signInUserIds = users.Select(user => user.UserId).Distinct().ToArray();
+        var withPassword = (await dbContext.Users.IgnoreQueryFilters().AsNoTracking()
+                .Where(user => signInUserIds.Contains(user.Id) && user.PasswordHash != null)
+                .Select(user => user.Id)
+                .ToListAsync(cancellationToken))
+            .ToHashSet();
+        var providersByUserId = (await dbContext.ExternalLogins.AsNoTracking()
+                .Where(link => signInUserIds.Contains(link.UserId))
+                .Select(link => new { link.UserId, link.Provider })
+                .ToListAsync(cancellationToken))
+            .GroupBy(link => link.UserId)
+            .ToDictionary(group => group.Key, group => group.Select(link => link.Provider).Distinct().OrderBy(key => key).ToList());
+        List<string> MethodsOf(Guid userId) =>
+        [
+            .. withPassword.Contains(userId) ? new[] { "password" } : [],
+            .. providersByUserId.GetValueOrDefault(userId, []),
+        ];
+
         return users
             .GroupBy(user => user.UserId)
             .Select(group => group.First())
@@ -902,6 +921,7 @@ public sealed class WorkforceAccountsController(
                         UserId = user.UserId,
                         IsActive = user.IsActive,
                         LastLoginAt = user.LastLoginAt,
+                        SignInMethods = MethodsOf(user.UserId),
                     };
                 });
     }
@@ -965,6 +985,7 @@ public sealed class WorkforceAccountsController(
             UserId = source.UserId,
             IsActive = source.IsActive,
             LastLoginAt = source.LastLoginAt,
+            SignInMethods = source.SignInMethods,
             InviteId = source.InviteId,
             InviteCreatedAt = source.InviteCreatedAt,
             InviteExpiresAt = source.InviteExpiresAt,
@@ -1209,7 +1230,13 @@ public sealed class WorkforceAccountsController(
             ProvisioningState = user.IsActive ? StateActive : StateInactive,
             UserId = user.Id,
             IsActive = user.IsActive,
-            LastLoginAt = user.LastLoginAt
+            LastLoginAt = user.LastLoginAt,
+            SignInMethods =
+            [
+                .. user.PasswordHash != null ? new[] { "password" } : [],
+                .. await dbContext.ExternalLogins.AsNoTracking().Where(link => link.UserId == user.Id)
+                    .Select(link => link.Provider).Distinct().OrderBy(key => key).ToListAsync(cancellationToken),
+            ],
         };
     }
 

@@ -25,7 +25,8 @@ import {
   type SortingState,
 } from "@repo/ds/data-table";
 import { LinkTabs, StatusBadge } from "@repo/ds/shell";
-import { canManageWorkforceAccess, useAuth } from "@repo/auth";
+import { canManageWorkforceAccess, ProviderMark, useAuth } from "@repo/auth";
+import { useTenantSummary } from "@repo/api/query";
 import type {
   OrganizationHierarchyNodeDto,
   PeopleQueryParams,
@@ -86,6 +87,27 @@ function useAgo() {
   );
 }
 
+/** "Signs in", with the mark of each provider the person uses (B-191). */
+function SignsInWith({ methods, label }: { methods: string[]; label: string }) {
+  const company = useTenantSummary().data?.name ?? "";
+  const providers = methods.filter((method): method is "microsoft" | "google" | "company" =>
+    method === "microsoft" || method === "google" || method === "company");
+  return (
+    <span className="inline-flex items-center gap-2">
+      {label}
+      {providers.map((provider) => (
+        <span
+          key={provider}
+          title={provider === "company" ? company : provider === "microsoft" ? "Microsoft" : "Google"}
+          className="inline-flex [&>*]:size-3.5 [&>span]:text-[0.5rem]"
+        >
+          <ProviderMark provider={provider} label={company || "C"} />
+        </span>
+      ))}
+    </span>
+  );
+}
+
 function SignInCell({ person }: { person: PeopleRowDto }) {
   const t = useTranslations("people.signIn");
   const ago = useAgo();
@@ -99,7 +121,7 @@ function SignInCell({ person }: { person: PeopleRowDto }) {
   );
   switch (signIn.state) {
     case "SignsIn":
-      return dot("bg-success", t("signsIn"));
+      return dot("bg-success", <SignsInWith methods={signIn.methods ?? []} label={t("signsIn")} />);
     case "Invited":
       return dot("bg-info", signIn.at ? t("invitedAgo", { when: ago(signIn.at) }) : t("invited"));
     case "Expired":

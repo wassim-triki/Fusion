@@ -1,3 +1,4 @@
+import type { SsoWaysInDto } from "./sso";
 /** Anonymous invite validate / accept (Identity). */
 import type { AccountPasswordRequirementsDto } from "./tenant-access";
 
@@ -16,6 +17,8 @@ export interface InviteDto {
   isUsed: boolean;
   createdAt: string;
   passwordRequirements?: AccountPasswordRequirementsDto | null;
+  /** How the invited address can accept: providers, and whether a password is offered (B-191). */
+  waysIn?: SsoWaysInDto | null;
 }
 
 export interface AcceptInviteRequest {

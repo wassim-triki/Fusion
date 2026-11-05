@@ -47,7 +47,33 @@ beforeEach(() => {
     .mockImplementation(() => undefined);
   mockedService.loadAuth.mockReturnValue(null);
   mockSearchParamGet.mockReturnValue(null);
+  window.sessionStorage.clear();
+  answerDiscover({ password: true, passwordForAdministratorsOnly: false, providers: [] });
 });
+
+const fetchMock = vi.fn();
+
+/** What Identity answers for the address's domain, and to a request to start a provider round trip. */
+function answerDiscover(ways: unknown, flow: { status: number; body: unknown } = { status: 200, body: { authorizeUrl: "https://login.example/authorize?state=x" } }) {
+  fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    const envelope = (status: number, data: unknown) =>
+      new Response(JSON.stringify(status < 300 ? { isSuccess: true, data, errors: [] } : { isSuccess: false, data: null, errors: ["No"], details: data }), {
+        status,
+        headers: { "Content-Type": "application/json" },
+      });
+    if (url.includes("/identity/sso/discover")) return envelope(200, ways);
+    if (url.includes("/identity/sso/flows")) return envelope(flow.status, flow.body);
+    return envelope(404, null);
+  });
+  vi.stubGlobal("fetch", fetchMock);
+}
+
+/** Step 1: the address, then Continue. */
+async function continueAs(email: string, labels = { email: /email/i, next: "Continue" }) {
+  await userEvent.type(screen.getByLabelText(labels.email), email);
+  await userEvent.click(screen.getByRole("button", { name: labels.next }));
+}
 
 function renderSignInPage(props = {}) {
   return render(
@@ -59,15 +85,18 @@ function renderSignInPage(props = {}) {
 
 describe("SignInPage", () => {
   describe("rendering", () => {
-    it("renders email and password fields", () => {
+    it("asks for the email first, then the ways in for it", async () => {
       renderSignInPage();
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    });
+      expect(screen.queryByLabelText(/password/i)).toBeNull();
 
-    it("renders sign in button", () => {
-      renderSignInPage();
+      await continueAs("test@example.com");
+
+      expect(await screen.findByLabelText(/password/i)).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
+      expect(screen.getByText("test@example.com")).toBeInTheDocument();
+      expect(screen.queryByText(/remember me/i)).toBeNull();
+      expect(screen.queryByText(/forgot password/i)).toBeNull();
     });
 
     it("does not expose self-service signup", () => {
@@ -83,8 +112,8 @@ describe("SignInPage", () => {
       mockedService.login.mockResolvedValue(makeAuthResponse());
       renderSignInPage();
 
-      await userEvent.type(screen.getByLabelText(/email/i), "test@example.com");
-      await userEvent.type(screen.getByLabelText(/password/i), "password123");
+      await continueAs("test@example.com");
+      await userEvent.type(await screen.findByLabelText(/password/i), "password123");
       await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
       await waitFor(() => {
@@ -99,8 +128,8 @@ describe("SignInPage", () => {
       mockedService.login.mockResolvedValue(makeAuthResponse());
       renderSignInPage();
 
-      await userEvent.type(screen.getByLabelText(/email/i), "test@example.com");
-      await userEvent.type(screen.getByLabelText(/password/i), "password123");
+      await continueAs("test@example.com");
+      await userEvent.type(await screen.findByLabelText(/password/i), "password123");
       await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
       await waitFor(() => {
@@ -127,8 +156,8 @@ describe("SignInPage", () => {
         }));
       renderSignInPage();
 
-      await userEvent.type(screen.getByLabelText(/email/i), "admin@example.com");
-      await userEvent.type(screen.getByLabelText(/password/i), "password123");
+      await continueAs("admin@example.com");
+      await userEvent.type(await screen.findByLabelText(/password/i), "password123");
       await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
       await waitFor(() => expect(mockLocationAssign).toHaveBeenCalledWith("/"));
@@ -156,8 +185,8 @@ describe("SignInPage", () => {
       );
       renderSignInPage();
 
-      await userEvent.type(screen.getByLabelText(/email/i), "admin@example.com");
-      await userEvent.type(screen.getByLabelText(/password/i), "password123");
+      await continueAs("admin@example.com");
+      await userEvent.type(await screen.findByLabelText(/password/i), "password123");
       await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
       await waitFor(() => expect(mockLocationAssign).toHaveBeenCalledWith("/"));
@@ -170,8 +199,8 @@ describe("SignInPage", () => {
       );
       renderSignInPage();
 
-      await userEvent.type(screen.getByLabelText(/email/i), "test@example.com");
-      await userEvent.type(screen.getByLabelText(/password/i), "password123");
+      await continueAs("test@example.com");
+      await userEvent.type(await screen.findByLabelText(/password/i), "password123");
       await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
       await waitFor(() => {
@@ -186,8 +215,8 @@ describe("SignInPage", () => {
       );
       renderSignInPage();
 
-      await userEvent.type(screen.getByLabelText(/email/i), "test@example.com");
-      await userEvent.type(screen.getByLabelText(/password/i), "password123");
+      await continueAs("test@example.com");
+      await userEvent.type(await screen.findByLabelText(/password/i), "password123");
       await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
       await waitFor(() => {
@@ -200,8 +229,8 @@ describe("SignInPage", () => {
       const onSuccess = vi.fn();
       renderSignInPage({ onSuccess });
 
-      await userEvent.type(screen.getByLabelText(/email/i), "test@example.com");
-      await userEvent.type(screen.getByLabelText(/password/i), "password123");
+      await continueAs("test@example.com");
+      await userEvent.type(await screen.findByLabelText(/password/i), "password123");
       await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
       await waitFor(() => {
@@ -216,8 +245,8 @@ describe("SignInPage", () => {
       );
       renderSignInPage();
 
-      await userEvent.type(screen.getByLabelText(/email/i), "test@example.com");
-      await userEvent.type(screen.getByLabelText(/password/i), "wrongpassword");
+      await continueAs("test@example.com");
+      await userEvent.type(await screen.findByLabelText(/password/i), "wrongpassword");
       await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
       await waitFor(() => {
@@ -229,8 +258,8 @@ describe("SignInPage", () => {
       mockedService.login.mockRejectedValue(makeApiError(["Invalid credentials."], 401));
       renderSignInPage();
 
-      await userEvent.type(screen.getByLabelText(/email/i), "test@example.com");
-      await userEvent.type(screen.getByLabelText(/password/i), "wrongpassword");
+      await continueAs("test@example.com");
+      await userEvent.type(await screen.findByLabelText(/password/i), "wrongpassword");
       await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
       expect(await screen.findByText("Invalid credentials.")).toBeInTheDocument();
@@ -247,8 +276,9 @@ describe("SignInPage", () => {
       );
 
       expect(screen.getByRole("heading", { name: "Connexion" })).toBeInTheDocument();
-      await userEvent.type(screen.getByLabelText("Adresse e-mail"), "test@example.com");
-      await userEvent.type(screen.getByLabelText("Mot de passe"), "wrongpassword");
+      expect(screen.getByRole("link", { name: "Conditions d’utilisation" })).toBeInTheDocument();
+      await continueAs("test@example.com", { email: "Adresse e-mail", next: "Continuer" });
+      await userEvent.type(await screen.findByLabelText("Mot de passe"), "wrongpassword");
       await userEvent.click(screen.getByRole("button", { name: "Se connecter" }));
       expect(await screen.findByText("Adresse e-mail ou mot de passe incorrect.")).toBeInTheDocument();
 
@@ -256,15 +286,15 @@ describe("SignInPage", () => {
       await userEvent.click(screen.getByRole("button", { name: "Se connecter" }));
       expect(await screen.findByText("Connexion impossible. Réessayez.")).toBeInTheDocument();
       expect(screen.queryByText("Something exploded")).not.toBeInTheDocument();
-      expect(screen.getByRole("link", { name: "Conditions d’utilisation" })).toBeInTheDocument();
+
     });
 
     it("resets isSubmitting after submission", async () => {
       mockedService.login.mockResolvedValue(makeAuthResponse());
       renderSignInPage();
 
-      await userEvent.type(screen.getByLabelText(/email/i), "test@example.com");
-      await userEvent.type(screen.getByLabelText(/password/i), "password123");
+      await continueAs("test@example.com");
+      await userEvent.type(await screen.findByLabelText(/password/i), "password123");
       
       const submitButton = screen.getByRole("button", { name: "Sign in" });
       await userEvent.click(submitButton);
@@ -306,6 +336,69 @@ describe("SignInPage", () => {
         expect(onSuccess).toHaveBeenCalled();
         expect(mockLocationReplace).not.toHaveBeenCalled();
       });
+    });
+  });
+
+  describe("single sign-on", () => {
+    it("leads with the company's provider, then Microsoft and Google, then the password", async () => {
+      answerDiscover({
+        password: true,
+        passwordForAdministratorsOnly: false,
+        providers: [
+          { key: "company", label: "Carthage Digital" },
+          { key: "microsoft", label: "Microsoft" },
+          { key: "google", label: "Google" },
+        ],
+      });
+      renderSignInPage();
+      await continueAs("aicha@carthagedigital.tn");
+
+      const buttons = await screen.findAllByRole("button", { name: /^Continue with/ });
+      expect(buttons.map((button) => button.textContent)).toEqual([
+        "CContinue with Carthage Digital",
+        "Continue with Microsoft",
+        "Continue with Google",
+      ]);
+      expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    });
+
+    it("offers only the company's provider where it is required, with the password for administrators", async () => {
+      answerDiscover({ password: false, passwordForAdministratorsOnly: true, providers: [{ key: "company", label: "Carthage Digital" }] });
+      renderSignInPage();
+      await continueAs("aicha@carthagedigital.tn");
+
+      expect(await screen.findByRole("button", { name: /Continue with Carthage Digital/ })).toBeInTheDocument();
+      expect(screen.queryByLabelText(/password/i)).toBeNull();
+      expect(screen.queryByRole("button", { name: /Microsoft/ })).toBeNull();
+
+      await userEvent.click(screen.getByRole("button", { name: "Use your password" }));
+      expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    });
+
+    it("leaves for the provider and remembers where the person meant to go", async () => {
+      answerDiscover({ password: true, passwordForAdministratorsOnly: false, providers: [{ key: "google", label: "Google" }] });
+      mockSearchParamGet.mockImplementation((key) => (key === "callbackUrl" ? "/core/people" : null));
+      renderSignInPage();
+      await continueAs("nour@gmail.com");
+
+      await userEvent.click(await screen.findByRole("button", { name: /Continue with Google/ }));
+
+      await waitFor(() => expect(mockLocationAssign).toHaveBeenCalledWith("https://login.example/authorize?state=x"));
+      const started = fetchMock.mock.calls.find(([url]) => String(url).includes("/identity/sso/flows"));
+      expect(JSON.parse(String((started?.[1] as RequestInit).body))).toEqual({ purpose: "signIn", provider: "google", email: "nour@gmail.com" });
+      expect(window.sessionStorage.getItem("fusion_sso_next")).toBe("/core/people");
+    });
+
+    it("says why a provider sign-in was refused, back on step 2 for the same address", async () => {
+      window.sessionStorage.setItem("fusion_sso_refusal", JSON.stringify({
+        code: "no_account", provider: "company", company: "Carthage Digital", email: "sami@carthagedigital.tn",
+      }));
+      renderSignInPage();
+
+      expect(await screen.findByText("There's no Fusion account for sami@carthagedigital.tn.")).toBeInTheDocument();
+      expect(screen.getByText("If you were invited, open the link in your invitation email.")).toBeInTheDocument();
+      expect(screen.getByText("sami@carthagedigital.tn")).toBeInTheDocument();
+      expect(window.sessionStorage.getItem("fusion_sso_refusal")).toBeNull();
     });
   });
 });

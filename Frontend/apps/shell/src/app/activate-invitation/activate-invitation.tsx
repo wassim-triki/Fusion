@@ -11,6 +11,7 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
+  FieldSeparator,
   Input,
   InputGroup,
   InputGroupAddon,
@@ -28,9 +29,15 @@ import {
   InvitationTransactionTerminalFrame,
   PasswordStrengthField,
 } from "@repo/ds/shell";
-import { login, persistAuth } from "@repo/auth";
+import { login, persistAuth, ProviderButton, startSsoFlow, takeSsoRefusal, useSsoRefusalText } from "@repo/auth";
 import { OptionCards } from "@repo/ds/choice";
-import { createPlatformApiClient, type AccessProfileAssignmentSummaryDto, type EffectivePermissionGrantDto } from "@repo/api";
+import {
+  createPlatformApiClient,
+  type AccessProfileAssignmentSummaryDto,
+  type EffectivePermissionGrantDto,
+  type SsoProviderKey,
+  type SsoRefusalDto,
+} from "@repo/api";
 import {
   ArrowRight,
   Ban,
@@ -284,6 +291,31 @@ function AccountForm({
   const [jobTitle, setJobTitle] = useState("");
 
   const summaryRef = useRef<HTMLDivElement>(null);
+  const refusalText = useSsoRefusalText();
+  const [refusal, setRefusal] = useState<SsoRefusalDto | null>(null);
+  const [leaving, setLeaving] = useState(false);
+  useEffect(() => setRefusal(takeSsoRefusal()), []);
+
+  // B-191: accept through a provider instead of choosing a password; it must sign in the invited address.
+  async function continueWith(provider: SsoProviderKey) {
+    setRefusal(null);
+    setLeaving(true);
+    const refused = await startSsoFlow(
+      {
+        purpose: "invitation",
+        provider,
+        invitation: { kind: journey.key === BOOTSTRAP_JOURNEY.key ? "bootstrap" : "administrator", credential },
+      },
+      { origin: `${window.location.pathname}?credential=${encodeURIComponent(credential)}` },
+    );
+    if (refused) {
+      setLeaving(false);
+      setRefusal({ code: refused as SsoRefusalDto["code"], provider, company: null, email: null });
+    }
+  }
+
+  const providers = entry.waysIn?.providers ?? [];
+  const message = refusal ? refusalText(refusal, { invitedEmail: entry.invitedEmail ?? undefined }) : null;
   const checks = passwordChecks(form.password, entry.passwordRequirements, say);
   const passwordsMatch =
     Boolean(form.password) && form.confirmPassword === form.password;
@@ -434,6 +466,33 @@ function AccountForm({
       ) : (
         <div ref={summaryRef} tabIndex={-1} role="alert" className="sr-only" />
       )}
+
+      {message ? (
+        <Alert variant="destructive" className="mt-6 border-destructive/30 bg-destructive/10">
+          <TriangleAlert aria-hidden="true" />
+          <AlertDescription className="text-destructive">
+            <p className="font-medium">{message.title}</p>
+            {message.more ? <p className="text-foreground">{message.more}</p> : null}
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      {providers.length > 0 ? (
+        <div className="mt-6 grid gap-2.5">
+          {providers.map((way) => (
+            <ProviderButton
+              key={way.key}
+              way={way}
+              primary={way.key === "company"}
+              disabled={leaving || pending}
+              onClick={() => void continueWith(way.key)}
+            />
+          ))}
+          <FieldSeparator className="mt-2 [&_[data-slot=field-separator-content]]:bg-background">
+            {say("form.orCreatePassword")}
+          </FieldSeparator>
+        </div>
+      ) : null}
 
       <FieldGroup className="mt-6 gap-4">
         <div className="grid gap-4 sm:grid-cols-2">

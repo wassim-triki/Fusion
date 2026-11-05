@@ -40,7 +40,10 @@
     "title": "الوصول إلى Fusion",
     "unavailable": "الحالة غير متاحة",
     "retry": "إعادة المحاولة",
-    "status": "حالة الحساب"
+    "status": "حالة الحساب",
+    "signsInWith": "يسجّل الدخول عبر",
+    "passwordOnly": "كلمة مرور فقط",
+    "removeLink": "إزالة الربط"
   },
   "contact": {
     "emailRequired": "مطلوب قبل إعداد الوصول إلى Fusion."

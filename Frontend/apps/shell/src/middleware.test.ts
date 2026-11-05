@@ -24,6 +24,7 @@ describe("Shell middleware", () => {
     "/recover-administrator-access",
     "/invite/accept",
     "/core/invite/accept",
+    "/auth/sso/complete",
   ])("allows the declared public route %s", (path) => {
     expect(middleware(request(path)).headers.get("location")).toBeNull();
   });

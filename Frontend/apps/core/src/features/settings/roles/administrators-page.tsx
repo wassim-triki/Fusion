@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
@@ -51,6 +51,9 @@ import {
   useTenantAdministrators,
 } from "@/features/tenant-access/api/use-tenant-access";
 import { useSettingsSay, type Say } from "@/features/settings/say";
+import { ProviderMark } from "@repo/auth";
+import { confirmThroughProvider, takeConfirmation } from "@/features/settings/sso/confirmation";
+import { useSsoSettings } from "@/features/settings/sso/use-sso";
 import { useBreadcrumbLabel } from "@/shell/breadcrumb-overrides";
 
 // The drawing's 48px faces (between the DS's lg and xl).
@@ -249,6 +252,12 @@ function AddSheet({ open, onOpenChange, onAdded, say }: {
   const query = search.trim();
   const candidates = useAdministratorCandidates(query, open);
   const add = useAddAdministrator();
+  // B-191: an administrator who signs in only through a provider confirms through it instead of a password.
+  const sso = useSsoSettings(open);
+  const viaProvider = sso.data ? !sso.data.you.hasPassword : false;
+  const confirmWith = sso.data?.you.confirmWith ?? [];
+  const providerLabel = (key: string) =>
+    key === "microsoft" ? "Microsoft" : key === "google" ? "Google" : (sso.data?.connection?.displayName ?? key);
 
   // Jobs come from Core HR, by the same people the search found.
   const client = useMemo(() => createPlatformApiClient(), []);
@@ -374,15 +383,35 @@ function AddSheet({ open, onOpenChange, onAdded, say }: {
             </div>
 
             <div className="grid gap-3 border-t border-border py-5">
-              <Label htmlFor="admin-password" className="type-label">{say("roles.administrators.yourPassword")}</Label>
-              <Input
-                id="admin-password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                aria-invalid={problem === "password-incorrect" || undefined}
-              />
+              {viaProvider ? (
+                confirmWith.map((key) => (
+                  <Button
+                    key={key}
+                    type="button"
+                    variant="outline"
+                    className="h-11 w-full"
+                    disabled={!picked}
+                    onClick={() =>
+                      picked && void confirmThroughProvider(key, { action: "addAdministrator", userId: picked.userId, name: picked.name })
+                    }
+                  >
+                    <ProviderMark provider={key} label={providerLabel(key)} />
+                    {say("sso.confirm.with", { provider: providerLabel(key) })}
+                  </Button>
+                ))
+              ) : (
+                <>
+                  <Label htmlFor="admin-password" className="type-label">{say("roles.administrators.yourPassword")}</Label>
+                  <Input
+                    id="admin-password"
+                    type="password"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    aria-invalid={problem === "password-incorrect" || undefined}
+                  />
+                </>
+              )}
               {failure ? <p role="alert" className="type-meta text-destructive">{failure}</p> : null}
             </div>
           </div>
@@ -390,7 +419,7 @@ function AddSheet({ open, onOpenChange, onAdded, say }: {
           <div className="flex items-center gap-2.5 border-t border-border px-6 py-4">
             <span className="flex-1 type-meta text-muted-foreground">{say("roles.administrators.recorded")}</span>
             <Button type="button" variant="ghost" onClick={() => close(false)}>{say("roles.cancel")}</Button>
-            <Button type="submit" disabled={!picked || !password || add.isLoading}>
+            <Button type="submit" className={viaProvider ? "hidden" : undefined} disabled={!picked || !password || add.isLoading}>
               {picked
                 ? say("roles.administrators.make", { name: firstName(picked.name) })
                 : say("roles.administrators.makeSomeone")}
@@ -428,6 +457,28 @@ export function AdministratorsPage({ section }: { section: FusionSettingsSection
   const [removing, setRemoving] = useState<TenantAdministratorDto | null>(null);
   const [fresh, setFresh] = useState<string | null>(null);
   const name = say("roles.administrators.name");
+
+  // Back from confirming through the provider: add the administrator that was chosen (B-191).
+  const confirmedAdd = useAddAdministrator();
+  const resumed = useRef(false);
+  useEffect(() => {
+    if (resumed.current) return;
+    resumed.current = true;
+    const back = takeConfirmation();
+    if (!back || back.pending?.action !== "addAdministrator") return;
+    const pending = back.pending;
+    if (!back.confirmed) {
+      toast.error(say("sso.errors.confirmFailed"));
+      return;
+    }
+    confirmedAdd
+      .mutateAsync({ userId: pending.userId, sso: true })
+      .then(() => {
+        setFresh(pending.userId);
+        toast.success(say("roles.administrators.added", { name: pending.name }));
+      })
+      .catch(() => toast.error(say("roles.administrators.notAdded")));
+  }, [confirmedAdd, say]);
   useBreadcrumbLabel("administrators", name);
 
   const list = administrators.data ?? [];

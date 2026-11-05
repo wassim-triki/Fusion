@@ -17,6 +17,8 @@ export interface PeopleSignInDto {
   state: PeopleSignInState;
   /** Last sign-in, when the invitation was sent, or when it expired. */
   at: string | null;
+  /** For someone who signs in: `password`, `microsoft`, `google`, `company` (B-191). */
+  methods?: string[] | null;
 }
 
 export interface PeopleViewCountsDto {
@@ -557,6 +559,8 @@ export interface PeopleAccessStatusDto {
     | string;
   label: string;
   detail: string | null;
+  /** The person's Fusion account, when active; how it signs in is listed beside (B-191). */
+  userId?: string | null;
 }
 
 export interface ManagerOptionDto {

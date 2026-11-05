@@ -251,6 +251,20 @@ foreach ($s in $Backend) {
         continue
     }
     $exe = Join-Path $projectDir "bin/Debug/net10.0/$(Split-Path $s.Project -Leaf).exe"
+    if ($s.Name -eq 'Identity') {
+        # B-191: real Fusion-wide Microsoft and Google apps, when their user variables are set; otherwise Identity
+        # points both at its local test provider. Inherited by the service's window, never written to its command.
+        foreach ($p in @(@('MICROSOFT', 'Microsoft'), @('GOOGLE', 'Google'))) {
+            $id = [Environment]::GetEnvironmentVariable("FUSION_SSO_$($p[0])_CLIENT_ID", 'User')
+            $secret = [Environment]::GetEnvironmentVariable("FUSION_SSO_$($p[0])_CLIENT_SECRET", 'User')
+            if ($id -and $secret) {
+                Set-Item "env:Sso__$($p[1])__ClientId" $id
+                Set-Item "env:Sso__$($p[1])__ClientSecret" $secret
+            } else {
+                Remove-Item "env:Sso__$($p[1])__ClientId", "env:Sso__$($p[1])__ClientSecret" -ErrorAction SilentlyContinue
+            }
+        }
+    }
     Start-Window -Title (Get-WindowTitle $s.Name) -WorkDir $projectDir -Command "& '$exe'" `
         -EnvVars @{ ASPNETCORE_ENVIRONMENT = 'Development'; ASPNETCORE_URLS = $s.Url }
     Write-Ok "starting in its own window..."

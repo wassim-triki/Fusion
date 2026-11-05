@@ -1,7 +1,8 @@
-﻿using EY.HRPlatform.Identity.Domain.Entities;
+using EY.HRPlatform.Identity.Domain.Entities;
 using EY.HRPlatform.Identity.Features.AccessProfiles;
 using EY.HRPlatform.Identity.Features.Accounts;
 using EY.HRPlatform.Identity.Features.Membership;
+using EY.HRPlatform.Identity.Features.SingleSignOn;
 using EY.HRPlatform.Identity.Infrastructure.Persistence;
 using EY.HRPlatform.Identity.Infrastructure.Services;
 using EY.HRPlatform.Identity.Models.Requests;
@@ -21,15 +22,18 @@ public class AuthController : ControllerBase
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly AppIdentityDbContext _dbContext;
     private readonly IAuthSessionFactory _sessions;
+    private readonly SsoPolicy _ssoPolicy;
 
     public AuthController(
         UserManager<ApplicationUser> userManager,
         AppIdentityDbContext dbContext,
-        IAuthSessionFactory sessions)
+        IAuthSessionFactory sessions,
+        SsoPolicy ssoPolicy)
     {
         _userManager = userManager;
         _dbContext = dbContext;
         _sessions = sessions;
+        _ssoPolicy = ssoPolicy;
     }
 
     /// <summary>
@@ -59,14 +63,30 @@ public class AuthController : ControllerBase
         var user = await _dbContext.Users
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail);
-        if (user is null || !user.IsActive)
+        // An account that signs in only through a provider has no password to check (B-191).
+        if (user is null || !user.IsActive || string.IsNullOrEmpty(user.PasswordHash))
             return Unauthorized(ApiResponse<AuthResponse>.Failure("Invalid credentials."));
 
         // Verify password directly (SignInManager uses UserManager which is affected by query filters)
         var verificationResult = _userManager.PasswordHasher
-            .VerifyHashedPassword(user, user.PasswordHash!, request.Password);
+            .VerifyHashedPassword(user, user.PasswordHash, request.Password);
         if (verificationResult == PasswordVerificationResult.Failed)
             return Unauthorized(ApiResponse<AuthResponse>.Failure("Invalid credentials."));
+
+        // Where the company requires its own provider, only its administrators keep the password, and their use of
+        // it is recorded. Everyone else gets the same answer as a wrong password, so it gives nothing away.
+        var membership = await _ssoPolicy.ActiveMembershipAsync(user.Id, HttpContext.RequestAborted);
+        if (membership is not null
+            && await _ssoPolicy.RequiresCompanyProviderAsync(membership.TenantId, user.Email, HttpContext.RequestAborted))
+        {
+            if (!await _ssoPolicy.IsUsableAdministratorAsync(membership.TenantId, user.Id, HttpContext.RequestAborted))
+                return Unauthorized(ApiResponse<AuthResponse>.Failure("Invalid credentials."));
+
+            _dbContext.AccessAuditEvents.Add(AccessAuditEvent.Create(
+                membership.TenantId, user.Id, string.Empty, string.Empty, SsoAuditActions.PasswordUsedWhileRequired,
+                SsoAuditActions.ResourceType, membership.Id.ToString(),
+                $"{user.FullName} signed in with their password while the company's provider is required.", null, null, null));
+        }
 
         // Rehash inline if the hasher settings have changed since the password was last set
         if (verificationResult == PasswordVerificationResult.SuccessRehashNeeded)
@@ -90,8 +110,21 @@ public class AuthController : ControllerBase
             .FirstOrDefaultAsync(rt => rt.Token == request.RefreshToken);
 
         if (storedToken is null || !storedToken.IsActive)
+        {
+            // A password session the company's requirement ended says why, so the page can send the person to
+            // their company's provider instead of a bare sign-in form (B-191).
+            if (storedToken is not null && !storedToken.IsExpired && SessionMethods.IsPassword(storedToken.Method))
+            {
+                var holder = await _dbContext.Users.IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(u => u.Id == storedToken.UserId && u.IsActive);
+                if (holder is not null && await _ssoPolicy.PasswordRefusedAsync(holder, HttpContext.RequestAborted))
+                    return Unauthorized(ApiResponse<AuthResponse>.Failure(
+                        "Your company signs in with its own provider.", new { code = SsoRefusals.SsoRequired }));
+            }
+
             return Unauthorized(ApiResponse<AuthResponse>.Failure(
                 "Invalid or expired refresh token."));
+        }
 
         // Revoke the old token (one-time use)
         storedToken.RevokedAt = DateTime.UtcNow;
@@ -104,8 +137,16 @@ public class AuthController : ControllerBase
             return Unauthorized(ApiResponse<AuthResponse>.Failure(
                 "User not found or deactivated."));
 
-        // Generate new token pair
-        var authResponse = await GenerateAuthResponseAsync(user);
+        // A password session ends once the company requires its own provider for this person (B-191).
+        if (SessionMethods.IsPassword(storedToken.Method) && await _ssoPolicy.PasswordRefusedAsync(user, HttpContext.RequestAborted))
+        {
+            await _dbContext.SaveChangesAsync();
+            return Unauthorized(ApiResponse<AuthResponse>.Failure(
+                "Your company signs in with its own provider.", new { code = SsoRefusals.SsoRequired }));
+        }
+
+        // Generate new token pair, started the same way as the one it replaces
+        var authResponse = await _sessions.CreateAsync(user, storedToken.Method);
         await _dbContext.SaveChangesAsync();
 
         return Ok(ApiResponse<AuthResponse>.Success(authResponse));

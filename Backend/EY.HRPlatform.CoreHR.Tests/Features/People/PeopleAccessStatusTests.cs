@@ -92,4 +92,19 @@ public sealed class PeopleAccessStatusTests
         Assert.Contains("work email", result.Value.Detail, StringComparison.OrdinalIgnoreCase);
         reader.VerifyNoOtherCalls();
     }
+
+    [Fact]
+    public void People_show_how_someone_who_signs_in_does_it()
+    {
+        // B-191: Identity reports the methods; People carries them for the Sign-in column.
+        var status = new WorkforceAccountStatusDto(
+            Guid.NewGuid(), "ada@example.com", "Ada Lovelace", "Employee", [], "Active", Guid.NewGuid(), true,
+            DateTime.UtcNow, null, null, null, null, null, null, null, null, ["password", "company"]);
+
+        var signIn = PeopleQueryHandler.SignInOf(status);
+
+        Assert.Equal(PeopleSignInState.SignsIn, signIn.State);
+        Assert.Equal(["password", "company"], signIn.Methods);
+        Assert.Null(PeopleQueryHandler.SignInOf(status with { ProvisioningState = "InvitePending" }).Methods);
+    }
 }

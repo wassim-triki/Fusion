@@ -8,16 +8,15 @@
       "password": "Password",
       "showCharacters": "Show characters",
       "hideCharacters": "Hide characters",
-      "rememberMe": "Remember me",
-      "forgotPassword": "Forgot password?",
       "submit": "Sign in",
       "submitting": "Signing in…",
       "or": "or",
-      "sso": "Sign in with SSO",
       "agreement": "By signing in, you agree to our <terms>Terms</terms> and <privacy>Privacy Policy</privacy>.",
       "invalidCredentials": "Invalid credentials.",
       "failed": "Login failed. Please try again.",
-      "to": "to {company}"
+      "to": "to {company}",
+      "continue": "Continue",
+      "change": "Change"
     },
     "search": {
       "label": "Search",
@@ -32,6 +31,62 @@
       "administrators": "Administrators",
       "readOnly": "Nothing can be changed",
       "back": "Back to Roles"
+    },
+    "sso": {
+      "continueWith": "Continue with {provider}",
+      "confirmWith": "Confirm with {provider}",
+      "administrator": "Administrator?",
+      "usePassword": "Use your password",
+      "yourProvider": "your company's provider",
+      "yourCompany": "Your company",
+      "signingIn": "Signing you in",
+      "confirmed": "{provider} confirmed {email}.",
+      "refusals": {
+        "no_account": {
+          "title": "There's no Fusion account for {email}.",
+          "more": "If you were invited, open the link in your invitation email."
+        },
+        "email_not_verified": {
+          "title": "{provider} says this address isn't verified.",
+          "more": "Use an account whose address your company has verified."
+        },
+        "linked_to_someone_else": {
+          "title": "This address is linked to a different {provider} account.",
+          "more": "Ask your administrator."
+        },
+        "company_requires": {
+          "title": "Your company signs in with {company}.",
+          "more": "Use the button below."
+        },
+        "provider_off": {
+          "title": "Your company doesn't use {provider} to sign in."
+        },
+        "invitation_mismatch": {
+          "title": "{provider} signed you in as {email}.",
+          "more": "This invitation is for {invited}. Choose that account, or create a password."
+        },
+        "invitation_closed": {
+          "title": "This invitation can't be used any more.",
+          "more": "Ask whoever invited you to send a new one."
+        },
+        "existing_account": {
+          "title": "This address already has a Fusion account.",
+          "more": "Sign in instead, or ask your administrator."
+        },
+        "operator": {
+          "title": "Fusion's own staff sign in with a password."
+        },
+        "access_paused": {
+          "title": "Your access to Fusion is paused.",
+          "more": "Ask your administrator."
+        },
+        "expired": {
+          "title": "Signing in took too long. Try again."
+        },
+        "provider_failed": {
+          "title": "{provider} couldn't sign you in. Try again."
+        }
+      }
     }
   }
 }

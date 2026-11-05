@@ -40,7 +40,10 @@
     "title": "Accès à Fusion",
     "unavailable": "Statut indisponible",
     "retry": "Réessayer",
-    "status": "Statut du compte"
+    "status": "Statut du compte",
+    "signsInWith": "Se connecte avec",
+    "passwordOnly": "Mot de passe uniquement",
+    "removeLink": "Retirer le lien"
   },
   "contact": {
     "emailRequired": "Nécessaire avant de configurer l’accès à Fusion."

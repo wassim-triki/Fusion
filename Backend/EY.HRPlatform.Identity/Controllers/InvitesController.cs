@@ -2,6 +2,7 @@ using EY.HRPlatform.Identity.Domain.Entities;
 using EY.HRPlatform.Identity.Domain.Enums;
 using EY.HRPlatform.Identity.Features.Accounts;
 using EY.HRPlatform.Identity.Features.AccessProfiles;
+using EY.HRPlatform.Identity.Features.SingleSignOn;
 using EY.HRPlatform.Identity.Features.TenantProvisioning;
 using EY.HRPlatform.Identity.Features.WorkforceAccounts;
 using EY.HRPlatform.Identity.Infrastructure.Persistence;
@@ -27,6 +28,7 @@ public class InvitesController : ControllerBase
     private readonly ITrainingServiceClient _trainingClient;
     private readonly IAccessProfileService _accessProfileService;
     private readonly IWorkforceInvitationAcceptanceService _workforceAcceptance;
+    private readonly SsoPolicy _ssoPolicy;
 
     public InvitesController(
         AppIdentityDbContext dbContext,
@@ -34,8 +36,10 @@ public class InvitesController : ControllerBase
         IConfiguration configuration,
         ITrainingServiceClient trainingClient,
         IAccessProfileService accessProfileService,
-        IWorkforceInvitationAcceptanceService workforceAcceptance)
+        IWorkforceInvitationAcceptanceService workforceAcceptance,
+        SsoPolicy ssoPolicy)
     {
+        _ssoPolicy = ssoPolicy;
         _dbContext = dbContext;
         _userManager = userManager;
         _configuration = configuration;
@@ -92,7 +96,8 @@ public class InvitesController : ControllerBase
             DeliveryStatus = invite.DeliveryStatus,
             DeliveryMessage = invite.DeliveryMessage,
             DeliveryRecordedAt = invite.DeliveryRecordedAt,
-            PasswordRequirements = AccountPasswordPolicy.Describe()
+            PasswordRequirements = AccountPasswordPolicy.Describe(),
+            WaysIn = await _ssoPolicy.WaysInForInvitationAsync(invite.TenantId, invite.Email, administrative: false, HttpContext.RequestAborted),
         };
 
         return Ok(ApiResponse<InviteDto>.Success(dto));
@@ -112,6 +117,12 @@ public class InvitesController : ControllerBase
         string token,
         [FromBody] AcceptInviteRequest request)
     {
+        // A company that requires its own provider for this address accepts the invitation only through it (B-191).
+        var invite = await ResolveWorkforceInvitationAsync(token);
+        if (invite is not null && await _ssoPolicy.RequiresCompanyProviderAsync(invite.TenantId, invite.Email, HttpContext.RequestAborted))
+            return Conflict(ApiResponse<UserDto>.Failure(
+                "Your company signs in with its own provider. Use the button on the invitation page.", new { code = SsoRefusals.SsoRequired }));
+
         // The account, its Active membership, the authoritative Employee binding, the
         // reviewed baseline, the accepted invitation, and the audit are created together
         // by the acceptance service — or none of them are. Credential verification,
@@ -187,40 +198,8 @@ public class InvitesController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Resolves a Workforce invitation from a presented value: a selector/secret credential
-    /// verified by digest, or — transitionally — a pre-cutover raw token. Read-only; the
-    /// acceptance service does the locked, authoritative resolution.
-    /// </summary>
-    private async Task<InviteToken?> ResolveWorkforceInvitationAsync(string presented)
-    {
-        if (BootstrapCredential.TryParse(presented, out var selector, out var secret))
-        {
-            var bySelector = await _dbContext.InviteTokens
-                .IgnoreQueryFilters()
-                .Include(i => i.Tenant)
-                .FirstOrDefaultAsync(i => i.CredentialSelector == selector);
-
-            if (bySelector is null
-                || bySelector.Purpose != InvitationPurpose.WorkforceAccount
-                || !bySelector.MatchesCredentialDigest(BootstrapCredential.Digest(secret)))
-            {
-                return null;
-            }
-
-            return bySelector;
-        }
-
-        if (string.IsNullOrWhiteSpace(presented))
-            return null;
-
-        var byToken = await _dbContext.InviteTokens
-            .IgnoreQueryFilters()
-            .Include(i => i.Tenant)
-            .FirstOrDefaultAsync(i => i.Token == presented);
-
-        return byToken?.Purpose == InvitationPurpose.WorkforceAccount ? byToken : null;
-    }
+    private Task<InviteToken?> ResolveWorkforceInvitationAsync(string presented)
+        => WorkforceInvitations.ResolveAsync(_dbContext, presented, HttpContext.RequestAborted);
 
     /// <summary>
     /// Dev-only: remove an orphaned user by email (partial-failure cleanup on InMemory).

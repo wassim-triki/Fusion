@@ -32,7 +32,8 @@ public sealed class AdministratorInvitationAcceptanceController(
     IAdministratorInvitationService invitations,
     IAdministrativeInvitationAcceptanceService acceptance,
     AppIdentityDbContext dbContext,
-    IAuthSessionFactory sessions) : ControllerBase
+    IAuthSessionFactory sessions,
+    Features.SingleSignOn.SsoPolicy ssoPolicy) : ControllerBase
 {
     /// <summary>
     /// What the link opens onto. Read-only: inspecting never consumes, expires,
@@ -59,6 +60,9 @@ public sealed class AdministratorInvitationAcceptanceController(
             Role = entry.Role,
             PasswordRequirements = entry.State == AdministrativeInvitationEntryState.AccountCreation
                 ? AccountPasswordPolicy.Describe()
+                : null,
+            WaysIn = entry.State == AdministrativeInvitationEntryState.AccountCreation
+                ? await ssoPolicy.WaysInForAdministrativeCredentialAsync(credential, entry.InvitedEmail, cancellationToken)
                 : null,
         }));
     }
@@ -193,6 +197,9 @@ public sealed class AdministratorEntryDto
     /// requirements from one source instead of a second copy that can drift.
     /// </summary>
     public AccountPasswordRequirements? PasswordRequirements { get; set; }
+
+    /// <summary>How the invited address can accept: providers, and the password (B-191).</summary>
+    public Features.SingleSignOn.SsoWaysIn? WaysIn { get; set; }
 }
 
 public sealed class AdministratorRefusalDto

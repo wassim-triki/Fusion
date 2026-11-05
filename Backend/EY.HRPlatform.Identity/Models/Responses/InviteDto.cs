@@ -55,4 +55,7 @@ public class InviteDto
 
     /// <summary>The account rules this recipient must satisfy, from the server policy.</summary>
     public AccountPasswordRequirements? PasswordRequirements { get; set; }
+
+    /// <summary>How the invited address can accept: providers and whether a password is offered (B-191).</summary>
+    public Features.SingleSignOn.SsoWaysIn? WaysIn { get; set; }
 }

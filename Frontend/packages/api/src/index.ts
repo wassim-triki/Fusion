@@ -29,6 +29,7 @@ export type {
   ViewAsMarker,
 } from "./platform";
 export * from "./view-as";
+export * from "./sso";
 export * from "./tenant-settings";
 export * from "./invites";
 export * from "./core-access";

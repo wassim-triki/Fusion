@@ -8,6 +8,4 @@ None.
 
 ## Next
 
-**Waiting on the user:** agree to the B-191 screens in the [explorer](https://claude.ai/artifact/Efx5HUDsdRqTsCH3wQzRXJ) (verdicts save to its db doc `explorer/b191`; read them with ArtifactData before building). Changes asked there are made to the explorer and the plan first.
-
-Then, in a fresh session at **xhigh**: "Build B-191 single sign-on from `plans/B-191-single-sign-on.md`. Screens as agreed in the explorer linked there. One slice, one commit; security-review before the commit; ends In review with three screens."
+B-191 plan and screens agreed (2026-11-05). In a fresh session at **xhigh**: "Build B-191 single sign-on from `plans/B-191-single-sign-on.md`. Screens as agreed in the explorer linked there. One slice, one commit; security-review before the commit; ends In review with three screens."

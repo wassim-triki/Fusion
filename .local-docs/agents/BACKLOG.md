@@ -27,12 +27,12 @@ Open work only. Agents keep it current from the conversation; closed items leave
 | Rebuild slice | Task | Status |
 | --- | --- | --- |
 | 1–16 | Jobs/places/lists through the Core HR front page | Accepted and closed |
-| 17 · B-191 | Single sign-on | Ready; re-planned, screens awaiting agreement |
+| 17 · B-191 | Single sign-on | Ready to build; plan and screens agreed |
 | 18 · B-192 | Seams and finish | Queued after the preceding slices |
 
 ## In progress
 
-None. Next: B-191 single sign-on, once the user agrees to its [screens](https://claude.ai/artifact/Efx5HUDsdRqTsCH3wQzRXJ).
+None. Next: build B-191 single sign-on (plan and screens agreed).
 
 ### Rebuild program tracking
 
@@ -60,7 +60,7 @@ None waiting.
 ### Rebuild slices
 
 - [ ] **B-191** Single sign-on: Microsoft, Google, a company's own provider, required per domain · Identity, Shell · 2026-10-30
-      Re-planned 2026-11-05 at xhigh: [plan](plans/B-191-single-sign-on.md). Build after the user agrees to the [screens explorer](https://claude.ai/artifact/Efx5HUDsdRqTsCH3wQzRXJ) (sign-in, invitation, Settings › Sign-in). Built and proven locally with a Development-only test provider; real Microsoft/Google apps optional via `FUSION_SSO_*` user variables.
+      Re-planned 2026-11-05 at xhigh: [plan](plans/B-191-single-sign-on.md). Screens agreed 2026-11-05 in the [explorer](https://claude.ai/artifact/Efx5HUDsdRqTsCH3wQzRXJ) (sign-in, invitation, Settings › Sign-in). Built and proven locally with a Development-only test provider; real Microsoft/Google apps optional via `FUSION_SSO_*` user variables.
 - [ ] **B-192** Seams and finish: colleague modules only when on, their lint and type-check once (the hook skips them since B-234), one vocabulary, replaced surfaces gone, demo presets for the tour · All · 2026-10-30
       Vocabulary seam from B-190: D-30’s six company departments are the Division-level units above Department A/B; Reports’ existing division field is the top ancestor under the root. Keep the accepted grouping while aligning the words.
 

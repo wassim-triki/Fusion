@@ -1,6 +1,6 @@
 # B-167 — The rebuild, in slices
 
-**Status:** Order accepted 2026-10-30. Slices 1–15 accepted and closed; slice 16 (B-190) In review, not accepted; slice 17 (B-191) next; slice 18 (B-192) follows the preceding slices. No implementation task active. The backlog separates these numbered slices from other work and follow-ups. Authority: `plans/B-164-decisions.md` (D-01–D-30), then the brief's §6b (scope), `DESIGN.md`, and the map (§4–§6) as evidence of what exists.
+**Status:** Order accepted 2026-10-30. Slices 1–17 accepted and closed; slice 18 (B-192) next with its own [plan](B-192-seams-and-finish.md); slice 19 (B-298, the demo presets, split from slice 18 on 2026-11-05) follows. Authority: `plans/B-164-decisions.md` (D-01–D-30), then the brief's §6b (scope), `DESIGN.md`, and the map (§4–§6) as evidence of what exists.
 
 ## Rules for every slice
 
@@ -33,7 +33,8 @@
 | 15 | B-189 | **Reports**: the standard set and your own (fields incl. the company's, filter, group, chart, save, share with a role, export), on a date or between two, run as the viewer | R1 (2) | D-14 | 3, 7 | — | **security-review** (what a report can show) |
 | 16 | B-190 | **Core HR's front page**: header, Growth and People views on one time slider with Replay, department cards following it, next 30 days, records to complete, open roles; from the reports engine | D2 (2) | D-30, D-20 | 9, 15 | Core Overview (dashboard) | cold build |
 | 17 | B-191 | **Single sign-on**: Microsoft and Google; a company's own Entra ID or OpenID Connect in Settings › Sign-in, tested, required for its email domain; invited people only; a local test provider for development and tests | S1 (2) | — | 2, 8 | — | **security-review**; journeys with the test provider |
-| 18 | B-192 | **Seams and finish**: colleague modules only when the company has them on (joining checklists replace Onboarding); one vocabulary swept across every surface; every replaced surface gone (map §3); demo presets rebuilt through the API with the explorer's stories for the tour | X1 (2), Q3 | — | all | — | full suites once; screens of the whole journey |
+| 18 | B-192 | **Seams and finish**: colleague modules only when the company has them on (joining checklists replace Onboarding); one vocabulary by a fix list; one way to refuse; what replaced surfaces left behind ([plan](B-192-seams-and-finish.md)) | X1 (2), Q3 | — | all | — | full suites once; one walk per role |
+| 19 | B-298 | **Demo presets**: one build proved, then a shared company finish (brand, fields, photos, checklists, open roles, a pending change, on leave) in all five | — | D-18 | 18 | — | `journey-demo-preset.cjs` |
 
 ## Recommended effort per session
 
@@ -58,7 +59,8 @@ Set by hand when the fresh session starts. xhigh where a mistake is silent and c
 | 15 | B-189 Reports | xhigh | queries over dated data that must show only what the viewer may see |
 | 16 | B-190 Core HR's front page | high | visual craft (two views, Replay, cards) on the reports engine |
 | 17 | B-191 Single sign-on | xhigh | authentication with outside providers |
-| 18 | B-192 Seams and finish | medium | sweep and demo data |
+| 18 | B-192 Seams and finish | medium | a fix list, a small gate and a cleanup |
+| 19 | B-298 Demo presets | medium | scripts over the product API |
 
 ## Why this order
 

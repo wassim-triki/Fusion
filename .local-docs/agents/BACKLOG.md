@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-298.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-299.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -28,7 +28,8 @@ Open work only. Agents keep it current from the conversation; closed items leave
 | --- | --- | --- |
 | 1–16 | Jobs/places/lists through the Core HR front page | Accepted and closed |
 | 17 · B-191 | Single sign-on | Accepted and closed |
-| 18 · B-192 | Seams and finish | Queued after the preceding slices |
+| 18 · B-192 | Seams and finish | Ready; plan agreed |
+| 19 · B-298 | Demo presets brought up to the rebuild | Ready, after B-192 |
 
 ## In progress
 
@@ -59,8 +60,10 @@ None waiting.
 
 ### Rebuild slices
 
-- [ ] **B-192** Seams and finish: colleague modules only when on, their lint and type-check once (the hook skips them since B-234), one vocabulary, replaced surfaces gone, demo presets for the tour · All · 2026-10-30
-      Vocabulary seam from B-190: D-30’s six company departments are the Division-level units above Department A/B; Reports’ existing division field is the top ancestor under the root. Keep the accepted grouping while aligning the words.
+- [ ] **B-192** Seams and finish: colleague modules only when on, one vocabulary, one way to refuse, what replaced screens left behind · All · 2026-10-30
+      Scope reviewed against slices 1–17 and agreed by the user 2026-11-05: [plan](plans/B-192-seams-and-finish.md). Replaced screens are already redirects, so that part is a cleanup; colleague modules and the one refusal aren't done; words are a fix list; the top-level unit takes the company's own level name. Medium effort, fresh session.
+- [ ] **B-298** Demo presets brought up to the rebuild · Data · 2026-11-05
+      Split from B-192 by the user, 2026-11-05. Last built 2026-10-22, before the rebuild; the script was changed on 10-30 and 11-01 with no build recorded since, so first prove one build (`fresh`, then one with a year). Then a shared company finish: brand, company fields from the gallery (D: demo companies ship a set), photos, joining checklists, open roles, a pending change, someone on leave, reusing the Carthage seed scripts. Rebuild all five; `journey-demo-preset.cjs` extended. The tour's stories wait for B-090's decision page. After B-192. Medium effort, fresh session.
 
 ### Other work
 

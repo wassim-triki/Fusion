@@ -8,4 +8,4 @@ None.
 
 ## Next
 
-B-192 (seams and finish), the last rebuild slice.
+B-192 plan agreed (2026-11-05). In a fresh session at **medium**: "Build B-192 seams and finish from `plans/B-192-seams-and-finish.md`. One slice, one commit; ends In review." Then B-298 (demo presets).

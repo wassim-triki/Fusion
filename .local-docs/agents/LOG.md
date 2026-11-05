@@ -1,5 +1,6 @@
 # LOG — the one history
 
+- ✓ **B-191** Single sign-on accepted, 2026-11-05 (user: "greate, lets close this").
 - **B-191** Single sign-on built, 2026-11-05, **In review** (three screens in `plans/B-191-screens/`):
   - Identity runs the code flow itself (PKCE, state, nonce, one callback per provider, the result collected once with an httpOnly cookie, nothing in URLs); identities linked by issuer and subject; per-provider email trust (`email_verified`/`hd`, `xms_edov`, pinned Entra `tid`); only invited people (invitations accept through a provider only from their link, with the invited address); a company connection reaches only its own members in domains a test sign-in proved; requiring it ends members' password sessions (refresh answers `sso_required`), administrators keep their password; step-up confirmation by password or a fresh provider sign-in (settings, adding an administrator, setting a first password); client secrets under Data Protection per company; SSRF-guarded backchannel; Development/Testing-only test provider. Migration `AddSingleSignOn`.
   - Front end: email-first sign-in, `/auth/sso/complete`, the proxy forwards every `Set-Cookie`, provider choices on all invitation pages, Settings › Sign-in "Single sign-on" block, provider marks on People, "Signs in with" on Person › Access; EN/FR/AR.

@@ -27,7 +27,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 | Rebuild slice | Task | Status |
 | --- | --- | --- |
 | 1–16 | Jobs/places/lists through the Core HR front page | Accepted and closed |
-| 17 · B-191 | Single sign-on | In review (built 2026-11-05) |
+| 17 · B-191 | Single sign-on | Accepted and closed |
 | 18 · B-192 | Seams and finish | Queued after the preceding slices |
 
 ## In progress
@@ -49,8 +49,7 @@ These are umbrella outcomes, not additional slices.
 
 ### Rebuild slices
 
-- [ ] **B-191** Single sign-on: Microsoft, Google, a company's own provider, required per domain · Identity, Shell, Core HR · 2026-10-30
-      Built 2026-11-05 ([plan](plans/B-191-single-sign-on.md), [explorer](https://claude.ai/artifact/Efx5HUDsdRqTsCH3wQzRXJ)). Look at: `plans/B-191-screens/` — 01 sign-in step 2 for an address at a company's proved domain (its provider leads, then Microsoft, Google, the password); 02 an invitation with the providers above "or create a password"; 03 Settings › Sign-in connected and required. One difference from the drawing: invitation pages keep their accepted split frame, with the providers at the top of the form. Try it on localhost with the "SSO Journey mw3qfmtb" company (`data/README.md` › Single sign-on); the test provider page asks which made-up person to be.
+None waiting.
 
 ### Other reviews
 

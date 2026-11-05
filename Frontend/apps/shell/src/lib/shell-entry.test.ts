@@ -78,6 +78,13 @@ describe("resolveShellEntryState", () => {
     ).toEqual({ kind: "home" });
   });
 
+  it("sends a visitor without a session to sign-in, not the no-workspace state", () => {
+    expect(resolveShellEntryState({ isLoading: false, user: null })).toEqual({
+      kind: "redirect",
+      destination: "/auth/signin",
+    });
+  });
+
   it("shows the no-workspace state when no entitled module can be entered", () => {
     expect(
       resolveShellEntryState({

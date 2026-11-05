@@ -95,6 +95,8 @@ describe("AuthProvider – initial state", () => {
     );
     expect(screen.getByTestId("authenticated").textContent).toBe("false");
     expect(screen.getByTestId("user").textContent).toBe("none");
+    // A leftover sign-in hint is expired with the empty session.
+    expect(mockedService.clearAuth).toHaveBeenCalled();
   });
 
   it("hydrates from localStorage when token is valid", async () => {

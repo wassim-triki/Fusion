@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-292.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-294.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -32,7 +32,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In progress
 
-None. Next: B-191 single sign-on (next planned slice).
+None. Next: B-292 batch 2 (B-244, B-291, B-281), then batch 3; B-191 single sign-on after.
 
 ### Rebuild program tracking
 
@@ -65,37 +65,29 @@ None waiting.
 
 ### Other work
 
-- [ ] **B-291** Import review loading matches the page it loads · Core HR · 2026-11-04
-      Seen in B-286 batch 3: `/core/import/{id}` loads as full-width bars under a "Details" breadcrumb, then renders the two-column Changes page (New/Changed panel + Changes apply from / Also to check rail) under "Changes". One loading shape per page (B-280).
-
-- [ ] **B-282** Recover sign-in when a stale compatibility hint has no stored session · Shell, shared authentication · 2026-11-04
-      B-280's production negatives confirm fail-closed behavior (zero protected page reads or successful protected responses), but `ey_hr_authenticated=true` with no real session redirects an MFE to sign-in, middleware sends sign-in to Home, and Home ends at No workspace is available. Without the hint, sign-in opens normally. Existing middleware/entry behavior, independent of skeleton presentation; remove the stale hint or otherwise recover sign-in without trusting the cookie as authority. Keep separate from B-280; no authentication flow fix attempted here.
+- [ ] **B-292** Bugs and flaky tests, in three batches (one session each, in order; independent if one runs short) · Shell, Performance, Core HR, Shared · 2026-11-05
+      Batch 1 closed 2026-11-05 (B-282, B-283, B-206). Batch 2, quick frontend (medium): B-244, B-291, B-281. Batch 3, won't-reproduce (medium, backend, time-boxed: a few runs with failure detail captured, fix if it fails, close ○ on clean evidence): B-272, B-279.
+  - [ ] **B-244** `@repo/ds` settings sidebar test fails 3 cases ("Employee fields" link not found, EN and FR); seen 2026-11-01 during B-185, which doesn't touch settings · Shared · 2026-11-01
+  - [ ] **B-291** Import review loading matches the page it loads · Core HR · 2026-11-04
+        Seen in B-286 batch 3: `/core/import/{id}` loads as full-width bars under a "Details" breadcrumb, then renders the two-column Changes page (New/Changed panel + Changes apply from / Also to check rail) under "Changes". One loading shape per page (B-280).
+  - [ ] **B-281** Diagnose missing Carthage photo responses seen during loading investigation · Core HR, shared navigation · 2026-11-04
+        B-280 investigation repeatedly reported five `/api/corehr/employees/people/{id}/photo` 404s across Core and Performance; implementation verification including the employee's cards adds one more (six unique photo paths). Initials render and page data succeeds; no hydration/page errors observed. Not the skeleton-switch cause (the SSR access placeholder predates these requests). Keep separate; no data or photo repair attempted. Exact response paths remain in ignored B-280 evidence.
+  - [ ] **B-272** Investigate the 2,000-person company import scale test failure · Core HR · 2026-11-02
+        Full CoreHR suite during B-271: 450 passed, 1 failed in Scale_two_thousand_people_in_eighty_units (3m50s); test runner omitted failure detail. B-190, 2026-11-03: repeated full relational suites pass 454/0/0, including scale; original failure not reproduced, no import code changed.
+  - [ ] **B-279** Capture and diagnose an intermittent first dated-profile response after historical import · Core HR · 2026-11-04
+        During B-246's first live publication, the dated-manager assertion failed; that harness did not retain the response status/body. The immediate direct read was 200 with the correct historical manager, and the resumed journey passed 17/0/0. No cause established. The journey now reports non-200 responses and manager mismatches explicitly and reuses fixtures with --resume. Reproduce with response evidence before attributing it to the domain, gateway or environment; remains queued separately from the completed start-date correction.
 
 - [ ] **B-287** Open roles remember who filled them, so the front page can show "Filled · Ons Khemiri, Monday" as drawn (D-30); today a filled role keeps no link to the hire or date · Core HR · 2026-11-04
       From B-285: the open roles model has Open/OnHold/Filled/Closed only.
 
-- [ ] **B-283** Gate Performance header cycle queries on workspace readiness and route relevance · Performance · 2026-11-04
-      B-280's stale-hint production control starts `/api/performance/context` from the unchanged PerformanceCycleContext before redirect; navigation cancels it before a response. Both useCurrentCycle/useWorkspaceContext run before the cycle-free-route return, without auth readiness. Protected 1:1 page never mounts/queries; anonymous context API refuses access. Existing source (last changed c7402cbb), not introduced by B-280; keep frame mounted while disabling unnecessary header reads until permitted and on cycle-free routes. No fix attempted here.
-
-- [ ] **B-281** Diagnose missing Carthage photo responses seen during loading investigation · Core HR, shared navigation · 2026-11-04
-      B-280 investigation repeatedly reported five `/api/corehr/employees/people/{id}/photo` 404s across Core and Performance; implementation verification including the employee's cards adds one more (six unique photo paths). Initials render and page data succeeds; no hydration/page errors observed. Not the skeleton-switch cause (the SSR access placeholder predates these requests). Keep separate; no data or photo repair attempted. Exact response paths remain in ignored B-280 evidence.
-
 - [ ] **B-277** Resolve archive collisions for completed review plans · Tooling · 2026-11-03
       Stack startup repeatedly reports `archive/plans/B-189-reports.md exists; left B-189-reports.md in plans/`. Compare and preserve both copies’ information before clearing the completed plan from the active folder.
-
-- [ ] **B-279** Capture and diagnose an intermittent first dated-profile response after historical import · Core HR · 2026-11-04
-      During B-246's first live publication, the dated-manager assertion failed; that harness did not retain the response status/body. The immediate direct read was 200 with the correct historical manager, and the resumed journey passed 17/0/0. No cause established. The journey now reports non-200 responses and manager mismatches explicitly and reuses fixtures with --resume. Reproduce with response evidence before attributing it to the domain, gateway or environment; remains queued separately from the completed start-date correction.
-
-- [ ] **B-272** Investigate the 2,000-person company import scale test failure · Core HR · 2026-11-02
-      Full CoreHR suite during B-271: 450 passed, 1 failed in Scale_two_thousand_people_in_eighty_units (3m50s); test runner omitted failure detail. B-190, 2026-11-03: repeated full relational suites pass 454/0/0, including scale; original failure not reproduced, no import code changed.
 
 - [ ] **B-255** Scale Reports filter values with viewer-scoped server search when company data grows; report runs currently return the complete allowed value set.
 
 - [ ] **B-249** The brand studio's Home preview draws the real Home (day one's guide, the company card) instead of its stand-in (from B-188's notes) · Core HR · 2026-11-01
 
 - [ ] **B-245** The import groups titles into job families when the files have no family column (D-23 widened the AI to it): suggestions marked with the sparkle, each family changeable on the chart's Jobs view · Core HR · 2026-11-01
-
-- [ ] **B-244** `@repo/ds` settings sidebar test fails 3 cases ("Employee fields" link not found, EN and FR); seen 2026-11-01 during B-185, which doesn't touch settings · Shared · 2026-11-01
 
 - [ ] **B-242** Tidy after the Organization refit: drop core's unused `@xyflow/react` dependency (lockfile update) and the now-unused `flattenOrganizationHierarchy` · Core HR · 2026-11-01
 
@@ -121,8 +113,6 @@ None waiting.
 - [ ] **B-204** Notification emails from Core HR and Performance in the company's brand (name, logo, colour), as invitations are since B-176; the modules don't hold the brand, so Identity serves it to them · Core HR, Performance, Identity · 2026-10-30
 
 - [ ] **B-205** The invitation acceptance and activation pages in the company's brand (the same frame as sign-in); fits B-188's activation redraw · Shell, Core HR · 2026-10-30
-
-- [ ] **B-206** `@repo/auth` `language.test.tsx` "is left alone when the session carries no supported language" fails under jsdom (an emptied `NEXT_LOCALE` cookie stays as ""), seen in B-176, file untouched by it · Frontend · 2026-10-30
 
 - [ ] **B-202** `fusion-dev` script that adds an EF migration without stopping the running service (build to the artifacts path, then `dotnet ef … --no-build` against it); B-175 had to stop CoreHR for it · Tooling · 2026-10-30
 
@@ -151,6 +141,9 @@ None waiting.
 
 - [ ] **B-210** Sign-in's company column feels empty (logo and name on a wash); give it more, canvas first · Shell · 2026-10-30
       User 2026-10-30 on the Arabic sign-in: "looks clean, still lacking … especially the empty column holding the title of the organization". Revisit later, not urgent (user, same day).
+
+- [ ] **B-293** `stack.ps1 -Apps <app>` starts the requested app when the shell is already up · Tooling · 2026-11-05
+      Seen in B-292 batch 1: the shell (3000) and a leftover Core HR (3002) were running; `stack.ps1 -Apps performance` said "already up" because it checks only `:3000`, so Performance (3004) never started and `/performance/*` returned 500 through the shell. `-Status` also reported Frontend DOWN while the shell answered. Check the requested MFE ports, not only the shell.
 
 ### Other work — follow-ups from earlier rebuild slices
 
@@ -188,7 +181,6 @@ Explicitly deferred; no change to the deferral or review verdict.
       User 2026-10-31 (B-182 review): "mark add person screen for restyling later".
 
 ## Needs discussion
-
 
 - [ ] **B-169** Core HR after the rebuild: the rungs chosen at checkpoint 2 to keep for later, so they aren't lost · Core HR, Shell · 2026-10-30
       From B-164's scope page (brief §6b). Each is the next rung above what B-167 builds.

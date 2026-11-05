@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** B-289 + B-290 2026-11-05: person page glance row keeps the tenure fact whole; job facts with company-colour marks on Overview and Job. Accepted ✓ (user: "close"); B-288 closed with them.
+**Last finished:** B-292 batch 1 2026-11-05: B-282 sign-in recovers from a stale hint, B-283 Performance header reads gated on access and route, B-206 language test reset fixed. Closed ○ on evidence.
 
 ## Active work
 
@@ -8,4 +8,4 @@ None.
 
 ## Next
 
-B-191 single sign-on (Microsoft, Google, a company's own provider, required per domain), the next planned rebuild slice: fresh session, high effort (auth), `security-review` required.
+B-292 batch 2, quick frontend (fresh session, medium): B-244 `@repo/ds` settings sidebar test (3 cases), B-291 import review loading shape, B-281 missing Carthage photo responses. Then batch 3 (B-272, B-279, backend, time-boxed). B-191 single sign-on after.

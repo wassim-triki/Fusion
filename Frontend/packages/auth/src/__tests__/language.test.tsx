@@ -27,7 +27,8 @@ function localeCookie(): string | undefined {
 }
 
 function clearLocaleCookie() {
-  document.cookie = "NEXT_LOCALE=; path=/; max-age=0";
+  // happy-dom keeps an empty cookie for `max-age=0`; a past expiry removes it, as browsers do for both.
+  document.cookie = "NEXT_LOCALE=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 }
 
 beforeEach(() => {

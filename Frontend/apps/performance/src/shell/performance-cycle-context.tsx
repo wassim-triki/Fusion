@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import { useHydratedWorkspaceAccess } from "@repo/auth";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import {
   DropdownMenu,
@@ -15,6 +16,7 @@ import { useWorkspaceContext } from "@/features/performance/api/use-workspace";
 
 import { isCycleAddress, withCycle } from "@/lib/performance-routes";
 import { CYCLE_FREE_ROUTES } from "@/data/sidebar-nav";
+import { resolvePerformanceWorkspaceAccessState } from "./performance-workspace-access";
 import { useTranslations } from "next-intl";
 import { useFormat } from "@repo/ds/lib/use-format";
 
@@ -29,17 +31,21 @@ export function PerformanceCycleContext() {
   const t = useTranslations("common.PerformanceCycleContext");
   const router = useRouter();
   const pathname = usePathname();
-  const detail = useCurrentCycle();
-  const context = useWorkspaceContext();
-  const cycle = detail.data?.cycle ?? null;
   // 1:1s and Feedback belong to people, not cycles (S-07): no cycle context to show or switch there.
   const path = pathname.replace(/^\/performance/, "") || "/";
-  if ([...CYCLE_FREE_ROUTES].some((route) => path === route || path.startsWith(`${route}/`))) return null;
+  const cycleFree = [...CYCLE_FREE_ROUTES].some((route) => path === route || path.startsWith(`${route}/`));
+  // The header reads nothing until the session is confirmed to enter Performance, and never on cycle-free routes.
+  const { state: access } = useHydratedWorkspaceAccess(resolvePerformanceWorkspaceAccessState);
+  const enabled = access === "allowed" && !cycleFree;
+  const detail = useCurrentCycle(enabled);
+  const context = useWorkspaceContext(enabled);
+  const cycle = detail.data?.cycle ?? null;
+  if (cycleFree) return null;
 
-  if (context.isLoading || detail.isLoading) {
+  if (access === "loading" || access === "sign-in-required" || context.isLoading || detail.isLoading) {
     return <Skeleton className="h-5 w-72 max-w-full" aria-hidden />;
   }
-  if (context.error) return null;
+  if (access !== "allowed" || context.error) return null;
   if (!cycle) return null;
 
   const cycles = context.data?.cycles ?? [];

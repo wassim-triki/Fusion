@@ -19,6 +19,9 @@ export function resolveShellEntryState({
     return { kind: "loading" };
   }
 
+  // No session at all is a signed-out visitor, not an account without a workspace.
+  if (!user) return { kind: "redirect", destination: "/auth/signin" };
+
   const destination = resolveDefaultProductDestination(user);
   if (destination === FUSION_HOME_ROUTE) return { kind: "home" };
   return destination

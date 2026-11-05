@@ -103,6 +103,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false);
       }
     } else {
+      // No stored session: expire a leftover sign-in hint too, or the shell's
+      // middleware keeps sending sign-in back to Home.
+      clearAuth();
       setIsLoading(false);
     }
   }, [applyStoredAuth]);

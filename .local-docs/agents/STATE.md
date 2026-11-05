@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** B-292 batch 1 2026-11-05: B-282 sign-in recovers from a stale hint, B-283 Performance header reads gated on access and route, B-206 language test reset fixed. Closed ○ on evidence.
+**Last finished:** B-293 2026-11-05: `stack.ps1` starts requested MFEs when the shell is already up; B-282 re-proved through Performance; session-hint review found nothing more to do. Closed ○. B-292 batch 1 accepted ✓.
 
 ## Active work
 

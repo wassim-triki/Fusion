@@ -80,6 +80,8 @@ $Backend = @(
 $FrontendPorts = 3000..3007        # shell 3000 + every MFE port (stopping clears all of them)
 $OurApps       = @('shell', 'core', 'performance', 'platform')   # the shell waits on the MFEs started (scripts/wait-mfes.cjs)
 $OtherAppPorts = @(3001, 3003, 3005, 3006)                       # Interview, Learning, Recruitment, Onboarding
+$MfePorts      = [ordered]@{ core = 3002; performance = 3004; platform = 3007 }
+$WantedMfes    = if ($Apps) { @($Apps) } else { @($MfePorts.Keys) }
 $MailpitPorts  = @(1025, 8025)
 
 # ---- helpers -------------------------------------------------------------
@@ -99,6 +101,13 @@ function Test-Up([string]$Url, [int]$TimeoutSec = 2) {
         return $false
     }
 }
+
+function Test-Listening([int]$Port) {
+    return [bool](Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)
+}
+
+# Our MFEs with a dev server listening, by name.
+function Get-RunningMfes { return @($MfePorts.Keys | Where-Object { Test-Listening $MfePorts[$_] }) }
 
 # Free a TCP port by killing whatever process is LISTENING on it.
 function Stop-Port([int[]]$Ports) {
@@ -167,7 +176,9 @@ if ($Status) {
     $rows = @()
     $rows += $Backend | ForEach-Object { @{ Name = $_.Name; Up = (Test-Up $_.Health 2); Note = $_.Url } }
     $rows += @{ Name = 'Mailpit';  Up = (Test-Up 'http://localhost:8025/' 2); Note = 'http://localhost:8025' }
-    $rows += @{ Name = 'Frontend'; Up = (Test-Up 'http://localhost:3000/' 2); Note = 'http://localhost:3000' }
+    # The shell's first page compile can outlast an HTTP probe, so "up" is its listener; the note names the MFEs running.
+    $mfes = Get-RunningMfes
+    $rows += @{ Name = 'Frontend'; Up = (Test-Listening 3000); Note = "http://localhost:3000  MFEs: $(if ($mfes.Count) { $mfes -join ', ' } else { 'none' })" }
     # Unauthenticated call through the shell: 401 = shell, gateway and Performance all answer; 502/504 = backend down.
     $code = Get-Code 'http://localhost:3000/api/performance/context'
     $rows += @{ Name = 'Chain'; Up = ($code -eq 401); Note = "shell /api/performance -> $code (401 expected)" }
@@ -248,9 +259,13 @@ foreach ($s in $Backend) {
 # ---- FRONTEND ------------------------------------------------------------
 if ((Want 'Frontend') -and -not $NoFrontend) {
     Write-Step "Frontend (pnpm dev)  ->  http://localhost:3000"
-    if (-not $Force -and (Test-Up 'http://localhost:3000/')) {
+    # Up only when the shell answers AND every requested MFE listens; a shell left with another set restarts with this one.
+    $missing = @($WantedMfes | Where-Object { -not (Test-Listening $MfePorts[$_]) })
+    $shellUp = Test-Up 'http://localhost:3000/'
+    if (-not $Force -and $missing.Count -eq 0 -and $shellUp) {
         Write-Ok "already up."
     } else {
+        if (-not $Force -and $shellUp) { Write-Warn2 "not running: $($missing -join ', '); restarting the frontend with them." }
         Stop-Window (Get-WindowTitle 'Frontend')
         Stop-Port $FrontendPorts   # clear any partial MFE set
         $started = if ($Apps) { @('shell') + $Apps } else { $OurApps }
@@ -291,6 +306,13 @@ foreach ($t in $targets) {
         Write-Host ("  {0,-12} UP" -f $t.Name) -ForegroundColor Green
     } else {
         Write-Host ("  {0,-12} DOWN (check its window)" -f $t.Name) -ForegroundColor Red
+        $allUp = $false
+    }
+}
+if ((Want 'Frontend') -and -not $NoFrontend) {
+    $missing = @($WantedMfes | Where-Object { -not (Test-Listening $MfePorts[$_]) })
+    if ($missing.Count) {
+        Write-Host ("  {0,-12} DOWN: {1} (check the Frontend window)" -f 'MFEs', ($missing -join ', ')) -ForegroundColor Red
         $allUp = $false
     }
 }

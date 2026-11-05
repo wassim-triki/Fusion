@@ -142,9 +142,6 @@ None waiting.
 - [ ] **B-210** Sign-in's company column feels empty (logo and name on a wash); give it more, canvas first · Shell · 2026-10-30
       User 2026-10-30 on the Arabic sign-in: "looks clean, still lacking … especially the empty column holding the title of the organization". Revisit later, not urgent (user, same day).
 
-- [ ] **B-293** `stack.ps1 -Apps <app>` starts the requested app when the shell is already up · Tooling · 2026-11-05
-      Seen in B-292 batch 1: the shell (3000) and a leftover Core HR (3002) were running; `stack.ps1 -Apps performance` said "already up" because it checks only `:3000`, so Performance (3004) never started and `/performance/*` returned 500 through the shell. `-Status` also reported Frontend DOWN while the shell answered. Check the requested MFE ports, not only the shell.
-
 ### Other work — follow-ups from earlier rebuild slices
 
 These keep their original scope and connection to B-167/B-192; they are not numbered slices.

@@ -53,10 +53,7 @@ None waiting.
 
 ### Other reviews
 
-- [ ] **B-289** Person page band: the "with the company since …" fact keeps its full width and pushes "Works from" along; never cut · Core HR · 2026-11-04 · under B-288
-      Look at: `/core/profile` as Amira Khelifi, the administrator: manager, team, time with the company and place on one row at 1440; the place mark now in the company colour. Screen `plans/B-289-screens/1-band.png`.
-- [ ] **B-290** Person page job facts with icons in the company colour, in the band's grammar (mark, label over value; the manager's face, linked) · Core HR · 2026-11-04 · under B-288
-      Look at: Overview › Job and history (job, team, manager, place) and Job › The job (title, family, level, unit, location; same component). Screens `plans/B-289-screens/2-overview-job-facts.png`, `3-job-tab.png`.
+None waiting.
 
 ## Ready
 
@@ -154,10 +151,6 @@ None waiting.
 
 - [ ] **B-210** Sign-in's company column feels empty (logo and name on a wash); give it more, canvas first · Shell · 2026-10-30
       User 2026-10-30 on the Arabic sign-in: "looks clean, still lacking … especially the empty column holding the title of the organization". Revisit later, not urgent (user, same day).
-
-- [ ] **B-288** Visual pass: friendlier, BambooHR-like surfaces, with more of the company colour and icons where they help · Core HR, Shell, Performance · 2026-11-04
-      User 2026-11-04, notes for a later pass (no manual UI testing now); design choices are the agent's.
-      Children B-289 and B-290 are In review (2026-11-05).
 
 ### Other work — follow-ups from earlier rebuild slices
 

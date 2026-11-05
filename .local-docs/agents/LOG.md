@@ -1,5 +1,7 @@
 # LOG — the one history
 
+- ✓ **B-289 / B-290** accepted, 2026-11-05 (user: "close"): person page tenure fact kept whole, job facts with company-colour marks. ○ **B-288** visual pass closed with them: its notes were these two; a new pass gets a new item.
+
 - **B-289 / B-290** Person page polish from the B-288 notes, committed, **In review**, 2026-11-05. Band glance row: the tenure fact no longer shrinks or wraps (`shrink-0 whitespace-nowrap`), gap 40→32px so all four facts sit on one row at 1440 (was 842px in an 840px row, which pushed "Works from" to a line of its own; no ellipsis reproduced in English at 1280–1920); the place mark now uses the company colour. New `JobFacts` (job-tab.tsx): company-colour icon wells (`bg-primary-tint text-primary-ink`, the established well), label over value, values wrap, the manager as face + link; used by Overview › Job and history and Job › The job.
   - `pnpm --filter core exec vitest run src/features/people/components/worker-profile`: **7/0/0**. ESLint on the three files clean. Checked live as Amira Khelifi, dark 1440×900 (`plans/B-289-screens/`).
 

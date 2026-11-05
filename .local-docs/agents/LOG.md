@@ -1,5 +1,7 @@
 # LOG — the one history
 
+- **B-191** Single sign-on planned, 2026-11-05: [plan](plans/B-191-single-sign-on.md). No deployment needed; local test provider; fallback: operators keep passwords, a company requires SSO only after a test sign-in, by an administrator signed in through it.
+- ✓ **B-291** Import loading matches the page it loads, accepted 2026-11-05 (user: "great close").
 - ○ **B-292** Bugs and flaky tests closed, 2026-11-05: all three batches done; only **B-291** (import loading shape) is left, In review on its own.
 - **B-292 batch 3**, 2026-11-05, one commit:
   - ○ **B-272** The 2,000-person import scale test doesn't reproduce. `test-backend.ps1 CoreHR -Filter Scale_two_thousand_people_in_eighty_units` alone: **1/0/0** three times; full `test-backend.ps1 CoreHR`: **471/0/0**. Likely cause of the one failure: the test asserts wall-clock budgets (read < 20 s, bring-in < 3 min), and the failing run took 3m50s inside a full suite on a memory-starved machine, so the bring-in budget probably ran out. Not changed, since it hasn't failed again. Detail was lost because `test-backend.ps1` printed only `Failed <name> [time]`; it now prints each failure's message, output and stack trace (40 lines each, first 10).

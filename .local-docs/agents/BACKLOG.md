@@ -32,7 +32,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In progress
 
-None. Next: B-191 single sign-on.
+None. Next: B-191 single sign-on ([plan](plans/B-191-single-sign-on.md)), fresh session at xhigh.
 
 ### Rebuild program tracking
 
@@ -53,14 +53,14 @@ None waiting.
 
 ### Other reviews
 
-- [ ] **B-291** Import review loading matches the page it loads · Core HR · 2026-11-05
-      Look at `plans/B-291-screens/01-loading-and-loaded.png` (left: loading, right: loaded; First Start Review administrator, `/core/import/{id}?step=changes`). Check the skeleton reads as the Changes page and the crumb says "Changes" from the first paint. The step is now in the URL (`?step=chart` Review, `?step=changes` Changes, `?step=done` the bring-in frame); one new crumb word for the bring-in frame, "Bring in" (FR "Import", AR "الاستيراد"), instead of the company's name, since the name isn't known while loading.
+None waiting.
 
 ## Ready
 
 ### Rebuild slices
 
 - [ ] **B-191** Single sign-on: Microsoft, Google, a company's own provider, required per domain · Identity, Shell · 2026-10-30
+      Plan set 2026-11-05: [plan](plans/B-191-single-sign-on.md). Built and proven locally with a Development-only test provider; no deployment needed. Real Microsoft/Google apps optional via `FUSION_SSO_*` user variables.
 - [ ] **B-192** Seams and finish: colleague modules only when on, their lint and type-check once (the hook skips them since B-234), one vocabulary, replaced surfaces gone, demo presets for the tour · All · 2026-10-30
       Vocabulary seam from B-190: D-30’s six company departments are the Division-level units above Department A/B; Reports’ existing division field is the top ancestor under the root. Keep the accepted grouping while aligning the words.
 

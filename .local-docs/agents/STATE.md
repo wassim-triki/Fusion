@@ -8,4 +8,4 @@ None.
 
 ## Next
 
-B-191 single sign-on, fresh session at **xhigh**. Cold pickup: read `plans/B-191-single-sign-on.md` (decisions 1–8, pieces, proof, order), then `AuthController` (login/refresh), `IAuthSessionFactory`, the three acceptance paths (`InvitesController` accept → workforce acceptance service, `AdministratorInvitationAcceptanceController`, `TenantActivationController`), Core `features/settings/sections/sign-in.tsx`, shell `app/auth/signin`. No real provider credentials needed; the Development-only test provider covers everything.
+B-191 single sign-on: **re-plan first** (user, 2026-11-05), fresh session at **xhigh**, before any build. `plans/B-191-single-sign-on.md` is a draft from a low-effort pass: verify, challenge and rewrite it. Build in a later fresh session.

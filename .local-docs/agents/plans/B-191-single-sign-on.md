@@ -1,6 +1,6 @@
 # B-191 — Single sign-on (rebuild slice 17)
 
-**Status:** Plan set 2026-11-05; build next, in a fresh session at **xhigh**. Authority: brief S1 (`B-164-target-brief.md` §6b, rung 2), slice row 17 in `B-167-rebuild.md`, then `DESIGN.md`. No deployment exists or is needed: everything is built and proven on `localhost:3000` with a local test provider. Real Microsoft/Google apps are optional, added later as Windows user variables (below); a hosted demo later only adds its address to those registrations.
+**Status:** Draft 2026-11-05 from a low-effort pass; to be re-planned at xhigh in a fresh session before any build. Authority: brief S1 (`B-164-target-brief.md` §6b, rung 2), slice row 17 in `B-167-rebuild.md`, then `DESIGN.md`. No deployment exists or is needed: everything is built and proven on `localhost:3000` with a local test provider. Real Microsoft/Google apps are optional, added later as Windows user variables (below); a hosted demo later only adds its address to those registrations.
 
 ## Scope (S1, as accepted)
 

@@ -32,7 +32,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In progress
 
-None. Next: B-191 single sign-on ([plan](plans/B-191-single-sign-on.md)), fresh session at xhigh.
+None. Next: re-plan B-191 single sign-on at xhigh ([draft](plans/B-191-single-sign-on.md)), then build.
 
 ### Rebuild program tracking
 
@@ -60,7 +60,7 @@ None waiting.
 ### Rebuild slices
 
 - [ ] **B-191** Single sign-on: Microsoft, Google, a company's own provider, required per domain · Identity, Shell · 2026-10-30
-      Plan set 2026-11-05: [plan](plans/B-191-single-sign-on.md). Built and proven locally with a Development-only test provider; no deployment needed. Real Microsoft/Google apps optional via `FUSION_SSO_*` user variables.
+      Draft plan 2026-11-05, to be re-planned at xhigh: [plan](plans/B-191-single-sign-on.md). Built and proven locally with a Development-only test provider; no deployment needed. Real Microsoft/Google apps optional via `FUSION_SSO_*` user variables.
 - [ ] **B-192** Seams and finish: colleague modules only when on, their lint and type-check once (the hook skips them since B-234), one vocabulary, replaced surfaces gone, demo presets for the tour · All · 2026-10-30
       Vocabulary seam from B-190: D-30’s six company departments are the Division-level units above Department A/B; Reports’ existing division field is the top ancestor under the root. Keep the accepted grouping while aligning the words.
 

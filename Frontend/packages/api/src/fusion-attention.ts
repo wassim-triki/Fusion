@@ -76,8 +76,8 @@ export interface FusionNotification {
   title: string;
   context?: string | null;
   actorName?: string | null;
-  /** The employee record of the person who acted, for their photo; null for Fusion's own reminders. */
-  actorEmployeeId?: string | null;
+  /** The actor's photo address; null when they have none or for Fusion's own reminders. */
+  actorPhotoUrl?: string | null;
   badge?: FusionNotificationBadge | null;
   /** ISO timestamp. */
   occurredAt: string;

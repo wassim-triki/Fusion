@@ -12,6 +12,7 @@ import type { CheckDto, CompanyImportDto, CompanyImportSaidDto } from "@repo/api
 import { AlertTriangle, ArrowLeft, CheckCircle2, Search } from "lucide-react";
 import { useImportApi, useImportChange } from "../api/use-company-import";
 import { ImportHeader, useFieldLabel } from "./import-parts";
+import { importHref } from "./import-skeleton";
 import { Lean } from "./understood";
 import { JobsGrid, PeopleChart, UnitsTree } from "./chart-views";
 
@@ -38,7 +39,7 @@ export function ChartStep({ data }: { data: CompanyImportDto }) {
 
   const bringIn = async () => {
     const next = await change.run("bring", (api, version) => api.bringIn(data.id, version, data.fingerprint));
-    if (next) router.replace(`/import/${data.id}`);
+    if (next) router.replace(importHref(data.id, "bring"));
   };
 
   const show = (check: CheckDto) => {

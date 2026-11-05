@@ -11,6 +11,7 @@ import type { AgainChangeDto, CompanyImportDto, ImportChangeDto } from "@repo/ap
 import { AlertTriangle, ArrowLeft, ArrowRight, Briefcase, Building2, CheckCircle2, UserCheck } from "lucide-react";
 import { useEarlierImports, useImportChange } from "../api/use-company-import";
 import { CheckCard } from "./chart-step";
+import { importHref } from "./import-skeleton";
 import { FileLine, ImportHeader } from "./import-parts";
 import { Lean } from "./understood";
 
@@ -37,7 +38,7 @@ export function AgainStep({ data }: { data: CompanyImportDto }) {
 
   const bringIn = async () => {
     const next = await change.run("bring", (api, version) => api.bringIn(data.id, version, data.fingerprint));
-    if (next) router.replace(`/import/${data.id}`);
+    if (next) router.replace(importHref(data.id, "bring"));
   };
 
   return (
@@ -230,7 +231,7 @@ export function EarlierImports({ items, className }: { items: NonNullable<Return
                 {item.fileNames.join(", ")} · {item.people > 0 || item.changed === 0 ? t("counts", { people: item.people, units: item.units }) : t("changed", { count: item.changed })}
               </p>
             </div>
-            <Link href={`/import/${item.id}`} className="type-label text-primary-ink hover:underline">{t("open")}</Link>
+            <Link href={importHref(item.id, "bring")} className="type-label text-primary-ink hover:underline">{t("open")}</Link>
           </li>
         ))}
       </ul>

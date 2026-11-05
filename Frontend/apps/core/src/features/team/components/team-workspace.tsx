@@ -54,7 +54,7 @@ function TeamRail({ team, photos }: { team: MyTeamDto; photos: ReadonlyMap<strin
         <div className={group}>
           <p className="type-meta text-muted-foreground">{t("yourManager")}</p>
           <Link href={`/people/${team.reportsTo.employeeKey}`} className="group flex min-w-0 items-center gap-2.5 outline-none focus-visible:rounded-control focus-visible:ring-2 focus-visible:ring-ring">
-            <PersonAvatar name={team.reportsTo.displayName} photo={photos.get(team.reportsTo.employeeKey)} size="xs" />
+            <PersonAvatar name={team.reportsTo.displayName} photo={team.reportsTo.photoUrl ? photos.get(team.reportsTo.photoUrl) : undefined} size="xs" />
             <span className="truncate type-body text-foreground group-hover:underline">{team.reportsTo.displayName}</span>
           </Link>
         </div>

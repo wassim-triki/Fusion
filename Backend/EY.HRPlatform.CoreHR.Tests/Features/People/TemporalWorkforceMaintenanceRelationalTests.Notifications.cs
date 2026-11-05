@@ -89,6 +89,16 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
             Assert.Equal((ctx.KarimId, CoreNotificationKind.ManagerChanged), (row.RecipientEmployeeId, row.Kind));
             Assert.Equal(ctx.YoussefId, row.ActorEmployeeId);
             Assert.Equal(lastDay.AddDays(1).ToString("yyyy-MM-dd"), row.Values["date"]);
+
+            // The bell shows the actor's face only when they have a photo: no address otherwise, so nothing is requested.
+            var feed = Feed(db, ctx.Tenant.TenantId);
+            Assert.Null(Assert.Single((await feed.PageAsync(ctx.KarimId, null, null, "en", default)).Items).ActorPhotoUrl);
+            var youssef = await db.Employees.SingleAsync(employee => employee.Id == ctx.YoussefId);
+            var photoKey = $"{ctx.Tenant.TenantId:N}/{Guid.NewGuid():N}.jpg";
+            youssef.ReplacePhoto(photoKey);
+            await db.SaveChangesAsync();
+            Assert.Equal(EmployeePhotos.UrlFor(youssef.StableEmployeeKey, photoKey),
+                Assert.Single((await feed.PageAsync(ctx.KarimId, null, null, "en", default)).Items).ActorPhotoUrl);
         });
 
     [RelationalDatabaseFact]

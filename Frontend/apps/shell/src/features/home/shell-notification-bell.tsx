@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useFusionNotifications, usePeoplePhotos } from "@repo/api/query";
+import { useFusionNotifications, usePhotos } from "@repo/api/query";
 import { resolveFusionAttentionModules, useAuth, useNotificationAlerts } from "@repo/auth";
 import { NotificationBell } from "@repo/ds/shell";
 
@@ -14,7 +14,7 @@ export function ShellNotificationBell() {
   const router = useRouter();
   const notifications = useFusionNotifications(resolveFusionAttentionModules(user), { enabled: Boolean(user?.tenantId) });
   const { alerts } = useNotificationAlerts();
-  const photos = usePeoplePhotos(notifications.items.flatMap((item) => (item.actorEmployeeId ? [item.actorEmployeeId] : [])));
+  const photos = usePhotos(notifications.items.map((item) => item.actorPhotoUrl));
   if (!user?.tenantId) return null;
 
   return (

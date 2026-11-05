@@ -410,7 +410,8 @@ public sealed class InternalWorkforceSnapshotService(CoreHRDbContext dbContext) 
                                 BuildDisplayName(manager),
                                 activeManagerIds.Contains(manager.Id))
                             : null,
-                    employmentStartByEmployee.TryGetValue(employee.Id, out var started) ? DateOnly.FromDateTime(started) : null);
+                    employmentStartByEmployee.TryGetValue(employee.Id, out var started) ? DateOnly.FromDateTime(started) : null,
+                    EY.HRPlatform.CoreHR.Features.People.EmployeePhotos.UrlFor(employee.StableEmployeeKey, employee.PhotoKey));
             })
             .ToList();
     }

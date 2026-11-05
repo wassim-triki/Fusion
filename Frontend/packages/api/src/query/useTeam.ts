@@ -6,7 +6,7 @@ import { conversationQueryKeys, createConversationsApi } from "../performance-co
 import { createPerformanceApi, performanceQueryKeys, type YourPeopleQuery } from "../performance";
 import { createPlatformApiClient } from "../platform";
 import { useApiQuery } from "./useApiQuery";
-import { usePeoplePhotos } from "./usePhoto";
+import { usePhotos } from "./usePhoto";
 
 const WHOLE_TEAM: YourPeopleQuery = { filter: "All", search: "", page: 1, pageSize: 100 };
 
@@ -59,8 +59,7 @@ export interface TeamBandMember {
 export function useTeamBand({ performance = true }: { performance?: boolean } = {}) {
   const team = useMyTeam();
   const perf = useTeamPerformance(performance && Boolean(team.data?.members.length));
-  const withPhoto = (team.data ? [team.data.manager, ...team.data.members] : []).filter((person) => person.photoUrl);
-  const photos = usePeoplePhotos(withPhoto.map((person) => person.employeeKey));
+  const photos = usePhotos(team.data ? [team.data.manager, team.data.reportsTo, ...team.data.members].map((person) => person?.photoUrl) : []);
   const members = useMemo<TeamBandMember[]>(() => {
     if (!team.data) return [];
     const meetings = new Map((perf.oneOnOnes.data?.reports ?? []).filter((row) => !row.ended).map((row) => [row.with.employeeId, row.nextMeetingAt]));
@@ -72,7 +71,7 @@ export function useTeamBand({ performance = true }: { performance?: boolean } = 
         employeeKey: person.employeeKey,
         name: person.displayName,
         jobTitle: person.jobTitle,
-        photo: photos.get(person.employeeKey) ?? null,
+        photo: (person.photoUrl && photos.get(person.photoUrl)) || null,
         joinsOn: person.joinsOn,
         events: team.data!.comingUp.filter((event) => event.employeeKey === person.employeeKey),
         oneOnOneAt: meetings.get(person.employeeId) ?? null,
@@ -80,5 +79,5 @@ export function useTeamBand({ performance = true }: { performance?: boolean } = 
       };
     });
   }, [team.data, perf.oneOnOnes.data, perf.roster.data, photos]);
-  return { team, perf, members, managerPhoto: team.data ? photos.get(team.data.manager.employeeKey) ?? null : null, photos };
+  return { team, perf, members, managerPhoto: (team.data?.manager.photoUrl && photos.get(team.data.manager.photoUrl)) || null, photos };
 }

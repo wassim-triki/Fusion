@@ -3,7 +3,7 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { createPlatformApiClient } from "../platform";
-import { corePeoplePaths, corePeopleQueryKeys, createCorePeopleApi } from "../core-people";
+import { corePeopleQueryKeys, createCorePeopleApi } from "../core-people";
 
 /**
  * A person's photo, ready for `<img src>`: the API needs the bearer token, so the photo loads as a blob through
@@ -34,25 +34,20 @@ export function usePhoto(photoUrl: string | null | undefined): string | null {
 }
 
 /**
- * Photos of several people by employee id, for faces in a list (the notification bell): id → displayable address,
- * absent while loading, without a photo, or when the viewer may not see it. Each id is fetched once per session.
+ * Photos for faces in a list, by the `photoUrl` the server gave each person (null for someone without one, who is
+ * never asked for): photoUrl → displayable address, absent while loading or when it fails. Shares `usePhoto`'s cache.
  */
-export function usePeoplePhotos(employeeIds: readonly string[]): ReadonlyMap<string, string> {
+export function usePhotos(photoUrls: readonly (string | null | undefined)[]): ReadonlyMap<string, string> {
   const api = useMemo(() => createCorePeopleApi(createPlatformApiClient()), []);
-  const ids = [...new Set(employeeIds)].sort();
+  const ids = [...new Set(photoUrls.filter((url): url is string => Boolean(url)))].sort();
   const results = useQueries({
-    queries: ids.map((id) => {
-      const url = corePeoplePaths.photo(id);
-      return {
-        queryKey: corePeopleQueryKeys.photo(url),
-        queryFn: ({ signal }: { signal: AbortSignal }) => api.photo(url, signal),
-        staleTime: Infinity,
-        gcTime: 30 * 60_000,
-        retry: false,
-        // Most people have no photo: one 404 per session is enough.
-        retryOnMount: false,
-      };
-    }),
+    queries: ids.map((url) => ({
+      queryKey: corePeopleQueryKeys.photo(url),
+      queryFn: ({ signal }: { signal: AbortSignal }) => api.photo(url, signal),
+      staleTime: Infinity,
+      gcTime: 30 * 60_000,
+      retry: false,
+    })),
   });
   const blobs = results.map((result) => (result.data instanceof Blob ? result.data : null));
   const [photos, setPhotos] = useState<ReadonlyMap<string, string>>(new Map());
@@ -65,7 +60,7 @@ export function usePeoplePhotos(employeeIds: readonly string[]): ReadonlyMap<str
     });
     setPhotos(next);
     return () => next.forEach((url) => URL.revokeObjectURL(url));
-    // The signature names every id and the version of its photo.
+    // The signature names every address and when its photo arrived.
   }, [signature]);
   return photos;
 }

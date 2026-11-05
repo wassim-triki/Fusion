@@ -1,5 +1,6 @@
 using System.Globalization;
 using EY.HRPlatform.CoreHR.Domain.Entities;
+using EY.HRPlatform.CoreHR.Features.People;
 using EY.HRPlatform.CoreHR.Features.People.Changes;
 using EY.HRPlatform.CoreHR.Infrastructure.Notifications;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence;
@@ -61,11 +62,16 @@ public sealed class CoreNotificationFeed(CoreHRDbContext db, TenantContext tenan
         var rows = await page.OrderByDescending(item => item.OccurredAt).ThenByDescending(item => item.Id)
             .Take(take + 1).ToListAsync(cancellationToken);
         var unread = await own.CountAsync(item => item.ReadAt == null, cancellationToken);
+        var actorIds = rows.Take(take).Where(item => item.ActorEmployeeId != null).Select(item => item.ActorEmployeeId!.Value).Distinct().ToList();
+        var photos = actorIds.Count == 0 ? new Dictionary<Guid, string?>()
+            : await db.Employees.AsNoTracking().Where(employee => actorIds.Contains(employee.Id) && employee.PhotoKey != null)
+                .Select(employee => new { employee.Id, employee.StableEmployeeKey, employee.PhotoKey })
+                .ToDictionaryAsync(employee => employee.Id, employee => EmployeePhotos.UrlFor(employee.StableEmployeeKey, employee.PhotoKey), cancellationToken);
         var items = rows.Take(take).Select(item =>
         {
             var (title, context) = CoreNotificationRenderer.InApp(item, language);
             return new FusionNotificationDto(item.Id.ToString(), Module, item.Kind.ToString(), title, context, item.ActorName,
-                item.ActorEmployeeId, "team", item.OccurredAt, item.Href, item.ReadAt);
+                item.ActorEmployeeId is { } actor ? photos.GetValueOrDefault(actor) : null, "team", item.OccurredAt, item.Href, item.ReadAt);
         }).ToList();
         var next = rows.Count > take ? rows[take - 1].OccurredAt.Ticks.ToString(CultureInfo.InvariantCulture) : null;
         return new FusionNotificationPageDto(items, unread, next);

@@ -336,6 +336,7 @@
     "undo": "تراجع"
   },
   "bring": {
+    "crumb": "الاستيراد",
     "title": "جارٍ استيراد {company}",
     "doneTitle": "{company} في Fusion",
     "doneMeta": "اليوم الساعة {time} · من {files}",

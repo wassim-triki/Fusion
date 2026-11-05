@@ -11,6 +11,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { WorkerProfileSkeleton } from "@/features/people/components/worker-profile/worker-profile-skeleton";
 import { PeoplePendingContent } from "@/features/people/components/people-page-skeleton";
+import { ImportRouteSkeleton } from "@/features/company-import/components/import-skeleton";
 
 // ── Route skeleton registry ─────────────────────────────────────────────────
 // One dedicated loading skeleton per route, shared by every loading surface:
@@ -257,8 +258,8 @@ export function getRoutePageSkeleton(corePath: string): ReactNode {
     return <ReportsPageSkeleton />;
   if (corePath === "/") return <OverviewPageSkeleton />;
   if (corePath === "/people") return <EmployeesPageSkeleton />;
-  if (corePath === "/import" || corePath.startsWith("/import/"))
-    return <PageSkeleton width="wide" />;
+  if (corePath.startsWith("/import/")) return <ImportRouteSkeleton />;
+  if (corePath === "/import") return <PageSkeleton width="wide" />;
   if (["/people/add", "/people/hire", "/people/add-existing"].includes(corePath)) return <PersonTaskPageSkeleton />;
   if (corePath.startsWith("/people/")) return <EmployeeProfilePageSkeleton />;
   if (corePath === "/profile") return <MyProfilePageSkeleton />;

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using EY.HRPlatform.Performance.Infrastructure.Core;
 using System.Text.Json;
 using EY.HRPlatform.Performance.Domain.Calibration;
 using EY.HRPlatform.Performance.Domain.Cycles;
@@ -162,14 +163,15 @@ public sealed class InAppNotificationTests
     private static readonly EffectivePermissionGrant[] SelfGrant = [new(PerformancePermissions.ObjectiveSelfManage, PermissionScopes.Self)];
 
     private static async Task<PerformanceNotification> SeedAsync(PerformanceApiFactory factory, Guid recipient, DateTime occurredAt,
-        Guid? tenant = null, Guid? userId = null)
+        Guid? tenant = null, Guid? userId = null, Guid? actor = null)
     {
         var tenantId = tenant ?? factory.Store.TenantId;
         var plan = SubmittedPlan(tenantId, Guid.NewGuid(), recipient);
         var message = PerformanceOutboxMessage.ForPlan(tenantId, PerformanceNotificationKind.PlanSubmitted, recipient, plan.Id,
             plan.Decisions.Last().Id, new PlanNotificationPayload(plan.CycleId, plan.Id, "Nour"));
         var notification = PerformanceNotification.For(message, userId,
-            PerformanceNotificationTemplates.ForPlan(plan, PerformanceNotificationKind.PlanSubmitted, "Nour"), occurredAt);
+            PerformanceNotificationTemplates.ForPlan(plan, PerformanceNotificationKind.PlanSubmitted, "Nour") with { ActorEmployeeId = actor },
+            occurredAt);
         await using var db = factory.Store.NewContext(TestTenantContext.WithTenant(tenantId));
         db.Notifications.Add(notification);
         await db.SaveChangesAsync();
@@ -187,10 +189,15 @@ public sealed class InAppNotificationTests
     {
         await using var factory = new PerformanceApiFactory();
         var lina = Guid.NewGuid(); var other = Guid.NewGuid();
-        var older = await SeedAsync(factory, lina, DateTime.UtcNow.AddHours(-2));
-        var newer = await SeedAsync(factory, lina, DateTime.UtcNow.AddMinutes(-5));
+        var nour = Guid.NewGuid(); var karim = Guid.NewGuid();
+        var older = await SeedAsync(factory, lina, DateTime.UtcNow.AddHours(-2), actor: karim);
+        var newer = await SeedAsync(factory, lina, DateTime.UtcNow.AddMinutes(-5), actor: nour);
         await SeedAsync(factory, other, DateTime.UtcNow);
         await SeedAsync(factory, lina, DateTime.UtcNow, tenant: Guid.NewGuid());
+        // Nour has a photo in Core, Karim doesn't.
+        const string photoUrl = "/corehr/employees/people/E-NOUR/photo?v=abc";
+        factory.Core.ById[nour] = new WorkforceSnapshot(nour, "E-NOUR", "Nour", "Nour", null, null, true, null, null, PhotoUrl: photoUrl);
+        factory.Core.ById[karim] = new WorkforceSnapshot(karim, "E-KARIM", "Karim", "Karim", null, null, true, null, null);
 
         var page = await Data(await factory.CreateAuthenticatedClient(employeeId: lina, permissions: SelfGrant)
             .GetAsync("/api/performance/notifications"));
@@ -202,7 +209,8 @@ public sealed class InAppNotificationTests
         Assert.Equal("PlanSubmitted", first.GetProperty("kind").GetString());
         Assert.Equal("Nour submitted their plan", first.GetProperty("title").GetString());
         Assert.Equal("plan", first.GetProperty("badge").GetString());
-        Assert.True(first.TryGetProperty("actorEmployeeId", out _));
+        Assert.Equal(photoUrl, first.GetProperty("actorPhotoUrl").GetString());
+        Assert.Equal(JsonValueKind.Null, page.GetProperty("items")[1].GetProperty("actorPhotoUrl").ValueKind);
     }
 
     [Fact]

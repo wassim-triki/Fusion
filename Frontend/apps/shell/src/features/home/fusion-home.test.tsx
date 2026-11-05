@@ -87,7 +87,7 @@ vi.mock("@repo/api/query", () => ({
     recent: [],
     person: { name: "Nour Ben Ali", detail: "QA Automation Engineer", detailPending: false },
   }),
-  usePeoplePhotos: () => new Map(),
+  usePhotos: () => new Map(),
   usePhoto: () => null,
   useTenantSummary: () => ({ data: { tenantId: "t", name: "Carthage Digital Group", language: "en", timeZone: "Africa/Tunis", logoUrl: null, brandColor: null } }),
   useCompanyWorkWeek: () => ({ data: { workingDays: [1, 2, 3, 4, 5] }, error: null }),

@@ -65,9 +65,10 @@ public sealed record FusionUpcomingDto(
 /// Something that happened for the person, served at `GET /api/{module}/notifications` (`@repo/api` FusionNotification).
 /// Title and context are worded in the reader's language. <paramref name="Badge"/> is the kind's family (praise, feedback,
 /// meeting, action, plan, review, reminder, team), so the bell marks it without knowing a module's kinds.
+/// <paramref name="ActorPhotoUrl"/> is the actor's Core photo address, null when they have none, so the bell asks only for photos that exist.
 /// </summary>
 public sealed record FusionNotificationDto(string Id, string Module, string Kind, string Title, string? Context,
-    string? ActorName, Guid? ActorEmployeeId, string Badge, DateTime OccurredAt, string Href, DateTime? ReadAt);
+    string? ActorName, string? ActorPhotoUrl, string Badge, DateTime OccurredAt, string Href, DateTime? ReadAt);
 
 public sealed record FusionNotificationPageDto(IReadOnlyList<FusionNotificationDto> Items, int UnreadCount, string? NextCursor);
 public sealed record MarkNotificationsReadRequest(IReadOnlyList<Guid>? Ids, bool? All);

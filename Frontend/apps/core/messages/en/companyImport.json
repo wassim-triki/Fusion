@@ -336,6 +336,7 @@
     "undo": "Undo"
   },
   "bring": {
+    "crumb": "Bring in",
     "title": "Bringing in {company}",
     "doneTitle": "{company} is in Fusion",
     "doneMeta": "Today at {time} · from {files}",

@@ -1,6 +1,7 @@
 using System.Globalization;
 using EY.HRPlatform.Performance.Domain.Common;
 using EY.HRPlatform.Performance.Domain.Notifications;
+using EY.HRPlatform.Performance.Infrastructure.Core;
 using EY.HRPlatform.Performance.Infrastructure.Notifications;
 using EY.HRPlatform.Performance.Infrastructure.Persistence;
 using EY.HRPlatform.SharedKernel.Api;
@@ -44,10 +45,10 @@ public static class NotificationFeed
             && ((employeeId != null && n.RecipientEmployeeId == employeeId) || (userId != null && n.RecipientUserId == userId)));
     }
 
-    public static FusionNotificationDto ToDto(PerformanceNotification n, string language)
+    public static FusionNotificationDto ToDto(PerformanceNotification n, string language, string? actorPhotoUrl)
     {
         var (title, context) = PerformanceNotificationRenderer.InApp(n, language);
-        return new(n.Id.ToString(), "performance", n.Kind.ToString(), title, context, n.ActorName, n.ActorEmployeeId, Badge(n.Kind),
+        return new(n.Id.ToString(), "performance", n.Kind.ToString(), title, context, n.ActorName, actorPhotoUrl, Badge(n.Kind),
             n.OccurredAt, n.Href, n.ReadAt);
     }
 
@@ -73,7 +74,7 @@ public static class NotificationFeed
             ? new DateTime(ticks, DateTimeKind.Utc) : null;
 }
 
-public sealed class GetNotificationsHandler(PerformanceDbContext db)
+public sealed class GetNotificationsHandler(PerformanceDbContext db, ICoreWorkforceClient workforce)
     : IQueryHandler<GetNotificationsQuery, Result<FusionNotificationPageDto>>
 {
     public async Task<Result<FusionNotificationPageDto>> Handle(GetNotificationsQuery query, CancellationToken token)
@@ -86,7 +87,13 @@ public sealed class GetNotificationsHandler(PerformanceDbContext db)
         var rows = await page.OrderByDescending(n => n.OccurredAt).ThenByDescending(n => n.Id)
             .Take(limit + 1).ToListAsync(token);
         var unread = await own.CountAsync(n => n.ReadAt == null, token);
-        var items = rows.Take(limit).Select(n => NotificationFeed.ToDto(n, query.Language)).ToList();
+        // Photos live in Core: ask once for the page's actors, so the bell requests only photos that exist.
+        var actorIds = rows.Take(limit).Where(n => n.ActorEmployeeId != null).Select(n => n.ActorEmployeeId!.Value).Distinct().ToList();
+        var photos = (await workforce.ResolveAsync(now, actorIds, token))
+            .Where(actor => actor.PhotoUrl != null).ToDictionary(actor => actor.EmployeeId, actor => actor.PhotoUrl);
+        var items = rows.Take(limit)
+            .Select(n => NotificationFeed.ToDto(n, query.Language, n.ActorEmployeeId is { } actor ? photos.GetValueOrDefault(actor) : null))
+            .ToList();
         var next = rows.Count > limit ? NotificationFeed.EncodeCursor(rows[limit - 1].OccurredAt) : null;
         return Result.Success(new FusionNotificationPageDto(items, unread, next));
     }

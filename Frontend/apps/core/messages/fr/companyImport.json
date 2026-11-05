@@ -336,6 +336,7 @@
     "undo": "Annuler"
   },
   "bring": {
+    "crumb": "Import",
     "title": "Import de {company}",
     "doneTitle": "{company} est dans Fusion",
     "doneMeta": "Aujourd’hui à {time} · depuis {files}",

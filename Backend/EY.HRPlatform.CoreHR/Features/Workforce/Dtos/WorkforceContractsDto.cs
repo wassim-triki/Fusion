@@ -119,7 +119,8 @@ public sealed record InternalWorkforceEmployeeSnapshotDto(
     bool IsActive,
     InternalWorkforceOrgSnapshotDto? OrgUnit,
     InternalWorkforceManagerSnapshotDto? Manager,
-    DateOnly? EmploymentStart = null);
+    DateOnly? EmploymentStart = null,
+    string? PhotoUrl = null);
 
 public sealed record InternalWorkforceOrgSnapshotDto(
     Guid OrgUnitId,

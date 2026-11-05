@@ -16,7 +16,8 @@ public sealed record WorkforceSnapshot(
     bool IsActive,
     WorkforceOrgSnapshot? OrgUnit,
     WorkforceManagerSnapshot? Manager,
-    DateOnly? EmploymentStart = null);
+    DateOnly? EmploymentStart = null,
+    string? PhotoUrl = null);
 
 public sealed record WorkforceOrgSnapshot(Guid OrgUnitId, string Name);
 

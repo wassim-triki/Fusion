@@ -32,8 +32,8 @@ export interface NotificationBellItem {
   title: string;
   context?: string | null;
   actorName?: string | null;
-  /** Whose face shows, when `photos` has one for them. */
-  actorEmployeeId?: string | null;
+  /** The actor's photo address, a key into `photos`; null without one. */
+  actorPhotoUrl?: string | null;
   /** The small mark on the face: what kind of thing this is. */
   badge?: NotificationBellBadge | null;
   /** ISO timestamp. */
@@ -67,7 +67,7 @@ export interface NotificationBellProps {
   /** The person's choices: pop-ups for arrivals, and a chime with each. Both on by default. */
   popups?: boolean;
   sound?: boolean;
-  /** Employee id → displayable photo address, for the faces. */
+  /** Photo address → displayable photo, for the faces. */
   photos?: ReadonlyMap<string, string>;
   /** Opens Settings › Notifications; the panel offers it in its footer. */
   onOpenSettings?: () => void;
@@ -151,7 +151,7 @@ function NotificationFace({
   className?: string;
 }) {
   const badge = badged && item.badge ? BADGES[item.badge] : null;
-  const photo = item.actorEmployeeId ? (photos?.get(item.actorEmployeeId) ?? null) : null;
+  const photo = item.actorPhotoUrl ? (photos?.get(item.actorPhotoUrl) ?? null) : null;
   return (
     <span className={cn("relative shrink-0", className)} aria-hidden>
       {item.actorName ? (

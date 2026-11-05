@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** B-293 2026-11-05: `stack.ps1` starts requested MFEs when the shell is already up; B-282 re-proved through Performance; session-hint review found nothing more to do. Closed ○. B-292 batch 1 accepted ✓.
+**Last finished:** B-292 batch 2, 2026-11-05: B-244 closed ○ (already fixed), B-281 closed ○ (bell asked for photos by the wrong id; now server photo addresses only), B-291 In review (import loading shape and crumb follow the URL's step).
 
 ## Active work
 
@@ -8,4 +8,4 @@ None.
 
 ## Next
 
-B-292 batch 2, quick frontend (fresh session, medium): B-244 `@repo/ds` settings sidebar test (3 cases), B-291 import review loading shape, B-281 missing Carthage photo responses. Then batch 3 (B-272, B-279, backend, time-boxed). B-191 single sign-on after.
+B-292 batch 3 (fresh session, medium, backend, time-boxed): B-272, B-279. B-191 single sign-on after. Waiting on the user: B-291 review.

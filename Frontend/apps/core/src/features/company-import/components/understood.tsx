@@ -27,6 +27,7 @@ import { cn } from "@repo/ds/lib/utils";
 import { useImportChange } from "../api/use-company-import";
 import { checkFiles, DropZone, MAX_FILES } from "./import-drop";
 import { AiMark, FileIcon, ImportHeader, ShareBar, useFieldLabel } from "./import-parts";
+import { importHref } from "./import-skeleton";
 import { SheetView } from "./sheet-view";
 
 /** What Fusion understood (D-22): each file as Fusion read it, the questions only a person can answer, and what the files add up to. */
@@ -80,7 +81,7 @@ export function Understood({ data }: { data: CompanyImportDto }) {
             </AlertDialog>
             {data.files.length < MAX_FILES ? <DropZone slim onFiles={addFiles} disabled={change.pending !== null} /> : null}
             <Button disabled={open > 0} asChild={open === 0}>
-              {open === 0 ? <Link href={`/import/${data.id}?step=chart`}>{toNext}</Link> : <span>{toNext}</span>}
+              {open === 0 ? <Link href={importHref(data.id, data.again ? "again" : "chart")}>{toNext}</Link> : <span>{toNext}</span>}
             </Button>
           </>
         }
@@ -366,7 +367,7 @@ function Across({ data }: { data: CompanyImportDto }) {
       title: jobs.detail ? t("jobsFamilies", { titles: jobs.of, count: jobs.count, families: Number(jobs.detail) }) : t("jobs", { titles: jobs.of, count: jobs.count }),
       detail: data.checks.some((check) => check.kind === "sameJob") ? t("sameJob", { count: data.checks.filter((check) => check.kind === "sameJob").length }) : undefined,
       end: open ? undefined : (
-        <Link href={`/import/${data.id}?step=chart`} className="inline-flex items-center gap-1 type-label text-primary-ink hover:underline">
+        <Link href={importHref(data.id, data.again ? "again" : "chart")} className="inline-flex items-center gap-1 type-label text-primary-ink hover:underline">
           {t("onChart")} <ArrowRight className="size-4 rtl:rotate-180" aria-hidden />
         </Link>
       ),

@@ -41,7 +41,7 @@ export {
   type ReactToPraiseArgs,
   type UsePraiseOptions,
 } from "./usePraise";
-export { usePeoplePhotos, usePhoto } from "./usePhoto";
+export { usePhoto, usePhotos } from "./usePhoto";
 export {
   useFusionNavigation,
   useMyCard,

@@ -5,7 +5,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Check } from "lucide-react";
 import { coreChecklistQueryKeys, createCoreChecklistsApi, createPlatformApiClient, type MyManagerDto, type ChecklistTaskDto } from "@repo/api";
-import { useApiQuery, useMyTeam, usePeoplePhotos, usePhoto, type UseApiQueryResult } from "@repo/api/query";
+import { useApiQuery, useMyTeam, usePhoto, usePhotos, type UseApiQueryResult } from "@repo/api/query";
 import { canAccessCorePeople, useAuth } from "@repo/auth";
 import { Button, PersonAvatar, Skeleton, cn } from "@repo/ds";
 import { ProgressSegments } from "@repo/ds/shell";
@@ -18,7 +18,7 @@ export function YourTeamCard() {
   const format = useFormatter();
   const team = useMyTeam();
   const members = team.data?.members ?? [];
-  const photos = usePeoplePhotos(members.filter((person) => person.photoUrl).map((person) => person.employeeId));
+  const photos = usePhotos(members.map((person) => person.photoUrl));
   if (!team.data || members.length === 0) return null;
   const joining = team.data.comingUp.find((event) => event.kind === "Joins" || event.kind === "MovesIn");
   const joiner = joining ? members.find((person) => person.employeeKey === joining.employeeKey) : null;
@@ -36,7 +36,7 @@ export function YourTeamCard() {
           <PersonAvatar
             key={person.employeeId}
             name={person.displayName}
-            photo={photos.get(person.employeeId)}
+            photo={person.photoUrl ? photos.get(person.photoUrl) : undefined}
             size="sm"
             className="-ms-2 ring-2 ring-card first:ms-0"
           />

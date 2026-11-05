@@ -32,7 +32,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In progress
 
-None. Next: B-292 batch 2 (B-244, B-291, B-281), then batch 3; B-191 single sign-on after.
+None. Next: B-292 batch 3 (B-272, B-279); B-191 single sign-on after.
 
 ### Rebuild program tracking
 
@@ -53,7 +53,8 @@ None waiting.
 
 ### Other reviews
 
-None waiting.
+- [ ] **B-291** Import review loading matches the page it loads (child of B-292) · Core HR · 2026-11-05
+      Look at `plans/B-291-screens/01-loading-and-loaded.png` (left: loading, right: loaded; First Start Review administrator, `/core/import/{id}?step=changes`). Check the skeleton reads as the Changes page and the crumb says "Changes" from the first paint. The step is now in the URL (`?step=chart` Review, `?step=changes` Changes, `?step=done` the bring-in frame); one new crumb word for the bring-in frame, "Bring in" (FR "Import", AR "الاستيراد"), instead of the company's name, since the name isn't known while loading.
 
 ## Ready
 
@@ -66,12 +67,7 @@ None waiting.
 ### Other work
 
 - [ ] **B-292** Bugs and flaky tests, in three batches (one session each, in order; independent if one runs short) · Shell, Performance, Core HR, Shared · 2026-11-05
-      Batch 1 closed 2026-11-05 (B-282, B-283, B-206). Batch 2, quick frontend (medium): B-244, B-291, B-281. Batch 3, won't-reproduce (medium, backend, time-boxed: a few runs with failure detail captured, fix if it fails, close ○ on clean evidence): B-272, B-279.
-  - [ ] **B-244** `@repo/ds` settings sidebar test fails 3 cases ("Employee fields" link not found, EN and FR); seen 2026-11-01 during B-185, which doesn't touch settings · Shared · 2026-11-01
-  - [ ] **B-291** Import review loading matches the page it loads · Core HR · 2026-11-04
-        Seen in B-286 batch 3: `/core/import/{id}` loads as full-width bars under a "Details" breadcrumb, then renders the two-column Changes page (New/Changed panel + Changes apply from / Also to check rail) under "Changes". One loading shape per page (B-280).
-  - [ ] **B-281** Diagnose missing Carthage photo responses seen during loading investigation · Core HR, shared navigation · 2026-11-04
-        B-280 investigation repeatedly reported five `/api/corehr/employees/people/{id}/photo` 404s across Core and Performance; implementation verification including the employee's cards adds one more (six unique photo paths). Initials render and page data succeeds; no hydration/page errors observed. Not the skeleton-switch cause (the SSR access placeholder predates these requests). Keep separate; no data or photo repair attempted. Exact response paths remain in ignored B-280 evidence.
+      Batch 1 closed 2026-11-05 (B-282, B-283, B-206). Batch 2 done 2026-11-05: B-244 and B-281 closed, B-291 In review. Batch 3, won't-reproduce (medium, backend, time-boxed: a few runs with failure detail captured, fix if it fails, close ○ on clean evidence): B-272, B-279.
   - [ ] **B-272** Investigate the 2,000-person company import scale test failure · Core HR · 2026-11-02
         Full CoreHR suite during B-271: 450 passed, 1 failed in Scale_two_thousand_people_in_eighty_units (3m50s); test runner omitted failure detail. B-190, 2026-11-03: repeated full relational suites pass 454/0/0, including scale; original failure not reproduced, no import code changed.
   - [ ] **B-279** Capture and diagnose an intermittent first dated-profile response after historical import · Core HR · 2026-11-04

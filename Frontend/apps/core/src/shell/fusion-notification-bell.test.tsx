@@ -20,7 +20,7 @@ vi.mock("@repo/auth", async (importOriginal) => ({
 }));
 
 vi.mock("@repo/api/query", () => ({
-  usePeoplePhotos: () => new Map(),
+  usePhotos: () => new Map(),
   useFusionNotifications: (modules: string[]) => {
     mocks.modules = modules;
     return {

@@ -61,7 +61,14 @@ if ($summary) {
 } else {
     $r.Out | Select-Object -Last 30 | ForEach-Object { Write-Host $_ }
 }
-$r.Out | Where-Object { $_ -match '^\s+(Failed|Skipped) ' } | Select-Object -First 20 | ForEach-Object { Write-Host $_ }
+$r.Out | Where-Object { $_ -match '^\s+Skipped ' } | Select-Object -First 20 | ForEach-Object { Write-Host $_ }
+# Each failure with its message, standard output and stack trace (up to 40 lines each, first 10 failures).
+$shown = 0; $lines = 0; $inFailure = $false
+foreach ($line in $r.Out) {
+    if ($line -match '^\s+Failed ') { $shown++; $lines = 0; $inFailure = $shown -le 10 }
+    elseif ($line -match '^\s+(Passed|Skipped) ' -or $line -match '(Passed|Failed)!\s+-') { $inFailure = $false }
+    if ($inFailure -and $lines -lt 40) { Write-Host $line; $lines++ }
+}
 
 & dotnet build-server shutdown 2>&1 | Out-Null
 if ($restart) { & pwsh -File (Join-Path $PSScriptRoot 'stack.ps1') -Only $Service | Out-Null; Write-Host "$Service restarted." }

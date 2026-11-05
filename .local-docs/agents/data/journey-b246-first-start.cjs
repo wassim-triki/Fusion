@@ -11,6 +11,24 @@ function check(name, condition) {
 }
 const data = (response) => response.json?.data;
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+// Publication can move the administrator's own authority (they become a manager), which turns their
+// earlier token away as revision-stale. The browser refreshes and retries once; so does this journey.
+async function signIn(account) {
+  const r = await call("POST", "/api/identity/auth/login", { email: account.admin, password: PASSWORD });
+  account.token = data(r).accessToken;
+  account.refreshToken = data(r).refreshToken;
+}
+let refreshed = 0;
+async function asAdmin(account, request) {
+  const first = await request(account.token);
+  if (first.status !== 401 || first.json?.reason !== "revision-stale") return first;
+  const r = await call("POST", "/api/identity/auth/refresh", { refreshToken: account.refreshToken });
+  if (r.status !== 200) throw new Error(`Session refresh after a stale revision: ${r.status} ${JSON.stringify(r.json)}`);
+  account.token = data(r).accessToken;
+  account.refreshToken = data(r).refreshToken;
+  refreshed++;
+  return request(account.token);
+}
 async function versioned(token, session, suffix, body, method = "PUT", version = session.version) {
   const response = await fetch(`${BASE}/api/corehr/imports/${session.id}/${suffix}`, {
     method, headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), "If-Match": `"${version}"` },
@@ -98,6 +116,7 @@ async function main() {
   const savedPublished = process.argv.includes("--resume")
     ? await fs.readFile(publishedPath, "utf8").then(JSON.parse).catch((error) => { if (error.code === "ENOENT") return null; throw error; }) : null;
   const publish = savedPublished ? { ...savedPublished, token: await login(savedPublished.admin) } : await company(platform, "Published");
+  await signIn(publish);
   if (savedPublished) publish.session = data(await call("GET", `/api/corehr/imports/${savedPublished.session}`, null, publish.token));
   else {
     await fs.writeFile(publishedPath, JSON.stringify({ admin: publish.admin, session: publish.session.id,
@@ -111,20 +130,23 @@ async function main() {
   }
   for (let i = 0; publish.session.status === "BringingIn" && i < 120; i++) {
     await pause(500);
-    publish.session = data(await call("GET", `/api/corehr/imports/${publish.session.id}`, null, publish.token));
+    publish.session = data(await asAdmin(publish, (token) => call("GET", `/api/corehr/imports/${publish.session.id}`, null, token)));
   }
   check("Historical import completes", publish.session.status === "BroughtIn");
-  const people = data(await call("GET", "/api/corehr/employees/people?pageSize=20", null, publish.token));
+  const people = data(await asAdmin(publish, (token) => call("GET", "/api/corehr/employees/people?pageSize=20", null, token)));
   const first = people.items.find((person) => person.employeeKey === publish.employeeKey);
   check("First person matched once; employment and original job start together", people.totalCount === 2 && first.employmentStart.startsWith("2020-01-02") && first.work.effectiveFrom.startsWith("2020-01-02"));
   const report = people.items.find((person) => person.workEmail === `nour@${publish.domain}`);
-  const datedResponse = await call("GET", `/api/corehr/employees/people/${report.employeeKey}?asOf=2021-02-03`, null, publish.token);
+  const datedResponse = await asAdmin(publish, (token) => call("GET", `/api/corehr/employees/people/${report.employeeKey}?asOf=2021-02-03`, null, token));
   if (datedResponse.status !== 200) throw new Error(`Dated profile: ${datedResponse.status} ${JSON.stringify(datedResponse.json)}`);
   const dated = data(datedResponse);
   if (dated?.primaryManager?.employeeKey !== publish.employeeKey)
     console.error(`Dated manager: ${dated?.primaryManager?.employeeKey ?? "none"}; expected ${publish.employeeKey}`);
   check("Dated report resolves the administrator before activation", dated?.primaryManager?.employeeKey === publish.employeeKey);
-  check("Completed import cannot be resumed into another correction", (await versioned(publish.token, publish.session, "resume", {}, "POST")).status === 409);
+  const resumed = await asAdmin(publish, (token) => versioned(token, publish.session, "resume", {}, "POST"));
+  if (resumed.status !== 409) console.error(`Resume after completion: ${resumed.status} ${JSON.stringify(resumed.json)} (session ${publish.session.id}, version ${publish.session.version})`);
+  check("Completed import cannot be resumed into another correction", resumed.status === 409);
+  console.log(`Stale-revision refreshes after publication: ${refreshed}`);
   console.log(`B-246 API | Passed ${passed} | Failed 0 | Skipped 0`);
 }
 main().catch((error) => { console.error(error.message); console.error(`B-246 API | Passed ${passed} | Failed 1 | Skipped 0`); process.exitCode = 1; });

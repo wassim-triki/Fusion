@@ -32,7 +32,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In progress
 
-None. Next: B-292 batch 3 (B-272, B-279); B-191 single sign-on after.
+None. Next: B-191 single sign-on.
 
 ### Rebuild program tracking
 
@@ -53,7 +53,7 @@ None waiting.
 
 ### Other reviews
 
-- [ ] **B-291** Import review loading matches the page it loads (child of B-292) · Core HR · 2026-11-05
+- [ ] **B-291** Import review loading matches the page it loads · Core HR · 2026-11-05
       Look at `plans/B-291-screens/01-loading-and-loaded.png` (left: loading, right: loaded; First Start Review administrator, `/core/import/{id}?step=changes`). Check the skeleton reads as the Changes page and the crumb says "Changes" from the first paint. The step is now in the URL (`?step=chart` Review, `?step=changes` Changes, `?step=done` the bring-in frame); one new crumb word for the bring-in frame, "Bring in" (FR "Import", AR "الاستيراد"), instead of the company's name, since the name isn't known while loading.
 
 ## Ready
@@ -65,13 +65,6 @@ None waiting.
       Vocabulary seam from B-190: D-30’s six company departments are the Division-level units above Department A/B; Reports’ existing division field is the top ancestor under the root. Keep the accepted grouping while aligning the words.
 
 ### Other work
-
-- [ ] **B-292** Bugs and flaky tests, in three batches (one session each, in order; independent if one runs short) · Shell, Performance, Core HR, Shared · 2026-11-05
-      Batch 1 closed 2026-11-05 (B-282, B-283, B-206). Batch 2 done 2026-11-05: B-244 and B-281 closed, B-291 In review. Batch 3, won't-reproduce (medium, backend, time-boxed: a few runs with failure detail captured, fix if it fails, close ○ on clean evidence): B-272, B-279.
-  - [ ] **B-272** Investigate the 2,000-person company import scale test failure · Core HR · 2026-11-02
-        Full CoreHR suite during B-271: 450 passed, 1 failed in Scale_two_thousand_people_in_eighty_units (3m50s); test runner omitted failure detail. B-190, 2026-11-03: repeated full relational suites pass 454/0/0, including scale; original failure not reproduced, no import code changed.
-  - [ ] **B-279** Capture and diagnose an intermittent first dated-profile response after historical import · Core HR · 2026-11-04
-        During B-246's first live publication, the dated-manager assertion failed; that harness did not retain the response status/body. The immediate direct read was 200 with the correct historical manager, and the resumed journey passed 17/0/0. No cause established. The journey now reports non-200 responses and manager mismatches explicitly and reuses fixtures with --resume. Reproduce with response evidence before attributing it to the domain, gateway or environment; remains queued separately from the completed start-date correction.
 
 - [ ] **B-287** Open roles remember who filled them, so the front page can show "Filled · Ons Khemiri, Monday" as drawn (D-30); today a filled role keeps no link to the hire or date · Core HR · 2026-11-04
       From B-285: the open roles model has Open/OnHold/Filled/Closed only.

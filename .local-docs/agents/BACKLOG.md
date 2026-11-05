@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-294.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-296.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -27,12 +27,12 @@ Open work only. Agents keep it current from the conversation; closed items leave
 | Rebuild slice | Task | Status |
 | --- | --- | --- |
 | 1–16 | Jobs/places/lists through the Core HR front page | Accepted and closed |
-| 17 · B-191 | Single sign-on | Ready; next planned slice |
+| 17 · B-191 | Single sign-on | Ready; re-planned, screens awaiting agreement |
 | 18 · B-192 | Seams and finish | Queued after the preceding slices |
 
 ## In progress
 
-None. Next: re-plan B-191 single sign-on at xhigh ([draft](plans/B-191-single-sign-on.md)), then build.
+None. Next: B-191 single sign-on, once the user agrees to its [screens](https://claude.ai/artifact/Efx5HUDsdRqTsCH3wQzRXJ).
 
 ### Rebuild program tracking
 
@@ -60,12 +60,16 @@ None waiting.
 ### Rebuild slices
 
 - [ ] **B-191** Single sign-on: Microsoft, Google, a company's own provider, required per domain · Identity, Shell · 2026-10-30
-      Draft plan 2026-11-05, to be re-planned at xhigh: [plan](plans/B-191-single-sign-on.md). Built and proven locally with a Development-only test provider; no deployment needed. Real Microsoft/Google apps optional via `FUSION_SSO_*` user variables.
+      Re-planned 2026-11-05 at xhigh: [plan](plans/B-191-single-sign-on.md). Build after the user agrees to the [screens explorer](https://claude.ai/artifact/Efx5HUDsdRqTsCH3wQzRXJ) (sign-in, invitation, Settings › Sign-in). Built and proven locally with a Development-only test provider; real Microsoft/Google apps optional via `FUSION_SSO_*` user variables.
 - [ ] **B-192** Seams and finish: colleague modules only when on, their lint and type-check once (the hook skips them since B-234), one vocabulary, replaced surfaces gone, demo presets for the tour · All · 2026-10-30
       Vocabulary seam from B-190: D-30’s six company departments are the Division-level units above Department A/B; Reports’ existing division field is the top ancestor under the root. Keep the accepted grouping while aligning the words.
 
 ### Other work
 
+- [ ] **B-294** Refresh tokens are stored in plain text (`RefreshToken.Token`); store a hash and look up by it, so a database read can't hand out sessions · Identity · 2026-11-05
+      Found while re-planning B-191. Small, backend only; a migration invalidates existing sessions (acceptable, no backward compatibility).
+- [ ] **B-295** Password reset: there is none, and sign-in shows a dead "Forgot password" link (B-191 removes the link) · Identity, Shell · 2026-11-05
+      Found while re-planning B-191. A reset by emailed one-time link (Mailpit locally), refused for addresses whose company requires its provider, unless the person is an administrator.
 - [ ] **B-287** Open roles remember who filled them, so the front page can show "Filled · Ons Khemiri, Monday" as drawn (D-30); today a filled role keeps no link to the hire or date · Core HR · 2026-11-04
       From B-285: the open roles model has Open/OnHold/Filled/Closed only.
 

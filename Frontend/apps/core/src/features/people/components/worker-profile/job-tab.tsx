@@ -12,7 +12,17 @@ import {
   createDataTableColumnHelper,
   useDataTable,
 } from "@repo/ds/data-table";
-import { ArrowRight, Plus, RotateCcw } from "lucide-react";
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  ChartNoAxesColumnIncreasing,
+  Layers,
+  MapPin,
+  Plus,
+  RotateCcw,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import { Monogram, useWorkforceDate } from "../workforce-ui";
 import { useTenure } from "./worker-profile";
 import type { WorkerProfileView } from "./worker-profile-view";
@@ -111,27 +121,63 @@ function JobSection({ title, aside, children }: { title: string; aside?: string;
   );
 }
 
+export interface JobFact {
+  label: string;
+  value: string | null | undefined;
+  icon: LucideIcon;
+  /** A person's fact (the manager) leads with their face and opens their page. */
+  person?: { name: string; href: string; photoUrl?: string | null };
+}
+
+/**
+ * Facts about someone's job in the band's glance grammar: a mark in the company colour (or the person's face), the
+ * label over the value. Values wrap; a long job title or team name is never cut.
+ */
+export function JobFacts({ facts, columns = 2 }: { facts: JobFact[]; columns?: 2 | 3 }) {
+  const shown = facts.filter((fact) => Boolean(fact.value));
+  return (
+    <dl className={cn("grid gap-x-8 gap-y-5", columns === 3 ? "sm:grid-cols-2 xl:grid-cols-3" : "sm:grid-cols-2")}>
+      {shown.map(({ label, value, icon: Icon, person }) => (
+        <div key={label} className="flex min-w-0 items-center gap-3">
+          {person ? (
+            <Monogram name={person.name} photoUrl={person.photoUrl} size="md" className="shrink-0" />
+          ) : (
+            <span className="grid size-9 shrink-0 place-items-center rounded-control bg-primary-tint text-primary-ink">
+              <Icon className="size-4" aria-hidden />
+            </span>
+          )}
+          <div className="min-w-0">
+            <dt className="type-meta text-muted-foreground">{label}</dt>
+            <dd className="break-words type-label text-foreground">
+              {person ? (
+                <Link href={person.href} className="underline-offset-4 outline-none hover:underline focus-visible:rounded-control focus-visible:ring-2 focus-visible:ring-ring">
+                  {value}
+                </Link>
+              ) : (
+                value
+              )}
+            </dd>
+          </div>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 /** The job as the company's catalogue has it (B-195): title, family and level, where it sits and where from. */
 function TheJob({ view }: { view: WorkerProfileView }) {
   const t = useTranslations("profile.job");
-  const facts = [
-    { label: t("jobTitle"), value: view.jobTitle },
-    { label: t("family"), value: view.jobFamily },
-    { label: t("level"), value: view.jobLevel },
-    { label: t("unit"), value: view.orgUnitName },
-    { label: t("location"), value: view.workLocation },
-  ].filter((fact): fact is { label: string; value: string } => Boolean(fact.value));
-  if (facts.length === 0) return null;
+  const facts: JobFact[] = [
+    { label: t("jobTitle"), value: view.jobTitle, icon: BriefcaseBusiness },
+    { label: t("family"), value: view.jobFamily, icon: Layers },
+    { label: t("level"), value: view.jobLevel, icon: ChartNoAxesColumnIncreasing },
+    { label: t("unit"), value: view.orgUnitName, icon: Users },
+    { label: t("location"), value: view.workLocation, icon: MapPin },
+  ];
+  if (!facts.some((fact) => fact.value)) return null;
   return (
     <Section title={t("theJob")}>
-      <dl className="grid gap-x-10 gap-y-4 sm:grid-cols-3">
-        {facts.map((fact) => (
-          <div key={fact.label} className="min-w-0">
-            <dt className="type-meta text-muted-foreground">{fact.label}</dt>
-            <dd className="mt-0.5 truncate type-body text-foreground">{fact.value}</dd>
-          </div>
-        ))}
-      </dl>
+      <JobFacts facts={facts} columns={3} />
     </Section>
   );
 }

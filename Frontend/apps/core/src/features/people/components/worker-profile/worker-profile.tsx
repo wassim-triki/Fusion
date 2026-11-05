@@ -157,7 +157,7 @@ function Glance({ view, teammates }: { view: WorkerProfileView; teammates?: Work
   const managerFirst = view.manager?.name.split(" ")[0];
   const started = view.employmentStart ? workforceDate(view.employmentStart, { month: "short" }) : null;
   return (
-    <div className="mt-5 flex flex-wrap items-center gap-x-10 gap-y-4 sm:col-start-2">
+    <div className="mt-5 flex flex-wrap items-center gap-x-8 gap-y-4 sm:col-start-2">
       {view.manager ? (
         <Link href={view.manager.href} className="group flex items-center gap-2.5 outline-none focus-visible:rounded-control focus-visible:ring-2 focus-visible:ring-ring">
           <Monogram name={view.manager.name} photoUrl={view.manager.photoUrl} size="md" />
@@ -185,7 +185,8 @@ function Glance({ view, teammates }: { view: WorkerProfileView; teammates?: Work
         </div>
       ) : null}
       {started && since ? (
-        <div className="min-w-0">
+        // Never cut: it keeps its full width and pushes the place along (B-289).
+        <div className="shrink-0 whitespace-nowrap">
           <span className="block type-meta text-muted-foreground">
             {company ? t("withCompanySince", { company, date: started }) : t("since", { date: started })}
           </span>
@@ -194,7 +195,7 @@ function Glance({ view, teammates }: { view: WorkerProfileView; teammates?: Work
       ) : null}
       {view.workLocation ? (
         <div className="flex items-center gap-2.5">
-          <span className="grid size-9 place-items-center rounded-full bg-card text-muted-foreground">
+          <span className="grid size-9 shrink-0 place-items-center rounded-control bg-primary-tint text-primary-ink">
             <MapPin className="size-4" aria-hidden />
           </span>
           <span className="min-w-0">

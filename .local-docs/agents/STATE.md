@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** B-286 ✓ 2026-11-05: Codex's In review items all closed; B-246 accepted (user: "close").
+**Last finished:** B-289 + B-290 2026-11-05: person page glance row keeps the tenure fact whole; job facts with company-colour marks on Overview and Job. In review.
 
 ## Active work
 

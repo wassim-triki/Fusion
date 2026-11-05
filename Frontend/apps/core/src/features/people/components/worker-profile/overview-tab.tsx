@@ -6,12 +6,12 @@ import { useState, type ReactNode } from "react";
 import type { EmployeeProfileFieldDto, PersonPerformanceSummaryDto } from "@repo/api";
 import { Button, Skeleton, Textarea, cn } from "@repo/ds";
 import { Section, Said } from "@repo/ds/shell";
-import { ArrowRight, BarChart3, Inbox, Users } from "lucide-react";
+import { ArrowRight, BarChart3, BriefcaseBusiness, Inbox, MapPin, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useRefusal } from "@/i18n/words";
 import { usePeopleFields, useUpdatePeopleAbout } from "../../api/use-people";
 import { ProfileFields } from "./profile-fields";
-import { ProfileTimeline } from "./job-tab";
+import { JobFacts, ProfileTimeline, type JobFact } from "./job-tab";
 import type { WorkerProfileView } from "./worker-profile-view";
 
 const HISTORY_ROWS = 4;
@@ -164,12 +164,18 @@ export function OverviewTab({
   ].sort((a, b) => (a.at ?? "").localeCompare(b.at ?? ""));
 
   const recent = view.timeline.slice(0, HISTORY_ROWS);
-  const facts = [
-    { label: t("job"), value: view.jobTitle },
-    { label: t("unit"), value: view.orgUnitName },
-    { label: t("manager"), value: view.manager?.name ?? null },
-    { label: t("place"), value: view.workLocation },
-  ].filter((fact): fact is { label: string; value: string } => Boolean(fact.value));
+  const facts: JobFact[] = [
+    { label: t("job"), value: view.jobTitle, icon: BriefcaseBusiness },
+    { label: t("unit"), value: view.orgUnitName, icon: Users },
+    {
+      label: t("manager"),
+      value: view.manager?.name,
+      icon: Users,
+      person: view.manager ? { name: view.manager.name, href: view.manager.href, photoUrl: view.manager.photoUrl } : undefined,
+    },
+    { label: t("place"), value: view.workLocation, icon: MapPin },
+  ];
+  const hasFacts = facts.some((fact) => fact.value);
 
   return (
     <div className="space-y-5">
@@ -204,15 +210,8 @@ export function OverviewTab({
       ) : null}
 
       <Section title={t("jobAndHistory")} action={jobHref ? <SectionLink href={jobHref}>{t("openJob")}</SectionLink> : undefined}>
-        {facts.length > 0 ? (
-          <dl className="grid gap-x-10 gap-y-4 sm:grid-cols-2">
-            {facts.map((fact) => (
-              <div key={fact.label} className="min-w-0">
-                <dt className="type-meta text-muted-foreground">{fact.label}</dt>
-                <dd className="mt-0.5 truncate type-body text-foreground">{fact.value}</dd>
-              </div>
-            ))}
-          </dl>
+        {hasFacts ? (
+          <JobFacts facts={facts} />
         ) : (
           <p className="type-body text-muted-foreground">{t("noJob")}</p>
         )}

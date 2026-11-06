@@ -1,5 +1,6 @@
 # LOG — the one history
 
+- ✓ **B-302** One family of error pages accepted, 2026-11-06 (user: "The screens look right", "Good enough is good enough"). No more error page work: dropped **B-303** (Request access) and the rest of the sidebar check (Leila Baccouche's Performance Reviews and Settings links unopened; 66 links plus her Feedback, 1:1s and My Plan opened with no refusal). **B-305** now covers only the Administration label.
 - **B-302** One family of error pages built, 2026-11-06, **In review** (six screens in `plans/B-302-screens/`):
   - `PageState` and six drawings in `@repo/ds/shell`, page, card or row; `PageFailure`, `PageGone`, `PageNotFound`, `PageRefusal`, `InvitationEnd` in `@repo/auth`, because the state a failure gets depends on the request. About 70 sites moved. `PlatformPageState`, DS's `PageError` and invitation terminal card deleted; no raw error message anywhere. Core HR's error and not-found moved inside the frame, with a catch-all route.
   - Who to ask: `GET /identity/tenant-context/administrators` (up to three, name and email, own company from the token; an administrator gets no names; Platform refused). `security-review`: no high-confidence findings. It returns the account's sign-in email as the work email.

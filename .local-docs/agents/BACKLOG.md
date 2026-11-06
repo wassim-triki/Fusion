@@ -62,6 +62,9 @@ None waiting.
 
 ### Other work
 
+- [ ] **B-211** Search in the top bar, made real: people first, then records and settings, as one place to find anything; a candidate small wow · Shell, Core HR, Performance · 2026-10-30
+      User 2026-10-30: "we should even have that search bar like we exactly have it in the artifacts … could be part of a small wow factor." Wired 2026-10-30 under B-176 (places only). Design accepted 2026-11-06 ([explorer](https://claude.ai/artifact/4nuqMWcJkD1EcxnVXcTFhg)); build next, fresh session, high effort, from the recipe in the [plan](plans/B-211-top-bar-search.md).
+
 - [ ] **B-294** Refresh tokens are stored in plain text (`RefreshToken.Token`); store a hash and look up by it, so a database read can't hand out sessions · Identity · 2026-11-05
       Found while re-planning B-191. Small, backend only; a migration invalidates existing sessions (acceptable, no backward compatibility).
 - [ ] **B-295** Password reset: there is none, and sign-in shows a dead "Forgot password" link (B-191 removes the link) · Identity, Shell · 2026-11-05
@@ -101,9 +104,6 @@ None waiting.
 - [ ] **B-221** Administrator invitations issued before B-178 can still be accepted, but nothing lists or revokes them now (the customer-side email invitation retired: only people who already sign in can be made administrators). List them on the Administrators page with Revoke, or expire them · Identity, Core HR · 2026-10-31
 
 - [ ] **B-222** Clean up what the old Administrators workspace left: Core HR's `admins` message namespace, the `/access` route skeletons, suspend/reactivate (still enforced by the two-administrator rule, no screen offers them), and the invite acceptance's Employee/Manager label from `InviteToken.Role` · Core HR, Identity · 2026-10-31
-
-- [ ] **B-211** Search in the top bar, made real: people first, then records and settings, as one place to find anything; a candidate small wow · Shell, Core HR, Performance · 2026-10-30
-      User 2026-10-30: "we should even have that search bar like we exactly have it in the artifacts … even if the functionality is not there yet … could be part of a small wow factor … just wire it in." Wired 2026-10-30 under B-176: the field (Ctrl/⌘ K) opens a palette of the places the person can open.
 
 - [ ] **B-203** Brand changes in Change history: a save in Settings › Brand is stored in Identity and isn't in Core HR's change history yet; fold into the unified audit (see the audit-history-deferred note) · Identity, Core HR · 2026-10-30
 

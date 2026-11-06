@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fusion Error Pages</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a real Fusion frame on a stage, with one family of failure pages swapped inside it. Tokens copied from @repo/ds tokens.css. */
+:root {
+  color-scheme: dark;
+  --page: oklch(0.11 0.004 286);
+  --page-text: oklch(0.96 0 0);
+  --page-muted: oklch(0.72 0.012 286);
+  --page-line: oklch(1 0 0 / 11%);
+  --page-raise: oklch(0.175 0.006 285.9);
+  --sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --serif: "Lora", Georgia, serif;
+  --mono: "Geist Mono", ui-monospace, monospace;
+}
+.m-dark {
+  --bg: oklch(0.141 0.005 285.823);
+  --fg: oklch(0.985 0 0);
+  --section: oklch(0.175 0.006 285.9);
+  --card: oklch(0.21 0.006 285.885);
+  --inlay: oklch(0.235 0.006 285.9);
+  --muted: oklch(0.705 0.015 286.067);
+  --line: oklch(1 0 0 / 10%);
+  --line-strong: oklch(1 0 0 / 16%);
+  --danger: oklch(0.704 0.191 22.216);
+  --ok: oklch(0.78 0.15 162);
+  color-scheme: dark;
+}
+.m-light {
+  --bg: oklch(0.955 0.002 286.375);
+  --fg: oklch(0.141 0.005 285.823);
+  --section: oklch(0.977 0.001 286.375);
+  --card: oklch(1 0 0);
+  --inlay: oklch(0.967 0.001 286.375);
+  --muted: oklch(0.47 0.016 285.938);
+  --line: oklch(0.92 0.004 286.32);
+  --line-strong: oklch(0.86 0.004 286.32);
+  --danger: oklch(0.577 0.245 27.325);
+  --ok: oklch(0.5 0.13 160);
+  color-scheme: light;
+}
+.a-blue.m-dark { --accent: oklch(0.6 0.19 262); --accent-fg: #fff; --accent-ink: oklch(0.72 0.15 262); }
+.a-blue.m-light { --accent: oklch(0.52 0.2 262); --accent-fg: #fff; --accent-ink: oklch(0.48 0.2 262); }
+.a-amber.m-dark { --accent: oklch(0.795 0.184 86.047); --accent-fg: oklch(0.3 0.08 57.7); --accent-ink: oklch(0.795 0.184 86.047); }
+.a-amber.m-light { --accent: oklch(0.852 0.199 91.936); --accent-fg: oklch(0.34 0.09 57.7); --accent-ink: oklch(0.56 0.14 75); }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--page); color: var(--page-text); font: 400 15px/1.55 var(--sans); }
+button, a { font: inherit; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--page-text); outline-offset: 2px; }
+.wrap { max-width: 1320px; margin: 0 auto; padding: 32px 24px 72px; display: flex; flex-direction: column; gap: 24px; }
+header.top h1 { font: 500 34px/1.15 var(--serif); margin: 0 0 6px; letter-spacing: -0.01em; text-wrap: balance; }
+header.top p { margin: 0; color: var(--page-muted); max-width: 68ch; }
+
+.controls { display: grid; grid-template-columns: auto 1fr; gap: 10px 16px; align-items: center; }
+.controls .lbl { color: var(--page-muted); font-size: 13px; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { background: transparent; color: var(--page-muted); border: 1px solid var(--page-line); border-radius: 999px; padding: 6px 13px; font-size: 13.5px; font-weight: 500; cursor: pointer; }
+.seg button:hover { color: var(--page-text); border-color: oklch(1 0 0 / 24%); }
+.seg button[aria-pressed="true"] { background: var(--page-text); color: var(--page); border-color: var(--page-text); }
+.seg .code { font: 500 11.5px var(--mono); opacity: .62; margin-inline-start: 5px; }
+.split { display: flex; flex-wrap: wrap; gap: 8px 28px; align-items: center; }
+.split > div { display: flex; align-items: center; gap: 10px; }
+
+.stage { width: 100%; border-radius: 20px; overflow: hidden; border: 1px solid var(--page-line); background: #000; position: relative; }
+.scale { width: 1280px; height: 760px; transform-origin: 0 0; }
+.note-line { color: var(--page-muted); font-size: 14px; margin: -8px 0 0; max-width: 90ch; }
+.note-line b { color: var(--page-text); font-weight: 600; }
+
+/* The Fusion frame */
+.frame { width: 100%; height: 100%; background: var(--bg); color: var(--fg); display: grid; grid-template-columns: 248px 1fr; font-size: 14px; line-height: 1.45; }
+.side { border-inline-end: 1px solid var(--line); padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.co { display: flex; align-items: center; gap: 10px; padding: 2px 4px 8px; }
+.co .logo { width: 30px; height: 30px; border-radius: 7px; background: #8d2a6e; position: relative; overflow: hidden; flex: none; }
+.co .logo::after { content: ""; position: absolute; width: 16px; height: 16px; border-radius: 50%; background: #0e8f7d; right: 2px; bottom: 2px; }
+.co b { font-weight: 600; display: block; font-size: 13.5px; line-height: 1.2; }
+.co span { font-size: 11.5px; color: var(--muted); }
+.nav { display: flex; flex-direction: column; gap: 1px; }
+.nav a { display: flex; align-items: center; gap: 11px; color: var(--muted); padding: 7px 10px; border-radius: 10px; text-decoration: none; font-size: 14px; }
+.nav a svg, .row svg { width: 16px; height: 16px; flex: none; }
+.nav a.on { background: var(--section); color: var(--fg); font-weight: 500; }
+.modsw { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line-strong); border-radius: 16px; padding: 9px 10px; font-weight: 600; font-size: 14px; }
+.modsw i { width: 28px; height: 28px; border-radius: 8px; background: color-mix(in oklab, var(--accent) 22%, transparent); color: var(--accent-ink); display: grid; place-items: center; }
+.modsw i svg { width: 15px; height: 15px; }
+.modsw em { margin-inline-start: auto; font-style: normal; color: var(--muted); font-size: 12px; }
+.grp { font-size: 11px; font-weight: 600; letter-spacing: .05em; color: var(--muted); padding: 10px 10px 4px; }
+.me { margin-top: auto; border-top: 1px solid var(--line); padding: 12px 6px 2px; display: flex; gap: 10px; align-items: center; }
+.me b { display: block; font-size: 13px; font-weight: 600; line-height: 1.25; }
+.me span { font-size: 11.5px; color: var(--muted); }
+.main { display: grid; grid-template-rows: 48px 1fr; min-width: 0; min-height: 0; }
+.bar { border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; padding: 0 20px; }
+.bar b { font-weight: 600; }
+.bar .tag { font-size: 12px; color: var(--ok); background: color-mix(in oklab, var(--ok) 13%, transparent); border-radius: 999px; padding: 2px 9px; }
+.bar .srch { margin-inline-start: auto; width: 290px; height: 32px; border: 1px solid var(--line-strong); border-radius: 12px; display: flex; align-items: center; gap: 8px; padding: 0 10px; color: var(--muted); font-size: 13px; }
+.bar .srch kbd { margin-inline-start: auto; font: 500 11px var(--sans); background: var(--inlay); border-radius: 5px; padding: 1px 6px; }
+.bar .srch svg { width: 14px; height: 14px; }
+.content { min-height: 0; overflow: auto; position: relative; }
+
+.av { display: inline-grid; place-items: center; border-radius: 50%; font-weight: 600; flex: none; background: var(--c, oklch(0.42 0.1 300)); color: #fff; width: var(--s, 32px); height: var(--s, 32px); font-size: calc(var(--s, 32px) * 0.36); font-family: var(--sans); }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 15px; border-radius: 14px; font-size: 14px; font-weight: 500; cursor: pointer; border: 1px solid transparent; text-decoration: none; white-space: nowrap; }
+.btn.p { background: var(--accent); color: var(--accent-fg); }
+.btn.s { background: transparent; color: var(--fg); border-color: var(--line-strong); }
+.btn.s:hover { background: var(--section); }
+.btn.p:hover { filter: brightness(1.07); }
+.btn svg { width: 15px; height: 15px; }
+.btn .spin { width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.title { font-family: var(--serif); font-weight: 500; letter-spacing: -0.012em; margin: 0; text-wrap: balance; color: var(--fg); }
+.body { color: var(--muted); margin: 0; font-size: 15px; max-width: 54ch; text-wrap: pretty; }
+.ref { display: inline-flex; align-items: center; gap: 8px; font: 500 12.5px var(--mono); color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 9px; padding: 4px 9px; cursor: pointer; }
+.ref:hover { color: var(--fg); border-color: var(--line-strong); }
+.ticking { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-ink); animation: breathe 1.6s ease-in-out infinite; }
+@keyframes breathe { 50% { opacity: .3; transform: scale(.8); } }
+
+/* Direction A: the way forward */
+.dA { padding: 72px 72px; display: grid; grid-template-columns: minmax(0, 1fr) 372px; gap: 64px; align-items: start; max-width: 1040px; }
+.dA .msg { display: flex; flex-direction: column; gap: 14px; padding-top: 10px; }
+.dA .title { font-size: 36px; line-height: 1.16; }
+.dA .actions { margin-top: 10px; }
+.panel { background: var(--section); border-radius: 28px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.panel h3 { margin: 0; font-size: 13px; font-weight: 500; color: var(--muted); }
+.who { background: var(--card); border-radius: 18px; padding: 16px; display: flex; gap: 13px; align-items: center; }
+.who b { font-weight: 600; display: block; font-size: 15px; line-height: 1.25; }
+.who span { color: var(--muted); font-size: 13px; }
+.who a { margin-inline-start: auto; }
+.rows { display: flex; flex-direction: column; gap: 2px; margin: 0 -6px; }
+.row { display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 12px; color: var(--fg); text-decoration: none; font-size: 14px; font-weight: 500; }
+.row:hover { background: var(--card); }
+.row .go { margin-inline-start: auto; color: var(--muted); }
+.row svg { color: var(--muted); }
+.fakeinput { display: flex; align-items: center; gap: 10px; height: 44px; background: var(--card); border: 1px solid var(--line-strong); border-radius: 16px; padding: 0 14px; color: var(--muted); font-size: 14.5px; }
+.fakeinput kbd { margin-inline-start: auto; font: 500 11px var(--sans); background: var(--inlay); border-radius: 5px; padding: 1px 6px; }
+.fakeinput svg { width: 16px; height: 16px; }
+.status { display: flex; flex-direction: column; gap: 2px; margin: 0 -6px; }
+.status div { display: flex; align-items: center; gap: 11px; padding: 8px 10px; font-size: 14px; font-weight: 500; }
+.status em { margin-inline-start: auto; font-style: normal; font-size: 13px; font-weight: 400; color: var(--muted); }
+.status .led { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+.status .led.off { background: var(--danger); }
+
+/* Direction B: a small drawing */
+.dB { padding: 64px 40px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; max-width: 640px; margin: 0 auto; }
+.dB .title { font-size: 31px; line-height: 1.18; margin-top: 8px; }
+.dB .body { margin: 0 auto; }
+.dB .actions { justify-content: center; margin-top: 12px; }
+.spot { width: 216px; height: 150px; color: var(--muted); }
+.spot .ac { stroke: var(--accent-ink); }
+.spot .acf { fill: var(--accent-ink); }
+.spot .fl { fill: var(--section); }
+.spot .fl2 { fill: var(--card); }
+.chip { display: inline-flex; align-items: center; gap: 9px; margin-top: 16px; font-size: 14px; color: var(--muted); }
+.chip b { color: var(--fg); font-weight: 500; }
+.chip a { color: var(--accent-ink); text-decoration: none; font-weight: 500; }
+.door { transform-origin: 74px 75px; animation: door 3.4s ease-in-out .4s 1 both; }
+@keyframes door { 0%, 100% { transform: none; } 40%, 62% { transform: skewY(-3deg) scaleX(.93); } }
+.sway { transform-origin: 108px 132px; animation: sway 3.6s ease-in-out 1; }
+@keyframes sway { 30% { transform: rotate(-2.4deg); } 65% { transform: rotate(1.8deg); } }
+.plugL { animation: plugL 2.6s ease-in-out infinite; }
+@keyframes plugL { 50% { transform: translateX(6px); } }
+.pulse { animation: breathe 1.8s ease-in-out infinite; }
+
+/* Direction C: one big sentence */
+.dC { padding: 84px 72px; display: flex; flex-direction: column; gap: 28px; max-width: 980px; }
+.dC .title { font-size: 58px; line-height: 1.1; letter-spacing: -0.02em; }
+.dC .title .pill { display: inline-flex; align-items: center; gap: .22em; vertical-align: baseline; white-space: nowrap; }
+.dC .title .pill .av { --s: .84em; position: relative; top: .1em; font-size: .3em; }
+.dC .title small { color: var(--muted); font-size: inherit; font-weight: inherit; }
+.dC .body { font-size: 17px; }
+.dC .links { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+.dC .links a { color: var(--muted); text-decoration: none; font-weight: 500; font-size: 14.5px; border-bottom: 1px solid var(--line-strong); padding-bottom: 1px; }
+.dC .links a:hover { color: var(--fg); }
+
+/* Today */
+.today { padding: 24px; }
+.today .dash { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border: 1px dashed var(--line-strong); border-radius: 28px; padding: 56px 24px; }
+.today .ic { width: 44px; height: 44px; border-radius: 50%; background: var(--inlay); display: grid; place-items: center; margin-bottom: 12px; color: var(--muted); }
+.today .ic svg { width: 20px; height: 20px; }
+.today h2 { margin: 0; font-size: 16px; font-weight: 600; }
+.today p { margin: 4px 0 0; font-size: 14px; color: var(--muted); max-width: 28rem; }
+.today .btn { height: 32px; margin-top: 16px; font-size: 13px; border-radius: 11px; }
+
+/* A piece of a page failing */
+.mini { padding: 28px; display: flex; flex-direction: column; gap: 18px; }
+.mini h2 { margin: 0; font: 500 30px/1.2 var(--serif); }
+.mgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.mcard { background: var(--section); border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 12px; min-height: 220px; }
+.mcard h4 { margin: 0; font-size: 15px; font-weight: 600; }
+.person { display: flex; align-items: center; gap: 10px; font-size: 13.5px; }
+.person div span { color: var(--muted); display: block; font-size: 12.5px; }
+.fail { margin: auto 0; display: flex; align-items: center; gap: 14px; }
+.fail p { margin: 0; color: var(--muted); font-size: 14px; }
+.fail .btn { margin-inline-start: auto; height: 32px; font-size: 13px; border-radius: 11px; padding: 0 12px; }
+.fail svg.warn { width: 16px; height: 16px; color: var(--muted); flex: none; }
+.today .fail { margin: auto; flex-direction: column; text-align: center; }
+.today .fail .btn { margin: 0; }
+
+/* Outside the frame: the real sign-in layout */
+.out { width: 100%; height: 100%; background: var(--bg); color: var(--fg); display: grid; grid-template-columns: 1fr 1fr; font-size: 14px; }
+.brandpanel { background: color-mix(in oklab, var(--accent) 17%, var(--bg)); padding: 56px 64px 54px; display: flex; flex-direction: column; justify-content: space-between; }
+.brandpanel i { width: 84px; height: 84px; border-radius: 22px; background: var(--accent); color: oklch(0.45 0.11 60); display: grid; place-items: center; font: 700 34px var(--sans); }
+.brandpanel strong { display: block; font: 500 48px/1.2 var(--serif); margin-top: 22px; }
+.brandpanel small { font-size: 12.5px; color: var(--muted); }
+.formside { position: relative; display: grid; place-items: center; padding: 24px; min-width: 0; }
+.lang { position: absolute; top: 34px; inset-inline-end: 40px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.out .inner { width: 100%; max-width: 416px; display: flex; flex-direction: column; gap: 6px; }
+.out .title { font-size: 26px; line-height: 1.2; letter-spacing: -0.01em; }
+.out .body { font-size: 14.5px; }
+.out .spot.sm { margin: 0 0 10px -15px; }
+.out .form { display: flex; flex-direction: column; gap: 18px; margin-top: 28px; }
+.out .field { display: flex; flex-direction: column; gap: 8px; font-size: 13.5px; }
+.out .field b { font-weight: 600; }
+.out .field div { height: 44px; border-radius: 16px; background: var(--bg); border: 1px solid var(--line-strong); padding: 0 12px; display: flex; align-items: center; gap: 8px; color: var(--muted); }
+.out .field svg { width: 15px; height: 15px; }
+.out .btn { justify-content: center; height: 42px; width: 100%; }
+.agree { margin: 0; font-size: 12.5px; color: var(--muted); }
+.agree a { color: var(--accent-ink); text-decoration: none; }
+.out.narrow { grid-template-columns: 1fr; }
+.out.narrow .brandpanel { display: none; }
+.spot.sm { width: 118px; height: 82px; }
+.failcard { margin: auto; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.failcard p, .failrow p { margin: 0; color: var(--muted); font-size: 14px; }
+.failcard .btn { height: 32px; font-size: 13px; border-radius: 11px; padding: 0 12px; margin-top: 4px; }
+.failrow { display: flex; align-items: center; gap: 12px; }
+.linkbtn { background: none; border: 0; padding: 0; cursor: pointer; color: var(--accent-ink); font-weight: 500; font-size: 14px; }
+.mcard.slim { min-height: 0; }
+.tinybox { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 6px; border: 1px dashed var(--line-strong); border-radius: 18px; padding: 14px; }
+.tinybox .ic { width: 34px; height: 34px; border-radius: 50%; background: var(--inlay); display: grid; place-items: center; color: var(--muted); }
+.tinybox .ic svg { width: 16px; height: 16px; }
+.tinybox p { margin: 0; font-size: 13.5px; color: var(--muted); }
+.tinybox .btn { height: 30px; font-size: 12.5px; border-radius: 10px; }
+
+.frame.narrow { grid-template-columns: 1fr; }
+.frame.narrow .side, .frame.narrow .srch { display: none; }
+.frame.narrow .dA { grid-template-columns: 1fr; padding: 28px 20px; gap: 28px; }
+.frame.narrow .dB { padding: 32px 16px; }
+.frame.narrow .dC { padding: 32px 20px; }
+.frame.narrow .dC .title { font-size: 38px; }
+.frame.narrow .mgrid { grid-template-columns: 1fr; }
+.frame.narrow .mini { padding: 20px; }
+.narrow .out.oC .inner .title, .out.narrow.oC .inner .title { font-size: 36px; }
+
+/* Under the stage */
+section.lower { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 40px 48px; padding-top: 16px; }
+section.lower h2 { font: 500 23px/1.25 var(--serif); margin: 0 0 12px; }
+section.lower p { margin: 0 0 10px; color: var(--page-muted); max-width: 66ch; }
+section.lower p b, section.lower li b { color: var(--page-text); font-weight: 600; }
+section.lower ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; color: var(--page-muted); }
+section.lower a { color: var(--page-text); }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: start; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--page-line); vertical-align: top; }
+th { color: var(--page-muted); font-weight: 500; font-size: 13px; }
+td { color: var(--page-muted); }
+td:first-child { color: var(--page-text); font-weight: 500; }
+td code { font: 400 12.5px var(--mono); }
+.wide { grid-column: 1 / -1; }
+.ask { background: var(--page-raise); border-radius: 22px; padding: 22px 24px; }
+.ask h2 { margin-bottom: 8px; }
+.ask ol { margin: 0; padding-inline-start: 20px; color: var(--page-muted); display: flex; flex-direction: column; gap: 6px; }
+.ask ol b { color: var(--page-text); font-weight: 600; }
+.pass { color: oklch(0.78 0.15 162); font-weight: 600; }
+.bad { color: oklch(0.75 0.17 30); font-weight: 600; }
+@media (max-width: 640px) { .controls { grid-template-columns: 1fr; } .wrap { padding: 20px 16px 56px; } header.top h1 { font-size: 28px; } }
+@media (prefers-reduced-motion: reduce) { .door, .sway, .plugL, .pulse, .dot { animation: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Fusion's error pages, as one family</h1>
+    <p>Every way a page can fail, drawn in the real frame with Carthage's data. Switch between the new design and what ships today.</p>
+  </header>
+
+  <div class="controls">
+    <span class="lbl">Version</span>
+    <div class="seg" id="dirs"></div>
+    <span class="lbl">State</span>
+    <div class="seg" id="states"></div>
+    <span class="lbl">Show</span>
+    <div class="split">
+      <div><span class="lbl">Seen by</span><div class="seg" id="viewers"></div></div>
+      <div><span class="lbl">Company colour</span><div class="seg" id="accents"></div></div>
+      <div><span class="lbl">Theme</span><div class="seg" id="themes"></div></div>
+    </div>
+  </div>
+
+  <div class="stage" id="stage"><div class="scale" id="scale"></div></div>
+  <p class="note-line" id="note"></p>
+
+  <section class="lower">
+    <div class="wide ask">
+      <h2>Agreed, 2026-11-06</h2>
+      <p>Direction B and every state here. The build plan is <code>plans/B-302-error-pages.md</code>.</p>
+    </div>
+
+    <div>
+      <h2>Decided</h2>
+      <ul>
+        <li><b>Direction B, a small drawing per state</b>, your pick over the other two.</li>
+        <li><b>DESIGN.md changes with it.</b> It rules out oversized illustrations, so it gains a line allowing one small drawing on failure pages. Ordinary empty states keep the old rule.</li>
+        <li><b>One component.</b> Today there are at least five treatments. One <code>PageState</code> in the design system would replace them all, in Core HR, Performance, Platform and the shell.</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2>The same in every state</h2>
+      <ul>
+        <li><b>No dashed box, no status codes.</b> Plain words, and the sidebar stays so nobody feels thrown out.</li>
+        <li><b>Never a dead end.</b> One clear next step and one way out.</li>
+        <li><b>Nothing leaks.</b> A refusal never names the record, repeats an ID from the address or says which role would open it.</li>
+        <li><b>Colleague modules are left alone.</b> Learning, Recruitment, Interview and Onboarding keep their own pages.</li>
+      </ul>
+    </div>
+
+    <div class="wide">
+      <h2>Do sidebars ever offer a page that refuses?</h2>
+      <div id="links"><p><b>66 links opened and none refused, with one gap.</b> A script signed in as each role and opened every sidebar link: Amira Khelifi 16, Rim Mahjoub 17, Mariam Gharbi 13 and Omar Mansour 13, all complete. Leila Baccouche's Core HR links all opened (7), then low memory stopped the script before her Performance links. An earlier walk had already opened her Overview and My Plan, so Feedback, 1:1s, Reviews and Settings remain. The build finishes those. It covers sidebar links, not buttons inside pages.</p></div>
+    </div>
+
+    <div class="wide">
+      <h2>What today's pages do</h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Where</th><th>Not found says</th><th>Failure says</th></tr></thead>
+        <tbody>
+          <tr><td>Shell</td><td>A bold "404"</td><td>The raw error message in English, or a fallback</td></tr>
+          <tr><td>Core HR</td><td>A bold "404", "The page you're looking for doesn't exist in Core HR."</td><td>"Something went wrong", which DESIGN.md asks us to avoid</td></tr>
+          <tr><td>Performance</td><td>Dashed box, "Nothing here"</td><td>Dashed box, "This page couldn't load", with its second button floating outside the box</td></tr>
+          <tr><td>Platform</td><td>Its own narrower page state</td><td>Its own narrower page state</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div>
+      <h2>Built in from the start, if you agree</h2>
+      <ul>
+        <li><b>Name the real administrators.</b> Needs a small read of who administers the company. An employee learns no more than the directory already shows.</li>
+        <li><b>A reference code on failures.</b> Next.js already gives us one. The person can copy it and send it to you.</li>
+        <li><b>Retrying by itself</b> when a module is down or you're offline, so the page comes back without a click.</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2>Left out on purpose</h2>
+      <ul>
+        <li><b>A "Request access" button with approvals.</b> Good products have it, but it's a whole feature with its own inbox. "Email Amira" gets most of the value now. I'd board the rest.</li>
+        <li><b>Jokes.</b> People reach these pages when they're stuck, often over their own pay or review.</li>
+        <li><b>Ordinary empty states.</b> "No reviews yet" isn't a failure, so those stay as they are for now.</li>
+      </ul>
+    </div>
+
+    <div class="wide">
+      <h2>Where this came from</h2>
+      <p>I couldn't find BambooHR's own error screens: they aren't documented publicly and its website only returned a bare 404 to my fetch. So the BambooHR influence comes from <a href="https://www.bamboohr.com/resources/ebooks/behind-the-scenes-ui-2024">its 2024 redesign</a> as recorded in our design direction: warm type, rounded shapes, people first. It isn't a copy of a specific page.</p>
+      <p>The access rules come from <a href="https://appmaster.io/blog/access-denied-ux-patterns-request-access">AppMaster on access denied patterns</a>: plain words, one next action, no restricted detail, a reference code. Plain language with no status codes comes from <a href="https://medium.com/design-ideas-thoughts/designing-error-pages-8d82e16e3472">How to Design Better Error Pages</a>. A non-blaming tone comes from the <a href="https://design.alberta.ca/examples/error-pages">Alberta design system</a>. Using a drawing only when it helps understanding comes from <a href="https://playbook.ebay.com/design-system/patterns/empty-states">eBay's Playbook</a>. Administrators naming a contact on a 403 comes from <a href="https://help.frontify.com/en/articles/6115072-understanding-and-fixing-403-and-404-errors-in-frontify">Frontify</a>.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+const I = {
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9v11h13V9"/><path d="M10 20v-6h4v6"/></svg>',
+  over: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>',
+  plan: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c.6-3.8 3-5.6 6-5.6s5.4 1.8 6 5.6"/><path d="m16 11 2 2 3.5-3.5"/></svg>',
+  one: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7.5"/><path d="m21 21-4.6-4.6"/><path d="M8.5 9.5v4M11.5 8.5v5"/></svg>',
+  chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>',
+  rev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 14.6 9l6 .7-4.4 4 1.2 5.9L12 16.7l-5.4 2.9 1.2-5.9-4.4-4 6-.7z"/></svg>',
+  team: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c.6-3.8 3-5.6 6-5.6s5.4 1.8 6 5.6"/><path d="M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 15c1.400.8 2.2 2.5 2.5 5"/></svg>',
+  set: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>',
+  chart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 20v-7M12 20V5M18 20v-10"/></svg>',
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 6 8-6"/></svg>',
+  arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+  inbox: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5.5 5h13L21 13v6H3v-6z"/></svg>',
+  warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20h19z"/><path d="M12 10v4.5M12 17.5v.1"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V4h11"/></svg>',
+  retry: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2 6"/><path d="M20 5v6h-6"/></svg>',
+};
+
+const SPOTS = {
+  refused: `<svg class="spot" viewBox="0 0 216 150" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M28 134h160"/><rect class="fl" x="72" y="16" width="72" height="118" rx="7"/>
+    <g class="door"><path class="fl2" d="M78 22h60v112H78z"/><circle class="acf" cx="127" cy="80" r="3.5" stroke="none"/></g>
+    <rect x="150" y="82" width="28" height="23" rx="5" class="fl2"/><path d="M155 82v-7a9 9 0 0 1 18 0v7"/><circle class="acf" cx="164" cy="94" r="2.5" stroke="none"/>
+  </svg>`,
+  notfound: `<svg class="spot" viewBox="0 0 216 150" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M28 134h160"/><g class="sway"><path d="M108 134V18"/>
+    <path class="fl2" d="M108 30h46l14 13-14 13h-46z"/><path class="fl" d="M108 66H66L52 79l14 13h42z" stroke-dasharray="4 5"/>
+    <path class="ac" d="M120 43h24"/></g><circle class="acf" cx="108" cy="16" r="3.5" stroke="none"/>
+  </svg>`,
+  gone: `<svg class="spot" viewBox="0 0 216 150" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M28 134h160"/><rect x="78" y="22" width="60" height="78" rx="7" stroke-dasharray="4 6"/>
+    <path d="M90 42h36M90 56h24" stroke-dasharray="3 6"/>
+    <path class="fl2" d="M62 106h92l-8 28H70z"/><path d="M62 106l-10 11h20l6-11M154 106l10 11h-20l-6-11"/><path class="ac" d="M96 120h24"/>
+  </svg>`,
+  crash: `<svg class="spot" viewBox="0 0 216 150" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M28 134h160"/><path class="fl2" d="M64 22h46l-6 18 10 14-10 16 8 14-8 22H64a6 6 0 0 1-6-6V28a6 6 0 0 1 6-6z"/>
+    <path class="fl" d="M124 30h30a6 6 0 0 1 6 6v72a6 6 0 0 1-6 6h-37l8-20-8-14 10-16-10-14z"/>
+    <path d="M70 40h20M70 54h22M70 68h16"/><path class="ac" d="M132 50h16M133 64h13"/>
+  </svg>`,
+  down: `<svg class="spot" viewBox="0 0 216 150" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M28 134h160"/><g class="plugL"><path d="M28 84h28"/><path class="fl2" d="M56 66h20a14 14 0 0 1 14 14v8a14 14 0 0 1-14 14H56z"/><path d="M90 76h13M90 92h13"/></g>
+    <path class="fl2" d="M160 62h-20a12 12 0 0 0-12 12v20a12 12 0 0 0 12 12h20z"/><path d="M128 76h8M128 92h8"/><path d="M160 84h28"/>
+    <g class="pulse"><path class="ac" d="M116 52v-11M104 56l-6-9M128 56l6-9"/></g>
+  </svg>`,
+  offline: `<svg class="spot" viewBox="0 0 216 150" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+    <path d="M28 134h160"/><path d="M58 62c28-26 72-26 100 0" stroke-dasharray="3 8"/><path d="M73 80c20-18 50-18 70 0" stroke-dasharray="3 8"/><path d="M88 97c11-10 29-10 40 0"/>
+    <circle class="acf pulse" cx="108" cy="113" r="5.5" stroke="none"/>
+  </svg>`,
+};
+
+const VIEWERS = {
+  leila: { name: "Leila Baccouche", job: "Project Manager", init: "LB", c: "oklch(0.45 0.09 200)",
+    nav: [["over","Overview"],["plan","My Plan"],["one","1:1s"],["chat","Feedback"],["rev","Reviews"]],
+    go: [["plan","My Plan"],["rev","Reviews"],["home","Home"]] },
+  mariam: { name: "Mariam Gharbi", job: "Delivery Manager", init: "MG", c: "oklch(0.45 0.11 330)",
+    nav: [["over","Overview"],["plan","My Plan"],["team","My Team"],["one","1:1s"],["chat","Feedback"],["rev","Reviews"]],
+    go: [["team","My Team"],["plan","My Plan"],["home","Home"]] },
+};
+const AMIRA = { name: "Amira Khelifi", first: "Amira", job: "Administrator", init: "AK", c: "oklch(0.45 0.11 300)", mail: "amira.khelifi@example.test" };
+
+const av = (p, s) => `<span class="av" style="--c:${p.c};--s:${s}px">${p.init}</span>`;
+const emailAmira = `<a class="btn s" href="mailto:${AMIRA.mail}">${I.mail}Email ${AMIRA.first}</a>`;
+const btn = (kind, text, icon = "", extra = "") => `<button type="button" class="btn ${kind}" ${extra}>${icon}${text}</button>`;
+const retry = (kind = "p", text = "Try again") => btn(kind, text, I.retry, 'data-retry="1"');
+const row = (icon, text) => `<a class="row" href="#">${I[icon]}${text}<span class="go">${I.arrow}</span></a>`;
+const refCode = `<button type="button" class="ref" data-copy="F7A3-91C2" title="Copy the code">F7A3-91C2 ${I.copy}</button>`;
+const ticking = (word) => `<span class="ticking"><span class="dot"></span>${word} <span data-count>12</span>s</span>`;
+
+const STATES = {
+  refused: { label: "No access", code: "403", title: "You don't have access to this page", body: "",
+    panelHead: "Who can help", spot: "refused",
+    primary: v => `<a class="btn p" href="#">${I.over}Go to Overview</a>`, secondary: () => "",
+    panel: v => `<div class="who">${av(AMIRA,42)}<div><b>${AMIRA.name}</b><span>${AMIRA.job}</span></div></div>${emailAmira.replace('btn s','btn s" style="justify-content:center')}<h3 style="margin-top:4px">Or go to</h3><div class="rows">${v.go.map(g => row(g[0],g[1])).join("")}</div>`,
+    chip: `${av(AMIRA,28)}<span><b>${AMIRA.name}</b> can give you access. <a href="mailto:${AMIRA.mail}">Email ${AMIRA.first}</a></span>`,
+    big: `You don't have access to this page. Ask <span class="pill"><span class="av" style="--c:${AMIRA.c}">${AMIRA.init}</span>${AMIRA.first}.</span>`,
+    links: v => [`Email ${AMIRA.first}`, ...v.go.map(g => g[1])],
+    today: { icon: "lock", h: "You don't have access to this page. Ask your administrator if you need it.", p: "", action: "" },
+    note: "<b>Today</b> is the box you rejected. In the new page, the administrator's name replaces \"your administrator\"." },
+  notfound: { label: "Not found", code: "404", title: "We can't find this page", body: "The link may be old or mistyped.",
+    panelHead: "Find it", spot: "notfound",
+    primary: () => `<a class="btn p" href="#">${I.over}Go to Overview</a>`, secondary: () => "",
+    panel: v => `<div class="fakeinput">${I.search}Search people, pages and more<kbd>Ctrl K</kbd></div><h3 style="margin-top:4px">Or go to</h3><div class="rows">${v.go.map(g => row(g[0],g[1])).join("")}</div>`,
+    chip: `<span class="fakeinput" style="width:340px;height:40px">${I.search}Search people, pages and more<kbd>Ctrl K</kbd></span>`,
+    big: "We can't find this page.", links: v => ["Search", ...v.go.map(g => g[1])],
+    today: { icon: "inbox", h: "Nothing here", p: "This address doesn't match anything in Performance.", action: `<a class="btn s" href="#">Go to Overview</a>` },
+    note: "<b>Today</b> differs by module: Core HR and the shell show a bold 404, while Performance shows this box. The new page never shows the address, because it can hold a record's ID." },
+  gone: { label: "No longer here", code: "404", title: "This is no longer here", body: "It may have been removed or closed since this link was sent.",
+    panelHead: "Go to", spot: "gone",
+    primary: () => `<a class="btn p" href="#">${I.rev}Go to Reviews</a>`, secondary: () => "",
+    panel: v => `<div class="rows">${v.go.map(g => row(g[0],g[1])).join("")}</div>`, chip: "",
+    big: "This is no longer here.", links: v => v.go.map(g => g[1]),
+    today: { icon: "inbox", h: "This is no longer available", p: "", action: `<a class="btn s" href="#">Go to Overview</a>` },
+    note: "For old links, usually from a notification. The button returns to the list the link came from, not a generic Overview. <b>Today</b> always sends you to Overview." },
+  crash: { label: "Page failed", code: "500", title: "This page didn't load", body: "Try again. If it keeps happening, send this code to your administrator.",
+    panelHead: "If it keeps happening", spot: "crash",
+    primary: () => retry(), secondary: () => `<a class="btn s" href="#">Go to Overview</a>`,
+    panel: v => `<div class="who">${av(AMIRA,42)}<div><b>${AMIRA.name}</b><span>${AMIRA.job}</span></div></div>${emailAmira.replace('btn s','btn s" style="justify-content:center')}<div>${refCode}</div>`,
+    chip: refCode, extra: refCode,
+    big: "This page didn't load.", links: () => ["Go to Overview"],
+    today: { icon: "warn", h: "This page couldn't load", p: "", action: `<a class="btn s" href="#">Retry</a>` },
+    note: "Our own bug. It stays calm and doesn't blame anyone, and the code tells you which failure it was. <b>Today</b> Core HR still says \"Something went wrong\" and the shell can show the raw error." },
+  down: { label: "Module down", code: "503", title: "Performance isn't responding", body: "We'll keep trying.",
+    panelHead: "Right now", spot: "down",
+    primary: () => retry(), secondary: () => `<a class="btn s" href="#">Open Core HR</a>`,
+    panel: () => `<div class="status"><div><span class="led off"></span>Performance<em>Not responding</em></div><div><span class="led"></span>Core HR<em>Working</em></div><div><span class="led"></span>Home<em>Working</em></div></div>`,
+    chip: ticking("Trying again in"), extra: ticking("Trying again in"),
+    big: "Performance isn't responding.", links: () => ["Open Core HR", "Home"],
+    today: { icon: "warn", h: "Temporarily unavailable", p: "Performance could not be loaded because the service is temporarily unavailable.", action: `<a class="btn s" href="#">Retry</a>` },
+    note: "One backend down shouldn't feel like all of Fusion is down, so the page offers another module and retries by itself." },
+  offline: { label: "Offline", code: "network", title: "You're offline", body: "This page comes back when you reconnect.",
+    panelHead: "", spot: "offline",
+    primary: () => retry("s"), secondary: () => "", panel: null,
+    chip: ticking("Checking again in"), extra: ticking("Checking again in"),
+    big: "You're offline.", links: () => [],
+    today: { icon: "warn", h: "Temporarily unavailable", p: "Performance could not be loaded because the service is temporarily unavailable.", action: `<a class="btn s" href="#">Retry</a>` },
+    note: "<b>Today</b> this says the service is down when it's really the person's connection, which sends people to the wrong fix." },
+  partial: { label: "Part of a page", code: "section", kind: "partial",
+    note: "When one piece fails, the page stays and the piece keeps its title. A card with room gets a small drawing and a retry. A slim row gets one line. <b>Today</b> it's a dashed box or nothing." },
+  signedout: { label: "Signed out", code: "401", kind: "outside", title: "You've been signed out", body: "Sign in again to go back to where you were.", spot: "refused",
+    note: "This is the real sign-in page, not a separate one: same brand panel, same email step. Only the words change and a small drawing joins them, so people know why they're here. A 401 lands here and returns you to the same page. <b>Today</b> it looks like a normal visit. This surface always uses Fusion's amber and dark." },
+  invite: { label: "Link expired", code: "invite", kind: "outside", title: "This invitation has expired", body: "Ask your administrator to send a new one.", spot: "gone",
+    note: "Same layout as sign-in. The title already exists today. Only the layout joins the family." },
+};
+
+const DIRS = { B: "New design", today: "Today" };
+const st = { dir: "B", state: "refused", viewer: "leila", accent: "blue", theme: "dark" };
+
+function paintToday(s) {
+  const t = s.today;
+  return `<div class="today"><div class="dash"><span class="ic">${I[t.icon]}</span><h2>${t.h}</h2>${t.p ? `<p>${t.p}</p>` : ""}${t.action}</div></div>`;
+}
+function paintB(s, v) {
+  return `<div class="dB">${SPOTS[s.spot]}<h1 class="title">${s.title}</h1>${s.body ? `<p class="body">${s.body}</p>` : ""}<div class="actions">${s.primary(v)}${s.secondary(v)}</div>${s.chip ? `<div class="chip">${s.chip}</div>` : ""}</div>`;
+}
+function paintPartial(today) {
+  const first = VIEWERS[st.viewer].name.split(" ")[0];
+  const people = [["Yasmine Trabelsi","Joined on Wednesday","YT","oklch(0.46 0.1 150)"],["Karim Jaziri","5 years on Monday","KJ","oklch(0.44 0.11 280)"],["Ines Chaabane","Back from leave","IC","oklch(0.46 0.09 90)"]];
+  const list = people.map(p => `<div class="person">${av({init:p[2],c:p[3]},36)}<div>${p[0]}<span>${p[1]}</span></div></div>`).join("");
+  const box = (icon, text) => `<div class="tinybox"><span class="ic">${I[icon]}</span><p>${text}</p><a class="btn s" href="#">Retry</a></div>`;
+  const card = today ? box("warn", "Temporarily unavailable")
+    : `<div class="failcard">${SPOTS.crash.replace('class="spot"','class="spot sm"')}<p>Praise didn't load</p>${retry("s")}</div>`;
+  const strip = today ? box("warn", "Temporarily unavailable")
+    : `<div class="failrow"><p>Your 1:1s didn't load</p><button type="button" class="linkbtn" data-retry="1">Try again</button></div>`;
+  return `<div class="mini"><h2>Good afternoon, ${first}</h2><div class="mgrid"><div class="mcard"><h4>Around the company</h4>${list}</div><div class="mcard"><h4>Praise</h4>${card}</div></div><div class="mcard slim"><h4>Coming up</h4>${strip}</div></div>`;
+}
+function paintOutside(s, dir) {
+  const signed = s === STATES.signedout, today = dir === "today";
+  const title = today && signed ? "Sign in" : s.title;
+  const body = today && signed ? "Sign in to your account" : s.body;
+  const spot = today ? "" : SPOTS[s.spot].replace('class="spot"','class="spot sm"');
+  const form = signed
+    ? `<div class="form"><div class="field"><b>Email</b><div>${I.mail}<span>name@company.com</span></div></div><button type="button" class="btn p">Continue ${I.arrow}</button><p class="agree">By signing in, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p></div>`
+    : `<div class="form"><a class="btn s" href="#">Go to sign in</a></div>`;
+  return `<div class="out"><div class="brandpanel"><div><i>F</i><strong>Fusion</strong></div><small>Fusion</small></div><div class="formside"><span class="lang">EN</span><div class="inner">${spot}<h1 class="title">${title}</h1><p class="body">${body}</p>${form}</div></div></div>`;
+}
+function paintFrame(inner) {
+  const v = VIEWERS[st.viewer];
+  return `<div class="frame"><div class="side">
+    <div class="co"><span class="logo"></span><div><b>Carthage Digital Group</b><span>Fusion</span></div></div>
+    <div class="nav"><a href="#">${I.home}Home</a></div>
+    <div class="modsw"><i>${I.chart}</i>Performance<em>⇅</em></div>
+    <div class="nav">${v.nav.map((n,i) => `<a href="#"${i === 0 && st.state === "partial" ? ' class="on"' : ""}>${I[n[0]]}${n[1]}</a>`).join("")}</div>
+    <div class="grp">ADMINISTRATION</div><div class="nav"><a href="#">${I.set}Settings</a></div>
+    <div class="me">${av(v,32)}<div><b>${v.name}</b><span>${v.job}</span></div></div>
+  </div><div class="main"><div class="bar"><b>FY2027 Cycle</b><span class="tag">Review</span><span class="srch">${I.search}Search<kbd>Ctrl K</kbd></span></div><div class="content">${inner}</div></div></div>`;
+}
+
+let countTimer = null;
+function paint() {
+  const scale = document.getElementById("scale");
+  const s = STATES[st.state], v = VIEWERS[st.viewer];
+  let html;
+  if (s.kind === "outside") html = paintOutside(s, st.dir);
+  else if (s.kind === "partial") html = paintFrame(paintPartial(st.dir === "today"));
+  else if (st.dir === "today") html = paintFrame(paintToday(s));
+  else html = paintFrame(paintB(s, v));
+  scale.className = s.kind === "outside" ? "scale m-dark a-amber" : `scale m-${st.theme} a-${st.accent}`;
+  scale.innerHTML = html;
+  document.getElementById("note").innerHTML = s.note;
+  renderControls();
+  fit();
+  clearInterval(countTimer);
+  const counters = scale.querySelectorAll("[data-count]");
+  if (counters.length) {
+    let n = 12;
+    countTimer = setInterval(() => { n = n <= 1 ? 12 : n - 1; counters.forEach(c => c.textContent = n); }, 1000);
+  }
+}
+function fit() {
+  const stage = document.getElementById("stage"), scale = document.getElementById("scale");
+  const w = stage.clientWidth;
+  const narrow = w < 760;
+  const frame = scale.firstElementChild;
+  if (frame) frame.classList.toggle("narrow", narrow);
+  if (narrow) {
+    scale.style.width = "100%"; scale.style.height = "680px"; scale.style.transform = "none"; stage.style.height = "680px";
+  } else {
+    const k = Math.min(1, w / 1280);
+    scale.style.width = "1280px"; scale.style.height = "760px"; scale.style.transform = `scale(${k})`; stage.style.height = 760 * k + "px";
+  }
+}
+function seg(id, options, key) {
+  const el = document.getElementById(id);
+  el.innerHTML = options.map(([val, label, code]) => `<button type="button" aria-pressed="${st[key] === val}" data-${key}="${val}">${label}${code ? `<span class="code">${code}</span>` : ""}</button>`).join("");
+}
+function renderControls() {
+  seg("dirs", Object.entries(DIRS), "dir");
+  seg("states", Object.entries(STATES).map(([k, s]) => [k, s.label, /^\d/.test(s.code) ? s.code : ""]), "state");
+  seg("viewers", [["leila","Leila, employee"],["mariam","Mariam, manager"]], "viewer");
+  seg("accents", [["blue","Carthage blue"],["amber","Fusion amber"]], "accent");
+  seg("themes", [["dark","Dark"],["light","Light"]], "theme");
+}
+document.addEventListener("click", (e) => {
+  const c = e.target.closest("[data-dir],[data-state],[data-viewer],[data-accent],[data-theme]");
+  if (c) {
+    for (const k of ["dir","state","viewer","accent","theme"]) if (c.dataset[k]) st[k] = c.dataset[k];
+    paint();
+    return;
+  }
+  const retryBtn = e.target.closest("[data-retry]");
+  if (retryBtn) {
+    const was = retryBtn.innerHTML;
+    retryBtn.innerHTML = '<span class="spin"></span>Trying';
+    retryBtn.disabled = true;
+    setTimeout(() => { retryBtn.innerHTML = was; retryBtn.disabled = false; }, 1100);
+    return;
+  }
+  const copy = e.target.closest("[data-copy]");
+  if (copy) {
+    const was = copy.innerHTML;
+    Promise.resolve().then(() => navigator.clipboard.writeText(copy.dataset.copy)).catch(() => {}).finally(() => {
+      copy.textContent = "Copied"; setTimeout(() => { copy.innerHTML = was; }, 1100);
+    });
+    return;
+  }
+  const a = e.target.closest('.stage a[href="#"]');
+  if (a) e.preventDefault();
+});
+new ResizeObserver(fit).observe(document.getElementById("stage"));
+paint();
+</script>
+</body>
+</html>

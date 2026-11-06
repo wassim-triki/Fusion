@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-302.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-303.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -28,7 +28,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 | --- | --- | --- |
 | 1–16 | Jobs/places/lists through the Core HR front page | Accepted and closed |
 | 17 · B-191 | Single sign-on | Accepted and closed |
-| 18 · B-192 | Seams and finish | In review |
+| 18 · B-192 | Seams and finish | Accepted and closed |
 | 19 · B-298 | Demo presets brought up to the rebuild | Ready, after B-192 |
 
 ## In progress
@@ -50,8 +50,7 @@ These are umbrella outcomes, not additional slices.
 
 ### Rebuild slices
 
-- [ ] **B-192** Seams and finish: colleague modules only when on, one vocabulary, one way to refuse, what replaced screens left behind · All · 2026-10-30
-      [plan](plans/B-192-seams-and-finish.md). Look at: the refusal ([screen](plans/B-192-screens/01-refusal.png), or `/performance/cycle` as Leila Baccouche, an employee); the wording (`/core` as Amira Khelifi, the administrator, says "6 divisions" in Carthage, [screen](plans/B-192-screens/02-front-page-level-word.png)); the switcher (Learning, Recruitment, Interview and Onboarding gone for every role). Live `/learning` checks ran for Amira only; the other three roles walked without that app, for memory.
+None waiting.
 
 ### Other reviews
 
@@ -60,6 +59,9 @@ None waiting.
 ## Ready
 
 ### Rebuild slices
+
+- [ ] **B-302** One family of error pages: refusal, not found, gone, failed, module down, offline, signed out, redrawn with a small drawing per state · Shell, DS, Core HR, Performance, Platform · 2026-11-06
+      Design agreed by the user 2026-11-06, B-192's refusal replaced by this. [plan](plans/B-302-error-pages.md), [explorer](https://claude.ai/artifact/M9ZehcDte7bDjuAmdasep8). Next up, in a fresh session. Includes a small read of who administers the company, so `security-review` applies.
 
 - [ ] **B-298** Demo presets brought up to the rebuild · Data · 2026-11-05
       Split from B-192 by the user, 2026-11-05. Last built 2026-10-22, before the rebuild; the script was changed on 10-30 and 11-01 with no build recorded since, so first prove one build (`fresh`, then one with a year). Then a shared company finish: brand, company fields from the gallery (D: demo companies ship a set), photos, joining checklists, open roles, a pending change, someone on leave, reusing the Carthage seed scripts. Rebuild all five; `journey-demo-preset.cjs` extended. The tour's stories wait for B-090's decision page. After B-192. Medium effort, fresh session.

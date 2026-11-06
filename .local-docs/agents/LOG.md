@@ -1,5 +1,8 @@
 # LOG — the one history
 
+- ✓ **B-192** Seams and finish accepted, 2026-11-06 (user: "yeah close it"); its refusal page is replaced by **B-302**.
+- **B-302** error page design agreed, 2026-11-06 (user: "great", after the redone Part of a page, Signed out and Link expired): [plan](plans/B-302-error-pages.md). Build is next, in a fresh session.
+- **B-302** error pages: direction B (a small drawing per state) chosen by the user over A and C, 2026-11-06 ("defintly B"); states mostly accepted, "Part of a page" and "Signed out" being redone ("seems to be separte login page entirely"). Means changing DESIGN.md's no-oversized-illustrations line for failure pages. [explorer](https://claude.ai/artifact/M9ZehcDte7bDjuAmdasep8)
 - **B-192** Seams and finish built, 2026-11-06, **In review** (two screens in `plans/B-192-screens/`):
   - Colleague modules only when the company has them on: Learning, Recruitment and Interview are real entitlements (off by default, Platform switch), the switcher and the modules' own pages follow them, direct addresses go Home, public ones (`/learning/verify`, `/interview/candidate/start`) stay open; Onboarding is hidden everywhere with no switch. Colleague code still builds.
   - Words: the fix list across Core, Performance and Platform; "Administrator" on screens; the top-level unit word follows the company (Division, Department or Unit) on the front page, the org chart and Reports.

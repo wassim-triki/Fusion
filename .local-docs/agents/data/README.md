@@ -23,7 +23,7 @@ The local Carthage Digital Group tenant is prepared for the next walkthrough. It
 | Omar Mansour | `omar.mansour@example.test` | Manager/reviewer without `core.team.view` |
 | Leila Baccouche | `leila.baccouche@example.test` | Employee subject |
 | Khaled Sassi | `khaled.sassi@example.test` | Employee subject; also "Performance lead" since 2026-10-24 |
-| Rim Mahjoub | `rim.mahjoub@example.test` | Employee subject; also "HR partner" (settings view only) since 2026-10-24 |
+| Rim Mahjoub | `rim.mahjoub@example.test` | Employee subject; also "HR partner" since 2026-10-24: Performance settings, view only; no Core HR settings since 2026-11-06 |
 
 The tenant contains 100 active employees and a 40-unit hierarchy (1 Organization, 3 Business Units, 6 Divisions, 12 Departments, 18 Teams). The active **FY2027 Cycle** runs October 1, 2026–September 30, 2027, with an October 31 planning deadline and 99 confirmed participants. Sami Ben Youssef, the CEO, is excluded because the top executive role has no in-cycle reviewer. Performance defaults are retained; five competencies and three published company objectives are available. Sample employee plans are in Draft (CDG-021) and Approved (CDG-005, and CDG-006 Omar Mansour since the 2026-10-15 Fusion frame journey), each with three weighted objectives. No Submitted sample remains; have an employee submit through the API to make one.
 

@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** B-302 One family of error pages, accepted ✓ 2026-11-06 (commit d0204382).
+**Last finished:** B-298 Carthage as the one company to walk around in, 2026-11-06.
 
 ## Active work
 
@@ -8,4 +8,4 @@ None.
 
 ## Next
 
-B-298 (demo presets).
+Nothing queued by the user; take the next from the board. The demo's date and walkthrough are the user's.

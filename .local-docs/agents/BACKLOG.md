@@ -29,7 +29,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 | 1–16 | Jobs/places/lists through the Core HR front page | Accepted and closed |
 | 17 · B-191 | Single sign-on | Accepted and closed |
 | 18 · B-192 | Seams and finish | Accepted and closed |
-| 19 · B-298 | Demo presets brought up to the rebuild | Ready, after B-192 |
+| 19 · B-298 | Carthage as the one company to walk around in | Accepted and closed |
 
 ## In progress
 
@@ -59,9 +59,6 @@ None waiting.
 ## Ready
 
 ### Rebuild slices
-
-- [ ] **B-298** Demo presets brought up to the rebuild · Data · 2026-11-05
-      Split from B-192 by the user, 2026-11-05. Last built 2026-10-22, before the rebuild; the script was changed on 10-30 and 11-01 with no build recorded since, so first prove one build (`fresh`, then one with a year). Then a shared company finish: brand, company fields from the gallery (D: demo companies ship a set), photos, joining checklists, open roles, a pending change, someone on leave, reusing the Carthage seed scripts. Rebuild all five; `journey-demo-preset.cjs` extended. The tour's stories wait for B-090's decision page. After B-192. Medium effort, fresh session.
 
 ### Other work
 

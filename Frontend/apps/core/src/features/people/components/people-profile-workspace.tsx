@@ -20,12 +20,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
   DatePicker,
   Input,
   Label,
@@ -33,7 +27,7 @@ import {
   SheetContent,
   SheetTitle,
 } from "@repo/ds";
-import { PageContainer, PageListSkeleton } from "@repo/ds/shell";
+import { PageListSkeleton } from "@repo/ds/shell";
 import { toast } from "sonner";
 import { useBreadcrumbLabel } from "@/shell/breadcrumb-overrides";
 import { useOrgChartAccess } from "@/features/org-chart/api/use-org-chart-access";
@@ -44,11 +38,9 @@ import {
   canManageCoreEmployees,
   canViewWorkforceAccess,
   canManageWorkforceAccess,
-  useAuth,
-} from "@repo/auth";
+  useAuth, PageFailure } from "@repo/auth";
 import { classifyApiError, type WorkforceAccessCandidateDto } from "@repo/api";
 import {
-  ArrowLeft,
   ArrowLeftRight,
   CalendarDays,
   Camera,
@@ -58,8 +50,6 @@ import {
   MessageSquarePlus,
   MoreHorizontal,
   RotateCcw,
-  ShieldAlert,
-  UserRound,
   UserRoundPlus,
   UserRoundX,
   Workflow,
@@ -124,6 +114,7 @@ export default function PeopleProfileWorkspace({
   const { user, isLoading: authLoading } = useAuth();
   const orgChart = useOrgChartAccess();
   const t = useTranslations("profile.record");
+  const nav = useTranslations("frame.nav");
   const tPhoto = useTranslations("profile.band");
   const say = useSay("profile");
   const locale = useLocale();
@@ -232,27 +223,11 @@ export default function PeopleProfileWorkspace({
   if (profile.isLoading || authLoading) return <WorkerProfileSkeleton />;
 
   if (profile.error || !profile.data) {
-    const kind = profile.error ? classifyApiError(profile.error) : "validation";
-    if (kind === "auth") {
-      return (
-        <ProfileNotice
-          icon={ShieldAlert}
-          title={t("noAccess")}
-          description={t("noAccessDescription")}
-        />
-      );
-    }
-    const transient = kind === "network" || kind === "upstream-unavailable";
     return (
-      <ProfileNotice
-        icon={UserRound}
-        title={t("notFound")}
-        description={transient ? t("transient") : t("missing")}
-        onRetry={
-          profile.error && (transient || kind === "unexpected")
-            ? () => void profile.refetch()
-            : undefined
-        }
+      <PageFailure
+        error={profile.error}
+        onRetry={() => void profile.refetch()}
+        back={{ href: "/core/people", label: nav("people") }}
       />
     );
   }
@@ -545,47 +520,6 @@ export default function PeopleProfileWorkspace({
         returnTo={returnTo}
       />
     </>
-  );
-}
-
-function ProfileNotice({
-  icon: Icon,
-  title,
-  description,
-  onRetry,
-}: {
-  icon: typeof UserRound;
-  title: string;
-  description: string;
-  onRetry?: () => void;
-}) {
-  const t = useTranslations("profile.record");
-  return (
-    <PageContainer>
-      <Empty className="min-h-[26rem] rounded-surface border">
-        <EmptyMedia variant="icon">
-          <Icon />
-        </EmptyMedia>
-        <EmptyHeader>
-          <EmptyTitle>{title}</EmptyTitle>
-          <EmptyDescription>{description}</EmptyDescription>
-        </EmptyHeader>
-        <EmptyContent>
-          <div className="flex gap-2">
-            <Button asChild variant="outline">
-              <Link href="/people">
-                <ArrowLeft className="size-4" /> {t("backToPeople")}
-              </Link>
-            </Button>
-            {onRetry ? (
-              <Button variant="ghost" onClick={onRetry}>
-                <RotateCcw className="size-4" /> {t("retry")}
-              </Button>
-            ) : null}
-          </div>
-        </EmptyContent>
-      </Empty>
-    </PageContainer>
   );
 }
 

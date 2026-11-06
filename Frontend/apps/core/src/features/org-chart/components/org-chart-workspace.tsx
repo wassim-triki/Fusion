@@ -7,14 +7,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { AlertTriangle, ArrowLeftRight, Briefcase, Search, X } from "lucide-react";
 import type { ChangePersonRef, OrgChartDto, OrgChartOpenRoleDto, OrgChartPersonDto, WorkforceChangeDto } from "@repo/api";
-import {
-  canAccessCorePeople,
-  canEnterPerformance,
-  canAccessCoreTeam,
-  canManageCoreEmployees,
-  canManageCoreReporting,
-  useAuth,
-} from "@repo/auth";
+import { canAccessCorePeople, canEnterPerformance, canAccessCoreTeam, canManageCoreEmployees, canManageCoreReporting, useAuth, PageRefusal } from "@repo/auth";
 import {
   Alert,
   AlertDescription,
@@ -31,7 +24,7 @@ import {
   cn,
 } from "@repo/ds";
 import { FilterChips, Segmented } from "@repo/ds/choice";
-import { PagePermissionNotice, PageRefusal } from "@repo/ds/shell";
+import { PagePermissionNotice } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { canAccessEmployeeRoster } from "@/lib/employee-roster-access";
 import { useOrgChart, useOrgChartBranches, useOrgChartChanges, useOrgChartSearch, useReviewProgress } from "../api/use-org-chart";

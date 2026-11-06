@@ -1,9 +1,7 @@
 {
   "PlanPage": {
-    "performanceWorkspace": "مساحة عمل الأداء",
     "youreNotPartOf": "لست مشمولًا في {selected}",
     "youreNotPartOfA": "لست مشمولًا في أي دورة أداء",
-    "theCycle": "الدورة",
     "noPerformanceCycleYet": "لا دورة أداء بعد"
   },
   "ChangeRequestDraft": {
@@ -32,7 +30,7 @@
   },
   "DevelopmentSection": {
     "loadingDevelopment": "جارٍ تحميل التطوير",
-    "developmentUnavailable": "التطوير غير متاح",
+    "developmentUnavailable": "لم يتم تحميل التطوير",
     "noDevelopmentGoalsYet": "لا أهداف تطوير بعد",
     "addAGoal": "إضافة هدف",
     "development": "التطوير",
@@ -302,8 +300,7 @@
   "PlanRecordPage": {
     "sPlan": "خطة {name}",
     "plan": "الخطة",
-    "planUnavailable": "الخطة غير متاحة",
-    "theCycle": "الدورة"
+    "planUnavailable": "الخطة غير متاحة"
   },
   "PlanReview": {
     "planUnavailable": "الخطة غير متاحة",

@@ -41,19 +41,12 @@
     "action": "Back to Core HR"
   },
   "boundary": {
-    "denied": {
-      "action": "Open Fusion"
-    },
     "platform": {
-      "title": "Core HR is a customer workspace",
-      "description": "Platform administration is kept separate from customer workforce data.",
       "noticeTitle": "Core HR is not available to Platform Administrators",
       "noticeDescription": "Use the Platform control plane for platform-level administration.",
       "action": "Open Platform"
     },
     "unavailable": {
-      "title": "Core HR is not available",
-      "description": "Your company doesn't have Core HR turned on.",
       "noticeTitle": "Module unavailable",
       "noticeDescription": "Ask your administrator if your company should have it.",
       "action": "Open Fusion"

@@ -152,7 +152,6 @@
     "answerTo": "Réponse à « {requestQuestion} »"
   },
   "RequestsTab": {
-    "feedbackRequests": "Demandes de feedback",
     "askedOfYou": "Qui vous sont adressées",
     "nothingToAnswer": "Rien à répondre",
     "lastAnsweredFor": "· dernière réponse pour {name}",
@@ -207,9 +206,6 @@
     "noPraiseForYouYet": "Aucune reconnaissance pour vous pour l’instant",
     "youHaventGivenPraiseYet": "Vous n’avez pas encore donné de reconnaissance",
     "showOlder": "Afficher les plus anciens"
-  },
-  "RequestRecord": {
-    "thisRequest": "Cette demande"
   },
   "RequestView": {
     "requests": "Demandes",

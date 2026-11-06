@@ -26,9 +26,8 @@ import { useFormat } from "@repo/ds/lib/use-format";
  * declines. The due date is shown, never enforced.
  */
 export function RequestRecord({ requestId }: { requestId: string }) {
-  const t = useTranslations("conversations.RequestRecord");
   const query = useFeedbackRequest(requestId);
-  if (query.error) return <ContentUnavailable error={query.error} onRetry={query.refetch} subject={t("thisRequest")} />;
+  if (query.error) return <ContentUnavailable list="feedback" error={query.error} onRetry={query.refetch} />;
   if (!query.data) return <RequestSkeleton />;
   return <RequestView request={query.data} />;
 }

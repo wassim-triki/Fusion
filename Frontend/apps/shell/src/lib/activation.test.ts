@@ -45,7 +45,7 @@ describe("terminalState", () => {
   });
 
   it("says an account was not created where none was", () => {
-    for (const outcome of ["invalid", "expired", "revoked"] as const) {
+    for (const outcome of ["invalid", "revoked"] as const) {
       expect(terminalState(outcome).detail).toContain("No account was created");
     }
   });

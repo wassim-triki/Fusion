@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@repo/ds";
-import { PageContainer, PageEmpty, PageError, PageRefusal } from "@repo/ds/shell";
+import { PageContainer, PageEmpty } from "@repo/ds/shell";
 import { ApiError } from "@repo/api";
 import { useCompanyImport } from "../api/use-company-import";
 import { useCanImport } from "./import-drop";
@@ -14,6 +14,7 @@ import { AgainStep } from "./again-step";
 import { ChartStep } from "./chart-step";
 import { Understood } from "./understood";
 import { ImportSkeleton, importStepFromParam, useImportCrumb, type ImportStep } from "./import-skeleton";
+import { PageFailure, PageRefusal } from "@repo/auth";
 
 /**
  * One import, from What Fusion understood to Brought in (D-22, D-29). The step follows the import's own state:
@@ -44,7 +45,7 @@ export default function ImportSession({ id }: { id: string }) {
         <PageEmpty title={t("gone.title")} action={<Button asChild><Link href="/import">{t("gone.action")}</Link></Button>} />
       </PageContainer>
     );
-  if (query.error) return <PageContainer><PageError title={t("error")} onRetry={() => void query.refetch()} /></PageContainer>;
+  if (query.error) return <PageContainer><PageFailure error={query.error} onRetry={() => void query.refetch()} /></PageContainer>;
   if (!data || data.status === "Discarded") return <ImportSkeleton step={step} />;
 
   if (view === "bring") return <BringFrame data={data} />;

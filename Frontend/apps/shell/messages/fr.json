@@ -13,7 +13,6 @@
     },
     "notifications": {
       "title": "Notifications",
-      "didNotLoad": "Impossible de charger les notifications",
       "emailGoesTo": "Les e-mails sont envoyés à <b>{address}</b>",
       "none": "Aucun de vos modules n’envoie encore de notifications.",
       "notSaved": "Cette modification n’a pas été enregistrée. Vos choix sont ceux affichés.",
@@ -84,7 +83,7 @@
     "terminal": {
       "expired": {
         "title": "Cette invitation a expiré",
-        "detail": "Aucun compte n’a été créé. Demandez à l’organisation à l’origine de l’invitation de vous en envoyer une nouvelle."
+        "detail": "Demandez à votre administrateur d’en envoyer une nouvelle."
       },
       "revoked": {
         "title": "Cette invitation a été annulée",
@@ -331,7 +330,6 @@
   "app": {
     "error": {
       "title": "Une erreur est survenue",
-      "fallback": "Une erreur inattendue s’est produite.",
       "retry": "Réessayer"
     },
     "notFound": {

@@ -9,7 +9,7 @@ import { Button } from "@repo/ds/components/ui/button";
 import { DatePicker } from "@repo/ds/components/ui/date-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ds/components/ui/popover";
 import { Textarea } from "@repo/ds/components/ui/textarea";
-import { AsyncButton, PageContainer, PageHeader, PageRefusal, PageSkeleton, StatusBadge } from "@repo/ds/shell";
+import { AsyncButton, PageContainer, PageHeader, PageSkeleton, StatusBadge } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { AvatarStack, PersonInitials } from "@repo/performance-ui";
 import { Bell, CalendarDays, Check, FileText, Send } from "@/lib/icons";
@@ -27,6 +27,7 @@ import { reportPerformanceFailure } from "@/features/performance/api/performance
 import { useFormat } from "@repo/ds/lib/use-format";
 import type { Format } from "@repo/ds/lib/use-format";
 import type { Say } from "@/i18n/say";
+import { PageRefusal } from "@repo/auth";
 
 /** One round's page in each state (boards 04–07): setup while Draft, monitoring while running, the outcome once closed. */
 export function RoundPage() {
@@ -41,9 +42,9 @@ export function RoundPage() {
     query.data ? { label: query.data.name, kind: "Review round", href: `/performance/reviews/rounds/${query.data.id}` } : null,
   );
   if (context.isLoading || (isAdmin && query.isLoading)) return <PageSkeleton rows={7} width="wide" label={t("loadingTheRound")} />;
-  if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} subject={t("performanceWorkspace")} />;
+  if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} />;
   if (!isAdmin) return <PageContainer><PageRefusal /></PageContainer>;
-  if (query.error) return <ContentUnavailable error={query.error} onRetry={query.refetch} subject={t("reviewRound")} />;
+  if (query.error) return <ContentUnavailable list="reviews" error={query.error} onRetry={query.refetch} />;
   const round = query.data;
   if (!round) return <PageSkeleton rows={7} width="wide" label={t("loadingTheRound")} />;
   const canCalibrate = context.data?.capabilities.canCalibrate ?? false;

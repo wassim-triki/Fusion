@@ -38,7 +38,7 @@
     "backToObjectiveDetails": "العودة إلى تفاصيل الهدف",
     "recordProgress": "تسجيل التقدم",
     "loadingProgress": "جارٍ تحميل التقدم",
-    "progressUnavailable": "التقدم غير متاح",
+    "progressUnavailable": "لم يتم تحميل التقدم",
     "cancel": "إلغاء"
   },
   "ObjectiveRecordSheet": {

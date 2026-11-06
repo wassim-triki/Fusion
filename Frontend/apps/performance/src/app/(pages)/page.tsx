@@ -35,9 +35,9 @@ export default function OverviewPage() {
   const overview = useOverview(!context.isLoading && !context.error);
 
   if (context.isLoading) return <PageSkeleton rows={4} label={t("loadingPerformance")} />;
-  if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} subject={t("performanceWorkspace")} />;
+  if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} />;
   if (overview.error) {
-    return <ContentUnavailable error={overview.error} onRetry={overview.refetch} subject={t("overview")} />;
+    return <ContentUnavailable error={overview.error} onRetry={overview.refetch} />;
   }
   if (!overview.data) return <PageSkeleton rows={4} label={t("loadingOverview")} />;
 

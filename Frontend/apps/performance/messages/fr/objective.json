@@ -38,7 +38,7 @@
     "backToObjectiveDetails": "Retour aux détails de l’objectif",
     "recordProgress": "Enregistrer l’avancement",
     "loadingProgress": "Chargement de l’avancement",
-    "progressUnavailable": "Avancement indisponible",
+    "progressUnavailable": "L’avancement ne s’est pas chargé",
     "cancel": "Annuler"
   },
   "ObjectiveRecordSheet": {

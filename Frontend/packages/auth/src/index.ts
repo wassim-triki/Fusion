@@ -89,7 +89,10 @@ export {
 } from "./customer-workspace-access";
 export type { CustomerModule } from "./customer-workspace-access";
 export type { CustomerWorkspaceAccessState } from "./customer-workspace-access";
+export { InvitationEnd } from "./components/invitation-end";
 export { ModuleGate } from "./components/module-gate";
+export { PageFailure, PageGone, PageNotFound, PageRefusal } from "./components/page-failure";
+export type { FailurePageApp, PageFailureProps } from "./components/page-failure";
 export { useHydratedWorkspaceAccess } from "./use-hydrated-workspace-access";
 export type { HydratedWorkspaceAccess } from "./use-hydrated-workspace-access";
 export {

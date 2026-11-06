@@ -14,7 +14,7 @@
     },
     "expired": {
       "title": "Cette invitation a expiré",
-      "detail": "Demandez un nouveau lien d’invitation à votre administrateur."
+      "detail": "Demandez à votre administrateur d’en envoyer une nouvelle."
     },
     "revoked": {
       "title": "Cette invitation a été annulée",

@@ -7,10 +7,11 @@ import { useSettingsConflictSaver } from "@repo/api/query";
 import { useStagedSettings } from "@repo/api/react";
 import { cn, Input } from "@repo/ds";
 import { formatDate } from "@repo/ds/lib/dates";
-import { PageError, SettingsBlock, SettingsPage, SettingsSaveBar, StatusBadge, useSettingsSectionName } from "@repo/ds/shell";
+import { SettingsBlock, SettingsPage, SettingsSaveBar, StatusBadge, useSettingsSectionName } from "@repo/ds/shell";
 import { useRatingScale } from "@/features/performance/api/use-performance";
 import { useSaveRatingScale } from "../api";
 import { useSaveFailure } from "../say";
+import { PageFailure } from "@repo/auth";
 
 /** Levels on screen; descriptions are kept as text, empty meaning none. */
 type Levels = RatingScaleLevelDto[];
@@ -81,7 +82,7 @@ export function RatingScaleSettings({ section }: { section: FusionSettingsSectio
   if (query.error && !query.data) {
     return (
       <SettingsPage title={title}>
-        <PageError title={t("didNotLoad")} onRetry={() => void query.refetch()} />
+        <PageFailure error={query.error} onRetry={() => void query.refetch()} headingLevel={2} />
       </SettingsPage>
     );
   }

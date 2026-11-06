@@ -38,7 +38,7 @@
     "backToObjectiveDetails": "Back to objective details",
     "recordProgress": "Record progress",
     "loadingProgress": "Loading progress",
-    "progressUnavailable": "Progress unavailable",
+    "progressUnavailable": "Progress didn't load",
     "cancel": "Cancel"
   },
   "ObjectiveRecordSheet": {

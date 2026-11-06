@@ -1,16 +1,13 @@
 {
-  "didNotLoad": "Impossible de charger les paramètres Performance",
   "on": "Activé",
   "off": "Désactivé",
   "more": "{sentences} Et {count, plural, one {# autre modification} other {# autres modifications}}.",
   "dayCount": "{count, plural, one {# jour} other {# jours}}",
   "cycle": {
-    "didNotLoad": "Impossible de charger « {section} »",
     "notSaved": "Les modifications de « {section} » n’ont pas été enregistrées. Réessayez.",
     "leave": "Quitter sans enregistrer ? Vos modifications de « {section} » seront perdues."
   },
   "ratingScale": {
-    "didNotLoad": "Impossible de charger l’échelle de notation",
     "notSaved": "L’échelle de notation n’a pas été enregistrée. Réessayez.",
     "leave": "Quitter sans enregistrer ? Vos modifications de l’échelle de notation seront perdues.",
     "previewTitle": "Un objectif dans une évaluation",
@@ -31,7 +28,6 @@
     "notUsed": "Pas encore utilisée"
   },
   "competencies": {
-    "didNotLoad": "Impossible de charger les compétences",
     "conflict": "Quelqu’un a modifié cette compétence après son ouverture. Fermez-la puis rouvrez-la.",
     "notSaved": "La compétence n’a pas été enregistrée. Réessayez.",
     "leave": "Quitter sans enregistrer ? Vos modifications de « {name} » seront perdues.",
@@ -55,7 +51,6 @@
     "usedIn": "Utilisée dans {cycles}"
   },
   "questions": {
-    "didNotLoad": "Impossible de charger les questions d’évaluation",
     "conflict": "Quelqu’un a modifié les questions après leur ouverture. Elles sont maintenant à jour.",
     "notSaved": "La modification n’a pas été enregistrée. Réessayez.",
     "audiences": {

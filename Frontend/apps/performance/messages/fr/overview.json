@@ -1,7 +1,6 @@
 {
   "OverviewPage": {
     "loadingPerformance": "Chargement de Performance",
-    "performanceWorkspace": "Espace Performance",
     "overview": "Vue d’ensemble",
     "loadingOverview": "Chargement de la vue d’ensemble"
   },

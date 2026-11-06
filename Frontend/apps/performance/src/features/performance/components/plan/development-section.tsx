@@ -29,7 +29,7 @@ import {
 import { Input } from "@repo/ds/components/ui/input";
 import { Label } from "@repo/ds/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@repo/ds/components/ui/native-select";
-import { AsyncButton, PageError } from "@repo/ds/shell";
+import { AsyncButton } from "@repo/ds/shell";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { cn } from "@repo/ds/lib/utils";
 import { usePerformanceWords } from "@repo/performance-ui";
@@ -39,6 +39,7 @@ import { useDevelopmentMutations, useDevelopmentPlan } from "../../api/use-perfo
 import { PlanSection } from "./plan-layout";
 import { useTranslations } from "next-intl";
 import { useFormat } from "@repo/ds/lib/use-format";
+import { PageFailure } from "@repo/auth";
 
 const STATUSES: DevelopmentGoalStatus[] = ["NotStarted", "InProgress", "Done"];
 const MAX_ACTIONS = 5;
@@ -71,7 +72,7 @@ export function DevelopmentSection({ cycleId, employeeId }: { cycleId: string; e
         {query.isLoading ? (
           <Skeleton className="h-28 w-full rounded-surface" aria-label={t("loadingDevelopment")} />
         ) : query.error || !plan ? (
-          <PageError title={t("developmentUnavailable")} description={query.error?.message} onRetry={query.refetch} />
+          <PageFailure error={query.error} onRetry={query.refetch} size="card" title={t("developmentUnavailable")} />
         ) : (
           <div className="space-y-3">
             {plan.carryOver ? <CarryOverOffer plan={plan} cycleId={cycleId} employeeId={employeeId} /> : null}

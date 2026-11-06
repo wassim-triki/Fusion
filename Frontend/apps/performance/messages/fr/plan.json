@@ -1,9 +1,7 @@
 {
   "PlanPage": {
-    "performanceWorkspace": "Espace Performance",
     "youreNotPartOf": "Vous ne faites pas partie de {selected}",
     "youreNotPartOfA": "Vous ne faites partie d’aucun cycle de performance",
-    "theCycle": "Le cycle",
     "noPerformanceCycleYet": "Pas encore de cycle de performance"
   },
   "ChangeRequestDraft": {
@@ -32,7 +30,7 @@
   },
   "DevelopmentSection": {
     "loadingDevelopment": "Chargement du développement",
-    "developmentUnavailable": "Développement indisponible",
+    "developmentUnavailable": "Le développement ne s’est pas chargé",
     "noDevelopmentGoalsYet": "Aucun objectif de développement pour l’instant",
     "addAGoal": "Ajouter un objectif",
     "development": "Développement",
@@ -302,8 +300,7 @@
   "PlanRecordPage": {
     "sPlan": "Plan de {name}",
     "plan": "Plan",
-    "planUnavailable": "Plan indisponible",
-    "theCycle": "Le cycle"
+    "planUnavailable": "Plan indisponible"
   },
   "PlanReview": {
     "planUnavailable": "Plan indisponible",

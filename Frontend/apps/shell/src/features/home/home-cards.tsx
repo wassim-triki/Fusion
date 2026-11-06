@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Check } from "lucide-react";
 import { coreChecklistQueryKeys, createCoreChecklistsApi, createPlatformApiClient, type MyManagerDto, type ChecklistTaskDto } from "@repo/api";
 import { useApiQuery, useMyTeam, usePhoto, usePhotos, type UseApiQueryResult } from "@repo/api/query";
-import { canAccessCorePeople, useAuth } from "@repo/auth";
+import { canAccessCorePeople, useAuth, PageFailure } from "@repo/auth";
 import { Button, PersonAvatar, Skeleton, cn } from "@repo/ds";
 import { ProgressSegments } from "@repo/ds/shell";
 
@@ -142,10 +142,7 @@ export function YourManagerCard({ query }: {
           <div className="grid flex-1 gap-2"><Skeleton className="h-5 w-36" /><Skeleton className="h-4 w-24" /></div>
         </div>
       ) : query.error ? (
-        <div>
-          <p role="alert" className="type-meta text-muted-foreground">{t("failed")}</p>
-          <Button variant="ghost" size="sm" onClick={() => void query.refetch()}>{t("retry")}</Button>
-        </div>
+        <PageFailure error={query.error} size="row" title={t("failed")} onRetry={() => query.refetch()} />
       ) : manager ? (
         <>
           <div className="flex items-center gap-4">

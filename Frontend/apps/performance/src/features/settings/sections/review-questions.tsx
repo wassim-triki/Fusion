@@ -6,9 +6,10 @@ import { Archive, ArrowDown, ArrowUp, ChevronRight, Pencil, Plus, Trash2 } from 
 import { ApiError, type FusionSettingsSection, type ReviewQuestionAudience, type ReviewQuestionDto } from "@repo/api";
 import { Button, cn, Input } from "@repo/ds";
 import { formatDate } from "@repo/ds/lib/dates";
-import { PageError, SettingsPage, useSettingsSectionName } from "@repo/ds/shell";
+import { SettingsPage, useSettingsSectionName } from "@repo/ds/shell";
 import { useReviewQuestionCommands, useReviewQuestions } from "@/features/performance/api/use-review-work";
 import { useRefreshSettingsSections } from "../api";
+import { PageFailure } from "@repo/auth";
 
 /** Who answers, in order; each audience's words are `questions.audiences.<audience>`. */
 const AUDIENCES: readonly ReviewQuestionAudience[] = ["Person", "Manager", "Peer"];
@@ -184,7 +185,7 @@ export function ReviewQuestionsSettings({ section }: { section: FusionSettingsSe
   if (query.error && !query.data) {
     return (
       <SettingsPage title={title}>
-        <PageError title={t("didNotLoad")} onRetry={() => void query.refetch()} />
+        <PageFailure error={query.error} onRetry={() => void query.refetch()} headingLevel={2} />
       </SettingsPage>
     );
   }

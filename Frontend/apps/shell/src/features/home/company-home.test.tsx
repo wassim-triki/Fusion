@@ -26,7 +26,7 @@ vi.mock("@repo/api/query", () => ({
   usePhoto: () => null,
   useTenantSummary: () => ({ data: { name: "Carthage", language: "en", timeZone: "Africa/Tunis" }, isLoading: false }),
 }));
-vi.mock("@repo/auth", () => ({ useAuth: () => ({ user: { employeeId: "me" } }), canAccessCorePeople: () => mocks.people }));
+vi.mock("@repo/auth", () => ({ PageFailure: ({ title, onRetry }: { title: string; onRetry: () => void }) => <div>{title}<button onClick={onRetry}>Try again</button></div>, useAuth: () => ({ user: { employeeId: "me" } }), canAccessCorePeople: () => mocks.people }));
 const guide = { people: 100, faces: [{ key: "E-AK", name: "Amira Khelifi", photoUrl: null }] };
 beforeEach(() => {
   mocks.manager.data = manager(); mocks.manager.error = null; mocks.manager.isLoading = false; mocks.people = true;
@@ -53,7 +53,7 @@ it("shows manager loading and a retry after failure", () => {
   mocks.manager.data = undefined; mocks.manager.isLoading = true;
   const view = renderWithIntl(<YourManagerCard query={mocks.manager} />); expect(screen.getByLabelText("Loading your manager")).toBeTruthy();
   mocks.manager.isLoading = false; mocks.manager.error = new Error("offline"); view.rerender(<YourManagerCard query={mocks.manager} />);
-  expect(screen.getByRole("alert").textContent).toBe("Your manager did not load"); fireEvent.click(screen.getByRole("button", { name: "Try again" })); expect(mocks.manager.refetch).toHaveBeenCalledOnce();
+  expect(screen.getByText("Your manager did not load")).toBeTruthy(); fireEvent.click(screen.getByRole("button", { name: "Try again" })); expect(mocks.manager.refetch).toHaveBeenCalledOnce();
 });
 it.each(["en", "fr", "ar"] as const)("sums the company up in one line with its people in %s", (locale) => {
   renderWithIntl(<><CompanyCard guide={guide} /><YourManagerCard query={mocks.manager} /></>, { locale });

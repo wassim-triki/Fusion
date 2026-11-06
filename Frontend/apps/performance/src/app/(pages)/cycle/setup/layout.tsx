@@ -15,7 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@repo/ds/components/ui/alert-dialog";
 import { Button } from "@repo/ds/components/ui/button";
-import { AsyncButton, PageContainer, PageRefusal } from "@repo/ds/shell";
+import { AsyncButton, PageContainer } from "@repo/ds/shell";
 import { performanceFailure, reportPerformanceFailure } from "@/features/performance/api/performance-failure";
 import { SetupShellSkeleton } from "@/features/performance/components/cycle-setup/setup-skeletons";
 import { useCurrentCycle, useDeleteDraftCycle } from "@/features/performance/api/use-performance";
@@ -31,6 +31,7 @@ import {
   type SetupStep,
 } from "@/features/performance/components/cycle-setup/setup-readiness";
 import { useTranslations } from "next-intl";
+import { PageRefusal } from "@repo/auth";
 
 function currentStep(pathname: string): SetupStep {
   const match = SETUP_STEPS.find((step) => pathname.endsWith(`/${step.key}`));
@@ -62,13 +63,13 @@ export default function CycleSetupLayout({ children }: { children: ReactNode }) 
 
   if (context.isLoading) return <SetupShellSkeleton step={currentStep(pathname)} label={t("loadingPerformance")} />;
   if (context.error && !canAdminister) return <PageContainer><PageRefusal /></PageContainer>;
-  if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} subject={t("performanceWorkspace")} />;
+  if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} />;
   if (!canAdminister) {
     return <PageContainer><PageRefusal /></PageContainer>;
   }
   if (detail.isLoading) return <SetupShellSkeleton step={currentStep(pathname)} />;
   if (detail.error) {
-    return <ContentUnavailable error={detail.error} onRetry={detail.refetch} subject={t("theCycle")} />;
+    return <ContentUnavailable error={detail.error} onRetry={detail.refetch} />;
   }
   if (establishedCycle) return <SetupShellSkeleton step={currentStep(pathname)} label={t("openingCycle")} />;
 

@@ -42,6 +42,7 @@ vi.mock("next/link", () => ({
   ),
 }));
 vi.mock("@repo/auth", () => ({
+  PageRefusal: () => <h1>Refused</h1>,
   useAuth: () => ({ user: {}, isLoading: false }),
   canViewCoreReports: () => state.see,
   canBuildCoreReports: () => state.build,

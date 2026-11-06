@@ -334,7 +334,7 @@ function FeedbackPage({
   const page = useFeedbackList({ view, before, limit: 50 });
   // A notification lands on its card in the newest page; an older one opens in the drawer.
   useLanding("feedback", before === null && Boolean(page.data), onOpen);
-  if (page.error) return <ContentUnavailable error={page.error} onRetry={page.refetch} subject={t("feedback")} />;
+  if (page.error) return <ContentUnavailable error={page.error} onRetry={page.refetch} />;
   if (!page.data) return <FeedSkeleton />;
   if (page.data.items.length === 0) return <>{empty}</>;
   return (
@@ -406,7 +406,7 @@ export function FeedbackCard({
 function RequestsTab() {
   const t = useTranslations("conversations.RequestsTab");
   const requests = useFeedbackRequests();
-  if (requests.error) return <ContentUnavailable error={requests.error} onRetry={requests.refetch} subject={t("feedbackRequests")} />;
+  if (requests.error) return <ContentUnavailable error={requests.error} onRetry={requests.refetch} />;
   if (!requests.data) return <FeedSkeleton />;
   const waiting = requests.data.toAnswer.filter((r) => r.state === "Open" && r.myStatus === "Waiting");
   const mineOpen = requests.data.mine.filter((r) => r.state === "Open");
@@ -692,7 +692,7 @@ function PraisePage({
   const page = usePraisePage(query);
   useLanding("praise", first && Boolean(page.data), onOpen);
   const react = useReactToPraise();
-  if (page.error) return <ContentUnavailable error={page.error} onRetry={page.refetch} subject={t("praise")} />;
+  if (page.error) return <ContentUnavailable error={page.error} onRetry={page.refetch} />;
   if (!page.data) return <FeedSkeleton />;
   const everyone = !query.employeeId && (query.scope ?? "all") === "all";
   return (

@@ -71,7 +71,6 @@
     "theListCouldntBeApproved": "تعذّر اعتماد القائمة."
   },
   "PeerRequestPage": {
-    "thisRequest": "هذا الطلب",
     "loadingTheRequest": "جارٍ تحميل الطلب"
   },
   "PeerRequestForm": {
@@ -147,7 +146,6 @@
   "ReviewRecordPage": {
     "sReview": "تقييم {subjectDisplayName}",
     "loadingReview": "جارٍ تحميل التقييم",
-    "performanceWorkspace": "مساحة عمل الأداء",
     "review": "التقييم",
     "reviewUnavailable": "التقييم غير متاح",
     "thisReviewCouldNotBe": "تعذّر العثور على هذا التقييم."
@@ -525,7 +523,6 @@
   },
   "RoundPage": {
     "loadingTheRound": "جارٍ تحميل الجولة",
-    "performanceWorkspace": "مساحة عمل الأداء",
     "reviewRound": "جولة التقييم",
     "reviews": "التقييمات",
     "describe": {

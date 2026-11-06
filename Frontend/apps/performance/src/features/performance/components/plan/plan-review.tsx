@@ -28,7 +28,7 @@ import {
   DialogTrigger,
 } from "@repo/ds/components/ui/dialog";
 import { Textarea } from "@repo/ds/components/ui/textarea";
-import { AsyncButton, PagePermissionNotice, PageError, StatusBadge } from "@repo/ds/shell";
+import { AsyncButton, PagePermissionNotice, StatusBadge } from "@repo/ds/shell";
 import {
   useAlignmentTargets,
   usePlanDetail,
@@ -45,6 +45,7 @@ import { PlanSurfaceSkeleton } from "./plan-skeleton";
 import { initials } from "./plan-lib";
 import { useTranslations } from "next-intl";
 import { useSay } from "@repo/ds/lib/say";
+import { PageFailure } from "@repo/auth";
 
 /**
  * The reviewer's view of a submitted Plan — the same Plan resource an employee authors, opened by its
@@ -68,7 +69,7 @@ export function PlanReview({ cycle, planId }: { cycle: CycleSummaryDto; planId: 
   }
 
   if (detail.error || !detail.data) {
-    return <PageError title={t("planUnavailable")} description={detail.error?.message} onRetry={detail.refetch} />;
+    return <PageFailure error={detail.error} onRetry={detail.refetch} />;
   }
 
   const plan = detail.data;

@@ -17,12 +17,13 @@ import {
   Label,
   PersonAvatar,
 } from "@repo/ds";
-import { PageError, SettingsPage, useSettingsSectionName } from "@repo/ds/shell";
+import { SettingsPage, useSettingsSectionName } from "@repo/ds/shell";
 import { useCreateRole, useRoles } from "@/features/settings/api/use-core-access";
 import { useSaveFailure, useSettingsSay, type Say } from "@/features/settings/say";
 import { cellOf, toCells, weightOf } from "./role-model";
 import { ADMINISTRATORS_PATH } from "./paths";
 import { holderSummary, useRuleValues } from "./role-words";
+import { PageFailure } from "@repo/auth";
 
 const GROUPS = ["core", "performance", "company"] as const;
 
@@ -223,7 +224,7 @@ export function RolesSettings({ section }: { section: FusionSettingsSection }) {
   if (roles.error && !roles.data) {
     return (
       <SettingsPage title={title} studio>
-        <PageError title={say("roles.didNotLoad")} onRetry={() => void roles.refetch()} />
+        <PageFailure error={roles.error} onRetry={() => void roles.refetch()} />
       </SettingsPage>
     );
   }

@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { visibleFusionModules } from "@repo/api";
 import { useFusionViewer } from "@repo/api/react";
 import {
+  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
@@ -14,6 +15,7 @@ import {
   CommandList,
   Kbd,
 } from "@repo/ds";
+import { onOpenTopBarSearch } from "@repo/ds/shell";
 
 /**
  * The top bar's search (D-02's frame): a field that opens with a click or Ctrl/⌘ K. Today it takes the person to the
@@ -34,7 +36,11 @@ export function TopBarSearch() {
       }
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    const stopListening = onOpenTopBarSearch(() => setOpen(true));
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      stopListening();
+    };
   }, []);
 
   const places = useMemo(
@@ -58,6 +64,7 @@ export function TopBarSearch() {
         <Kbd className="ms-auto">{mac ? "⌘ K" : "Ctrl K"}</Kbd>
       </button>
       <CommandDialog open={open} onOpenChange={setOpen} title={t("label")} description={t("placeholder")}>
+        <Command>
         <CommandInput placeholder={t("placeholder")} />
         <CommandList>
           <CommandEmpty>{t("nothing")}</CommandEmpty>
@@ -77,6 +84,7 @@ export function TopBarSearch() {
             ))}
           </CommandGroup>
         </CommandList>
+        </Command>
       </CommandDialog>
     </>
   );

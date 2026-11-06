@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { PageFailure } from "@repo/auth";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Activity,
@@ -25,20 +26,14 @@ import {
   type SortingState,
 } from "@repo/ds/data-table";
 import { cn } from "@repo/ds/lib/utils";
-import {
-  AsyncButton,
-  PageContainer,
-  PageEmpty,
-  PageError,
-  PageHeader,
-} from "@repo/ds/shell";
+import { AsyncButton, PageContainer, PageEmpty, PageHeader } from "@repo/ds/shell";
 import type {
   OverviewFilter,
   TenantOverviewQuery,
   TenantOverviewRow,
   TenantOverviewSort,
 } from "../api";
-import { failureKind, listAllMatchingTenants, TENANT_PAGE_SIZES } from "../api";
+import { listAllMatchingTenants, TENANT_PAGE_SIZES } from "../api";
 import { useTenantWords, type TenantWords } from "../language";
 import { useTenantActivity, useTenantOverview } from "../queries";
 import { TenantsPageSkeleton } from "./tenants-page-skeleton";
@@ -517,22 +512,5 @@ function TenantsFailure({
   error: Error;
   onRetry: () => void;
 }) {
-  const t = useTranslations("tenants");
-  const kind = failureKind(error);
-
-  return (
-    <PageError
-      title={
-        kind === "permission"
-          ? t("common.noAccess")
-          : t("overview.failure.title")
-      }
-      description={
-        kind === "permission"
-          ? t("common.permissionChanged")
-          : t("overview.failure.description")
-      }
-      onRetry={kind === "permission" ? undefined : onRetry}
-    />
-  );
+  return <PageFailure error={error} onRetry={onRetry} />;
 }

@@ -15,25 +15,5 @@
   "metadata": {
     "title": "Platform administration — Fusion",
     "description": "Fusion platform control plane"
-  },
-  "states": {
-    "forbidden": {
-      "title": "Platform access required",
-      "description": "Your account does not have access to Platform administration.",
-      "action": "Return to Fusion home"
-    },
-    "notFound": {
-      "title": "Page not found",
-      "description": "This destination does not exist in Platform administration.",
-      "action": "Return to Platform overview"
-    },
-    "unavailable": {
-      "title": "Platform administration is unavailable",
-      "description": "The workspace could not load its required session state. Try again when the connection is restored."
-    },
-    "error": {
-      "title": "Platform administration could not load",
-      "description": "Your access is unchanged. Try loading this page again."
-    }
   }
 }

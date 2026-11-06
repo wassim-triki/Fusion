@@ -8,7 +8,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { ApiError, finishViewAs, type FusionNavigationViewer } from "@repo/api";
+import { ApiError, clearSessionExpired, finishViewAs, markSessionExpired, type FusionNavigationViewer } from "@repo/api";
 import { FusionViewerProvider, type FusionViewerState } from "@repo/api/react";
 import { getSidebarAccountLabel } from "./account-label";
 import { resolveFusionAttentionModules } from "./customer-workspace-access";
@@ -93,6 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             persistAuth(nextStored);
           })
           .catch(() => {
+            markSessionExpired();
             clearAuth();
             applyStoredAuth(null);
           })
@@ -217,6 +218,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setAccessToken(null);
     setRefreshToken(null);
+    clearSessionExpired();
     clearAuth();
   }, [accessToken]);
 

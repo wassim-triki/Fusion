@@ -16,7 +16,10 @@
       "failed": "Impossible de vous connecter. Réessayez.",
       "to": "à {company}",
       "continue": "Continuer",
-      "change": "Modifier"
+      "change": "Modifier",
+      "expiredTitle": "Votre session a pris fin",
+      "expiredBody": "Reconnectez-vous pour revenir là où vous étiez.",
+      "goToSignIn": "Aller à la connexion"
     },
     "search": {
       "label": "Rechercher",

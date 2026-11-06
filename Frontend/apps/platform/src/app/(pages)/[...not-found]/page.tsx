@@ -1,5 +1,6 @@
-import { PlatformPageState } from "@/features/states/platform-page-state";
+import { PageNotFound } from "@repo/auth";
 
+/** An address that matches nothing, inside the frame. */
 export default function PlatformNotFoundPage() {
-  return <PlatformPageState kind="not-found" />;
+  return <PageNotFound app="platform" />;
 }

@@ -3,13 +3,8 @@
 import { useEffect, type ReactNode } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { canAccessPlatform, useHydratedWorkspaceAccess } from "@repo/auth";
-import {
-  PageContainer,
-  PageHeader,
-  PagePermissionNotice,
-  PageRefusal,
-} from "@repo/ds/shell";
+import { canAccessPlatform, useHydratedWorkspaceAccess, PageRefusal } from "@repo/auth";
+import { PageState } from "@repo/ds/shell";
 import { Button } from "@/components/ui/button";
 import { CoreRouteSkeleton } from "./route-page-skeleton";
 import { buildShellUrl } from "@/lib/shell-url";
@@ -50,55 +45,33 @@ export function CoreWorkspaceAccessBoundary({
   }
 
   if (state === "forbidden") {
-    if (!canAccessPlatform(user)) {
-      return (
-        <PageContainer className="space-y-6">
-          <PageRefusal
-            action={
-              <Button asChild variant="outline">
-                <a href={buildShellUrl("/").toString()}>{t("boundary.denied.action")}</a>
-              </Button>
-            }
-          />
-        </PageContainer>
-      );
-    }
+    if (!canAccessPlatform(user)) return <PageRefusal />;
     return (
-      <PageContainer className="space-y-6">
-        <PageHeader
-          title={t("boundary.platform.title")}
-          description={t("boundary.platform.description")}
-        />
-        <PagePermissionNotice
-          title={t("boundary.platform.noticeTitle")}
-          description={t("boundary.platform.noticeDescription")}
-          action={
-            <Button asChild>
-              <a href={buildShellUrl("/platform").toString()}>{t("boundary.platform.action")}</a>
-            </Button>
-          }
-        />
-      </PageContainer>
+      <PageState
+        drawing="refused"
+        title={t("boundary.platform.noticeTitle")}
+        description={t("boundary.platform.noticeDescription")}
+        actions={
+          <Button asChild>
+            <a href={buildShellUrl("/platform").toString()}>{t("boundary.platform.action")}</a>
+          </Button>
+        }
+      />
     );
   }
 
   if (state === "module-unavailable") {
     return (
-      <PageContainer className="space-y-6">
-        <PageHeader
-          title={t("boundary.unavailable.title")}
-          description={t("boundary.unavailable.description")}
-        />
-        <PagePermissionNotice
-          title={t("boundary.unavailable.noticeTitle")}
-          description={t("boundary.unavailable.noticeDescription")}
-          action={
-            <Button asChild variant="outline">
-              <a href={buildShellUrl("/").toString()}>{t("boundary.unavailable.action")}</a>
-            </Button>
-          }
-        />
-      </PageContainer>
+      <PageState
+        drawing="refused"
+        title={t("boundary.unavailable.noticeTitle")}
+        description={t("boundary.unavailable.noticeDescription")}
+        actions={
+          <Button asChild>
+            <a href={buildShellUrl("/").toString()}>{t("boundary.unavailable.action")}</a>
+          </Button>
+        }
+      />
     );
   }
 

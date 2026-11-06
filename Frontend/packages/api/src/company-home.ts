@@ -27,12 +27,15 @@ export interface MyManagerDto {
 export const companyHomeKeys = {
   workWeek: (tenantId: string) => ["company-work-week", tenantId] as const,
   manager: (tenantId: string, userId: string) => ["my-manager", tenantId, userId] as const,
+  administrators: (tenantId: string) => ["company-administrators", tenantId] as const,
 };
 
 export function createCompanyHomeApi(client: ApiClient) {
   return {
     workWeek: (signal?: AbortSignal) => client.get<CompanyWorkWeekDto>("/corehr/settings/work-week", { signal }),
     manager: (signal?: AbortSignal) => client.get<MyManagerDto>("/corehr/me/manager", { signal }),
+    administrators: (signal?: AbortSignal) =>
+      client.get<CompanyAdministratorsDto>("/identity/tenant-context/administrators", { signal }),
   };
 }
 
@@ -44,4 +47,16 @@ export function formatWorkWeek(days: readonly number[], locale: string): string 
   if (sorted.length > 1 && sorted.every((value, index) => index === 0 || value === sorted[index - 1]! + 1))
     return `${day(sorted[0]!)}–${day(sorted[sorted.length - 1]!)}`;
   return new Intl.ListFormat(locale, { style: "short", type: "conjunction" }).format(sorted.map(day));
+}
+
+/** Someone who can give a person access; a refused page names them (B-302). */
+export interface CompanyAdministratorContactDto {
+  name: string;
+  firstName: string;
+  email: string;
+}
+export interface CompanyAdministratorsDto {
+  /** An administrator gets no names: a refusal never tells them to ask themselves. */
+  callerIsAdministrator: boolean;
+  administrators: CompanyAdministratorContactDto[];
 }

@@ -14,20 +14,12 @@ import { useSettingsConflictSaver } from "@repo/api/query";
 import { useStagedSettings, type StagedSettings } from "@repo/api/react";
 import { cn, Input, NativeSelect, NativeSelectOption, Slider, Switch } from "@repo/ds";
 import { OptionCards } from "@repo/ds/choice";
-import {
-  PageError,
-  SettingsBlock,
-  SettingsPage,
-  SettingsRow,
-  SettingsRows,
-  SettingsSaveBar,
-  SettingsValue,
-  useSettingsSectionName,
-} from "@repo/ds/shell";
+import { SettingsBlock, SettingsPage, SettingsRow, SettingsRows, SettingsSaveBar, SettingsValue, useSettingsSectionName } from "@repo/ds/shell";
 import { useRatingScale, useSettings } from "@/features/performance/api/use-performance";
 import { useSaveCycleSettings, type CycleSettingsRequest } from "../api";
 import { CYCLE_SETTINGS_SECTIONS } from "../performance-settings";
 import { sayInEnglish, useSaveFailure, useSettingsSay, type Say } from "../say";
+import { PageFailure } from "@repo/auth";
 
 type Draft = CycleSettingsDto;
 type Update = StagedSettings<Draft>["update"];
@@ -141,7 +133,7 @@ function CycleSettingsSection({
   if (query.error && !saved) {
     return (
       <SettingsPage title={title}>
-        <PageError title={say("cycle.didNotLoad", { section: title })} onRetry={() => void query.refetch()} />
+        <PageFailure error={query.error} onRetry={() => void query.refetch()} headingLevel={2} />
       </SettingsPage>
     );
   }

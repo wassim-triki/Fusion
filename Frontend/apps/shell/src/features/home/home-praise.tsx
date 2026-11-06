@@ -3,7 +3,7 @@
 import { ChevronRight, HeartHandshake, Lightbulb, PartyPopper, ThumbsUp } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePraiseFeed, useReactToPraise } from "@repo/api/query";
-import { resolveFusionAttentionModules, useAuth } from "@repo/auth";
+import { resolveFusionAttentionModules, useAuth, PageFailure } from "@repo/auth";
 import { Skeleton } from "@repo/ds";
 import { Button } from "@repo/ds/components/ui/button";
 import { Section } from "@repo/ds/shell";
@@ -40,7 +40,7 @@ export function HomePraise() {
       action={<Button asChild variant="ghost" size="sm"><a href={`${PRAISE_TAB}&compose=praise`}>{t("give")}</a></Button>}
     >
       {feed.error ? (
-        <p className="type-body-secondary text-muted-foreground">{t("failed")}</p>
+        <PageFailure error={feed.error} size="card" title={t("failed")} onRetry={() => feed.refetch()} />
       ) : !feed.data ? (
         <div aria-label={t("loading")} className="space-y-3">
           <Skeleton className="h-28 w-full rounded-control" />

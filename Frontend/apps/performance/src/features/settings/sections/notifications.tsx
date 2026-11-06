@@ -9,14 +9,9 @@ import {
   useUpdateNotificationDefaults,
 } from "@repo/api/query";
 import { useStagedSettings } from "@repo/api/react";
-import {
-  NotificationModeList,
-  PageError,
-  SettingsPage,
-  SettingsSaveBar,
-  useSettingsSectionName,
-} from "@repo/ds/shell";
+import { NotificationModeList, SettingsPage, SettingsSaveBar, useSettingsSectionName } from "@repo/ds/shell";
 import { useSaveFailure } from "../say";
+import { PageFailure } from "@repo/auth";
 
 /**
  * Settings › Notifications: the company's email mode per Performance group (B-002 N7). People's own choices are kept
@@ -58,10 +53,7 @@ export function NotificationsSettings({
   if (query.error && !query.data) {
     return (
       <SettingsPage title={title}>
-        <PageError
-          title={t("didNotLoad")}
-          onRetry={() => void query.refetch()}
-        />
+        <PageFailure error={query.error} onRetry={() => void query.refetch()} headingLevel={2} />
       </SettingsPage>
     );
   }

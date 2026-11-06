@@ -2,9 +2,9 @@
 
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { useAuth, canEnterPerformance } from "@repo/auth";
+import { useAuth, canEnterPerformance, PageFailure } from "@repo/auth";
 import { useTeamBand } from "@repo/api/query";
-import { PageContainer, PageEmpty, PageError, TeamBand, TeamBandSkeleton } from "@repo/ds/shell";
+import { PageContainer, PageEmpty, TeamBand, TeamBandSkeleton } from "@repo/ds/shell";
 import { Users } from "lucide-react";
 
 export type TeamTab = "overview" | "orgChart";
@@ -31,7 +31,7 @@ export function TeamFrame({ tab, children }: { tab: TeamTab; children: (band: Te
   if (!team.data) {
     return (
       <PageContainer width="wide" className="max-w-6xl pb-16">
-        <PageError title={t("error")} onRetry={() => void team.refetch()} retryLabel={t("retry")} />
+        <PageFailure error={team.error} onRetry={() => void team.refetch()} />
       </PageContainer>
     );
   }

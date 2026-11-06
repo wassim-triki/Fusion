@@ -13,7 +13,6 @@
     },
     "notifications": {
       "title": "Notifications",
-      "didNotLoad": "Notifications didn't load",
       "emailGoesTo": "Email goes to <b>{address}</b>",
       "none": "None of your modules send notifications yet.",
       "notSaved": "That change didn't save. Your choices are as shown.",
@@ -84,7 +83,7 @@
     "terminal": {
       "expired": {
         "title": "This invitation has expired",
-        "detail": "No account was created. Ask the organization that invited you to send a new invitation."
+        "detail": "Ask your administrator to send a new one."
       },
       "revoked": {
         "title": "This invitation was cancelled",
@@ -331,7 +330,6 @@
   "app": {
     "error": {
       "title": "Something went wrong",
-      "fallback": "An unexpected error occurred.",
       "retry": "Try Again"
     },
     "notFound": {

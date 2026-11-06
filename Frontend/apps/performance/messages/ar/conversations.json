@@ -152,7 +152,6 @@
     "answerTo": "رد على «{requestQuestion}»"
   },
   "RequestsTab": {
-    "feedbackRequests": "طلبات الملاحظات",
     "askedOfYou": "مطلوبة منك",
     "nothingToAnswer": "لا شيء للرد عليه",
     "lastAnsweredFor": "· آخر رد لـ{name}",
@@ -207,9 +206,6 @@
     "noPraiseForYouYet": "لا إشادات لك بعد",
     "youHaventGivenPraiseYet": "لم تقدّم إشادة بعد",
     "showOlder": "عرض الأقدم"
-  },
-  "RequestRecord": {
-    "thisRequest": "هذا الطلب"
   },
   "RequestView": {
     "requests": "الطلبات",

@@ -21,6 +21,12 @@ const ROUTE_SEGMENTS = [
   "activity",
 ] as const;
 
+// Core HR's route folders with no word of their own.
+const ROUTES = new Set([
+  "access", "add", "administrators", "changes", "employees", "jobs", "org-chart", "organization", "people", "places",
+  "profile", "reports", "roles", "settings", "setup", "team", "units", "workforce-access", ...ROUTE_SEGMENTS,
+]);
+
 export function AppBreadcrumb() {
   const pathname = usePathname();
   const pageOverrides = useBreadcrumbOverridesMap();
@@ -38,6 +44,7 @@ export function AppBreadcrumb() {
       pathname={clean}
       navItems={[...nav.people.items, ...nav.admin.items]}
       overrides={overrides}
+      routeSegments={ROUTES}
     />
   );
 }

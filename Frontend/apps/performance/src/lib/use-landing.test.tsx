@@ -49,10 +49,10 @@ describe("useLanding", () => {
 });
 
 describe("ContentUnavailable", () => {
-  it("says plainly that something gone is no longer available, without a retry", () => {
-    render(<ContentUnavailable error={new ApiError(404, "Not Found", ["Not found"], null)} onRetry={vi.fn()} subject="1:1" />);
-    expect(screen.getByText("This is no longer available")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Go to Overview" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+  it("says plainly that something gone is no longer here and goes back to its list, without a retry", () => {
+    render(<ContentUnavailable error={new ApiError(404, "Not Found", ["Not found"], null)} onRetry={vi.fn()} list="oneOnOnes" />);
+    expect(screen.getByRole("heading", { name: "This is no longer here" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Go to 1:1s" }).getAttribute("href")).toBe("/performance/one-on-ones");
+    expect(screen.queryByRole("button", { name: "Try again" })).toBeNull();
   });
 });

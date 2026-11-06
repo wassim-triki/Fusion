@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { ApiError, type AccountPasswordRequirementsDto, type SsoProviderKey, type SsoRefusalDto } from "@repo/api";
-import { login as apiLogin, persistAuth, ProviderButton, startSsoFlow, takeSsoRefusal, useSsoRefusalText } from "@repo/auth";
+import { InvitationEnd, login as apiLogin, persistAuth, ProviderButton, startSsoFlow, takeSsoRefusal, useSsoRefusalText } from "@repo/auth";
 import type { AuthUser, StoredAuth } from "@repo/auth";
 import {
   Alert,
@@ -25,20 +25,16 @@ import {
 } from "@repo/ds";
 import {
   InvitationContextPanel,
-  InvitationTerminalCard,
   InvitationTransactionFrame,
   InvitationTransactionLoading,
-  InvitationTransactionTerminalFrame,
   PasswordStrengthField,
   type PasswordCheck,
 } from "@repo/ds/shell";
+import type { PageStateDrawingKind } from "@repo/ds/shell";
 import {
   ArrowRight,
-  Ban,
   Building2,
   Check,
-  CircleCheck,
-  Clock,
   Eye,
   EyeOff,
   Lock,
@@ -46,7 +42,6 @@ import {
   TriangleAlert,
   Users,
   X,
-  type LucideIcon,
 } from "lucide-react";
 import {
   useValidateInvite,
@@ -107,24 +102,23 @@ function passwordChecks(
 
 /** A stopping point: its lines are `invite.terminal.<state>`, the detail sometimes replaced by a sharper one. */
 interface TerminalDescriptor {
-  variant: "resolved" | "error";
-  icon: LucideIcon;
+  drawing: PageStateDrawingKind;
   state: "invalid" | "expired" | "revoked" | "used" | "verifyFailed";
   /** `invite.terminal.<detail>` in place of the state's own detail. */
   detail?: "askForNew" | "checkConnection" | "refreshOrRetry" | "refresh";
-  /** Offers sign-in. */
+  /** Offers sign-in as the way on, not just the way out. */
   signIn?: boolean;
 }
 
-const INVALID_LINK: TerminalDescriptor = { variant: "error", icon: TriangleAlert, state: "invalid" };
+const INVALID_LINK: TerminalDescriptor = { drawing: "gone", state: "invalid" };
 
-const EXPIRED: TerminalDescriptor = { variant: "error", icon: Clock, state: "expired" };
+const EXPIRED: TerminalDescriptor = { drawing: "gone", state: "expired" };
 
-const REVOKED: TerminalDescriptor = { variant: "error", icon: Ban, state: "revoked" };
+const REVOKED: TerminalDescriptor = { drawing: "gone", state: "revoked" };
 
-const ALREADY_USED: TerminalDescriptor = { variant: "resolved", icon: CircleCheck, state: "used", signIn: true };
+const ALREADY_USED: TerminalDescriptor = { drawing: "gone", state: "used", signIn: true };
 
-const VERIFY_FAILED: TerminalDescriptor = { variant: "error", icon: TriangleAlert, state: "verifyFailed" };
+const VERIFY_FAILED: TerminalDescriptor = { drawing: "crash", state: "verifyFailed" };
 
 function hasErrorMessage(error: ApiError, fragment: string): boolean {
   return error.errors.some((message) =>
@@ -234,15 +228,12 @@ export function InviteAcceptanceForm({ token }: { token: string | null }) {
 function TerminalScreen({ descriptor }: { descriptor: TerminalDescriptor }) {
   const t = useTranslations("invite.terminal");
   return (
-    <InvitationTransactionTerminalFrame>
-      <InvitationTerminalCard
-        variant={descriptor.variant}
-        icon={descriptor.icon}
-        title={t(`${descriptor.state}.title`)}
-        detail={descriptor.detail ? t(descriptor.detail) : t(`${descriptor.state}.detail`)}
-        action={descriptor.signIn ? { label: t("signIn"), href: "/auth/signin" } : undefined}
-      />
-    </InvitationTransactionTerminalFrame>
+    <InvitationEnd
+      drawing={descriptor.drawing}
+      title={t(`${descriptor.state}.title`)}
+      detail={descriptor.detail ? t(descriptor.detail) : t(`${descriptor.state}.detail`)}
+      action={descriptor.signIn ? { label: t("signIn"), href: "/auth/signin" } : undefined}
+    />
   );
 }
 

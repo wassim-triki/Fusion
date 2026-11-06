@@ -15,6 +15,10 @@ import {
 } from "@/features/performance/components/one-on-ones/one-on-one-skeletons";
 
 const route = vi.hoisted(() => ({ pathname: "" }));
+vi.mock("@repo/api/query", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  useCompanyAdministrators: () => ({ isLoading: false, data: undefined }),
+}));
 vi.mock("next/navigation", () => ({
   usePathname: () => route.pathname,
   useSearchParams: () => new URLSearchParams(),

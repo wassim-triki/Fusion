@@ -14,7 +14,7 @@ import {
   Users,
 } from "@/lib/icons";
 import { toast } from "sonner";
-import { useAuth } from "@repo/auth";
+import { useAuth, PageFailure } from "@repo/auth";
 import type {
   AddPlanObjectiveRequest,
   AlignmentTargetDto,
@@ -34,7 +34,7 @@ import {
   AlertDialogTrigger,
 } from "@repo/ds/components/ui/alert-dialog";
 import { Button } from "@repo/ds/components/ui/button";
-import { AsyncButton, PagePermissionNotice, PageError } from "@repo/ds/shell";
+import { AsyncButton, PagePermissionNotice } from "@repo/ds/shell";
 import { PlanEmptySkeleton } from "./plan-skeleton";
 import {
   useAlignmentTargets,
@@ -96,7 +96,7 @@ export function MyPlan({
     return (
       <>
         {heading()}
-        <PageError title={t("planUnavailable")} description={state.error?.message} onRetry={state.refetch} />
+        <PageFailure error={state.error} onRetry={state.refetch} />
       </>
     );
   }

@@ -42,7 +42,7 @@ export function PlanRecordPage({ cycleId, planId }: { cycleId: string; planId: s
       </PageContainer>
     );
   }
-  if (cycle.error) return <ContentUnavailable error={cycle.error} onRetry={cycle.refetch} subject={t("theCycle")} />;
+  if (cycle.error) return <ContentUnavailable error={cycle.error} onRetry={cycle.refetch} />;
   if (!cycle.data) return <PlanPageSkeleton />;
 
   if (plan.data?.isOwner) {

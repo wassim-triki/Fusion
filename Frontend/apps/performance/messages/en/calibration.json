@@ -128,14 +128,10 @@
     "calibration": "Calibration"
   },
   "SessionBody": {
-    "thisView": "This view",
     "moved": "{name} moved."
   },
   "StillWithManagers": {
     "stillWithManagers": "Still with managers"
-  },
-  "Finalized": {
-    "theOutcome": "The outcome"
   },
   "OpenSession": {
     "reviewRound": "Review round",

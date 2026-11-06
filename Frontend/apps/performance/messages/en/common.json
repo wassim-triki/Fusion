@@ -1,6 +1,5 @@
 {
   "PerformanceError": {
-    "thisPageCouldntLoad": "This page couldn't load",
     "goToOverview": "Go to Overview"
   },
   "PagesLayout": {
@@ -10,8 +9,6 @@
     "loading": "Loading"
   },
   "PerformanceNotFound": {
-    "nothingHere": "Nothing here",
-    "thisAddressDoesntMatchAnything": "This address doesn't match anything in Performance.",
     "goToOverview": "Go to Overview"
   },
   "CompetencyCatalog": {
@@ -49,11 +46,7 @@
     "couldNotDeleteCompetency": "Could not delete competency."
   },
   "ContentUnavailable": {
-    "temporarilyUnavailable": "Temporarily unavailable",
-    "couldNotBeLoadedBecause": "{subject} could not be loaded because the service is temporarily unavailable. It will recover when the service is back.",
-    "retry": "Retry",
     "unavailable": "{subject} unavailable",
-    "noLongerAvailable": "This is no longer available",
     "goToOverview": "Go to Overview"
   },
   "CycleContextBar": {
@@ -84,8 +77,6 @@
   },
   "PerformanceWorkspaceAccessBoundary": {
     "checkingPerformanceAccess": "Checking Performance access",
-    "performanceIsACustomerWorkspace": "Performance is a customer workspace",
-    "platformAdministrationIsKeptSeparate": "Platform administration is kept separate from customer performance data.",
     "performanceIsNotAvailableTo": "Performance is not available to Platform Administrators",
     "useThePlatformControlPlane": "Use the Platform control plane for platform-level administration.",
     "openPlatform": "Open Platform",

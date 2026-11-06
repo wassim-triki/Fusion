@@ -51,7 +51,7 @@ export function CycleInsights({ cycleId, unitId, onUnit }: { cycleId: string; un
   const insights = useInsights(cycleId, unitId);
   const [drill, setDrill] = useState<Drill | null>(null);
 
-  if (insights.error) return <ContentUnavailable error={insights.error} onRetry={insights.refetch} subject={t("insights")} />;
+  if (insights.error) return <ContentUnavailable error={insights.error} onRetry={insights.refetch} />;
   if (!insights.data) return <InsightsSkeleton />;
   const data = insights.data;
   const open = (metric: InsightsMetric, context: string, extra?: Partial<Drill>) =>

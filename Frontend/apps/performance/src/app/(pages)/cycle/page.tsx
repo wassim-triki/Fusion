@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
-import { PageContainer, PageHeader, PageRefusal } from "@repo/ds/shell";
+import { PageContainer, PageHeader } from "@repo/ds/shell";
 import { CycleSurfaceSkeleton } from "@/features/performance/components/cycle-setup/setup-skeletons";
 import { ContentUnavailable } from "@/features/performance/components/content-unavailable";
 import { useCurrentCycle, useCycleClosure } from "@/features/performance/api/use-performance";
@@ -12,6 +12,7 @@ import { MilestoneRail } from "@/features/performance/components/milestone-rail"
 import { CycleInsights } from "@/features/performance/components/cycle/cycle-insights";
 import { cn } from "@repo/ds/lib/utils";
 import { useTranslations } from "next-intl";
+import { PageRefusal } from "@repo/auth";
 
 /**
  * The durable Cycle surface — the established (Active/Closed) Cycle, read-only. A Draft is still
@@ -55,13 +56,13 @@ export default function CyclePage() {
 
   if (context.isLoading) return <CycleSurfaceSkeleton />;
   if (context.error && !canAdminister) return <PageContainer><PageRefusal /></PageContainer>;
-  if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} subject={t("performanceWorkspace")} />;
+  if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} />;
   if (!canAdminister) {
     return <PageContainer><PageRefusal /></PageContainer>;
   }
   if (detail.isLoading) return <CycleSurfaceSkeleton />;
   if (detail.error) {
-    return <ContentUnavailable error={detail.error} onRetry={detail.refetch} subject={t("theCycle")} />;
+    return <ContentUnavailable error={detail.error} onRetry={detail.refetch} />;
   }
   if (!detail.data || isDraft) return <CycleSurfaceSkeleton />;
 
@@ -98,7 +99,7 @@ export default function CyclePage() {
         <div className="space-y-8">
           <MilestoneRail milestones={cycleDetail.milestones} />
           {closure.error ? (
-            <ContentUnavailable error={closure.error} onRetry={closure.refetch} subject={t("closureReadiness")} />
+            <ContentUnavailable error={closure.error} onRetry={closure.refetch} size="card" title={t("closureDidNotLoad")} />
           ) : (
             <ClosureSection closure={closure.data} loading={closure.isLoading} />
           )}

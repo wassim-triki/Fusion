@@ -6,16 +6,7 @@ import { useSettingsConflictSaver } from "@repo/api/query";
 import { useStagedSettings } from "@repo/api/react";
 import { Input, NativeSelect, NativeSelectOption, Switch } from "@repo/ds";
 import { OptionCards } from "@repo/ds/choice";
-import {
-  PageError,
-  SettingsBlock,
-  SettingsPage,
-  SettingsRow,
-  SettingsRows,
-  SettingsSaveBar,
-  SettingsValue,
-  useSettingsSectionName,
-} from "@repo/ds/shell";
+import { SettingsBlock, SettingsPage, SettingsRow, SettingsRows, SettingsSaveBar, SettingsValue, useSettingsSectionName } from "@repo/ds/shell";
 import { useAccessProfiles } from "@/features/settings/api/use-core-access";
 import {
   useProvisioningSettings,
@@ -23,6 +14,7 @@ import {
 } from "@/features/settings/api/use-tenant-settings";
 import { sayInEnglish, useSaveFailure, useSettingsSay, type Say } from "@/features/settings/say";
 import { SingleSignOnBlock } from "@/features/settings/sso/single-sign-on";
+import { PageFailure } from "@repo/auth";
 
 /** Each choice's words are `invitations.reinvite.<value>` in the catalogue. */
 const REINVITE = ["RefreshExisting", "KeepExisting"] as const;
@@ -119,7 +111,7 @@ export function SignInSettings({ section }: { section: FusionSettingsSection }) 
   if (query.error && !query.data) {
     return (
       <SettingsPage title={title}>
-        <PageError title={say("invitations.didNotLoad")} onRetry={() => void query.refetch()} />
+        <PageFailure error={query.error} onRetry={() => void query.refetch()} headingLevel={2} />
       </SettingsPage>
     );
   }

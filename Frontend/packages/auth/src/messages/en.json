@@ -16,7 +16,10 @@
       "failed": "Couldn't sign you in. Try again.",
       "to": "to {company}",
       "continue": "Continue",
-      "change": "Change"
+      "change": "Change",
+      "expiredTitle": "You've been signed out",
+      "expiredBody": "Sign in again to go back to where you were.",
+      "goToSignIn": "Go to sign in"
     },
     "search": {
       "label": "Search",

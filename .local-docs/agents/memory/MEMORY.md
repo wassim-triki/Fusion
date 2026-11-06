@@ -36,6 +36,7 @@
 - [Loading architecture](loading-architecture.md) — B-280 verified pending contract and stable Home frame; scoped production/dev evidence, retained hydration guards, independent auth/header follow-ups. July notes are historical.
 - [Roles model](roles-model.md) — B-177: areas over access profiles, holders by rule recomputed from Core HR, chosen = user ids, Personal on its own keys since B-214.
 - [Section titles inside sections](section-titles-inside-sections.md) — title + actions in the container; fields darker than surface; DS pickers only; icon row actions (B-179 review).
+- [Failure pages](page-failure-family.md) — B-302: `PageFailure` in `@repo/auth` picks the state, `PageState` in DS draws it; no hooks in `page-states.tsx` (server `loading.tsx` imports it).
 - [Permission-gate: hide, don't deny](permission-gate-hide-not-deny.md) — hide inaccessible nav/actions; gate on operational access.
 
 ## Core HR / Platform work

@@ -5,9 +5,12 @@ export {
   finishViewAs,
   isBrowser,
   openPlatformEventStream,
+  clearSessionExpired,
+  markSessionExpired,
   persistLanguageCookie,
   readLanguageCookie,
   readViewAs,
+  wasSessionExpired,
 } from "./platform";
 export { ApiError } from "./types";
 export type {
@@ -18,10 +21,13 @@ export type {
 } from "./types";
 export {
   classifyApiError,
+  pageFailureKind,
+  serviceAnswers,
   isRetriableErrorKind,
   UPSTREAM_UNAVAILABLE_CODE,
   UPSTREAM_UNAVAILABLE_STATUS,
   type ApiErrorKind,
+  type PageFailureKind,
 } from "./error-classification";
 export type {
   PlatformApiClientConfig,

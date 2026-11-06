@@ -53,11 +53,7 @@
     "personalDetails": "Coordonnées mises à jour"
   },
   "record": {
-    "noAccess": "Vous n’avez pas accès à ce profil",
-    "noAccessDescription": "Votre rôle ne permet pas de consulter ce collaborateur.",
     "notFound": "Collaborateur introuvable",
-    "transient": "Ce profil n’a pas pu être chargé. Réessayez dans un instant.",
-    "missing": "Ce collaborateur n’existe pas ou n’est pas disponible dans votre entreprise.",
     "setUpAccess": "Configurer la connexion",
     "reviewAccess": "Vérifier la connexion",
     "addWorkEmail": "Ajouter l’adresse e-mail professionnelle",
@@ -68,7 +64,6 @@
     "added": "Ajouté",
     "asOf": "Au {date}",
     "today": "Aujourd’hui",
-    "backToPeople": "Retour aux collaborateurs",
     "retry": "Réessayer",
     "viewAsOf": "Voir à une autre date",
     "viewAsOfDate": "Date d’affichage",

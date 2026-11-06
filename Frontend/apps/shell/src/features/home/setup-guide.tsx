@@ -7,7 +7,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Check, ChevronRight, FileSpreadsheet, Upload } from "lucide-react";
 import { formatWorkWeek, ApiError, createCoreImportApi, createPlatformApiClient, coreImportQueryKeys } from "@repo/api";
 import { useCompanyWorkWeek, useApiQuery, useMyCard, usePhoto, useSetupGuide, useTenantSummary, type SetupGuide, type SetupStepKey } from "@repo/api/query";
-import { canImportCoreEmployees, canManageCoreOrganization, canViewTenantAdministration, useAuth } from "@repo/auth";
+import { canImportCoreEmployees, canManageCoreOrganization, canViewTenantAdministration, useAuth, PageFailure } from "@repo/auth";
 import { Button, PersonAvatar, Skeleton, cn } from "@repo/ds";
 import { ProgressSegments } from "@repo/ds/shell";
 
@@ -310,10 +310,7 @@ export function CompanyCard({ guide }: { guide: Pick<SetupGuide, "people" | "fac
             <p className="type-meta text-muted-foreground">{[language, zone, days].filter(Boolean).join(" · ")}</p>
           )}
           {week.error ? (
-            <p className="type-meta text-muted-foreground">
-              {t("workWeekFailed")}
-              <Button variant="ghost" size="sm" onClick={() => void week.refetch()}>{t("retry")}</Button>
-            </p>
+            <PageFailure error={week.error} size="row" title={t("workWeekFailed")} onRetry={() => week.refetch()} />
           ) : null}
         </div>
       </div>

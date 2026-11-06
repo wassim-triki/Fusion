@@ -3,10 +3,9 @@
 import { useEffect, type ReactNode } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useHydratedWorkspaceAccess } from "@repo/auth";
+import { useHydratedWorkspaceAccess, PageRefusal } from "@repo/auth";
 import { PlatformRouteSkeleton } from "@/shell/route-page-skeleton";
 import { buildShellUrl } from "@/lib/shell-url";
-import { PlatformPageState } from "@/features/states/platform-page-state";
 import {
   buildPlatformCallbackUrl,
   resolvePlatformAccessState,
@@ -41,7 +40,8 @@ export function PlatformAccessBoundary({
   }
 
   if (state === "forbidden") {
-    return <PlatformPageState kind="forbidden" />;
+    // A company's administrators can't open Platform, so there's no one here to ask.
+    return <PageRefusal leaveTo="home" help={false} />;
   }
 
   return children;

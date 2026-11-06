@@ -106,6 +106,8 @@ interface RefreshEnvelope {
   isSuccess: boolean;
 }
 
+const SESSION_EXPIRED_KEY = "ey_hr_session_expired";
+
 let refreshPromise: Promise<string | null> | null = null;
 
 function dispatchAuthStorageChanged(): void {
@@ -200,6 +202,26 @@ export async function openPlatformEventStream(
     cache: "no-store",
     credentials: "same-origin",
   });
+}
+
+/**
+ * Marks a session that ended on its own, so sign-in can say so. Only a refused refresh sets it, never the person's own
+ * sign-out or a first visit. Per tab, and it stays until they are back in.
+ */
+export function markSessionExpired(): void {
+  tabStorage()?.setItem(SESSION_EXPIRED_KEY, "1");
+}
+
+export function clearSessionExpired(): void {
+  tabStorage()?.removeItem(SESSION_EXPIRED_KEY);
+}
+
+export function wasSessionExpired(): boolean {
+  return tabStorage()?.getItem(SESSION_EXPIRED_KEY) != null;
+}
+
+function tabStorage(): Storage | null {
+  return isBrowser() && typeof sessionStorage !== "undefined" ? sessionStorage : null;
 }
 
 function clearBrowserAuth(): void {
@@ -322,6 +344,7 @@ async function requestSessionRefresh(baseUrl: string): Promise<string | null> {
       response.status === 401 ||
       response.status === 403
     ) {
+      markSessionExpired();
       clearBrowserAuth();
       return null;
     }
@@ -337,6 +360,7 @@ async function requestSessionRefresh(baseUrl: string): Promise<string | null> {
   }
 
   if (!payload.isSuccess || !payload.data) {
+    markSessionExpired();
     clearBrowserAuth();
     return null;
   }

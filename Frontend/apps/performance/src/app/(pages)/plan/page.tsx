@@ -19,7 +19,7 @@ export default function PlanPage() {
   const cycle = detail.data?.cycle ?? null;
 
   if (context.isLoading) return <PlanPageSkeleton empty />;
-  if (context.error && !performanceFailure(context.error).unavailable) return <ContentUnavailable error={context.error} onRetry={context.refetch} subject={t("performanceWorkspace")} />;
+  if (context.error && !performanceFailure(context.error).unavailable) return <ContentUnavailable error={context.error} onRetry={context.refetch} />;
   // Not a participant of the selected cycle (B-069): one precise line; the cycle switcher above offers the others.
   if (context.error || !canParticipate) {
     const selected = context.data?.selected?.name ?? null;
@@ -30,7 +30,7 @@ export default function PlanPage() {
     );
   }
   if (detail.isLoading) return <PlanPageSkeleton empty />;
-  if (detail.error) return <ContentUnavailable error={detail.error} onRetry={detail.refetch} subject={t("theCycle")} />;
+  if (detail.error) return <ContentUnavailable error={detail.error} onRetry={detail.refetch} />;
   // Planning opens at activation: a Cycle still in setup has no plan to author yet.
   if (!cycle || cycle.state === "Draft") {
     return (

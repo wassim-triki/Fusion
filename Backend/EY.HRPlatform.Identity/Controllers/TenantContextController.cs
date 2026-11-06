@@ -1,4 +1,5 @@
 using EY.HRPlatform.Identity.Features.Branding;
+using EY.HRPlatform.Identity.Features.TenantAdministration;
 using EY.HRPlatform.Identity.Features.TenantContext;
 using EY.HRPlatform.Identity.Features.TenantContext.Dtos;
 using EY.HRPlatform.Identity.Infrastructure.Persistence;
@@ -71,6 +72,40 @@ public class TenantContextController(
             TenantOperationalStatus.For(tenant),
             tenant.IsActive,
             tenant.IsArchived)));
+    }
+
+    /// <summary>
+    /// Who a refused person can ask: up to three of the caller's own company's usable administrators, longest-serving
+    /// first. Any signed-in member may read it, as the directory already shows these people. The tenant comes only from
+    /// the token's membership claim; a Platform Administrator has none and is refused.
+    /// </summary>
+    [HttpGet("administrators")]
+    [ProducesResponseType(typeof(ApiResponse<CompanyAdministratorsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<CompanyAdministratorsDto>>> GetAdministrators(
+        CancellationToken cancellationToken)
+    {
+        if (tenantContext.TenantIdOrDefault is not { } tenantId || tenantId == Guid.Empty)
+            return StatusCode(StatusCodes.Status403Forbidden,
+                ApiResponse.Failure("A customer tenant context is required."));
+
+        var callerId = User.GetUserId();
+        var usable = UsableTenantAdministrator.ForTenant(dbContext, tenantId).AsNoTracking();
+
+        if (await usable.AnyAsync(assignment => assignment.UserId == callerId, cancellationToken))
+            return Ok(ApiResponse<CompanyAdministratorsDto>.Success(new CompanyAdministratorsDto(true, [])));
+
+        var administrators = await usable
+            .Where(assignment => assignment.User!.Email != null)
+            .OrderBy(assignment => assignment.GrantedAt)
+            .Take(3)
+            .Select(assignment => new CompanyAdministratorContactDto(
+                (assignment.User!.FirstName + " " + assignment.User!.LastName).Trim(),
+                assignment.User!.FirstName,
+                assignment.User!.Email!))
+            .ToListAsync(cancellationToken);
+
+        return Ok(ApiResponse<CompanyAdministratorsDto>.Success(new CompanyAdministratorsDto(false, administrators)));
     }
 
     /// <summary>

@@ -128,14 +128,10 @@
     "calibration": "Calibrage"
   },
   "SessionBody": {
-    "thisView": "Cette vue",
     "moved": "{name} déplacé."
   },
   "StillWithManagers": {
     "stillWithManagers": "Encore chez les managers"
-  },
-  "Finalized": {
-    "theOutcome": "Le résultat"
   },
   "OpenSession": {
     "reviewRound": "Campagne d’évaluation",

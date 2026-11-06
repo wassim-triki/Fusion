@@ -41,19 +41,12 @@
     "action": "Retour à Core HR"
   },
   "boundary": {
-    "denied": {
-      "action": "Ouvrir Fusion"
-    },
     "platform": {
-      "title": "Core HR est un espace client",
-      "description": "L’administration Platform reste séparée des données des collaborateurs des clients.",
       "noticeTitle": "Core HR n’est pas disponible pour les administrateurs Platform",
       "noticeDescription": "Utilisez la console Platform pour l’administration de la plateforme.",
       "action": "Ouvrir Platform"
     },
     "unavailable": {
-      "title": "Core HR n’est pas disponible",
-      "description": "Core HR n’est pas activé pour votre entreprise.",
       "noticeTitle": "Module indisponible",
       "noticeDescription": "Demandez à votre administrateur si votre entreprise devrait en disposer.",
       "action": "Ouvrir Fusion"

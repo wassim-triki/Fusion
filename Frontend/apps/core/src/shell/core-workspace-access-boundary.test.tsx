@@ -15,6 +15,10 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
+vi.mock("@repo/api/query", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  useCompanyAdministrators: () => ({ isLoading: false, data: undefined }),
+}));
 vi.mock("@repo/auth", async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
   return {
@@ -77,7 +81,7 @@ describe("CoreWorkspaceAccessBoundary", () => {
   it("does not render Core children when the module is unavailable", async () => {
     mocks.user = user({ moduleEntitlements: [] });
     render(<CoreWorkspaceAccessBoundary><div>Protected Core content</div></CoreWorkspaceAccessBoundary>);
-    expect(await screen.findByRole("heading", { name: "Core HR is not available" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "Module unavailable" })).toBeTruthy();
     expect(screen.queryByText("Protected Core content")).toBeNull();
   });
 
@@ -90,7 +94,7 @@ describe("CoreWorkspaceAccessBoundary", () => {
     mocks.pathname = "/access";
     mocks.user = user({ moduleEntitlements: [] });
     render(<CoreWorkspaceAccessBoundary><div>Tenant access content</div></CoreWorkspaceAccessBoundary>);
-    expect(await screen.findByRole("heading", { name: "You don't have access to this page. Ask your administrator if you need it." })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "You don't have access to this page" })).toBeTruthy();
     expect(screen.queryByText("Tenant access content")).toBeNull();
   });
 

@@ -30,8 +30,9 @@ import {
   type SsoProviderKey,
   type SsoRefusalDto,
   type SsoWaysInDto,
+  wasSessionExpired,
 } from "@repo/api";
-import { LanguageMenu } from "@repo/ds/shell";
+import { LanguageMenu, PageStateDrawing } from "@repo/ds/shell";
 import { isLocale } from "@repo/i18n/config";
 
 const client = createPlatformApiClient();
@@ -96,6 +97,12 @@ export function SignInPage({ onSuccess }: SignInPageProps) {
   const [refusal, setRefusal] = useState<SsoRefusalDto | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [expired, setExpired] = useState(false);
+
+  // Read once the session has settled: restoring it is what finds out that it ended.
+  useEffect(() => {
+    if (!authLoading) setExpired(wasSessionExpired());
+  }, [authLoading]);
 
   // Resolve the landing for the just-authenticated user: a safe callback, else the product's default.
   const finishSignIn = useCallback(
@@ -215,9 +222,10 @@ export function SignInPage({ onSuccess }: SignInPageProps) {
       }
     >
       <div className="flex flex-col gap-1">
-        <h1 className="type-page-title text-foreground">{t("title")}</h1>
+        {expired ? <PageStateDrawing kind="refused" size="small" className="mb-2.5 -ms-[15px]" /> : null}
+        <h1 className="type-page-title text-foreground">{expired ? t("expiredTitle") : t("title")}</h1>
         <p className="type-body text-muted-foreground">
-          {brand.value ? t("to", { company: brand.value.name }) : t("subtitle")}
+          {expired ? t("expiredBody") : brand.value ? t("to", { company: brand.value.name }) : t("subtitle")}
         </p>
       </div>
 

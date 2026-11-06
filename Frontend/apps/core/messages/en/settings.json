@@ -207,7 +207,6 @@
     "notFilled": "Not filled in yet"
   },
   "invitations": {
-    "didNotLoad": "Invitations didn't load",
     "notSaved": "Invitations didn't save. Try again.",
     "leave": "Leave without saving? Your changes to Invitations are discarded.",
     "reinvite": {
@@ -251,7 +250,6 @@
     "title": "Invitations"
   },
   "roles": {
-    "didNotLoad": "Roles didn't load",
     "title": "Roles",
     "newRole": "New role",
     "groups": {
@@ -404,7 +402,6 @@
       "notEligible": "Only people who already sign in can be made administrators.",
       "notAdded": "Couldn't add them. Try again.",
       "added": "{name} is an administrator",
-      "didNotLoad": "Administrators didn't load",
       "historyDidNotLoad": "History didn't load",
       "history": {
         "first": "{company}'s first administrator, from Fusion's invitation",
@@ -436,7 +433,6 @@
     "notCreated": "The role wasn't created.",
     "renameTitle": "Rename {role}",
     "renameAction": "Rename",
-    "notFound": "This role doesn't exist anymore",
     "preview": {
       "title": "As {viewer} sees {subject}",
       "titleSelf": "As {viewer} sees their own page",
@@ -486,7 +482,6 @@
     "seeAsFailed": "Couldn't open Fusion as them. Try again."
   },
   "changeHistory": {
-    "didNotLoad": "Change history didn't load",
     "section": "Section",
     "person": "Person",
     "allSections": "All sections",

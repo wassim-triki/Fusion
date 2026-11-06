@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { PageFailure } from "@repo/auth";
 import {
   createPerformanceApi,
   createPlatformApiClient,
@@ -97,7 +98,7 @@ export function YourYear({ employeeId, enabled }: { employeeId: string | null | 
   if (summary.isError) {
     return (
       <Section size="card" id="your-year" title={t("title")}>
-        <p className="type-body-secondary text-muted-foreground">{t("failed")}</p>
+        <PageFailure error={summary.error} size="row" title={t("failed")} onRetry={() => summary.refetch()} />
       </Section>
     );
   }

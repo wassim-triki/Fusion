@@ -65,3 +65,33 @@ export function classifyApiError(error: unknown): ApiErrorKind {
 export function isRetriableErrorKind(kind: ApiErrorKind): boolean {
   return kind === "upstream-unavailable" || kind === "network";
 }
+
+/** Which of the failure pages a request's failure gets (B-302). */
+export type PageFailureKind = "refused" | "gone" | "down" | "offline" | "failed";
+
+/**
+ * A request that never reached a server is the person's connection only when the browser says so; otherwise the
+ * thing that should have answered didn't.
+ */
+export function pageFailureKind(error: unknown, online: boolean): PageFailureKind {
+  const kind = classifyApiError(error);
+  if (kind === "network") return online ? "down" : "offline";
+  if (kind === "upstream-unavailable") return "down";
+  if (error instanceof ApiError && error.status === 403) return "refused";
+  if (error instanceof ApiError && error.status === 404) return "gone";
+  return "failed";
+}
+
+/**
+ * Whether the service behind a path answers at all, without touching the page's own requests: a refresh of a query
+ * with no data flips its page back to loading, so a page waiting on an outage asks here first. A refusal is an answer;
+ * only the proxy's and gateway's 502/503/504 and a failed request are not.
+ */
+export async function serviceAnswers(path: string): Promise<boolean> {
+  try {
+    const response = await fetch(path, { cache: "no-store", headers: { Accept: "application/json" } });
+    return ![502, 503, 504].includes(response.status);
+  } catch {
+    return false;
+  }
+}

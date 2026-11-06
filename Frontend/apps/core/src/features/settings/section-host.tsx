@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
-import { useTranslations } from "next-intl";
 import type { FusionSettingsSection } from "@repo/api";
 import { useSettingsSections } from "@repo/api/query";
-import { PageError, SettingsPage } from "@repo/ds/shell";
+import { SettingsPage } from "@repo/ds/shell";
 import { useCoreSettingsLabel } from "./core-settings";
+import { PageFailure } from "@repo/auth";
 
 /**
  * Opens one Core HR section once the server says the person may see it. A section they can't view, or an unknown
@@ -18,7 +18,6 @@ export function CoreSettingsSectionHost({
   id: string;
   render: (section: FusionSettingsSection) => ReactNode;
 }) {
-  const t = useTranslations("settings");
   const coreSettingsLabel = useCoreSettingsLabel();
   const sections = useSettingsSections("core");
   const section = sections.data?.find((candidate) => candidate.id === id);
@@ -31,7 +30,7 @@ export function CoreSettingsSectionHost({
   if (sections.isError) {
     return (
       <SettingsPage title={coreSettingsLabel(id)}>
-        <PageError title={t("didNotLoad")} onRetry={() => void sections.refetch()} />
+        <PageFailure error={sections.error} onRetry={() => void sections.refetch()} headingLevel={2} />
       </SettingsPage>
     );
   }

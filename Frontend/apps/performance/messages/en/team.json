@@ -1,7 +1,5 @@
 {
   "MyTeamPage": {
-    "performanceWorkspace": "Performance workspace",
-    "theCycle": "The Cycle",
     "yourPeople": "Your people"
   },
   "NoReports": {
@@ -162,9 +160,6 @@
   },
   "PdfButton": {
     "pdf": "PDF"
-  },
-  "YourPeople": {
-    "yourPeopleAreUnavailable": "Your people are unavailable"
   },
   "RosterSection": {
     "findAPerson": "Find a person",

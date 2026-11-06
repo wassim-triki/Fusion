@@ -34,7 +34,7 @@ export function ReviewsWorkspace() {
   const params = useSearchParams();
   const router = useRouter();
   const peers = params.get("peers");
-  if (query.error) return <ContentUnavailable error={query.error} onRetry={query.refetch} subject={t("reviews")} />;
+  if (query.error) return <ContentUnavailable error={query.error} onRetry={query.refetch} />;
   if (!query.data) return <WorkspaceSkeleton />;
   const close = () => {
     const next = new URLSearchParams(params.toString());

@@ -23,13 +23,11 @@ import {
 } from "@repo/ds";
 import {
   InvitationContextPanel,
-  InvitationTerminalCard,
   InvitationTransactionFrame,
   InvitationTransactionLoading,
-  InvitationTransactionTerminalFrame,
   PasswordStrengthField,
 } from "@repo/ds/shell";
-import { login, persistAuth, ProviderButton, startSsoFlow, takeSsoRefusal, useSsoRefusalText } from "@repo/auth";
+import { InvitationEnd, login, persistAuth, ProviderButton, startSsoFlow, takeSsoRefusal, useSsoRefusalText } from "@repo/auth";
 import { OptionCards } from "@repo/ds/choice";
 import {
   createPlatformApiClient,
@@ -40,21 +38,15 @@ import {
 } from "@repo/api";
 import {
   ArrowRight,
-  Ban,
   Building2,
   Check,
-  CircleCheck,
-  Clock,
   Eye,
   EyeOff,
   Lock,
   Mail,
-  RefreshCw,
   TriangleAlert,
-  UserX,
   Users,
   X,
-  type LucideIcon,
 } from "lucide-react";
 import {
   BOOTSTRAP_JOURNEY,
@@ -138,9 +130,7 @@ export function ActivateInvitation({
   if (phase.kind === "terminal") {
     return (
       <div lang={locale} className="contents">
-        <InvitationTransactionTerminalFrame>
-          <Terminal outcome={phase.outcome} journey={journey} />
-        </InvitationTransactionTerminalFrame>
+        <Terminal outcome={phase.outcome} journey={journey} />
       </div>
     );
   }
@@ -223,19 +213,6 @@ function TenantContext({
 /* Terminal states                                                            */
 /* -------------------------------------------------------------------------- */
 
-/** One semantic glyph per stopping point, so the state reads before the words do. */
-const TERMINAL_ICON: Record<string, LucideIcon> = {
-  expired: Clock,
-  revoked: Ban,
-  superseded: RefreshCw,
-  already_accepted: CircleCheck,
-  existing_account: UserX,
-  session_unavailable: CircleCheck,
-};
-
-/** Only the two states where activation actually succeeded read as resolved. */
-const RESOLVED = new Set(["already_accepted", "session_unavailable"]);
-
 function Terminal({
   outcome,
   journey,
@@ -247,9 +224,9 @@ function Terminal({
   const state = journeyTerminalState(journey, outcome, say);
 
   return (
-    <InvitationTerminalCard
-      variant={RESOLVED.has(outcome) ? "resolved" : "error"}
-      icon={TERMINAL_ICON[outcome] ?? TriangleAlert}
+    <InvitationEnd
+      // Activation went through here, so there is nothing to draw.
+      drawing={outcome === "session_unavailable" ? undefined : outcome === "existing_account" ? "refused" : "gone"}
       title={state.title}
       detail={state.detail}
       action={state.action}

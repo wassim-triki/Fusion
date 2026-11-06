@@ -7,7 +7,7 @@ import { ApiError, type CalibrationFilter, type CalibrationHeaderDto, type Calib
 import { Button } from "@repo/ds/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@repo/ds/components/ui/dialog";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
-import { AsyncButton, PageContainer, PageRefusal, PageSkeleton } from "@repo/ds/shell";
+import { AsyncButton, PageContainer, PageSkeleton } from "@repo/ds/shell";
 import { PersonInitials } from "@repo/performance-ui";
 import { ArrowLeft } from "@/lib/icons";
 import { roundHref, withCycle } from "@/lib/performance-routes";
@@ -33,6 +33,7 @@ import { FinalizeDialog } from "./finalize-dialog";
 import { NineBoxView, type NineBoxMove } from "./nine-box";
 import { useRecentRecord } from "@repo/api/react";
 import { useTranslations } from "next-intl";
+import { PageRefusal } from "@repo/auth";
 
 export function CalibrationWorkspacePage({ roundId }: { roundId: string }) {
   const t = useTranslations("calibration.CalibrationWorkspacePage");
@@ -48,12 +49,12 @@ export function CalibrationWorkspacePage({ roundId }: { roundId: string }) {
   const mutations = useCalibrationMutations(roundId, session.data?.cycleId ?? context.data?.selected?.id ?? null);
 
   if (context.isLoading || (canCalibrate && session.isLoading)) return <PageSkeleton rows={7} width="wide" label={t("loadingCalibration")} />;
-  if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} subject={t("calibration")} />;
+  if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} />;
   if (!canCalibrate) return <PageContainer><PageRefusal /></PageContainer>;
   const status = session.error instanceof ApiError ? session.error.status : null;
   if (status === 403) return <PageContainer><PageRefusal /></PageContainer>;
   if (status === 404) return <OpenSession roundId={roundId} cycleId={context.data?.selected?.id ?? null} mutations={mutations} />;
-  if (session.error) return <ContentUnavailable error={session.error} onRetry={session.refetch} subject={t("calibration")} />;
+  if (session.error) return <ContentUnavailable error={session.error} onRetry={session.refetch} />;
   if (!session.data?.header) return <PageSkeleton rows={7} width="wide" label={t("loadingCalibration")} />;
   return (
     <RecordCycleScope cycleId={session.data.cycleId}>
@@ -127,7 +128,7 @@ function SessionBody({ roundId, view, filter, header, top, session, mutations, o
   const nineBox = useCalibrationNineBox(roundId, filter, view === "nine-box");
   const lenient = useMemo(() => new Set(header.managers.filter((manager) => manager.flagged).map((manager) => manager.id)), [header.managers]);
   const query = view === "distribution" ? distribution : view === "nine-box" ? nineBox : people;
-  if (query.error) return <ContentUnavailable error={query.error} onRetry={query.refetch} subject={t("thisView")} />;
+  if (query.error) return <ContentUnavailable error={query.error} onRetry={query.refetch} />;
   if (view === "distribution" && distribution.data) return <DistributionView view={distribution.data} onManager={onManager} />;
   if (view === "people" && people.data) return <PeopleView view={people.data} top={top} lenient={lenient} onOpen={(person) => onPerson(person.reviewId)} />;
   if (view === "nine-box" && nineBox.data) {
@@ -173,9 +174,8 @@ function StillWithManagers({ header }: { header: CalibrationHeaderDto }) {
 }
 
 function Finalized({ roundId, top }: { roundId: string; top: number }) {
-  const t = useTranslations("calibration.Finalized");
   const changes = useCalibrationChanges(roundId, {}, true);
-  if (changes.error) return <ContentUnavailable error={changes.error} onRetry={changes.refetch} subject={t("theOutcome")} />;
+  if (changes.error) return <ContentUnavailable error={changes.error} onRetry={changes.refetch} />;
   if (!changes.data) return <Skeleton className="mt-8 h-96 rounded-surface" />;
   return <div className="mt-8"><ChangesView view={changes.data} top={top} /></div>;
 }

@@ -1,6 +1,5 @@
 {
   "PerformanceError": {
-    "thisPageCouldntLoad": "Cette page n’a pas pu se charger",
     "goToOverview": "Aller à la vue d’ensemble"
   },
   "PagesLayout": {
@@ -10,8 +9,6 @@
     "loading": "Chargement"
   },
   "PerformanceNotFound": {
-    "nothingHere": "Rien ici",
-    "thisAddressDoesntMatchAnything": "Cette adresse ne correspond à rien dans Performance.",
     "goToOverview": "Aller à la vue d’ensemble"
   },
   "CompetencyCatalog": {
@@ -49,11 +46,7 @@
     "couldNotDeleteCompetency": "Impossible de supprimer la compétence."
   },
   "ContentUnavailable": {
-    "temporarilyUnavailable": "Temporairement indisponible",
-    "couldNotBeLoadedBecause": "{subject} n’a pas pu être chargé, car le service est temporairement indisponible. Il reviendra dès que le service sera rétabli.",
-    "retry": "Réessayer",
     "unavailable": "{subject} indisponible",
-    "noLongerAvailable": "Cet élément n’est plus disponible",
     "goToOverview": "Aller à la vue d’ensemble"
   },
   "CycleContextBar": {
@@ -84,8 +77,6 @@
   },
   "PerformanceWorkspaceAccessBoundary": {
     "checkingPerformanceAccess": "Vérification de l’accès à Performance",
-    "performanceIsACustomerWorkspace": "Performance est un espace client",
-    "platformAdministrationIsKeptSeparate": "L’administration Platform est séparée des données de performance des clients.",
     "performanceIsNotAvailableTo": "Performance n’est pas disponible pour les administrateurs Platform",
     "useThePlatformControlPlane": "Utilisez la console Platform pour l’administration de la plateforme.",
     "openPlatform": "Ouvrir Platform",

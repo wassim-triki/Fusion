@@ -18,7 +18,7 @@ import {
 } from "@repo/api";
 import { formatDateParts } from "@repo/ds/lib/dates";
 import { useApiQuery } from "@repo/api/query";
-import { canBuildCoreReports, canViewCoreReports, useAuth } from "@repo/auth";
+import { canBuildCoreReports, canViewCoreReports, useAuth, PageRefusal } from "@repo/auth";
 import {
   Button,
   ButtonGroup,
@@ -50,7 +50,7 @@ import {
   Skeleton,
   cn,
 } from "@repo/ds";
-import { PageContainer, PageRefusal } from "@repo/ds/shell";
+import { PageContainer } from "@repo/ds/shell";
 import { Segmented } from "@repo/ds/choice";
 import {
   createDataTableColumnHelper,

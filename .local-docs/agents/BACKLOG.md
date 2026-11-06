@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-303.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-307.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -50,7 +50,8 @@ These are umbrella outcomes, not additional slices.
 
 ### Rebuild slices
 
-None waiting.
+- [ ] **B-302** One family of error pages: refusal, not found, gone, failed, module down, offline, signed out, redrawn with a small drawing per state · Shell, DS, Core HR, Performance, Platform · 2026-11-06
+      [plan](plans/B-302-error-pages.md), [explorer](https://claude.ai/artifact/M9ZehcDte7bDjuAmdasep8). Look at the six screens in `plans/B-302-screens/` against the explorer: `refusal`, `not-found`, `module-down`, `part-of-a-page`, `signed-out`, `refusal-arabic`. One word differs: the search box says "Search for a page", because search only finds places today (B-211).
 
 ### Other reviews
 
@@ -60,14 +61,15 @@ None waiting.
 
 ### Rebuild slices
 
-- [ ] **B-302** One family of error pages: refusal, not found, gone, failed, module down, offline, signed out, redrawn with a small drawing per state · Shell, DS, Core HR, Performance, Platform · 2026-11-06
-      Design agreed by the user 2026-11-06, B-192's refusal replaced by this. [plan](plans/B-302-error-pages.md), [explorer](https://claude.ai/artifact/M9ZehcDte7bDjuAmdasep8). Next up, in a fresh session. Includes a small read of who administers the company, so `security-review` applies.
-
 - [ ] **B-298** Demo presets brought up to the rebuild · Data · 2026-11-05
       Split from B-192 by the user, 2026-11-05. Last built 2026-10-22, before the rebuild; the script was changed on 10-30 and 11-01 with no build recorded since, so first prove one build (`fresh`, then one with a year). Then a shared company finish: brand, company fields from the gallery (D: demo companies ship a set), photos, joining checklists, open roles, a pending change, someone on leave, reusing the Carthage seed scripts. Rebuild all five; `journey-demo-preset.cjs` extended. The tour's stories wait for B-090's decision page. After B-192. Medium effort, fresh session.
 
 ### Other work
 
+- [ ] **B-303** Request access from a refused page, with approvals and an inbox; "Email Amira" covers it for now (left out of B-302) · Identity, Shell · 2026-11-06
+- [ ] **B-304** Performance's route-literal test fails: `use-workspace.test.tsx` flags `/reviews/rounds/new` in `route-page-skeleton.tsx`; move it to performance-routes · Performance · 2026-11-06
+- [ ] **B-305** Finish the sidebar check from B-302: Leila Baccouche's (an employee's) Performance Reviews and Settings links are unopened, the run was killed for low memory after her Feedback, 1:1s and My Plan opened fine (`node links-b302-sidebar.cjs leila` on `-Apps core,performance`). Also why an employee is offered Settings under Administration, which opens her change history: the group may read wrong · Shell, Performance · 2026-11-06
+- [ ] **B-306** A test account shows on refused pages: "So can Sidebar Admin. Email Sidebar" in Carthage, from an old journey (`sidebar.admin@example.test`, also used by `journey-b178-administrators.cjs`). Rename or retire it through the product · Data · 2026-11-06
 - [ ] **B-294** Refresh tokens are stored in plain text (`RefreshToken.Token`); store a hash and look up by it, so a database read can't hand out sessions · Identity · 2026-11-05
       Found while re-planning B-191. Small, backend only; a migration invalidates existing sessions (acceptable, no backward compatibility).
 - [ ] **B-295** Password reset: there is none, and sign-in shows a dead "Forgot password" link (B-191 removes the link) · Identity, Shell · 2026-11-05

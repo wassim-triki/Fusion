@@ -7,10 +7,11 @@ import { ApiError, type CompetencyDto, type FusionSettingsSection } from "@repo/
 import { useStagedSettings } from "@repo/api/react";
 import { Button, cn, Input, Label, Textarea } from "@repo/ds";
 import { formatDate } from "@repo/ds/lib/dates";
-import { PageError, SettingsPage, StatusBadge, useSettingsSectionName } from "@repo/ds/shell";
+import { SettingsPage, StatusBadge, useSettingsSectionName } from "@repo/ds/shell";
 import { ValueDot } from "@repo/performance-ui";
 import { useCompetencies, useCompetencyMutations } from "@/features/performance/api/use-performance";
 import { useRefreshSettingsSections } from "../api";
+import { PageFailure } from "@repo/auth";
 
 interface CompetencyDraft {
   name: string;
@@ -211,7 +212,7 @@ export function CompetenciesSettings({ section }: { section: FusionSettingsSecti
   if (query.error && !query.data) {
     return (
       <SettingsPage title={title}>
-        <PageError title={t("didNotLoad")} onRetry={() => void query.refetch()} />
+        <PageFailure error={query.error} onRetry={() => void query.refetch()} headingLevel={2} />
       </SettingsPage>
     );
   }

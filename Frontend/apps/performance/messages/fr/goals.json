@@ -7,9 +7,7 @@
   },
   "GoalsWorkspace": {
     "loadingPerformance": "Chargement de Performance",
-    "performanceWorkspace": "Espace Performance",
     "loadingCycle": "Chargement du cycle",
-    "theCycle": "Le cycle",
     "noCycleYet": "Pas encore de cycle",
     "organizationDirectionOpensOnceA": "L’orientation de l’organisation s’ouvre dès qu’un cycle de performance existe.",
     "draftObjectiveRemoved": "Objectif en brouillon supprimé.",
@@ -22,11 +20,9 @@
     "createCompanyObjective": "Créer un objectif d’entreprise",
     "organizationDirection": "Orientation de l’organisation",
     "overview": "Vue d’ensemble",
-    "theAlignmentMap": "La carte d’alignement",
     "noPublishedDirectionForThis": "Aucune orientation publiée pour ce cycle",
     "openTheList": "Ouvrir la liste",
-    "loadingGoals": "Chargement des objectifs",
-    "organizationDirectionUnavailable": "Orientation de l’organisation indisponible"
+    "loadingGoals": "Chargement des objectifs"
   },
   "DirectionNode": {
     "personal": "{total} personnels",

@@ -204,7 +204,6 @@ export function PopulationStep({ cycleId }: { cycleId: string }) {
       <ContentUnavailable
         error={population.error}
         onRetry={population.refetch}
-        subject={t("thePopulation")}
       />
     );
   }

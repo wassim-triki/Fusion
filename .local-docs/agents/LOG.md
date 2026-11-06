@@ -1,5 +1,14 @@
 # LOG — the one history
 
+- **B-302** One family of error pages built, 2026-11-06, **In review** (six screens in `plans/B-302-screens/`):
+  - `PageState` and six drawings in `@repo/ds/shell`, page, card or row; `PageFailure`, `PageGone`, `PageNotFound`, `PageRefusal`, `InvitationEnd` in `@repo/auth`, because the state a failure gets depends on the request. About 70 sites moved. `PlatformPageState`, DS's `PageError` and invitation terminal card deleted; no raw error message anywhere. Core HR's error and not-found moved inside the frame, with a catch-all route.
+  - Who to ask: `GET /identity/tenant-context/administrators` (up to three, name and email, own company from the token; an administrator gets no names; Platform refused). `security-review`: no high-confidence findings. It returns the account's sign-in email as the work email.
+  - Module down and offline are split, with a countdown; the retry asks the service first (`serviceAnswers`), because refetching a query with no data flips its page to loading. Signed out: only a refused refresh marks it, per tab; `callbackUrl` kept.
+  - Fixed on the way: the top bar search crashed on opening everywhere (`CommandDialog` without `Command`), now tested; Core's breadcrumb read a wrong address back, now "Details"; a `useState` in the DS states file broke every server `loading.tsx`, caught by the cold build.
+  - Words: expired invitations say "Ask your administrator to send a new one", dropping "No account was created" for that state as drawn. Search box "Search for a page" rather than the drawing's "people, pages and more".
+  - Checks: Identity 621/0/0; vitest `@repo/api` 21 files, `@repo/ds` shell 7, `@repo/auth` 15, Platform 16 files; Core HR and shell touched tests; Performance 256/1 (B-304, not this slice's); journey `journey-b302-who-to-ask.cjs` 10/0; cold builds of core, platform, shell, performance. Self-recovery seen in a browser: a stopped CoreHR answered 502, restarted 401, the page came back unprompted. Arabic checked in RTL once.
+  - Not done: Leila's Performance Reviews and Settings links, killed for low memory (B-305). Learning, Recruitment, Interview and Onboarding untouched.
+  - Boarded: **B-303** to **B-306**.
 - ✓ **B-192** Seams and finish accepted, 2026-11-06 (user: "yeah close it"); its refusal page is replaced by **B-302**.
 - **B-302** error page design agreed, 2026-11-06 (user: "great", after the redone Part of a page, Signed out and Link expired): [plan](plans/B-302-error-pages.md). Build is next, in a fresh session.
 - **B-302** error pages: direction B (a small drawing per state) chosen by the user over A and C, 2026-11-06 ("defintly B"); states mostly accepted, "Part of a page" and "Signed out" being redone ("seems to be separte login page entirely"). Means changing DESIGN.md's no-oversized-illustrations line for failure pages. [explorer](https://claude.ai/artifact/M9ZehcDte7bDjuAmdasep8)

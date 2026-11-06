@@ -61,9 +61,8 @@ type Names = Map<string, string>;
  * private. The report's year sits beside it so the conversation has context. An ended series is its history.
  */
 export function SeriesRecord({ seriesId }: { seriesId: string }) {
-  const t = useTranslations("oneOnOnes.SeriesRecord");
   const query = useOneOnOne(seriesId);
-  if (query.error) return <ContentUnavailable error={query.error} onRetry={query.refetch} subject={t("this11")} />;
+  if (query.error) return <ContentUnavailable list="oneOnOnes" error={query.error} onRetry={query.refetch} />;
   if (!query.data) return <SeriesSkeleton />;
   return <SeriesView series={query.data} />;
 }

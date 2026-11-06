@@ -152,7 +152,6 @@
     "answerTo": "Answer to “{requestQuestion}”"
   },
   "RequestsTab": {
-    "feedbackRequests": "Feedback requests",
     "askedOfYou": "Asked of you",
     "nothingToAnswer": "Nothing to answer",
     "lastAnsweredFor": "· last answered for {name}",
@@ -207,9 +206,6 @@
     "noPraiseForYouYet": "No praise for you yet",
     "youHaventGivenPraiseYet": "You haven't given praise yet",
     "showOlder": "Show older"
-  },
-  "RequestRecord": {
-    "thisRequest": "This request"
   },
   "RequestView": {
     "requests": "Requests",

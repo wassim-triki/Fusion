@@ -5,10 +5,11 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { ChecklistKind, ChecklistOwner, ChecklistTemplateTaskInput, FusionSettingsSection } from "@repo/api";
 import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@repo/ds";
-import { PageError, SettingsBlock, SettingsPage, SettingsRows, SettingsSaveBar, useSettingsSectionName } from "@repo/ds/shell";
+import { SettingsBlock, SettingsPage, SettingsRows, SettingsSaveBar, useSettingsSectionName } from "@repo/ds/shell";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { useRefusal } from "@/i18n/words";
 import { useChecklistTemplates, useSaveChecklistTemplate } from "@/features/checklists/use-checklists";
+import { PageFailure } from "@repo/auth";
 
 const OWNERS: ChecklistOwner[] = ["hr", "manager", "person"];
 const KINDS: ChecklistKind[] = ["joining", "leaving"];
@@ -32,7 +33,7 @@ export function ChecklistsSettings({ section }: { section: FusionSettingsSection
   const [drafts, setDrafts] = useState<Drafts | null>(null);
 
   if (query.error && !query.data) {
-    return <SettingsPage title={title}><PageError title={ds("didNotLoad")} onRetry={() => void query.refetch()} /></SettingsPage>;
+    return <SettingsPage title={title}><PageFailure error={query.error} onRetry={() => void query.refetch()} headingLevel={2} /></SettingsPage>;
   }
   if (!query.data) return <SettingsPage title={title} loading />;
 

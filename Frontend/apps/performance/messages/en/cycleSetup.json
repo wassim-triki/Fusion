@@ -1,8 +1,6 @@
 {
   "CycleSetupLayout": {
     "loadingPerformance": "Loading Performance",
-    "performanceWorkspace": "Performance workspace",
-    "theCycle": "The Cycle",
     "openingCycle": "Opening Cycle"
   },
   "SetupHeader": {
@@ -278,7 +276,6 @@
     "broadenTheScopeOrReview": "Broaden the scope or review the selection."
   },
   "PopulationStep": {
-    "thePopulation": "The population",
     "population": "Population",
     "selectWhoWillParticipateFusion": "Select who will participate. Fusion validates eligibility and reviewer coverage.",
     "continue": "Continue",

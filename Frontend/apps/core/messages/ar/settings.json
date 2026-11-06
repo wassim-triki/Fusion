@@ -207,7 +207,6 @@
     "notFilled": "لم يُملأ بعد"
   },
   "invitations": {
-    "didNotLoad": "تعذّر تحميل الدعوات",
     "notSaved": "لم تُحفظ الدعوات. أعد المحاولة.",
     "leave": "المغادرة دون حفظ؟ ستُتجاهل تغييراتك على الدعوات.",
     "reinvite": {
@@ -251,7 +250,6 @@
     "title": "الدعوات"
   },
   "roles": {
-    "didNotLoad": "لم يتم تحميل الأدوار",
     "title": "الأدوار",
     "newRole": "دور جديد",
     "groups": {
@@ -404,7 +402,6 @@
       "notEligible": "لا يمكن تعيين إلا من يسجّل الدخول بالفعل مسؤولًا.",
       "notAdded": "تعذّرت الإضافة. حاول مرة أخرى.",
       "added": "{name} مسؤول الآن",
-      "didNotLoad": "تعذّر تحميل المسؤولين",
       "historyDidNotLoad": "تعذّر تحميل السجل",
       "history": {
         "first": "أول مسؤول في {company}، بدعوة من Fusion",
@@ -436,7 +433,6 @@
     "notCreated": "لم يُنشأ الدور.",
     "renameTitle": "إعادة تسمية {role}",
     "renameAction": "إعادة التسمية",
-    "notFound": "هذا الدور لم يعد موجودًا",
     "preview": {
       "title": "{subject} كما يراه {viewer}",
       "titleSelf": "{viewer} على صفحته",
@@ -486,7 +482,6 @@
     "seeAsFailed": "تعذّر فتح Fusion كما يراه هذا الشخص. حاول مرة أخرى."
   },
   "changeHistory": {
-    "didNotLoad": "تعذّر تحميل سجل التغييرات",
     "section": "القسم",
     "person": "الشخص",
     "allSections": "كل الأقسام",

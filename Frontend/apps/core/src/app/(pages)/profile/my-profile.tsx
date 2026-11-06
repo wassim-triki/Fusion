@@ -3,8 +3,8 @@
 import { useTranslations } from "next-intl";
 import { User } from "lucide-react";
 import { useFieldVisibility } from "@repo/api/query";
-import { useAuth } from "@repo/auth";
-import { PageContainer, PageEmpty, PageError, PageHeader } from "@repo/ds/shell";
+import { PageFailure, useAuth } from "@repo/auth";
+import { PageContainer, PageEmpty, PageHeader } from "@repo/ds/shell";
 import PeopleProfileWorkspace from "@/features/people/components/people-profile-workspace";
 import { WorkerProfileSkeleton } from "@/features/people/components/worker-profile/worker-profile-skeleton";
 import { useEmployeeDetailsById } from "@/features/people/api/use-employees";
@@ -16,7 +16,7 @@ export function MyProfile() {
   const employeeId = user?.employeeId ?? null;
   // The field policy every member may read (fusion-settings): no settings permission needed.
   const { data: settings } = useFieldVisibility({ enabled: Boolean(employeeId) });
-  const { data: details, error, isLoading } = useEmployeeDetailsById(employeeId);
+  const { data: details, error, isLoading, refetch } = useEmployeeDetailsById(employeeId);
 
   if (authLoading || (employeeId && isLoading && !details && !error)) return <WorkerProfileSkeleton />;
 
@@ -31,11 +31,12 @@ export function MyProfile() {
     );
   }
 
-  if (error || !details) {
+  if (error) return <PageFailure error={error} onRetry={refetch} />;
+  if (!details) {
     return (
       <PageContainer className="space-y-6">
         <PageHeader title={t("title")} />
-        <PageError title={t("notFound")} description={t("notFoundDescription")} />
+        <PageEmpty icon={User} title={t("notFound")} description={t("notFoundDescription")} />
       </PageContainer>
     );
   }

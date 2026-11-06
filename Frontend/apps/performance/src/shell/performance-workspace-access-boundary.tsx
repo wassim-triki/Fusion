@@ -2,13 +2,8 @@
 
 import { useEffect, type ReactNode } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useHydratedWorkspaceAccess } from "@repo/auth";
-import {
-  PageContainer,
-  PageHeader,
-  PagePermissionNotice,
-  PageRefusal,
-} from "@repo/ds/shell";
+import { useHydratedWorkspaceAccess, PageRefusal } from "@repo/auth";
+import { PageState } from "@repo/ds/shell";
 import { Button } from "@repo/ds/components/ui/button";
 import { PerformanceRouteSkeleton } from "./route-page-skeleton";
 import { buildShellUrl } from "@/lib/shell-url";
@@ -55,52 +50,34 @@ export function PerformanceWorkspaceAccessBoundary({
 
   if (state === "forbidden") {
     return (
-      <PageContainer className="space-y-6">
-        <PageHeader
-          title={t("performanceIsACustomerWorkspace")}
-          description={t("platformAdministrationIsKeptSeparate")}
-        />
-        <PagePermissionNotice
-          title={t("performanceIsNotAvailableTo")}
-          description={t("useThePlatformControlPlane")}
-          action={
-            <Button asChild>
-              <a href={buildShellUrl("/platform").toString()}>{t("openPlatform")}</a>
-            </Button>
-          }
-        />
-      </PageContainer>
+      <PageState
+        drawing="refused"
+        title={t("performanceIsNotAvailableTo")}
+        description={t("useThePlatformControlPlane")}
+        actions={
+          <Button asChild>
+            <a href={buildShellUrl("/platform").toString()}>{t("openPlatform")}</a>
+          </Button>
+        }
+      />
     );
   }
 
-  if (state === "no-access") {
-    return (
-      <PageContainer>
-        <PageRefusal
-          action={
-            <Button asChild variant="outline">
-              <a href={buildShellUrl("/").toString()}>{t("openFusion")}</a>
-            </Button>
-          }
-        />
-      </PageContainer>
-    );
-  }
+  // They hold no way into Performance at all, so its Overview wouldn't open either.
+  if (state === "no-access") return <PageRefusal leaveTo="home" />;
 
   if (state === "module-unavailable") {
     return (
-      <PageContainer>
-        <PagePermissionNotice
-          title={t("performanceIsNotAvailable")}
-          headingLevel={1}
-          description={t("performanceIsNotEnabledFor")}
-          action={
-            <Button asChild variant="outline">
-              <a href={buildShellUrl("/").toString()}>{t("openFusion")}</a>
-            </Button>
-          }
-        />
-      </PageContainer>
+      <PageState
+        drawing="refused"
+        title={t("performanceIsNotAvailable")}
+        description={t("performanceIsNotEnabledFor")}
+        actions={
+          <Button asChild>
+            <a href={buildShellUrl("/").toString()}>{t("openFusion")}</a>
+          </Button>
+        }
+      />
     );
   }
 

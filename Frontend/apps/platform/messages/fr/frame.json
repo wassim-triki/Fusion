@@ -15,25 +15,5 @@
   "metadata": {
     "title": "Administration Platform — Fusion",
     "description": "Console d’administration de la plateforme Fusion"
-  },
-  "states": {
-    "forbidden": {
-      "title": "Accès à Platform requis",
-      "description": "Votre compte n’a pas accès à l’administration Platform.",
-      "action": "Revenir à l’accueil Fusion"
-    },
-    "notFound": {
-      "title": "Page introuvable",
-      "description": "Cette page n’existe pas dans l’administration Platform.",
-      "action": "Revenir à la console Platform"
-    },
-    "unavailable": {
-      "title": "L’administration Platform est indisponible",
-      "description": "L’espace de travail n’a pas pu charger votre session. Réessayez une fois la connexion rétablie."
-    },
-    "error": {
-      "title": "Échec du chargement de l’administration Platform",
-      "description": "Votre accès n’a pas changé. Rechargez la page."
-    }
   }
 }

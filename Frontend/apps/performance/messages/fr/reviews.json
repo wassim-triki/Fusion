@@ -71,7 +71,6 @@
     "theListCouldntBeApproved": "La liste n’a pas pu être approuvée."
   },
   "PeerRequestPage": {
-    "thisRequest": "Cette demande",
     "loadingTheRequest": "Chargement de la demande"
   },
   "PeerRequestForm": {
@@ -147,7 +146,6 @@
   "ReviewRecordPage": {
     "sReview": "Évaluation de {subjectDisplayName}",
     "loadingReview": "Chargement de la vérification",
-    "performanceWorkspace": "Espace Performance",
     "review": "Vérification",
     "reviewUnavailable": "Évaluation indisponible",
     "thisReviewCouldNotBe": "Cette évaluation est introuvable."
@@ -525,7 +523,6 @@
   },
   "RoundPage": {
     "loadingTheRound": "Chargement de la campagne",
-    "performanceWorkspace": "Espace Performance",
     "reviewRound": "Campagne d’évaluation",
     "reviews": "Évaluations",
     "describe": {

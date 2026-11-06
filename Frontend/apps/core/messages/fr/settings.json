@@ -207,7 +207,6 @@
     "notFilled": "Pas encore renseigné"
   },
   "invitations": {
-    "didNotLoad": "Impossible de charger les invitations",
     "notSaved": "Les invitations n’ont pas été enregistrées. Réessayez.",
     "leave": "Quitter sans enregistrer ? Vos modifications des invitations seront perdues.",
     "reinvite": {
@@ -251,7 +250,6 @@
     "title": "Invitations"
   },
   "roles": {
-    "didNotLoad": "Les rôles ne se sont pas chargés",
     "title": "Rôles",
     "newRole": "Nouveau rôle",
     "groups": {
@@ -404,7 +402,6 @@
       "notEligible": "Seules les personnes qui se connectent déjà peuvent devenir administrateurs.",
       "notAdded": "Impossible de l'ajouter. Réessayez.",
       "added": "{name} est administrateur",
-      "didNotLoad": "Les administrateurs n'ont pas pu être chargés",
       "historyDidNotLoad": "L'historique n'a pas pu être chargé",
       "history": {
         "first": "Premier administrateur de {company}, sur invitation de Fusion",
@@ -436,7 +433,6 @@
     "notCreated": "Le rôle n'a pas été créé.",
     "renameTitle": "Renommer {role}",
     "renameAction": "Renommer",
-    "notFound": "Ce rôle n'existe plus",
     "preview": {
       "title": "{subject} vu par {viewer}",
       "titleSelf": "{viewer} sur sa propre page",
@@ -486,7 +482,6 @@
     "seeAsFailed": "Impossible d'ouvrir Fusion comme cette personne. Réessayez."
   },
   "changeHistory": {
-    "didNotLoad": "Impossible de charger l’historique des modifications",
     "section": "Section",
     "person": "Auteur",
     "allSections": "Toutes les sections",

@@ -1,17 +1,15 @@
 {
   "CyclePage": {
-    "performanceWorkspace": "Performance workspace",
-    "theCycle": "The Cycle",
     "closed": "Closed",
     "status": "Status",
     "insights": "Insights",
     "cycleViews": "Cycle views",
-    "closureReadiness": "Closure readiness",
     "phase": {
       "Planning": "Planning",
       "Execution": "Execution",
       "Review": "Review"
-    }
+    },
+    "closureDidNotLoad": "Closure readiness didn't load"
   },
   "CloseCycleAction": {
     "closeCycle": "Close cycle",

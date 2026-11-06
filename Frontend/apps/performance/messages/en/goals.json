@@ -7,9 +7,7 @@
   },
   "GoalsWorkspace": {
     "loadingPerformance": "Loading Performance",
-    "performanceWorkspace": "Performance workspace",
     "loadingCycle": "Loading Cycle",
-    "theCycle": "The Cycle",
     "noCycleYet": "No Cycle yet",
     "organizationDirectionOpensOnceA": "Organization direction opens once a Performance Cycle exists.",
     "draftObjectiveRemoved": "Draft objective removed.",
@@ -22,11 +20,9 @@
     "createCompanyObjective": "Create company objective",
     "organizationDirection": "Organization direction",
     "overview": "Overview",
-    "theAlignmentMap": "The alignment map",
     "noPublishedDirectionForThis": "No published direction for this cycle",
     "openTheList": "Open the list",
-    "loadingGoals": "Loading objectives",
-    "organizationDirectionUnavailable": "Organization direction unavailable"
+    "loadingGoals": "Loading objectives"
   },
   "DirectionNode": {
     "personal": "{total} personal",

@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { PageFailure } from "@repo/auth";
 import {
   formatWorkWeek,
   visibleFusionModules,
@@ -9,17 +10,7 @@ import {
 } from "@repo/api";
 import { useTenantSummary } from "@repo/api/query";
 import { useStagedSettings, useFusionViewer } from "@repo/api/react";
-import {
-  FUSION_MODULE_ICONS,
-  PageError,
-  SettingsBlock,
-  SettingsPage,
-  SettingsRow,
-  SettingsRows,
-  SettingsValue,
-  SettingsSaveBar,
-  useSettingsSectionName,
-} from "@repo/ds/shell";
+import { FUSION_MODULE_ICONS, SettingsBlock, SettingsPage, SettingsRow, SettingsRows, SettingsValue, SettingsSaveBar, useSettingsSectionName } from "@repo/ds/shell";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@repo/ds";
 import { FilterChips } from "@repo/ds/choice";
 import { useSettingsConflictSaver } from "@repo/api/query";
@@ -88,7 +79,7 @@ export function DetailsSettings({ section }: { section: FusionSettingsSection })
   if ((tenant.error && !tenant.data) || (query.error && !query.data)) {
     return (
       <SettingsPage title={title}>
-        <PageError title={t("didNotLoad")} onRetry={() => { void tenant.refetch(); void query.refetch(); }} />
+        <PageFailure error={tenant.error ?? query.error} onRetry={() => { void tenant.refetch(); void query.refetch(); }} headingLevel={2} />
       </SettingsPage>
     );
   }

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "rea
 import { useLocale } from "next-intl";
 import { Check, Copy, Lock } from "lucide-react";
 import { ApiError, type SsoConfirmation, type SsoProviderKey, type SsoSettingsDto } from "@repo/api";
-import { ProviderMark, startSsoFlow } from "@repo/auth";
+import { ProviderMark, startSsoFlow, PageFailure } from "@repo/auth";
 import {
   Button,
   cn,
@@ -22,7 +22,7 @@ import {
   Switch,
 } from "@repo/ds";
 import { formatDate, formatDateTime } from "@repo/ds/lib/dates";
-import { PageError, SettingsBlock, SettingsRows, StatusBadge } from "@repo/ds/shell";
+import { SettingsBlock, SettingsRows, StatusBadge } from "@repo/ds/shell";
 import { OptionCards } from "@repo/ds/choice";
 import { useSaveFailure, useSettingsSay, type Say } from "@/features/settings/say";
 import { confirmThroughProvider, takeConfirmation, type PendingConfirmation } from "./confirmation";
@@ -150,7 +150,7 @@ export function SingleSignOnBlock() {
   }, [settings]);
 
   if (query.error && !settings) {
-    return <PageError title={say("sso.didNotLoad")} onRetry={() => void query.refetch()} />;
+    return <PageFailure error={query.error} onRetry={() => void query.refetch()} size="card" title={say("sso.didNotLoad")} />;
   }
   if (!settings) return null;
 

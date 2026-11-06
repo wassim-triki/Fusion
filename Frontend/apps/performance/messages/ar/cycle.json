@@ -1,17 +1,15 @@
 {
   "CyclePage": {
-    "performanceWorkspace": "مساحة عمل الأداء",
-    "theCycle": "الدورة",
     "closed": "مغلقة",
     "status": "الحالة",
     "insights": "الرؤى",
     "cycleViews": "عروض الدورة",
-    "closureReadiness": "جاهزية الإغلاق",
     "phase": {
       "Planning": "التخطيط",
       "Execution": "التنفيذ",
       "Review": "التقييم"
-    }
+    },
+    "closureDidNotLoad": "لم يتم تحميل جاهزية الإغلاق"
   },
   "CloseCycleAction": {
     "closeCycle": "إغلاق الدورة",

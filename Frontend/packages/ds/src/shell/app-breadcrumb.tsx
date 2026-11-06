@@ -26,6 +26,7 @@ function resolveLabel(
   navItems: ShellNavItem[],
   overrides: Map<string, string>,
   details: string,
+  routeSegments?: ReadonlySet<string>,
 ): string {
   if (UUID_SEGMENT_REGEX.test(segment)) {
     return overrides.get(segment) ?? details;
@@ -39,6 +40,9 @@ function resolveLabel(
   });
   if (fromNav) return fromNav.label;
 
+  // A segment no route has came from the address: a wrong link is never read back.
+  if (routeSegments && !routeSegments.has(segment)) return details;
+
   return humanize(segment);
 }
 
@@ -51,6 +55,8 @@ export interface AppBreadcrumbProps {
   navItems: ShellNavItem[];
   /** Dynamic label overrides keyed by path segment. */
   overrides?: Map<string, string>;
+  /** The folders the app's routes have; anything else in the address isn't shown as typed. */
+  routeSegments?: ReadonlySet<string>;
   /** Transform a relative href into a full link target (e.g. for tenant context). */
   buildHref?: (href: string) => string;
 }
@@ -68,6 +74,7 @@ export function AppBreadcrumb({
   pathname,
   navItems,
   overrides = new Map(),
+  routeSegments,
   buildHref,
 }: AppBreadcrumbProps) {
   const t = useTranslations("ds.breadcrumb");
@@ -96,7 +103,7 @@ export function AppBreadcrumb({
             {segments.map((segment, index) => {
               const isLast = index === segments.length - 1;
               const href = "/" + segments.slice(0, index + 1).join("/");
-              const label = resolveLabel(segment, navItems, overrides, t("details"));
+              const label = resolveLabel(segment, navItems, overrides, t("details"), routeSegments);
               return (
                 <React.Fragment key={href}>
                   <BreadcrumbSeparator />

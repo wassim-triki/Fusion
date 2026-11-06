@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { createPlatformApiClient, isBrowser } from "../platform";
+import { createPlatformApiClient, isBrowser, wasSessionExpired } from "../platform";
 
 // ── Setup ────────────────────────────────────────────────────────────
 
@@ -324,5 +324,51 @@ describe("SSR safety", () => {
 
     const [url] = fetchSpy.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("http://localhost:5000/api/training/courses");
+  });
+
+  describe("a session that ended on its own", () => {
+    function signedInBrowser(refreshToken: string | null) {
+      const session: Record<string, string> = {};
+      const local: Record<string, string> = {
+        ey_hr_auth: JSON.stringify({
+          accessToken: "expired-token",
+          refreshToken,
+          accessTokenExpiration: new Date(Date.now() - 5_000).toISOString(),
+          user: { userId: "user-1", email: "jane@example.com", fullName: "Jane Doe", roles: [] },
+        }),
+      };
+      const storage = (values: Record<string, string>) => ({
+        getItem: (key: string) => values[key] ?? null,
+        setItem: (key: string, value: string) => {
+          values[key] = value;
+        },
+        removeItem: (key: string) => {
+          delete values[key];
+        },
+      });
+      vi.stubGlobal("window", { dispatchEvent: vi.fn() });
+      vi.stubGlobal("document", { cookie: "" });
+      vi.stubGlobal("localStorage", storage(local));
+      vi.stubGlobal("sessionStorage", storage(session));
+    }
+
+    it("is marked when the refresh is refused", async () => {
+      signedInBrowser("refresh-token");
+      fetchSpy.mockResolvedValue(new Response("{}", { status: 401, headers: { "Content-Type": "application/json" } }));
+      await createPlatformApiClient().get("/corehr/x").catch(() => undefined);
+      expect(wasSessionExpired()).toBe(true);
+    });
+
+    it("is not marked when there was nothing to refresh, or the server just failed", async () => {
+      signedInBrowser(null);
+      fetchSpy.mockResolvedValue(new Response("{}", { status: 401, headers: { "Content-Type": "application/json" } }));
+      await createPlatformApiClient().get("/corehr/x").catch(() => undefined);
+      expect(wasSessionExpired()).toBe(false);
+
+      signedInBrowser("refresh-token");
+      fetchSpy.mockResolvedValue(new Response("{}", { status: 503, headers: { "Content-Type": "application/json" } }));
+      await createPlatformApiClient().get("/corehr/x").catch(() => undefined);
+      expect(wasSessionExpired()).toBe(false);
+    });
   });
 });

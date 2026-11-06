@@ -5,9 +5,10 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { CHANGE_APPROVAL_TYPES, type ChangeApprovalType, type FusionSettingsSection } from "@repo/api";
 import { PersonAvatar, Switch } from "@repo/ds";
-import { PageError, SettingsBlock, SettingsPage, SettingsRow, SettingsRows, useSettingsSectionName } from "@repo/ds/shell";
+import { SettingsBlock, SettingsPage, SettingsRow, SettingsRows, useSettingsSectionName } from "@repo/ds/shell";
 import { useRefusal } from "@/i18n/words";
 import { useApprovalSettings, useUpdateApprovals } from "@/features/people/changes/use-changes";
+import { PageFailure } from "@repo/auth";
 
 /**
  * Settings › Changes and approvals (B-179): which changes wait for whoever approves, off until the company turns one
@@ -23,7 +24,7 @@ export function ApprovalsSettings({ section }: { section: FusionSettingsSection 
   const update = useUpdateApprovals();
 
   if (query.error && !query.data) {
-    return <SettingsPage title={title}><PageError title={ds("didNotLoad")} onRetry={() => void query.refetch()} /></SettingsPage>;
+    return <SettingsPage title={title}><PageFailure error={query.error} onRetry={() => void query.refetch()} headingLevel={2} /></SettingsPage>;
   }
   if (!query.data) return <SettingsPage title={title} loading />;
 

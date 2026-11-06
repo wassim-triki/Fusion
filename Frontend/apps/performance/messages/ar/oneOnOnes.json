@@ -17,9 +17,6 @@
   "RhythmStrip": {
     "heldMissedInTheLast": "{label}: {held} عُقدت، {missed} فاتت خلال الأسابيع الستة الأخيرة"
   },
-  "OneOnOnesWorkspace": {
-    "your11s": "لقاءاتك الفردية"
-  },
   "Workspace": {
     "n11s": "اللقاءات الفردية",
     "youHaveNoManagerOr": "ليس لديك مدير أو مرؤوسون مباشرون في الموارد البشرية الأساسية.",
@@ -88,9 +85,6 @@
   },
   "OneOnOnesSkeleton": {
     "loadingYour11s": "جارٍ تحميل لقاءاتك الفردية"
-  },
-  "SeriesRecord": {
-    "this11": "هذا اللقاء الفردي"
   },
   "SeriesView": {
     "n11With": "لقاء فردي مع {displayName}",

@@ -7,9 +7,7 @@
   },
   "GoalsWorkspace": {
     "loadingPerformance": "جارٍ تحميل الأداء",
-    "performanceWorkspace": "مساحة عمل الأداء",
     "loadingCycle": "جارٍ تحميل الدورة",
-    "theCycle": "الدورة",
     "noCycleYet": "لا دورة بعد",
     "organizationDirectionOpensOnceA": "يُفتح توجه المؤسسة عند وجود دورة أداء.",
     "draftObjectiveRemoved": "حُذف الهدف المسودة.",
@@ -22,11 +20,9 @@
     "createCompanyObjective": "إنشاء هدف للشركة",
     "organizationDirection": "توجه المؤسسة",
     "overview": "نظرة عامة",
-    "theAlignmentMap": "خريطة الارتباط",
     "noPublishedDirectionForThis": "لا توجه منشور لهذه الدورة",
     "openTheList": "فتح القائمة",
-    "loadingGoals": "جارٍ تحميل الأهداف",
-    "organizationDirectionUnavailable": "توجه المؤسسة غير متاح"
+    "loadingGoals": "جارٍ تحميل الأهداف"
   },
   "DirectionNode": {
     "personal": "{total} شخصية",

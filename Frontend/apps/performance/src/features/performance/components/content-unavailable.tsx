@@ -1,61 +1,35 @@
 "use client";
 
-import Link from "next/link";
-import { Button } from "@repo/ds/components/ui/button";
-import { PageEmpty, PageError } from "@repo/ds/shell";
-import { ApiError, classifyApiError } from "@repo/api";
+import { PageFailure } from "@repo/auth";
 import { useTranslations } from "next-intl";
 
+const LISTS = { reviews: "/performance/reviews", oneOnOnes: "/performance/one-on-ones", feedback: "/performance/feedback" } as const;
+
 /**
- * Attributed, frame-preserving failure state for a Performance content region.
- * It distinguishes a temporarily-unavailable upstream (retry will recover once the
- * backend is back — no full-page reload) from an unexpected application error, so
- * the user sees the real cause. It always renders inside the persistent module
- * frame; the retry re-runs the query and recovers cleanly on restore.
+ * A Performance content region that didn't load, inside the module frame. A record's page names the `list` it belongs
+ * to, where its link goes when the record is gone.
  */
 export function ContentUnavailable({
   error,
   onRetry,
-  subject,
+  list,
+  size,
+  title,
 }: {
   error: Error;
-  onRetry: () => void;
-  /** What could not load, e.g. "Cycle" or "Settings". */
-  subject: string;
+  onRetry: () => unknown;
+  list?: keyof typeof LISTS;
+  size?: "card";
+  title?: string;
 }) {
-  const t = useTranslations("common.ContentUnavailable");
-  const kind = classifyApiError(error);
-
-  // Gone, e.g. opened from an older notification: say so plainly; retrying can't bring it back.
-  if (error instanceof ApiError && error.status === 404) {
-    return (
-      <PageEmpty
-        title={t("noLongerAvailable")}
-        action={
-          <Button asChild variant="outline">
-            <Link href="/">{t("goToOverview")}</Link>
-          </Button>
-        }
-      />
-    );
-  }
-
-  if (kind === "upstream-unavailable" || kind === "network") {
-    return (
-      <PageError
-        title={t("temporarilyUnavailable")}
-        description={t("couldNotBeLoadedBecause", { subject })}
-        onRetry={onRetry}
-        retryLabel={t("retry")}
-      />
-    );
-  }
-
+  const nav = useTranslations("common.nav");
   return (
-    <PageError
-      title={t("unavailable", { subject })}
-      description={error.message}
+    <PageFailure
+      error={error}
       onRetry={onRetry}
+      size={size}
+      title={title}
+      back={list ? { href: LISTS[list], label: nav(list) } : undefined}
     />
   );
 }

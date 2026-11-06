@@ -9,7 +9,7 @@ import { Button } from "@repo/ds/components/ui/button";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { Segmented } from "@repo/ds/choice";
 import { useOrgHierarchy } from "@repo/workforce-ui";
-import { PageContainer, PageError, PageHeader, PagePermissionNotice, PageSkeleton } from "@repo/ds/shell";
+import { PageContainer, PageHeader, PagePermissionNotice, PageSkeleton } from "@repo/ds/shell";
 import { ContentUnavailable } from "@/features/performance/components/content-unavailable";
 import { useObjectiveRecord } from "@/features/performance/components/objective-record/use-objective-record";
 import { ObjectiveWorkspace } from "@/features/performance/components/goals/objective-workspace";
@@ -37,6 +37,7 @@ import {
 import { useWorkforceMe } from "@/features/performance/api/use-workforce-me";
 import { useWorkspaceContext } from "@/features/performance/api/use-workspace";
 import { useTranslations } from "next-intl";
+import { PageFailure } from "@repo/auth";
 
 function MapSkeleton() {
   const t = useTranslations("goals.MapSkeleton");
@@ -173,14 +174,13 @@ function GoalsWorkspace() {
   if (context.isLoading)
     return <PageSkeleton rows={4} label={t("loadingPerformance")} />;
   if (context.error)
-    return <ContentUnavailable error={context.error} onRetry={context.refetch} subject={t("performanceWorkspace")} />;
+    return <ContentUnavailable error={context.error} onRetry={context.refetch} />;
   if (detail.isLoading) return <PageSkeleton rows={4} label={t("loadingCycle")} />;
   if (detail.error)
     return (
       <ContentUnavailable
         error={detail.error}
         onRetry={detail.refetch}
-        subject={t("theCycle")}
       />
     );
   if (!cycle) {
@@ -288,7 +288,6 @@ function GoalsWorkspace() {
             <ContentUnavailable
               error={map.error ?? new Error("The alignment map did not load.")}
               onRetry={map.refetch}
-              subject={t("theAlignmentMap")}
             />
           ) : !hasDirection ? (
             <div className="grid h-full place-items-center rounded-surface border border-dashed border-border bg-section px-6 text-center">
@@ -313,11 +312,7 @@ function GoalsWorkspace() {
       ) : goals.isLoading || meResolving ? (
         <PageSkeleton rows={4} label={t("loadingGoals")} />
       ) : goals.error || !overview ? (
-        <PageError
-          title={t("organizationDirectionUnavailable")}
-          description={goals.error?.message}
-          onRetry={goals.refetch}
-        />
+        <PageFailure error={goals.error} onRetry={goals.refetch} />
       ) : (
         <ObjectiveWorkspace
           cycleId={cycle.id}

@@ -17,9 +17,6 @@
   "RhythmStrip": {
     "heldMissedInTheLast": "{label}: {held} held, {missed} missed in the last six weeks"
   },
-  "OneOnOnesWorkspace": {
-    "your11s": "Your 1:1s"
-  },
   "Workspace": {
     "n11s": "1:1s",
     "youHaveNoManagerOr": "You have no manager or direct reports in Core HR.",
@@ -88,9 +85,6 @@
   },
   "OneOnOnesSkeleton": {
     "loadingYour11s": "Loading your 1:1s"
-  },
-  "SeriesRecord": {
-    "this11": "This 1:1"
   },
   "SeriesView": {
     "n11With": "1:1 with {displayName}",

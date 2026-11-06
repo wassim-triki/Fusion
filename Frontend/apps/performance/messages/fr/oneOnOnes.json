@@ -17,9 +17,6 @@
   "RhythmStrip": {
     "heldMissedInTheLast": "{label} : {held} tenus, {missed} manqués ces six dernières semaines"
   },
-  "OneOnOnesWorkspace": {
-    "your11s": "Vos entretiens individuels"
-  },
   "Workspace": {
     "n11s": "Entretiens individuels",
     "youHaveNoManagerOr": "Vous n’avez ni manager ni collaborateurs directs dans Core HR.",
@@ -88,9 +85,6 @@
   },
   "OneOnOnesSkeleton": {
     "loadingYour11s": "Chargement de vos entretiens individuels"
-  },
-  "SeriesRecord": {
-    "this11": "Cet entretien"
   },
   "SeriesView": {
     "n11With": "Entretien individuel avec {displayName}",

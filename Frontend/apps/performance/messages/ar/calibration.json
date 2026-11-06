@@ -128,14 +128,10 @@
     "calibration": "المعايرة"
   },
   "SessionBody": {
-    "thisView": "هذا العرض",
     "moved": "نُقل {name}."
   },
   "StillWithManagers": {
     "stillWithManagers": "لا تزال لدى المديرين"
-  },
-  "Finalized": {
-    "theOutcome": "النتيجة"
   },
   "OpenSession": {
     "reviewRound": "جولة التقييم",

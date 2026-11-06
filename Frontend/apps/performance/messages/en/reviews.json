@@ -71,7 +71,6 @@
     "theListCouldntBeApproved": "The list couldn't be approved."
   },
   "PeerRequestPage": {
-    "thisRequest": "This request",
     "loadingTheRequest": "Loading the request"
   },
   "PeerRequestForm": {
@@ -147,7 +146,6 @@
   "ReviewRecordPage": {
     "sReview": "{subjectDisplayName}'s review",
     "loadingReview": "Loading review",
-    "performanceWorkspace": "Performance workspace",
     "review": "Review",
     "reviewUnavailable": "Review unavailable",
     "thisReviewCouldNotBe": "This review could not be found."
@@ -525,7 +523,6 @@
   },
   "RoundPage": {
     "loadingTheRound": "Loading the round",
-    "performanceWorkspace": "Performance workspace",
     "reviewRound": "Review round",
     "reviews": "Reviews",
     "describe": {

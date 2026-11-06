@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { ArrowLeft } from "@/lib/icons";
 import { Button } from "@repo/ds/components/ui/button";
-import { AsyncButton, PageError, PageSkeleton } from "@repo/ds/shell";
+import { AsyncButton, PageSkeleton } from "@repo/ds/shell";
 import { useObjectiveProgress, useProgressMutations } from "../../../api/use-performance";
 import { ProgressUpdateComposer } from "../../progress/progress-update-composer";
 import type { ObjectiveRecord } from "../objective-record-model";
 import { MeasurementSection } from "../sections/measurement-section";
 import { RecordRequestBand } from "../../update-requests/update-requests";
 import { useTranslations } from "next-intl";
+import { PageFailure } from "@repo/auth";
 
 /**
  * Recording progress is a task inside the same record, not another surface: the measurement it is read
@@ -48,7 +49,7 @@ export function RecordProgressMode({ record, onDone }: { record: ObjectiveRecord
             {progressQuery.isLoading ? (
               <PageSkeleton rows={2} label={t("loadingProgress")} />
             ) : progressQuery.error || !progress ? (
-              <PageError title={t("progressUnavailable")} description={progressQuery.error?.message} onRetry={progressQuery.refetch} />
+              <PageFailure error={progressQuery.error} onRetry={progressQuery.refetch} size="card" title={t("progressUnavailable")} />
             ) : (
               <ProgressUpdateComposer
                 progress={progress}

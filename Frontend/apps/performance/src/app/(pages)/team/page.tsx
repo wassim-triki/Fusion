@@ -86,8 +86,8 @@ function MyTeam({ context, detail }: { context: ReturnType<typeof useWorkspaceCo
     if (filterHidden && peopleQuery.filter !== DEFAULT_PEOPLE_QUERY.filter) setPeopleQuery((query) => ({ ...query, filter: DEFAULT_PEOPLE_QUERY.filter }));
   }, [filterHidden, peopleQuery.filter]);
 
-  if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} subject={t("performanceWorkspace")} />;
-  if (detail.error) return <ContentUnavailable error={detail.error} onRetry={detail.refetch} subject={t("theCycle")} />;
+  if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} />;
+  if (detail.error) return <ContentUnavailable error={detail.error} onRetry={detail.refetch} />;
   if (!canReview || !cycle) return <NoReports cycleName={cycle?.name ?? null} />;
 
   const lead = cycle ? leadAction(cycle.id, people.data, peopleWords) : null;

@@ -1,6 +1,5 @@
 {
   "PerformanceError": {
-    "thisPageCouldntLoad": "تعذّر تحميل هذه الصفحة",
     "goToOverview": "الانتقال إلى النظرة العامة"
   },
   "PagesLayout": {
@@ -10,8 +9,6 @@
     "loading": "جارٍ التحميل"
   },
   "PerformanceNotFound": {
-    "nothingHere": "لا شيء هنا",
-    "thisAddressDoesntMatchAnything": "لا يطابق هذا العنوان أي شيء في الأداء.",
     "goToOverview": "الانتقال إلى النظرة العامة"
   },
   "CompetencyCatalog": {
@@ -49,11 +46,7 @@
     "couldNotDeleteCompetency": "تعذّر حذف الكفاءة."
   },
   "ContentUnavailable": {
-    "temporarilyUnavailable": "غير متاح مؤقتًا",
-    "couldNotBeLoadedBecause": "تعذّر تحميل {subject} لأن الخدمة غير متاحة مؤقتًا. سيعود عند عودة الخدمة.",
-    "retry": "إعادة المحاولة",
     "unavailable": "{subject} غير متاح",
-    "noLongerAvailable": "لم يعد هذا متاحًا",
     "goToOverview": "الانتقال إلى النظرة العامة"
   },
   "CycleContextBar": {
@@ -84,8 +77,6 @@
   },
   "PerformanceWorkspaceAccessBoundary": {
     "checkingPerformanceAccess": "جارٍ التحقق من الوصول إلى الأداء",
-    "performanceIsACustomerWorkspace": "الأداء مساحة عمل للعملاء",
-    "platformAdministrationIsKeptSeparate": "إدارة المنصة منفصلة عن بيانات أداء العملاء.",
     "performanceIsNotAvailableTo": "الأداء غير متاح لمسؤولي المنصة",
     "useThePlatformControlPlane": "استخدم لوحة تحكم المنصة للإدارة على مستوى المنصة.",
     "openPlatform": "فتح المنصة",

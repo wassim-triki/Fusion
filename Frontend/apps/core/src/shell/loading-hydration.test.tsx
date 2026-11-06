@@ -13,6 +13,10 @@ import { EmployeesPageSkeleton } from "./route-skeletons";
 import { WorkerProfileSkeleton } from "@/features/people/components/worker-profile/worker-profile-skeleton";
 
 const route = vi.hoisted(() => ({ pathname: "" }));
+vi.mock("@repo/api/query", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  useCompanyAdministrators: () => ({ isLoading: false, data: undefined }),
+}));
 vi.mock("next/navigation", () => ({
   usePathname: () => route.pathname,
   useSearchParams: () => new URLSearchParams(),

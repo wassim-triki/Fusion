@@ -1,17 +1,15 @@
 {
   "CyclePage": {
-    "performanceWorkspace": "Espace Performance",
-    "theCycle": "Le cycle",
     "closed": "Clôturé",
     "status": "Statut",
     "insights": "Analyses",
     "cycleViews": "Vues du cycle",
-    "closureReadiness": "État de préparation à la clôture",
     "phase": {
       "Planning": "Planification",
       "Execution": "Exécution",
       "Review": "Vérification"
-    }
+    },
+    "closureDidNotLoad": "L’état de préparation à la clôture ne s’est pas chargé"
   },
   "CloseCycleAction": {
     "closeCycle": "Clôturer le cycle",

@@ -1,7 +1,5 @@
 {
   "MyTeamPage": {
-    "performanceWorkspace": "مساحة عمل الأداء",
-    "theCycle": "الدورة",
     "yourPeople": "فريقك"
   },
   "NoReports": {
@@ -162,9 +160,6 @@
   },
   "PdfButton": {
     "pdf": "PDF"
-  },
-  "YourPeople": {
-    "yourPeopleAreUnavailable": "أفراد فريقك غير متاحين"
   },
   "RosterSection": {
     "findAPerson": "البحث عن شخص",

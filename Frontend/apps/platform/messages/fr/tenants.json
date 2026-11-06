@@ -2,7 +2,6 @@
   "common": {
     "permissionChanged": "Votre accès à l’administration Platform a changé. Reconnectez-vous pour continuer.",
     "accessChanged": "Votre accès à l’administration Platform a changé.",
-    "noAccess": "Vous n’avez plus accès à Platform",
     "retry": "Réessayer"
   },
   "status": {
@@ -195,10 +194,6 @@
     "empty": {
       "title": "Aucune organisation pour l’instant",
       "description": "Aucune organisation cliente n’a encore été créée."
-    },
-    "failure": {
-      "title": "Échec du chargement des organisations",
-      "description": "La liste des organisations est indisponible pour le moment. Vos organisations ne sont pas affectées."
     }
   }
 }

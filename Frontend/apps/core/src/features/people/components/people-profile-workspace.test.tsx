@@ -59,6 +59,7 @@ vi.mock("@/shell/breadcrumb-overrides", () => ({
 vi.mock("@/features/settings/roles/person-roles", () => ({ PersonRoles: () => null }));
 
 vi.mock("@repo/auth", () => ({
+  PageFailure: ({ back }: { back: { href: string; label: string } }) => <a href={back.href}>{back.label}</a>,
   useAuth: () => ({
     user: { id: "u1", employeeId: "viewer-1" },
     isAuthenticated: true,
@@ -506,8 +507,8 @@ describe("PeopleProfileWorkspace", () => {
   it("renders a non-disclosing not-found state for unknown or cross-tenant keys", () => {
     mockProfile.mockReturnValue(q({ error: new Error("not found") }));
     render(<PeopleProfileWorkspace employeeKey="E-MISSING" />);
-    expect(screen.getByText("Person not found")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Back to People/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "People" })).toHaveAttribute("href", "/core/people");
+    expect(screen.queryByText("E-MISSING")).toBeNull();
   });
 
   it("announces the committed result after establishment", () => {

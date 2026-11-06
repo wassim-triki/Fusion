@@ -61,8 +61,8 @@ export function ReviewRecordPage() {
       : null,
   );
   if (context.isLoading || (context.data && review.isLoading)) return <PageSkeleton rows={7} width="wide" label={t("loadingReview")} />;
-  if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} subject={t("performanceWorkspace")} />;
-  if (review.error) return <ContentUnavailable error={review.error} onRetry={review.refetch} subject={t("review")} />;
+  if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} />;
+  if (review.error) return <ContentUnavailable list="reviews" error={review.error} onRetry={review.refetch} />;
   if (!review.data) return <PagePermissionNotice title={t("reviewUnavailable")} description={t("thisReviewCouldNotBe")} />;
   const record = review.data;
   return (

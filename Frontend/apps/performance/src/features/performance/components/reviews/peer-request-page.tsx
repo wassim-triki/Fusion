@@ -24,7 +24,7 @@ export function PeerRequestPage() {
   const t = useTranslations("reviews.PeerRequestPage");
   const { requestId } = useParams<{ requestId: string }>();
   const query = usePeerRequest(requestId);
-  if (query.error) return <ContentUnavailable error={query.error} onRetry={query.refetch} subject={t("thisRequest")} />;
+  if (query.error) return <ContentUnavailable list="reviews" error={query.error} onRetry={query.refetch} />;
   if (!query.data) return <PageSkeleton rows={5} label={t("loadingTheRequest")} />;
   return <PeerRequestForm request={query.data} />;
 }

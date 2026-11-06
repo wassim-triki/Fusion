@@ -2,7 +2,6 @@
   "common": {
     "permissionChanged": "Your Platform administration access has changed. Sign in again to continue.",
     "accessChanged": "Your Platform administration access has changed.",
-    "noAccess": "You no longer have Platform access",
     "retry": "Retry"
   },
   "status": {
@@ -195,10 +194,6 @@
     "empty": {
       "title": "No tenants yet",
       "description": "No customer tenant has been provisioned."
-    },
-    "failure": {
-      "title": "Tenants could not be loaded",
-      "description": "The tenant list is unavailable right now. Your tenants are unaffected."
     }
   }
 }

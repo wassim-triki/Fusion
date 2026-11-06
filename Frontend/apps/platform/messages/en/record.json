@@ -49,7 +49,6 @@
   },
   "failure": {
     "notFound": "Tenant not found",
-    "notFoundDescription": "This tenant does not exist, or it was removed.",
     "back": "Back to Tenants",
     "title": "This tenant could not be loaded",
     "description": "The tenant record is unavailable right now. Nothing about the tenant has changed."

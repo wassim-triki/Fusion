@@ -207,6 +207,7 @@ Selection is an amber tint everywhere. A real one-off toggle (a chart node, a si
 **States** (every async or stateful view): loading, empty, no results, success, warning, error, partial failure, disabled, permission denied.
 - **Loading:** the least disruptive form. Local progress for actions, stable skeletons (`PageLoading`, `PageListSkeleton`) for data, a full-page spinner as a last resort. The app frame always renders; loading happens only in the content area. Long work shows real activity, never fake progress or a static "Processing…".
 - **Empty:** a precise state, one short line if needed, one relevant action. No product explanations, oversized illustrations or motivational filler.
+- **Failure:** one family, `PageState`: plain words, no status codes, one small drawing with one movement, a next step, the frame kept around it. Only failure pages get a drawing; ordinary empty states don't.
 - **Error:** what happened, what it affects, what to do. No vague "Something went wrong" when the cause is known.
 - **Success:** lightweight confirmation; never a dialog for routine actions.
 

@@ -1,4 +1,4 @@
-import { createPlatformApiClient, persistLanguageCookie } from "@repo/api";
+import { clearSessionExpired, createPlatformApiClient, persistLanguageCookie } from "@repo/api";
 import type {
   LoginRequest,
   RegisterRequest,
@@ -58,6 +58,7 @@ export async function saveNotificationAlerts(change: Partial<NotificationAlerts>
 const STORAGE_KEY = "ey_hr_auth";
 
 export function persistAuth(auth: StoredAuth): void {
+  clearSessionExpired();
   if (typeof window !== "undefined") {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(auth));
     document.cookie = `ey_hr_authenticated=true; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;

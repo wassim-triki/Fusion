@@ -7,11 +7,12 @@ import { toast } from "sonner";
 import { Inbox } from "lucide-react";
 import type { ChangeRequestDto } from "@repo/api";
 import { Button, PersonAvatar, Skeleton, Tabs, TabsList, TabsTrigger } from "@repo/ds";
-import { PageContainer, PageError, PageHeader } from "@repo/ds/shell";
+import { PageContainer, PageHeader } from "@repo/ds/shell";
 import { useRefusal } from "@/i18n/words";
 import { useChangeRequests, useRequestDecisions } from "@/features/people/changes/use-changes";
 import { RequestSheet, RequestStatus } from "./request-sheet";
 import { useRequestWords } from "./request-words";
+import { PageFailure } from "@repo/auth";
 
 type View = "pending" | "decided";
 
@@ -45,7 +46,7 @@ export function ChangesPage() {
       </Tabs>
 
       {list.error && !list.data ? (
-        <PageError title={t("failed")} onRetry={() => void list.refetch()} />
+        <PageFailure error={list.error} onRetry={() => void list.refetch()} />
       ) : !list.data ? (
         <div className="grid gap-2"><Skeleton className="h-[76px] rounded-surface" /><Skeleton className="h-[76px] rounded-surface" /></div>
       ) : list.data.length === 0 ? (

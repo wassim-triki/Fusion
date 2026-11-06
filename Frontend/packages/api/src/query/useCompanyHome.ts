@@ -21,3 +21,12 @@ export function useMyManager() {
     enabled: Boolean(viewer?.tenantId && viewer.employeeId), retry: false,
   });
 }
+
+/** Who a refused person can ask, from their own company only. A failed read falls back to "your administrator". */
+export function useCompanyAdministrators(enabled: boolean) {
+  const { viewer } = useFusionViewer();
+  const api = useMemo(() => createCompanyHomeApi(createPlatformApiClient()), []);
+  return useApiQuery(companyHomeKeys.administrators(viewer?.tenantId ?? "none"), (signal) => api.administrators(signal), {
+    enabled: enabled && Boolean(viewer?.tenantId), retry: false,
+  });
+}

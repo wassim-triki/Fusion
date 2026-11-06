@@ -27,13 +27,14 @@ import {
   Switch,
   cn,
 } from "@repo/ds";
-import { PageError, Said, Section, SettingsPage } from "@repo/ds/shell";
+import { Said, Section, SettingsPage } from "@repo/ds/shell";
 import { Check, Eye, LockKeyhole, MoreHorizontal, Plus, Save, X } from "lucide-react";
 import { usePeople, usePeopleFields, usePeopleProfile } from "@/features/people/api/use-people";
 import { Monogram } from "@/features/people/components/workforce-ui";
 import { useEmployeeFields, useUpdateEmployeeFields } from "@/features/settings/api/use-tenant-settings";
 import { useCoreSettingsLabel } from "@/features/settings/core-settings";
 import { useRefusal } from "@/i18n/words";
+import { PageFailure } from "@repo/auth";
 
 type Audience = "Everyone" | "ManagersAndHr" | "YouAndHr" | "Hr" | "Hidden";
 
@@ -131,7 +132,7 @@ export function EmployeeFieldsSettings({ section }: { section: FusionSettingsSec
   };
 
   if (query.error && !query.data) {
-    return <SettingsPage title={title} studio><PageError title={t("didNotLoad")} onRetry={() => void query.refetch()} /></SettingsPage>;
+    return <SettingsPage title={title} studio><PageFailure error={query.error} onRetry={() => void query.refetch()} headingLevel={2} /></SettingsPage>;
   }
 
   return (

@@ -2,6 +2,9 @@ using System.Security.Claims;
 using System.Text.Json;
 using EY.HRPlatform.Identity.Controllers;
 using EY.HRPlatform.Identity.Domain.Entities;
+using EY.HRPlatform.Identity.Domain.Enums;
+using EY.HRPlatform.Identity.Features.TenantContext.Dtos;
+using EY.HRPlatform.Identity.Models.Responses;
 using EY.HRPlatform.Identity.Features.AccessProfiles;
 using EY.HRPlatform.Identity.Features.Accounts;
 using EY.HRPlatform.Identity.Features.Membership;
@@ -183,6 +186,111 @@ public sealed class AdministratorsAndViewAsTests : IAsyncLifetime
         Assert.Equal(403, await Send("POST", "/api/identity/view-as", viewer));
         // Anyone else is untouched.
         Assert.Equal(200, await Send("POST", "/api/identity/view-as", new ClaimsPrincipal(new ClaimsIdentity())));
+    }
+
+    // ── Who a refused person can ask (B-302) ─────────────
+
+    [SkippableFact]
+    public async Task A_member_reads_their_own_companys_usable_administrators_and_no_more_than_three()
+    {
+        Skip.IfNot(Available, "No PostgreSQL connection configured.");
+        var world = await ArrangeAsync();
+        var users = RelationalTestDatabase.CreateUserManager(world.Db);
+
+        var removed = await MakeAdministratorAsync(world, users, "removed@atlas.example", "Removed");
+        var suspended = await MakeAdministratorAsync(world, users, "suspended@atlas.example", "Suspended");
+        var assignment = await world.Db.TenantAdministratorAssignments.FirstAsync(item => item.UserId == removed.Id);
+        assignment.Revoke(world.AdminId);
+        var membership = await world.Db.TenantMemberships.FirstAsync(item => item.UserId == suspended.Id);
+        membership.Suspend(world.AdminId);
+        await world.Db.SaveChangesAsync();
+
+        var answer = await Contacts(world, Member(world, world.Member));
+        Assert.False(answer.CallerIsAdministrator);
+        Assert.Equal(["Ada Admin"], answer.Administrators.Select(item => item.Name));
+        Assert.Equal("Ada", answer.Administrators[0].FirstName);
+        Assert.Equal("first.admin@atlas.example", answer.Administrators[0].Email);
+
+        foreach (var name in new[] { "Bea", "Cy", "Di" })
+            await MakeAdministratorAsync(world, users, $"{name}@atlas.example", name);
+        Assert.Equal(3, (await Contacts(world, Member(world, world.Member))).Administrators.Count);
+    }
+
+    [SkippableFact]
+    public async Task Another_companys_administrators_are_never_named_whatever_the_request_carries()
+    {
+        Skip.IfNot(Available, "No PostgreSQL connection configured.");
+        var world = await ArrangeAsync();
+        var users = RelationalTestDatabase.CreateUserManager(world.Db);
+        var other = Tenant.Create("Elsewhere");
+        world.Db.Tenants.Add(other);
+        await world.Db.SaveChangesAsync();
+        var outsider = await AddMemberAsync(world.Db, users, other.Id, "out@elsewhere.example", "Outsider", MemberPassword);
+        world.Db.TenantAdministratorAssignments.Add(TenantAdministratorAssignment.Grant(
+            await world.Db.TenantMemberships.FirstAsync(item => item.UserId == outsider.Id), TenantAdministratorGrantActor.Migration));
+        await world.Db.SaveChangesAsync();
+
+        // The tenant is the token's, so a header naming Elsewhere can't change the answer.
+        var controller = ContactsController(world, Member(world, world.Member));
+        controller.ControllerContext.HttpContext.Request.Headers["X-Tenant-Id"] = other.Id.ToString();
+        var result = await controller.GetAdministrators(default);
+        var answer = Assert.IsType<ApiResponse<CompanyAdministratorsDto>>(Assert.IsType<OkObjectResult>(result.Result).Value).Data!;
+        Assert.DoesNotContain(answer.Administrators, item => item.Email == "out@elsewhere.example");
+        Assert.Equal(["first.admin@atlas.example"], answer.Administrators.Select(item => item.Email));
+    }
+
+    [SkippableFact]
+    public async Task A_platform_administrator_has_no_company_to_read()
+    {
+        Skip.IfNot(Available, "No PostgreSQL connection configured.");
+        var world = await ArrangeAsync();
+        var platform = new ClaimsPrincipal(new ClaimsIdentity(
+            [new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()), new Claim(ClaimTypes.Role, PlatformRole.PlatformAdmin)], "test"));
+        var controller = new TenantContextController(new TestTenantContext(), world.Db)
+        {
+            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = platform } },
+        };
+
+        var refused = Assert.IsType<ObjectResult>((await controller.GetAdministrators(default)).Result);
+        Assert.Equal(403, refused.StatusCode);
+    }
+
+    [SkippableFact]
+    public async Task An_administrator_is_told_they_are_one_and_is_never_pointed_at_anyone()
+    {
+        Skip.IfNot(Available, "No PostgreSQL connection configured.");
+        var world = await ArrangeAsync();
+        var users = RelationalTestDatabase.CreateUserManager(world.Db);
+        await MakeAdministratorAsync(world, users, "second@atlas.example", "Second");
+
+        var answer = await Contacts(world, Admin(world));
+        Assert.True(answer.CallerIsAdministrator);
+        Assert.Empty(answer.Administrators);
+    }
+
+    private static async Task<ApplicationUser> MakeAdministratorAsync(
+        World world, UserManager<ApplicationUser> users, string email, string firstName)
+    {
+        var account = await AddMemberAsync(world.Db, users, world.TenantId, email, firstName, MemberPassword);
+        var membership = await world.Db.TenantMemberships.FirstAsync(item => item.UserId == account.Id);
+        world.Db.TenantAdministratorAssignments.Add(TenantAdministratorAssignment.Grant(membership, TenantAdministratorGrantActor.TenantAdministrator, world.AdminId));
+        await world.Db.SaveChangesAsync();
+        return account;
+    }
+
+    private static TenantContextController ContactsController(World world, ClaimsPrincipal user)
+    {
+        world.Db.ChangeTracker.Clear();
+        return new TenantContextController(TestTenantContext.WithTenant(world.TenantId), world.Db)
+        {
+            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = user } },
+        };
+    }
+
+    private static async Task<CompanyAdministratorsDto> Contacts(World world, ClaimsPrincipal user)
+    {
+        var result = await ContactsController(world, user).GetAdministrators(default);
+        return Assert.IsType<ApiResponse<CompanyAdministratorsDto>>(Assert.IsType<OkObjectResult>(result.Result).Value).Data!;
     }
 
     // ── plumbing ─────────────────────────────────────────

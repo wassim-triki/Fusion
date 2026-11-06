@@ -29,9 +29,8 @@ const WEEK_MS = 7 * 86_400_000;
  * week ahead sit beside it. Someone with no 1:1s yet gets one job: starting them. Not cycle-bound.
  */
 export function OneOnOnesWorkspace() {
-  const t = useTranslations("oneOnOnes.OneOnOnesWorkspace");
   const query = useOneOnOnes();
-  if (query.error) return <ContentUnavailable error={query.error} onRetry={query.refetch} subject={t("your11s")} />;
+  if (query.error) return <ContentUnavailable error={query.error} onRetry={query.refetch} />;
   if (!query.data) return <OneOnOnesSkeleton />;
   return <Workspace data={query.data} />;
 }

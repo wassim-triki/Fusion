@@ -1,10 +1,10 @@
 import type { ComponentType, ReactNode } from "react";
-import { AlertTriangle, Inbox, Lock } from "lucide-react";
+import { Inbox, Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "../lib/utils";
-import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { PageContainer, type PageContainerProps } from "./page";
+import { PageStateDrawing, type PageStateDrawingKind } from "./page-state-drawings";
 
 interface BaseStateProps {
   icon?: ComponentType<{ className?: string }>;
@@ -53,50 +53,83 @@ export function PageEmpty(props: BaseStateProps) {
   return <StateShell icon={props.icon ?? Inbox} {...props} />;
 }
 
-/** Permission/read-only notice: explains the boundary rather than hiding silently. */
+/** A standing notice that isn't a failure, like a cycle that hasn't started or a view narrowed to someone's team. */
 export function PagePermissionNotice(props: Omit<BaseStateProps, "icon">) {
   return <StateShell icon={Lock} {...props} />;
 }
 
+const OPEN_SEARCH_EVENT = "fusion:open-search";
+
+/** Opens the top bar's search, the one search there is. */
+export function openTopBarSearch() {
+  window.dispatchEvent(new Event(OPEN_SEARCH_EVENT));
+}
+
+/** Lets the top bar's search answer {@link openTopBarSearch}; returns the way to stop listening. */
+export function onOpenTopBarSearch(open: () => void): () => void {
+  window.addEventListener(OPEN_SEARCH_EVENT, open);
+  return () => window.removeEventListener(OPEN_SEARCH_EVENT, open);
+}
+
+export interface PageStateProps {
+  drawing: PageStateDrawingKind;
+  /** A page gets the drawing and the Lora title; a card with room a small drawing; a slim row one line. */
+  size?: "page" | "card" | "row";
+  title: string;
+  description?: ReactNode;
+  actions?: ReactNode;
+  /** Under the actions on a page: who to ask, the reference code, the countdown, the search. */
+  footer?: ReactNode;
+  headingLevel?: 1 | 2 | 3;
+  className?: string;
+}
+
 /**
- * What an address someone can't use shows. Navigation already hides these pages,
- * so this is for a typed or old link; every refusal reads the same.
+ * One family for every way a page or a piece of one fails (B-302): plain words, one small drawing, a next step. No
+ * status codes, no box; the frame stays around it. Ordinary empty states stay with {@link PageEmpty}.
  */
-export function PageRefusal({ action, className }: Pick<BaseStateProps, "action" | "className">) {
-  const t = useTranslations("ds.states");
-  return <StateShell icon={Lock} title={t("refused")} headingLevel={1} action={action} className={className} />;
-}
-
-export interface PageErrorProps extends Omit<BaseStateProps, "icon" | "action"> {
-  onRetry?: () => void;
-  retryLabel?: string;
-}
-
-/** Constructive error state with an optional retry. */
-export function PageError({
+export function PageState({
+  drawing,
+  size = "page",
   title,
   description,
-  onRetry,
-  retryLabel,
+  actions,
+  footer,
+  headingLevel = 1,
   className,
-  headingLevel,
-}: PageErrorProps) {
-  const t = useTranslations("ds.states");
+}: PageStateProps) {
+  if (size === "row") {
+    return (
+      <div className={cn("flex items-center gap-3", className)}>
+        <p className="text-sm text-muted-foreground">{title}</p>
+        {actions}
+      </div>
+    );
+  }
+
+  if (size === "card") {
+    return (
+      <div className={cn("m-auto flex flex-col items-center gap-2 py-2 text-center", className)}>
+        <PageStateDrawing kind={drawing} size="small" />
+        <p className="text-sm text-muted-foreground">{title}</p>
+        {actions ? <div className="mt-1 flex flex-wrap justify-center gap-2">{actions}</div> : null}
+      </div>
+    );
+  }
+
+  const Heading = headingLevel === 1 ? "h1" : headingLevel === 2 ? "h2" : "h3";
   return (
-    <StateShell
-      icon={AlertTriangle}
-      title={title}
-      description={description}
-      className={className}
-      headingLevel={headingLevel}
-      action={
-        onRetry ? (
-          <Button variant="outline" size="sm" onClick={onRetry}>
-            {retryLabel ?? t("tryAgain")}
-          </Button>
-        ) : undefined
-      }
-    />
+    <div className={cn("mx-auto flex max-w-[40rem] flex-col items-center gap-3 px-6 py-16 text-center", className)}>
+      <PageStateDrawing kind={drawing} />
+      <Heading className="mt-2 text-balance font-editorial text-[1.9375rem] font-medium leading-[1.18] tracking-[-0.012em] text-foreground">
+        {title}
+      </Heading>
+      {description ? (
+        <p className="max-w-[54ch] text-pretty text-[0.9375rem] text-muted-foreground">{description}</p>
+      ) : null}
+      {actions ? <div className="mt-3 flex flex-wrap items-center justify-center gap-2">{actions}</div> : null}
+      {footer ? <div className="mt-4 flex flex-col items-center gap-2 text-sm text-muted-foreground">{footer}</div> : null}
+    </div>
   );
 }
 

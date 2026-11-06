@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { PageFailure } from "@repo/auth";
 import {
   Archive,
   Ban,
@@ -17,7 +18,6 @@ import {
   Copy,
   MoreHorizontal,
   RotateCcw,
-  SearchX,
 } from "@/lib/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import {
@@ -46,13 +46,8 @@ import {
 } from "@repo/ds/components/ui/tooltip";
 import { toast } from "sonner";
 import { cn } from "@repo/ds/lib/utils";
-import {
-  PageContainer,
-  PageEmpty,
-  PageError,
-  StatusBadge,
-} from "@repo/ds/shell";
-import { failureKind, type TenantDetail } from "../api";
+import { PageContainer, StatusBadge } from "@repo/ds/shell";
+import { type TenantDetail } from "../api";
 import { useFailureDetail } from "../language";
 import { TenantMonogram } from "../overview/tenant-monogram";
 import { useTenantDetail, useTenantLifecycle } from "../queries";
@@ -496,34 +491,6 @@ function RecordFailure({
   error: Error;
   onRetry: () => void;
 }) {
-  const t = useTranslations("record.failure");
-  const common = useTranslations("tenants.common");
-  const kind = failureKind(error);
-
-  if (kind === "not-found") {
-    return (
-      <PageEmpty
-        headingLevel={1}
-        icon={SearchX}
-        title={t("notFound")}
-        description={t("notFoundDescription")}
-        action={
-          <Button asChild variant="outline" size="sm">
-            <Link href="/tenants">{t("back")}</Link>
-          </Button>
-        }
-      />
-    );
-  }
-
-  return (
-    <PageError
-      headingLevel={1}
-      title={kind === "permission" ? common("noAccess") : t("title")}
-      description={
-        kind === "permission" ? common("permissionChanged") : t("description")
-      }
-      onRetry={kind === "permission" ? undefined : onRetry}
-    />
-  );
+  const nav = useTranslations("frame.nav");
+  return <PageFailure error={error} onRetry={onRetry} back={{ href: "/platform/tenants", label: nav("tenants") }} />;
 }

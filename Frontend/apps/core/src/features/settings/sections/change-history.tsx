@@ -6,12 +6,13 @@ import { ChevronRight } from "lucide-react";
 import type { AccessAuditEventDto, FusionSettingsSection, RoleCellDto, SettingsAuditEventDto } from "@repo/api";
 import { cn, NativeSelect, NativeSelectOption } from "@repo/ds";
 import { formatDate, formatDateParts, formatTime } from "@repo/ds/lib/dates";
-import { PageError, SettingsPage, useSettingsSectionName } from "@repo/ds/shell";
+import { SettingsPage, useSettingsSectionName } from "@repo/ds/shell";
 import { useAccessAudit } from "@/features/settings/api/use-core-access";
 import { useSettingsAudit } from "@/features/settings/api/use-tenant-settings";
 import { AUDIT_SECTION_IDS } from "@/features/settings/core-settings";
 import { sayInEnglish, useSettingsSay, type Say } from "@/features/settings/say";
 import { settingWords } from "@/features/settings/roles/role-words";
+import { PageFailure } from "@repo/auth";
 
 /** The profile fields Employee fields names (`employeeFields.fields.<key>.label`). */
 const FIELDS = new Set(["firstName", "lastName", "email", "hireDate", "phone", "jobTitle", "workLocation", "employmentType"]);
@@ -466,7 +467,7 @@ export function ChangeHistorySettings({ section }: { section: FusionSettingsSect
   if (settings.error && !settings.data) {
     return (
       <SettingsPage title={title}>
-        <PageError title={say("changeHistory.didNotLoad")} onRetry={() => void settings.refetch()} />
+        <PageFailure error={settings.error} onRetry={() => void settings.refetch()} headingLevel={2} />
       </SettingsPage>
     );
   }

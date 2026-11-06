@@ -28,7 +28,7 @@ import {
   type DataTableFilterState,
   type DataTableModel,
 } from "@repo/ds/data-table";
-import { PageError, StatusBadge, type StatusTone } from "@repo/ds/shell";
+import { StatusBadge, type StatusTone } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { initials } from "../plan/plan-lib";
 
@@ -41,6 +41,7 @@ import { useTranslations } from "next-intl";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { useSay } from "@repo/ds/lib/say";
 import { english, type Say } from "@/i18n/say";
+import { PageFailure } from "@repo/auth";
 
 /**
  * Your People — the manager's roster for the selected Cycle, served a page at a time. The server owns
@@ -587,7 +588,6 @@ export function YourPeople({
   query: YourPeopleQuery;
   onQueryChange: (query: YourPeopleQuery) => void;
 }) {
-  const t = useTranslations("team.YourPeople");
   const words = useSay("team.people");
   const format = useFormat();
   const router = useRouter();
@@ -628,7 +628,7 @@ export function YourPeople({
   });
 
   if (!people.isLoading && (people.error || !data)) {
-    return <PageError title={t("yourPeopleAreUnavailable")} description={people.error?.message} onRetry={people.refetch} />;
+    return <PageFailure error={people.error} onRetry={people.refetch} />;
   }
 
   return (

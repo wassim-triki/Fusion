@@ -5,18 +5,9 @@ import { Check, ChevronRight, Lock } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { ApiError, type FusionSettingsModuleKey, type NotificationGroupKey, type NotificationPreferenceGroup } from "@repo/api";
 import { useNotificationPreferences, useUpdateNotificationPreferences } from "@repo/api/query";
-import { useNotificationAlerts, type NotificationAlerts } from "@repo/auth";
+import { useNotificationAlerts, type NotificationAlerts, PageFailure } from "@repo/auth";
 import { Button, cn, Switch } from "@repo/ds";
-import {
-  FUSION_MODULE_ICONS,
-  PageError,
-  playChime,
-  SettingsBlock,
-  SettingsPage,
-  SettingsRow,
-  SettingsRows,
-  SettingsSaved,
-} from "@repo/ds/shell";
+import { FUSION_MODULE_ICONS, playChime, SettingsBlock, SettingsPage, SettingsRow, SettingsRows, SettingsSaved } from "@repo/ds/shell";
 
 /**
  * Each module serves its groups and lines from a fixed English catalogue with no codes for the lines (Performance's
@@ -278,7 +269,7 @@ export function Notifications() {
     return (
       <div lang={locale} className="contents">
         <SettingsPage title={t("title")}>
-          <PageError title={t("didNotLoad")} onRetry={() => void broken.refetch()} />
+          <PageFailure error={broken.error} onRetry={() => void broken.refetch()} headingLevel={2} />
         </SettingsPage>
       </div>
     );

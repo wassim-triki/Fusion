@@ -38,7 +38,6 @@ import {
   TabsTrigger,
   cn,
 } from "@repo/ds";
-import { PageRefusal } from "@repo/ds/shell";
 import type { UnitStaffingDto } from "@repo/api";
 import { useStaffingAccess } from "../api/use-staffing";
 import { FilterFieldChip, isFilterActive, matchesField, type DataTableFilterField, type DataTableFilterState } from "@repo/ds/data-table";
@@ -63,12 +62,7 @@ import {
   Wrench,
   X,
 } from "lucide-react";
-import {
-  canManageCoreOrganization,
-  canViewCoreOrganization,
-  canViewTenantAdministration,
-  useAuth,
-} from "@repo/auth";
+import { canManageCoreOrganization, canViewCoreOrganization, canViewTenantAdministration, useAuth, PageRefusal } from "@repo/auth";
 import type {
   OrganizationUnitStateDto,
 } from "@repo/api";

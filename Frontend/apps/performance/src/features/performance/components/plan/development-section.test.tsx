@@ -117,7 +117,7 @@ describe("DevelopmentSection", () => {
     state.query.data = undefined;
     state.query.error = new Error("Down");
     render(<DevelopmentSection cycleId="c" employeeId="nour" />);
-    expect(screen.getByText("Development unavailable")).toBeTruthy();
+    expect(screen.getByText("Development didn't load")).toBeTruthy();
     state.query.error = null;
   });
 });

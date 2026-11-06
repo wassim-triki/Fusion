@@ -53,11 +53,7 @@
     "personalDetails": "Updated contact details"
   },
   "record": {
-    "noAccess": "You don’t have access to this profile",
-    "noAccessDescription": "Your role does not permit viewing this person.",
     "notFound": "Person not found",
-    "transient": "This profile could not be loaded right now. Try again in a moment.",
-    "missing": "This person may not exist or may not be available in your company.",
     "setUpAccess": "Set up sign-in",
     "reviewAccess": "Review sign-in",
     "addWorkEmail": "Add work email",
@@ -68,7 +64,6 @@
     "added": "Added",
     "asOf": "As of {date}",
     "today": "Today",
-    "backToPeople": "Back to People",
     "retry": "Retry",
     "viewAsOf": "View as of a date",
     "viewAsOfDate": "View as of date",

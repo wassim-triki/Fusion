@@ -5,7 +5,7 @@ import { reportPerformanceFailure } from "@/features/performance/api/performance
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { classifyApiError } from "@repo/api";
-import { useAuth } from "@repo/auth";
+import { useAuth, PageFailure } from "@repo/auth";
 import type {
   AlignmentTargetDto,
   CycleSummaryDto,
@@ -149,19 +149,14 @@ export function TeamDirection({
         <h2 className="type-section-title text-foreground">
           {t("upstreamDirection")}
         </h2>
-        <p className="mt-2 type-body text-muted-foreground">
-          {workspace.error?.message || t("teamObjectivesCouldNotBe")}
-        </p>
-        {/* A validation or access answer won't change on retry; only transient failures offer one. */}
-        {["validation", "auth"].includes(classifyApiError(workspace.error)) ? null : (
-          <Button
-            variant="outline"
-            className="mt-4"
-            onClick={() => void workspace.refetch()}
-          >
-            {t("tryAgain")}
-          </Button>
-        )}
+        <PageFailure
+          error={workspace.error}
+          size="row"
+          className="mt-2"
+          title={t("teamObjectivesCouldNotBe")}
+          // A validation or access answer won't change on retry; only transient failures offer one.
+          onRetry={["validation", "auth"].includes(classifyApiError(workspace.error)) ? undefined : () => workspace.refetch()}
+        />
       </section>
     );
   }

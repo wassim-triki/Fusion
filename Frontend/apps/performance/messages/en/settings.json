@@ -1,16 +1,13 @@
 {
-  "didNotLoad": "Performance settings didn't load",
   "on": "On",
   "off": "Off",
   "more": "{sentences} And {count, plural, one {# more change} other {# more changes}}.",
   "dayCount": "{count, plural, one {# day} other {# days}}",
   "cycle": {
-    "didNotLoad": "{section} didn't load",
     "notSaved": "{section} didn't save. Try again.",
     "leave": "Leave without saving? Your changes to {section} are discarded."
   },
   "ratingScale": {
-    "didNotLoad": "The rating scale didn't load",
     "notSaved": "The rating scale didn't save. Try again.",
     "leave": "Leave without saving? Your changes to the rating scale are discarded.",
     "previewTitle": "An objective in a review",
@@ -31,7 +28,6 @@
     "notUsed": "Not used yet"
   },
   "competencies": {
-    "didNotLoad": "Competencies didn't load",
     "conflict": "Someone changed this competency after you opened it. Close it and open it again.",
     "notSaved": "The competency didn't save. Try again.",
     "leave": "Leave without saving? Your changes to {name} are discarded.",
@@ -55,7 +51,6 @@
     "usedIn": "Used in {cycles}"
   },
   "questions": {
-    "didNotLoad": "Review questions didn't load",
     "conflict": "Someone changed the questions after you opened them. They're up to date now.",
     "notSaved": "That didn't save. Try again.",
     "audiences": {

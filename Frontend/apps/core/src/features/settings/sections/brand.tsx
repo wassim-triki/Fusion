@@ -20,10 +20,11 @@ import { Button, Input } from "@repo/ds";
 import { Segmented } from "@repo/ds/choice";
 import { FUSION_COLORS, applyCompanyColor, isBrandColor, readableText } from "@repo/ds/brand";
 import { cn } from "@repo/ds/lib/utils";
-import { PageError, SettingsPage, useSettingsSectionName } from "@repo/ds/shell";
+import { SettingsPage, useSettingsSectionName } from "@repo/ds/shell";
 import { EmailPreview, HomePreview, SignInPreview, type BrandDraftView } from "../brand/brand-previews";
 import { prepareLogo, storedLogoColors } from "../brand/prepare-logo";
 import { useSaveFailure } from "../say";
+import { PageFailure } from "@repo/auth";
 
 const LANGUAGES: { value: CompanyLanguage; label: string }[] = [
   { value: "en", label: "English" },
@@ -147,7 +148,7 @@ export function BrandSettings({ section }: { section: FusionSettingsSection }) {
   if (summary.error && !summary.data) {
     return (
       <SettingsPage title={title}>
-        <PageError title={t("didNotLoad")} onRetry={() => void summary.refetch()} />
+        <PageFailure error={summary.error} onRetry={() => void summary.refetch()} headingLevel={2} />
       </SettingsPage>
     );
   }

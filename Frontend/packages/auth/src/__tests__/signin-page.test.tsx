@@ -6,6 +6,7 @@ import { SignInPage } from "../components/signin-page";
 import { AuthProvider } from "../auth-context";
 import * as authService from "../auth-service";
 import { makeAuthResponse, makeApiError, makeStoredAuth } from "./helpers";
+import { markSessionExpired } from "@repo/api";
 import { IntlTestProvider } from "@repo/ds/testing";
 import dsFr from "@repo/ds/messages/fr.json";
 import fr from "../messages/fr.json";
@@ -104,6 +105,29 @@ describe("SignInPage", () => {
 
       expect(screen.queryByRole("link", { name: /sign up/i })).toBeNull();
       expect(screen.queryByRole("button", { name: /sign up/i })).toBeNull();
+    });
+  });
+
+  describe("a session that ended on its own", () => {
+    it("says so, only then, and keeps the way back", async () => {
+      mockSearchParamGet.mockImplementation((key) => (key === "callbackUrl" ? "/core/people" : null));
+      markSessionExpired();
+      renderSignInPage();
+      expect(await screen.findByRole("heading", { name: "You've been signed out" })).toBeInTheDocument();
+      expect(screen.getByText("Sign in again to go back to where you were.")).toBeInTheDocument();
+      expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+    });
+
+    it("is a normal sign-in on a first visit", async () => {
+      renderSignInPage();
+      expect(await screen.findByRole("heading", { name: "Sign in" })).toBeInTheDocument();
+    });
+
+    it("is marked when a stored session can't be restored", async () => {
+      mockedService.loadAuth.mockReturnValue(makeStoredAuth({ accessTokenExpiration: new Date(Date.now() - 5_000).toISOString() }));
+      mockedService.refreshToken.mockRejectedValue(makeApiError(401));
+      renderSignInPage();
+      expect(await screen.findByRole("heading", { name: "You've been signed out" })).toBeInTheDocument();
     });
   });
 

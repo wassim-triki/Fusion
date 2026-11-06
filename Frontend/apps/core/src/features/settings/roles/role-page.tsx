@@ -51,8 +51,8 @@ import {
   PopoverTrigger,
   Skeleton,
 } from "@repo/ds";
-import { canManageTenantAdministration, startViewAs, useAuth } from "@repo/auth";
-import { LastChange, PageError, ViewOnlyBadge } from "@repo/ds/shell";
+import { canManageTenantAdministration, startViewAs, useAuth, PageFailure } from "@repo/auth";
+import { LastChange, ViewOnlyBadge } from "@repo/ds/shell";
 import { useDeleteRole, useRole, useRoleCandidates, useSaveRole } from "@/features/settings/api/use-core-access";
 import { useSaveFailure, useSettingsSay, type Say } from "@/features/settings/say";
 import { useBreadcrumbLabel } from "@/shell/breadcrumb-overrides";
@@ -670,11 +670,12 @@ function RoleEditor({ roleId, section }: { roleId: string; section: FusionSettin
   }, []);
 
   if (role.error && !detail) {
-    const missing = role.error instanceof ApiError && role.error.status === 404;
     return (
-      <Frame back={say("roles.back")} title={say("roles.title")}>
-        <PageError title={missing ? say("roles.notFound") : say("roles.didNotLoad")} onRetry={missing ? undefined : () => void role.refetch()} />
-      </Frame>
+      <PageFailure
+        error={role.error}
+        onRetry={() => void role.refetch()}
+        back={{ href: "/core/settings/roles", label: say("roles.title") }}
+      />
     );
   }
 

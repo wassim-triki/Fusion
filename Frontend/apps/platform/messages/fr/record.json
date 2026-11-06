@@ -49,7 +49,6 @@
   },
   "failure": {
     "notFound": "Organisation introuvable",
-    "notFoundDescription": "Cette organisation n’existe pas ou a été supprimée.",
     "back": "Retour aux organisations",
     "title": "Échec du chargement de cette organisation",
     "description": "La fiche de l’organisation est indisponible pour le moment. Rien n’a changé pour l’organisation."

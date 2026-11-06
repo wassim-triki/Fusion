@@ -16,7 +16,7 @@ import {
   type TenantAdministratorDto,
 } from "@repo/api";
 import { useApiQuery, useTenantSummary } from "@repo/api/query";
-import { useAuth } from "@repo/auth";
+import { useAuth, PageFailure } from "@repo/auth";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,7 +41,6 @@ import {
   Skeleton,
 } from "@repo/ds";
 import { formatDate } from "@repo/ds/lib/dates";
-import { PageError } from "@repo/ds/shell";
 import {
   problemTypeOf,
   useAddAdministrator,
@@ -505,7 +504,7 @@ export function AdministratorsPage({ section }: { section: FusionSettingsSection
     return (
       <div className="mx-auto w-full max-w-[1240px] px-6 pt-8 pb-16">
         {header}
-        <PageError title={say("roles.administrators.didNotLoad")} onRetry={() => void administrators.refetch()} />
+        <PageFailure error={administrators.error} onRetry={() => void administrators.refetch()} headingLevel={2} />
       </div>
     );
   }
@@ -563,7 +562,7 @@ export function AdministratorsPage({ section }: { section: FusionSettingsSection
               <History items={history.data} company={company} say={say} />
             ) : null
           ) : history.error ? (
-            <PageError title={say("roles.administrators.historyDidNotLoad")} onRetry={() => void history.refetch()} />
+            <PageFailure error={history.error} onRetry={() => void history.refetch()} size="card" title={say("roles.administrators.historyDidNotLoad")} />
           ) : (
             <Skeleton className="h-28 rounded-surface" />
           )}

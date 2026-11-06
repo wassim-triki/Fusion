@@ -14,9 +14,10 @@ import {
   Input,
   cn,
 } from "@repo/ds";
-import { PageError, SettingsBlock, SettingsPage, SettingsRows, StatusBadge, useSettingsSectionName } from "@repo/ds/shell";
+import { SettingsBlock, SettingsPage, SettingsRows, StatusBadge, useSettingsSectionName } from "@repo/ds/shell";
 import { Archive, ArrowDown, ArrowUp, MoreHorizontal, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useCompanyLists, useListMutations } from "@/features/catalog/api/use-catalog";
+import { PageFailure } from "@repo/auth";
 
 /** Lists whose values something counts (jobs or people); the others have no users yet. */
 const COUNTED = new Set(["employment-types", "levels", "job-families"]);
@@ -34,7 +35,7 @@ export function ListsSettings({ section }: { section: FusionSettingsSection }) {
   if (lists.error && !lists.data) {
     return (
       <SettingsPage title={title}>
-        <PageError title={t("didNotLoad")} onRetry={() => void lists.refetch()} />
+        <PageFailure error={lists.error} onRetry={() => void lists.refetch()} headingLevel={2} />
       </SettingsPage>
     );
   }

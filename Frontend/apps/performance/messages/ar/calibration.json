@@ -125,11 +125,7 @@
   },
   "CalibrationWorkspacePage": {
     "loadingCalibration": "جارٍ تحميل المعايرة",
-    "calibration": "المعايرة",
-    "calibrationUnavailable": "المعايرة غير متاحة",
-    "calibrationIsOpenToPeople": "المعايرة متاحة لمن ييسّرون معايرة التقديرات.",
-    "youAreNotAFacilitator": "لست ميسّرًا لهذه الجلسة",
-    "aFacilitatorOfThisCalibration": "يمكن لميسّر هذه المعايرة إضافتك."
+    "calibration": "المعايرة"
   },
   "SessionBody": {
     "thisView": "هذا العرض",

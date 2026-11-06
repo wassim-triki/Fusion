@@ -7,7 +7,7 @@ import { ApiError, type CalibrationFilter, type CalibrationHeaderDto, type Calib
 import { Button } from "@repo/ds/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@repo/ds/components/ui/dialog";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
-import { AsyncButton, PageContainer, PagePermissionNotice, PageSkeleton } from "@repo/ds/shell";
+import { AsyncButton, PageContainer, PageRefusal, PageSkeleton } from "@repo/ds/shell";
 import { PersonInitials } from "@repo/performance-ui";
 import { ArrowLeft } from "@/lib/icons";
 import { roundHref, withCycle } from "@/lib/performance-routes";
@@ -49,9 +49,9 @@ export function CalibrationWorkspacePage({ roundId }: { roundId: string }) {
 
   if (context.isLoading || (canCalibrate && session.isLoading)) return <PageSkeleton rows={7} width="wide" label={t("loadingCalibration")} />;
   if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} subject={t("calibration")} />;
-  if (!canCalibrate) return <PagePermissionNotice title={t("calibrationUnavailable")} description={t("calibrationIsOpenToPeople")} />;
+  if (!canCalibrate) return <PageContainer><PageRefusal /></PageContainer>;
   const status = session.error instanceof ApiError ? session.error.status : null;
-  if (status === 403) return <PagePermissionNotice title={t("youAreNotAFacilitator")} description={t("aFacilitatorOfThisCalibration")} />;
+  if (status === 403) return <PageContainer><PageRefusal /></PageContainer>;
   if (status === 404) return <OpenSession roundId={roundId} cycleId={context.data?.selected?.id ?? null} mutations={mutations} />;
   if (session.error) return <ContentUnavailable error={session.error} onRetry={session.refetch} subject={t("calibration")} />;
   if (!session.data?.header) return <PageSkeleton rows={7} width="wide" label={t("loadingCalibration")} />;

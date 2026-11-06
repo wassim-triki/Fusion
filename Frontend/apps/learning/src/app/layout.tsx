@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
-import { AuthProvider } from "@repo/auth";
+import { AuthProvider, ModuleGate } from "@repo/auth";
 import { ModuleLayout, ThemeProvider, ThemeScript } from "@repo/ui";
 import { Toaster } from "sonner";
 import { LearningSidebar } from "@/components/learning-sidebar";
@@ -31,15 +31,17 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider>
             <AuthProvider>
-              {/* AI-L-1: one module-wide Academy Assistant (ADR-0013). The provider lets the
-                  course player publish its active chapter; the assistant floats everywhere. */}
-              <AssistantScopeProvider>
-                <ModuleLayout sidebar={<LearningSidebar />}>
-                  <LearningHeader />
-                  {children}
-                </ModuleLayout>
-                <AcademyAssistant />
-              </AssistantScopeProvider>
+              <ModuleGate module="Learning" publicPaths={["/verify"]}>
+                {/* AI-L-1: one module-wide Academy Assistant (ADR-0013). The provider lets the
+                    course player publish its active chapter; the assistant floats everywhere. */}
+                <AssistantScopeProvider>
+                  <ModuleLayout sidebar={<LearningSidebar />}>
+                    <LearningHeader />
+                    {children}
+                  </ModuleLayout>
+                  <AcademyAssistant />
+                </AssistantScopeProvider>
+              </ModuleGate>
               <Toaster
                 richColors
                 closeButton

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AuthProvider } from "@repo/auth";
+import { AuthProvider, ModuleGate } from "@repo/auth";
 import { AppShell } from "@/components/app-shell";
 import { Providers } from "@/app/providers";
 import "@repo/ui/src/ey-brand.css";
@@ -18,7 +18,9 @@ export default function RootLayout({
       <body className="min-h-screen antialiased bg-white">
         <Providers>
           <AuthProvider>
-            <AppShell>{children}</AppShell>
+            <ModuleGate module="Interview" publicPaths={["/candidate/start"]}>
+              <AppShell>{children}</AppShell>
+            </ModuleGate>
           </AuthProvider>
         </Providers>
       </body>

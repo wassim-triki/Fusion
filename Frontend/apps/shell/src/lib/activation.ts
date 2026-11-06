@@ -274,7 +274,7 @@ export function scrubbedUrl(href: string): string | null {
  */
 export interface ActivationJourney {
   /** Its words in the catalogue: `journeys.<key>` (role, heading, lead with `{tenant}`). */
-  key: "bootstrap" | "administrator" | "recovery";
+  key: "bootstrap" | "recovery";
 
   /** Read-only inspection of the credential (GET, with `?credential=`). */
   inspectPath: string;
@@ -300,15 +300,6 @@ export const BOOTSTRAP_JOURNEY: ActivationJourney = {
   acceptPath: "/api/identity/tenant-activation",
   // Home, where the company's setup guide opens, reached only after the tenant-scoped session exists.
   destination: "/",
-};
-
-/** An additional administrator, invited by an existing one. */
-export const ADMINISTRATOR_JOURNEY: ActivationJourney = {
-  key: "administrator",
-  inspectPath: "/api/identity/tenant-access/invitations/inspect",
-  acceptPath: "/api/identity/tenant-access/invitations/accept",
-  destination: "/core/settings/roles/administrators",
-  terminalOverrides: ["expired", "revoked", "existing_account"],
 };
 
 /**

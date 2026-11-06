@@ -8,7 +8,6 @@
     "peopleDirectory": "الموظفون",
     "organization": "التنظيم",
     "changes": "التغييرات والموافقات",
-    "workforceAccess": "وصول الموظفين",
     "administrators": "المسؤولون",
     "settings": "الإعدادات",
     "reports": "التقارير"
@@ -43,10 +42,6 @@
   },
   "boundary": {
     "denied": {
-      "title": "الوصول مرفوض",
-      "description": "ليست لديك صلاحية فتح هذا القسم.",
-      "noticeTitle": "هذا القسم غير متاح لحسابك",
-      "noticeDescription": "افتح قسمًا آخر من Fusion يمكنك استخدامه، أو تواصل مع المسؤول إن كنت تتوقع الوصول.",
       "action": "فتح Fusion"
     },
     "platform": {
@@ -58,9 +53,9 @@
     },
     "unavailable": {
       "title": "الموارد البشرية الأساسية غير متاحة",
-      "description": "وحدة الموارد البشرية الأساسية غير مفعّلة لهذه المؤسسة حاليًا.",
+      "description": "لم تُفعَّل وحدة Core HR لشركتك.",
       "noticeTitle": "الوحدة غير متاحة",
-      "noticeDescription": "تواصل مع مسؤول Fusion إن كان يجب تفعيل الموارد البشرية الأساسية لهذه المؤسسة.",
+      "noticeDescription": "اسأل مسؤولك إن كان ينبغي أن تتوفر لشركتك.",
       "action": "فتح Fusion"
     }
   },
@@ -74,8 +69,6 @@
     "loadingTeam": "جارٍ تحميل الفريق.",
     "loadingYourTeam": "جارٍ تحميل فريقك…",
     "organization": "التنظيم",
-    "accessProfiles": "ملفات الوصول",
-    "openingAccessProfiles": "جارٍ فتح إعدادات ملفات الوصول",
     "setup": "الإعداد",
     "setupDescription": "فعّل مساحة العمل التجريبية للبدء."
   }

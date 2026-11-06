@@ -21,7 +21,7 @@ public sealed record FrontPagePersonDto(string EmployeeKey, string Name, string?
 public sealed record FrontPageRoleDto(Guid Id, string? Job, string? Place, string? Unit, DateOnly? TargetStartDate, string? ManagerKey);
 public sealed record FrontPageDto(DateOnly Today, DateOnly FirstDate, DateOnly LastDate, bool TeamOnly,
     IReadOnlyList<string> Fields, IReadOnlyList<FrontPagePersonDto> People, IReadOnlyList<FrontPageRoleDto> OpenRoles,
-    IReadOnlyList<EmployeeFieldMissingPersonDto> RecordsToComplete);
+    IReadOnlyList<EmployeeFieldMissingPersonDto> RecordsToComplete, string UnitLevel);
 
 public sealed partial class ReportEngine
 {
@@ -46,7 +46,7 @@ public sealed partial class ReportEngine
             projection.Fields, projection.Spans(),
             roles.Select(r => new FrontPageRoleDto(r.Id, projection.Fields.Contains("job") ? r.JobTitle : null,
                 projection.Fields.Contains("place") ? r.PlaceName : null, units.GetValueOrDefault(r.OrgUnitId)?.Name, r.TargetStartDate,
-                projection.People.GetValueOrDefault(r.ManagerEmployeeId)?.StableEmployeeKey)).ToList(), missing);
+                projection.People.GetValueOrDefault(r.ManagerEmployeeId)?.StableEmployeeKey)).ToList(), missing, projection.UnitLevel);
     }
 
     private sealed class FrontPageProjection
@@ -95,6 +95,7 @@ public sealed partial class ReportEngine
         private List<ManagerRelationship> managers = [];
         private Dictionary<string, Guid> ids = [];
         private Guid? departmentType;
+        public string UnitLevel { get; private set; } = CompanyUnitLevel.Unit;
 
         public Dictionary<Guid, OrgUnitEffectiveState> UnitsOn(DateOnly date) => states
             .Where(s => s.EffectiveTo == null || date < s.EffectiveTo).GroupBy(s => s.OrgUnitId)
@@ -111,10 +112,13 @@ public sealed partial class ReportEngine
             states = await db.OrgUnitEffectiveStates.AsNoTracking().ToListAsync(ct);
             // D-30's company departments are the six Division-level groups in Carthage,
             // above its Department A/B units. Companies with only Departments use that level.
-            departmentType = states.Any(s => s.OrganizationalUnitTypeId == OrganizationalUnitTypeCatalog.DivisionId)
-                ? OrganizationalUnitTypeCatalog.DivisionId
-                : states.Any(s => s.OrganizationalUnitTypeId == OrganizationalUnitTypeCatalog.DepartmentId)
-                    ? OrganizationalUnitTypeCatalog.DepartmentId : null;
+            UnitLevel = CompanyUnitLevel.Of(states.Select(s => (Guid?)s.OrganizationalUnitTypeId));
+            departmentType = UnitLevel switch
+            {
+                CompanyUnitLevel.Division => OrganizationalUnitTypeCatalog.DivisionId,
+                CompanyUnitLevel.Department => OrganizationalUnitTypeCatalog.DepartmentId,
+                _ => null,
+            };
             var visibleIds = people.Keys.ToList();
             managers = await db.ManagerRelationships.AsNoTracking().Where(r => visibleIds.Contains(r.SubjectEmployeeId)
                 && visibleIds.Contains(r.ManagerEmployeeId) && r.Type == ReportingRelationshipType.PrimaryManager).ToListAsync(ct);

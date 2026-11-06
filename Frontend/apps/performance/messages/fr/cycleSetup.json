@@ -1,8 +1,6 @@
 {
   "CycleSetupLayout": {
     "loadingPerformance": "Chargement de Performance",
-    "administrationOnly": "Réservé à l’administration",
-    "cycleSetupIsAvailableTo": "La préparation du cycle est réservée aux administrateurs de la performance.",
     "performanceWorkspace": "Espace Performance",
     "theCycle": "Le cycle",
     "openingCycle": "Ouverture du cycle"
@@ -68,7 +66,7 @@
   "CycleSetupHero": {
     "higherPerformanceTogether": "Plus de performance, ensemble",
     "setTheStageForPerformance": "Préparez le terrain de la performance",
-    "bringYourPeopleGoalsAnd": "Réunissez vos collaborateurs, vos objectifs et leur développement dans un seul cycle. Quelques étapes claires et votre organisation est prête.",
+    "bringYourPeopleGoalsAnd": "Réunissez vos collaborateurs, vos objectifs et leur développement dans un seul cycle. Quelques étapes claires et votre entreprise est prête.",
     "values": {
       "align": "Aligner collaborateurs et objectifs",
       "impact": "Créer un impact réel",
@@ -120,28 +118,28 @@
     "inheritedViaParent": "Hérité de l’unité parente",
     "includeSubUnits": "Inclure les sous-unités",
     "includeSubUnitsOf": "Inclure les sous-unités de {name}",
-    "organizationUnits": "Unités d’organisation",
-    "selectTheOrganizationUnitsTo": "Sélectionnez les unités d’organisation à inclure dans cette population.",
+    "organizationUnits": "Unités",
+    "selectTheOrganizationUnitsTo": "Sélectionnez les unités à inclure dans cette population.",
     "unit": "unité",
     "units": "unités",
     "selected": "sélectionnée(s)",
     "person": "personne",
     "people": "collaborateurs",
     "matched": "trouvée(s)",
-    "searchOrganizationUnits": "Rechercher des unités d’organisation…",
+    "searchOrganizationUnits": "Rechercher des unités…",
     "removeFromScope": "Retirer {value} du périmètre",
     "selectedUnitsOutOfView": "Unités sélectionnées hors de la vue",
-    "loadingOrganizationUnits": "Chargement des unités d’organisation",
+    "loadingOrganizationUnits": "Chargement des unités",
     "noUnitsMatch": "Aucune unité ne correspond à « {term} »."
   },
   "EmptyTree": {
     "yourOrganizationStructureStartsOn": "La structure de votre organisation commence le {startsOn}",
     "thisCycleStartsOnBefore": "Ce cycle commence le {asOf}, avant l’existence de toute unité.",
     "changeCycleDates": "Modifier les dates du cycle",
-    "noOrganizationUnitsExistYet": "Aucune unité d’organisation n’existe encore."
+    "noOrganizationUnitsExistYet": "Aucune unité n’existe encore."
   },
   "TreeError": {
-    "couldntLoadOrganizationUnits": "Impossible de charger les unités d’organisation.",
+    "couldntLoadOrganizationUnits": "Impossible de charger les unités.",
     "tryAgain": "Réessayer"
   },
   "PeopleInScope": {
@@ -234,11 +232,11 @@
     "eligibilityDate": "Date d’éligibilité",
     "allActiveEmployees": "Tous les collaborateurs actifs",
     "everyoneEligibleAcross": "Toutes les personnes éligibles de {value}.",
-    "selectedOrganizationUnits": "Unités d’organisation sélectionnées",
+    "selectedOrganizationUnits": "Unités sélectionnées",
     "chooseSpecificUnitsAndOptionally": "Choisissez des unités précises et, si vous le souhaitez, leurs sous-unités.",
     "populationExceptions": "Exceptions de population",
     "savedScopeAdditions": "Ajouts au périmètre enregistrés",
-    "theseAdditionsAreRetainedIf": "Ces ajouts sont conservés si vous revenez aux unités d’organisation sélectionnées.",
+    "theseAdditionsAreRetainedIf": "Ces ajouts sont conservés si vous revenez aux unités sélectionnées.",
     "specificEmployeeAdded": "{length} collaborateur ajouté individuellement",
     "specificEmployeesAdded": "{length} collaborateurs ajoutés individuellement",
     "addSpecificEmployeesOutsideThe": "Ajoutez des collaborateurs précis hors du périmètre d’organisation sélectionné.",
@@ -289,7 +287,7 @@
     "populationConfirmed": "Population confirmée.",
     "populationConfirmed2": "Population confirmée",
     "participantsReviewersResolved": "{readyCount} participants · {reviewerReadyCount} évaluateurs trouvés",
-    "selectAnOrganizationUnitTo": "Sélectionnez une unité d’organisation pour continuer.",
+    "selectAnOrganizationUnitTo": "Sélectionnez une unité pour continuer.",
     "issue": "problème",
     "issues": "problèmes",
     "mustBeResolvedBeforeConfirmation": "doivent être résolus avant confirmation.",
@@ -371,7 +369,7 @@
     "basicInformationAndTimelineFor": "Informations générales et calendrier de ce cycle."
   },
   "PopulationBlock": {
-    "selectedOrganizationUnits": "Unités d’organisation sélectionnées",
+    "selectedOrganizationUnits": "Unités sélectionnées",
     "allActiveEmployees": "Tous les collaborateurs actifs",
     "includingSubUnits": "· sous-unités comprises",
     "scope": "Périmètre",

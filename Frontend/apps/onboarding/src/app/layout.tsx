@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AuthProvider } from "@repo/auth";
+import { AuthProvider, ModuleGate } from "@repo/auth";
 import { OnboardingSidebar } from "@/components/onboarding-sidebar";
 import "@repo/ui/src/ey-brand.css";
 import "./globals.css";
@@ -18,10 +18,13 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen antialiased">
         <AuthProvider>
-          <div className="flex h-screen overflow-hidden">
-            <OnboardingSidebar />
-            <main className="flex-1 overflow-y-auto">{children}</main>
-          </div>
+          {/* Retired: joining checklists in Core HR replaced this module. */}
+          <ModuleGate module={null}>
+            <div className="flex h-screen overflow-hidden">
+              <OnboardingSidebar />
+              <main className="flex-1 overflow-y-auto">{children}</main>
+            </div>
+          </ModuleGate>
         </AuthProvider>
       </body>
     </html>

@@ -60,7 +60,7 @@ function resolveModule(
  * rather than the navigation captions the switcher uses
  * (`provisioning.moduleDescriptions.<key>`).
  */
-const DESCRIBED_MODULES = new Set(["core", "performance", "learning", "recruitment", "onboarding", "interview"]);
+const DESCRIBED_MODULES = new Set(["core", "performance", "learning", "recruitment", "interview"]);
 
 export function buildModuleOptions(
   provisionable: readonly ProvisionableModule[],

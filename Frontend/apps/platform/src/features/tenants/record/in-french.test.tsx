@@ -34,7 +34,7 @@ describe("The tenant record in French", () => {
 
     expect(screen.getByRole("heading", { name: "Produits" })).toBeInTheDocument();
     expect(screen.getAllByText("Inclus")).toHaveLength(1);
-    expect(screen.getAllByText("Désactivé")).toHaveLength(4);
+    expect(screen.getAllByText("Désactivé")).toHaveLength(3);
     expect(screen.getByText("Secteur d’activité").nextSibling).toHaveTextContent("Services financiers");
     expect(screen.getByText("Langue par défaut").nextSibling).toHaveTextContent("Français");
     expect(screen.getByText("Créée le").nextSibling).toHaveTextContent("1 août 2026");

@@ -729,9 +729,6 @@ function WorkEmailEditorDialog({
               placeholder={t("placeholder")}
               aria-invalid={error ? true : undefined}
             />
-            <p className="type-meta text-muted-foreground">
-              {t("hint")}
-            </p>
           </div>
 
           {error ? (

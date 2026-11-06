@@ -89,11 +89,9 @@
     "performanceIsNotAvailableTo": "الأداء غير متاح لمسؤولي المنصة",
     "useThePlatformControlPlane": "استخدم لوحة تحكم المنصة للإدارة على مستوى المنصة.",
     "openPlatform": "فتح المنصة",
-    "youDontHaveAccessTo": "ليس لديك وصول إلى الأداء",
-    "askATenantAdministratorFor": "اطلب من مسؤول المؤسسة الوصول إلى الأداء.",
     "openFusion": "فتح Fusion",
     "performanceIsNotAvailable": "الأداء غير متاح",
-    "performanceIsNotEnabledFor": "الأداء غير مفعّل لهذه المؤسسة."
+    "performanceIsNotEnabledFor": "لم تُفعَّل وحدة Performance لشركتك."
   },
   "failure": {
     "stale": "تغيّر هذا منذ أن فتحته",

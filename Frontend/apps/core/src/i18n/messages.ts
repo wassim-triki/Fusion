@@ -1,5 +1,4 @@
 import reports from "../../messages/en/reports.json";
-import admins from "../../messages/en/admins.json";
 import catalog from "../../messages/en/catalog.json";
 import changes from "../../messages/en/changes.json";
 import checklists from "../../messages/en/checklists.json";
@@ -19,7 +18,6 @@ import wfAccess from "../../messages/en/wfAccess.json";
 /** Core HR's own catalogue in English, one file per namespace (`messages/<locale>/<namespace>.json`). */
 export const englishMessages = {
   reports,
-  admins,
   catalog,
   changes,
   checklists,

@@ -1,8 +1,6 @@
 {
   "CycleSetupLayout": {
     "loadingPerformance": "جارٍ تحميل الأداء",
-    "administrationOnly": "للإدارة فقط",
-    "cycleSetupIsAvailableTo": "إعداد الدورة متاح لمسؤولي الأداء.",
     "performanceWorkspace": "مساحة عمل الأداء",
     "theCycle": "الدورة",
     "openingCycle": "جارٍ فتح الدورة"
@@ -68,7 +66,7 @@
   "CycleSetupHero": {
     "higherPerformanceTogether": "أداء أعلى، معًا",
     "setTheStageForPerformance": "مهّد الطريق للأداء",
-    "bringYourPeopleGoalsAnd": "اجمع أفرادك وأهدافك ونموهم في دورة واحدة. بضع خطوات واضحة وتصبح مؤسستك جاهزة للأداء.",
+    "bringYourPeopleGoalsAnd": "اجمع أفرادك وأهدافك ونموهم في دورة واحدة. بضع خطوات واضحة وتصبح شركتك جاهزة للأداء.",
     "values": {
       "align": "ربط الأفراد بالأهداف",
       "impact": "تحقيق أثر ملموس",
@@ -120,28 +118,28 @@
     "inheritedViaParent": "موروث عبر الوحدة الأم",
     "includeSubUnits": "تضمين الوحدات الفرعية",
     "includeSubUnitsOf": "تضمين الوحدات الفرعية لـ{name}",
-    "organizationUnits": "الوحدات التنظيمية",
-    "selectTheOrganizationUnitsTo": "اختر الوحدات التنظيمية المراد تضمينها في هذه الفئة.",
+    "organizationUnits": "الوحدات",
+    "selectTheOrganizationUnitsTo": "اختر الوحدات المراد تضمينها في هذه الفئة.",
     "unit": "وحدة",
     "units": "وحدات",
     "selected": "مختارة",
     "person": "شخص",
     "people": "أشخاص",
     "matched": "مطابقون",
-    "searchOrganizationUnits": "البحث في الوحدات التنظيمية...",
+    "searchOrganizationUnits": "البحث في الوحدات...",
     "removeFromScope": "إزالة {value} من النطاق",
     "selectedUnitsOutOfView": "وحدات مختارة خارج العرض",
-    "loadingOrganizationUnits": "جارٍ تحميل الوحدات التنظيمية",
+    "loadingOrganizationUnits": "جارٍ تحميل الوحدات",
     "noUnitsMatch": "لا وحدات تطابق «{term}»."
   },
   "EmptyTree": {
     "yourOrganizationStructureStartsOn": "يبدأ هيكلك التنظيمي في {startsOn}",
     "thisCycleStartsOnBefore": "تبدأ هذه الدورة في {asOf}، قبل وجود أي وحدات.",
     "changeCycleDates": "تغيير تواريخ الدورة",
-    "noOrganizationUnitsExistYet": "لا وحدات تنظيمية بعد."
+    "noOrganizationUnitsExistYet": "لا وحدات بعد."
   },
   "TreeError": {
-    "couldntLoadOrganizationUnits": "تعذّر تحميل الوحدات التنظيمية.",
+    "couldntLoadOrganizationUnits": "تعذّر تحميل الوحدات.",
     "tryAgain": "أعد المحاولة"
   },
   "PeopleInScope": {
@@ -234,11 +232,11 @@
     "eligibilityDate": "تاريخ الأهلية",
     "allActiveEmployees": "كل الموظفين النشطين",
     "everyoneEligibleAcross": "كل المؤهلين في {value}.",
-    "selectedOrganizationUnits": "وحدات تنظيمية مختارة",
+    "selectedOrganizationUnits": "وحدات مختارة",
     "chooseSpecificUnitsAndOptionally": "اختر وحدات محددة واختياريًا وحداتها الفرعية.",
     "populationExceptions": "استثناءات الفئة المشمولة",
     "savedScopeAdditions": "الإضافات المحفوظة إلى النطاق",
-    "theseAdditionsAreRetainedIf": "تُحفظ هذه الإضافات إن عدت إلى الوحدات التنظيمية المختارة.",
+    "theseAdditionsAreRetainedIf": "تُحفظ هذه الإضافات إن عدت إلى الوحدات المختارة.",
     "specificEmployeeAdded": "أُضيف {length} موظف محدد",
     "specificEmployeesAdded": "أُضيف {length} موظفين محددين",
     "addSpecificEmployeesOutsideThe": "أضف موظفين محددين من خارج نطاق الوحدات المختارة.",
@@ -289,7 +287,7 @@
     "populationConfirmed": "تأكدت الفئة المشمولة.",
     "populationConfirmed2": "تأكدت الفئة المشمولة",
     "participantsReviewersResolved": "{readyCount} مشاركين · {reviewerReadyCount} مراجعين محددين",
-    "selectAnOrganizationUnitTo": "اختر وحدة تنظيمية للمتابعة.",
+    "selectAnOrganizationUnitTo": "اختر وحدة للمتابعة.",
     "issue": "مشكلة",
     "issues": "مشاكل",
     "mustBeResolvedBeforeConfirmation": "يجب معالجتها قبل التأكيد.",
@@ -371,7 +369,7 @@
     "basicInformationAndTimelineFor": "المعلومات الأساسية والجدول الزمني لهذه الدورة."
   },
   "PopulationBlock": {
-    "selectedOrganizationUnits": "وحدات تنظيمية مختارة",
+    "selectedOrganizationUnits": "وحدات مختارة",
     "allActiveEmployees": "كل الموظفين النشطين",
     "includingSubUnits": "· بما في ذلك الوحدات الفرعية",
     "scope": "النطاق",

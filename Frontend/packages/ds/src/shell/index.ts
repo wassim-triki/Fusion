@@ -31,6 +31,7 @@ export {
   PageListSkeleton,
   PageLoading,
   PagePermissionNotice,
+  PageRefusal,
   PageSkeleton,
 } from "./page-states";
 export type {

@@ -31,7 +31,7 @@ export type AttentionReason =
   | "InvitationExpired"
   | "InvitationRevoked";
 
-export type TenantModule = "CoreHR" | "Performance";
+export type TenantModule = "CoreHR" | "Performance" | "Learning" | "Recruitment" | "Interview";
 
 export type OverviewFilter =
   | "All"
@@ -206,6 +206,9 @@ function overviewSearchParams(
 const GRANTABLE_MODULES = new Set<string>([
   "CoreHR",
   "Performance",
+  "Learning",
+  "Recruitment",
+  "Interview",
 ] satisfies TenantModule[]);
 
 function grantableModules(modules: string[]): string[] {

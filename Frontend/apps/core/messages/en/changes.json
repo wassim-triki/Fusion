@@ -24,7 +24,7 @@
     "title": "Job",
     "unit": "Unit",
     "jobTitle": "Title",
-    "location": "Location",
+    "location": "Place",
     "employmentType": "Employment type",
     "none": "None",
     "change": "Change",
@@ -63,7 +63,7 @@
     "note": "Note"
   },
   "start": {
-    "workerId": "Worker ID",
+    "workerId": "Employee ID",
     "kept": "Kept",
     "former": "Former {title}"
   },

@@ -11,7 +11,6 @@
     "title": "RH",
     "addPeople": "Ajouter des personnes",
     "yourTeam": "Votre équipe",
-    "departments": "{count, plural, one {# département} other {# départements}}",
     "places": "{count, plural, one {# lieu} other {# lieux}}",
     "since": "depuis {date}",
     "unavailable": "Historique indisponible",
@@ -22,7 +21,6 @@
     "peopleNoun": "personnes",
     "view": "Vue",
     "groupBy": "Regrouper les personnes par",
-    "department": "Département",
     "place": "Lieu",
     "timeHere": "Ancienneté",
     "history": "Historique de l’entreprise",
@@ -30,13 +28,11 @@
     "planned": "Prévu · {date}",
     "onDate": "Au {date}",
     "lastJoined": "dernière arrivée le {date}, {name}",
-    "chartLabel": "Effectif par département, chaque mois. Utilisez les flèches pour explorer.",
     "unassigned": "Non affecté",
     "count": "{count, plural, one {# personne} other {# personnes}}",
     "joinedMonth": "{count, plural, =0 {Aucune arrivée ce mois-ci} one {# arrivée ce mois-ci} other {# arrivées ce mois-ci}}",
     "more": "+{count} autres",
     "noPeople": "Aucune personne à cette date.",
-    "departmentCards": "Départements",
     "yearChange": "{change} en un an",
     "noChange": "inchangé en un an",
     "leads": "Dirige {department}",
@@ -82,6 +78,28 @@
     "placeChange": "{name} passe à {place}",
     "managerChange": "{name} change de responsable",
     "hiringFor": "Équipe de {name}",
-    "outsideDepartments": "Hors département"
+    "level": {
+      "Division": {
+        "count": "{count, plural, one {# division} other {# divisions}}",
+        "label": "Division",
+        "cards": "Divisions",
+        "chart": "Effectif par division, chaque mois. Utilisez les flèches pour explorer.",
+        "outside": "Hors division"
+      },
+      "Department": {
+        "count": "{count, plural, one {# département} other {# départements}}",
+        "label": "Département",
+        "cards": "Départements",
+        "chart": "Effectif par département, chaque mois. Utilisez les flèches pour explorer.",
+        "outside": "Hors département"
+      },
+      "Unit": {
+        "count": "{count, plural, one {# unité} other {# unités}}",
+        "label": "Unité",
+        "cards": "Unités",
+        "chart": "Effectif par unité, chaque mois. Utilisez les flèches pour explorer.",
+        "outside": "Hors unité"
+      }
+    }
   }
 }

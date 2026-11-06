@@ -4,10 +4,6 @@
   "lean": "suggestion de Fusion",
   "loading": "Chargement de l’import",
   "error": "L’import n’a pas pu se charger.",
-  "access": {
-    "title": "Vous ne pouvez pas importer l’entreprise",
-    "description": "Il faut gérer l’organisation et importer des personnes."
-  },
   "gone": {
     "title": "Cet import n’existe plus",
     "action": "Commencer un import"

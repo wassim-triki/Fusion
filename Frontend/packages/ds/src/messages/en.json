@@ -125,7 +125,7 @@
       "signOut": "Sign out",
       "moduleDescriptions": {
         "core": "People and organization",
-        "performance": "Goals, conversations and reviews",
+        "performance": "Objectives, conversations and reviews",
         "learning": "Training and sessions",
         "recruitment": "Hiring pipeline",
         "onboarding": "New-hire journeys",
@@ -179,7 +179,8 @@
       "loading": "Loading",
       "loadingList": "Loading list",
       "loadingPage": "Loading page",
-      "tryAgain": "Try again"
+      "tryAgain": "Try again",
+      "refused": "You don't have access to this page. Ask your administrator if you need it."
     },
     "breadcrumb": {
       "details": "Details"

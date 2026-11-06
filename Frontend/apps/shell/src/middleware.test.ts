@@ -20,7 +20,6 @@ describe("Shell middleware", () => {
 
   it.each([
     "/activate-invitation",
-    "/accept-administrator-invitation",
     "/recover-administrator-access",
     "/invite/accept",
     "/core/invite/accept",
@@ -31,7 +30,6 @@ describe("Shell middleware", () => {
 
   it.each([
     "/activate-invitation-old",
-    "/accept-administrator-invitation-fake",
     "/recover-administrator-access-old",
     "/invite-anything",
     "/core/invitation",

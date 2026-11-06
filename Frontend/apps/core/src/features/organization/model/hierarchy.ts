@@ -84,23 +84,6 @@ export function revealOrganizationUnit(collapsed: ReadonlySet<string>, model: Or
   return next;
 }
 
-export function flattenOrganizationHierarchy(
-  model: OrganizationHierarchyModel,
-  collapsed: ReadonlySet<string>
-): VisibleOrganizationRow[] {
-  const rows: VisibleOrganizationRow[] = [];
-  function append(id: string) {
-    const unit = model.byId.get(id);
-    if (!unit) return;
-    const children = model.childrenByParent.get(id) ?? [];
-    const expanded = !collapsed.has(id);
-    rows.push({ unit, depth: model.depthById.get(id) ?? 0, hasChildren: children.length > 0, expanded });
-    if (expanded) for (const child of children) append(child);
-  }
-  for (const root of model.roots) append(root);
-  return rows;
-}
-
 const ENGLISH = englishSay(englishMessages, "organization");
 
 export function organizationAccessibleName(model: OrganizationHierarchyModel, id: string, say: Say = ENGLISH) {

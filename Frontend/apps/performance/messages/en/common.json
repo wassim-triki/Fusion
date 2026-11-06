@@ -89,11 +89,9 @@
     "performanceIsNotAvailableTo": "Performance is not available to Platform Administrators",
     "useThePlatformControlPlane": "Use the Platform control plane for platform-level administration.",
     "openPlatform": "Open Platform",
-    "youDontHaveAccessTo": "You don't have access to Performance",
-    "askATenantAdministratorFor": "Ask a tenant administrator for Performance access.",
     "openFusion": "Open Fusion",
     "performanceIsNotAvailable": "Performance is not available",
-    "performanceIsNotEnabledFor": "Performance is not enabled for this tenant."
+    "performanceIsNotEnabledFor": "Your company doesn't have Performance turned on."
   },
   "failure": {
     "stale": "This changed since you opened it",

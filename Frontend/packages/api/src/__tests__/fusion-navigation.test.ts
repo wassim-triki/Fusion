@@ -37,7 +37,6 @@ describe("FUSION_MODULE_REGISTRY", () => {
       "performance",
       "learning",
       "recruitment",
-      "onboarding",
       "interview",
     ]);
     expect(FUSION_MODULE_REGISTRY.every((m) => m.description.length > 0 && m.href.startsWith("/"))).toBe(true);
@@ -52,21 +51,20 @@ describe("FUSION_MODULE_REGISTRY", () => {
 });
 
 describe("visibleFusionModules", () => {
-  it("offers Core HR and Performance only when entitled and enterable; the rest always", () => {
+  it("offers Core HR and Performance only when entitled and enterable; the rest when entitled", () => {
     const keys = (entitlements: string[], enterable: ("core" | "performance")[]) =>
       visibleFusionModules({ moduleEntitlements: entitlements, enterableModules: enterable }).map((m) => m.key);
 
-    expect(keys(["CoreHR", "Performance"], ["core", "performance"])).toEqual([
+    expect(keys(["CoreHR", "Performance"], ["core", "performance"])).toEqual(["core", "performance"]);
+    expect(keys(["CoreHR", "Learning", "Recruitment", "Interview"], ["core"])).toEqual([
       "core",
-      "performance",
       "learning",
       "recruitment",
-      "onboarding",
       "interview",
     ]);
     expect(keys(["CoreHR"], ["core", "performance"])).not.toContain("performance");
     expect(keys(["CoreHR", "Performance"], ["performance"])).not.toContain("core");
-    expect(visibleFusionModules(null).map((m) => m.key)).toEqual(["learning", "recruitment", "onboarding", "interview"]);
+    expect(visibleFusionModules(null)).toEqual([]);
   });
 });
 

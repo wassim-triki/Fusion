@@ -79,7 +79,7 @@
   },
   "ObjectiveRow": {
     "openObjective": "فتح الهدف",
-    "organizationalUnit": "الوحدة التنظيمية",
+    "organizationalUnit": "الوحدة",
     "accountable": "المسؤول",
     "child": "فرعي",
     "objective": "هدف",
@@ -130,7 +130,7 @@
     "enableOrganizationalAlignment": "مكّن الارتباط التنظيمي",
     "helpTeamsAlignTheirGoals": "ساعد الفرق على ربط أهدافها بما يهم أكثر.",
     "createSharedFocus": "أنشئ تركيزًا مشتركًا",
-    "makeTheOrganizationsPrioritiesClear": "اجعل أولويات المؤسسة واضحة طوال الدورة.",
+    "makeTheOrganizationsPrioritiesClear": "اجعل أولويات الشركة واضحة طوال الدورة.",
     "organizationalAlignment": "الارتباط التنظيمي",
     "organizationalObjectivesWillAppearHere": "ستظهر الأهداف التنظيمية هنا بعد تحديد توجه الشركة.",
     "alignedObjectivesWillAppearHere": "ستظهر الأهداف المرتبطة هنا",
@@ -226,11 +226,11 @@
     "noEligibleTeamMembers": "لا أعضاء مؤهلين."
   },
   "WorkingScopeSelector": {
-    "organizationWide": "على مستوى المؤسسة",
+    "organizationWide": "على مستوى الشركة",
     "searchOrganization": "البحث في الهيكل التنظيمي…",
     "searchWorkingScope": "البحث في نطاق العمل",
     "loadingOrganization": "جارٍ تحميل الهيكل التنظيمي…",
-    "noOrganizationalUnitsMatch": "لا وحدات تنظيمية مطابقة."
+    "noOrganizationalUnitsMatch": "لا وحدات مطابقة."
   },
   "lib": {
     "state": {
@@ -239,10 +239,10 @@
       "Archived": "مؤرشف"
     },
     "company": "الشركة",
-    "orgUnit": "وحدة تنظيمية",
+    "orgUnit": "وحدة",
     "employee": "موظف",
     "yourUnit": "{type} الخاص بك",
-    "yourOrganization": "مؤسستك",
+    "yourOrganization": "شركتك",
     "orgStrategic": "هدف {orgName} الاستراتيجي",
     "companyObjective": "هدف الشركة",
     "companyStrategy": "استراتيجية الشركة",

@@ -1,5 +1,5 @@
 {
-  "meta": "{people, plural, one {# person} other {# people}} · {divisions, plural, =0 {no divisions} one {# division} other {# divisions}}{open, plural, =0 {} one { · # open role} other { · # open roles}}",
+  "meta": "{people, plural, one {# person} other {# people}} · {units}{open, plural, =0 {} one { · # open role} other { · # open roles}}",
   "views": {
     "label": "View",
     "aroundYou": "Around you",
@@ -14,7 +14,7 @@
   "lens": {
     "label": "Colour by",
     "division": "Division",
-    "location": "Location",
+    "location": "Place",
     "none": "Nothing",
     "leadership": "Leadership",
     "filter": "Show only {label}",
@@ -37,7 +37,9 @@
     "reviewLoading": "Loading review progress",
     "reviewError": "Review progress didn't load.",
     "reviewNone": "No reviews in progress",
-    "legend": "Show only"
+    "legend": "Show only",
+    "department": "Department",
+    "unit": "Unit"
   },
   "card": {
     "you": "You",
@@ -70,7 +72,7 @@
     "teamCount": "{direct} direct",
     "teamCountAll": "{direct} direct · {total} in all",
     "noReports": "No reports",
-    "location": "Location",
+    "location": "Place",
     "since": "Here since",
     "email": "Work email",
     "joined": "Joined in {year}",
@@ -96,8 +98,6 @@
     "branchError": "That team didn't load. Try again."
   },
   "access": {
-    "title": "Org chart access required",
-    "description": "Your role doesn't include the org chart. Ask your administrator if you need it.",
     "narrowed": {
       "title": "The org chart isn't shared with you",
       "description": "Your company shows it to managers and HR only."
@@ -146,5 +146,10 @@
     },
     "failed": "The open role wasn't saved.",
     "place": "Place"
+  },
+  "levelCount": {
+    "Division": "{count, plural, =0 {no divisions} one {# division} other {# divisions}}",
+    "Department": "{count, plural, =0 {no departments} one {# department} other {# departments}}",
+    "Unit": "{count, plural, =0 {no units} one {# unit} other {# units}}"
   }
 }

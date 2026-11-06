@@ -73,6 +73,9 @@ interface ModuleEntry {
 export const MODULE_CATALOGUE: ModuleEntry[] = [
   { id: "CoreHR", label: "Core HR", mandatory: true },
   { id: "Performance", label: "Performance", mandatory: false },
+  { id: "Learning", label: "Learning", mandatory: false },
+  { id: "Recruitment", label: "Recruitment", mandatory: false },
+  { id: "Interview", label: "Interview", mandatory: false },
 ];
 
 export const MODULE_IDS: TenantModule[] = MODULE_CATALOGUE.map(

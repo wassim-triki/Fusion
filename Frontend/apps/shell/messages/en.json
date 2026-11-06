@@ -160,31 +160,12 @@
     },
     "journeys": {
       "bootstrap": {
-        "role": "Tenant Administrator",
+        "role": "Administrator",
         "heading": "Set up your account",
         "lead": "Accept your invitation from {tenant} to create your Fusion account."
       },
-      "administrator": {
-        "role": "Tenant Administrator",
-        "heading": "Set up your account",
-        "lead": "Accept your invitation from {tenant} to create your Fusion account.",
-        "terminal": {
-          "expired": {
-            "title": "This invitation has expired",
-            "detail": "No account was created. Contact the Tenant Administrator who invited you to request another invitation."
-          },
-          "revoked": {
-            "title": "This invitation was revoked",
-            "detail": "It can no longer be accepted, and no account was created."
-          },
-          "existingAccount": {
-            "title": "An account already exists for this address",
-            "detail": "This email already belongs to a Fusion account and cannot complete this new-account invitation. Contact the administrator who invited you so they can send it to a different address."
-          }
-        }
-      },
       "recovery": {
-        "role": "Tenant Administrator",
+        "role": "Administrator",
         "heading": "Set up your account",
         "lead": "Restore administrator access for {tenant} by creating your Fusion account.",
         "terminal": {
@@ -198,7 +179,7 @@
           },
           "alreadyAccepted": {
             "title": "Administrator access has already been recovered",
-            "detail": "This tenant is administered again."
+            "detail": "This company is administered again."
           },
           "existingAccount": {
             "title": "An account already exists for this address",
@@ -294,7 +275,7 @@
         },
         "performance": {
           "title": "Start Performance",
-          "meta": "Your first goal-setting cycle",
+          "meta": "Your first performance cycle",
           "action": "Start a cycle"
         }
       },

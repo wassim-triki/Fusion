@@ -130,7 +130,7 @@
     "enableOrganizationalAlignment": "Permettre l’alignement organisationnel",
     "helpTeamsAlignTheirGoals": "Aidez les équipes à aligner leurs objectifs sur l’essentiel.",
     "createSharedFocus": "Créer un cap commun",
-    "makeTheOrganizationsPrioritiesClear": "Rendez les priorités de l’organisation claires tout au long du cycle.",
+    "makeTheOrganizationsPrioritiesClear": "Rendez les priorités de l’entreprise claires tout au long du cycle.",
     "organizationalAlignment": "Alignement organisationnel",
     "organizationalObjectivesWillAppearHere": "Les objectifs organisationnels apparaîtront ici une fois l’orientation de l’entreprise établie.",
     "alignedObjectivesWillAppearHere": "Les objectifs alignés apparaîtront ici",
@@ -226,7 +226,7 @@
     "noEligibleTeamMembers": "Aucun membre éligible dans l’équipe."
   },
   "WorkingScopeSelector": {
-    "organizationWide": "Toute l’organisation",
+    "organizationWide": "Toute l’entreprise",
     "searchOrganization": "Rechercher une unité…",
     "searchWorkingScope": "Rechercher un périmètre de travail",
     "loadingOrganization": "Chargement de l’organisation…",
@@ -239,10 +239,10 @@
       "Archived": "Archivée"
     },
     "company": "Entreprise",
-    "orgUnit": "Unité d’organisation",
+    "orgUnit": "Unité",
     "employee": "Collaborateur",
     "yourUnit": "Votre {type}",
-    "yourOrganization": "Votre organisation",
+    "yourOrganization": "Votre entreprise",
     "orgStrategic": "Objectif stratégique de {orgName}",
     "companyObjective": "Objectif de l’entreprise",
     "companyStrategy": "Stratégie de l’entreprise",

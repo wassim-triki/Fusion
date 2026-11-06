@@ -13,7 +13,7 @@
       "or": "ou",
       "agreement": "En vous connectant, vous acceptez nos <terms>Conditions d’utilisation</terms> et notre <privacy>Politique de confidentialité</privacy>.",
       "invalidCredentials": "Adresse e-mail ou mot de passe incorrect.",
-      "failed": "Connexion impossible. Réessayez.",
+      "failed": "Impossible de vous connecter. Réessayez.",
       "to": "à {company}",
       "continue": "Continuer",
       "change": "Modifier"

@@ -76,11 +76,14 @@ export interface FrontPagePersonDto {
   photoUrl: string | null;
   spans: FrontPageSpanDto[];
 }
+export type CompanyUnitLevel = "Division" | "Department" | "Unit";
 export interface FrontPageDto {
   today: string;
   firstDate: string;
   lastDate: string;
   teamOnly: boolean;
+  /** What the company calls its top-level groups. */
+  unitLevel: CompanyUnitLevel;
   fields: string[];
   people: FrontPagePersonDto[];
   openRoles: { id: string; job: string | null; place: string | null; unit: string | null; targetStartDate: string | null; managerKey: string | null }[];

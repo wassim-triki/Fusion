@@ -7,6 +7,7 @@ import {
   PageContainer,
   PageHeader,
   PagePermissionNotice,
+  PageRefusal,
 } from "@repo/ds/shell";
 import { Button } from "@repo/ds/components/ui/button";
 import { PerformanceRouteSkeleton } from "./route-page-skeleton";
@@ -75,10 +76,7 @@ export function PerformanceWorkspaceAccessBoundary({
   if (state === "no-access") {
     return (
       <PageContainer>
-        <PagePermissionNotice
-          title={t("youDontHaveAccessTo")}
-          headingLevel={1}
-          description={t("askATenantAdministratorFor")}
+        <PageRefusal
           action={
             <Button asChild variant="outline">
               <a href={buildShellUrl("/").toString()}>{t("openFusion")}</a>

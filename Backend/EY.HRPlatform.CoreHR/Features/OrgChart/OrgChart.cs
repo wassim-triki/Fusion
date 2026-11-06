@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Features.Reports;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Features.Employees.Services;
@@ -29,7 +30,8 @@ public sealed record OrgChartDto(
     IReadOnlyList<OrgChartPersonDto> People,
     IReadOnlyList<OrgChartFoldDto> Folded,
     IReadOnlyList<OrgChartOpenRoleDto> OpenRoles,
-    OrgChartWindowDto? Window);
+    OrgChartWindowDto? Window,
+    string UnitLevel);
 
 /// <param name="StartYear">Year the current employment started; null when the hire date is hidden from the viewer.</param>
 /// <param name="StartDate">The full start date, for HR only (the Tenure lens); everyone else gets the year.</param>
@@ -202,7 +204,8 @@ public sealed class OrgChartQueryHandler(
         }
 
         var viewerKey = request.ViewerEmployeeId is { } self && chart.KeyOf.TryGetValue(self, out var key) ? key : null;
-        return Result.Success(new OrgChartDto(request.AsOf, request.Scope, viewerKey, people, folded, openRoles, window));
+        return Result.Success(new OrgChartDto(request.AsOf, request.Scope, viewerKey, people, folded, openRoles, window,
+            await CompanyUnitLevel.ReadAsync(dbContext, cancellationToken)));
     }
 
     internal sealed record PersonRow(Guid Id, string StableEmployeeKey, string FirstName, string LastName, string? PreferredName, string? Email, string? PhotoKey);

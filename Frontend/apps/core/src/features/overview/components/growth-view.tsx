@@ -110,7 +110,7 @@ export function GrowthView({
       <div
         tabIndex={0}
         role="group"
-        aria-label={t("chartLabel")}
+        aria-label={t(`level.${data.unitLevel}.chart`)}
         className="outline-none focus-visible:rounded-control focus-visible:ring-2 focus-visible:ring-ring"
         onPointerMove={(event) => {
           if (!replaying) selectMonth(event.clientX, event.currentTarget);
@@ -140,7 +140,7 @@ export function GrowthView({
           viewBox={`0 0 ${W} ${H}`}
           className="block w-full cursor-crosshair"
           role="img"
-          aria-label={t("chartLabel")}
+          aria-label={t(`level.${data.unitLevel}.chart`)}
         >
           <defs>
             <clipPath id="growth-past">
@@ -263,7 +263,7 @@ export function GrowthView({
                   }}
                 />
                 <span className="min-w-0 flex-1 truncate">
-                  {group.label ?? t("outsideDepartments")}
+                  {group.label ?? t(`level.${data.unitLevel}.outside`)}
                 </span>
                 {number(
                   shown.people.filter((p) => departmentKey(p) === group.key)

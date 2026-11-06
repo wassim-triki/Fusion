@@ -89,11 +89,9 @@
     "performanceIsNotAvailableTo": "Performance n’est pas disponible pour les administrateurs Platform",
     "useThePlatformControlPlane": "Utilisez la console Platform pour l’administration de la plateforme.",
     "openPlatform": "Ouvrir Platform",
-    "youDontHaveAccessTo": "Vous n’avez pas accès à Performance",
-    "askATenantAdministratorFor": "Demandez l’accès à Performance à un administrateur de l’organisation.",
     "openFusion": "Ouvrir Fusion",
     "performanceIsNotAvailable": "Performance n’est pas disponible",
-    "performanceIsNotEnabledFor": "Performance n’est pas activé pour cette organisation."
+    "performanceIsNotEnabledFor": "Performance n’est pas activé pour votre entreprise."
   },
   "failure": {
     "stale": "Ceci a changé depuis que vous l’avez ouvert",

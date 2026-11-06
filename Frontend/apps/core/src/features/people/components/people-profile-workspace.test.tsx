@@ -446,11 +446,11 @@ describe("PeopleProfileWorkspace", () => {
 
   describe("Access tab", () => {
     it.each([
-      ["InvitationPending", "Invitation pending", "Review workforce access"],
-      ["Active", "Active", "Review workforce access"],
-      ["Suspended", "Suspended", "Review workforce access"],
-      ["NeedsReview", "Needs review", "Review workforce access"],
-      ["NoAccess", "No Fusion access", "Set up workforce access"],
+      ["InvitationPending", "Invitation pending", "Review sign-in"],
+      ["Active", "Active", "Review sign-in"],
+      ["Suspended", "Suspended", "Review sign-in"],
+      ["NeedsReview", "Needs review", "Review sign-in"],
+      ["NoAccess", "No Fusion access", "Set up sign-in"],
     ])("renders truthful %s Fusion access state", (state, label, actionLabel) => {
       tab("access");
       mockProfile.mockReturnValue(q({ data: profile() }));
@@ -506,7 +506,7 @@ describe("PeopleProfileWorkspace", () => {
   it("renders a non-disclosing not-found state for unknown or cross-tenant keys", () => {
     mockProfile.mockReturnValue(q({ error: new Error("not found") }));
     render(<PeopleProfileWorkspace employeeKey="E-MISSING" />);
-    expect(screen.getByText("Worker not found")).toBeInTheDocument();
+    expect(screen.getByText("Person not found")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Back to People/i })).toBeInTheDocument();
   });
 

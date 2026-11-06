@@ -1,5 +1,5 @@
 {
-  "meta": "{people, plural, one {# personne} other {# personnes}} · {divisions, plural, =0 {aucune division} one {# division} other {# divisions}}{open, plural, =0 {} one { · # poste ouvert} other { · # postes ouverts}}",
+  "meta": "{people, plural, one {# personne} other {# personnes}} · {units}{open, plural, =0 {} one { · # poste ouvert} other { · # postes ouverts}}",
   "views": {
     "label": "Vue",
     "aroundYou": "Autour de vous",
@@ -37,7 +37,9 @@
     "reviewLoading": "Chargement de l'avancement",
     "reviewError": "L'avancement des évaluations n'a pas pu être chargé.",
     "reviewNone": "Aucune évaluation en cours",
-    "legend": "Afficher seulement"
+    "legend": "Afficher seulement",
+    "department": "Département",
+    "unit": "Unité"
   },
   "card": {
     "you": "Vous",
@@ -96,8 +98,6 @@
     "branchError": "Cette équipe ne s'est pas chargée. Réessayez."
   },
   "access": {
-    "title": "Accès à l'organigramme requis",
-    "description": "Votre rôle n'inclut pas l'organigramme. Demandez-le à votre administrateur si besoin.",
     "narrowed": {
       "title": "L’organigramme ne vous est pas partagé",
       "description": "Votre entreprise le réserve aux managers et aux RH."
@@ -146,5 +146,10 @@
     },
     "failed": "Le poste n'a pas été enregistré.",
     "place": "Lieu"
+  },
+  "levelCount": {
+    "Division": "{count, plural, =0 {aucune division} one {# division} other {# divisions}}",
+    "Department": "{count, plural, =0 {aucun département} one {# département} other {# départements}}",
+    "Unit": "{count, plural, =0 {aucune unité} one {# unité} other {# unités}}"
   }
 }

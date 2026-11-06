@@ -1,7 +1,5 @@
 {
   "CyclePage": {
-    "administrationOnly": "Administration only",
-    "cycleAdministrationIsAvailableTo": "Cycle administration is available to performance administrators.",
     "performanceWorkspace": "Performance workspace",
     "theCycle": "The Cycle",
     "closed": "Closed",
@@ -51,7 +49,7 @@
   },
   "UnitFilter": {
     "unit": "Unit",
-    "theWholeOrganization": "The whole organization"
+    "theWholeOrganization": "The whole company"
   },
   "FactStrip": {
     "resultsReleased": "Results released",

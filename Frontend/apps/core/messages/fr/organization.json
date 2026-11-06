@@ -51,10 +51,6 @@
     "emptyDescription": "Les modifications en vigueur apparaîtront ici."
   },
   "recentKind": "Unité",
-  "access": {
-    "title": "Accès à l’organisation requis",
-    "description": "Vous n’avez pas l’autorisation de consulter l’organisation de cette entreprise."
-  },
   "export": {
     "failed": "La structure n’a pas pu être exportée",
     "failedDescription": "Réessayez dans un instant."

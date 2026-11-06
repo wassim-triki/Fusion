@@ -48,7 +48,7 @@ public sealed class AdministrativeInvitationDelivery(
         Guid initiatedByAccountId,
         CancellationToken cancellationToken = default)
     {
-        var link = AdministrativeAcceptanceLinkBuilder.Build(configuration, credential.RawValue, purpose);
+        var link = AdministrativeAcceptanceLinkBuilder.Build(configuration, credential.RawValue);
 
         InvitationDeliveryAttempt attempt;
         try
@@ -133,13 +133,12 @@ public sealed class AdministrativeInvitationDelivery(
 public static class AdministrativeAcceptanceLinkBuilder
 {
     private const string DefaultPublicBaseUrl = "http://localhost:3000";
-    private const string AdministratorPath = "/accept-administrator-invitation";
     private const string RecoveryPath = "/recover-administrator-access";
 
-    public static string Build(IConfiguration configuration, string credential, InvitationPurpose purpose)
-        => Build(configuration["Application:PublicBaseUrl"], credential, purpose);
+    public static string Build(IConfiguration configuration, string credential)
+        => Build(configuration["Application:PublicBaseUrl"], credential);
 
-    public static string Build(string? publicBaseUrl, string credential, InvitationPurpose purpose)
+    public static string Build(string? publicBaseUrl, string credential)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(credential);
 
@@ -147,10 +146,6 @@ public static class AdministrativeAcceptanceLinkBuilder
             ? DefaultPublicBaseUrl
             : publicBaseUrl.TrimEnd('/');
 
-        var path = purpose == InvitationPurpose.TenantAdministratorRecovery
-            ? RecoveryPath
-            : AdministratorPath;
-
-        return $"{baseUrl}{path}?credential={Uri.EscapeDataString(credential)}";
+        return $"{baseUrl}{RecoveryPath}?credential={Uri.EscapeDataString(credential)}";
     }
 }

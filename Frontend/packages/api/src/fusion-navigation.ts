@@ -4,7 +4,7 @@ import type { ApiClient } from "./types";
 // ── The Fusion sidebar's navigation model (fusion-navigation) ──
 //
 // Renderer-neutral: `@repo/ds/shell` draws it for the shell, Core HR and
-// Performance, `@repo/ui`'s AppSidebar for the other contributors' apps. Icons
+// Performance, `@repo/ui`'s ModuleSwitcher for the other contributors' apps. Icons
 // stay with each renderer; content, order, visibility and counts live here once.
 
 export type FusionModuleKey =
@@ -12,7 +12,6 @@ export type FusionModuleKey =
   | "performance"
   | "learning"
   | "recruitment"
-  | "onboarding"
   | "interview";
 
 export interface FusionModuleEntry {
@@ -22,8 +21,8 @@ export interface FusionModuleEntry {
   description: string;
   /** Absolute entry path, e.g. `/performance`. Always a full document navigation. */
   href: string;
-  /** Tenant entitlement that governs the module; modules without one are always offered. */
-  entitlement?: string;
+  /** Tenant entitlement that governs the module. */
+  entitlement: string;
   /** Set when the module serves the work-item contract, so it carries counts. */
   attention?: FusionAttentionModuleKey;
 }
@@ -34,15 +33,14 @@ export const FUSION_MODULE_REGISTRY: readonly FusionModuleEntry[] = [
   {
     key: "performance",
     label: "Performance",
-    description: "Goals, conversations and reviews",
+    description: "Objectives, conversations and reviews",
     href: "/performance",
     entitlement: "Performance",
     attention: "performance",
   },
-  { key: "learning", label: "Learning", description: "Training and sessions", href: "/learning" },
-  { key: "recruitment", label: "Recruitment", description: "Hiring pipeline", href: "/recruitment" },
-  { key: "onboarding", label: "Onboarding", description: "New-hire journeys", href: "/onboarding" },
-  { key: "interview", label: "Interview", description: "Candidate assessments", href: "/interview" },
+  { key: "learning", label: "Learning", description: "Training and sessions", href: "/learning", entitlement: "Learning" },
+  { key: "recruitment", label: "Recruitment", description: "Hiring pipeline", href: "/recruitment", entitlement: "Recruitment" },
+  { key: "interview", label: "Interview", description: "Candidate assessments", href: "/interview", entitlement: "Interview" },
 ];
 
 export function getFusionModuleEntry(key: FusionModuleKey): FusionModuleEntry {
@@ -78,15 +76,14 @@ export interface FusionNavigationViewer {
 }
 
 /**
- * The modules offered to the viewer: Core HR and Performance only when the
- * tenant is entitled and the person can enter them; the others as before.
+ * The modules offered to the viewer: those the tenant is entitled to, and for
+ * Core HR and Performance only when the person can enter them.
  * Visibility only: the module's own entry gate and the backend still decide.
  */
 export function visibleFusionModules(
   viewer: Pick<FusionNavigationViewer, "moduleEntitlements" | "enterableModules"> | null,
 ): FusionModuleEntry[] {
   return FUSION_MODULE_REGISTRY.filter((entry) => {
-    if (!entry.entitlement) return true;
     if (!viewer || !viewer.moduleEntitlements.includes(entry.entitlement)) return false;
     return entry.attention === undefined || viewer.enterableModules.includes(entry.attention);
   });

@@ -30,7 +30,7 @@ const PRODUCT_EVENTS = new Set(["ProductEnabled", "ProductDisabled"]);
  * Every Fusion product and where this tenant stands on each, with when and by
  * whom access last changed.
  *
- * A platform administrator turns an optional product (Performance) on or off
+ * A platform administrator turns an optional product on or off
  * here. Off pauses it: the tenant's data, roles and assignments are kept, and
  * people lose it as their sessions renew, which the confirmation says. Core HR
  * is included with every tenant and has no switch; an archived tenant has none.

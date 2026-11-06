@@ -29,210 +29,35 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
 
     public Task DisposeAsync() => _databases.DisposeAsync().AsTask();
 
-    // ── Issue ────────────────────────────────────────────
-
-    [SkippableFact]
-    public async Task An_invitation_is_issued_with_a_hash_only_credential()
-    {
-        Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var (db, tenantId, actor, delivery) = await ArrangeAsync();
-
-        var result = await Service(db, delivery).IssueAsync(tenantId, InvitedEmail, actor);
-
-        Assert.True(result.Succeeded);
-        Assert.False(result.DeliveryFailed);
-
-        var invitation = await db.InviteTokens.IgnoreQueryFilters()
-            .SingleAsync(item => item.Id == result.InvitationId);
-
-        Assert.Equal(InvitationPurpose.TenantAdministrator, invitation.Purpose);
-        Assert.Equal(InvitationState.Pending, invitation.State);
-
-        // No reusable secret at rest, and none returned to the caller: the raw
-        // credential exists only inside the delivery link.
-        Assert.Null(invitation.Token);
-        Assert.NotNull(invitation.CredentialSelector);
-        Assert.NotNull(invitation.CredentialDigest);
-        Assert.DoesNotContain(delivery.Credential!.Secret, invitation.CredentialDigest!, StringComparison.Ordinal);
-
-        Assert.Contains(await db.AccessAuditEvents.IgnoreQueryFilters().ToListAsync(),
-            item => item.Action == AccessAuditActions.InvitationIssued);
-    }
-
-    [SkippableTheory]
-    [InlineData("")]
-    [InlineData("not-an-address")]
-    [InlineData("missing@domain")]
-    [InlineData("spaces in@example.com")]
-    public async Task An_unusable_address_is_refused_against_its_own_field(string email)
-    {
-        Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var (db, tenantId, actor, delivery) = await ArrangeAsync();
-
-        var result = await Service(db, delivery).IssueAsync(tenantId, email, actor);
-
-        Assert.Equal(InvitationCommandOutcome.InvalidEmail, result.Outcome);
-        Assert.Empty(await PendingAdministrativeAsync(db, tenantId));
-    }
-
-    [SkippableFact]
-    public async Task An_address_that_already_belongs_to_an_account_is_refused()
-    {
-        Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var (db, tenantId, actor, delivery) = await ArrangeAsync();
-
-        // Administrative invitations establish a new account. Adopting an existing
-        // one would silently join a person's identity to a tenant they were never
-        // shown joining.
-        var existing = await db.Users.IgnoreQueryFilters().FirstAsync();
-
-        var result = await Service(db, delivery).IssueAsync(tenantId, existing.Email!, actor);
-
-        Assert.Equal(InvitationCommandOutcome.ExistingAccount, result.Outcome);
-        Assert.Empty(await PendingAdministrativeAsync(db, tenantId));
-    }
-
-    [SkippableFact]
-    public async Task A_second_invitation_to_a_pending_address_is_refused_as_a_duplicate()
-    {
-        Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var (db, tenantId, actor, delivery) = await ArrangeAsync();
-        var service = Service(db, delivery);
-
-        await service.IssueAsync(tenantId, InvitedEmail, actor);
-        db.ChangeTracker.Clear();
-
-        var duplicate = await service.IssueAsync(tenantId, InvitedEmail, actor);
-
-        Assert.Equal(InvitationCommandOutcome.DuplicatePending, duplicate.Outcome);
-        Assert.Single(await PendingAdministrativeAsync(db, tenantId));
-    }
-
-    [SkippableFact]
-    public async Task Inviting_an_address_whose_invitation_expired_reissues_rather_than_conflicting()
-    {
-        Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var (db, tenantId, actor, delivery) = await ArrangeAsync();
-        var service = Service(db, delivery);
-
-        var first = await service.IssueAsync(tenantId, InvitedEmail, actor);
-        await ExpireAsync(db, first.InvitationId!.Value);
-
-        // The pending-uniqueness index cannot test expiry, so the expired row still
-        // occupies the slot. Refusing here would leave the administrator unable to
-        // re-invite an address with no visible live invitation.
-        var reissue = await service.IssueAsync(tenantId, InvitedEmail, actor);
-
-        Assert.True(reissue.Succeeded);
-        Assert.NotEqual(first.InvitationId, reissue.InvitationId);
-
-        db.ChangeTracker.Clear();
-        var predecessor = await db.InviteTokens.IgnoreQueryFilters()
-            .SingleAsync(item => item.Id == first.InvitationId);
-
-        Assert.Equal(InvitationState.Superseded, predecessor.State);
-        Assert.Equal(reissue.InvitationId, predecessor.ReplacedByInvitationId);
-        Assert.Single(await PendingAdministrativeAsync(db, tenantId));
-    }
-
-    // ── Resend ───────────────────────────────────────────
-
-    [SkippableFact]
-    public async Task Resending_invalidates_the_previous_link_immediately()
-    {
-        Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var (db, tenantId, actor, delivery) = await ArrangeAsync();
-        var service = Service(db, delivery);
-
-        var issued = await service.IssueAsync(tenantId, InvitedEmail, actor);
-        var originalLink = delivery.Credential!.RawValue;
-
-        await service.ResendAsync(tenantId, issued.InvitationId!.Value, actor);
-        var newLink = delivery.Credential!.RawValue;
-
-        Assert.NotEqual(originalLink, newLink);
-
-        // The old selector no longer exists, so the previously delivered link stops
-        // resolving rather than merely expiring later.
-        var stale = await service.InspectAsync(originalLink);
-        Assert.Equal(AdministrativeInvitationEntryState.Invalid, stale.State);
-
-        var current = await service.InspectAsync(newLink);
-        Assert.Equal(AdministrativeInvitationEntryState.AccountCreation, current.State);
-
-        // One logical invitation throughout: a resend is not a second invitation.
-        Assert.Single(await PendingAdministrativeAsync(db, tenantId));
-    }
-
-    // ── Replace ──────────────────────────────────────────
-
-    [SkippableFact]
-    public async Task Replacing_the_invited_email_records_lineage_both_ways()
-    {
-        Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var (db, tenantId, actor, delivery) = await ArrangeAsync();
-        var service = Service(db, delivery);
-
-        var original = await service.IssueAsync(tenantId, InvitedEmail, actor);
-        var originalLink = delivery.Credential!.RawValue;
-
-        var replacement = await service.ReplaceEmailAsync(
-            tenantId, original.InvitationId!.Value, "corrected@atlas.example", actor);
-
-        Assert.True(replacement.Succeeded);
-
-        db.ChangeTracker.Clear();
-        var predecessor = await db.InviteTokens.IgnoreQueryFilters()
-            .SingleAsync(item => item.Id == original.InvitationId);
-        var successor = await db.InviteTokens.IgnoreQueryFilters()
-            .SingleAsync(item => item.Id == replacement.InvitationId);
-
-        Assert.Equal(InvitationState.Superseded, predecessor.State);
-        Assert.Equal(successor.Id, predecessor.ReplacedByInvitationId);
-        Assert.Equal(predecessor.Id, successor.PredecessorInvitationId);
-        Assert.Equal("corrected@atlas.example", successor.Email);
-
-        // The person originally invited can no longer act on it, and is told the
-        // invitation was replaced rather than being shown an opaque failure they
-        // cannot interpret or act on.
-        Assert.Equal(
-            AdministrativeInvitationEntryState.Superseded,
-            (await service.InspectAsync(originalLink)).State);
-    }
-
-    // ── Revoke and terminal states ───────────────────────
+    // ── What a link opens onto ───────────────────────────
 
     [SkippableFact]
     public async Task A_revoked_invitation_is_terminal_and_says_so()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var (db, tenantId, actor, delivery) = await ArrangeAsync();
-        var service = Service(db, delivery);
+        var (db, tenantId, actor, sent) = await ArrangeAsync();
+        var service = Service(db, sent);
 
         var issued = await service.IssueAsync(tenantId, InvitedEmail, actor);
-        var link = delivery.Credential!.RawValue;
+        var link = sent.Credential!.RawValue;
 
-        Assert.True((await service.RevokeAsync(tenantId, issued.InvitationId!.Value, actor)).Succeeded);
+        await service.RevokeAsync(issued.InvitationId);
 
         Assert.Equal(
             AdministrativeInvitationEntryState.Revoked,
             (await service.InspectAsync(link)).State);
-
-        // Terminal means terminal: there is no un-revoke.
-        var again = await service.RevokeAsync(tenantId, issued.InvitationId!.Value, actor);
-        Assert.Equal(InvitationCommandOutcome.NotPending, again.Outcome);
     }
 
     [SkippableFact]
     public async Task An_expired_invitation_reports_expiry_rather_than_invalidity()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var (db, tenantId, actor, delivery) = await ArrangeAsync();
-        var service = Service(db, delivery);
+        var (db, tenantId, actor, sent) = await ArrangeAsync();
+        var service = Service(db, sent);
 
         var issued = await service.IssueAsync(tenantId, InvitedEmail, actor);
-        var link = delivery.Credential!.RawValue;
-        await ExpireAsync(db, issued.InvitationId!.Value);
+        var link = sent.Credential!.RawValue;
+        await ExpireAsync(db, issued.InvitationId);
 
         // Expired and invalid mean different things to the recipient: one can be
         // resolved by asking for another invitation, the other cannot.
@@ -247,7 +72,7 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
     public async Task A_bootstrap_credential_cannot_be_used_through_the_administrative_route()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var (db, _, _, delivery) = await ArrangeAsync();
+        var (db, _, _, sent) = await ArrangeAsync();
 
         var bootstrapCredential = await db.InviteTokens.IgnoreQueryFilters()
             .Where(item => item.Purpose == InvitationPurpose.OrganizationBootstrap)
@@ -259,7 +84,7 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
         // Purpose is bound at creation and never inferred, so a credential issued
         // for one journey is refused by the other — and refused indistinguishably
         // from an unknown one.
-        var entry = await Service(db, delivery).InspectAsync($"{bootstrapCredential}.whatever-secret");
+        var entry = await Service(db, sent).InspectAsync($"{bootstrapCredential}.whatever-secret");
         Assert.Equal(AdministrativeInvitationEntryState.Invalid, entry.State);
     }
 
@@ -270,9 +95,9 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
     public async Task An_unusable_credential_discloses_nothing(string credential)
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var (db, _, _, delivery) = await ArrangeAsync();
+        var (db, _, _, sent) = await ArrangeAsync();
 
-        var entry = await Service(db, delivery).InspectAsync(credential);
+        var entry = await Service(db, sent).InspectAsync(credential);
 
         Assert.Equal(AdministrativeInvitationEntryState.Invalid, entry.State);
         Assert.Null(entry.TenantName);
@@ -285,10 +110,10 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
     public async Task Acceptance_establishes_exactly_one_account_membership_and_authority()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var (db, tenantId, actor, delivery) = await ArrangeAsync();
+        var (db, tenantId, actor, sent) = await ArrangeAsync();
 
-        var issued = await Service(db, delivery).IssueAsync(tenantId, InvitedEmail, actor);
-        var link = delivery.Credential!.RawValue;
+        var issued = await Service(db, sent).IssueAsync(tenantId, InvitedEmail, actor);
+        var link = sent.Credential!.RawValue;
         db.ChangeTracker.Clear();
 
         var result = await Acceptance(db).AcceptAsync(new AdministrativeAcceptanceRequest
@@ -326,10 +151,10 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
     public async Task Replaying_an_accepted_invitation_is_neutral_and_duplicates_nothing()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var (db, tenantId, actor, delivery) = await ArrangeAsync();
+        var (db, tenantId, actor, sent) = await ArrangeAsync();
 
-        await Service(db, delivery).IssueAsync(tenantId, InvitedEmail, actor);
-        var link = delivery.Credential!.RawValue;
+        await Service(db, sent).IssueAsync(tenantId, InvitedEmail, actor);
+        var link = sent.Credential!.RawValue;
         db.ChangeTracker.Clear();
 
         var request = new AdministrativeAcceptanceRequest
@@ -357,10 +182,10 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
     public async Task Concurrent_acceptance_of_the_same_link_establishes_access_once()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var (db, tenantId, actor, delivery) = await ArrangeAsync();
+        var (db, tenantId, actor, sent) = await ArrangeAsync();
 
-        await Service(db, delivery).IssueAsync(tenantId, InvitedEmail, actor);
-        var link = delivery.Credential!.RawValue;
+        await Service(db, sent).IssueAsync(tenantId, InvitedEmail, actor);
+        var link = sent.Credential!.RawValue;
         db.ChangeTracker.Clear();
 
         var second = _databases.Connect(db);
@@ -391,12 +216,12 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
     public async Task A_refused_acceptance_leaves_no_partial_access()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var (db, tenantId, actor, delivery) = await ArrangeAsync();
+        var (db, tenantId, actor, sent) = await ArrangeAsync();
 
-        var issued = await Service(db, delivery).IssueAsync(tenantId, InvitedEmail, actor);
-        var link = delivery.Credential!.RawValue;
+        var issued = await Service(db, sent).IssueAsync(tenantId, InvitedEmail, actor);
+        var link = sent.Credential!.RawValue;
 
-        await Service(db, delivery).RevokeAsync(tenantId, issued.InvitationId!.Value, actor);
+        await Service(db, sent).RevokeAsync(issued.InvitationId);
         db.ChangeTracker.Clear();
 
         var result = await Acceptance(db).AcceptAsync(new AdministrativeAcceptanceRequest
@@ -419,10 +244,10 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
     public async Task An_acceptance_refused_for_an_existing_account_still_records_why()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var (db, tenantId, actor, delivery) = await ArrangeAsync();
+        var (db, tenantId, actor, sent) = await ArrangeAsync();
 
-        var issued = await Service(db, delivery).IssueAsync(tenantId, InvitedEmail, actor);
-        var link = delivery.Credential!.RawValue;
+        var issued = await Service(db, sent).IssueAsync(tenantId, InvitedEmail, actor);
+        var link = sent.Credential!.RawValue;
 
         // The address is claimed after the invitation was issued — the realistic
         // race, and the only case where an administrator sees a valid invitation
@@ -467,10 +292,10 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
     public async Task The_invited_address_cannot_be_altered_by_editing_the_request()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var (db, tenantId, actor, delivery) = await ArrangeAsync();
+        var (db, tenantId, actor, sent) = await ArrangeAsync();
 
-        await Service(db, delivery).IssueAsync(tenantId, InvitedEmail, actor);
-        var link = delivery.Credential!.RawValue;
+        await Service(db, sent).IssueAsync(tenantId, InvitedEmail, actor);
+        var link = sent.Credential!.RawValue;
         db.ChangeTracker.Clear();
 
         var result = await Acceptance(db).AcceptAsync(new AdministrativeAcceptanceRequest
@@ -483,27 +308,6 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
     }
 
     // ── Delivery ─────────────────────────────────────────
-
-    [SkippableFact]
-    public async Task A_failed_delivery_leaves_a_valid_pending_invitation()
-    {
-        Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var (db, tenantId, actor, delivery) = await ArrangeAsync();
-        delivery.FailNext = true;
-
-        var result = await Service(db, delivery).IssueAsync(tenantId, InvitedEmail, actor);
-
-        // The command succeeded and the invitation exists. Reporting this as a
-        // failed invitation would tell the administrator something untrue and hide
-        // the resend that actually resolves it.
-        Assert.True(result.Succeeded);
-        Assert.True(result.DeliveryFailed);
-
-        db.ChangeTracker.Clear();
-        var invitation = await db.InviteTokens.IgnoreQueryFilters()
-            .SingleAsync(item => item.Id == result.InvitationId);
-        Assert.Equal(InvitationState.Pending, invitation.State);
-    }
 
     // ── plumbing ─────────────────────────────────────────
 
@@ -541,9 +345,7 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
         db.ChangeTracker.Clear();
     }
 
-    private static IAdministratorInvitationService Service(
-        AppIdentityDbContext db, CapturingAdministrativeDelivery delivery)
-        => new AdministratorInvitationService(db, RelationalTestDatabase.CreateUserManager(db), delivery);
+    private static Invitations Service(AppIdentityDbContext db, SentLink sent) => new(db, sent);
 
     private static IAdministrativeInvitationAcceptanceService Acceptance(AppIdentityDbContext db)
     {
@@ -555,7 +357,7 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
     /// Provisions and activates a tenant, so the arrangement is a real tenant with
     /// a real first administrator rather than hand-built rows.
     /// </summary>
-    private async Task<(AppIdentityDbContext Db, Guid TenantId, Guid Actor, CapturingAdministrativeDelivery Delivery)>
+    private async Task<(AppIdentityDbContext Db, Guid TenantId, Guid Actor, SentLink Sent)>
         ArrangeAsync()
     {
         var db = await _databases.CreateAsync("fusion_admin_invite");
@@ -589,7 +391,7 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
         Assert.Equal(BootstrapActivationOutcome.Activated, activation.Outcome);
         db.ChangeTracker.Clear();
 
-        return (db, provisioned.Value.TenantId, activation.AccountId!.Value, new CapturingAdministrativeDelivery(db));
+        return (db, provisioned.Value.TenantId, activation.AccountId!.Value, new SentLink());
     }
 
     private sealed class CapturingBootstrapDelivery : IBootstrapInvitationDelivery
@@ -604,30 +406,31 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
         }
     }
 
-    /// <summary>
-    /// Captures the link the recipient would receive, and can simulate a bounce so
-    /// the "invitation valid, delivery failed" case is exercised for real.
-    /// </summary>
-    private sealed class CapturingAdministrativeDelivery(AppIdentityDbContext db) : IAdministrativeInvitationDelivery
+    /// <summary>The link the recipient would have received.</summary>
+    private sealed class SentLink
     {
-        public BootstrapCredential? Credential { get; private set; }
+        public BootstrapCredential? Credential { get; set; }
+    }
 
-        public bool FailNext { get; set; }
+    private sealed record Issued(Guid InvitationId);
 
-        public async Task DeliverAsync(
-            Guid invitationId, string email, BootstrapCredential credential,
-            InvitationPurpose purpose, Guid initiatedByAccountId,
-            CancellationToken cancellationToken = default)
+    private sealed class Invitations(AppIdentityDbContext db, SentLink sent)
+    {
+        public Task<AdministrativeInvitationEntry> InspectAsync(string credential)
+            => new AdministratorInvitationService(db, RelationalTestDatabase.CreateUserManager(db)).InspectAsync(credential);
+
+        public async Task<Issued> IssueAsync(Guid tenantId, string email, Guid actor)
         {
-            Credential = credential;
+            var (id, credential) = await AdministrativeInvitations.IssueAsync(db, tenantId, email, actor);
+            sent.Credential = credential;
+            return new Issued(id);
+        }
 
-            // Records the outcome the same way the real delivery does, so the
-            // caller observes a genuine bounce rather than a flag set in the test.
-            await db.Database.ExecuteSqlRawAsync(
-                "UPDATE identity.\"InviteTokens\" SET \"DeliveryStatus\" = {1} WHERE \"Id\" = {0}",
-                [invitationId, FailNext ? "Failed" : "Sent"],
-                cancellationToken);
-
+        public async Task RevokeAsync(Guid invitationId)
+        {
+            var invitation = await db.InviteTokens.IgnoreQueryFilters().SingleAsync(item => item.Id == invitationId);
+            invitation.Revoke();
+            await db.SaveChangesAsync();
             db.ChangeTracker.Clear();
         }
     }

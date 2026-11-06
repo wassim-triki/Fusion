@@ -80,6 +80,7 @@ public sealed class ReportTests
         var front = await engine.FrontPageAsync(Hr, fields, default);
         Assert.Equal(Today.AddYears(-2), front.FirstDate);
         Assert.Equal(2, On(front, Today).Count);
+        Assert.Equal(CompanyUnitLevel.Division, front.UnitLevel);
         Assert.All(On(front, Today), p => { Assert.Equal(division.Id, p.Span.DepartmentId); Assert.Equal("Engineering", p.Span.Department); });
         Assert.Equal(3, On(front, Today.AddDays(-20)).Count);
         Assert.All(front.People, p => Assert.DoesNotContain("Other", p.Name));
@@ -186,6 +187,15 @@ public sealed class ReportTests
             if (measure == "joiners-leavers" && mode == "range") Assert.Equal(2m, run.Totals.Sum());
             if (measure == "turnover" && mode == "range") Assert.Contains(run.Totals, value => value > 0);
         }
+    }
+
+    [Fact]
+    public void A_company_without_divisions_or_departments_says_unit()
+    {
+        Assert.Equal(CompanyUnitLevel.Department, CompanyUnitLevel.Of([OrganizationalUnitTypeCatalog.DepartmentId]));
+        Assert.Equal(CompanyUnitLevel.Division,
+            CompanyUnitLevel.Of([OrganizationalUnitTypeCatalog.DepartmentId, OrganizationalUnitTypeCatalog.DivisionId]));
+        Assert.Equal(CompanyUnitLevel.Unit, CompanyUnitLevel.Of([Guid.NewGuid()]));
     }
 
     [Fact]

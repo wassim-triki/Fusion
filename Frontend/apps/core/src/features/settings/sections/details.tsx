@@ -83,10 +83,7 @@ export function DetailsSettings({ section }: { section: FusionSettingsSection })
   const dayName = (day: number, weekday: "long" | "short" = "long") =>
     dateFormatter({ weekday, timeZone: "UTC" }, locale).format(new Date(Date.UTC(2026, 0, 4 + day)));
   const daysOff = WEEK_DAYS.filter((day) => !draft?.includes(day));
-  const modules = useMemo(
-    () => visibleFusionModules(viewer).filter((module) => module.entitlement),
-    [viewer]
-  );
+  const modules = useMemo(() => visibleFusionModules(viewer), [viewer]);
 
   if ((tenant.error && !tenant.data) || (query.error && !query.data)) {
     return (

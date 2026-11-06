@@ -575,16 +575,13 @@ public sealed class AuthorityStateContractTests : IAsyncLifetime
 
         foreach (var (email, name) in new[] { ("second.admin@atlas.example", "Bea"), ("third.admin@atlas.example", "Cleo") }.Take(administrators - 1))
         {
-            var delivery = new SilentDelivery();
-            await new AdministratorInvitationService(db, users, delivery)
-                .IssueAsync(tenantId, email, firstAccountId);
-            db.ChangeTracker.Clear();
+            var (_, credential) = await AdministrativeInvitations.IssueAsync(db, tenantId, email, firstAccountId);
 
             var accepted = await new AdministrativeInvitationAcceptanceService(
                     db, users, new AccessProfileService(db, users))
                 .AcceptAsync(new AdministrativeAcceptanceRequest
                 {
-                    Credential = delivery.Credential!.RawValue,
+                    Credential = credential.RawValue,
                     Email = email,
                     Password = "Administrator@123456",
                     FirstName = name,
@@ -608,18 +605,6 @@ public sealed class AuthorityStateContractTests : IAsyncLifetime
 
         public Task DeliverAsync(Guid invitationId, string email, BootstrapCredential credential,
             Guid initiatedByAccountId, CancellationToken cancellationToken = default)
-        {
-            Credential = credential;
-            return Task.CompletedTask;
-        }
-    }
-
-    private sealed class SilentDelivery : IAdministrativeInvitationDelivery
-    {
-        public BootstrapCredential? Credential { get; private set; }
-
-        public Task DeliverAsync(Guid invitationId, string email, BootstrapCredential credential,
-            InvitationPurpose purpose, Guid initiatedByAccountId, CancellationToken cancellationToken = default)
         {
             Credential = credential;
             return Task.CompletedTask;

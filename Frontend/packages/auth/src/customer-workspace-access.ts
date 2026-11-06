@@ -39,6 +39,9 @@ export type CustomerWorkspaceAccessState =
 export const CUSTOMER_MODULES = {
   coreHr: "CoreHR",
   performance: "Performance",
+  learning: "Learning",
+  recruitment: "Recruitment",
+  interview: "Interview",
 } as const;
 
 export type CustomerModule =

@@ -6,7 +6,7 @@ import { Button } from "@repo/ds/components/ui/button";
 import { Input } from "@repo/ds/components/ui/input";
 import { DatePicker } from "@repo/ds/components/ui/date-picker";
 import { Label } from "@repo/ds/components/ui/label";
-import { PageContainer, PageHeader, PagePermissionNotice, PageSkeleton } from "@repo/ds/shell";
+import { PageContainer, PageHeader, PagePermissionNotice, PageRefusal, PageSkeleton } from "@repo/ds/shell";
 import { useReviewRoundMutations } from "@/features/performance/api/use-reviews";
 import { useWorkspaceContext } from "@/features/performance/api/use-workspace";
 import { ContentUnavailable } from "@/features/performance/components/content-unavailable";
@@ -30,7 +30,7 @@ export default function NewReviewRoundPage() {
   const formEnd = periodEnd || cycle?.endDate || "";
 
   if (context.isLoading) return <PageSkeleton rows={5} width="wide" label={t("loadingCycle")} />;
-  if (!isAdmin) return <PagePermissionNotice title={t("administrationOnly")} description={t("onlyPerformanceAdministratorsCanCreate")} />;
+  if (!isAdmin) return <PageContainer><PageRefusal /></PageContainer>;
   if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} subject={t("cycle")} />;
   if (!cycle) return <PagePermissionNotice title={t("noActiveCycle")} description={t("aReviewRoundBelongsTo")} />;
   if (cycle.state !== "Active") return <PagePermissionNotice title={t("cycleIsNotActive")} description={t("reviewRoundsCanOnlyBe")} />;

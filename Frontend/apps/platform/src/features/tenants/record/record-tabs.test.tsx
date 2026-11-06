@@ -114,7 +114,7 @@ describe("The tenant record tabs", () => {
     expect(
       screen.getByRole("heading", { name: "المنتجات" })
     ).toBeInTheDocument();
-    expect(screen.getByText("2 من 6 منتجات مستخدمة")).toBeInTheDocument();
+    expect(screen.getByText("2 من 5 منتجات مستخدمة")).toBeInTheDocument();
     expect(
       screen.getAllByText("بواسطة Admin Platform عند الإنشاء")
     ).toHaveLength(2);
@@ -134,7 +134,7 @@ describe("The tenant record tabs", () => {
     expect(screen.getByText("Désactivé par Admin Platform")).toBeInTheDocument();
     const toggle = screen.getByRole("switch", { name: "Performance pour cette organisation" });
     expect(toggle).not.toBeChecked();
-    expect(screen.getAllByRole("switch")).toHaveLength(1);
+    expect(screen.getAllByRole("switch")).toHaveLength(4);
     fireEvent.click(toggle);
     expect(screen.getByRole("alertdialog")).toHaveTextContent(/Activer Performance pour .+ \?/);
     fireEvent.click(screen.getByRole("button", { name: "Activer" }));

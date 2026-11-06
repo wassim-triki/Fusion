@@ -1,7 +1,5 @@
 {
   "CyclePage": {
-    "administrationOnly": "للإدارة فقط",
-    "cycleAdministrationIsAvailableTo": "إدارة الدورة متاحة لمسؤولي الأداء.",
     "performanceWorkspace": "مساحة عمل الأداء",
     "theCycle": "الدورة",
     "closed": "مغلقة",
@@ -51,7 +49,7 @@
   },
   "UnitFilter": {
     "unit": "الوحدة",
-    "theWholeOrganization": "المؤسسة كاملة"
+    "theWholeOrganization": "الشركة كاملة"
   },
   "FactStrip": {
     "resultsReleased": "النتائج المنشورة",

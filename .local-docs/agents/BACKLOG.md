@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-299.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-302.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -28,7 +28,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 | --- | --- | --- |
 | 1–16 | Jobs/places/lists through the Core HR front page | Accepted and closed |
 | 17 · B-191 | Single sign-on | Accepted and closed |
-| 18 · B-192 | Seams and finish | Ready; plan agreed |
+| 18 · B-192 | Seams and finish | In review |
 | 19 · B-298 | Demo presets brought up to the rebuild | Ready, after B-192 |
 
 ## In progress
@@ -50,7 +50,8 @@ These are umbrella outcomes, not additional slices.
 
 ### Rebuild slices
 
-None waiting.
+- [ ] **B-192** Seams and finish: colleague modules only when on, one vocabulary, one way to refuse, what replaced screens left behind · All · 2026-10-30
+      [plan](plans/B-192-seams-and-finish.md). Look at: the refusal ([screen](plans/B-192-screens/01-refusal.png), or `/performance/cycle` as Leila Baccouche, an employee); the wording (`/core` as Amira Khelifi, the administrator, says "6 divisions" in Carthage, [screen](plans/B-192-screens/02-front-page-level-word.png)); the switcher (Learning, Recruitment, Interview and Onboarding gone for every role). Live `/learning` checks ran for Amira only; the other three roles walked without that app, for memory.
 
 ### Other reviews
 
@@ -60,8 +61,6 @@ None waiting.
 
 ### Rebuild slices
 
-- [ ] **B-192** Seams and finish: colleague modules only when on, one vocabulary, one way to refuse, what replaced screens left behind · All · 2026-10-30
-      Scope reviewed against slices 1–17 and agreed by the user 2026-11-05: [plan](plans/B-192-seams-and-finish.md). Replaced screens are already redirects, so that part is a cleanup; colleague modules and the one refusal aren't done; words are a fix list; the top-level unit takes the company's own level name. Medium effort, fresh session.
 - [ ] **B-298** Demo presets brought up to the rebuild · Data · 2026-11-05
       Split from B-192 by the user, 2026-11-05. Last built 2026-10-22, before the rebuild; the script was changed on 10-30 and 11-01 with no build recorded since, so first prove one build (`fresh`, then one with a year). Then a shared company finish: brand, company fields from the gallery (D: demo companies ship a set), photos, joining checklists, open roles, a pending change, someone on leave, reusing the Carthage seed scripts. Rebuild all five; `journey-demo-preset.cjs` extended. The tour's stories wait for B-090's decision page. After B-192. Medium effort, fresh session.
 
@@ -74,6 +73,12 @@ None waiting.
 - [ ] **B-296** Prove a single sign-on domain by DNS before Fusion is hosted: today the first company to pass a test sign-in from a domain proves it, so a company running its own provider could claim another company's unclaimed domain and show its button on that domain's sign-in page · Identity, Core HR · 2026-11-05
       Found in the B-191 security review (accepted rung 2 in the plan, D9). A claim never signs anyone in across companies; the risk is the sign-in page steering another company's people to that provider. Fix: a DNS TXT record per domain, checked before it counts as proved.
 - [ ] **B-297** Rate limits trust a client-sent `X-Forwarded-For` (shell proxy forwards it), so single sign-on's discover and flow-start limits can be dodged by changing the header · Shell, Gateway, Identity · 2026-11-05
+
+- [ ] **B-299** Administrator Suspend/Reactivate and the `TenantAdministrator` invitation purpose are now unreachable from the product: only tests and a database constraint keep them. Remove them, or say what they are for · Identity · 2026-11-06
+
+- [ ] **B-300** The backend still says "Tenant Administrator" in role names, mail and audit, while screens say "Administrator" since B-192 · Identity · 2026-11-06
+
+- [ ] **B-301** "Growth goal" and "development goal" both appear for the same idea; pick one (left out of B-192's fix list) · Performance · 2026-11-06
       Found in the B-191 security review. Local only today; before hosting, the edge sets the client address and the shell proxy drops any incoming value.
 - [ ] **B-287** Open roles remember who filled them, so the front page can show "Filled · Ons Khemiri, Monday" as drawn (D-30); today a filled role keeps no link to the hire or date · Core HR · 2026-11-04
       From B-285: the open roles model has Open/OnHold/Filled/Closed only.
@@ -86,8 +91,6 @@ None waiting.
 - [ ] **B-249** The brand studio's Home preview draws the real Home (day one's guide, the company card) instead of its stand-in (from B-188's notes) · Core HR · 2026-11-01
 
 - [ ] **B-245** The import groups titles into job families when the files have no family column (D-23 widened the AI to it): suggestions marked with the sparkle, each family changeable on the chart's Jobs view · Core HR · 2026-11-01
-
-- [ ] **B-242** Tidy after the Organization refit: drop core's unused `@xyflow/react` dependency (lockfile update) and the now-unused `flattenOrganizationHierarchy` · Core HR · 2026-11-01
 
 - [ ] **B-240** Directory card as drawn (D-28): initials in Fusion's serif on every face, and the card footer's org chart icon matching the drawing's (Hugeicons Hierarchy; Core's chrome is still Lucide, so pick the match or move this icon). Long names already end in an ellipsis · Core HR · 2026-10-31
       User 2026-10-31 (B-182 review, card compared with `plans/B-182-screens/ref-directory-card.png`).

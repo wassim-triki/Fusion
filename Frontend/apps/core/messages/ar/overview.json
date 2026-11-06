@@ -11,7 +11,6 @@
     "title": "الموارد البشرية",
     "addPeople": "إضافة أشخاص",
     "yourTeam": "فريقك",
-    "departments": "{count} أقسام",
     "places": "{count} مواقع",
     "since": "منذ {date}",
     "unavailable": "سجل الشركة غير متاح",
@@ -22,7 +21,6 @@
     "peopleNoun": "شخصًا",
     "view": "العرض",
     "groupBy": "تجميع الأشخاص حسب",
-    "department": "القسم",
     "place": "الموقع",
     "timeHere": "مدة الخدمة",
     "history": "سجل الشركة",
@@ -30,13 +28,11 @@
     "planned": "مخطط · {date}",
     "onDate": "في {date}",
     "lastJoined": "آخر انضمام في {date}، {name}",
-    "chartLabel": "عدد الأشخاص حسب القسم كل شهر. استخدم مفاتيح الأسهم للاستكشاف.",
     "unassigned": "غير معيّن",
     "count": "{count} أشخاص",
     "joinedMonth": "{count} انضموا هذا الشهر",
     "more": "+{count} آخرين",
     "noPeople": "لا يوجد أشخاص في هذا التاريخ.",
-    "departmentCards": "الأقسام",
     "yearChange": "{change} خلال سنة",
     "noChange": "دون تغيير خلال سنة",
     "leads": "يقود {department}",
@@ -82,6 +78,28 @@
     "placeChange": "{name} ينتقل إلى {place}",
     "managerChange": "{name} يغيّر المدير",
     "hiringFor": "فريق {name}",
-    "outsideDepartments": "خارج الأقسام"
+    "level": {
+      "Division": {
+        "count": "{count} أقسام رئيسية",
+        "label": "القسم الرئيسي",
+        "cards": "الأقسام الرئيسية",
+        "chart": "عدد الأشخاص حسب القسم الرئيسي كل شهر. استخدم مفاتيح الأسهم للاستكشاف.",
+        "outside": "خارج الأقسام الرئيسية"
+      },
+      "Department": {
+        "count": "{count} أقسام",
+        "label": "القسم",
+        "cards": "الأقسام",
+        "chart": "عدد الأشخاص حسب القسم كل شهر. استخدم مفاتيح الأسهم للاستكشاف.",
+        "outside": "خارج الأقسام"
+      },
+      "Unit": {
+        "count": "{count} وحدات",
+        "label": "الوحدة",
+        "cards": "الوحدات",
+        "chart": "عدد الأشخاص حسب الوحدة كل شهر. استخدم مفاتيح الأسهم للاستكشاف.",
+        "outside": "خارج الوحدات"
+      }
+    }
   }
 }

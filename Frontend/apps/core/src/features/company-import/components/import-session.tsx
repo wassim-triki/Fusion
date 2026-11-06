@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@repo/ds";
-import { PageContainer, PageEmpty, PageError, PagePermissionNotice } from "@repo/ds/shell";
+import { PageContainer, PageEmpty, PageError, PageRefusal } from "@repo/ds/shell";
 import { ApiError } from "@repo/api";
 import { useCompanyImport } from "../api/use-company-import";
 import { useCanImport } from "./import-drop";
@@ -37,7 +37,7 @@ export default function ImportSession({ id }: { id: string }) {
     if (data?.status === "Discarded") router.replace("/import");
   }, [data?.status, router]);
 
-  if (!allowed) return <PageContainer><PagePermissionNotice title={t("access.title")} description={t("access.description")} /></PageContainer>;
+  if (!allowed) return <PageContainer><PageRefusal /></PageContainer>;
   if (query.error instanceof ApiError && query.error.status === 404)
     return (
       <PageContainer>

@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
-import { PageContainer, PageHeader, PagePermissionNotice } from "@repo/ds/shell";
+import { PageContainer, PageHeader, PageRefusal } from "@repo/ds/shell";
 import { CycleSurfaceSkeleton } from "@/features/performance/components/cycle-setup/setup-skeletons";
 import { ContentUnavailable } from "@/features/performance/components/content-unavailable";
 import { useCurrentCycle, useCycleClosure } from "@/features/performance/api/use-performance";
@@ -54,15 +54,10 @@ export default function CyclePage() {
   }, [noCycle, router]);
 
   if (context.isLoading) return <CycleSurfaceSkeleton />;
-  if (context.error && !canAdminister) return <PagePermissionNotice title={t("administrationOnly")} description={t("cycleAdministrationIsAvailableTo")} />;
+  if (context.error && !canAdminister) return <PageContainer><PageRefusal /></PageContainer>;
   if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} subject={t("performanceWorkspace")} />;
   if (!canAdminister) {
-    return (
-      <PagePermissionNotice
-        title={t("administrationOnly")}
-        description={t("cycleAdministrationIsAvailableTo")}
-      />
-    );
+    return <PageContainer><PageRefusal /></PageContainer>;
   }
   if (detail.isLoading) return <CycleSurfaceSkeleton />;
   if (detail.error) {

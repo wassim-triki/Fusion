@@ -206,18 +206,10 @@ export interface AcceptAdministratorInvitationRequest {
 export const tenantAccessPaths = {
   summary: () => "/identity/tenant-access/summary",
   administrators: () => "/identity/tenant-access/administrators",
-  removedAdministrators: () => "/identity/tenant-access/administrators/removed",
   administratorHistory: () => "/identity/tenant-access/administrators/history",
   administratorCandidates: () => "/identity/tenant-access/administrators/candidates",
-  suspend: (membershipId: string) =>
-    `/identity/tenant-access/administrators/${membershipId}/suspend`,
-  reactivate: (membershipId: string) =>
-    `/identity/tenant-access/administrators/${membershipId}/reactivate`,
   revokeAuthority: (membershipId: string) =>
     `/identity/tenant-access/administrators/${membershipId}/authority:revoke`,
-  invitations: () => "/identity/tenant-access/invitations",
-  activity: () => "/identity/tenant-access/activity",
-  recentActivity: () => "/identity/tenant-access/activity/recent",
   inspectInvitation: () => "/identity/tenant-access/invitations/inspect",
   acceptInvitation: () => "/identity/tenant-access/invitations/accept",
 } as const;
@@ -226,13 +218,7 @@ export const tenantAccessQueryKeys = {
   all: () => ["tenant-access"] as const,
   summary: () => [...tenantAccessQueryKeys.all(), "summary"] as const,
   administrators: () => [...tenantAccessQueryKeys.all(), "administrators"] as const,
-  removedAdministrators: () =>
-    [...tenantAccessQueryKeys.all(), "administrators", "removed"] as const,
   administratorHistory: () => [...tenantAccessQueryKeys.all(), "administrators", "history"] as const,
   administratorCandidates: (search: string) =>
     [...tenantAccessQueryKeys.all(), "administrators", "candidates", search] as const,
-  invitations: (includeHistorical = false) =>
-    [...tenantAccessQueryKeys.all(), "invitations", includeHistorical] as const,
-  recentActivity: () => [...tenantAccessQueryKeys.all(), "activity", "recent"] as const,
-  activity: () => [...tenantAccessQueryKeys.all(), "activity"] as const,
 } as const;

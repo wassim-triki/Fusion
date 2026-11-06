@@ -1,7 +1,5 @@
 {
   "CyclePage": {
-    "administrationOnly": "Réservé à l’administration",
-    "cycleAdministrationIsAvailableTo": "L’administration du cycle est réservée aux administrateurs de la performance.",
     "performanceWorkspace": "Espace Performance",
     "theCycle": "Le cycle",
     "closed": "Clôturé",
@@ -51,7 +49,7 @@
   },
   "UnitFilter": {
     "unit": "Unité",
-    "theWholeOrganization": "Toute l’organisation"
+    "theWholeOrganization": "Toute l’entreprise"
   },
   "FactStrip": {
     "resultsReleased": "Résultats publiés",

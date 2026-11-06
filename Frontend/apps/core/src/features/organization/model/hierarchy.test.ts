@@ -3,7 +3,6 @@ import { asteriaHierarchy, largeOrganizationHierarchy } from "../test/fixtures";
 import {
   buildOrganizationHierarchy,
   deepestBlockingUnit,
-  flattenOrganizationHierarchy,
   isInvalidMoveTarget,
   organizationAccessibleName,
   revealOrganizationUnit,
@@ -25,7 +24,6 @@ describe("Organization hierarchy model", () => {
     const collapsed = new Set(["asteria", "consulting", "technology"]);
     const revealed = revealOrganizationUnit(collapsed, model, "data-ai");
     expect(revealed.size).toBe(0);
-    expect(flattenOrganizationHierarchy(model, revealed)).toHaveLength(7);
   });
 
   it("finds a deterministic actionable leaf beneath a blocked unit", () => {
@@ -37,10 +35,9 @@ describe("Organization hierarchy model", () => {
     expect(deepestBlockingUnit(model, "data-ai")).toBeNull();
   });
 
-  it("builds and flattens a representative large hierarchy", () => {
+  it("builds a representative large hierarchy", () => {
     const model = buildOrganizationHierarchy(largeOrganizationHierarchy());
     expect(model.units).toHaveLength(421);
-    expect(flattenOrganizationHierarchy(model, new Set())).toHaveLength(421);
   });
 });
 

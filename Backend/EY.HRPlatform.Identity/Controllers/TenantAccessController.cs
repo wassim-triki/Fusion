@@ -21,12 +21,11 @@ public sealed record AdministratorActionRequest(string? Reason);
 public sealed record AddAdministratorRequest(Guid UserId, string? Password, bool Sso = false);
 
 /// <summary>
-/// The customer Access Management surface: who administers this tenant, who has
-/// been invited to, and what has happened to that access.
+/// The customer Access Management surface: who administers this tenant, and what
+/// has happened to that access.
 /// <para>
 /// Every refusal carries a stable problem type, so the workspace can distinguish
-/// a duplicate invitation from an existing account from the final-administrator
-/// rule from a stale screen — each of which the person resolves differently.
+/// the final-administrator rule from a stale screen — each of which the person resolves differently.
 /// </para>
 /// </summary>
 [ApiController]
@@ -68,19 +67,6 @@ public sealed class TenantAccessController(
             ? Success(await projection.GetAdministratorCandidatesAsync(tenantId, search, cancellationToken))
             : refusal;
 
-    [HttpGet("administrators/removed")]
-    public async Task<IActionResult> RemovedAdministrators(CancellationToken cancellationToken)
-        => Resolve(out var tenantId, requireManage: false, out var refusal)
-            ? Success(await projection.GetRemovedAdministratorsAsync(tenantId, cancellationToken))
-            : refusal;
-
-    [HttpGet("invitations")]
-    public async Task<IActionResult> Invitations(
-        [FromQuery] bool includeHistorical, CancellationToken cancellationToken)
-        => Resolve(out var tenantId, requireManage: false, out var refusal)
-            ? Success(await projection.GetInvitationsAsync(tenantId, includeHistorical, cancellationToken))
-            : refusal;
-
     [HttpGet("activity")]
     public async Task<IActionResult> Activity(
         [FromQuery] DateTime? cursorOccurredAt,
@@ -94,30 +80,6 @@ public sealed class TenantAccessController(
             ? Success(await projection.GetActivityPageAsync(
                 tenantId, cursorOccurredAt, cursorId, from, to, category,
                 pageSize == 0 ? 25 : pageSize, cancellationToken))
-            : refusal;
-
-    [HttpGet("activity/recent")]
-    public async Task<IActionResult> RecentActivity(CancellationToken cancellationToken)
-        => Resolve(out var tenantId, requireManage: false, out var refusal)
-            ? Success(await projection.GetRecentActivityAsync(tenantId, 5, cancellationToken))
-            : refusal;
-
-    // ── Administrator lifecycle ──────────────────────────
-
-    [HttpPost("administrators/{membershipId:guid}/suspend")]
-    public async Task<IActionResult> Suspend(
-        Guid membershipId, [FromBody] AdministratorActionRequest? request, CancellationToken cancellationToken)
-        => Resolve(out var tenantId, requireManage: true, out var refusal)
-            ? Translate(await lifecycle.SuspendAsync(
-                Command(tenantId, membershipId, request?.Reason), cancellationToken))
-            : refusal;
-
-    [HttpPost("administrators/{membershipId:guid}/reactivate")]
-    public async Task<IActionResult> Reactivate(
-        Guid membershipId, CancellationToken cancellationToken)
-        => Resolve(out var tenantId, requireManage: true, out var refusal)
-            ? Translate(await lifecycle.ReactivateAsync(
-                Command(tenantId, membershipId, null), cancellationToken))
             : refusal;
 
     /// <summary>

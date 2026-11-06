@@ -1,8 +1,6 @@
 {
   "NewReviewRoundPage": {
     "loadingCycle": "Chargement du cycle",
-    "administrationOnly": "Réservé à l’administration",
-    "onlyPerformanceAdministratorsCanCreate": "Seuls les administrateurs Performance peuvent créer des campagnes d’évaluation.",
     "cycle": "Cycle",
     "noActiveCycle": "Aucun cycle actif",
     "aReviewRoundBelongsTo": "Une campagne d’évaluation appartient à un cycle actif. Sélectionnez-en un avant de démarrer une campagne.",
@@ -528,8 +526,6 @@
   "RoundPage": {
     "loadingTheRound": "Chargement de la campagne",
     "performanceWorkspace": "Espace Performance",
-    "administrationOnly": "Réservé à l’administration",
-    "reviewRoundsAreRunBy": "Les campagnes d’évaluation sont menées par les administrateurs Performance.",
     "reviewRound": "Campagne d’évaluation",
     "reviews": "Évaluations",
     "describe": {

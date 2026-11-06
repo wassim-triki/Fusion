@@ -4,10 +4,6 @@
   "lean": "Fusion's lean",
   "loading": "Loading the import",
   "error": "The import didn't load.",
-  "access": {
-    "title": "You can't bring the company in",
-    "description": "It takes managing the organization and importing people."
-  },
   "gone": {
     "title": "This import isn't here any more",
     "action": "Start an import"

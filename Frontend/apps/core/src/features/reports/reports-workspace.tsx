@@ -50,7 +50,7 @@ import {
   Skeleton,
   cn,
 } from "@repo/ds";
-import { PageContainer, PagePermissionNotice } from "@repo/ds/shell";
+import { PageContainer, PageRefusal } from "@repo/ds/shell";
 import { Segmented } from "@repo/ds/choice";
 import {
   createDataTableColumnHelper,
@@ -160,9 +160,7 @@ export function ReportsWorkspace({ reportId }: { reportId: string }) {
   useBreadcrumbLabel(reportId, title);
   if (isLoading) return <ReportsPageSkeleton />;
   if (!canSee)
-    return (
-      <PagePermissionNotice title={t("title")} description={t("noAccess")} />
-    );
+    return <PageContainer><PageRefusal /></PageContainer>;
   if ((!standard && saved.isLoading) || fields.isLoading)
     return <ReportsPageSkeleton />;
   if (saved.error || fields.error || list.error)
@@ -275,10 +273,13 @@ function ReportEditor({
       return next;
     });
   }
-  const fieldLabel = (key: string) =>
-    key.startsWith("field:")
-      ? (fields.find((f) => f.key === key)?.label ?? key)
-      : t(`field.${key as "name"}`);
+  const fieldLabel = (key: string) => {
+    const field = fields.find((f) => f.key === key);
+    if (key.startsWith("field:")) return field?.label ?? key;
+    // The server names this one with the company's own word for its top level.
+    if (key === "division" && field) return t(`field.${field.label.toLowerCase() as "division"}`);
+    return t(`field.${key as "name"}`);
+  };
   const seriesLabel = (label: string) =>
     label.replace(
       / · (joiners|leavers)$/,
@@ -1009,7 +1010,7 @@ function PeopleFields({ run }: { run: ReportRunDto }) {
       } } : {}),
       header: f.key.startsWith("field:")
         ? f.label
-        : t(`field.${f.key as "name"}`),
+        : t(`field.${(f.key === "division" ? f.label.toLowerCase() : f.key) as "name"}`),
     })
   );
   const model = useDataTable({

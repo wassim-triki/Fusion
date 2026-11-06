@@ -160,31 +160,12 @@
     },
     "journeys": {
       "bootstrap": {
-        "role": "Administrateur de l’organisation",
+        "role": "Administrateur",
         "heading": "Créez votre compte",
         "lead": "Acceptez l’invitation de {tenant} pour créer votre compte Fusion."
       },
-      "administrator": {
-        "role": "Administrateur de l’organisation",
-        "heading": "Créez votre compte",
-        "lead": "Acceptez l’invitation de {tenant} pour créer votre compte Fusion.",
-        "terminal": {
-          "expired": {
-            "title": "Cette invitation a expiré",
-            "detail": "Aucun compte n’a été créé. Contactez l’administrateur à l’origine de l’invitation pour en recevoir une nouvelle."
-          },
-          "revoked": {
-            "title": "Cette invitation a été révoquée",
-            "detail": "Elle ne peut plus être acceptée et aucun compte n’a été créé."
-          },
-          "existingAccount": {
-            "title": "Un compte existe déjà pour cette adresse",
-            "detail": "Cette adresse e-mail appartient déjà à un compte Fusion et ne peut pas servir à cette invitation, qui crée un nouveau compte. Contactez l’administrateur à l’origine de l’invitation pour qu’il l’envoie à une autre adresse."
-          }
-        }
-      },
       "recovery": {
-        "role": "Administrateur de l’organisation",
+        "role": "Administrateur",
         "heading": "Créez votre compte",
         "lead": "Rétablissez l’accès administrateur de {tenant} en créant votre compte Fusion.",
         "terminal": {

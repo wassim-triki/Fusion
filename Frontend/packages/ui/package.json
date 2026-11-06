@@ -28,6 +28,7 @@
     "typescript": "^5.7.3"
   },
   "dependencies": {
+    "@repo/api": "workspace:*",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-checkbox": "^1.3.3",
     "@radix-ui/react-dialog": "^1.1.15",

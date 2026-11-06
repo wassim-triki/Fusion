@@ -284,7 +284,7 @@ describe("SignInPage", () => {
 
       mockedService.login.mockRejectedValueOnce(makeApiError(["Something exploded"], 500));
       await userEvent.click(screen.getByRole("button", { name: "Se connecter" }));
-      expect(await screen.findByText("Connexion impossible. Réessayez.")).toBeInTheDocument();
+      expect(await screen.findByText("Impossible de vous connecter. Réessayez.")).toBeInTheDocument();
       expect(screen.queryByText("Something exploded")).not.toBeInTheDocument();
 
     });

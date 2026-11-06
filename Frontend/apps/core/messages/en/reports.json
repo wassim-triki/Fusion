@@ -51,7 +51,8 @@
     "job": "Job",
     "place": "Place",
     "first-day": "First day",
-    "tenure": "Time with the company"
+    "tenure": "Time with the company",
+    "department": "Department"
   },
   "interval": {
     "month": "Month",
@@ -94,7 +95,6 @@
   "runFailed": "This report could not run. Check its fields and dates.",
   "saveFailed": "The report could not be saved.",
   "exportFailed": "The report could not be exported.",
-  "noAccess": "Reports are not available to this role.",
   "currentDescription": "By {field}, today",
   "onDescription": "By {field}, on the selected date",
   "rangeDescription": "By {field}, at the end of each {interval}",
@@ -105,7 +105,7 @@
   "saveBeforeShare": "Your changes will be saved before sharing.",
   "shareFailed": "Sharing could not be saved. Try again.",
   "stopSharing": "Stop sharing",
-  "fieldCount": "Fields \u00b7 {count}/30",
+  "fieldCount": "Fields · {count}/30",
   "searchFields": "Search fields",
   "dateLimit": "Choose a range of up to 30 years.",
   "clearFilters": "Clear filters",

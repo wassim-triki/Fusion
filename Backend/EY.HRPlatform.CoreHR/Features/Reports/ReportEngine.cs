@@ -37,13 +37,14 @@ public sealed partial class ReportEngine(CoreHRDbContext db, ITenantSettingsRead
             ? EmployeeReadAudience.Manager : EmployeeReadAudience.Employee;
         var jobAudience = viewer.JobHr ? EmployeeReadAudience.HrAdmin : viewer.Scope == PermissionScopes.DirectReports
             ? EmployeeReadAudience.Manager : EmployeeReadAudience.Employee;
+        var unitLevel = await CompanyUnitLevel.ReadAsync(db, ct);
         var built = BuiltIns.Where(f => f.Key switch
         {
             "job" => OrgChartQueryHandler.CanViewField(policy, "jobTitle", jobAudience),
             "place" => OrgChartQueryHandler.CanViewField(policy, "workLocation", jobAudience),
             "first-day" or "tenure" => OrgChartQueryHandler.CanViewField(policy, "hireDate", jobAudience),
             _ => true,
-        }).ToList();
+        }).Select(f => f.Key == "division" ? f with { Label = unitLevel } : f).ToList();
         var custom = await db.EmployeeFieldDefinitions.AsNoTracking().Where(f => f.IsActive && f.SourceKey == null && f.Type != EmployeeFieldType.Section).ToListAsync(ct);
         built.AddRange(custom.Where(f => EmployeeFieldService.CanSee(f, Guid.Empty, f.Area == EmployeeFieldArea.Job ? jobAudience : audience, null)).Select(f => new ReportFieldDto("field:" + f.Key, f.Label, f.Type == EmployeeFieldType.Date ? "date" : f.Type == EmployeeFieldType.Tags ? "tags" : "choice")));
         return built;

@@ -3,7 +3,6 @@ import { createTranslator } from "next-intl";
 import fr from "../../messages/fr.json";
 import {
   type PasswordRequirements,
-  ADMINISTRATOR_JOURNEY,
   BOOTSTRAP_JOURNEY,
   RECOVERY_JOURNEY,
   errorFor,
@@ -276,8 +275,7 @@ describe("bootstrap handoff", () => {
     expect(BOOTSTRAP_JOURNEY.destination).toBe("/");
   });
 
-  it("uses the purpose-specific administrator and recovery destinations", () => {
-    expect(ADMINISTRATOR_JOURNEY.destination).toBe("/core/settings/roles/administrators");
+  it("sends a recovered administrator Home", () => {
     expect(RECOVERY_JOURNEY.destination).toBe("/");
   });
 });

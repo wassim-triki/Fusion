@@ -10,7 +10,7 @@ import { AlertTriangle, ArrowLeft, Network } from "lucide-react";
 import type { OrgChartOpenRoleDto, OrgChartPersonDto } from "@repo/api";
 import { useAuth } from "@repo/auth";
 import { Alert, AlertDescription, AlertTitle, Button } from "@repo/ds";
-import { PageContainer, PagePermissionNotice } from "@repo/ds/shell";
+import { PageContainer, PageRefusal } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { canAccessEmployeeRoster } from "@/lib/employee-roster-access";
 import { Monogram } from "@/features/people/components/workforce-ui";
@@ -54,7 +54,7 @@ export default function OrganizationUnitPage({ id }: { id: string }) {
   if (!access.unitPages) {
     return (
       <PageContainer width="wide" className="max-w-6xl">
-        <PagePermissionNotice title={t("access.title")} description={t("access.description")} />
+        <PageRefusal />
       </PageContainer>
     );
   }

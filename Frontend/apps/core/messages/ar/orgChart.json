@@ -1,5 +1,5 @@
 {
-  "meta": "{people, plural, one {شخص واحد} other {# أشخاص}} · {divisions, plural, =0 {بلا أقسام} one {قسم واحد} other {# أقسام}}{open, plural, =0 {} one { · وظيفة شاغرة واحدة} other { · # وظائف شاغرة}}",
+  "meta": "{people, plural, one {شخص واحد} other {# أشخاص}} · {units}{open, plural, =0 {} one { · وظيفة شاغرة واحدة} other { · # وظائف شاغرة}}",
   "views": {
     "label": "العرض",
     "aroundYou": "من حولك",
@@ -37,7 +37,9 @@
     "reviewLoading": "جارٍ تحميل تقدّم التقييمات",
     "reviewError": "تعذّر تحميل تقدّم التقييمات.",
     "reviewNone": "لا توجد تقييمات جارية",
-    "legend": "إظهار فقط"
+    "legend": "إظهار فقط",
+    "department": "القسم",
+    "unit": "الوحدة"
   },
   "card": {
     "you": "أنت",
@@ -96,8 +98,6 @@
     "branchError": "لم يتم تحميل هذا الفريق. حاول مرة أخرى."
   },
   "access": {
-    "title": "يلزم الوصول إلى الهيكل التنظيمي",
-    "description": "دورك لا يشمل الهيكل التنظيمي. اطلبه من المسؤول إذا احتجت إليه.",
     "narrowed": {
       "title": "الهيكل التنظيمي غير متاح لك",
       "description": "تتيحه شركتك للمديرين والموارد البشرية فقط."
@@ -146,5 +146,10 @@
     },
     "failed": "لم تُحفظ الوظيفة.",
     "place": "مكان العمل"
+  },
+  "levelCount": {
+    "Division": "{count, plural, =0 {بلا أقسام رئيسية} one {قسم رئيسي واحد} other {# أقسام رئيسية}}",
+    "Department": "{count, plural, =0 {بلا أقسام} one {قسم واحد} other {# أقسام}}",
+    "Unit": "{count, plural, =0 {بلا وحدات} one {وحدة واحدة} other {# وحدات}}"
   }
 }

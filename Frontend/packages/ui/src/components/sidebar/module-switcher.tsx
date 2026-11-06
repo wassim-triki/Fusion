@@ -3,6 +3,8 @@
 import type { CSSProperties } from "react";
 import { useState, useRef, useEffect, useId } from "react";
 import Link from "next/link";
+import { visibleFusionModules } from "@repo/api";
+import { useFusionViewer } from "@repo/api/react";
 import * as Popover from "@radix-ui/react-popover";
 import {
   LayoutGrid,
@@ -13,7 +15,6 @@ import {
   BookOpen,
   BarChart2,
   Users,
-  Handshake,
   Video,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
@@ -41,7 +42,6 @@ const DEFAULT_MODULES: SidebarModule[] = [
   { label: "Learning", href: "/learning", icon: BookOpen },
   { label: "Performance", href: "/performance", icon: BarChart2 },
   { label: "Recruitment", href: "/recruitment", icon: Users },
-  { label: "Onboarding", href: "/onboarding", icon: Handshake },
   { label: "Interview", href: "/interview", icon: Video },
 ];
 
@@ -59,7 +59,7 @@ interface ModuleSwitcherProps {
 
 export function ModuleSwitcher({
   activeModule,
-  modules = DEFAULT_MODULES,
+  modules: givenModules,
   collapsed = false,
   variant = "default",
   triggerStyle,
@@ -70,6 +70,10 @@ export function ModuleSwitcher({
   const [search, setSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const _popoverId = useId();
+  const { viewer } = useFusionViewer();
+  // The same rule as the shell's switcher: only what this person's company has.
+  const offered = new Set(visibleFusionModules(viewer).map((entry) => entry.href));
+  const modules = givenModules ?? DEFAULT_MODULES.filter((module) => offered.has(module.href));
 
   useEffect(() => { setMounted(true); }, []);
 

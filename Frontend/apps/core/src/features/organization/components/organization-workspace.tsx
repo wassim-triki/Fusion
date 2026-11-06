@@ -38,7 +38,7 @@ import {
   TabsTrigger,
   cn,
 } from "@repo/ds";
-import { PagePermissionNotice } from "@repo/ds/shell";
+import { PageRefusal } from "@repo/ds/shell";
 import type { UnitStaffingDto } from "@repo/api";
 import { useStaffingAccess } from "../api/use-staffing";
 import { FilterFieldChip, isFilterActive, matchesField, type DataTableFilterField, type DataTableFilterState } from "@repo/ds/data-table";
@@ -757,10 +757,7 @@ export default function OrganizationWorkspace({
   if (!canView)
     return (
       <div className="p-6">
-        <PagePermissionNotice
-          title={t("access.title")}
-          description={t("access.description")}
-        />
+        <PageRefusal />
       </div>
     );
 

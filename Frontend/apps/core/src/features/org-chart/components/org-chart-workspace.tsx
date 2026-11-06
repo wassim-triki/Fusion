@@ -31,7 +31,7 @@ import {
   cn,
 } from "@repo/ds";
 import { FilterChips, Segmented } from "@repo/ds/choice";
-import { PagePermissionNotice } from "@repo/ds/shell";
+import { PagePermissionNotice, PageRefusal } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { canAccessEmployeeRoster } from "@/lib/employee-roster-access";
 import { useOrgChart, useOrgChartBranches, useOrgChartChanges, useOrgChartSearch, useReviewProgress } from "../api/use-org-chart";
@@ -104,10 +104,11 @@ export default function OrgChartWorkspace({ asOf, replaying }: { asOf: string | 
   if (!canView) {
     return (
       <div className="p-6">
-        <PagePermissionNotice
-          title={t(access.narrowed ? "access.narrowed.title" : "access.title")}
-          description={t(access.narrowed ? "access.narrowed.description" : "access.description")}
-        />
+        {access.narrowed ? (
+          <PagePermissionNotice title={t("access.narrowed.title")} description={t("access.narrowed.description")} />
+        ) : (
+          <PageRefusal />
+        )}
       </div>
     );
   }
@@ -623,14 +624,14 @@ function OrgChart({ data, asOf, replaying }: { data: OrgChartDto; asOf: string |
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="division">{t("lens.division")}</SelectItem>
+            <SelectItem value="division">{t(`lens.${data.unitLevel.toLowerCase() as "division"}`)}</SelectItem>
             <SelectItem value="location">{t("lens.location")}</SelectItem>
             {hr ? HR_LENSES.map((key) => <SelectItem key={key} value={key}>{t(`lens.${key}`)}</SelectItem>) : null}
             {reviewLens ? <SelectItem value="review">{t("lens.review")}</SelectItem> : null}
             <SelectItem value="none">{t("lens.none")}</SelectItem>
           </SelectContent>
         </Select>
-        <p className="ms-auto type-meta text-muted-foreground">{t("meta", { people: headcount, divisions, open: openCount })}</p>
+        <p className="ms-auto type-meta text-muted-foreground">{t("meta", { people: headcount, units: t(`levelCount.${data.unitLevel}`, { count: divisions }), open: openCount })}</p>
       </div>
 
       <div

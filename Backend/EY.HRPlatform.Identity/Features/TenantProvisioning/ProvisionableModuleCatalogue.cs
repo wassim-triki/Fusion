@@ -21,11 +21,9 @@ public sealed record ProvisionableModuleDto
 /// <summary>
 /// What provisioning accepts, stated by the service that enforces it.
 ///
-/// Fusion has more modules than this — the shell's registry lists every one —
-/// but only these are provisionable today. Publishing the accepted set lets the
-/// workspace derive availability from the authority rather than restating the
-/// rule as frontend text that could quietly fall out of step: a module absent
-/// here is one the request would be refused for.
+/// Publishing the accepted set lets the workspace derive availability from the
+/// authority rather than restating the rule as frontend text that could quietly
+/// fall out of step: a module absent here is one the request would be refused for.
 /// </summary>
 public static class ProvisionableModuleCatalogue
 {

@@ -8,7 +8,6 @@
     "peopleDirectory": "Collaborateurs",
     "organization": "Organisation",
     "changes": "Changements et validations",
-    "workforceAccess": "Accès des collaborateurs",
     "administrators": "Administrateurs",
     "settings": "Paramètres",
     "reports": "Rapports"
@@ -43,10 +42,6 @@
   },
   "boundary": {
     "denied": {
-      "title": "Accès refusé",
-      "description": "Vous n’avez pas l’autorisation d’ouvrir cet espace.",
-      "noticeTitle": "Cet espace n’est pas disponible pour votre compte",
-      "noticeDescription": "Ouvrez un autre espace Fusion auquel vous avez accès, ou contactez votre administrateur si vous pensiez y avoir accès.",
       "action": "Ouvrir Fusion"
     },
     "platform": {
@@ -58,9 +53,9 @@
     },
     "unavailable": {
       "title": "Core HR n’est pas disponible",
-      "description": "Le module Core HR n’est pas activé pour cette organisation.",
+      "description": "Core HR n’est pas activé pour votre entreprise.",
       "noticeTitle": "Module indisponible",
-      "noticeDescription": "Contactez votre administrateur Fusion si Core HR doit être activé pour cette organisation.",
+      "noticeDescription": "Demandez à votre administrateur si votre entreprise devrait en disposer.",
       "action": "Ouvrir Fusion"
     }
   },
@@ -74,8 +69,6 @@
     "loadingTeam": "Chargement de l’équipe.",
     "loadingYourTeam": "Chargement de votre équipe…",
     "organization": "Organisation",
-    "accessProfiles": "Profils d’accès",
-    "openingAccessProfiles": "Ouverture des paramètres des profils d’accès",
     "setup": "Configuration",
     "setupDescription": "Activez l’espace de travail en brouillon pour commencer."
   }

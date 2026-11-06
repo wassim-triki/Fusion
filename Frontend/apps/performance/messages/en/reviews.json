@@ -1,8 +1,6 @@
 {
   "NewReviewRoundPage": {
     "loadingCycle": "Loading Cycle",
-    "administrationOnly": "Administration only",
-    "onlyPerformanceAdministratorsCanCreate": "Only Performance administrators can create review rounds.",
     "cycle": "Cycle",
     "noActiveCycle": "No Active Cycle",
     "aReviewRoundBelongsTo": "A review round belongs to an Active Cycle. Select one before starting a round.",
@@ -528,8 +526,6 @@
   "RoundPage": {
     "loadingTheRound": "Loading the round",
     "performanceWorkspace": "Performance workspace",
-    "administrationOnly": "Administration only",
-    "reviewRoundsAreRunBy": "Review rounds are run by Performance administrators.",
     "reviewRound": "Review round",
     "reviews": "Reviews",
     "describe": {

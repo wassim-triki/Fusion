@@ -215,7 +215,6 @@ const FILTER_MODULES = [
   { value: "Recruitment", label: "Recruitment" },
   { value: "Interview", label: "Interview" },
   { value: "Learning", label: "Learning" },
-  { value: "Onboarding", label: "Onboarding" },
 ];
 
 const ACTIVATION_OPTIONS: Exclude<OverviewFilter, "All">[] = [

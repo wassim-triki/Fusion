@@ -58,6 +58,8 @@ export type OrgChartScope = "Tenant" | "DirectReports";
 /** `GET /api/corehr/org-chart`: the people org chart as of a date (another date than today is for HR). */
 export interface OrgChartDto {
   asOf: string;
+  /** What the company calls its top-level groups. */
+  unitLevel: "Division" | "Department" | "Unit";
   scope: OrgChartScope;
   /** The viewer's own employee key; null without an employee record. */
   viewerKey: string | null;

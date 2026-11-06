@@ -1,8 +1,6 @@
 {
   "NewReviewRoundPage": {
     "loadingCycle": "جارٍ تحميل الدورة",
-    "administrationOnly": "للإدارة فقط",
-    "onlyPerformanceAdministratorsCanCreate": "يمكن لمسؤولي الأداء فقط إنشاء جولات التقييم.",
     "cycle": "الدورة",
     "noActiveCycle": "لا دورة نشطة",
     "aReviewRoundBelongsTo": "تنتمي جولة التقييم إلى دورة نشطة. اختر واحدة قبل بدء جولة.",
@@ -528,8 +526,6 @@
   "RoundPage": {
     "loadingTheRound": "جارٍ تحميل الجولة",
     "performanceWorkspace": "مساحة عمل الأداء",
-    "administrationOnly": "للإدارة فقط",
-    "reviewRoundsAreRunBy": "يدير مسؤولو الأداء جولات التقييم.",
     "reviewRound": "جولة التقييم",
     "reviews": "التقييمات",
     "describe": {

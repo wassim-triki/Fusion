@@ -54,6 +54,7 @@ const data: FrontPageDto = {
   firstDate: "2020-01-01",
   lastDate: "2026-04-01",
   teamOnly: false,
+  unitLevel: "Department",
   fields: ["name", "job", "place", "first-day"],
   people: [ada, bo].map(({ employeeKey, name, photoUrl, ...details }) => ({
     employeeKey,
@@ -83,6 +84,15 @@ const data: FrontPageDto = {
 afterEach(cleanup);
 
 describe("Core HR's front page", () => {
+  it.each([
+    ["Division", "Divisions"],
+    ["Department", "Departments"],
+    ["Unit", "Units"],
+  ] as const)("calls a %s company's groups %s", (unitLevel, word) => {
+    render(<FrontPageContent data={{ ...data, unitLevel }} />);
+    expect(screen.getByLabelText(word)).toBeInTheDocument();
+  });
+
   it("keeps one selected date across Growth, People and department counts", () => {
     render(<FrontPageContent data={data} />);
     expect(screen.getByTestId("front-count")).toHaveTextContent("1");

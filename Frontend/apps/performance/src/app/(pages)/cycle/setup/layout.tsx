@@ -15,7 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@repo/ds/components/ui/alert-dialog";
 import { Button } from "@repo/ds/components/ui/button";
-import { AsyncButton, PageContainer, PagePermissionNotice } from "@repo/ds/shell";
+import { AsyncButton, PageContainer, PageRefusal } from "@repo/ds/shell";
 import { performanceFailure, reportPerformanceFailure } from "@/features/performance/api/performance-failure";
 import { SetupShellSkeleton } from "@/features/performance/components/cycle-setup/setup-skeletons";
 import { useCurrentCycle, useDeleteDraftCycle } from "@/features/performance/api/use-performance";
@@ -61,15 +61,10 @@ export default function CycleSetupLayout({ children }: { children: ReactNode }) 
   const fallbackExit = useCallback(() => router.push("/"), [router]);
 
   if (context.isLoading) return <SetupShellSkeleton step={currentStep(pathname)} label={t("loadingPerformance")} />;
-  if (context.error && !canAdminister) return <PagePermissionNotice title={t("administrationOnly")} description={t("cycleSetupIsAvailableTo")} />;
+  if (context.error && !canAdminister) return <PageContainer><PageRefusal /></PageContainer>;
   if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} subject={t("performanceWorkspace")} />;
   if (!canAdminister) {
-    return (
-      <PagePermissionNotice
-        title={t("administrationOnly")}
-        description={t("cycleSetupIsAvailableTo")}
-      />
-    );
+    return <PageContainer><PageRefusal /></PageContainer>;
   }
   if (detail.isLoading) return <SetupShellSkeleton step={currentStep(pathname)} />;
   if (detail.error) {

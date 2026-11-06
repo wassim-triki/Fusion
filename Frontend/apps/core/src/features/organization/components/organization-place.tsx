@@ -10,7 +10,7 @@ import { canAccessCorePeople, canViewCoreOrganization, useAuth } from "@repo/aut
 import { Skeleton } from "@repo/ds";
 import { OrganizationPageSkeleton as PlaceSkeleton } from "@/shell/route-skeletons";
 import { Segmented } from "@repo/ds/choice";
-import { PageHeader, PagePermissionNotice } from "@repo/ds/shell";
+import { PageHeader, PagePermissionNotice, PageRefusal } from "@repo/ds/shell";
 import OrgChartWorkspace from "@/features/org-chart/components/org-chart-workspace";
 import { useOrgChartAccess } from "@/features/org-chart/api/use-org-chart-access";
 import { useUpcomingChanges } from "@/features/people/changes/use-changes";
@@ -132,10 +132,11 @@ export default function OrganizationPlace() {
     return (
       <div className="p-6">
         <PageHeader title={t("title")} />
-        <PagePermissionNotice
-          title={chartAccess.narrowed ? tc("access.narrowed.title") : t("access.title")}
-          description={chartAccess.narrowed ? tc("access.narrowed.description") : t("access.description")}
-        />
+        {chartAccess.narrowed ? (
+          <PagePermissionNotice title={tc("access.narrowed.title")} description={tc("access.narrowed.description")} />
+        ) : (
+          <PageRefusal />
+        )}
       </div>
     );
   }

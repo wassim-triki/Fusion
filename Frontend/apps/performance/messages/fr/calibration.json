@@ -125,11 +125,7 @@
   },
   "CalibrationWorkspacePage": {
     "loadingCalibration": "Chargement du calibrage",
-    "calibration": "Calibrage",
-    "calibrationUnavailable": "Calibrage indisponible",
-    "calibrationIsOpenToPeople": "Le calibrage est ouvert aux personnes qui animent le calibrage des notes.",
-    "youAreNotAFacilitator": "Vous n’animez pas cette session",
-    "aFacilitatorOfThisCalibration": "Un animateur de ce calibrage peut vous ajouter."
+    "calibration": "Calibrage"
   },
   "SessionBody": {
     "thisView": "Cette vue",

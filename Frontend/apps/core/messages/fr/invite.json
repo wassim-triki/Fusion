@@ -1,5 +1,5 @@
 {
-  "yourOrganization": "votre organisation",
+  "yourOrganization": "votre entreprise",
   "password": {
     "minimumLength": "{count} caractères ou plus",
     "uppercase": "Une majuscule",
@@ -48,7 +48,7 @@
   },
   "workforce": {
     "eyebrow": "Votre accès",
-    "lead": "Activez le compte lié à votre fiche collaborateur. Votre organisation gère l’identité et les informations professionnelles affichées dans Fusion.",
+    "lead": "Activez le compte lié à votre fiche collaborateur. Votre entreprise gère l’identité et les informations professionnelles affichées dans Fusion.",
     "access": "Accès",
     "accountEmail": "E-mail du compte",
     "security": "Cette invitation est sécurisée et liée à votre adresse e-mail professionnelle. Ce lien ne peut être utilisé que par vous.",
@@ -77,7 +77,7 @@
     "submitting": "Création de votre compte…",
     "email": "E-mail de l’invitation"
   },
-  "organization": "Organisation",
+  "organization": "Entreprise",
   "footer": "Travailler ensemble",
   "firstName": "Prénom",
   "lastName": "Nom",

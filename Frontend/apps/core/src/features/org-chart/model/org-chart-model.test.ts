@@ -24,7 +24,7 @@ function person(key: string, managerKey: string | null, division: string | null 
 
 // Sami leads Amira (who leads Mariam → Aicha, Aymen) and Nour (no reports).
 const chart: OrgChartDto = {
-  asOf: "2026-10-27", scope: "Tenant", viewerKey: "Aicha", folded: [], openRoles: [], window: null,
+  asOf: "2026-10-27", unitLevel: "Division", scope: "Tenant", viewerKey: "Aicha", folded: [], openRoles: [], window: null,
   people: [
     person("Sami", null, null), person("Amira", "Sami"), person("Nour", "Sami", "d2"),
     person("Mariam", "Amira"), person("Aicha", "Mariam"), person("Aymen", "Mariam"),

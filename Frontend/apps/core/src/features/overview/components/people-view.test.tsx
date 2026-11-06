@@ -23,12 +23,12 @@ const person: FrontPerson = {
 describe("People's face wall", () => {
   it("provides its own tooltip context and keeps real named faces when regrouped", () => {
     const view = render(
-      <PeopleView people={[person]} by="department" date="2026-01-01" />
+      <PeopleView people={[person]} by="department" date="2026-01-01" unitLevel="Department" />
     );
     expect(screen.getByRole("img", { name: "Ada Lee" })).toBeInTheDocument();
     expect(screen.getByText("Engineering")).toBeInTheDocument();
     view.rerender(
-      <PeopleView people={[person]} by="place" date="2026-01-01" />
+      <PeopleView people={[person]} by="place" date="2026-01-01" unitLevel="Department" />
     );
     expect(screen.getByRole("img", { name: "Ada Lee" })).toBeInTheDocument();
     expect(screen.getByText("Tunis")).toBeInTheDocument();

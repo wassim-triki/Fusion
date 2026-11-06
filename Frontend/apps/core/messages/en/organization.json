@@ -11,7 +11,7 @@
     "established": "Organization established"
   },
   "asOf": "As of",
-  "unit": "Organizational unit",
+  "unit": "Unit",
   "loadingDetails": "Loading details…",
   "closeInspector": "Close inspector",
   "tabs": {
@@ -50,11 +50,7 @@
     "empty": "No business history yet",
     "emptyDescription": "Effective changes will appear here."
   },
-  "recentKind": "Org unit",
-  "access": {
-    "title": "Organization access required",
-    "description": "You do not have permission to view this tenant’s Organization."
-  },
+  "recentKind": "Unit",
   "export": {
     "failed": "Structure could not be exported",
     "failedDescription": "Try again in a moment."
@@ -91,7 +87,7 @@
     "plannedUnits": "Planned unit changes ({count})"
   },
   "workspaceLabel": "Organization Structure workspace",
-  "noUnitsForDate": "No Organizational Units resolve for this date.",
+  "noUnitsForDate": "No units on this date.",
   "panelLabel": "Organization panel",
   "cancelChange": {
     "title": "Cancel scheduled {event}?",
@@ -267,7 +263,7 @@
     "expand": "Expand"
   },
   "outline": {
-    "unit": "Organizational unit",
+    "unit": "Unit",
     "type": "Type",
     "code": "Business code",
     "addChild": "Add child to {name}",

@@ -271,7 +271,6 @@ export function getRoutePageSkeleton(corePath: string): ReactNode {
   if (corePath === "/org-chart") return <OrganizationPageSkeleton />;
   if (corePath === "/settings" || corePath.startsWith("/settings/"))
     return <SettingsPageSkeleton />;
-  if (corePath === "/access/profiles") return <AccessProfilesPageSkeleton />;
   if (corePath === "/access/activity") return <ActivityLogPageSkeleton />;
   if (corePath.startsWith("/access")) return <AccessPageSkeleton />;
   return <PageFallbackSkeleton />;
@@ -365,17 +364,6 @@ function PersonTaskPageSkeleton() {
       title={t("people")}
       rows={5}
       label={t("openingPerson")}
-    />
-  );
-}
-
-function AccessProfilesPageSkeleton() {
-  const t = useTranslations("frame.skeletons");
-  return (
-    <TitledPageLoading
-      title={t("accessProfiles")}
-      rows={4}
-      label={t("openingAccessProfiles")}
     />
   );
 }

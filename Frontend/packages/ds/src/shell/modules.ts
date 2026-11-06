@@ -3,7 +3,6 @@ import {
   BookOpen,
   BrainCircuit,
   Briefcase,
-  Handshake,
   UsersRound,
   Video,
   type LucideIcon,
@@ -19,7 +18,6 @@ export const FUSION_MODULES: ShellModule[] = [
   { key: "learning", label: "Learning", description: "Training & onboarding", icon: BookOpen, href: "/learning" },
   { key: "performance", label: "Performance", description: "Workspace", icon: BarChart3, href: "/performance" },
   { key: "recruitment", label: "Recruitment", description: "Hiring pipeline", icon: UsersRound, href: "/recruitment" },
-  { key: "onboarding", label: "Onboarding", description: "New-hire journeys", icon: Handshake, href: "/onboarding" },
   { key: "interview", label: "Interview", description: "Candidate assessments", icon: Video, href: "/interview" },
 ];
 
@@ -29,6 +27,5 @@ export const FUSION_MODULE_ICONS: Record<string, LucideIcon> = {
   performance: BarChart3,
   learning: BookOpen,
   recruitment: Briefcase,
-  onboarding: Handshake,
   interview: Video,
 };

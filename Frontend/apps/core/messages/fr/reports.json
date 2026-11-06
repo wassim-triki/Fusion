@@ -51,7 +51,8 @@
     "job": "Emploi",
     "place": "Lieu",
     "first-day": "Premier jour",
-    "tenure": "Ancienneté"
+    "tenure": "Ancienneté",
+    "department": "Département"
   },
   "interval": {
     "month": "Mois",
@@ -94,7 +95,6 @@
   "runFailed": "Impossible de lancer ce rapport. Vérifiez les champs et les dates.",
   "saveFailed": "Impossible d’enregistrer le rapport.",
   "exportFailed": "Impossible d’exporter le rapport.",
-  "noAccess": "Les rapports ne sont pas accessibles à ce rôle.",
   "currentDescription": "Par {field}, aujourd’hui",
   "onDescription": "Par {field}, à la date choisie",
   "rangeDescription": "Par {field}, en fin de période ({interval})",

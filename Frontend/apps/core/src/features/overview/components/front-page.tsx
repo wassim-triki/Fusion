@@ -154,7 +154,7 @@ function CompanyMeta({ data }: { data: FrontPageDto }) {
     <p className="mt-1 type-body text-muted-foreground">
       {[
         data.teamOnly ? t("yourTeam") : null,
-        t("departments", { count: departments }),
+        t(`level.${data.unitLevel}.count`, { count: departments }),
         data.fields.includes("place") ? t("places", { count: places }) : null,
         t("since", {
           date: format.parts(data.firstDate, {
@@ -253,7 +253,7 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
       department:
         event.person.department ??
         event.person.parent ??
-        t("outsideDepartments"),
+        t(`level.${data.unitLevel}.outside`),
       job: event.person.job ?? "",
       place: event.person.place ?? t("unassigned"),
     });
@@ -306,7 +306,7 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
                 value={by}
                 onChange={setBy}
                 options={[
-                  { value: "department", label: t("department") },
+                  { value: "department", label: t(`level.${data.unitLevel}.label`) },
                   ...(data.fields.includes("place")
                     ? [{ value: "place" as const, label: t("place") }]
                     : []),
@@ -344,7 +344,7 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
             onDate={selectDate}
           />
         ) : (
-          <PeopleView people={people} by={by} date={date} />
+          <PeopleView people={people} by={by} date={date} unitLevel={data.unitLevel} />
         )}
         <TimeBar
           embedded
@@ -363,7 +363,7 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
       {departments.length ? (
         <div
           className="grid items-start gap-3.5 md:grid-cols-2 xl:grid-cols-3"
-          aria-label={t("departmentCards")}
+          aria-label={t(`level.${data.unitLevel}.cards`)}
         >
           {departments.map((group) => {
             const outside = group.key === OUTSIDE_DEPARTMENTS;
@@ -413,10 +413,10 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
                           href={`/organization/units/${first.departmentId}?asOf=${date}`}
                           className="hover:underline"
                         >
-                          {group.label ?? t("outsideDepartments")}
+                          {group.label ?? t(`level.${data.unitLevel}.outside`)}
                         </Link>
                       ) : (
-                        (group.label ?? t("outsideDepartments"))
+                        (group.label ?? t(`level.${data.unitLevel}.outside`))
                       )}
                     </h2>
                     <p
@@ -488,7 +488,7 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
           })}
         </div>
       ) : (
-        <Section title={t("departmentCards")}>
+        <Section title={t(`level.${data.unitLevel}.cards`)}>
           <p className="type-body text-muted-foreground">{t("noPeople")}</p>
         </Section>
       )}

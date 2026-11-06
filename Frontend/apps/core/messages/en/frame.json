@@ -8,7 +8,6 @@
     "peopleDirectory": "People",
     "organization": "Organization",
     "changes": "Changes and approvals",
-    "workforceAccess": "Workforce access",
     "administrators": "Administrators",
     "settings": "Settings",
     "reports": "Reports"
@@ -43,10 +42,6 @@
   },
   "boundary": {
     "denied": {
-      "title": "Access denied",
-      "description": "You do not have permission to open this area.",
-      "noticeTitle": "This area is not available to your account",
-      "noticeDescription": "Open another Fusion area you can use, or contact your administrator if you expected access.",
       "action": "Open Fusion"
     },
     "platform": {
@@ -58,9 +53,9 @@
     },
     "unavailable": {
       "title": "Core HR is not available",
-      "description": "This tenant does not currently have the Core HR module enabled.",
+      "description": "Your company doesn't have Core HR turned on.",
       "noticeTitle": "Module unavailable",
-      "noticeDescription": "Contact your Fusion administrator if Core HR should be enabled for this tenant.",
+      "noticeDescription": "Ask your administrator if your company should have it.",
       "action": "Open Fusion"
     }
   },
@@ -74,8 +69,6 @@
     "loadingTeam": "Loading team.",
     "loadingYourTeam": "Loading your team…",
     "organization": "Organization",
-    "accessProfiles": "Access profiles",
-    "openingAccessProfiles": "Opening access profile settings",
     "setup": "Setup",
     "setupDescription": "Activate the draft workspace to get started."
   }

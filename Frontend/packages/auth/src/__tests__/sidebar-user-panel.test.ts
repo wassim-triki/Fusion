@@ -31,7 +31,7 @@ describe("getSidebarAccountLabel", () => {
     () => {
       expect(
         getSidebarAccountLabel(user({ accessProfiles: [tenantAdministratorProfile] }))
-      ).toBe("Tenant Administrator");
+      ).toBe("Administrator");
     }
   );
 

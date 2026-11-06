@@ -125,11 +125,7 @@
   },
   "CalibrationWorkspacePage": {
     "loadingCalibration": "Loading calibration",
-    "calibration": "Calibration",
-    "calibrationUnavailable": "Calibration unavailable",
-    "calibrationIsOpenToPeople": "Calibration is open to people who facilitate rating calibration.",
-    "youAreNotAFacilitator": "You are not a facilitator of this session",
-    "aFacilitatorOfThisCalibration": "A facilitator of this calibration can add you."
+    "calibration": "Calibration"
   },
   "SessionBody": {
     "thisView": "This view",

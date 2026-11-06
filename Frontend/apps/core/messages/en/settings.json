@@ -167,9 +167,9 @@
         "plural": "job titles"
       },
       "workLocation": {
-        "label": "Work location",
-        "their": "their work location",
-        "plural": "work locations"
+        "label": "Place",
+        "their": "their place",
+        "plural": "places"
       },
       "employmentType": {
         "label": "Employment type",

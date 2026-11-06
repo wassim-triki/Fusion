@@ -35,10 +35,4 @@ export const MICROFRONTENDS: Microfrontend[] = [
     href: "/recruitment",
     badge: "Microfrontend",
   },
-  {
-    title: "Onboarding",
-    description: "Guide new hires through orientation, training, and team integration.",
-    href: "/onboarding",
-    badge: "Microfrontend",
-  },
 ];

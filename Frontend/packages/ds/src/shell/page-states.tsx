@@ -58,6 +58,15 @@ export function PagePermissionNotice(props: Omit<BaseStateProps, "icon">) {
   return <StateShell icon={Lock} {...props} />;
 }
 
+/**
+ * What an address someone can't use shows. Navigation already hides these pages,
+ * so this is for a typed or old link; every refusal reads the same.
+ */
+export function PageRefusal({ action, className }: Pick<BaseStateProps, "action" | "className">) {
+  const t = useTranslations("ds.states");
+  return <StateShell icon={Lock} title={t("refused")} headingLevel={1} action={action} className={className} />;
+}
+
 export interface PageErrorProps extends Omit<BaseStateProps, "icon" | "action"> {
   onRetry?: () => void;
   retryLabel?: string;

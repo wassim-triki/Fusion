@@ -1,5 +1,6 @@
 "use client";
 
+import type { CompanyUnitLevel } from "@repo/api";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePhoto } from "@repo/api/query";
@@ -41,7 +42,9 @@ export function PeopleView({
   people,
   by,
   date,
+  unitLevel,
 }: {
+  unitLevel: CompanyUnitLevel;
   people: FrontPerson[];
   by: Grouping;
   date: string;
@@ -94,7 +97,7 @@ export function PeopleView({
         by === "time"
           ? t(`tenure.${group.key as "underOne"}`)
           : (group.label ??
-            t(by === "department" ? "outsideDepartments" : "unassigned"));
+            (by === "department" ? t(`level.${unitLevel}.outside`) : t("unassigned")));
       labels.push({
         key: group.key,
         name,

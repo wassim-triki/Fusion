@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AuthProvider } from "@repo/auth";
+import { AuthProvider, ModuleGate } from "@repo/auth";
 import { RecruitmentSidebar } from "@/components/recruitment-sidebar";
 import "@repo/ui/src/ey-brand.css";
 import "./globals.css";
@@ -18,10 +18,12 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen antialiased">
         <AuthProvider>
-          <div className="flex h-screen overflow-hidden">
-            <RecruitmentSidebar />
-            <main className="flex-1 overflow-y-auto">{children}</main>
-          </div>
+          <ModuleGate module="Recruitment">
+            <div className="flex h-screen overflow-hidden">
+              <RecruitmentSidebar />
+              <main className="flex-1 overflow-y-auto">{children}</main>
+            </div>
+          </ModuleGate>
         </AuthProvider>
       </body>
     </html>

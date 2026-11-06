@@ -120,7 +120,7 @@ describe("useFusionNavigation", () => {
     const { result } = renderHook(() => useFusionNavigation(null, [], { api: navigation(), attentionApi: attention() }), {
       wrapper: wrapper({ viewer: { ...MARIAM, moduleEntitlements: ["CoreHR"], enterableModules: ["core"] }, isLoading: false }),
     });
-    expect(result.current.modules.map((m) => m.key)).toEqual(["core", "learning", "recruitment", "onboarding", "interview"]);
+    expect(result.current.modules.map((m) => m.key)).toEqual(["core"]);
   });
 });
 

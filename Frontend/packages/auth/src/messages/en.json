@@ -13,7 +13,7 @@
       "or": "or",
       "agreement": "By signing in, you agree to our <terms>Terms</terms> and <privacy>Privacy Policy</privacy>.",
       "invalidCredentials": "Invalid credentials.",
-      "failed": "Login failed. Please try again.",
+      "failed": "Couldn't sign you in. Try again.",
       "to": "to {company}",
       "continue": "Continue",
       "change": "Change"

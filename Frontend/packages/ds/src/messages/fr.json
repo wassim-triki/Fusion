@@ -179,7 +179,8 @@
       "loading": "Chargement",
       "loadingList": "Chargement de la liste",
       "loadingPage": "Chargement de la page",
-      "tryAgain": "Réessayer"
+      "tryAgain": "Réessayer",
+      "refused": "Vous n’avez pas accès à cette page. Demandez à votre administrateur si vous en avez besoin."
     },
     "breadcrumb": {
       "details": "Détails"

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
 import { Alert, AlertDescription, Button } from "@repo/ds";
-import { PageContainer, PagePermissionNotice } from "@repo/ds/shell";
+import { PageContainer, PageRefusal } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { ApiError, coreImportQueryKeys } from "@repo/api";
 import { useTenantSummary } from "@repo/api/query";
@@ -76,7 +76,7 @@ export default function ImportDrop() {
     downloadBlob(await api.template(), "Fusion-import-template.xlsx");
   }
 
-  if (!allowed) return <PageContainer><PagePermissionNotice title={t("access.title")} description={t("access.description")} /></PageContainer>;
+  if (!allowed) return <PageContainer><PageRefusal /></PageContainer>;
   if (reading) return <ReadingFiles files={reading} />;
 
   return (

@@ -9,6 +9,9 @@ public static class ModuleEntitlements
 {
     public const string CoreHR = "CoreHR";
     public const string Performance = "Performance";
+    public const string Learning = "Learning";
+    public const string Recruitment = "Recruitment";
+    public const string Interview = "Interview";
 }
 
 /// <summary>

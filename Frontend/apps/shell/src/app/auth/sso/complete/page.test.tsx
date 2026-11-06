@@ -1,12 +1,13 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { waitFor } from "@testing-library/react";
+import type * as AuthModule from "@repo/auth";
 import { renderWithIntl } from "@/test/intl";
 import SsoCompletePage from "./page";
 
 const persistAuth = vi.fn();
 vi.mock("@repo/auth", async () => {
-  const actual = await vi.importActual<typeof import("@repo/auth")>("@repo/auth");
+  const actual = await vi.importActual<typeof AuthModule>("@repo/auth");
   return { ...actual, persistAuth: (...args: unknown[]) => persistAuth(...args) };
 });
 

@@ -48,7 +48,7 @@
     "noUpstreamObjectiveSelected": "No upstream objective selected",
     "theNextTeamObjectiveWill": "The next team objective will be standalone and won't be aligned to an objective from a team above yours.",
     "standaloneObjectivesStayInMy": "Standalone objectives stay in My Team",
-    "theyAppearInOrganizationGoals": "They appear in Organization Goals once aligned.",
+    "theyAppearInOrganizationGoals": "They appear in Organization direction once aligned.",
     "chooseOne": "choose one"
   },
   "EmptyDirectionCard": {

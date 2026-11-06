@@ -189,6 +189,39 @@ public sealed class TenantProductTests : IAsyncLifetime
         Assert.Contains("Performance", await TokenModulesAsync(world, world.Manager));
     }
 
+    [SkippableTheory]
+    [InlineData("Learning", ModuleSettingsPermissions.LearningManage)]
+    [InlineData("Interview", ModuleSettingsPermissions.InterviewManage)]
+    [InlineData("Recruitment", null)] // Contributes no permissions: the entitlement alone.
+    public async Task Other_modules_start_off_and_follow_the_switch(string product, string? administratorGrant)
+    {
+        Skip.IfNot(Available, "No PostgreSQL connection configured.");
+        var world = await ArrangeAsync();
+        var administrator = await world.Db.AccessProfiles.IgnoreQueryFilters()
+            .Where(profile => profile.TenantId == world.TenantId && profile.InternalKey == TenantAdministratorAuthority.InternalKey)
+            .Select(profile => profile.Id).SingleAsync();
+        var before = await ProfileGrantKeysAsync(world, administrator);
+        Assert.DoesNotContain(product, await TokenModulesAsync(world, world.Manager));
+
+        Assert.True((await Service(world).SetEnabledAsync(world.TenantId, product, true, Actor)).IsSuccess);
+        world.Db.ChangeTracker.Clear();
+
+        Assert.Contains(product, await TokenModulesAsync(world, world.Manager));
+        var on = await ProfileGrantKeysAsync(world, administrator);
+        if (administratorGrant is null) Assert.Equal(before.Order(), on.Order());
+        else Assert.Contains(administratorGrant, on);
+
+        // The other tenant doesn't get it.
+        Assert.False(await world.Db.TenantModuleEntitlements.IgnoreQueryFilters()
+            .AnyAsync(item => item.TenantId == world.OtherTenantId && item.Module.ToString() == product));
+
+        Assert.True((await Service(world).SetEnabledAsync(world.TenantId, product, false, Actor)).IsSuccess);
+        world.Db.ChangeTracker.Clear();
+
+        Assert.DoesNotContain(product, await TokenModulesAsync(world, world.Manager));
+        Assert.Equal(before.Order(), (await ProfileGrantKeysAsync(world, administrator)).Order());
+    }
+
     [SkippableFact]
     public async Task Each_change_is_recorded_once_with_who_made_it()
     {

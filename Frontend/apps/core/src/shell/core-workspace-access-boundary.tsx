@@ -8,6 +8,7 @@ import {
   PageContainer,
   PageHeader,
   PagePermissionNotice,
+  PageRefusal,
 } from "@repo/ds/shell";
 import { Button } from "@/components/ui/button";
 import { CoreRouteSkeleton } from "./route-page-skeleton";
@@ -52,13 +53,7 @@ export function CoreWorkspaceAccessBoundary({
     if (!canAccessPlatform(user)) {
       return (
         <PageContainer className="space-y-6">
-          <PageHeader
-            title={t("boundary.denied.title")}
-            description={t("boundary.denied.description")}
-          />
-          <PagePermissionNotice
-            title={t("boundary.denied.noticeTitle")}
-            description={t("boundary.denied.noticeDescription")}
+          <PageRefusal
             action={
               <Button asChild variant="outline">
                 <a href={buildShellUrl("/").toString()}>{t("boundary.denied.action")}</a>

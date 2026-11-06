@@ -90,7 +90,7 @@ describe("CoreWorkspaceAccessBoundary", () => {
     mocks.pathname = "/access";
     mocks.user = user({ moduleEntitlements: [] });
     render(<CoreWorkspaceAccessBoundary><div>Tenant access content</div></CoreWorkspaceAccessBoundary>);
-    expect(await screen.findByRole("heading", { name: "Access denied" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "You don't have access to this page. Ask your administrator if you need it." })).toBeTruthy();
     expect(screen.queryByText("Tenant access content")).toBeNull();
   });
 

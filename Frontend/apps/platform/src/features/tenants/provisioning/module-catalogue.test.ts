@@ -28,7 +28,7 @@ describe("buildModuleOptions", () => {
     expect(byKey.core!.availability).toBe("included");
     expect(byKey.performance!.availability).toBe("selectable");
 
-    for (const key of ["learning", "recruitment", "onboarding", "interview"]) {
+    for (const key of ["learning", "recruitment", "interview"]) {
       expect(byKey[key]!.availability).toBe("unavailable");
     }
   });

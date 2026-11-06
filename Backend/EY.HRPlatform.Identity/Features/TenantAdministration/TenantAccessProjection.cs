@@ -98,35 +98,6 @@ public sealed record AdministratorHistoryItem(DateTime At, string Kind, string P
 /// <summary>Someone in the company who could be made an administrator; only people who already sign in can be.</summary>
 public sealed record AdministratorCandidate(Guid UserId, Guid? EmployeeId, string Name, string? JobTitle, bool SignsIn);
 
-/// <summary>
-/// An administrator whose authority has been revoked and not re-granted. Kept as a
-/// distinct read because a removed administrator is history the tenant needs to
-/// account for, not an operational row that can be acted on.
-/// </summary>
-public sealed record RemovedAdministratorListItem(
-    Guid MembershipId,
-    Guid UserId,
-    string Name,
-    string Email,
-    DateTime RemovedAt,
-    string RemovedBy,
-    string? Reason);
-
-public sealed record AdministratorInvitationListItem(
-    Guid InvitationId,
-    string Email,
-    /// <summary>
-    /// The recipient's name as captured on the invitation, or empty when it was
-    /// issued without one. Unconfirmed until acceptance, but shown so the pending
-    /// list reads the same as the administrator list.
-    /// </summary>
-    string Name,
-    string State,
-    string Purpose,
-    DateTime IssuedAt,
-    DateTime ExpiresAt,
-    string? DeliveryStatus);
-
 public sealed record AccessActivityItem(
     Guid Id,
     DateTime OccurredAt,
@@ -152,20 +123,11 @@ public interface ITenantAccessProjection
     Task<IReadOnlyList<TenantAdministratorListItem>> GetAdministratorsAsync(
         Guid tenantId, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<RemovedAdministratorListItem>> GetRemovedAdministratorsAsync(
-        Guid tenantId, CancellationToken cancellationToken = default);
-
     Task<IReadOnlyList<AdministratorHistoryItem>> GetAdministratorHistoryAsync(
         Guid tenantId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<AdministratorCandidate>> GetAdministratorCandidatesAsync(
         Guid tenantId, string? search, CancellationToken cancellationToken = default);
-
-    Task<IReadOnlyList<AdministratorInvitationListItem>> GetInvitationsAsync(
-        Guid tenantId, bool includeHistorical = false, CancellationToken cancellationToken = default);
-
-    Task<IReadOnlyList<AccessActivityItem>> GetRecentActivityAsync(
-        Guid tenantId, int take = 5, CancellationToken cancellationToken = default);
 
     Task<AccessActivityPage> GetActivityPageAsync(
         Guid tenantId,
@@ -311,68 +273,6 @@ public sealed class TenantAccessProjection(AppIdentityDbContext dbContext) : ITe
                     && !string.IsNullOrWhiteSpace(grantorName) ? grantorName : null,
                 item.EmployeeId);
         }).ToList();
-    }
-
-    public async Task<IReadOnlyList<RemovedAdministratorListItem>> GetRemovedAdministratorsAsync(
-        Guid tenantId, CancellationToken cancellationToken = default)
-    {
-        // A membership with any unrevoked authority is not removed — a grant that
-        // followed a revocation makes the person a current administrator again.
-        var stillActive = await dbContext.TenantAdministratorAssignments
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .Where(assignment => assignment.TenantId == tenantId && assignment.RevokedAt == null)
-            .Select(assignment => assignment.TenantMembershipId)
-            .Distinct()
-            .ToListAsync(cancellationToken);
-
-        var revoked = await dbContext.TenantAdministratorAssignments
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .Where(assignment => assignment.TenantId == tenantId
-                && assignment.RevokedAt != null
-                && !stillActive.Contains(assignment.TenantMembershipId))
-            .Select(assignment => new
-            {
-                assignment.TenantMembershipId,
-                assignment.UserId,
-                assignment.RevokedAt,
-                assignment.RevokedByUserId,
-                assignment.RevocationReason,
-                FirstName = assignment.User!.FirstName,
-                LastName = assignment.User!.LastName,
-                Email = assignment.User!.Email,
-            })
-            .ToListAsync(cancellationToken);
-
-        // The most recent revocation per membership is the one that ended their
-        // access; earlier revoked grants are part of the same person's history.
-        var latest = revoked
-            .GroupBy(item => item.TenantMembershipId)
-            .Select(group => group.OrderByDescending(item => item.RevokedAt).First())
-            .OrderByDescending(item => item.RevokedAt)
-            .ToList();
-
-        var revokerNames = await ResolveNamesAsync(
-            latest.Where(item => item.RevokedByUserId.HasValue && item.RevokedByUserId != item.UserId)
-                .Select(item => item.RevokedByUserId!.Value),
-            cancellationToken);
-
-        return latest.Select(item => new RemovedAdministratorListItem(
-            item.TenantMembershipId,
-            item.UserId,
-            $"{item.FirstName} {item.LastName}".Trim(),
-            item.Email ?? string.Empty,
-            item.RevokedAt!.Value,
-            item.RevokedByUserId == item.UserId
-                ? "Removed themselves"
-                : item.RevokedByUserId is { } id
-                    && revokerNames.TryGetValue(id, out var name)
-                    && !string.IsNullOrWhiteSpace(name)
-                        ? name
-                        : "An administrator",
-            string.IsNullOrWhiteSpace(item.RevocationReason) ? null : item.RevocationReason))
-            .ToList();
     }
 
     /// <summary>Resolves a set of account ids to display names in one query.</summary>
@@ -530,40 +430,6 @@ public sealed class TenantAccessProjection(AppIdentityDbContext dbContext) : ITe
                 false)),
         ];
     }
-
-    public async Task<IReadOnlyList<AdministratorInvitationListItem>> GetInvitationsAsync(
-        Guid tenantId, bool includeHistorical = false, CancellationToken cancellationToken = default)
-    {
-        var invitations = await dbContext.InviteTokens
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .Where(item => item.TenantId == tenantId
-                && item.Purpose == InvitationPurpose.TenantAdministrator)
-            .OrderByDescending(item => item.CreatedAt)
-            .Take(includeHistorical ? 200 : 50)
-            .ToListAsync(cancellationToken);
-
-        return invitations
-            .Where(item => includeHistorical || item.State == InvitationState.Pending)
-            .Select(item => new AdministratorInvitationListItem(
-                item.Id,
-                item.Email,
-                $"{item.FirstName} {item.LastName}".Trim(),
-                item.State.ToString(),
-                item.Purpose.ToString(),
-                item.CredentialIssuedAt ?? item.CreatedAt,
-                item.ExpiresAt,
-                item.DeliveryStatus))
-            .ToList();
-    }
-
-    public async Task<IReadOnlyList<AccessActivityItem>> GetRecentActivityAsync(
-        Guid tenantId, int take = 5, CancellationToken cancellationToken = default)
-        => await NameActorsAsync(
-            await ActivityQuery(tenantId)
-                .Take(Math.Clamp(take, 1, 25))
-                .ToListAsync(cancellationToken),
-            cancellationToken);
 
     public async Task<AccessActivityPage> GetActivityPageAsync(
         Guid tenantId,

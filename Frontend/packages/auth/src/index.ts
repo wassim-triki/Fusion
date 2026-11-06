@@ -89,6 +89,7 @@ export {
 } from "./customer-workspace-access";
 export type { CustomerModule } from "./customer-workspace-access";
 export type { CustomerWorkspaceAccessState } from "./customer-workspace-access";
+export { ModuleGate } from "./components/module-gate";
 export { useHydratedWorkspaceAccess } from "./use-hydrated-workspace-access";
 export type { HydratedWorkspaceAccess } from "./use-hydrated-workspace-access";
 export {

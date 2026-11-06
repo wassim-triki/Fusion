@@ -1,8 +1,6 @@
 {
   "CycleSetupLayout": {
     "loadingPerformance": "Loading Performance",
-    "administrationOnly": "Administration only",
-    "cycleSetupIsAvailableTo": "Cycle setup is available to performance administrators.",
     "performanceWorkspace": "Performance workspace",
     "theCycle": "The Cycle",
     "openingCycle": "Opening Cycle"
@@ -68,9 +66,9 @@
   "CycleSetupHero": {
     "higherPerformanceTogether": "Higher performance, together",
     "setTheStageForPerformance": "Set the stage for performance",
-    "bringYourPeopleGoalsAnd": "Bring your people, goals, and growth into one cycle. A few clear steps and your organization is ready to perform.",
+    "bringYourPeopleGoalsAnd": "Bring your people, objectives, and growth into one cycle. A few clear steps and your company is ready to perform.",
     "values": {
-      "align": "Align people and goals",
+      "align": "Align people and objectives",
       "impact": "Drive meaningful impact",
       "future": "Build a stronger future"
     },
@@ -120,28 +118,28 @@
     "inheritedViaParent": "Inherited via parent",
     "includeSubUnits": "Include sub-units",
     "includeSubUnitsOf": "Include sub-units of {name}",
-    "organizationUnits": "Organization units",
-    "selectTheOrganizationUnitsTo": "Select the organization units to include in this population.",
+    "organizationUnits": "Units",
+    "selectTheOrganizationUnitsTo": "Select the units to include in this population.",
     "unit": "unit",
     "units": "units",
     "selected": "selected",
     "person": "person",
     "people": "people",
     "matched": "matched",
-    "searchOrganizationUnits": "Search organization units...",
+    "searchOrganizationUnits": "Search units...",
     "removeFromScope": "Remove {value} from scope",
     "selectedUnitsOutOfView": "Selected units out of view",
-    "loadingOrganizationUnits": "Loading organization units",
+    "loadingOrganizationUnits": "Loading units",
     "noUnitsMatch": "No units match “{term}”."
   },
   "EmptyTree": {
     "yourOrganizationStructureStartsOn": "Your organization structure starts on {startsOn}",
     "thisCycleStartsOnBefore": "This cycle starts on {asOf}, before any units exist.",
     "changeCycleDates": "Change cycle dates",
-    "noOrganizationUnitsExistYet": "No organization units exist yet."
+    "noOrganizationUnitsExistYet": "No units exist yet."
   },
   "TreeError": {
-    "couldntLoadOrganizationUnits": "Couldn’t load organization units.",
+    "couldntLoadOrganizationUnits": "Couldn’t load units.",
     "tryAgain": "Try again"
   },
   "PeopleInScope": {
@@ -234,11 +232,11 @@
     "eligibilityDate": "Eligibility date",
     "allActiveEmployees": "All active employees",
     "everyoneEligibleAcross": "Everyone eligible across {value}.",
-    "selectedOrganizationUnits": "Selected organization units",
+    "selectedOrganizationUnits": "Selected units",
     "chooseSpecificUnitsAndOptionally": "Choose specific units and optionally their sub-units.",
     "populationExceptions": "Population exceptions",
     "savedScopeAdditions": "Saved scope additions",
-    "theseAdditionsAreRetainedIf": "These additions are retained if you return to selected organization units.",
+    "theseAdditionsAreRetainedIf": "These additions are retained if you return to selected units.",
     "specificEmployeeAdded": "{length} specific employee added",
     "specificEmployeesAdded": "{length} specific employees added",
     "addSpecificEmployeesOutsideThe": "Add specific employees outside the selected organization scope.",
@@ -289,7 +287,7 @@
     "populationConfirmed": "Population confirmed.",
     "populationConfirmed2": "Population confirmed",
     "participantsReviewersResolved": "{readyCount} participants · {reviewerReadyCount} reviewers resolved",
-    "selectAnOrganizationUnitTo": "Select an organization unit to continue.",
+    "selectAnOrganizationUnitTo": "Select a unit to continue.",
     "issue": "issue",
     "issues": "issues",
     "mustBeResolvedBeforeConfirmation": "must be resolved before confirmation.",
@@ -371,7 +369,7 @@
     "basicInformationAndTimelineFor": "Basic information and timeline for this cycle."
   },
   "PopulationBlock": {
-    "selectedOrganizationUnits": "Selected organization units",
+    "selectedOrganizationUnits": "Selected units",
     "allActiveEmployees": "All active employees",
     "includingSubUnits": "· including sub-units",
     "scope": "Scope",

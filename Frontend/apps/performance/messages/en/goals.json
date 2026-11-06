@@ -3,7 +3,7 @@
     "loadingTheAlignmentMap": "Loading the alignment map"
   },
   "GoalsPage": {
-    "loadingGoals": "Loading goals"
+    "loadingGoals": "Loading objectives"
   },
   "GoalsWorkspace": {
     "loadingPerformance": "Loading Performance",
@@ -25,7 +25,7 @@
     "theAlignmentMap": "The alignment map",
     "noPublishedDirectionForThis": "No published direction for this cycle",
     "openTheList": "Open the list",
-    "loadingGoals": "Loading goals",
+    "loadingGoals": "Loading objectives",
     "organizationDirectionUnavailable": "Organization direction unavailable"
   },
   "DirectionNode": {
@@ -79,7 +79,7 @@
   },
   "ObjectiveRow": {
     "openObjective": "Open objective",
-    "organizationalUnit": "Organizational unit",
+    "organizationalUnit": "Unit",
     "accountable": "Accountable",
     "child": "child",
     "objective": "objective",
@@ -122,15 +122,15 @@
   "NoPublishedDirection": {
     "companyDirection": "Company direction",
     "establishCompanyDirection": "Establish company direction",
-    "defineTheStrategicObjectiveThat": "Define the strategic objective that organizational goals will align to during this cycle.",
+    "defineTheStrategicObjectiveThat": "Define the strategic objective that organizational objectives will align to during this cycle.",
     "createCompanyObjective": "Create company objective",
     "goToCycleSetup": "Go to Cycle setup",
     "setTheStrategicDirection": "Set the strategic direction",
     "defineTheCompanysFocusFor": "Define the company's focus for the performance cycle.",
     "enableOrganizationalAlignment": "Enable organizational alignment",
-    "helpTeamsAlignTheirGoals": "Help teams align their goals to what matters most.",
+    "helpTeamsAlignTheirGoals": "Help teams align their objectives to what matters most.",
     "createSharedFocus": "Create shared focus",
-    "makeTheOrganizationsPrioritiesClear": "Make the organization's priorities clear across the cycle.",
+    "makeTheOrganizationsPrioritiesClear": "Make the company's priorities clear across the cycle.",
     "organizationalAlignment": "Organizational alignment",
     "organizationalObjectivesWillAppearHere": "Organizational objectives will appear here once company direction has been established.",
     "alignedObjectivesWillAppearHere": "Aligned objectives will appear here",
@@ -226,11 +226,11 @@
     "noEligibleTeamMembers": "No eligible team members."
   },
   "WorkingScopeSelector": {
-    "organizationWide": "Organization-wide",
+    "organizationWide": "Company-wide",
     "searchOrganization": "Search organization…",
     "searchWorkingScope": "Search working scope",
     "loadingOrganization": "Loading organization…",
-    "noOrganizationalUnitsMatch": "No organizational units match."
+    "noOrganizationalUnitsMatch": "No units match."
   },
   "lib": {
     "state": {
@@ -239,10 +239,10 @@
       "Archived": "Archived"
     },
     "company": "Company",
-    "orgUnit": "Organization unit",
+    "orgUnit": "Unit",
     "employee": "Employee",
     "yourUnit": "Your {type}",
-    "yourOrganization": "Your organization",
+    "yourOrganization": "Your company",
     "orgStrategic": "{orgName} strategic objective",
     "companyObjective": "Company objective",
     "companyStrategy": "Company strategy",

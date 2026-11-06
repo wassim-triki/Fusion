@@ -6,7 +6,6 @@ import {
   BarChart3,
   BookOpen,
   BrainCircuit,
-  Handshake,
   Layers,
   UsersRound,
   Video,
@@ -57,10 +56,9 @@ const PRODUCTS: ProductDefinition[] = [
     icon: BarChart3,
     module: "Performance",
   },
-  { key: "learning", label: "Learning", icon: BookOpen },
-  { key: "recruitment", label: "Recruitment", icon: UsersRound },
-  { key: "onboarding", label: "Onboarding", icon: Handshake },
-  { key: "interview", label: "Interview", icon: Video },
+  { key: "learning", label: "Learning", icon: BookOpen, module: "Learning" },
+  { key: "recruitment", label: "Recruitment", icon: UsersRound, module: "Recruitment" },
+  { key: "interview", label: "Interview", icon: Video, module: "Interview" },
 ];
 
 export interface ProductRow {

@@ -16,11 +16,8 @@ const PUBLIC_ROUTES = [
   // session, so it can't require one.
   { path: "/auth/sso/complete", descendants: false },
 
-  // An additional administrator invited by an existing one, and a Platform
-  // recovery for a tenant that has lost every administrator. Both establish the
-  // account they sign in with, so requiring a session first would make them
-  // impossible to complete.
-  { path: "/accept-administrator-invitation", descendants: false },
+  // A Platform recovery for a tenant that has lost every administrator. It
+  // establishes the account they sign in with, so it can't require a session first.
   { path: "/recover-administrator-access", descendants: false },
   { path: "/invite", descendants: true }, // Primary workforce invite surface
   { path: "/core/invite", descendants: true }, // Compatibility for issued links

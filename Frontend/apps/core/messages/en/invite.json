@@ -1,5 +1,5 @@
 {
-  "yourOrganization": "your organization",
+  "yourOrganization": "your company",
   "password": {
     "minimumLength": "{count} characters or more",
     "uppercase": "An uppercase letter",
@@ -48,7 +48,7 @@
   },
   "workforce": {
     "eyebrow": "Your access",
-    "lead": "Activate the account connected to your employee record. Your organization owns the identity and work details shown in Fusion.",
+    "lead": "Activate the account connected to your employee record. Your company owns the identity and work details shown in Fusion.",
     "access": "Access",
     "accountEmail": "Account email",
     "security": "This invitation is secure and tied to your work email address. Only you can use this link.",
@@ -77,7 +77,7 @@
     "submitting": "Creating your account…",
     "email": "Invitation email"
   },
-  "organization": "Organization",
+  "organization": "Company",
   "footer": "People work together",
   "firstName": "First name",
   "lastName": "Last name",

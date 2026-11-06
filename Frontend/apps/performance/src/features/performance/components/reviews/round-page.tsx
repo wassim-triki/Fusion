@@ -9,7 +9,7 @@ import { Button } from "@repo/ds/components/ui/button";
 import { DatePicker } from "@repo/ds/components/ui/date-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ds/components/ui/popover";
 import { Textarea } from "@repo/ds/components/ui/textarea";
-import { AsyncButton, PageContainer, PageHeader, PagePermissionNotice, PageSkeleton, StatusBadge } from "@repo/ds/shell";
+import { AsyncButton, PageContainer, PageHeader, PageRefusal, PageSkeleton, StatusBadge } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { AvatarStack, PersonInitials } from "@repo/performance-ui";
 import { Bell, CalendarDays, Check, FileText, Send } from "@/lib/icons";
@@ -42,7 +42,7 @@ export function RoundPage() {
   );
   if (context.isLoading || (isAdmin && query.isLoading)) return <PageSkeleton rows={7} width="wide" label={t("loadingTheRound")} />;
   if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} subject={t("performanceWorkspace")} />;
-  if (!isAdmin) return <PagePermissionNotice title={t("administrationOnly")} description={t("reviewRoundsAreRunBy")} />;
+  if (!isAdmin) return <PageContainer><PageRefusal /></PageContainer>;
   if (query.error) return <ContentUnavailable error={query.error} onRetry={query.refetch} subject={t("reviewRound")} />;
   const round = query.data;
   if (!round) return <PageSkeleton rows={7} width="wide" label={t("loadingTheRound")} />;

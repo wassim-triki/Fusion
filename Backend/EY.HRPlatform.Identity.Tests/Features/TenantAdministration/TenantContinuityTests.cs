@@ -516,7 +516,7 @@ public sealed class TenantContinuityTests : IAsyncLifetime
         await Lifecycle(world.Db).SuspendAsync(new AdministratorCommand(
             world.TenantId, world.SecondMembershipId!.Value, world.FirstAccountId));
 
-        var recent = await new TenantAccessProjection(world.Db).GetRecentActivityAsync(world.TenantId);
+        var recent = (await new TenantAccessProjection(world.Db).GetActivityPageAsync(world.TenantId, null, null, null, null, null)).Items;
         var suspension = recent.First(item => item.Action == AccessAuditActions.MembershipSuspended);
 
         // Commands hold a user id, not an account, so the stored name is a
@@ -547,9 +547,8 @@ public sealed class TenantContinuityTests : IAsyncLifetime
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
         var world = await ArrangeAsync();
 
-        await new AdministratorInvitationService(
-                world.Db, RelationalTestDatabase.CreateUserManager(world.Db), new SilentDelivery())
-            .IssueAsync(world.TenantId, "pending.admin@atlas.example", world.FirstAccountId);
+        await AdministrativeInvitations.IssueAsync(
+            world.Db, world.TenantId, "pending.admin@atlas.example", world.FirstAccountId);
 
         world.Db.ChangeTracker.Clear();
         var summary = await new TenantAccessProjection(world.Db).GetSummaryAsync(world.TenantId);
@@ -654,16 +653,13 @@ public sealed class TenantContinuityTests : IAsyncLifetime
         var more = new List<Guid>();
         foreach (var (email, first) in new[] { ("second.admin@atlas.example", "Bea"), ("third.admin@atlas.example", "Cleo") }.Take(administrators - 1))
         {
-            var delivery = new SilentDelivery();
-            await new AdministratorInvitationService(db, users, delivery)
-                .IssueAsync(tenantId, email, firstAccountId);
-            db.ChangeTracker.Clear();
+            var (_, credential) = await AdministrativeInvitations.IssueAsync(db, tenantId, email, firstAccountId);
 
             var accepted = await new AdministrativeInvitationAcceptanceService(
                     db, users, new AccessProfileService(db, users))
                 .AcceptAsync(new AdministrativeAcceptanceRequest
                 {
-                    Credential = delivery.Credential!.RawValue,
+                    Credential = credential.RawValue,
                     Email = email,
                     Password = "Administrator@123456",
                     FirstName = first,
@@ -687,18 +683,6 @@ public sealed class TenantContinuityTests : IAsyncLifetime
 
         public Task DeliverAsync(Guid invitationId, string email, BootstrapCredential credential,
             Guid initiatedByAccountId, CancellationToken cancellationToken = default)
-        {
-            Credential = credential;
-            return Task.CompletedTask;
-        }
-    }
-
-    private sealed class SilentDelivery : IAdministrativeInvitationDelivery
-    {
-        public BootstrapCredential? Credential { get; private set; }
-
-        public Task DeliverAsync(Guid invitationId, string email, BootstrapCredential credential,
-            InvitationPurpose purpose, Guid initiatedByAccountId, CancellationToken cancellationToken = default)
         {
             Credential = credential;
             return Task.CompletedTask;

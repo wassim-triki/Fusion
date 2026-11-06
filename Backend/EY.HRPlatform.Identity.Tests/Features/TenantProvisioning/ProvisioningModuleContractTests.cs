@@ -60,11 +60,10 @@ public sealed class ProvisioningModuleContractTests
             Deserialize("""["Performance"]""").NormalizedModules());
 
     [Fact]
-    public void A_module_this_feature_does_not_own_is_refused()
+    public void A_module_that_cannot_be_entitled_is_refused()
     {
-        // Training, Onboarding, Interview, Learning and Recruitment belong to
-        // other modules and must not become entitlements here.
-        var exception = Record.Exception(() => Deserialize("""["Recruitment"]"""));
+        // Onboarding was replaced by joining checklists and isn't an entitlement.
+        var exception = Record.Exception(() => Deserialize("""["Onboarding"]"""));
 
         Assert.IsType<JsonException>(exception);
     }

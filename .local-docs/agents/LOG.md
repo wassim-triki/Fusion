@@ -1,5 +1,9 @@
 # LOG — the one history
 
+- ○ **B-304**, **B-305**, **B-306** closed, 2026-11-06:
+  - **B-304** Performance's skeleton uses `newReviewRoundHref()`, so the route-literal test passes.
+  - **B-305** wasn't a product bug: `journey-b109` had chosen Leila Baccouche for HR partner, which is where her Settings came from. She's out of that role, and Rim Mahjoub stays in it. Leila now has no Core HR settings sections.
+  - **B-306** Mouna Kooli (Recruitment Partner) is now administrator and HR in Carthage in place of the Sidebar Admin test account, which still signs in. Refused pages name Amira Khelifi and Mouna Kooli. Done by `data/tidy-carthage-roles.cjs`.
 - ✓ **B-302** One family of error pages accepted, 2026-11-06 (user: "The screens look right", "Good enough is good enough"). No more error page work: dropped **B-303** (Request access) and the rest of the sidebar check (Leila Baccouche's Performance Reviews and Settings links unopened; 66 links plus her Feedback, 1:1s and My Plan opened with no refusal). **B-305** now covers only the Administration label.
 - **B-302** One family of error pages built, 2026-11-06, **In review** (six screens in `plans/B-302-screens/`):
   - `PageState` and six drawings in `@repo/ds/shell`, page, card or row; `PageFailure`, `PageGone`, `PageNotFound`, `PageRefusal`, `InvitationEnd` in `@repo/auth`, because the state a failure gets depends on the request. About 70 sites moved. `PlatformPageState`, DS's `PageError` and invitation terminal card deleted; no raw error message anywhere. Core HR's error and not-found moved inside the frame, with a catch-all route.

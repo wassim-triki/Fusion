@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { newReviewRoundHref } from "@/lib/performance-routes";
 import { PageSkeleton } from "@repo/ds/shell";
 import {
   OneOnOnesSkeleton,
@@ -45,7 +46,7 @@ export function PerformanceRouteSkeleton({ label }: { label?: string }) {
     skeleton = <RequestSkeleton />;
   else if (path.startsWith("/reviews/peer-requests/"))
     skeleton = <PageSkeleton rows={5} />;
-  else if (path === "/reviews/rounds/new")
+  else if (path === newReviewRoundHref())
     skeleton = <PageSkeleton rows={5} width="wide" />;
   else if (path.startsWith("/reviews/"))
     skeleton = <PageSkeleton rows={7} width="wide" />;

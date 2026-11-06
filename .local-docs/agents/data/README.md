@@ -18,6 +18,7 @@ The local Carthage Digital Group tenant is prepared for the next walkthrough. It
 | Persona | Local sign-in | Access |
 | --- | --- | --- |
 | Amira Khelifi | `amira.khelifi@example.test` | Tenant administrator and manager/reviewer |
+| Mouna Kooli | `mouna.kooli@example.test` | Recruitment Partner; second administrator and HR since 2026-11-06 |
 | Mariam Gharbi | `mariam.gharbi@example.test` | Manager/reviewer |
 | Omar Mansour | `omar.mansour@example.test` | Manager/reviewer without `core.team.view` |
 | Leila Baccouche | `leila.baccouche@example.test` | Employee subject |
@@ -90,6 +91,7 @@ B-278 accepted and closed 2026-11-03. Reusable shell verification remains below.
 - [screens-demo-presets.cjs](screens-demo-presets.cjs): B-095 task 6.1 live screens from the presets into `plans/B-070-slice-6-screens/live/s7-*.png` and `plans/B-070-slice-4-screens/live/s7-07-round-closed.png`; changes no data. Ran 2026-10-22.
 - [journey-fusion-frame-approve-plan.cjs](journey-fusion-frame-approve-plan.cjs): the establish-fusion-frame API journey (work items, in-app notification, mark read, person summary visibility). Approves Omar Mansour's Submitted plan, so it runs once against a fresh Carthage fixture.
 - [walk-b192-roles.cjs](walk-b192-roles.cjs): B-192 walk per role in Carthage (dark, 1440×900): sign-in, Home, main pages, the one refusal, the switcher without colleague modules, `/learning` going Home and `/learning/verify` staying open; screens into `plans/B-192-screens/`. Changes no data. All roles need `stack.ps1 -AllApps`; lighter: `rim mariam leila --no-learning` on `-Apps core,performance`. Ran 2026-11-05: Amira 16/16 and 15/15; the other three 33/0/6.
+- [tidy-carthage-roles.cjs](tidy-carthage-roles.cjs): takes Leila Baccouche out of HR partner, and makes Mouna Kooli administrator and HR in place of the Sidebar Admin test account, through the product API. Ran 2026-11-06. `journey-b178-administrators.cjs` and `journey-b109-role-changes.cjs` were written for the old state: b178 looks for Sidebar Admin as an administrator, and running b109 again would put Leila back.
 - [journey-b302-who-to-ask.cjs](journey-b302-who-to-ask.cjs): B-302 read-only API journey: who a refused person can ask, with cross-tenant, forged-header, Platform and no-token negatives. Second company: Fresh preset's `leila.baccouche@fresh-5.example.test`. Ran 2026-11-06, 10/0.
 - [screens-b302-error-pages.cjs](screens-b302-error-pages.cjs): B-302 screens (dark, 1440×900) as Leila Baccouche into `plans/B-302-screens/`; `up` on `-Apps core`, `down` with CoreHR and Performance stopped. Changes no data. Ran 2026-11-06.
 - [links-b302-sidebar.cjs](links-b302-sidebar.cjs): B-302: per role in Carthage, opens every link in the sidebar and checks for the refusal or a server failure. Changes no data. Needs `stack.ps1 -Apps core,performance`; pass first names to run one role at a time. Ran 2026-11-06: 66 links, none refused; killed for low memory before Leila Baccouche's Performance links.

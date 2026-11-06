@@ -65,9 +65,6 @@ None waiting.
 
 ### Other work
 
-- [ ] **B-304** Performance's route-literal test fails: `use-workspace.test.tsx` flags `/reviews/rounds/new` in `route-page-skeleton.tsx`; move it to performance-routes · Performance · 2026-11-06
-- [ ] **B-305** An employee is offered Settings under Administration, though it only opens their change history: the group may read wrong · Shell · 2026-11-06
-- [ ] **B-306** A test account shows on refused pages: "So can Sidebar Admin. Email Sidebar" in Carthage, from an old journey (`sidebar.admin@example.test`, also used by `journey-b178-administrators.cjs`). Rename or retire it through the product · Data · 2026-11-06
 - [ ] **B-294** Refresh tokens are stored in plain text (`RefreshToken.Token`); store a hash and look up by it, so a database read can't hand out sessions · Identity · 2026-11-05
       Found while re-planning B-191. Small, backend only; a migration invalidates existing sessions (acceptable, no backward compatibility).
 - [ ] **B-295** Password reset: there is none, and sign-in shows a dead "Forgot password" link (B-191 removes the link) · Identity, Shell · 2026-11-05

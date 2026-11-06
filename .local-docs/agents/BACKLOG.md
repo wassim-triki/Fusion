@@ -151,7 +151,7 @@ These keep their original scope and connection to B-167/B-192; they are not numb
 
 - [ ] **B-229** On leave: dates and a type on a person, shown wherever the person appears (Performance included); slice 6's row, not in this session's ask · Core HR, Performance · 2026-10-31
 
-- [ ] **B-230** Demo photos for Carthage's people (slice 6's row); every page draws initials today · Core HR · 2026-10-31
+- [ ] **B-230** Parked by the user, 2026-11-06; don't offer it again unprompted. Demo photos for Carthage's people (slice 6's row); every page draws initials today · Core HR · 2026-10-31
 
 - [ ] **B-231** Access tab › History (the drawn account story: invited by, accepted, signed in); Identity has no per-person account history read yet · Identity, Core HR · 2026-10-31
 

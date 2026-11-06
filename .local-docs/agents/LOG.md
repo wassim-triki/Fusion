@@ -1,5 +1,6 @@
 # LOG — the one history
 
+- **B-211** top bar search chosen as next, design first in a new session (user, 2026-11-06: "investigate and search in clean design first bamboohr vbe liek friendlieness lieke always a,d suggest the artefact for me to see").
 - ○ **B-298** Carthage is the one company to walk around in, 2026-11-06 (user: "establish Carthage alone for now"; the demo's timing is theirs). Presets not rebuilt and left in place; a new company comes from the platform admin. Checked: 6 plans (3 approved, 2 submitted, 1 draft), one Year-end round (19 ready to finalize, 1 finalized), calibration finalized, 4 open roles (2 open), 2 checklists, 4 1:1 series, 18 praise, brand set. Added the one gap, a pending change (`data/seed-b298-pending-change.cjs`), with approval on for job changes. No leave feature in Core HR, so nobody is on leave. Phases only go forward (no way back found for cycle, round, review or calibration), so a backup before a rehearsal is the way to undo them.
 - **B-298** cut down, 2026-11-06 (user: "5 companies are too much, can we have the bare minimum, onyl the needed"): Carthage is the one demo company; the five presets aren't rebuilt.
 - ○ **B-304**, **B-305**, **B-306** closed, 2026-11-06:

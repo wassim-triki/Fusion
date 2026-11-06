@@ -108,6 +108,7 @@
 - [Agent-run board](agent-run-board.md) — agents run `.local-docs/agents` autonomously ("Jarvis"); user rarely touches it; AGENTS.md ~70 lines.
 - [STATE for every task](state-for-every-task.md) — set Active work before the first edit of any task, audits included; update as you go.
 - [Agent commits everything](agent-commits-everything.md) — the user never commits; commit finished work yourself (applies too), logical commits, then hand over the next session's prompt; push/PR stay the user's.
+- [Short replies, keep the rest](short-replies-keep-the-rest.md) — store what matters; reply with one concrete next thing; good enough outside the main demo journey.
 - [Minimize ETA, no fluff](minimize-eta-no-fluff.md) — long applies: shortest path, checks in background, few final screenshots; ask before committing when the user steers the finish.
 - [i18n speed mode](i18n-speed-mode.md) — after B-118: FR+AR just working, few demo screens, no polish; B-119 then B-115 lean.
 - [Name items, not just IDs](name-items-not-just-ids.md) — in replies say what B-NNN / a change is in plain words; bare IDs lose the user.

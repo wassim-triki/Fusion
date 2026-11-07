@@ -154,6 +154,22 @@ public sealed class AccountLanguageEndpointTests : IAsyncLifetime
     }
 
     [SkippableFact]
+    public async Task Of_two_refreshes_racing_with_one_token_only_one_succeeds()
+    {
+        Skip.IfNot(Available, "No PostgreSQL connection configured.");
+        await using var factory = await NewApiAsync();
+        var tenantId = await AddTenantAsync(factory, "en-US");
+        await AddMemberAsync(factory, "rim@atlas.example", tenantId);
+        var raw = (await LoginAsync(factory.CreateClient(), "rim@atlas.example")).GetProperty("refreshToken").GetString()!;
+
+        var statuses = await Task.WhenAll(Enumerable.Range(0, 8).Select(async _ =>
+            (await factory.CreateClient().PostAsJsonAsync("/api/identity/auth/refresh", new { refreshToken = raw })).StatusCode));
+
+        Assert.Single(statuses, status => status == HttpStatusCode.OK);
+        Assert.All(statuses.Where(status => status != HttpStatusCode.OK), status => Assert.Equal(HttpStatusCode.Unauthorized, status));
+    }
+
+    [SkippableFact]
     public async Task A_stored_hash_presented_as_a_refresh_token_is_refused()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");

@@ -64,8 +64,6 @@ None waiting.
 
 ### Other work
 
-- [ ] **B-309** Two refreshes racing with the same refresh token can both succeed (read, revoke, save without a lock or concurrency check), so one stolen token can fork a second session; make the revoke conditional · Identity · 2026-11-07
-      Found while re-planning B-191. Small, backend only; a migration invalidates existing sessions (acceptable, no backward compatibility).
 - [ ] **B-295** Password reset: there is none, and sign-in shows a dead "Forgot password" link (B-191 removes the link) · Identity, Shell · 2026-11-05
       Found while re-planning B-191. A reset by emailed one-time link (Mailpit locally), refused for addresses whose company requires its provider, unless the person is an administrator.
 - [ ] **B-296** Prove a single sign-on domain by DNS before Fusion is hosted: today the first company to pass a test sign-in from a domain proves it, so a company running its own provider could claim another company's unclaimed domain and show its button on that domain's sign-in page · Identity, Core HR · 2026-11-05

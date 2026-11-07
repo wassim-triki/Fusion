@@ -127,8 +127,15 @@ public class AuthController : ControllerBase
                 "Invalid or expired refresh token."));
         }
 
-        // Revoke the old token (one-time use)
-        storedToken.RevokedAt = DateTime.UtcNow;
+        // Revoke the old token (one-time use). Conditional in the database, so of two refreshes racing with the
+        // same token only one claims it and the other is refused (B-309).
+        var revokedAt = DateTime.UtcNow;
+        var claimed = await _dbContext.RefreshTokens
+            .Where(rt => rt.Id == storedToken.Id && rt.RevokedAt == null)
+            .ExecuteUpdateAsync(set => set.SetProperty(rt => rt.RevokedAt, revokedAt));
+        if (claimed == 0)
+            return Unauthorized(ApiResponse<AuthResponse>.Failure("Invalid or expired refresh token."));
+        storedToken.RevokedAt = revokedAt;
 
         // Find the user — bypass tenant filter since refresh may happen without tenant context
         var user = await _dbContext.Users

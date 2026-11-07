@@ -87,7 +87,7 @@ export function WorkerProfile({
             name={view.displayName}
             photo={photo}
             size="profile"
-            className="size-24 border-2 font-serif text-3xl font-medium ring-[6px] ring-section sm:size-[10.5rem] sm:text-[3.5rem]"
+            className="size-24 border-2 font-editorial text-3xl font-medium ring-[6px] ring-section sm:size-[10.5rem] sm:text-[3.5rem]"
           />
           {photoAction ? <div className="absolute end-[4%] bottom-[4%]">{photoAction}</div> : null}
         </div>

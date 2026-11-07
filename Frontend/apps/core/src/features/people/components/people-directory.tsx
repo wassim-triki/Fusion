@@ -50,7 +50,7 @@ function PersonCard({ person, tag, mine }: { person: PeopleDirectoryPersonDto; t
           name={person.displayName}
           photoUrl={person.photoUrl}
           size="xl"
-          className="mb-2.5 size-[4.25rem] border-2 font-serif text-[1.4375rem] font-medium"
+          className="mb-2.5 size-[4.25rem] border-2 font-editorial text-[1.4375rem] font-medium"
         />
         <Link
           href={`/people/${person.employeeKey}`}
@@ -237,7 +237,7 @@ export function PeopleDirectory({ canSwitch, header }: { canSwitch: boolean; hea
             {groups.map(([letter, members]) => (
               <section key={letter} id={`people-${letter}`} aria-label={letter} className="scroll-mt-6">
                 <div className="mb-3 flex items-baseline gap-3.5">
-                  <span className="font-serif text-[1.625rem] font-medium leading-none">{letter}</span>
+                  <span className="font-editorial text-[1.625rem] font-medium leading-none">{letter}</span>
                   <span className="type-meta text-muted-foreground">{t("count", { count: members.length })}</span>
                 </div>
                 <CardGrid>

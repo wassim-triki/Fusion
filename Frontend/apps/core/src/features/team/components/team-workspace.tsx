@@ -202,7 +202,7 @@ function TeamYear({ band }: { band: TeamBandData }) {
     >
       <div className="grid gap-3">
         <p className="flex flex-wrap items-baseline gap-2.5">
-          <span className="font-serif text-[2rem] leading-none text-foreground tabular-nums">{total}</span>
+          <span className="font-editorial text-[2rem] leading-none text-foreground tabular-nums">{total}</span>
           <span className="type-body text-muted-foreground">
             {t("objectives", { count: total })} · {t("updated", { updated: summary.updatedIn30Days, people: summary.approved })}
           </span>

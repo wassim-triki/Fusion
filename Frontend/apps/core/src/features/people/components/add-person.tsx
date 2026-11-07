@@ -207,7 +207,7 @@ export default function AddPerson() {
       </Link>
 
       <section aria-labelledby="add-name" className="rounded-surface bg-section px-6 py-6 sm:grid sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:gap-x-7 sm:px-8 sm:py-7">
-        <PersonAvatar name={name || "?"} size="profile" className="mb-4 size-24 border-2 font-serif text-3xl font-medium sm:mb-0 sm:size-[7.5rem] sm:text-[2.5rem]" />
+        <PersonAvatar name={name || "?"} size="profile" className="mb-4 size-24 border-2 font-editorial text-3xl font-medium sm:mb-0 sm:size-[7.5rem] sm:text-[2.5rem]" />
         <div className="min-w-0">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">

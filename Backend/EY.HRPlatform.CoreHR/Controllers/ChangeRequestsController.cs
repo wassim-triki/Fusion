@@ -116,7 +116,8 @@ public sealed class ChangeRequestsController(
         User.FindFirstValue(CustomClaimTypes.FullName) ?? User.FindFirstValue(ClaimTypes.Email) ?? "Someone",
         accessPolicy.CanManageEmployees(User),
         accessPolicy.CanProposeChanges(User),
-        accessPolicy.CanApproveChanges(User));
+        accessPolicy.CanApproveChanges(User),
+        accessPolicy.ProposesForUnit(User));
 
     private IActionResult Respond<T>(Result<T> result)
         => result.IsFailure ? Failure(result.Error) : Ok(ApiResponse<T>.Success(result.Value));

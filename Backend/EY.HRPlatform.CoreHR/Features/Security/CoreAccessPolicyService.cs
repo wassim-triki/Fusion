@@ -52,12 +52,17 @@ public interface ICoreAccessPolicyService
     /// <summary>Proposes dated changes for their direct reports (Roles › Approving changes: Propose).</summary>
     bool CanProposeChanges(ClaimsPrincipal user) => false;
 
+    /// <summary>Proposes for their unit as well as their team (B-212).</summary>
+    bool ProposesForUnit(ClaimsPrincipal user) => false;
+
     /// <summary>Approves or declines proposed changes, for everyone (Roles › Approving changes: Approve).</summary>
     bool CanApproveChanges(ClaimsPrincipal user) => false;
 
     /// <summary>How far the caller reads others' personal details (Roles › Personal details; B-214).</summary>
     PersonalGrant GetPersonalGrant(ClaimsPrincipal user) => PersonalGrant.None;
     EmployeeReadAudience GetEmployeeReadAudience(ClaimsPrincipal user);
+
+    /// <summary>Tenant, OrgUnit (their unit, B-212), DirectReports (their team), Self, or null without a view permission.</summary>
     string? GetEmployeeViewScope(ClaimsPrincipal user);
 }
 
@@ -213,12 +218,16 @@ public sealed class CoreAccessPolicyService : ICoreAccessPolicyService
     public bool CanProposeChanges(ClaimsPrincipal user)
         => user.HasCorePermission(CorePermissions.ChangePropose, PermissionScopes.DirectReports);
 
+    public bool ProposesForUnit(ClaimsPrincipal user)
+        => user.GetCorePermissionScope(CorePermissions.ChangePropose) == PermissionScopes.OrgUnit;
+
     public bool CanApproveChanges(ClaimsPrincipal user)
         => user.HasCorePermission(CorePermissions.ChangeApprove, PermissionScopes.Tenant);
 
     public PersonalGrant GetPersonalGrant(ClaimsPrincipal user)
         => user.HasCorePermission(CorePermissions.PersonalManage, PermissionScopes.Tenant) ? PersonalGrant.Change
             : user.HasCorePermission(CorePermissions.PersonalView, PermissionScopes.Tenant) ? PersonalGrant.Everyone
+            : user.HasCorePermission(CorePermissions.PersonalView, PermissionScopes.OrgUnit) ? PersonalGrant.Unit
             : user.HasCorePermission(CorePermissions.PersonalView, PermissionScopes.DirectReports) ? PersonalGrant.Team
             : PersonalGrant.None;
 
@@ -228,7 +237,7 @@ public sealed class CoreAccessPolicyService : ICoreAccessPolicyService
         return scope switch
         {
             PermissionScopes.Tenant => EmployeeReadAudience.HrAdmin,
-            PermissionScopes.DirectReports => EmployeeReadAudience.Manager,
+            PermissionScopes.DirectReports or PermissionScopes.OrgUnit => EmployeeReadAudience.Manager,
             _ => EmployeeReadAudience.Employee,
         };
     }
@@ -238,6 +247,11 @@ public sealed class CoreAccessPolicyService : ICoreAccessPolicyService
         if (CanViewTenantEmployees(user))
         {
             return PermissionScopes.Tenant;
+        }
+
+        if (user.HasCorePermission(CorePermissions.EmployeeView, PermissionScopes.OrgUnit))
+        {
+            return PermissionScopes.OrgUnit;
         }
 
         if (user.HasCorePermission(CorePermissions.EmployeeView, PermissionScopes.DirectReports)

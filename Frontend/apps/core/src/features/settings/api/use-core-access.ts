@@ -12,6 +12,7 @@ import {
   type PersonRoleDto,
   type RoleCandidateDto,
   type RoleDetailDto,
+  type RoleReachDto,
   type RolesOverviewDto,
   type SaveRoleRequest,
 } from "@repo/api";
@@ -145,5 +146,18 @@ export function useDeleteRole(roleId: string, opts?: { onSuccess?: () => void })
       await invalidateRoleQueries(queryClient);
       await opts?.onSuccess?.();
     },
+  });
+}
+
+/** What "their unit" covers for one of a role's holders, for the role page's preview (B-212). */
+export function useRoleReach(employeeId: string | null, enabled = true) {
+  const { isAuthenticated } = useAuth();
+  const client = useClient();
+  const queryFn = useCallback(
+    (signal: AbortSignal) => client.get<RoleReachDto>(coreAccessPaths.roleReach(employeeId ?? ""), { signal }),
+    [client, employeeId]
+  );
+  return useApiQuery(coreAccessQueryKeys.roleReach(employeeId ?? ""), queryFn, {
+    enabled: isAuthenticated && enabled && !!employeeId,
   });
 }

@@ -49,6 +49,31 @@ public sealed class RoleAreasTests
     }
 
     [Fact]
+    public void Their_unit_saves_and_reads_back_between_their_team_and_everyone()
+    {
+        var unit = new[] { "job", "personal", "approve", "reports", "plans" };
+        var cells = unit.Select(area => new RoleAreaCell(area, area switch
+        {
+            "approve" => RoleLevels.Propose,
+            "reports" => RoleLevels.Build,
+            _ => RoleLevels.See,
+        }, RoleReaches.Unit)).ToList();
+
+        var grants = RoleAreas.Compose(cells, []);
+        var read = RoleAreas.Read(grants);
+
+        foreach (var cell in cells) Assert.Equal(cell, Cell(read, cell.AreaId));
+        Assert.Contains(new EffectivePermissionGrant(CorePermissions.EmployeeView, PermissionScopes.OrgUnit), grants);
+        Assert.Contains(new EffectivePermissionGrant(PerformancePermissions.CycleView, PermissionScopes.OrgUnit), grants);
+        // A unit covers a team but not everyone.
+        Assert.True(PermissionScopes.GetRank(PermissionScopes.OrgUnit) > PermissionScopes.GetRank(PermissionScopes.DirectReports));
+        Assert.True(PermissionScopes.GetRank(PermissionScopes.OrgUnit) < PermissionScopes.GetRank(PermissionScopes.Tenant));
+        // Two roles, one for the team and one for the unit: the person holds the unit.
+        var both = RoleAreas.Compose([new("job", RoleLevels.See, RoleReaches.Team)], []).Concat(grants);
+        Assert.Equal(new RoleAreaCell("job", RoleLevels.See, RoleReaches.Unit), Cell(RoleAreas.Read(both), "job"));
+    }
+
+    [Fact]
     public void Saving_writes_what_was_read()
     {
         foreach (var template in AccessProfileTemplates.ComposeSeeded(performanceEnabled: true))
@@ -83,7 +108,8 @@ public sealed class RoleAreasTests
     [Theory]
     [InlineData("job", RoleLevels.Change, RoleReaches.Team)]
     [InlineData("reports", RoleLevels.Build, RoleReaches.Self)]
-    [InlineData("job", RoleLevels.See, "unit")]
+    [InlineData("job", RoleLevels.Change, RoleReaches.Unit)]
+    [InlineData("signin", RoleLevels.See, RoleReaches.Unit)]
     [InlineData("nowhere", RoleLevels.See, null)]
     public void An_option_an_area_does_not_offer_is_refused(string area, string level, string? reach)
         => Assert.Throws<InvalidOperationException>(() => RoleAreas.Compose([new RoleAreaCell(area, level, reach)], []));

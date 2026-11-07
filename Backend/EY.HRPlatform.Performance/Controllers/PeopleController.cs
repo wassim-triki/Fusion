@@ -22,7 +22,7 @@ public sealed class PeopleController(IMediator mediator, IPerformanceAccessPolic
         var viewer = new PersonSummaryViewer(
             User.GetEmployeeId() ?? Guid.Empty,
             policy.CanReviewDirectReports(User),
-            policy.CanAdministerCycles(User));
+            policy.CanAdministerCycles(User)) { PlansReach = policy.AggregateViewScope(User) };
         return MapResult(await mediator.Send(new GetPersonSummaryQuery(employeeId, cycleId, viewer), cancellationToken));
     }
 

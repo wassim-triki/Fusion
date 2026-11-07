@@ -2,11 +2,13 @@ using System.Collections.ObjectModel;
 
 namespace EY.HRPlatform.SharedKernel.Auth;
 
-/// <summary>How far an area reaches: whose records. Rendered as themselves, their team, everyone.</summary>
+/// <summary>How far an area reaches: whose records. Rendered as themselves, their team, their unit, everyone.</summary>
 public static class RoleReaches
 {
     public const string Self = "self";
     public const string Team = "team";
+    /// <summary>The unit they work in and every unit under it, with their team (B-212). Follows the organization.</summary>
+    public const string Unit = "unit";
     public const string Everyone = "everyone";
 }
 
@@ -73,6 +75,7 @@ public static class RoleAreas
 
     private const string T = PermissionScopes.Tenant;
     private const string Dr = PermissionScopes.DirectReports;
+    private const string U = PermissionScopes.OrgUnit;
     private const string S = PermissionScopes.Self;
 
     private static readonly EffectivePermissionGrant[] OwnPersonal =
@@ -82,6 +85,7 @@ public static class RoleAreas
         new("job", CoreGroup, PermissionModuleKeys.CoreHR, false, [
             O(RoleLevels.See, RoleReaches.Self, [G(CorePermissions.EmployeeView, S)]),
             O(RoleLevels.See, RoleReaches.Team, [G(CorePermissions.EmployeeView, Dr)], G(CorePermissions.TeamView, Dr)),
+            O(RoleLevels.See, RoleReaches.Unit, [G(CorePermissions.EmployeeView, U)], G(CorePermissions.TeamView, Dr)),
             O(RoleLevels.See, RoleReaches.Everyone, [G(CorePermissions.EmployeeView, T)]),
             O(RoleLevels.Change, RoleReaches.Everyone, [G(CorePermissions.EmployeeManage, T)],
                 G(CorePermissions.EmployeeView, T), G(CorePermissions.ReportingManage, T), G(CorePermissions.EmployeeImport, T)),
@@ -90,6 +94,7 @@ public static class RoleAreas
             O(RoleLevels.See, RoleReaches.Self, [G(CorePermissions.ProfileSelfView, S)]),
             O(RoleLevels.Change, RoleReaches.Self, [G(CorePermissions.ProfileSelfUpdate, S)], G(CorePermissions.ProfileSelfView, S)),
             O(RoleLevels.See, RoleReaches.Team, [G(CorePermissions.PersonalView, Dr)], OwnPersonal),
+            O(RoleLevels.See, RoleReaches.Unit, [G(CorePermissions.PersonalView, U)], OwnPersonal),
             O(RoleLevels.See, RoleReaches.Everyone, [G(CorePermissions.PersonalView, T)], OwnPersonal),
             O(RoleLevels.Change, RoleReaches.Everyone, [G(CorePermissions.PersonalManage, T)], [G(CorePermissions.PersonalView, T), .. OwnPersonal]),
         ]),
@@ -101,12 +106,15 @@ public static class RoleAreas
         ]),
         new("approve", CoreGroup, PermissionModuleKeys.CoreHR, false, [
             O(RoleLevels.Propose, RoleReaches.Team, [G(CorePermissions.ChangePropose, Dr)]),
+            O(RoleLevels.Propose, RoleReaches.Unit, [G(CorePermissions.ChangePropose, U)]),
             O(RoleLevels.Approve, RoleReaches.Everyone, [G(CorePermissions.ChangeApprove, T)]),
         ]),
         new("reports", CoreGroup, PermissionModuleKeys.CoreHR, false, [
             O(RoleLevels.See, RoleReaches.Team, [G(CorePermissions.OverviewView, Dr)]),
+            O(RoleLevels.See, RoleReaches.Unit, [G(CorePermissions.OverviewView, U)]),
             O(RoleLevels.See, RoleReaches.Everyone, [G(CorePermissions.OverviewView, T)], G(CorePermissions.SettingsGovernanceView, T)),
             O(RoleLevels.Build, RoleReaches.Team, [G(CorePermissions.ReportsBuild, Dr)], G(CorePermissions.OverviewView, Dr)),
+            O(RoleLevels.Build, RoleReaches.Unit, [G(CorePermissions.ReportsBuild, U)], G(CorePermissions.OverviewView, U)),
             O(RoleLevels.Build, RoleReaches.Everyone, [G(CorePermissions.ReportsBuild, T)], G(CorePermissions.OverviewView, T), G(CorePermissions.SettingsGovernanceView, T)),
         ]),
         new("signin", CoreGroup, PermissionModuleKeys.CoreHR, false, [
@@ -119,6 +127,7 @@ public static class RoleAreas
             O(RoleLevels.Change, RoleReaches.Self, [G(PerformancePermissions.ObjectiveSelfManage, S)], G(PerformancePermissions.CycleView, S)),
             O(RoleLevels.Change, RoleReaches.Team, [G(PerformancePermissions.CycleView, Dr)],
                 G(PerformancePermissions.ObjectiveSelfManage, S), G(PerformancePermissions.ObjectiveOrgManage, T), G(CorePermissions.OrganizationView, T)),
+            O(RoleLevels.See, RoleReaches.Unit, [G(PerformancePermissions.CycleView, U)], G(PerformancePermissions.ObjectiveSelfManage, S)),
             O(RoleLevels.See, RoleReaches.Everyone, [G(PerformancePermissions.CycleView, T)], G(PerformancePermissions.ObjectiveSelfManage, S)),
         ]),
         new("cycles", PerformanceGroup, PermissionModuleKeys.Performance, false, [
@@ -240,7 +249,7 @@ public static class RoleAreas
         return held;
     }
 
-    // Self is narrower than a team, and a team narrower than everyone; DirectReports and OrgUnit rank alike.
+    // Self is narrower than a team, a team narrower than a unit (which includes it), and a unit narrower than everyone.
     private static bool Holds(Dictionary<string, string> held, EffectivePermissionGrant required)
         => held.TryGetValue(required.PermissionKey, out var scope)
             && PermissionScopes.GetRank(scope) >= PermissionScopes.GetRank(required.Scope);

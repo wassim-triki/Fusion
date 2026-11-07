@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Features.Security;
 using System.Globalization;
 using System.Text.Json;
 using EY.HRPlatform.CoreHR.Domain.Entities;
@@ -42,9 +43,9 @@ public sealed class ReportService(CoreHRDbContext db, ITenantContext tenant, Rep
         if (peopleFilters.Count > 0 && dto.Definition.Measure != "open-roles")
         {
             var people = db.Employees.AsNoTracking();
-            if (viewer.Scope == PermissionScopes.DirectReports)
+            if (viewer.Partial)
             {
-                var branch = await ChangeSupport.BranchAsync(db, viewer.EmployeeId!.Value, ct);
+                var branch = await ViewerReach.PeopleAsync(db, viewer.EmployeeId!.Value, viewer.Scope!, ct);
                 people = people.Where(person => branch.Contains(person.Id));
             }
             var visiblePeople = await people.ToListAsync(ct);

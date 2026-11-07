@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { Check, ChevronDown, EyeOff, UserRoundSearch } from "lucide-react";
+import { Building2, Check, ChevronDown, EyeOff, UserRoundSearch } from "lucide-react";
 import type { RoleAreaDto, RoleAreaId, RoleHolderDto } from "@repo/api";
 import {
   cn,
@@ -19,11 +19,11 @@ import {
 } from "@repo/ds";
 import { formatDate } from "@repo/ds/lib/dates";
 import { useEmployeeDetailsById } from "@/features/people/api/use-employees";
-import { useRoleCandidates } from "@/features/settings/api/use-core-access";
+import { useRoleCandidates, useRoleReach } from "@/features/settings/api/use-core-access";
 import { useSettingsSay, type Say } from "@/features/settings/say";
 import { cellOf, type Cells } from "./role-model";
 
-type Relation = "self" | "team" | "elsewhere";
+type Relation = "self" | "team" | "unit" | "elsewhere";
 
 interface Person {
   employeeId: string;
@@ -35,7 +35,8 @@ function reaches(cells: Cells, area: RoleAreaId, relation: Relation): boolean {
   const cell = cellOf(cells, area);
   if (cell.level === "none") return false;
   if (!cell.reach || cell.reach === "everyone") return true;
-  if (cell.reach === "team") return relation !== "elsewhere";
+  if (cell.reach === "unit") return relation !== "elsewhere";
+  if (cell.reach === "team") return relation === "self" || relation === "team";
   return relation === "self";
 }
 
@@ -181,6 +182,9 @@ export function RolePreview({
     : viewer;
   const subject = picked ?? fallback;
   const details = useEmployeeDetailsById(viewer && subject ? subject.employeeId : null);
+  const usesUnit = areas.some((area) => cellOf(cells, area.id).level !== "none" && cellOf(cells, area.id).reach === "unit");
+  const unitReach = useRoleReach(viewer?.employeeId ?? null, usesUnit);
+  const unitIds = new Set((unitReach.data?.units ?? []).map((unit) => unit.orgUnitId));
 
   const has = (area: RoleAreaId) => areas.some((candidate) => candidate.id === area);
   const relation: Relation = !viewer || !subject
@@ -189,7 +193,9 @@ export function RolePreview({
       ? "self"
       : details.data?.currentManager?.managerEmployeeId === viewer.employeeId
         ? "team"
-        : "elsewhere";
+        : details.data?.currentWorkAssignment && unitIds.has(details.data.currentWorkAssignment.orgUnitId)
+          ? "unit"
+          : "elsewhere";
   const firstName = (person: Person | null) => person?.name.split(" ")[0] ?? "";
   const outside = (area: RoleAreaId) =>
     say("roles.preview.outside", {
@@ -198,7 +204,9 @@ export function RolePreview({
       where:
         cellOf(cells, area).reach === "self"
           ? say("roles.preview.whereSelf", { viewer: firstName(viewer) })
-          : say("roles.preview.whereTeam", { viewer: firstName(viewer) }),
+          : cellOf(cells, area).reach === "unit"
+            ? say("roles.preview.whereUnit", { viewer: firstName(viewer) })
+            : say("roles.preview.whereTeam", { viewer: firstName(viewer) }),
     });
   const on = (area: RoleAreaId) => has(area) && reaches(cells, area, relation);
   const blocked = (area: RoleAreaId) => has(area) && cellOf(cells, area).level !== "none" && !on(area);
@@ -216,7 +224,7 @@ export function RolePreview({
   const job = cellOf(cells, "job");
   const personal = cellOf(cells, "personal");
   const plans = cellOf(cells, "plans");
-  const proposes = cellOf(cells, "approve").level === "propose" && relation === "team";
+  const proposes = cellOf(cells, "approve").level === "propose" && reaches(cells, "approve", relation) && relation !== "self";
 
   const title =
     viewer && subject
@@ -339,6 +347,42 @@ export function RolePreview({
           </>
         )}
       </div>
+
+      {viewer && usesUnit ? <UnitReach viewer={firstName(viewer)} reach={unitReach} say={say} /> : null}
     </aside>
+  );
+}
+
+/** What "their unit" covers for the holder previewed: the units under theirs and the people in them (B-212). */
+function UnitReach({ viewer, reach, say }: { viewer: string; reach: ReturnType<typeof useRoleReach>; say: Say }) {
+  if (reach.isLoading) return <Skeleton className="h-24 w-full rounded-menu" />;
+  if (reach.error || !reach.data) return null;
+  const { units, people } = reach.data;
+  return (
+    <section aria-label={say("roles.preview.unitTitle", { viewer })} className="grid gap-2 rounded-menu border border-border bg-background p-[18px]">
+      <div className="flex items-baseline justify-between gap-3">
+        <h3 className="type-control-label text-foreground">{say("roles.preview.unitTitle", { viewer })}</h3>
+        <span className="type-meta text-muted-foreground">{say("roles.preview.unitPeople", { count: people, viewer })}</span>
+      </div>
+      {units.length === 0 ? (
+        <p className="type-meta text-muted-foreground">{say("roles.preview.noUnit", { viewer })}</p>
+      ) : (
+        <ul className="grid">
+          {units.map((unit) => (
+            <li
+              key={unit.orgUnitId}
+              className="flex min-h-8 items-center justify-between gap-3 border-t border-border first:border-t-0"
+              style={{ paddingInlineStart: unit.depth * 16 }}
+            >
+              <span className="flex min-w-0 items-center gap-2 type-control text-foreground">
+                <Building2 aria-hidden className="size-3.5 shrink-0 text-muted-foreground" />
+                <span className="truncate">{unit.name}</span>
+              </span>
+              <span className="shrink-0 type-meta text-muted-foreground">{say("roles.preview.unitCount", { count: unit.people })}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

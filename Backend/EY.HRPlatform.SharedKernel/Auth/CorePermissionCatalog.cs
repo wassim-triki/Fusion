@@ -23,10 +23,11 @@ public static class PermissionScopes
         {
             Self => 1,
             DirectReports => 2,
-            OrgUnit => 2,
-            Tenant => 3,
-            Module => 3,
-            Platform => 4,
+            // A unit reach covers the holder's team as well as their unit and every unit under it (B-212).
+            OrgUnit => 3,
+            Tenant => 4,
+            Module => 4,
+            Platform => 5,
             _ => 0,
         };
 
@@ -164,8 +165,8 @@ public static class CorePermissionCatalog
 {
     private static readonly ReadOnlyCollection<CorePermissionDefinition> Definitions =
         Array.AsReadOnly<CorePermissionDefinition>([
-            new(CorePermissions.OverviewView, "See reports", "Reports", [PermissionScopes.DirectReports, PermissionScopes.Tenant]),
-            new(CorePermissions.ReportsBuild, "Build reports", "Reports", [PermissionScopes.DirectReports, PermissionScopes.Tenant]),
+            new(CorePermissions.OverviewView, "See reports", "Reports", [PermissionScopes.DirectReports, PermissionScopes.OrgUnit, PermissionScopes.Tenant]),
+            new(CorePermissions.ReportsBuild, "Build reports", "Reports", [PermissionScopes.DirectReports, PermissionScopes.OrgUnit, PermissionScopes.Tenant]),
             new(CorePermissions.SetupView, "View setup", "Setup & Structure", [PermissionScopes.Tenant]),
             new(CorePermissions.SetupManage, "Manage setup", "Setup & Structure", [PermissionScopes.Tenant]),
             new(CorePermissions.StructureView, "View structure", "Setup & Structure", [PermissionScopes.Tenant]),
@@ -173,7 +174,7 @@ public static class CorePermissionCatalog
             new(CorePermissions.StructurePublish, "Publish structure", "Setup & Structure", [PermissionScopes.Tenant]),
             new(CorePermissions.OrganizationView, "View organization", "Organization", [PermissionScopes.Tenant]),
             new(CorePermissions.OrganizationManage, "Manage organization", "Organization", [PermissionScopes.Tenant]),
-            new(CorePermissions.EmployeeView, "View employees", "Employees", [PermissionScopes.Self, PermissionScopes.DirectReports, PermissionScopes.Tenant], "Controls access to employee profiles and roster surfaces."),
+            new(CorePermissions.EmployeeView, "View employees", "Employees", [PermissionScopes.Self, PermissionScopes.DirectReports, PermissionScopes.OrgUnit, PermissionScopes.Tenant], "Controls access to employee profiles and roster surfaces."),
             new(CorePermissions.EmployeeManage, "Manage employees", "Employees", [PermissionScopes.Tenant]),
             new(CorePermissions.EmployeeImport, "Import employees", "Employees", [PermissionScopes.Tenant]),
             new(CorePermissions.ReportingManage, "Manage reporting lines", "Employees", [PermissionScopes.Tenant]),
@@ -199,9 +200,9 @@ public static class CorePermissionCatalog
             new(CorePermissions.ProfileSelfView, "View own profile", "Self & Team", [PermissionScopes.Self]),
             new(CorePermissions.ProfileSelfUpdate, "Update own profile", "Self & Team", [PermissionScopes.Self]),
             new(CorePermissions.TeamView, "View direct team", "Self & Team", [PermissionScopes.DirectReports]),
-            new(CorePermissions.PersonalView, "View personal details", "Employees", [PermissionScopes.DirectReports, PermissionScopes.Tenant]),
+            new(CorePermissions.PersonalView, "View personal details", "Employees", [PermissionScopes.DirectReports, PermissionScopes.OrgUnit, PermissionScopes.Tenant]),
             new(CorePermissions.PersonalManage, "Manage personal details", "Employees", [PermissionScopes.Tenant]),
-            new(CorePermissions.ChangePropose, "Propose changes", "Changes", [PermissionScopes.DirectReports]),
+            new(CorePermissions.ChangePropose, "Propose changes", "Changes", [PermissionScopes.DirectReports, PermissionScopes.OrgUnit]),
             new(CorePermissions.ChangeApprove, "Approve changes", "Changes", [PermissionScopes.Tenant]),
             new(ModuleSettingsPermissions.LearningView, "View Learning module settings", "Module settings", [PermissionScopes.Module]),
             new(ModuleSettingsPermissions.LearningManage, "Manage Learning module settings", "Module settings", [PermissionScopes.Module]),

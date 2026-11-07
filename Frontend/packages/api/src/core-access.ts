@@ -72,7 +72,22 @@ export type RoleLevel =
   | "propose"
   | "approve"
   | "build";
-export type RoleReach = "self" | "team" | "everyone";
+/** Whose records: themselves, their team, their unit (the unit they work in and every unit under it, B-212), everyone. */
+export type RoleReach = "self" | "team" | "unit" | "everyone";
+
+/** One unit "their unit" covers for a person; depth 0 is the unit they work in. */
+export interface RoleReachUnitDto {
+  orgUnitId: string;
+  name: string;
+  depth: number;
+  people: number;
+}
+
+/** What "their unit" covers for one person today: the units, and the people in them besides that person. */
+export interface RoleReachDto {
+  units: RoleReachUnitDto[];
+  people: number;
+}
 /** How people come to hold a role besides being chosen. */
 export type RoleHolderKind = "chosen" | "everyone" | "team" | "rule";
 export type RoleConditionKind = "department" | "job" | "place" | "unit";
@@ -205,6 +220,8 @@ export const coreAccessPaths = {
     `/identity/core-access/roles/candidates?search=${encodeURIComponent(search)}`,
   personRoles: (employeeId: string) =>
     `/identity/core-access/people/${employeeId}/roles`,
+  /** Core HR reads the organization, so the reach preview lives there. */
+  roleReach: (employeeId: string) => `/corehr/roles/reach/${employeeId}`,
 } as const;
 
 export const coreAccessQueryKeys = {
@@ -220,4 +237,5 @@ export const coreAccessQueryKeys = {
     [...coreAccessQueryKeys.roles(), "candidates", search] as const,
   personRoles: (employeeId: string) =>
     [...coreAccessQueryKeys.all(), "person", employeeId] as const,
+  roleReach: (employeeId: string) => [...coreAccessQueryKeys.roles(), "reach", employeeId] as const,
 } as const;

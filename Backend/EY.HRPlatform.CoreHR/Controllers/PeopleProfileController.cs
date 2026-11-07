@@ -221,7 +221,11 @@ public sealed class PeopleProfileController(
         accessPolicy.CanViewTenantEmployees(User),
         accessPolicy.CanViewTeam(User),
         accessPolicy.CanUpdateOwnProfile(User),
-        accessPolicy.GetPersonalGrant(User));
+        accessPolicy.GetPersonalGrant(User),
+        JobReach());
+
+    private string JobReach() => accessPolicy.GetEmployeeViewScope(User) == PermissionScopes.OrgUnit
+        ? PermissionScopes.OrgUnit : PermissionScopes.DirectReports;
 
     private string ActorName()
         => User.FindFirstValue(CustomClaimTypes.FullName) ?? User.FindFirstValue(ClaimTypes.Email) ?? "Unknown user";

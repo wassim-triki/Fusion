@@ -204,7 +204,7 @@ public class EmployeesController(
         var effectiveAsOf = audience == EmployeeReadAudience.Employee ? null : asOf;
         Guid? branchOf = audience == EmployeeReadAudience.Manager ? User.GetEmployeeId() ?? Guid.Empty : null;
         var result = await sender.Send(
-            new PeopleProfileQuery(employeeKey, effectiveAsOf, audience, branchOf, User.GetEmployeeId(), accessPolicy.GetPersonalGrant(User)),
+            new PeopleProfileQuery(employeeKey, effectiveAsOf, audience, branchOf, User.GetEmployeeId(), accessPolicy.GetPersonalGrant(User), BranchScope()),
             cancellationToken);
         if (result.IsFailure)
             return NotFound(ApiResponse.Failure("Employee was not found."));
@@ -222,10 +222,10 @@ public class EmployeesController(
         var profile = await sender.Send(new PeopleProfileQuery(
             employeeKey, null, audience,
             audience == EmployeeReadAudience.Manager ? User.GetEmployeeId() ?? Guid.Empty : null,
-            User.GetEmployeeId(), accessPolicy.GetPersonalGrant(User)), cancellationToken);
+            User.GetEmployeeId(), accessPolicy.GetPersonalGrant(User), BranchScope()), cancellationToken);
         if (profile.IsFailure) return NotFound(ApiResponse.Failure("Employee was not found."));
         var fields = await employeeFields!.ProfileFieldsAsync(
-            profile.Value.Identity.EmployeeId, audience, User.GetEmployeeId(), accessPolicy.CanManageEmployees(User), cancellationToken);
+            profile.Value.Identity.EmployeeId, audience, User.GetEmployeeId(), accessPolicy.CanManageEmployees(User), cancellationToken, BranchScope());
         return Ok(EY.HRPlatform.SharedKernel.Api.ApiResponse<IReadOnlyList<EmployeeProfileFieldDto>>.Success(fields));
     }
 
@@ -246,7 +246,8 @@ public class EmployeesController(
             User.GetEmployeeId(),
             accessPolicy.CanManageEmployees(User),
             GetAuditActor(),
-            cancellationToken);
+            cancellationToken,
+            BranchScope());
         if (result.IsSuccess)
             return Ok(EY.HRPlatform.SharedKernel.Api.ApiResponse<EmployeeProfileFieldDto>.Success(result.Value));
         return result.Error.Code switch
@@ -274,7 +275,7 @@ public class EmployeesController(
             branchOf = accessPolicy.CanViewTeam(User) ? me : Guid.Empty;
         }
 
-        var result = await sender.Send(new PeopleTimelineQuery(employeeKey, branchOf, self), cancellationToken);
+        var result = await sender.Send(new PeopleTimelineQuery(employeeKey, branchOf, self, BranchScope()), cancellationToken);
         if (result.IsFailure)
             return NotFound(ApiResponse.Failure("Employee was not found."));
 
@@ -969,6 +970,10 @@ public class EmployeesController(
     private EmployeeReadAudience GetCurrentReadAudience()
         => accessPolicy.GetEmployeeReadAudience(User);
 
+    /// <summary>Below tenant scope, how far the caller's branch reaches: their unit (B-212) or their team.</summary>
+    private string BranchScope() => accessPolicy.GetEmployeeViewScope(User) == PermissionScopes.OrgUnit
+        ? PermissionScopes.OrgUnit : PermissionScopes.DirectReports;
+
     private bool CanReadReportingLines(EmployeeListItemDto employee)
     {
         var scope = accessPolicy.GetEmployeeViewScope(User);
@@ -988,7 +993,7 @@ public class EmployeesController(
             return scope == PermissionScopes.Self || scope == PermissionScopes.DirectReports || accessPolicy.CanViewOwnProfile(User);
         }
 
-        return scope == PermissionScopes.DirectReports && employee.ManagerId == linkedEmployeeId.Value;
+        return scope is PermissionScopes.DirectReports or PermissionScopes.OrgUnit && employee.ManagerId == linkedEmployeeId.Value;
     }
 
     /// <summary>
@@ -1045,7 +1050,7 @@ public class EmployeesController(
             return reportingLines;
         }
 
-        if (scope == PermissionScopes.DirectReports)
+        if (scope is PermissionScopes.DirectReports or PermissionScopes.OrgUnit)
         {
             return reportingLines with
             {

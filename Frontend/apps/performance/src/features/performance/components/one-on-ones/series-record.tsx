@@ -751,7 +751,8 @@ function SeriesSidebar({ series, onCadence }: { series: OneOnOneSeriesDto; onCad
               </div>
             </div>
             <ul className="mt-4 space-y-2.5">
-              {cycle.objectives.map((objective) => (
+              {/* A 1:1's two people always reach the objective's record; only an Observer's summary has no links. */}
+              {cycle.objectives.flatMap((objective) => (objective.href ? [{ ...objective, href: objective.href }] : [])).map((objective) => (
                 <li key={objective.objectiveId}>
                   <Link href={appHref(objective.href)} className="flex items-center gap-2.5 hover:underline">
                     <span className="min-w-0 flex-1 truncate type-body text-foreground">{objective.title}</span>

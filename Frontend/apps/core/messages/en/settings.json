@@ -310,6 +310,7 @@
     "reaches": {
       "self": "themselves",
       "team": "their team",
+      "unit": "their unit",
       "everyone": "everyone"
     },
     "for": "for",
@@ -466,7 +467,12 @@
       "outside": "{area}: {subject} isn't {where}",
       "whereSelf": "{viewer}",
       "whereTeam": "in {viewer}'s team",
-      "didNotLoad": "This page didn't load"
+      "didNotLoad": "This page didn't load",
+      "whereUnit": "in {viewer}'s unit",
+      "unitTitle": "{viewer}'s unit",
+      "unitPeople": "{count, plural, =0 {Nobody besides {viewer}} one {# person besides {viewer}} other {# people besides {viewer}}}",
+      "unitCount": "{count, plural, =0 {nobody yet} one {# person} other {# people}}",
+      "noUnit": "{viewer} isn't in a unit"
     },
     "access": {
       "title": "Roles",
@@ -479,7 +485,13 @@
       "open": "Open {role}"
     },
     "seeAs": "See Fusion as {name}",
-    "seeAsFailed": "Couldn't open Fusion as them. Try again."
+    "seeAsFailed": "Couldn't open Fusion as them. Try again.",
+    "reachDetails": {
+      "self": "Only their own record",
+      "team": "People who report to them",
+      "unit": "The unit they work in and every unit under it",
+      "everyone": "The whole company"
+    }
   },
   "changeHistory": {
     "section": "Section",

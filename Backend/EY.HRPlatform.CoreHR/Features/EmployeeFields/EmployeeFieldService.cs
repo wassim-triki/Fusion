@@ -1,3 +1,5 @@
+using EY.HRPlatform.SharedKernel.Auth;
+using EY.HRPlatform.CoreHR.Features.Security;
 using System.Text.Json;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Exceptions;
@@ -171,9 +173,10 @@ public sealed class EmployeeFieldService(CoreHRDbContext db, ITenantContext tena
         EmployeeReadAudience audience,
         Guid? viewerEmployeeId,
         bool canManageEmployees,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string branchScope = PermissionScopes.DirectReports)
     {
-        audience = await EffectiveAudienceAsync(employeeId, audience, viewerEmployeeId, cancellationToken);
+        audience = await EffectiveAudienceAsync(employeeId, audience, viewerEmployeeId, branchScope, cancellationToken);
         var fields = await ActiveDefinitionsAsync(cancellationToken);
         if (fields.Count == 0) return [];
         var values = await db.EmployeeFieldValues.AsNoTracking()
@@ -198,14 +201,15 @@ public sealed class EmployeeFieldService(CoreHRDbContext db, ITenantContext tena
         Guid? viewerEmployeeId,
         bool canManageEmployees,
         string? actor,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string branchScope = PermissionScopes.DirectReports)
     {
         var employee = await db.Employees.SingleOrDefaultAsync(item => item.StableEmployeeKey == employeeKey.Trim().ToUpperInvariant(), cancellationToken);
         if (employee is null) return Result.Failure<EmployeeProfileFieldDto>(new Error("Employee.NotFound", "Employee was not found."));
         var field = await db.EmployeeFieldDefinitions.SingleOrDefaultAsync(item => item.Key == CatalogName.Slug(fieldKey) && item.IsActive, cancellationToken);
         if (field is null || field.SourceKey is not null)
             return Result.Failure<EmployeeProfileFieldDto>(new Error("EmployeeField.NotFound", "Field was not found."));
-        audience = await EffectiveAudienceAsync(employee.Id, audience, viewerEmployeeId, cancellationToken);
+        audience = await EffectiveAudienceAsync(employee.Id, audience, viewerEmployeeId, branchScope, cancellationToken);
         if (!CanSee(field, employee.Id, audience, viewerEmployeeId))
             return Result.Failure<EmployeeProfileFieldDto>(new Error("EmployeeField.NotFound", "Field was not found."));
         if (!CanEdit(field, employee.Id, viewerEmployeeId, canManageEmployees))
@@ -233,11 +237,11 @@ public sealed class EmployeeFieldService(CoreHRDbContext db, ITenantContext tena
         return field is null ? null : field.Editor is EmployeeFieldEditor.Employee or EmployeeFieldEditor.EmployeeWithApproval;
     }
 
-    /// <summary>A manager reads as a manager only inside their branch; anyone else they look at, as a colleague.</summary>
+    /// <summary>A manager reads as a manager only inside their branch (team or unit); anyone else they look at, as a colleague.</summary>
     private async Task<EmployeeReadAudience> EffectiveAudienceAsync(
-        Guid employeeId, EmployeeReadAudience audience, Guid? viewerEmployeeId, CancellationToken cancellationToken)
+        Guid employeeId, EmployeeReadAudience audience, Guid? viewerEmployeeId, string branchScope, CancellationToken cancellationToken)
         => audience == EmployeeReadAudience.Manager && viewerEmployeeId is { } managerId && managerId != employeeId
-            && !(await ChangeSupport.BranchAsync(db, managerId, cancellationToken)).Contains(employeeId)
+            && !(await ViewerReach.PeopleAsync(db, managerId, branchScope, cancellationToken)).Contains(employeeId)
                 ? EmployeeReadAudience.Employee
                 : audience;
 

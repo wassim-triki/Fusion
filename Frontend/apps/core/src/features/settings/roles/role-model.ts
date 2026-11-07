@@ -20,10 +20,10 @@ const RANK: Record<PermissionScope, number> = {
   None: 0,
   Self: 1,
   DirectReports: 2,
-  OrgUnit: 2,
-  Tenant: 3,
-  Module: 3,
-  Platform: 4,
+  OrgUnit: 3,
+  Tenant: 4,
+  Module: 4,
+  Platform: 5,
 };
 
 /** The levels an area offers, weakest first, after "none". */

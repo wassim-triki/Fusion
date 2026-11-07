@@ -86,7 +86,8 @@ export function performanceUpcoming(
     });
   }
   for (const objective of summary.currentCycle?.objectives ?? []) {
-    if (!objective.openRequest) continue;
+    // Someone who reads the plan here only (no link) doesn't get the person's asks in Coming up.
+    if (!objective.openRequest || !objective.href) continue;
     items.push({
       key: `ask-${objective.objectiveId}`,
       at: null,

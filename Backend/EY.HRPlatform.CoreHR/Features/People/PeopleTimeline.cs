@@ -1,3 +1,5 @@
+using EY.HRPlatform.SharedKernel.Auth;
+using EY.HRPlatform.CoreHR.Features.Security;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence;
@@ -43,7 +45,9 @@ public sealed record PeopleTimelineDto(
 
 /// <param name="BranchOfEmployeeId">Set for a reader without tenant-wide access: only this manager's branch is readable.</param>
 /// <param name="SelfEmployeeId">The caller's own person: their own history is always theirs to read (B-180).</param>
-public sealed record PeopleTimelineQuery(string EmployeeKey, Guid? BranchOfEmployeeId = null, Guid? SelfEmployeeId = null) : IQuery<Result<PeopleTimelineDto>>;
+/// <param name="BranchScope">How far the branch reaches: their team, or their unit (B-212).</param>
+public sealed record PeopleTimelineQuery(string EmployeeKey, Guid? BranchOfEmployeeId = null, Guid? SelfEmployeeId = null,
+    string BranchScope = PermissionScopes.DirectReports) : IQuery<Result<PeopleTimelineDto>>;
 
 public sealed class PeopleTimelineQueryHandler(
     CoreHRDbContext dbContext,
@@ -60,7 +64,7 @@ public sealed class PeopleTimelineQueryHandler(
         if (employee is null)
             return Result.Failure<PeopleTimelineDto>(new Error("Employee.NotFound", "Employee was not found."));
         if (request.BranchOfEmployeeId is { } managerId && employee.Id != request.SelfEmployeeId
-            && !(await Changes.ChangeSupport.BranchAsync(dbContext, managerId, cancellationToken)).Contains(employee.Id))
+            && !(await ViewerReach.PeopleAsync(dbContext, managerId, request.BranchScope, cancellationToken)).Contains(employee.Id))
             return Result.Failure<PeopleTimelineDto>(new Error("Employee.NotFound", "Employee was not found."));
 
         var timeline = await composer.ComposeAsync(employee.Id, employee.StableEmployeeKey, cancellationToken);

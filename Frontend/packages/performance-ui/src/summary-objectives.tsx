@@ -34,12 +34,8 @@ export function SummaryObjectives({ cycle, renderLink }: { cycle: PersonSummaryC
         <ul className="divide-y divide-border overflow-hidden rounded-surface bg-card">
           {cycle.objectives.map((objective) => {
             const aligned = objective.alignedTo !== null;
-            return (
-              <li key={objective.objectiveId}>
-                {renderLink({
-                  href: objective.href,
-                  className: "group flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-muted",
-                  children: (
+            const row = "group flex items-center gap-4 px-4 py-3.5";
+            const content = (
                     <>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate type-body font-medium text-foreground group-hover:underline">
@@ -69,8 +65,14 @@ export function SummaryObjectives({ cycle, renderLink }: { cycle: PersonSummaryC
                         <ObjectiveStatusBadge status={objective.status} />
                       </span>
                     </>
-                  ),
-                })}
+            );
+            return (
+              <li key={objective.objectiveId}>
+                {objective.href ? (
+                  renderLink({ href: objective.href, className: `${row} transition-colors hover:bg-muted`, children: content })
+                ) : (
+                  <div className={row}>{content}</div>
+                )}
               </li>
             );
           })}

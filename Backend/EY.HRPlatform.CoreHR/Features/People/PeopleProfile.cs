@@ -1,3 +1,5 @@
+using EY.HRPlatform.SharedKernel.Auth;
+using EY.HRPlatform.CoreHR.Features.Security;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Features.Employees.Services;
@@ -18,13 +20,15 @@ namespace EY.HRPlatform.CoreHR.Features.People;
 /// (themselves included) as a colleague.
 /// </param>
 /// <param name="Personal">The viewer's Personal details reach (B-214): it alone decides whether the mobile shows.</param>
+/// <param name="BranchScope">How far the branch reaches: their team, or their unit (B-212).</param>
 public sealed record PeopleProfileQuery(
     string EmployeeKey,
     DateTime? AsOf = null,
     EmployeeReadAudience Audience = EmployeeReadAudience.HrAdmin,
     Guid? BranchOfEmployeeId = null,
     Guid? ViewerEmployeeId = null,
-    PersonalGrant Personal = PersonalGrant.None) : IQuery<Result<PeopleProfileDto>>;
+    PersonalGrant Personal = PersonalGrant.None,
+    string BranchScope = PermissionScopes.DirectReports) : IQuery<Result<PeopleProfileDto>>;
 
 public sealed record PeopleProfileIdentityDto(
     string EmployeeKey,
@@ -103,7 +107,7 @@ public sealed class PeopleProfileQueryHandler(
             return Result.Failure<PeopleProfileDto>(new Error("Employee.NotFound", "Employee was not found."));
 
         if (request.Audience == EmployeeReadAudience.Manager && request.BranchOfEmployeeId is { } managerId
-            && !(await Changes.ChangeSupport.BranchAsync(dbContext, managerId, cancellationToken)).Contains(employee.Id))
+            && !(await ViewerReach.PeopleAsync(dbContext, managerId, request.BranchScope, cancellationToken)).Contains(employee.Id))
             request = request with { Audience = EmployeeReadAudience.Employee, AsOf = null };
 
         var today = DateTime.UtcNow.Date;
@@ -259,8 +263,9 @@ public sealed class PeopleProfileQueryHandler(
         // The mobile follows the Personal tab: the person, and whoever sees personal details for them.
         var seesMobile = employee.Id == request.ViewerEmployeeId
             || request.Personal is PersonalGrant.Change or PersonalGrant.Everyone
-            || (request.Personal == PersonalGrant.Team && request.ViewerEmployeeId is { } viewerId
-                && (await Changes.ChangeSupport.BranchAsync(dbContext, viewerId, cancellationToken)).Contains(employee.Id));
+            || (request.Personal is PersonalGrant.Team or PersonalGrant.Unit && request.ViewerEmployeeId is { } viewerId
+                && (await ViewerReach.PeopleAsync(dbContext, viewerId,
+                    request.Personal == PersonalGrant.Unit ? PermissionScopes.OrgUnit : PermissionScopes.DirectReports, cancellationToken)).Contains(employee.Id));
 
         var result = new PeopleProfileDto(
             new PeopleProfileIdentityDto(

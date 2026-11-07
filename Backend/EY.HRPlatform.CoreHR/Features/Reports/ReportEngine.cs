@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Features.Security;
 using System.Globalization;
 using System.Text.Json;
 using EY.HRPlatform.CoreHR.Domain.Entities;
@@ -33,9 +34,9 @@ public sealed partial class ReportEngine(CoreHRDbContext db, ITenantSettingsRead
     {
         if (!viewer.CanSee) throw new UnauthorizedAccessException();
         var policy = await settings.GetCurrentAsync(ct);
-        var audience = viewer.Hr ? EmployeeReadAudience.HrAdmin : viewer.Scope == PermissionScopes.DirectReports
+        var audience = viewer.Hr ? EmployeeReadAudience.HrAdmin : viewer.Partial
             ? EmployeeReadAudience.Manager : EmployeeReadAudience.Employee;
-        var jobAudience = viewer.JobHr ? EmployeeReadAudience.HrAdmin : viewer.Scope == PermissionScopes.DirectReports
+        var jobAudience = viewer.JobHr ? EmployeeReadAudience.HrAdmin : viewer.Partial
             ? EmployeeReadAudience.Manager : EmployeeReadAudience.Employee;
         var unitLevel = await CompanyUnitLevel.ReadAsync(db, ct);
         var built = BuiltIns.Where(f => f.Key switch
@@ -85,8 +86,8 @@ public sealed partial class ReportEngine(CoreHRDbContext db, ITenantSettingsRead
                 throw new ArgumentException("Invalid filter range.");
         }
 
-        HashSet<Guid>? branch = viewer.Scope == PermissionScopes.DirectReports
-            ? await ChangeSupport.BranchAsync(db, viewer.EmployeeId!.Value, ct) : null;
+        HashSet<Guid>? branch = viewer.Partial
+            ? await ViewerReach.PeopleAsync(db, viewer.EmployeeId!.Value, viewer.Scope!, ct) : null;
         var peopleQuery = db.Employees.AsNoTracking();
         if (branch is not null) peopleQuery = peopleQuery.Where(p => branch.Contains(p.Id));
         var people = await peopleQuery.ToDictionaryAsync(p => p.Id, ct);

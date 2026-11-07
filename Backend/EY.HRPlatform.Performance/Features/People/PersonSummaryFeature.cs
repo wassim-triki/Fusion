@@ -1,3 +1,4 @@
+using EY.HRPlatform.SharedKernel.Auth;
 using EY.HRPlatform.Performance.Domain.Common;
 using EY.HRPlatform.Performance.Domain.Progress;
 using EY.HRPlatform.Performance.Domain.Cycles;
@@ -20,11 +21,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EY.HRPlatform.Performance.Features.People;
 
-/// <summary>The caller's relation to the person, from the most permissive that applies.</summary>
-public enum PersonRelation { Self, Manager, Reviewer, Administrator, Other }
+/// <summary>
+/// The caller's relation to the person, from the most permissive that applies. An Observer sees plans and check-ins for
+/// the person's unit or for everyone (Roles › Plans and check-ins, B-212): the current plan once put forward, read here
+/// only, without reviews.
+/// </summary>
+public enum PersonRelation { Self, Manager, Reviewer, Administrator, Other, Observer }
 
+/// <param name="Href">The objective's record; null for an Observer, who reads the plan here only.</param>
 public sealed record PersonSummaryObjectiveDto(Guid ObjectiveId, int Number, string Title, string? AlignedTo,
-    decimal? Weight, decimal? Progress, string Href)
+    decimal? Weight, decimal? Progress, string? Href)
 {
     /// <summary>The owner's latest reported status; null until reported, never assumed On track.</summary>
     public ObjectiveStatus? Status { get; init; }
@@ -89,6 +95,9 @@ public sealed record PersonSummaryViewer(Guid EmployeeId, bool ReviewsReports, b
 {
     /// <summary>Holds the own-participation grant that every self-authoring action needs.</summary>
     public bool ManagesOwnParticipation { get; init; } = true;
+
+    /// <summary>The scope of the caller's plans grant (<c>performance.cycle.view</c>): OrgUnit or Tenant make them an Observer.</summary>
+    public string? PlansReach { get; init; }
 }
 
 public sealed record GetPersonSummaryQuery(Guid EmployeeId, Guid? CycleId, PersonSummaryViewer Viewer)
@@ -117,7 +126,9 @@ public sealed class GetPersonSummaryHandler(PerformanceDbContext db, ICoreWorkfo
         var plan = cycle is null ? null : await db.EmployeePlans.AsNoTracking().Include(p => p.Decisions)
             .FirstOrDefaultAsync(p => p.CycleId == cycle.Id && p.EmployeeId == query.EmployeeId, token);
 
-        var relation = Relate(query.Viewer, person, plan);
+        PersonRelation relation;
+        try { relation = await RelateAsync(query.Viewer, person, plan, token); }
+        catch (HttpRequestException) { return Result.Failure<PersonPerformanceSummaryDto>(PerformanceErrors.CoreUnavailable()); }
         var identity = empty with
         {
             DisplayName = person.DisplayName, JobTitle = person.JobTitle, OrgUnitName = person.OrgUnit?.Name,
@@ -136,7 +147,7 @@ public sealed class GetPersonSummaryHandler(PerformanceDbContext db, ICoreWorkfo
         return Result.Success(identity with
         {
             CurrentCycle = cycle is null ? null : await CycleSectionAsync(cycle, query.EmployeeId, plan, relation, token),
-            Reviews = await ReviewsAsync(query.EmployeeId, token),
+            Reviews = relation == PersonRelation.Observer ? null : await ReviewsAsync(query.EmployeeId, token),
             Development = development,
         });
     }
@@ -204,13 +215,33 @@ public sealed class GetPersonSummaryHandler(PerformanceDbContext db, ICoreWorkfo
     /// Self; the current Core HR manager; the plan's recorded reviewer for this cycle; a cycle administrator.
     /// Managing and reviewing both need the direct-reports view grant, as everywhere else in Performance.
     /// </summary>
-    private static PersonRelation Relate(PersonSummaryViewer viewer, WorkforceSnapshot person, EmployeePlan? plan)
+    /// <remarks>
+    /// A unit reach is Core HR's "their unit": the unit the caller works in today and every unit under it, read from Core's
+    /// unit chain for the person. (Core also counts the caller's whole branch; here their direct reports already relate as
+    /// Manager.)
+    /// </remarks>
+    private async Task<PersonRelation> RelateAsync(PersonSummaryViewer viewer, WorkforceSnapshot person, EmployeePlan? plan,
+        CancellationToken token)
     {
         var me = viewer.EmployeeId;
         if (me != Guid.Empty && me == person.EmployeeId) return PersonRelation.Self;
         if (viewer.ReviewsReports && me != Guid.Empty && person.Manager?.EmployeeId == me) return PersonRelation.Manager;
         if (viewer.ReviewsReports && me != Guid.Empty && plan?.ResponsibleManagerId == me) return PersonRelation.Reviewer;
-        return viewer.Administers ? PersonRelation.Administrator : PersonRelation.Other;
+        if (viewer.Administers) return PersonRelation.Administrator;
+        if (viewer.PlansReach == PermissionScopes.Tenant) return PersonRelation.Observer;
+        if (viewer.PlansReach == PermissionScopes.OrgUnit && me != Guid.Empty && person.IsActive && person.OrgUnit is { } unit)
+        {
+            var now = PerformanceClock.UtcNow;
+            var caller = (await workforce.ResolveAsync(now, [me], token)).SingleOrDefault(s => s.EmployeeId == me);
+            if (caller is { IsActive: true, OrgUnit: { } own })
+            {
+                if (own.OrgUnitId == unit.OrgUnitId) return PersonRelation.Observer;
+                var chain = (await workforce.ResolveOrgUnitsAsync(now, [unit.OrgUnitId], token)).SingleOrDefault(c => c.OrgUnitId == unit.OrgUnitId);
+                if (chain?.AncestorOrgUnitIds.Contains(own.OrgUnitId) == true) return PersonRelation.Observer;
+            }
+        }
+
+        return PersonRelation.Other;
     }
 
     /// <summary>The requested cycle; otherwise the active cycle that includes the person; otherwise their most recent.</summary>
@@ -241,8 +272,10 @@ public sealed class GetPersonSummaryHandler(PerformanceDbContext db, ICoreWorkfo
             return new(cycle.Id, cycle.Name, cycle.State, phase, false, null, null, null, null, []);
 
         // A never-submitted Draft stays the owner's private workspace for everyone but the owner and administrators.
-        var privateDraft = plan is not null && relation is PersonRelation.Manager or PersonRelation.Reviewer
+        var privateDraft = plan is not null && relation is PersonRelation.Manager or PersonRelation.Reviewer or PersonRelation.Observer
             && !PlanPolicy.HasBeenPutForward(plan);
+        // An Observer reads the plan on this summary only: Performance's plan and objective pages stay the reviewer's.
+        var links = relation != PersonRelation.Observer;
         var objectives = plan is null || privateDraft ? [] : await db.Objectives.AsNoTracking().Include(o => o.Measurement)
             .Where(o => o.EmployeePlanId == plan.Id && o.State != ObjectiveLifecycleState.Archived)
             .ToListAsync(token);
@@ -264,12 +297,12 @@ public sealed class GetPersonSummaryHandler(PerformanceDbContext db, ICoreWorkfo
         return new(cycle.Id, cycle.Name, cycle.State, phase, true, privateDraft ? null : plan?.Id, standing.Status,
             // Missing is not 0%: no figure until some objective has recorded progress.
             approved && objectives.Any(o => o.HasProgress) ? ProgressCalc.PlanProgress(objectives) : null,
-            plan is null || privateDraft ? null : PerformanceNotificationTemplates.PlanPath(cycle.Id, plan.Id),
+            plan is null || privateDraft || !links ? null : PerformanceNotificationTemplates.PlanPath(cycle.Id, plan.Id),
             ordered.Select((o, index) => new PersonSummaryObjectiveDto(o.Id, index + 1, o.Title,
                 o.ParentObjectiveId is Guid parent && parents.TryGetValue(parent, out var title) ? title : null,
                 o.PlanWeight,
                 approved && o.HasProgress ? Math.Min(o.DerivedProgress, 100m) : null,
-                PerformanceNotificationTemplates.ObjectivePath(cycle.Id, o.Id))
+                links ? PerformanceNotificationTemplates.ObjectivePath(cycle.Id, o.Id) : null)
                 {
                     Status = approved ? o.CurrentStatus : null,
                     OpenRequest = openRequests.TryGetValue(o.Id, out var asked) ? new(asked.RequestedByName, asked.RequestedAt) : null,

@@ -22,7 +22,9 @@ public sealed record ReportRoleDto(Guid Id, string Name, bool Held);
 // Constructed only from authenticated claims. A saved definition never carries authority.
 public sealed record ReportViewer(Guid UserId, Guid? EmployeeId, string? Scope, bool Build, bool Hr, bool JobHr = false)
 {
-    public bool CanSee => Scope == PermissionScopes.Tenant || Scope == PermissionScopes.DirectReports && EmployeeId.HasValue;
+    /// <summary>Reads only their team or their unit (B-212), never the whole company.</summary>
+    public bool Partial => Scope is PermissionScopes.DirectReports or PermissionScopes.OrgUnit;
+    public bool CanSee => Scope == PermissionScopes.Tenant || Partial && EmployeeId.HasValue;
     public static ReportViewer From(ClaimsPrincipal user) => new(user.GetUserId(), user.GetEmployeeId(),
         user.GetCorePermissionScope(CorePermissions.OverviewView), user.HasCorePermission(CorePermissions.ReportsBuild),
         user.HasCorePermission(CorePermissions.PersonalManage, PermissionScopes.Tenant),

@@ -2069,7 +2069,8 @@ export interface SetPopulationRequest {
 // ── Person summary (D-32): one person's performance as the viewer may see it ──
 
 /** The caller's relation to the person, from the most permissive that applies. */
-export type PersonPerformanceRelation = "Self" | "Manager" | "Reviewer" | "Administrator" | "Other";
+/** Observer: sees plans and check-ins for the person's unit or for everyone; reads the plan on the summary only (B-212). */
+export type PersonPerformanceRelation = "Self" | "Manager" | "Reviewer" | "Administrator" | "Other" | "Observer";
 
 export interface PersonSummaryObjectiveDto {
   objectiveId: string;
@@ -2081,7 +2082,8 @@ export interface PersonSummaryObjectiveDto {
   weight: number | null;
   /** 0–100, or null before any progress is recorded. */
   progress: number | null;
-  href: string;
+  /** The objective's record; null when the viewer reads the plan here only (an Observer). */
+  href: string | null;
   /** The owner's latest status; null until reported, never assumed on track. */
   status: ObjectiveStatus | null;
   /** An update asked for and not yet given (the person page's Coming up). */

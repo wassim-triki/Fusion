@@ -310,6 +310,7 @@
     "reaches": {
       "self": "eux-mêmes",
       "team": "leur équipe",
+      "unit": "leur unité",
       "everyone": "tout le monde"
     },
     "for": "pour",
@@ -466,7 +467,12 @@
       "outside": "{area} : {subject} n'est pas {where}",
       "whereSelf": "{viewer}",
       "whereTeam": "dans l'équipe de {viewer}",
-      "didNotLoad": "Cette page ne s'est pas chargée"
+      "didNotLoad": "Cette page ne s'est pas chargée",
+      "whereUnit": "dans l'unité de {viewer}",
+      "unitTitle": "Unité de {viewer}",
+      "unitPeople": "{count, plural, =0 {Personne à part {viewer}} one {# personne à part {viewer}} other {# personnes à part {viewer}}}",
+      "unitCount": "{count, plural, =0 {personne pour l'instant} one {# personne} other {# personnes}}",
+      "noUnit": "{viewer} n'est dans aucune unité"
     },
     "access": {
       "title": "Rôles",
@@ -479,7 +485,13 @@
       "open": "Ouvrir {role}"
     },
     "seeAs": "Voir Fusion comme {name}",
-    "seeAsFailed": "Impossible d'ouvrir Fusion comme cette personne. Réessayez."
+    "seeAsFailed": "Impossible d'ouvrir Fusion comme cette personne. Réessayez.",
+    "reachDetails": {
+      "self": "Uniquement leur propre dossier",
+      "team": "Les personnes qui leur sont rattachées",
+      "unit": "L'unité où ils travaillent et toutes celles en dessous",
+      "everyone": "Toute l'entreprise"
+    }
   },
   "changeHistory": {
     "section": "Section",

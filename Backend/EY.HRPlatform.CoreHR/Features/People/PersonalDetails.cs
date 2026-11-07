@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Features.Security;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Exceptions;
@@ -25,13 +26,15 @@ namespace EY.HRPlatform.CoreHR.Features.People;
 /// <param name="ManagesTeam">A manager who reads their own branch.</param>
 /// <param name="UpdatesSelf">May change their own profile (<c>core.profile.self.update</c>).</param>
 /// <param name="Personal">How far they read others' personal details (<c>core.personal.*</c>), apart from jobs.</param>
+/// <param name="JobReach">Below tenant scope, whose jobs they read: their team, or their unit (B-212).</param>
 public sealed record PeopleViewer(
     Guid? EmployeeId,
     bool ManagesPeople,
     bool ViewsTenant,
     bool ManagesTeam,
     bool UpdatesSelf,
-    PersonalGrant Personal = PersonalGrant.None);
+    PersonalGrant Personal = PersonalGrant.None,
+    string JobReach = PermissionScopes.DirectReports);
 
 /// <summary>A role's Personal details area for others (B-214): their keys, separate from Jobs.</summary>
 public enum PersonalGrant
@@ -39,6 +42,8 @@ public enum PersonalGrant
     None,
     /// <summary>Contact details of their branch (<c>core.personal.view</c> for direct reports).</summary>
     Team,
+    /// <summary>Contact details of their unit and their branch (<c>core.personal.view</c> for an org unit, B-212).</summary>
+    Unit,
     /// <summary>Contact details of everyone (<c>core.personal.view</c> for the tenant).</summary>
     Everyone,
     /// <summary>Reads and changes everyone's personal details (<c>core.personal.manage</c>).</summary>
@@ -66,17 +71,24 @@ public static class PeopleAccess
     public static async Task<PeopleAccessDecision> DecideAsync(
         CoreHRDbContext dbContext, PeopleViewer viewer, Guid employeeId, CancellationToken cancellationToken)
     {
-        // Personal details follow the Personal keys and job history the Jobs keys (B-214); the branch is read once.
+        // Personal details follow the Personal keys and job history the Jobs keys (B-214); each reach is read once.
         var isSelf = viewer.EmployeeId == employeeId;
-        bool? inBranch = null;
-        async Task<bool> InBranchAsync() => inBranch ??= viewer.EmployeeId is { } managerId
-            && (await Changes.ChangeSupport.BranchAsync(dbContext, managerId, cancellationToken)).Contains(employeeId);
+        var reached = new Dictionary<string, bool>();
+        async Task<bool> ReachesAsync(string scope)
+        {
+            if (viewer.EmployeeId is not { } viewerId) return false;
+            if (!reached.TryGetValue(scope, out var reaches))
+                reached[scope] = reaches = (await ViewerReach.PeopleAsync(dbContext, viewerId, scope, cancellationToken)).Contains(employeeId);
+            return reaches;
+        }
 
         var access = isSelf || viewer.Personal == PersonalGrant.Change ? PersonalAccess.Full
-            : viewer.Personal == PersonalGrant.Everyone || (viewer.Personal == PersonalGrant.Team && await InBranchAsync()) ? PersonalAccess.Contact
+            : viewer.Personal == PersonalGrant.Everyone
+                || (viewer.Personal == PersonalGrant.Team && await ReachesAsync(PermissionScopes.DirectReports))
+                || (viewer.Personal == PersonalGrant.Unit && await ReachesAsync(PermissionScopes.OrgUnit)) ? PersonalAccess.Contact
             : PersonalAccess.Directory;
         var canEdit = viewer.Personal == PersonalGrant.Change || (isSelf && viewer.UpdatesSelf);
-        var jobHistory = viewer.ManagesPeople || viewer.ViewsTenant || (!isSelf && viewer.ManagesTeam && await InBranchAsync());
+        var jobHistory = viewer.ManagesPeople || viewer.ViewsTenant || (!isSelf && viewer.ManagesTeam && await ReachesAsync(viewer.JobReach));
         return new(access, canEdit, jobHistory);
     }
 
@@ -158,7 +170,7 @@ public sealed class PersonalAudienceDirectory(HttpClient httpClient, IInternalSe
 
         var full = Names(role => role.PermissionKey == CorePermissions.PersonalManage);
         var contact = Names(role => role.Scope == PermissionScopes.Tenant);
-        var team = roles.Any(role => role.PermissionKey == CorePermissions.PersonalView && role.Scope == PermissionScopes.DirectReports);
+        var team = roles.Any(role => role.PermissionKey == CorePermissions.PersonalView && role.Scope is PermissionScopes.DirectReports or PermissionScopes.OrgUnit);
         return new PeoplePersonalAudienceDto(contact, team, full);
     }
 }

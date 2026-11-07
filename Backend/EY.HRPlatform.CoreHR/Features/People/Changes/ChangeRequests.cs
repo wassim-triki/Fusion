@@ -1,3 +1,4 @@
+using EY.HRPlatform.CoreHR.Features.Security;
 using System.Data;
 using System.Globalization;
 using System.Net.Http.Json;
@@ -22,7 +23,8 @@ namespace EY.HRPlatform.CoreHR.Features.People.Changes;
 /// <param name="ManagesPeople">HR (<c>core.employee.manage</c>): their changes apply at once.</param>
 /// <param name="Proposes">Proposes changes for their direct reports (<c>core.change.propose</c>).</param>
 /// <param name="Approves">Approves changes (<c>core.change.approve</c> for everyone).</param>
-public sealed record ChangeActor(string UserId, Guid? EmployeeId, string Name, bool ManagesPeople, bool Proposes, bool Approves)
+public sealed record ChangeActor(string UserId, Guid? EmployeeId, string Name, bool ManagesPeople, bool Proposes, bool Approves,
+    bool ProposesForUnit = false)
 {
     public string Audit => $"{UserId}|{Name}";
 }
@@ -439,7 +441,14 @@ public sealed class ChangeRequestService(
         var reportsToProposer = await db.ManagerRelationships.AsNoTracking().AnyAsync(line => line.SubjectEmployeeId == subject.Id
             && line.ManagerEmployeeId == proposerId && line.Type == ReportingRelationshipType.PrimaryManager
             && line.EffectiveFrom <= at && (line.EffectiveTo == null || at < line.EffectiveTo), cancellationToken);
-        return reportsToProposer ? null : new Error(ForbiddenCode, $"You can propose changes for your team. {subject.DisplayName} isn't on it.");
+        if (reportsToProposer) return null;
+        // "Their unit" (B-212): anyone in the unit they work in or a unit under it, and their whole branch.
+        if (actor.ProposesForUnit
+            && (await ViewerReach.PeopleAsync(db, proposerId, PermissionScopes.OrgUnit, cancellationToken)).Contains(subject.Id))
+            return null;
+        return actor.ProposesForUnit
+            ? new Error(ForbiddenCode, $"You can propose changes for your unit. {subject.DisplayName} isn't in it.")
+            : new Error(ForbiddenCode, $"You can propose changes for your team. {subject.DisplayName} isn't on it.");
     }
 
     private static Error? MayDecide(WorkforceChangeRequest request, ChangeActor actor)

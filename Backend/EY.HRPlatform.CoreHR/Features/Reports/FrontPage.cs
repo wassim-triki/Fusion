@@ -43,7 +43,7 @@ public sealed partial class ReportEngine
         await RunCoreAsync(new("headcount", "division", "range", new(1900, 1, 1), today, "month", [], []), viewer, ct, projection);
         var currentKeys = projection.Snapshots.Single(s => s.Date == today).People.Select(p => p.Key).ToList();
         var currentIds = projection.People.Values.Where(p => currentKeys.Contains(p.StableEmployeeKey)).Select(p => p.Id).ToList();
-        var audience = viewer.Hr ? EmployeeReadAudience.HrAdmin : viewer.Scope == PermissionScopes.DirectReports
+        var audience = viewer.Hr ? EmployeeReadAudience.HrAdmin : viewer.Partial
             ? EmployeeReadAudience.Manager : EmployeeReadAudience.Employee;
         var jobAudience = viewer.JobHr ? EmployeeReadAudience.HrAdmin : audience;
         var missing = await employeeFields.VisibleRecordsAsync(currentIds, audience, jobAudience, ct);
@@ -56,7 +56,7 @@ public sealed partial class ReportEngine
         roles = roles.OrderBy(r => r.Status == OpenRoleStatus.Filled).ThenBy(r => r.FilledOn).ThenBy(r => r.CreatedAt).ToList();
         string? KeyOf(Guid? id) => id is { } known ? projection.People.GetValueOrDefault(known)?.StableEmployeeKey : null;
         var units = projection.UnitsOn(today);
-        return new(today, projection.First, projection.Last, viewer.Scope == PermissionScopes.DirectReports,
+        return new(today, projection.First, projection.Last, viewer.Partial,
             projection.Fields, projection.Spans(),
             roles.Select(r => new FrontPageRoleDto(r.Id, projection.Fields.Contains("job") ? r.JobTitle : null,
                 projection.Fields.Contains("place") ? r.PlaceName : null, units.GetValueOrDefault(r.OrgUnitId)?.Name, r.TargetStartDate,

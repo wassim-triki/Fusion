@@ -8,10 +8,10 @@ export const HR_ADMIN_ROLE = "HRAdmin";
 
 const SELF_SCOPE_RANK = 1;
 const DIRECT_REPORTS_SCOPE_RANK = 2;
-const ORG_UNIT_SCOPE_RANK = 2;
-const TENANT_SCOPE_RANK = 3;
-const MODULE_SCOPE_RANK = 3;
-const PLATFORM_SCOPE_RANK = 4;
+const ORG_UNIT_SCOPE_RANK = 3;
+const TENANT_SCOPE_RANK = 4;
+const MODULE_SCOPE_RANK = 4;
+const PLATFORM_SCOPE_RANK = 5;
 
 const CORE_PERMISSION = {
   overviewView: "core.overview.view",

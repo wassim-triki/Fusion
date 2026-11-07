@@ -135,7 +135,8 @@ function Pick({
   value: string;
   /** What the pick reads when it differs from the option's menu label. */
   shown?: string;
-  options: { value: string; label: string }[];
+  /** A line under an option's label in the menu, saying what it means. */
+  options: { value: string; label: string; detail?: string }[];
   onChange: (value: string) => void;
   muted?: boolean;
   flash?: boolean;
@@ -159,7 +160,14 @@ function Pick({
         <DropdownMenuRadioGroup value={value} onValueChange={onChange}>
           {options.map((option) => (
             <DropdownMenuRadioItem key={option.value} value={option.value}>
-              {option.label}
+              {option.detail ? (
+                <span className="flex flex-col gap-0.5 py-0.5">
+                  <span>{option.label}</span>
+                  <span className="type-meta text-muted-foreground">{option.detail}</span>
+                </span>
+              ) : (
+                option.label
+              )}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>
@@ -235,7 +243,11 @@ function Sentence({
               label={say("roles.reachOf", { what })}
               value={cell.reach}
               flash={flash}
-              options={reaches.map((reach) => ({ value: reach, label: say(`roles.reaches.${reach}`) }))}
+              options={reaches.map((reach) => ({
+                value: reach,
+                label: say(`roles.reaches.${reach}`),
+                detail: say(`roles.reachDetails.${reach}`),
+              }))}
               onChange={(reach) => onChange({ ...cell, reach: reach as RoleReach })}
             />
           ) : (

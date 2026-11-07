@@ -126,6 +126,79 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
             Assert.NotNull(applies.Value.Change);
         });
 
+    [RelationalDatabaseFact]
+    public Task The_manager_hears_when_leave_is_set_changed_ended_or_cancelled_with_its_type_and_nobody_else_does()
+        => WithDatabaseAsync(async (db, ctx, other) =>
+        {
+            var requests = Requests(db, ctx);
+            var annual = LeaveType(db, ctx.Tenant.TenantId, "Annual leave");
+            var monday = NextMonday(Today.AddDays(14));
+            var leave = (await requests.ProposeAsync(ctx.KarimKey, new ProposeChangeRequest(
+                Leave: new LeaveChangeRequest(annual, monday, monday.AddDays(4))), Hr, default)).Value.Change!;
+
+            // Amina, Karim's manager, hears it with the type; Karim and everyone else don't; another tenant sees nothing.
+            var row = Assert.Single(await db.Notifications.AsNoTracking().ToListAsync());
+            Assert.Equal((ctx.AminaId, CoreNotificationKind.TeamLeave, leave.Id), (row.RecipientEmployeeId, row.Kind, row.ChangeId));
+            var feed = Feed(db, ctx.Tenant.TenantId);
+            var item = Assert.Single((await feed.PageAsync(ctx.AminaId, null, null, "en", default)).Items);
+            var day = (DateTime date) => date.ToString("ddd d MMM", System.Globalization.CultureInfo.InvariantCulture);
+            Assert.Equal(($"Karim Zayed is on leave from {day(monday)}", $"Annual leave · back {day(monday.AddDays(7))}", "/core/team"),
+                (item.Title, item.Context, item.Href));
+            Assert.Empty((await feed.PageAsync(ctx.KarimId, null, null, "en", default)).Items);
+            Assert.Equal(0, await other.Db.Notifications.CountAsync());
+
+            // HR changes it, then cancels it: one more each, the cancellation answering once.
+            var edit = new EditWorkforceChangeCommandHandler(db, Service(db, ctx), new WorkforceChangeReader(db));
+            Assert.True((await edit.Handle(new EditWorkforceChangeCommand(leave.Id,
+                new EditChangeRequest(Leave: new LeaveChangeRequest(annual, monday, null)), Actor, true), default)).IsSuccess);
+            Assert.True((await CancelAsync(db, ctx, leave.Id)).IsSuccess);
+            var titles = (await feed.PageAsync(ctx.AminaId, null, null, "en", default)).Items.Select(entry => entry.Title).ToList();
+            Assert.Equal(3, titles.Count);
+            Assert.Contains($"Karim Zayed's leave from {day(monday)} changed", titles);
+            Assert.Contains($"Karim Zayed's leave from {day(monday)} was cancelled", titles);
+
+            // Leave that started ends early.
+            var sick = LeaveType(db, ctx.Tenant.TenantId, "Sick leave");
+            var now = (await requests.ProposeAsync(ctx.KarimKey, new ProposeChangeRequest(
+                Leave: new LeaveChangeRequest(sick, Today, Today.AddDays(5))), Hr, default)).Value.Change!;
+            Assert.True((await edit.Handle(new EditWorkforceChangeCommand(now.Id,
+                new EditChangeRequest(Leave: new LeaveChangeRequest(sick, Today, Today)), Actor, true), default)).IsSuccess);
+            Assert.Equal(["TeamLeave.now", "TeamLeave.endedEarly"], await db.Notifications.AsNoTracking()
+                .Where(entry => entry.ChangeId == now.Id).OrderBy(entry => entry.OccurredAt).Select(entry => entry.TitleKey).ToListAsync());
+            Assert.Equal(0, await other.Db.Notifications.CountAsync());
+        });
+
+    [RelationalDatabaseFact]
+    public Task Ended_leave_stays_in_history_with_its_type_and_working_days_while_leave_now_does_not()
+        => WithDatabaseAsync(async (db, ctx, _) =>
+        {
+            var annual = LeaveType(db, ctx.Tenant.TenantId, "Annual leave");
+            var from = DateOnly.FromDateTime(NextMonday(Today.AddDays(-30)));
+            var until = from.AddDays(11); // Two weeks, Monday to the second Friday: 10 working days.
+            db.WorkforceChanges.Add(WorkforceChange.Create(ctx.Tenant.TenantId, ctx.KarimId, WorkforceChangeKind.Leave, from, null,
+                System.Text.Json.JsonSerializer.Serialize(new WorkforceChangeDetails(LeaveTypeId: annual, LeaveType: "Annual leave", LeaveUntil: until),
+                    WorkforceChangeRecorder.Json), "test", [], until));
+            await db.SaveChangesAsync();
+            Assert.True((await Requests(db, ctx).ProposeAsync(ctx.KarimKey, new ProposeChangeRequest(
+                Leave: new LeaveChangeRequest(annual, Today, Today.AddDays(3))), Hr, default)).IsSuccess);
+
+            var history = (await new PeopleTimelineComposer(db).ComposeAsync(ctx.KarimId, ctx.KarimKey, default)).Timeline;
+            var ended = Assert.Single(history, item => item.Kind == PeopleChangeKind.Leave);
+            Assert.Equal(new PeopleTimelineLeaveDto("Annual leave", from, until, 10), ended.Leave);
+        });
+
+    [RelationalDatabaseFact]
+    public Task A_manager_whose_leave_request_is_approved_isnt_told_about_it_again()
+        => WithDatabaseAsync(async (db, ctx, _) =>
+        {
+            var requests = Requests(db, ctx);
+            await requests.UpdateSettingsAsync([ChangeApprovalTypes.Leave], "test", null, default);
+            var waits = await requests.ProposeAsync(ctx.KarimKey, new ProposeChangeRequest(Leave: new LeaveChangeRequest(
+                LeaveType(db, ctx.Tenant.TenantId, "Annual leave"), Today.AddDays(20), Today.AddDays(24))), AminaProposes(ctx), default);
+            Assert.True((await requests.ApproveAsync(waits.Value.Request!.Id, Hr, default)).IsSuccess);
+            Assert.DoesNotContain(await db.Notifications.AsNoTracking().ToListAsync(), item => item.Kind == CoreNotificationKind.TeamLeave);
+        });
+
     private static Guid LeaveType(CoreHRDbContext db, Guid tenantId, string label)
     {
         var value = CompanyListValue.Create(tenantId, CompanyList.LeaveTypes, label, $"leave-{Guid.NewGuid():N}"[..20], 0, "test");

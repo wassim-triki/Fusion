@@ -1,5 +1,11 @@
 # LOG — the one history
 
+- ○ **B-317** closed on evidence, 2026-11-07: shell Home tests stub `TopBarSearch` like `TopBarPreferences`; `pnpm --filter shell exec vitest run src/features/home` 26/26 (18 were failing).
+- **B-319 B-315 + B-316** built, 2026-11-07, **In review** (no screen, see the board):
+  - **B-315** `CoreNotificationKind.TeamLeave`: `CoreChangeNotifications.StageLeaveAsync` tells the person's primary manager today when leave is set (on apply: HR at once, an approved request, or a proposal that needs no approval), changed in place (`changed`) or ended early (`endedEarly`, a started leave's last day moved earlier); leave cancellation now goes through `StageCancelledAsync` (answers the latest leave notification once). Skips the actor, the proposer whose request was approved, and the person. Revisions dedupe per occasion (`CoreNotification.For(..., occasion)`). Words en/fr/ar with the type and return day; no Upcoming entry for leave.
+  - **B-316** `PeopleChangeKind.Leave` events in `PeopleTimeline` for leave whose last day has passed (`PeopleTimelineLeaveDto`: type, from, until, working days from the work week); `ProfileTimeline` shows "{type}, N working days" and the dates with an info dot. `@repo/api` types updated.
+  - Checks: CoreHR 492/0/0 (+3: manager hears set/changed/cancelled/ended early with type, person and another tenant don't; approved manager request not told again; ended leave in history with 10 working days, leave now not); core worker-profile 8/8 (+1); core type-check clean. No journey: no authorization change beyond who is notified.
+
 - ○ **B-318** closed on evidence, 2026-11-07: the `Manager` platform role is a label only. It is set in `AccessProfileService` and `WorkforceAccountsController` and read by the account label; no module authorizes on it (Training's admin controllers need `PlatformAdmin`/`HRAdmin`; Interview and the colleague frontends don't read it). A unit holder labelled Manager gains nothing.
 - ✓ **B-212** accepted, 2026-11-07 (user: "sure, proceed"): roles reach "their unit"; "See · everyone" for plans reads put-forward plans on the Performance tab too. Closes **B-313** (✓): branded emails, Access › History, on leave, their unit.
 - **B-313 session 3: B-212 Their unit** built, 2026-11-07, **In review** (screen `plans/B-212-screens/01-role-their-unit.png`):

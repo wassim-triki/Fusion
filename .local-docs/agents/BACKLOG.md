@@ -33,10 +33,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In progress
 
-- [ ] **B-319** Leave and Home follow-ups, one batch (user 2026-11-07: "batch em") · Core HR, Shell · 2026-11-07
-  - [ ] **B-315** Tell the manager when leave is set for someone on their team (the Leave sheet's drawing lists it under "Also changes"): a Core notification and email like team joining/leaving · Core HR · 2026-11-07
-  - [ ] **B-316** Past leave on the person's Job and history (the drawing keeps ended leave there); Job information is built from job rows today · Core HR · 2026-11-07
-  - [ ] **B-317** Shell Home tests fail since the top-bar search (`20c3f0b1`): `fusion-home.test.tsx` renders `TopBarSearch`, which needs an `AuthProvider` (18 failing, unrelated to B-229) · Shell · 2026-11-07
+None.
 
 ### Rebuild program tracking
 
@@ -57,7 +54,10 @@ None waiting.
 
 ### Other reviews
 
-None waiting.
+- [ ] **B-319** Leave and Home follow-ups (user 2026-11-07: "batch em") · Core HR · 2026-11-07
+      Look at: the words below in the bell (Amira or Mariam, as a manager whose report's leave HR sets), and Aicha's Person › Job › History once her 7–20 Nov leave is over (21 Nov on): "Annual leave, 10 working days" with "7 Nov – 20 Nov" under it, an info-coloured dot.
+  - [ ] **B-315** Manager told about a report's leave: "Karim Zayed is on leave from Mon 16 Nov" / "…'s leave from … changed" / "…'s leave ends early" / "…'s leave from … was cancelled", context "Annual leave · back Mon 30 Nov"; email the same, button "Open your team". Not the person, not whoever set it, not a manager whose own request was approved · Core HR · 2026-11-07
+  - [ ] **B-316** Ended leave in Person › Job › History (type for every History reader: HR, the manager, the person). No screen: Core HR has no demo clock, so past leave can't be made through the API; drawn from a component test. Differs from the drawing: no "Set by … on …" line for HR · Core HR · 2026-11-07
 
 ## Ready
 

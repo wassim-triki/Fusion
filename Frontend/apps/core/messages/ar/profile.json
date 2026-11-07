@@ -50,7 +50,10 @@
   },
   "history": {
     "empty": "لا سجل توظيف بعد.",
-    "personalDetails": "تحديث بيانات التواصل"
+    "personalDetails": "تحديث بيانات التواصل",
+    "leave": "{type}، {count, plural, one {يوم عمل واحد} two {يوما عمل} few {# أيام عمل} many {# يوم عمل} other {# يوم عمل}}",
+    "leaveUntyped": "إجازة، {count, plural, one {يوم عمل واحد} two {يوما عمل} few {# أيام عمل} many {# يوم عمل} other {# يوم عمل}}",
+    "leaveDates": "{from} – {until}"
   },
   "record": {
     "notFound": "الموظف غير موجود",

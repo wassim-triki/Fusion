@@ -1,4 +1,5 @@
 using EY.HRPlatform.CoreHR.Domain.Entities;
+using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Features.People.Changes;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence;
 using EY.HRPlatform.SharedKernel.Auth;
@@ -49,6 +50,34 @@ public sealed class CoreChangeNotifications(CoreHRDbContext db, IHttpContextAcce
     }
 
     /// <summary>
+    /// Tells the person's manager today that they go on leave, or that their leave changed or ends early
+    /// (<paramref name="occasion"/>), with its type. Neither whoever set it nor <paramref name="proposedBy"/> (a manager whose
+    /// request was approved) hears it.
+    /// </summary>
+    public async Task StageLeaveAsync(WorkforceChange change, string? occasion, Guid? proposedBy, CancellationToken cancellationToken)
+    {
+        var now = DateTime.UtcNow;
+        var today = DateOnly.FromDateTime(now);
+        var at = WorkforceChangeService.At(today);
+        var managerId = await db.ManagerRelationships.AsNoTracking()
+            .Where(line => line.SubjectEmployeeId == change.EmployeeId && line.Type == ReportingRelationshipType.PrimaryManager
+                && line.EffectiveFrom <= at && (line.EffectiveTo == null || at < line.EffectiveTo))
+            .Select(line => (Guid?)line.ManagerEmployeeId)
+            .FirstOrDefaultAsync(cancellationToken);
+        var actorEmployeeId = http?.HttpContext?.User.GetEmployeeId();
+        if (managerId is not { } recipient || recipient == actorEmployeeId || recipient == proposedBy || recipient == change.EmployeeId)
+            return;
+        var employee = await db.Employees.AsNoTracking().FirstAsync(item => item.Id == change.EmployeeId, cancellationToken);
+        var details = WorkforceChangeService.ReadDetails(change);
+        var back = LeaveReader.Back(change.LastDay, await LeaveReader.WorkWeekAsync(db, cancellationToken));
+        var moment = new CoreChangeMoment(recipient, CoreNotificationKind.TeamLeave, change.EffectiveDate,
+            [WorkforceChangeService.Ref(employee)], Summary: details.LeaveType, Back: back, Occasion: occasion);
+        db.Notifications.Add(CoreNotification.For(change.TenantId, recipient, CoreNotificationKind.TeamLeave, change.Id,
+            CoreChangeMoments.Words(moment, CoreMomentTense.Recorded, today, ChangeSupport.ActorName(change.UpdatedBy ?? change.CreatedBy), actorEmployeeId),
+            now, occasion is null ? null : now.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+    }
+
+    /// <summary>
     /// Tells everyone the change told that it was cancelled, from the notifications it stored rather than recomputed, so
     /// a cancelled hire (the person is deleted) still reaches the manager. Their earlier rows stay as history; whoever
     /// cancelled hears nothing.
@@ -59,6 +88,9 @@ public sealed class CoreChangeNotifications(CoreHRDbContext db, IHttpContextAcce
             .Where(item => item.ChangeId == change.Id && item.Kind != CoreNotificationKind.ChangeCancelled)
             .OrderBy(item => item.OccurredAt).ThenBy(item => item.Id)
             .ToListAsync(cancellationToken);
+        // Leave changed in place told its manager more than once: the cancellation answers the latest.
+        told = told.GroupBy(item => (item.Kind, item.RecipientEmployeeId)).Select(group => group.Last())
+            .OrderBy(item => item.OccurredAt).ThenBy(item => item.Id).ToList();
         var actorEmployeeId = http?.HttpContext?.User.GetEmployeeId();
         var actorName = ChangeSupport.ActorName(actor);
         var now = DateTime.UtcNow;

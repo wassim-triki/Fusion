@@ -18,7 +18,9 @@ public enum PeopleChangeKind
     EmploymentEnded,
     WorkEstablished,
     /// <summary>The person or HR changed contact or personal details; the fields name the sections, never the values.</summary>
-    PersonalDetails
+    PersonalDetails,
+    /// <summary>Leave that is over (B-316): <see cref="PeopleTimelineEventDto.Leave"/> carries its type and days.</summary>
+    Leave
 }
 
 /// <summary>A single changed value expressed as before → after; either side may be absent.</summary>
@@ -37,7 +39,11 @@ public sealed record PeopleTimelineEventDto(
     PeopleChangeKind Kind,
     string Title,
     bool IsFuture,
-    IReadOnlyList<PeopleChangeFieldDto> Fields);
+    IReadOnlyList<PeopleChangeFieldDto> Fields,
+    PeopleTimelineLeaveDto? Leave = null);
+
+/// <summary>Ended leave as History shows it: its type (every History reader may see it) and its working days.</summary>
+public sealed record PeopleTimelineLeaveDto(string? Type, DateOnly From, DateOnly Until, int WorkingDays);
 
 public sealed record PeopleTimelineDto(
     IReadOnlyList<PeopleUpcomingChangeDto> Upcoming,
@@ -109,9 +115,32 @@ public sealed class PeopleTimelineComposer(CoreHRDbContext dbContext)
         var upcoming = BuildUpcoming(employeeKey, today, assignments, relationships, orgNames, managerNames);
         var timeline = BuildTimeline(today, employments, assignments, relationships, orgNames, managerNames);
         timeline.AddRange(await PersonalDetailEventsAsync(employeeId, cancellationToken));
+        timeline.AddRange(await EndedLeaveEventsAsync(employeeId, DateOnly.FromDateTime(today), cancellationToken));
         timeline = timeline.OrderByDescending(e => e.EffectiveDate).ThenBy(e => e.Kind).ToList();
 
         return new PeopleTimelineDto(upcoming, timeline);
+    }
+
+    /// <summary>Leave whose last day has passed; leave now or ahead shows under Coming up instead.</summary>
+    private async Task<IEnumerable<PeopleTimelineEventDto>> EndedLeaveEventsAsync(
+        Guid employeeId, DateOnly today, CancellationToken cancellationToken)
+    {
+        var leaves = await dbContext.WorkforceChanges.AsNoTracking()
+            .Where(item => item.EmployeeId == employeeId && item.Kind == WorkforceChangeKind.Leave && !item.IsCancelled
+                && item.LastDay != null && item.LastDay < today)
+            .ToListAsync(cancellationToken);
+        if (leaves.Count == 0)
+            return [];
+        var week = await Changes.LeaveReader.WorkWeekAsync(dbContext, cancellationToken);
+        return leaves.Select(leave =>
+        {
+            var until = leave.LastDay!.Value;
+            var days = Enumerable.Range(0, until.DayNumber - leave.EffectiveDate.DayNumber + 1)
+                .Count(offset => week.Length == 0 || week.Contains((int)leave.EffectiveDate.AddDays(offset).DayOfWeek));
+            var type = Changes.WorkforceChangeService.ReadDetails(leave).LeaveType;
+            return new PeopleTimelineEventDto(Changes.WorkforceChangeService.At(leave.EffectiveDate), PeopleChangeKind.Leave,
+                type ?? "Leave", false, [], new PeopleTimelineLeaveDto(type, leave.EffectiveDate, until, days));
+        });
     }
 
     private async Task<IEnumerable<PeopleTimelineEventDto>> PersonalDetailEventsAsync(

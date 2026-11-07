@@ -183,7 +183,7 @@ public sealed class ChangeRequestService(
         Task<Result<WorkforceChange>> Stage(Employee person, string audit) => body switch
         {
             { Job: { } job } => changes.StageJobChangeAsync(person, job, audit, canManageEmployees: true, cancellationToken),
-            { Leave: { } leave } => changes.StageLeaveAsync(person, leave, audit, cancellationToken),
+            { Leave: { } leave } => changes.StageLeaveAsync(person, leave, audit, cancellationToken, actor.EmployeeId),
             _ => changes.StageEndEmploymentAsync(person, body.End!, audit, cancellationToken),
         };
 
@@ -308,7 +308,8 @@ public sealed class ChangeRequestService(
                     WorkforceChangeRequestKind.JobChange => await changes.StageJobChangeAsync(subject,
                         JsonSerializer.Deserialize<JobChangeRequest>(request.PayloadJson, Json)!, requester, canManageEmployees: true, cancellationToken),
                     WorkforceChangeRequestKind.Leave => await changes.StageLeaveAsync(subject,
-                        JsonSerializer.Deserialize<LeaveChangeRequest>(request.PayloadJson, Json)!, requester, cancellationToken),
+                        JsonSerializer.Deserialize<LeaveChangeRequest>(request.PayloadJson, Json)!, requester, cancellationToken,
+                        request.RequestedByEmployeeId),
                     _ => await changes.StageEndEmploymentAsync(subject,
                         JsonSerializer.Deserialize<EndEmploymentChangeRequest>(request.PayloadJson, Json)!, requester, cancellationToken),
                 };

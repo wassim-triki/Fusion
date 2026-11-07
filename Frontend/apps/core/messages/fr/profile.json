@@ -50,7 +50,10 @@
   },
   "history": {
     "empty": "Aucun historique d’emploi pour l’instant.",
-    "personalDetails": "Coordonnées mises à jour"
+    "personalDetails": "Coordonnées mises à jour",
+    "leave": "{type}, {count, plural, one {# jour ouvré} other {# jours ouvrés}}",
+    "leaveUntyped": "Congé, {count, plural, one {# jour ouvré} other {# jours ouvrés}}",
+    "leaveDates": "{from} – {until}"
   },
   "record": {
     "notFound": "Collaborateur introuvable",

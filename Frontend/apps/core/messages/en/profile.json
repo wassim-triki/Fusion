@@ -50,7 +50,10 @@
   },
   "history": {
     "empty": "No employment history yet.",
-    "personalDetails": "Updated contact details"
+    "personalDetails": "Updated contact details",
+    "leave": "{type}, {count, plural, one {# working day} other {# working days}}",
+    "leaveUntyped": "Leave, {count, plural, one {# working day} other {# working days}}",
+    "leaveDates": "{from} – {until}"
   },
   "record": {
     "notFound": "Person not found",

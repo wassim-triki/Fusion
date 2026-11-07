@@ -23,6 +23,8 @@ public enum CoreNotificationKind
     ChangeApproved = 7,
     /// <summary>To whoever asked: their request was declined, with the reason.</summary>
     ChangeDeclined = 8,
+    /// <summary>To a manager: someone on their team goes on leave, or their leave changes or ends early.</summary>
+    TeamLeave = 9,
 }
 
 /// <summary>
@@ -56,7 +58,7 @@ public sealed class CoreNotification : ITenantEntity, IFeedNudgeRecipient
     public string Href { get; private set; } = string.Empty;
     public DateTime OccurredAt { get; private set; }
     public DateTime? ReadAt { get; private set; }
-    /// <summary>One notification per change, kind and recipient.</summary>
+    /// <summary>One notification per change, kind and recipient (and occasion, for leave changed in place).</summary>
     public string DedupeKey { get; private set; } = string.Empty;
 
     public int EmailAttempts { get; private set; }
@@ -67,7 +69,7 @@ public sealed class CoreNotification : ITenantEntity, IFeedNudgeRecipient
     public bool EmailPending => EmailSentAt is null && EmailSkippedReason is null && EmailAttempts < MaxEmailAttempts;
 
     public static CoreNotification For(Guid tenantId, Guid recipientEmployeeId, CoreNotificationKind kind, Guid changeId,
-        CoreNotificationMessage text, DateTime occurredAt)
+        CoreNotificationMessage text, DateTime occurredAt, string? occasion = null)
     {
         if (tenantId == Guid.Empty || recipientEmployeeId == Guid.Empty || changeId == Guid.Empty)
             throw new ArgumentException("A notification needs a tenant, a recipient and the change that raised it.");
@@ -86,7 +88,7 @@ public sealed class CoreNotification : ITenantEntity, IFeedNudgeRecipient
             ActorEmployeeId = text.ActorName is null ? null : text.ActorEmployeeId,
             Href = text.Href,
             OccurredAt = occurredAt,
-            DedupeKey = $"{kind}:{changeId:N}:{recipientEmployeeId:N}",
+            DedupeKey = occasion is null ? $"{kind}:{changeId:N}:{recipientEmployeeId:N}" : $"{kind}:{changeId:N}:{recipientEmployeeId:N}:{occasion}",
             EmailNextAttemptAt = occurredAt,
         };
     }

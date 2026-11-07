@@ -341,7 +341,9 @@ export type PeopleChangeKind =
   | "EmploymentEnded"
   | "WorkEstablished"
   /** The person or HR changed the Personal tab: `fields` name the sections, never the values. */
-  | "PersonalDetails";
+  | "PersonalDetails"
+  /** Leave that is over: `leave` carries its type and working days. */
+  | "Leave";
 
 export interface PeopleChangeFieldDto {
   label: string;
@@ -362,6 +364,15 @@ export interface PeopleTimelineEventDto {
   title: string;
   isFuture: boolean;
   fields: PeopleChangeFieldDto[];
+  leave?: PeopleTimelineLeaveDto | null;
+}
+
+/** Ended leave in History: the type every History reader may see, and its working days. */
+export interface PeopleTimelineLeaveDto {
+  type: string | null;
+  from: string;
+  until: string;
+  workingDays: number;
 }
 
 export interface PeopleTimelineDto {

@@ -184,6 +184,24 @@ describe("ProfileTimeline", () => {
     expect(screen.getByText("Mobile, Home address")).toBeInTheDocument();
     expect(screen.queryByText("—")).not.toBeInTheDocument();
   });
+
+  it("keeps ended leave with its type and working days", () => {
+    render(
+      <ProfileTimeline
+        events={[
+          {
+            kind: "Leave",
+            effectiveDate: "2026-10-19",
+            title: "Annual leave",
+            fields: [],
+            isFuture: false,
+            leave: { type: "Annual leave", from: "2026-10-19", until: "2026-11-06", workingDays: 15 },
+          },
+        ]}
+      />
+    );
+    expect(screen.getByText("Annual leave, 15 working days")).toBeInTheDocument();
+  });
 });
 
 describe("tenure", () => {

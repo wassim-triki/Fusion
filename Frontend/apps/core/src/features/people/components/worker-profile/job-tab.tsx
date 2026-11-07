@@ -329,6 +329,7 @@ export function ProfileTimeline({ events }: { events: PeopleTimelineEventDto[] }
     <ol>
       {ordered.map((event, index) => {
         const personal = event.kind === "PersonalDetails";
+        const leave = event.kind === "Leave" ? event.leave : null;
         return (
           <li key={`${event.kind}-${event.effectiveDate}-${index}`} className="flex gap-4">
             <span
@@ -343,14 +344,30 @@ export function ProfileTimeline({ events }: { events: PeopleTimelineEventDto[] }
               <span
                 className={cn(
                   "mt-1 size-2.5 shrink-0 rounded-full ring-4",
-                  event.isFuture ? "bg-primary ring-primary/15" : "bg-muted-foreground/35 ring-transparent"
+                  leave
+                    ? "bg-info ring-info/15"
+                    : event.isFuture
+                      ? "bg-primary ring-primary/15"
+                      : "bg-muted-foreground/35 ring-transparent"
                 )}
               />
               {index < last ? <span className="w-px flex-1 bg-border" /> : null}
             </div>
             <div className={cn("min-w-0", index < last && "pb-6")}>
-              <p className="type-label text-foreground">{personal ? t("personalDetails") : event.title}</p>
-              {personal ? (
+              <p className="type-label text-foreground">
+                {personal
+                  ? t("personalDetails")
+                  : leave
+                    ? leave.type
+                      ? t("leave", { type: leave.type, count: leave.workingDays })
+                      : t("leaveUntyped", { count: leave.workingDays })
+                    : event.title}
+              </p>
+              {leave ? (
+                <p className="mt-1 type-meta text-muted-foreground">
+                  {t("leaveDates", { from: workforceDate(leave.from), until: workforceDate(leave.until) })}
+                </p>
+              ) : personal ? (
                 event.fields.length > 0 ? (
                   <p className="mt-1 type-meta text-muted-foreground">
                     {event.fields

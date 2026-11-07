@@ -10,7 +10,9 @@ namespace EY.HRPlatform.CoreHR.Features.Notifications;
 /// One thing a workforce change means for one person (B-002 N8): the person hears that their manager or job changes, a
 /// manager hears who joins or leaves their team. <paramref name="People"/> are the people joining or leaving (one
 /// notification per manager, however many move); <paramref name="Manager"/> is the person's manager after the change.
-/// <paramref name="Date"/> is the day it happens (an end of employment: the last day).
+/// <paramref name="Date"/> is the day it happens (an end of employment: the last day). For leave, <paramref name="Summary"/>
+/// is its type, <paramref name="Back"/> the first working day after it and <paramref name="Occasion"/> names a change in
+/// place ("changed", "endedEarly").
 /// </summary>
 public sealed record CoreChangeMoment(
     Guid RecipientEmployeeId,
@@ -20,7 +22,9 @@ public sealed record CoreChangeMoment(
     ChangePersonRef? Manager = null,
     bool LastDay = false,
     string? Summary = null,
-    string? HireTitle = null);
+    string? HireTitle = null,
+    DateOnly? Back = null,
+    string? Occasion = null);
 
 /// <summary>How a moment is worded: when it's recorded ahead or on the day, and under Upcoming on its date.</summary>
 public enum CoreMomentTense { Recorded, Upcoming }
@@ -177,6 +181,14 @@ public static class CoreChangeMoments
                 }
                 href = TeamPath;
                 break;
+            case CoreNotificationKind.TeamLeave:
+                values["name"] = moment.People[0].DisplayName;
+                values["type"] = moment.Summary ?? "";
+                title = moment.Occasion is { } occasion ? $"TeamLeave.{occasion}" : "TeamLeave" + suffix;
+                if (moment.Back is { } back) values["back"] = back.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                context = moment.Back is null ? "TeamLeave.context" : "TeamLeave.context.back";
+                href = TeamPath;
+                break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(moment), moment.Kind, "Choose a Core HR moment.");
         }
@@ -194,7 +206,7 @@ public static class CoreChangeMoments
             CoreNotificationKind.TeamJoining when told.ContextKey == "TeamJoining.context.hire" => "TeamJoining.hire.cancelled",
             CoreNotificationKind.TeamLeaving when told.TitleKey.StartsWith("TeamLeaving.lastDay", StringComparison.Ordinal) => "TeamLeaving.lastDay.cancelled",
             CoreNotificationKind.ManagerChanged or CoreNotificationKind.JobChanged or CoreNotificationKind.TeamJoining
-                or CoreNotificationKind.TeamLeaving => $"{told.Kind}.cancelled",
+                or CoreNotificationKind.TeamLeaving or CoreNotificationKind.TeamLeave => $"{told.Kind}.cancelled",
             _ => throw new ArgumentOutOfRangeException(nameof(told), told.Kind, "A cancellation answers what the change told."),
         };
         return new CoreNotificationMessage(title, actor is null ? null : "Context.cancelledBy", values, actor, told.Href,

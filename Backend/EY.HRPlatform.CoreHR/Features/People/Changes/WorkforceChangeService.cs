@@ -406,7 +406,7 @@ public sealed class WorkforceChangeService(
     /// neither waits for nor blocks the person's other changes. Overlapping leave is refused.
     /// </summary>
     public async Task<Result<WorkforceChange>> StageLeaveAsync(
-        Employee subject, LeaveChangeRequest request, string actor, CancellationToken cancellationToken)
+        Employee subject, LeaveChangeRequest request, string actor, CancellationToken cancellationToken, Guid? proposedBy = null)
     {
         var from = DateOnly.FromDateTime(request.From);
         var refused = ValidateDate(from);
@@ -419,6 +419,7 @@ public sealed class WorkforceChangeService(
         var change = WorkforceChange.Create(tenantContext.TenantId, subject.Id, WorkforceChangeKind.Leave, from, request.Note,
             JsonSerializer.Serialize(details.Value, WorkforceChangeRecorder.Json), actor, [], details.Value.LeaveUntil);
         dbContext.WorkforceChanges.Add(change);
+        await notifications.StageLeaveAsync(change, null, proposedBy, cancellationToken);
         return Result.Success(change);
     }
 
@@ -452,8 +453,11 @@ public sealed class WorkforceChangeService(
         var details = await LeaveDetailsAsync(subject, request, change, cancellationToken);
         if (details.IsFailure)
             return Result.Failure<WorkforceChange>(details.Error);
+        var endsEarly = change.EffectiveDate <= today && details.Value.LeaveUntil is { } newLast
+            && (change.LastDay is null || newLast < change.LastDay);
         change.ReviseLeave(from, details.Value.LeaveUntil, request.Note,
             JsonSerializer.Serialize(details.Value, WorkforceChangeRecorder.Json), actor);
+        await notifications.StageLeaveAsync(change, endsEarly ? "endedEarly" : "changed", null, cancellationToken);
         return Result.Success(change);
     }
 
@@ -525,6 +529,7 @@ public sealed class WorkforceChangeService(
                 tenantContext.TenantId, "WorkforceChange", change.Id, WorkforceAuditAction.WorkforceChangeCancelled,
                 WorkforceSourceType.Manual, actor, At(change.EffectiveDate),
                 changeDetails: $"Leave from {change.EffectiveDate:yyyy-MM-dd} cancelled."));
+            await notifications.StageCancelledAsync(change, actor, cancellationToken);
             return Result.Success(change);
         }
         var lastDayInEffect = change.Kind == WorkforceChangeKind.EndEmployment ? change.EffectiveDate.AddDays(-1) : change.EffectiveDate;

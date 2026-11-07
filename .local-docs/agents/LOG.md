@@ -1,5 +1,6 @@
 # LOG — the one history
 
+- ✓ **B-229** accepted, 2026-11-07 (user: "proceed"): on leave, set from the person's ⋯ menu and shown wherever they appear.
 - **B-313 session 2: B-229 On leave** built, 2026-11-07, **In review** (screen `plans/B-229-screens/aicha-on-leave.png`):
   - Leave is a fourth `WorkforceChangeKind` (`Leave`) with a `LastDay` column (migration `AddLeaveChanges`; null = not known yet). It writes no rows, so it neither waits for nor blocks job changes (left out of the ordering, latest-change and request-basis rules); overlapping leave, an unknown or retired type, a day outside employment and a past first day are refused. HR revises it in place (`PUT people/changes/{id}` with `leave`): anything while scheduled, type and last day once started (down to yesterday: End early); cancelled only before it starts.
   - Proposals carry `leave`; approval type `leave` (Settings › Changes and approvals), so a manager's leave for a report waits only when the company asks; HR's applies at once. Headline `Request.leave` in en/fr/ar.

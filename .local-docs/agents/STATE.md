@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** B-313 session 2, B-229 On leave, 2026-11-07, In review.
+**Last finished:** B-313 session 2, B-229 On leave, 2026-11-07, accepted.
 
 ## Active work
 
@@ -11,7 +11,7 @@
 - Recommendations preselected: leave type visible to HR and the manager only (others see "On leave"); pill + glance cell; open-ended leave allowed; leave follows the company's approval rules; History newest first; "their unit" = the unit they work in and every unit under it (units have no heads; Managers keep "their team"); email exactly like the invitation.
 - **Picks in (2026-11-07):** every recommendation; recorded in the plan under "Picks".
 - **Session 1 done (2026-11-07):** B-204 + B-231 built, committed (`6510e655`), accepted.
-- **Session 2 done (2026-11-07):** B-229 built, committed, In review (screen `plans/B-229-screens/aicha-on-leave.png`). Follow-ups boarded: B-315 manager notification, B-316 past leave in Job and history, B-317 shell Home tests (pre-existing).
+- **Session 2 done (2026-11-07):** B-229 built, committed (`74bb6010`), accepted (screen `plans/B-229-screens/aicha-on-leave.png`). Follow-ups boarded: B-315 manager notification, B-316 past leave in Job and history, B-317 shell Home tests (pre-existing).
 - **Next (fresh session): Session 3, B-212 "their unit"** per the plan's Session 3 (security-sensitive: high effort, `security-review`, API journey with unit/out-of-unit and cross-tenant negatives).
 - After the picks: sessions 1–3 per the plan, each fresh, each ends In review with one screen per new surface.
 

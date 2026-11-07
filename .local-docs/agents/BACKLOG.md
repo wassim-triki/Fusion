@@ -36,7 +36,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 - [ ] **B-313** The person record and who sees it, as one batch (user 2026-11-07): branded notification emails, Access › History, on leave, roles reaching "their unit" · Core HR, Performance, Identity · 2026-11-07
       Plan: [plans/B-229-batch-leave-history-reach-emails.md](plans/B-229-batch-leave-history-reach-emails.md). Explorer first (session 0), then three builds, one commit each: 1 B-204 + B-231, 2 B-229, 3 B-212.
       Session 0 done 2026-11-07: [plans/B-313-explorer.html](plans/B-313-explorer.html) (https://claude.ai/artifact/45gU5RWQJR8gqbekvF8Uy7), seven screens and seven questions; user took every recommendation (picks in the plan).
-      Session 1 accepted 2026-11-07: B-204 + B-231 (✓, LOG). Session 2 built 2026-11-07: B-229, In review below. Next: session 3 (B-212), fresh.
+      Session 1 accepted 2026-11-07: B-204 + B-231 (✓, LOG). Session 2 accepted 2026-11-07: B-229 (✓, LOG). Next: session 3 (B-212), fresh.
   - [ ] **B-212** Reach "their unit" for roles (D-25 draws it): Core HR's record reads and Performance resolve the viewer's unit and the units under it, then the Jobs, Personal and Plans areas offer it. Not offered in B-177 because nothing enforces it yet (`performance.cycle.view@OrgUnit` is unseeded and treated as a team) · Core HR, Performance, Identity · 2026-10-30
     User 2026-10-31 (B-179 screen 11 vs the drawing): the band's glance row gets manager, team, time with the company and location even though the left rail repeats them (keep the rail); a ⋯ menu at the band's top right like the drawing (empty if nothing fits); sections stacked one under another as drawn, not the newspaper grid, titles inside their sections (B-225); "do as the reference, we agreed on it for a reason". Tabs and filters: active state in the tenant's theme, outline with a subtle fill (as configured before); date pickers per B-227.
 
@@ -52,10 +52,6 @@ These are umbrella outcomes, not additional slices.
         Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 done (✓ 2026-10-31); B-178 done (✓ 2026-10-31); B-179 done (✓ 2026-10-31); B-180 done (✓ 2026-10-31); B-181 done (✓ 2026-10-31); B-182 done (✓ 2026-10-31); B-183 done (✓ 2026-11-01); B-184 done (✓ 2026-11-01); B-185 done (✓ 2026-11-01); B-186 done (✓ 2026-11-01); B-187 done (✓ 2026-11-01); B-188 done (✓ 2026-11-01); B-189 Reports done (✓ 2026-11-03); B-190 Core HR’s front page done (✓ 2026-11-04).
 
 ## In review
-
-- [ ] **B-229** On leave (B-313 session 2) · Core HR, Performance · 2026-11-07
-      Look at: [plans/B-229-screens/aicha-on-leave.png](plans/B-229-screens/aicha-on-leave.png) (Aicha's page as Amira, HR: "On leave" pill, mark on the photo, "Annual leave · Back Mon 23 Nov" glance cell, Coming up with Change / Cancel leave). By hand on :3000 (Amira, local password): Aicha's ⋯ › Set leave; People list and cards, the org chart card, My team (as Mariam) and Home's team card all show her away; Performance › Your people shows the chip beside her plan.
-      Deviations from the drawing: Set leave sits in the person's ⋯ menu (the sheet has no kind tabs today); Mariam isn't sent a notification (B-315); past leave doesn't show in Job and history (B-316).
 
 ### Rebuild slices
 

@@ -71,6 +71,13 @@ function navigateToRedirectTarget(target: string, mode: "push" | "replace") {
   }
 }
 
+/** The reset request (B-295) for the address already typed, in the same company's brand. */
+function forgotPasswordHref(email: string, company: string | null): string {
+  const params = new URLSearchParams({ email });
+  if (company) params.set("company", company);
+  return `/auth/forgot-password?${params.toString()}`;
+}
+
 const PASSWORD_ONLY: SsoWaysInDto = { password: true, passwordForAdministratorsOnly: false, providers: [] };
 
 /**
@@ -334,9 +341,17 @@ export function SignInPage({ onSuccess }: SignInPageProps) {
                   </FieldSeparator>
                 ) : null}
                 <Field>
-                  <FieldLabel htmlFor="password" className="text-card-foreground">
-                    {t("password")}
-                  </FieldLabel>
+                  <div className="flex items-center justify-between gap-3">
+                    <FieldLabel htmlFor="password" className="text-card-foreground">
+                      {t("password")}
+                    </FieldLabel>
+                    <a
+                      href={forgotPasswordHref(email.trim(), companySlug)}
+                      className="type-meta font-medium text-primary-ink hover:underline focus-visible:underline focus-visible:outline-none"
+                    >
+                      {t("forgot")}
+                    </a>
+                  </div>
                   <InputGroup className="h-11">
                     <InputGroupAddon>
                       <Lock />

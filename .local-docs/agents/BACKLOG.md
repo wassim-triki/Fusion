@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-307.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-311.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -54,7 +54,8 @@ None waiting.
 
 ### Other reviews
 
-None waiting.
+- [ ] **B-295** Password reset by an emailed one-time link · Identity, Shell · 2026-11-07
+      Look at: [screen](plans/B-295-screens/reset-password.png) (the reset form in Carthage's frame). To try it: http://localhost:3000/auth/signin → `leila.baccouche@example.test` → Continue → "Forgot password?" by the password label → Send link → open the "Choose a new password" mail in Mailpit (http://localhost:8025) → its button. Password: `FUSION_LOCAL_PASSWORD` (choosing it again keeps her sign-in as is). Judge the words of "Check your email" and the ended states (expired, used, invalid, company signs you in), and the two mails.
 
 ## Ready
 
@@ -64,8 +65,6 @@ None waiting.
 
 ### Other work
 
-- [ ] **B-295** Password reset: there is none, and sign-in shows a dead "Forgot password" link (B-191 removes the link) · Identity, Shell · 2026-11-05
-      Found while re-planning B-191. A reset by emailed one-time link (Mailpit locally), refused for addresses whose company requires its provider, unless the person is an administrator.
 - [ ] **B-296** Prove a single sign-on domain by DNS before Fusion is hosted: today the first company to pass a test sign-in from a domain proves it, so a company running its own provider could claim another company's unclaimed domain and show its button on that domain's sign-in page · Identity, Core HR · 2026-11-05
       Found in the B-191 security review (accepted rung 2 in the plan, D9). A claim never signs anyone in across companies; the risk is the sign-in page steering another company's people to that provider. Fix: a DNS TXT record per domain, checked before it counts as proved.
 - [ ] **B-299** Administrator Suspend/Reactivate and the `TenantAdministrator` invitation purpose are now unreachable from the product: only tests and a database constraint keep them. Remove them, or say what they are for · Identity · 2026-11-06

@@ -5,5 +5,14 @@
   "RoleRemoved.lead": "أزال {actor} دور {role} الخاص بك في {company}. إذا لم تكن تتوقع ذلك، فأبلغ المسؤول.",
   "RoleRemoved.self.lead": "أزلت دور {role} الخاص بك في {company}.",
   "action": "افتح Fusion",
-  "group": "تغييرات الوصول"
+  "group": "تغييرات الوصول",
+  "PasswordReset.subject": "اختر كلمة مرور جديدة",
+  "PasswordReset.lead": "طلب شخص ما إعادة تعيين كلمة المرور للحساب {email}. يعمل الزر أدناه مرة واحدة، لمدة 30 دقيقة.",
+  "PasswordReset.action": "اختر كلمة مرور جديدة",
+  "PasswordReset.ignore": "إذا لم تطلب ذلك، تجاهل هذه الرسالة. تبقى كلمة المرور كما هي.",
+  "PasswordChanged.subject": "تم تغيير كلمة المرور",
+  "PasswordChanged.lead": "تم للتو تغيير كلمة المرور للحساب {email}، وتم تسجيل الخروج من كل الأجهزة التي كانت تستخدمها.",
+  "PasswordChanged.action": "تسجيل الدخول",
+  "PasswordChanged.ignore": "إذا لم تغيّرها أنت، أخبر المسؤول فورًا.",
+  "sentBy": "أرسلتها {company} عبر Fusion"
 }

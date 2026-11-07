@@ -36,6 +36,7 @@ export type {
 } from "./platform";
 export * from "./view-as";
 export * from "./sso";
+export * from "./password-reset";
 export * from "./tenant-settings";
 export * from "./invites";
 export * from "./core-access";

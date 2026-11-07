@@ -19,7 +19,8 @@
       "change": "Modifier",
       "expiredTitle": "Votre session a pris fin",
       "expiredBody": "Reconnectez-vous pour revenir là où vous étiez.",
-      "goToSignIn": "Aller à la connexion"
+      "goToSignIn": "Aller à la connexion",
+      "forgot": "Mot de passe oublié ?"
     },
     "search": {
       "label": "Rechercher",
@@ -253,6 +254,61 @@
         },
         "provider_failed": {
           "title": "{provider} n’a pas pu vous connecter. Réessayez."
+        }
+      }
+    },
+    "passwordReset": {
+      "requestTitle": "Réinitialiser votre mot de passe",
+      "requestBody": "Nous vous enverrons un lien pour en choisir un nouveau.",
+      "email": "E-mail",
+      "send": "Envoyer le lien",
+      "sending": "Envoi…",
+      "sentTitle": "Consultez vos e-mails",
+      "sentBody": "Si <email></email> a un mot de passe Fusion, un lien pour en choisir un nouveau arrive. Il fonctionne pendant 30 minutes.",
+      "backToSignIn": "Retour à la connexion",
+      "otherAddress": "Utiliser une autre adresse",
+      "tooMany": "Trop d'essais. Attendez une minute et réessayez.",
+      "sendFailed": "Le lien n'a pas pu être envoyé. Réessayez.",
+      "checking": "Vérification du lien",
+      "chooseTitle": "Choisissez un nouveau mot de passe",
+      "newPassword": "Nouveau mot de passe",
+      "confirmPassword": "Confirmez le mot de passe",
+      "showCharacters": "Afficher les caractères",
+      "hideCharacters": "Masquer les caractères",
+      "matches": "Les mots de passe correspondent",
+      "doesNotMatch": "Les mots de passe ne correspondent pas encore",
+      "save": "Enregistrer le mot de passe",
+      "saving": "Enregistrement…",
+      "passwordRefused": "Ce mot de passe ne peut pas être utilisé. Essayez-en un autre.",
+      "saveFailed": "Le mot de passe n'a pas pu être enregistré. Réessayez.",
+      "doneTitle": "Mot de passe modifié",
+      "doneBody": "Connectez-vous avec votre nouveau mot de passe. Toutes les autres sessions ont été déconnectées.",
+      "signIn": "Se connecter",
+      "askAgain": "Envoyer un nouveau lien",
+      "rules": {
+        "length": "{count} caractères",
+        "letter": "Une lettre",
+        "uppercase": "Une majuscule",
+        "lowercase": "Une minuscule",
+        "number": "Un chiffre",
+        "symbol": "Un symbole"
+      },
+      "ended": {
+        "expired": {
+          "title": "Ce lien a expiré",
+          "body": "Un lien fonctionne pendant 30 minutes, et seul le plus récent fonctionne."
+        },
+        "used": {
+          "title": "Ce lien a déjà servi",
+          "body": "Chaque lien fonctionne une fois. Demandez-en un nouveau si besoin."
+        },
+        "invalid": {
+          "title": "Ce lien ne fonctionne pas",
+          "body": "Ouvrez le lien complet depuis l'e-mail, ou demandez-en un nouveau."
+        },
+        "provider_required": {
+          "title": "Votre entreprise vous connecte",
+          "body": "Connectez-vous avec le fournisseur de votre entreprise. Votre mot de passe ne sert plus ici."
         }
       }
     }

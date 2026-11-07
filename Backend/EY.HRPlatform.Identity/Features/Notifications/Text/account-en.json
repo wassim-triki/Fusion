@@ -5,5 +5,14 @@
   "RoleRemoved.lead": "{actor} removed your {role} role at {company}. If you didn't expect this, tell your administrator.",
   "RoleRemoved.self.lead": "You removed your own {role} role at {company}.",
   "action": "Open Fusion",
-  "group": "Access changes"
+  "group": "Access changes",
+  "PasswordReset.subject": "Choose a new password",
+  "PasswordReset.lead": "Someone asked to reset the password for {email}. The button below works once, for 30 minutes.",
+  "PasswordReset.action": "Choose a new password",
+  "PasswordReset.ignore": "If you didn't ask for this, ignore this email. Your password stays the same.",
+  "PasswordChanged.subject": "Your password was changed",
+  "PasswordChanged.lead": "The password for {email} was just changed, and every device signed in with it was signed out.",
+  "PasswordChanged.action": "Sign in",
+  "PasswordChanged.ignore": "If you didn't change it, tell your administrator now.",
+  "sentBy": "Sent by {company} with Fusion"
 }

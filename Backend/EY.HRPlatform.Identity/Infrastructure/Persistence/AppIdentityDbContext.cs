@@ -17,6 +17,7 @@ public class AppIdentityDbContext : IdentityDbContext<ApplicationUser, IdentityR
     private readonly ITenantContext? _tenantContext;
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<TenantLogo> TenantLogos => Set<TenantLogo>();
     public DbSet<InviteToken> InviteTokens => Set<InviteToken>();
@@ -134,6 +135,16 @@ public class AppIdentityDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .HasMaxLength(64)
                 .IsRequired()
                 .HasDefaultValue(SessionMethods.Password);
+        });
+
+        // One-time password reset links (B-295): only the token's hash is stored
+        builder.Entity<PasswordResetToken>(entity =>
+        {
+            entity.HasKey(item => item.Id);
+            entity.Property(item => item.TokenHash).HasMaxLength(64).IsRequired();
+            entity.HasIndex(item => item.TokenHash).IsUnique();
+            entity.HasIndex(item => item.UserId);
+            entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(item => item.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         // Tenant table configuration

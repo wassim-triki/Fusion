@@ -97,7 +97,10 @@ describe("SignInPage", () => {
       expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
       expect(screen.getByText("test@example.com")).toBeInTheDocument();
       expect(screen.queryByText(/remember me/i)).toBeNull();
-      expect(screen.queryByText(/forgot password/i)).toBeNull();
+      expect(screen.getByRole("link", { name: "Forgot password?" })).toHaveAttribute(
+        "href",
+        "/auth/forgot-password?email=test%40example.com"
+      );
     });
 
     it("does not expose self-service signup", () => {

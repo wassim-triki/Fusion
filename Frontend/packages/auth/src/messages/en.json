@@ -19,7 +19,8 @@
       "change": "Change",
       "expiredTitle": "You've been signed out",
       "expiredBody": "Sign in again to go back to where you were.",
-      "goToSignIn": "Go to sign in"
+      "goToSignIn": "Go to sign in",
+      "forgot": "Forgot password?"
     },
     "search": {
       "label": "Search",
@@ -253,6 +254,61 @@
         },
         "provider_failed": {
           "title": "{provider} couldn't sign you in. Try again."
+        }
+      }
+    },
+    "passwordReset": {
+      "requestTitle": "Reset your password",
+      "requestBody": "We'll email you a link to choose a new one.",
+      "email": "Email",
+      "send": "Send link",
+      "sending": "Sending…",
+      "sentTitle": "Check your email",
+      "sentBody": "If <email></email> has a Fusion password, a link to choose a new one is on its way. It works for 30 minutes.",
+      "backToSignIn": "Back to sign in",
+      "otherAddress": "Use another address",
+      "tooMany": "Too many tries. Wait a minute and try again.",
+      "sendFailed": "Couldn't send the link. Try again.",
+      "checking": "Checking your link",
+      "chooseTitle": "Choose a new password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "showCharacters": "Show characters",
+      "hideCharacters": "Hide characters",
+      "matches": "Passwords match",
+      "doesNotMatch": "Passwords don't match yet",
+      "save": "Save password",
+      "saving": "Saving…",
+      "passwordRefused": "That password can't be used. Try another.",
+      "saveFailed": "Couldn't save your password. Try again.",
+      "doneTitle": "Password changed",
+      "doneBody": "Sign in with your new password. Every other session was signed out.",
+      "signIn": "Sign in",
+      "askAgain": "Send a new link",
+      "rules": {
+        "length": "{count} characters",
+        "letter": "A letter",
+        "uppercase": "An uppercase letter",
+        "lowercase": "A lowercase letter",
+        "number": "A number",
+        "symbol": "A symbol"
+      },
+      "ended": {
+        "expired": {
+          "title": "This link has expired",
+          "body": "A link works for 30 minutes, and only the newest one works."
+        },
+        "used": {
+          "title": "This link was already used",
+          "body": "Each link works once. Ask for a new one if you still need it."
+        },
+        "invalid": {
+          "title": "This link doesn't work",
+          "body": "Open the whole link from the email, or ask for a new one."
+        },
+        "provider_required": {
+          "title": "Your company signs you in",
+          "body": "Sign in through your company's provider. Your password isn't used here any more."
         }
       }
     }

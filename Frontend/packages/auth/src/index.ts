@@ -114,6 +114,7 @@ export {
   type SignInBrand,
 } from "./components/signin-page";
 export type { SignInPageProps } from "./components/signin-page";
+export { ForgotPasswordPage, ResetPasswordPage } from "./components/password-reset-page";
 export {
   finishSsoFlow,
   ProviderButton,

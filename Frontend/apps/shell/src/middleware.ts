@@ -16,6 +16,11 @@ const PUBLIC_ROUTES = [
   // session, so it can't require one.
   { path: "/auth/sso/complete", descendants: false },
 
+  // Password reset (B-295): asking for a link and choosing the new password happen
+  // signed out; the emailed one-time link is the only credential.
+  { path: "/auth/forgot-password", descendants: false },
+  { path: "/auth/reset-password", descendants: false },
+
   // A Platform recovery for a tenant that has lost every administrator. It
   // establishes the account they sign in with, so it can't require a session first.
   { path: "/recover-administrator-access", descendants: false },

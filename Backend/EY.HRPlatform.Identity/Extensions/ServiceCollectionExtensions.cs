@@ -219,6 +219,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<NotificationAudienceReader>();
         services.AddScoped<IAccountMailSender, SmtpAccountMailSender>();
         services.AddScoped<IAdministratorRoleMail, AdministratorRoleMail>();
+        services.AddScoped<Features.Accounts.PasswordReset>();
         services.AddScoped<IEligibilityDecisionService, EligibilityDecisionService>();
         services.AddScoped<IAccessAuditService, AccessAuditService>();
         services.Configure<WorkforceInvitationEmailOptions>(
@@ -256,6 +257,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<Features.SingleSignOn.SsoFlowService>();
         services.AddScoped<Features.SingleSignOn.SsoStepUp>();
         var ssoPermitsPerMinute = configuration.GetValue("Sso:RateLimitPerMinute", 30);
+        var passwordResetPermitsPerMinute = configuration.GetValue("PasswordReset:RateLimitPerMinute", 10);
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -265,6 +267,14 @@ public static class ServiceCollectionExtensions
                 _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
                 {
                     PermitLimit = ssoPermitsPerMinute,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 0,
+                }));
+            options.AddPolicy(Controllers.PasswordResetController.RateLimitPolicy, context => System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
+                context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = passwordResetPermitsPerMinute,
                     Window = TimeSpan.FromMinutes(1),
                     QueueLimit = 0,
                 }));

@@ -5,5 +5,14 @@
   "RoleRemoved.lead": "{actor} a retiré votre rôle {role} chez {company}. Si vous ne vous y attendiez pas, prévenez votre administrateur.",
   "RoleRemoved.self.lead": "Vous avez retiré votre propre rôle {role} chez {company}.",
   "action": "Ouvrir Fusion",
-  "group": "Les changements d'accès"
+  "group": "Les changements d'accès",
+  "PasswordReset.subject": "Choisissez un nouveau mot de passe",
+  "PasswordReset.lead": "Quelqu'un a demandé à réinitialiser le mot de passe de {email}. Le bouton ci-dessous fonctionne une seule fois, pendant 30 minutes.",
+  "PasswordReset.action": "Choisir un nouveau mot de passe",
+  "PasswordReset.ignore": "Si vous n'avez rien demandé, ignorez cet e-mail. Votre mot de passe reste le même.",
+  "PasswordChanged.subject": "Votre mot de passe a été modifié",
+  "PasswordChanged.lead": "Le mot de passe de {email} vient d'être modifié, et tous les appareils connectés avec lui ont été déconnectés.",
+  "PasswordChanged.action": "Se connecter",
+  "PasswordChanged.ignore": "Si ce n'est pas vous, prévenez votre administrateur tout de suite.",
+  "sentBy": "Envoyé par {company} avec Fusion"
 }

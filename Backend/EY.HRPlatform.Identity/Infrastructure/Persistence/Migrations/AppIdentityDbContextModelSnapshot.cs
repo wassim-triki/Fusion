@@ -571,6 +571,42 @@ namespace EY.HRPlatform.Identity.Infrastructure.Persistence.Migrations
                     b.ToTable("InviteTokens", "identity");
                 });
 
+            modelBuilder.Entity("EY.HRPlatform.Identity.Domain.Entities.PasswordResetToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("VoidedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PasswordResetTokens", "identity");
+                });
+
             modelBuilder.Entity("EY.HRPlatform.Identity.Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1555,6 +1591,15 @@ namespace EY.HRPlatform.Identity.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("EY.HRPlatform.Identity.Domain.Entities.PasswordResetToken", b =>
+                {
+                    b.HasOne("EY.HRPlatform.Identity.Domain.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("EY.HRPlatform.Identity.Domain.Entities.SsoConnection", b =>

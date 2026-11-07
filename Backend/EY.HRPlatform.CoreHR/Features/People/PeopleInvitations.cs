@@ -88,6 +88,15 @@ public sealed class PeopleInvitations(
         return new SendInvitationsResultDto(null, sent.Invited, sent.Linked + sent.Reactivated, sent.AlreadyActive, sent.Blocked + sent.Failed);
     }
 
+    /// <summary>Invites one person just added; true when the invitation reached them.</summary>
+    public async Task<bool> InviteOneAsync(Guid employeeId, CancellationToken cancellationToken)
+    {
+        var people = await workforce.ResolveEmployeesForCompanyAsync([employeeId], cancellationToken);
+        if (people.Count == 0) return false;
+        var sent = await invitationSender.SendAsync(people, null, cancellationToken);
+        return sent.Invited + sent.Linked + sent.Reactivated + sent.AlreadyActive > 0;
+    }
+
     public async Task<bool> CancelAsync(Guid scheduleId, string? actor, CancellationToken cancellationToken)
     {
         var schedule = await dbContext.InvitationSchedules.SingleOrDefaultAsync(item => item.Id == scheduleId, cancellationToken);

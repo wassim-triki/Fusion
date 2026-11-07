@@ -1,8 +1,11 @@
 using System.Data;
+using System.Text.Json;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
+using EY.HRPlatform.CoreHR.Features.EmployeeFields;
 using EY.HRPlatform.CoreHR.Features.Notifications;
 using EY.HRPlatform.CoreHR.Features.Organization;
+using EY.HRPlatform.CoreHR.Features.TenantSettings.Services;
 using EY.HRPlatform.CoreHR.Features.Workforce.Services;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence;
 using EY.HRPlatform.SharedKernel.CQRS;
@@ -19,7 +22,9 @@ public sealed class HireEmployeeCommandHandler(
     IEmployeeNumberAllocator employeeNumberAllocator,
     IWorkforceMutationService mutationService,
     IOrganizationService organizationService,
-    CoreChangeNotifications? notifications = null)
+    CoreChangeNotifications? notifications = null,
+    ITenantSettingsReadService? settings = null,
+    PeopleInvitations? invitations = null)
     : ICommandHandler<HireEmployeeCommand, Result<EstablishmentResultDto>>
 {
     public Task<Result<EstablishmentResultDto>> Handle(HireEmployeeCommand command, CancellationToken cancellationToken)
@@ -29,10 +34,12 @@ public sealed class HireEmployeeCommandHandler(
             employeeNumberAllocator,
             mutationService,
             organizationService,
-            EstablishmentInput.FromHire(command.Request),
+            EstablishmentInput.FromHire(command.Request) with { CanInvite = command.CanInvite },
             command.Actor,
             cancellationToken,
-            notifications);
+            notifications,
+            settings,
+            invitations);
 }
 
 public sealed class AddExistingEmployeeCommandHandler(
@@ -40,7 +47,9 @@ public sealed class AddExistingEmployeeCommandHandler(
     ITenantContext tenantContext,
     IEmployeeNumberAllocator employeeNumberAllocator,
     IWorkforceMutationService mutationService,
-    IOrganizationService organizationService)
+    IOrganizationService organizationService,
+    ITenantSettingsReadService? settings = null,
+    PeopleInvitations? invitations = null)
     : ICommandHandler<AddExistingEmployeeCommand, Result<EstablishmentResultDto>>
 {
     public Task<Result<EstablishmentResultDto>> Handle(AddExistingEmployeeCommand command, CancellationToken cancellationToken)
@@ -50,9 +59,11 @@ public sealed class AddExistingEmployeeCommandHandler(
             employeeNumberAllocator,
             mutationService,
             organizationService,
-            EstablishmentInput.FromAddExisting(command.Request),
+            EstablishmentInput.FromAddExisting(command.Request) with { CanInvite = command.CanInvite },
             command.Actor,
-            cancellationToken);
+            cancellationToken,
+            settings: settings,
+            invitations: invitations);
 }
 
 internal sealed record EstablishmentInput(
@@ -71,19 +82,23 @@ internal sealed record EstablishmentInput(
     Guid? PlaceId,
     Guid? ManagerEmployeeId,
     WorkforceAuditAction EstablishmentAction,
-    string? SourceReference = null)
+    string? SourceReference = null,
+    Guid? OpenRoleId = null,
+    HireInvite? Invite = null,
+    IReadOnlyDictionary<string, JsonElement>? Fields = null,
+    bool CanInvite = false)
 {
     public static EstablishmentInput FromHire(HireEmployeeRequest request) => new(
         request.FirstName, request.LastName, request.PreferredName, request.WorkEmail, request.Phone,
         request.EmployeeNumberMode, request.EmployeeNumber, request.StartDate, request.StartDate,
         request.EmploymentTypeId, request.OrgUnitId, request.JobId, request.PlaceId,
-        request.PrimaryManagerEmployeeId, WorkforceAuditAction.Hire);
+        request.PrimaryManagerEmployeeId, WorkforceAuditAction.Hire, null, request.OpenRoleId, request.Invite, request.Fields);
 
     public static EstablishmentInput FromAddExisting(AddExistingEmployeeRequest request) => new(
         request.FirstName, request.LastName, request.PreferredName, request.WorkEmail, request.Phone,
         request.EmployeeNumberMode, request.EmployeeNumber, request.EmploymentStart, request.WorkDetailsEffectiveFrom,
         request.EmploymentTypeId, request.OrgUnitId, request.JobId, request.PlaceId,
-        request.PrimaryManagerEmployeeId, WorkforceAuditAction.Establish);
+        request.PrimaryManagerEmployeeId, WorkforceAuditAction.Establish, null, request.OpenRoleId, request.Invite, request.Fields);
 }
 
 internal static class EstablishmentOrchestrator
@@ -97,15 +112,31 @@ internal static class EstablishmentOrchestrator
         EstablishmentInput input,
         string actor,
         CancellationToken cancellationToken,
-        CoreChangeNotifications? notifications = null)
+        CoreChangeNotifications? notifications = null,
+        ITenantSettingsReadService? settings = null,
+        PeopleInvitations? invitations = null)
     {
         var employmentStart = NormalizeDate(input.EmploymentStart);
         var workEffectiveFrom = NormalizeDate(input.WorkEffectiveFrom);
-        var today = DateTime.UtcNow.Date;
+        var now = DateTime.UtcNow;
+        var today = now.Date;
 
         var validation = Validate(input, employmentStart, workEffectiveFrom, today);
         if (validation is not null)
             return Result.Failure<EstablishmentResultDto>(validation);
+
+        // The company's first-day invitation covers a joiner unless HR says otherwise; anything sent on top needs access rights.
+        var companyFirstDay = settings is null
+            || (await settings.GetCurrentAsync(cancellationToken)).Provisioning.InviteJoinersOnFirstDay;
+        var ownFirstDay = input.Invite == HireInvite.FirstDay && !companyFirstDay;
+        if ((input.Invite == HireInvite.Now || ownFirstDay) && !input.CanInvite)
+            return Result.Failure<EstablishmentResultDto>(new Error(
+                "Invite.Forbidden", "You can't send invitations. Choose Later, and someone who manages access can invite them.", Field("invite")));
+        var sendNow = input.Invite == HireInvite.Now || (ownFirstDay && employmentStart <= today);
+
+        var fields = await ReadFieldsAsync(dbContext, input.Fields, cancellationToken);
+        if (fields.IsFailure)
+            return Result.Failure<EstablishmentResultDto>(fields.Error);
 
         var useTransaction = dbContext.Database.IsRelational();
         await using var transaction = useTransaction
@@ -131,6 +162,25 @@ internal static class EstablishmentOrchestrator
                 return Result.Failure<EstablishmentResultDto>(Error.Conflict(
                     "EmployeeNumber.AlreadyOwned",
                     $"Employee number {number} already belongs to {numberOwner.DisplayName}. Open /core/people/{numberOwner.StableEmployeeKey}."));
+            }
+
+            OpenRole? role = null;
+            if (input.OpenRoleId is { } roleId)
+            {
+                // Read inside the tenant filter: another company's role is refused like one that doesn't exist.
+                role = await dbContext.OpenRoles.FirstOrDefaultAsync(item => item.Id == roleId, cancellationToken);
+                var refusal = role is null
+                    ? Error.Validation("OpenRole.Missing", "That open role isn't here any more. Pick another, or none.", Field("openRole"))
+                    : !role.IsActive
+                        ? Error.Validation("OpenRole.Taken", "That role was already filled or closed.", Field("openRole"))
+                        : role.ManagerEmployeeId != input.ManagerEmployeeId
+                            ? Error.Validation("OpenRole.OtherManager", "That role reports to someone else. Pick its manager, or another role.", Field("openRole"))
+                            : null;
+                if (refusal is not null)
+                {
+                    await RollbackAsync(transaction, cancellationToken);
+                    return Result.Failure<EstablishmentResultDto>(refusal);
+                }
             }
 
             var suggestions = await FindSuggestionsAsync(dbContext, input, cancellationToken);
@@ -225,9 +275,30 @@ internal static class EstablishmentOrchestrator
                 await Checklists.ChecklistService.StageAsync(dbContext, tenantContext.TenantId, change, details, actor, cancellationToken);
             }
 
+            role?.Fill(employee.Id, DateOnly.FromDateTime(employmentStart), actor);
+            foreach (var (fieldId, json) in fields.Value)
+                dbContext.EmployeeFieldValues.Add(EmployeeFieldValue.Create(tenantContext.TenantId, employee.Id, fieldId, json, actor));
+
+            if (input.Invite == HireInvite.Later && companyFirstDay)
+                // Counted as handled, so the company's first-day send leaves them for HR to invite when they choose.
+                dbContext.InvitationAutoSends.Add(InvitationAutoSend.Record(
+                    tenantContext.TenantId, employee.Id, InvitationAutoSendKind.FirstDay, employmentResult.Value.Id, now));
+            if (ownFirstDay && !sendNow)
+            {
+                if (employmentStart > today.AddYears(1))
+                    return await FailAsync(dbContext, transaction, Error.Validation(
+                        "Invite.TooFar", "Invitations can be planned up to a year ahead. Choose Later.", Field("invite")), cancellationToken);
+                dbContext.InvitationSchedules.Add(InvitationSchedule.Plan(
+                    tenantContext.TenantId, InvitationAudience.Chosen, [employee.Id], employmentStart.AddHours(8), now, actor));
+            }
+
             await dbContext.SaveChangesAsync(cancellationToken);
             if (transaction is not null)
                 await transaction.CommitAsync(cancellationToken);
+
+            var invitation = input.Invite switch { HireInvite.FirstDay => "FirstDay", HireInvite.Now => "Sent", HireInvite.Later => "Later", _ => companyFirstDay && input.EstablishmentAction == WorkforceAuditAction.Hire ? "FirstDay" : "Later" };
+            if (sendNow)
+                invitation = invitations is not null && await invitations.InviteOneAsync(employee.Id, cancellationToken) ? "Sent" : "NotSent";
 
             return Result.Success(new EstablishmentResultDto(
                 employee.StableEmployeeKey,
@@ -242,7 +313,8 @@ internal static class EstablishmentOrchestrator
                 orgUnit.Path,
                 assignmentResult.Value.WorkLocation,
                 managerName,
-                suggestions));
+                suggestions,
+                invitation));
         }
         catch (DbUpdateException exception) when (TryMapConstraint(exception, out var error))
         {
@@ -283,7 +355,56 @@ internal static class EstablishmentOrchestrator
             return Error.Validation("Establish.DateOrder", "Work details effective from must be on or after Employment start and no later than Today.");
         if (input.EstablishmentAction == WorkforceAuditAction.Hire && workEffectiveFrom != employmentStart)
             return Error.Validation("Hire.DateAlignment", "Hire work details must begin on the Employment start date.");
+        if (input.Invite is { } chosen && !Enum.IsDefined(chosen))
+            return Error.Validation("Invite.Unknown", "Choose when to invite them.", Field("invite"));
+        if (input.Invite == HireInvite.FirstDay && input.EstablishmentAction != WorkforceAuditAction.Hire)
+            return Error.Validation("Invite.FirstDayPast", "Their first day has passed. Invite them now or later.", Field("invite"));
+        if (input.Invite is HireInvite.Now or HireInvite.FirstDay && string.IsNullOrWhiteSpace(input.WorkEmail))
+            return Error.Validation("Invite.NeedsEmail", "Add a work email to invite them, or choose Later.", Field("workEmail"));
+        if (input.OpenRoleId is not null && input.ManagerEmployeeId is null)
+            return Error.Validation("OpenRole.OtherManager", "Pick the manager the role reports to.", Field("openRole"));
         return null;
+    }
+
+    private static object Field(string name) => new { field = name };
+
+    /// <summary>
+    /// The values given for the company's own fields, checked against its catalogue: known keys only, each in its
+    /// field's shape, and every required field answered.
+    /// </summary>
+    private static async Task<Result<List<(Guid FieldId, string Json)>>> ReadFieldsAsync(
+        CoreHRDbContext dbContext, IReadOnlyDictionary<string, JsonElement>? given, CancellationToken cancellationToken)
+    {
+        var definitions = await dbContext.EmployeeFieldDefinitions.AsNoTracking()
+            .Where(item => item.IsActive && item.SourceKey == null && item.Type != EmployeeFieldType.Section)
+            .ToListAsync(cancellationToken);
+        var byKey = definitions.ToDictionary(item => item.Key, StringComparer.OrdinalIgnoreCase);
+        var values = new List<(Guid FieldId, string Json)>();
+        foreach (var (key, value) in given ?? new Dictionary<string, JsonElement>())
+        {
+            if (!byKey.TryGetValue(CatalogName.Slug(key), out var definition))
+                return Fail("EmployeeField.Unknown", "That field isn't one of the company's.", key);
+            string json;
+            try
+            {
+                json = EmployeeFieldService.NormalizeValue(definition.Type, value).GetRawText();
+            }
+            catch (ArgumentException exception)
+            {
+                return Fail("EmployeeField.Invalid", exception.Message, definition.Key);
+            }
+            if (EmployeeFieldService.HasValue(json)) values.Add((definition.Id, json));
+        }
+        var missing = definitions
+            .Where(item => item.Required && values.All(value => value.FieldId != item.Id))
+            .OrderBy(item => item.Area).ThenBy(item => item.SortOrder)
+            .FirstOrDefault();
+        return missing is not null
+            ? Fail("EmployeeField.Required", $"{missing.Label} is required.", missing.Key)
+            : Result.Success(values);
+
+        static Result<List<(Guid FieldId, string Json)>> Fail(string code, string message, string key)
+            => Result.Failure<List<(Guid FieldId, string Json)>>(Error.Validation(code, message, Field("fields." + key)));
     }
 
     private static async Task<IReadOnlyList<EstablishmentSuggestionDto>> FindSuggestionsAsync(

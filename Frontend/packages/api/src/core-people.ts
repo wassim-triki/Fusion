@@ -1,4 +1,5 @@
 import type { ApiClient } from "./types";
+import type { ChecklistTemplateTaskDto } from "./core-checklists";
 
 export type PeopleEmploymentState =
   | "Active"
@@ -572,6 +573,8 @@ export interface ManagerOptionDto {
   organizationName: string;
   organizationPath: string;
   availability: "Available" | "Scheduled" | string;
+  /** How many open roles report to them. */
+  openRoles: number;
 }
 
 export interface EstablishmentRequestBase {
@@ -587,6 +590,45 @@ export interface EstablishmentRequestBase {
   jobId: string;
   placeId?: string | null;
   primaryManagerEmployeeId?: string | null;
+  /** An open role under the chosen manager, filled by the new person from their first day. */
+  openRoleId?: string | null;
+  /** Anything but Later needs a work email; FirstDay is for joiners. */
+  invite?: HireInvite;
+  /** Values for the company's own fields, by field key; every required one is needed. */
+  fields?: Record<string, unknown>;
+}
+
+export type HireInvite = "FirstDay" | "Now" | "Later";
+
+export interface HiringOpenRoleDto {
+  id: string;
+  jobId: string;
+  jobTitle: string;
+  orgUnitId: string;
+  orgUnitName: string | null;
+  placeId: string | null;
+  placeName: string | null;
+  targetStartDate: string | null;
+}
+
+export interface HiringTeamMemberDto {
+  employeeKey: string;
+  displayName: string;
+  jobTitle: string;
+}
+
+export interface HiringContextDto {
+  manager: {
+    orgUnitId: string | null;
+    orgUnitName: string | null;
+    team: HiringTeamMemberDto[];
+    teamCount: number;
+    openRoles: HiringOpenRoleDto[];
+  } | null;
+  requiredFields: { key: string; label: string; type: "Text" | "Tags" | "Date" | "Email" | "Phone" | "Address" | string }[];
+  checklist: ChecklistTemplateTaskDto[];
+  invitesOnFirstDay: boolean;
+  canInvite: boolean;
 }
 
 export interface HireEmployeeRequest extends EstablishmentRequestBase {
@@ -640,6 +682,7 @@ export interface EstablishmentResultDto {
   location: string | null;
   primaryManagerName: string | null;
   reviewSuggestions: EstablishmentSuggestionDto[];
+  invitation: "Sent" | "FirstDay" | "Later" | "NotSent";
 }
 
 export const corePeoplePaths = {
@@ -694,6 +737,7 @@ export const corePeoplePaths = {
     `/corehr/employees/people/${encodeURIComponent(employeeKey)}/documents/${encodeURIComponent(documentId)}`,
   hire: () => "/corehr/employees/hire",
   addExisting: () => "/corehr/employees/add-existing",
+  hiringContext: () => "/corehr/employees/people/hiring-context",
 } as const;
 
 export const corePeopleQueryKeys = {
@@ -727,6 +771,8 @@ export const corePeopleQueryKeys = {
   photo: (photoUrl: string) => [...corePeopleQueryKeys.all(), "photo", photoUrl] as const,
   managerOptions: (effectiveDate: string, q: string, forEmployee?: string | null) =>
     [...corePeopleQueryKeys.all(), "managerOptions", effectiveDate, q, forEmployee ?? "any"] as const,
+  hiringContext: (managerId: string | null, on: string) =>
+    [...corePeopleQueryKeys.all(), "hiringContext", managerId ?? "none", on] as const,
 } as const;
 
 /** Canonical typed transport for the Workforce Slice 1 People surface. */
@@ -854,6 +900,11 @@ export function createCorePeopleApi(client: ApiClient) {
         corePeoplePaths.establishmentReview(),
         request
       ),
+    hiringContext: (managerId: string | null, on: string, signal?: AbortSignal) =>
+      client.get<HiringContextDto>(corePeoplePaths.hiringContext(), {
+        params: { on, ...(managerId ? { managerId } : {}) },
+        signal,
+      }),
     hire: (request: HireEmployeeRequest) =>
       client.post<EstablishmentResultDto>(corePeoplePaths.hire(), request),
     addExisting: (request: AddExistingEmployeeRequest) =>

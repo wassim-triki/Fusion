@@ -95,6 +95,18 @@ public sealed class OpenRole : BaseEntity, ITenantEntity
         UpdatedBy = actor;
     }
 
+    /// <summary>The person hired into it takes it from their first day.</summary>
+    public void Fill(Guid employeeId, DateOnly on, string? actor)
+    {
+        if (!IsActive) throw new InvalidOperationException("Only an open or on-hold role can be filled.");
+        if (employeeId == Guid.Empty) throw new ArgumentException("Who filled the role is required.");
+        Status = OpenRoleStatus.Filled;
+        FilledByEmployeeId = employeeId;
+        FilledOn = on;
+        UpdatedAt = DateTime.UtcNow;
+        UpdatedBy = actor;
+    }
+
     /// <summary>Points at <paramref name="job"/> with its current title (a rename, or a merge into it).</summary>
     public void ReflectJob(Job job)
     {

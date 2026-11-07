@@ -355,7 +355,7 @@ public sealed class EmployeeFieldService(CoreHRDbContext db, ITenantContext tena
             _ => false,
         };
 
-    private static JsonElement NormalizeValue(EmployeeFieldType type, JsonElement value)
+    internal static JsonElement NormalizeValue(EmployeeFieldType type, JsonElement value)
     {
         if (type == EmployeeFieldType.Tags)
         {
@@ -375,7 +375,7 @@ public sealed class EmployeeFieldService(CoreHRDbContext db, ITenantContext tena
         return JsonSerializer.SerializeToElement(string.IsNullOrWhiteSpace(text) ? null : text);
     }
 
-    private static bool HasValue(string json)
+    internal static bool HasValue(string json)
     {
         using var doc = JsonDocument.Parse(json);
         return doc.RootElement.ValueKind switch

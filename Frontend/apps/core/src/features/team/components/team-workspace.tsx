@@ -73,10 +73,10 @@ function TeamRail({ team, photos }: { team: MyTeamDto; photos: ReadonlyMap<strin
       ) : null}
       <div className={group}>
         <p className="type-meta text-muted-foreground">{t("openRoles")}</p>
-        {team.openRoles.length === 0 ? (
+        {team.openRoles.every((role) => role.filledBy) ? (
           <p className="type-body text-foreground">{t("none")}</p>
         ) : (
-          team.openRoles.map((role) => (
+          team.openRoles.filter((role) => !role.filledBy).map((role) => (
             <div key={role.id} className="min-w-0">
               <p className="truncate type-body text-foreground">{role.jobTitle}</p>
               {role.placeName || role.targetStartDate ? (
@@ -87,6 +87,9 @@ function TeamRail({ team, photos }: { team: MyTeamDto; photos: ReadonlyMap<strin
             </div>
           ))
         )}
+        {team.openRoles.filter((role) => role.filledBy).map((role) => (
+          <p key={role.id} className="truncate type-meta text-muted-foreground">{t("filledBy", { job: role.jobTitle, name: role.filledBy ?? "" })}</p>
+        ))}
       </div>
       <div className={group}>
         <Link href="/team/org-chart" className="inline-flex items-center gap-2 type-label text-primary-ink underline-offset-4 hover:underline">

@@ -10,6 +10,7 @@
     "openRoles": "Postes ouverts",
     "none": "Aucun",
     "from": "à partir du {date}",
+    "filledBy": "{job}, pourvu par {name}",
     "showOnChart": "Voir dans l'organigramme"
   },
   "comingUp": {

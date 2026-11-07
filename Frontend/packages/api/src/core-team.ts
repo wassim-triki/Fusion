@@ -28,6 +28,8 @@ export interface TeamOpenRoleDto {
   jobTitle: string;
   placeName: string | null;
   targetStartDate: string | null;
+  /** Set when the role was filled lately: the first name of who took it. */
+  filledBy: string | null;
 }
 
 /** The signed-in manager's own team (B-185): never anyone else's. */

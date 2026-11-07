@@ -51,7 +51,7 @@ public class EmployeesController(
             return Forbid();
 
         var result = await sender.Send(
-            new HireEmployeeCommand(request, GetAuditActor()),
+            new HireEmployeeCommand(request, GetAuditActor(), accessPolicy.CanManageAccess(User)),
             cancellationToken);
         if (result.IsFailure)
             return MapEmployeeMutationFailure(result.Error);
@@ -72,7 +72,7 @@ public class EmployeesController(
             return Forbid();
 
         var result = await sender.Send(
-            new AddExistingEmployeeCommand(request, GetAuditActor()),
+            new AddExistingEmployeeCommand(request, GetAuditActor(), accessPolicy.CanManageAccess(User)),
             cancellationToken);
         if (result.IsFailure)
             return MapEmployeeMutationFailure(result.Error);
@@ -81,6 +81,23 @@ public class EmployeesController(
         return StatusCode(
             StatusCodes.Status201Created,
             EY.HRPlatform.SharedKernel.Api.ApiResponse<EstablishmentResultDto>.Success(result.Value));
+    }
+
+    /// <summary>What Add a person shows around the form: the manager's unit, team and open roles on the first day, and the company's required fields, joining checklist and invitation rule.</summary>
+    [HttpGet("people/hiring-context")]
+    [ProducesResponseType(typeof(EY.HRPlatform.SharedKernel.Api.ApiResponse<HiringContextDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetHiringContext(
+        [FromServices] HiringContextReader reader,
+        [FromQuery] Guid? managerId,
+        [FromQuery] DateOnly? on,
+        CancellationToken cancellationToken)
+    {
+        if (!accessPolicy.CanManageEmployees(User))
+            return Forbid();
+
+        var result = await reader.ReadAsync(
+            managerId, on ?? DateOnly.FromDateTime(DateTime.UtcNow), accessPolicy.CanManageAccess(User), cancellationToken);
+        return Ok(EY.HRPlatform.SharedKernel.Api.ApiResponse<HiringContextDto>.Success(result));
     }
 
     [HttpPost("people/establishment-review")]
@@ -992,19 +1009,32 @@ public class EmployeesController(
 
     private IActionResult MapEmployeeMutationFailure(EY.HRPlatform.SharedKernel.Results.Error error)
     {
+        // Errors that belong to one field say which, so the form can show them there.
+        var details = error.Details ?? (error.Code.Split('.')[0] switch
+        {
+            "WorkEmail" => new { field = "workEmail" },
+            "EmployeeNumber" => new { field = "employeeNumber" },
+            _ => null,
+        });
+
         if (error.Code.EndsWith(".NotFound", StringComparison.Ordinal))
         {
-            return NotFound(ApiResponse.Failure(error.Message));
+            return NotFound(ApiResponse.Failure(error.Message, details));
+        }
+
+        if (error.Code.EndsWith(".Forbidden", StringComparison.Ordinal))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, ApiResponse.Failure(error.Message, details));
         }
 
         if (error.Code.Contains("Duplicate", StringComparison.OrdinalIgnoreCase)
             || error.Code.Contains("Conflict", StringComparison.OrdinalIgnoreCase)
             || error.Code.Contains("AlreadyActive", StringComparison.OrdinalIgnoreCase))
         {
-            return Conflict(ApiResponse.Failure(error.Message));
+            return Conflict(ApiResponse.Failure(error.Message, details));
         }
 
-        return BadRequest(ApiResponse.Failure(error.Message));
+        return BadRequest(ApiResponse.Failure(error.Message, details));
     }
 
     private EmployeeReportingLinesDto ApplyReportingScope(EmployeeReportingLinesDto reportingLines)

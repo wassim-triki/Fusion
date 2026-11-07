@@ -23,7 +23,9 @@ public sealed record ManagerOptionDto(
     string JobTitle,
     string OrganizationName,
     string OrganizationPath,
-    string Availability);
+    string Availability,
+    /// <summary>How many open roles report to them: they're hiring.</summary>
+    int OpenRoles = 0);
 
 public sealed class ManagerOptionsQueryHandler(
     CoreHRDbContext dbContext,
@@ -79,6 +81,12 @@ public sealed class ManagerOptionsQueryHandler(
         var organizationById = Flatten(hierarchy.Roots)
             .ToDictionary(node => node.Unit.Id, node => node.Unit);
         var today = DateTime.UtcNow.Date;
+        var ids = rows.Select(row => row.Id).ToList();
+        var hiring = await dbContext.OpenRoles.AsNoTracking()
+            .Where(role => ids.Contains(role.ManagerEmployeeId) && role.Status == Domain.Entities.OpenRoleStatus.Open)
+            .GroupBy(role => role.ManagerEmployeeId)
+            .Select(group => new { group.Key, Count = group.Count() })
+            .ToDictionaryAsync(item => item.Key, item => item.Count, cancellationToken);
         IReadOnlyList<ManagerOptionDto> result = rows.Select(row =>
         {
             organizationById.TryGetValue(row.OrgUnitId, out var organization);
@@ -90,7 +98,8 @@ public sealed class ManagerOptionsQueryHandler(
                 row.JobTitle,
                 organization?.Name ?? "Organization unavailable",
                 organization?.Path ?? "Organization unavailable",
-                row.EffectiveFrom > today ? "Scheduled" : "Available");
+                row.EffectiveFrom > today ? "Scheduled" : "Available",
+                hiring.GetValueOrDefault(row.Id));
         }).ToList();
         return Result.Success(result);
     }

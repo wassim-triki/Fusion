@@ -33,7 +33,8 @@ public sealed record TeamPersonDto(
 /// <summary>Something in the team's next 30 days. <paramref name="Years"/> for an anniversary, <paramref name="JobTitle"/> for a new job.</summary>
 public sealed record TeamEventDto(TeamEventKind Kind, DateOnly Date, string EmployeeKey, int? Years = null, string? JobTitle = null);
 
-public sealed record TeamOpenRoleDto(Guid Id, string JobTitle, string? PlaceName, DateOnly? TargetStartDate);
+/// <param name="FilledBy">Set when the role was filled lately: the first name of who took it.</param>
+public sealed record TeamOpenRoleDto(Guid Id, string JobTitle, string? PlaceName, DateOnly? TargetStartDate, string? FilledBy = null);
 
 /// <summary>
 /// The signed-in manager's team for the Team page (B-185): themselves, their own manager, their direct reports today
@@ -149,11 +150,18 @@ public sealed class MyTeamQueryHandler(CoreHRDbContext dbContext) : IQueryHandle
                 events.Add(new TeamEventDto(TeamEventKind.Birthday, birthday, person.EmployeeKey));
         }
 
-        var openRoles = await dbContext.OpenRoles.AsNoTracking()
-            .Where(item => item.ManagerEmployeeId == request.EmployeeId
-                && (item.Status == OpenRoleStatus.Open || item.Status == OpenRoleStatus.OnHold))
-            .OrderBy(item => item.TargetStartDate).ThenBy(item => item.JobTitle)
-            .Select(item => new TeamOpenRoleDto(item.Id, item.JobTitle, item.PlaceName, item.TargetStartDate))
+        // Open roles, then the ones filled in the last 30 days or later, named by who took them (all in the manager's line).
+        var filledSince = today.AddDays(-WindowDays);
+        var openRoles = await (
+                from role in dbContext.OpenRoles.AsNoTracking()
+                join filler in dbContext.Employees.AsNoTracking() on role.FilledByEmployeeId equals filler.Id into fillers
+                from filler in fillers.DefaultIfEmpty()
+                where role.ManagerEmployeeId == request.EmployeeId
+                    && (role.Status == OpenRoleStatus.Open || role.Status == OpenRoleStatus.OnHold
+                        || (role.Status == OpenRoleStatus.Filled && role.FilledOn >= filledSince))
+                orderby role.Status == OpenRoleStatus.Filled, role.TargetStartDate, role.JobTitle
+                select new TeamOpenRoleDto(role.Id, role.JobTitle, role.PlaceName, role.TargetStartDate,
+                    filler == null ? null : filler.PreferredName ?? filler.FirstName))
             .ToListAsync(cancellationToken);
 
         return Result.Success(new MyTeamDto(

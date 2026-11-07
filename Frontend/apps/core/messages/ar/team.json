@@ -10,6 +10,7 @@
     "openRoles": "الوظائف الشاغرة",
     "none": "لا شيء",
     "from": "ابتداءً من {date}",
+    "filledBy": "{job}، شغلها {name}",
     "showOnChart": "اعرض في الهيكل التنظيمي"
   },
   "comingUp": {

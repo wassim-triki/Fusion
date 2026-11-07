@@ -148,6 +148,16 @@ export function usePeopleEstablishmentMutations() {
   };
 }
 
+/** What Add a person shows around the form: the manager's team and open roles on the first day, and the company's rules. */
+export function useHiringContext(managerId: string | null, on: string) {
+  const api = usePeopleApi();
+  return useApiQuery(
+    corePeopleQueryKeys.hiringContext(managerId, on),
+    useCallback((signal) => api.hiringContext(managerId, on, signal), [api, managerId, on]),
+    { placeholderData: keepPreviousData }
+  );
+}
+
 /** The Personal tab, shaped by the server for this viewer. */
 export function usePeoplePersonal(employeeKey: string, enabled = true) {
   const api = usePeopleApi();

@@ -33,12 +33,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In progress
 
-- [ ] **B-239** Restyle the Add a person page (B-199's `/core/people/add`) · Core HR · 2026-10-31
-      User 2026-10-31 (B-182 review): "mark add person screen for restyling later".
-      2026-11-07: canvas first, then build. Directions explorer sent ([explorer](plans/B-239-add-person.html), https://claude.ai/artifact/BjbZDN2Lx3fT4VUjgF5Va7); user picked **C** (the record band before it exists); next session builds it. B-312 folded in as a child.
-  - [ ] **B-312** Fill a role where the hiring happens: Add person offers the open roles under the chosen manager ("Fills the open QA Automation Engineer role") and marks it filled from the first day; Your team shows the filled role as its drawing does ("QA Automation Engineer, filled by Ons") · Core HR · 2026-11-07
-        From B-287: today a role is marked filled from its panel on the chart, after the hire.
-
+None.
 
 ### Rebuild program tracking
 
@@ -59,7 +54,12 @@ None waiting.
 
 ### Other reviews
 
-None waiting.
+- [ ] **B-239** Restyle the Add a person page (B-199's `/core/people/add`) · Core HR · 2026-10-31
+      User 2026-10-31 (B-182 review): "mark add person screen for restyling later".
+      2026-11-07: canvas first, then build. Directions explorer sent ([explorer](plans/B-239-add-person.html), https://claude.ai/artifact/BjbZDN2Lx3fT4VUjgF5Va7); user picked **C** (the record band before it exists); next session builds it. B-312 folded in as a child.
+      2026-11-07: built as C. Look at `/core/people/add` as Amira Khelifi, the administrator: pick Walid Dridi as manager, tick "Fills the open Data Engineer role", see Coming up and Walid's team; screen `plans/B-239-screens/add-person-ready.png` beside drawing C.
+  - [ ] **B-312** Fill a role where the hiring happens: Add person offers the open roles under the chosen manager ("Fills the open QA Automation Engineer role") and marks it filled from the first day; Your team shows the filled role as its drawing does ("QA Automation Engineer, filled by Ons") · Core HR · 2026-11-07
+        From B-287: today a role is marked filled from its panel on the chart, after the hire.
 
 ## Ready
 

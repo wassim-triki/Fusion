@@ -934,7 +934,7 @@ export function PersonPicker({
     const found = (options.data ?? []).filter((option) => option.employeeKey !== excludeKey);
     if (!value || found.some((option) => option.employeeKey === value.employeeKey)) return found;
     return [{ employeeId: value.employeeId || value.employeeKey, employeeKey: value.employeeKey, employeeNumber: "", displayName: value.displayName,
-      jobTitle: "", organizationName: "", organizationPath: "", availability: "Available" }, ...found];
+      jobTitle: "", organizationName: "", organizationPath: "", availability: "Available", openRoles: 0 }, ...found];
   }, [options.data, value, excludeKey]);
   const selectedId = value ? listed.find((option) => option.employeeKey === value.employeeKey)?.employeeId ?? "" : "";
   return (

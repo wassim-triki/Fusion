@@ -10,6 +10,7 @@
     "openRoles": "Open roles",
     "none": "None",
     "from": "from {date}",
+    "filledBy": "{job}, filled by {name}",
     "showOnChart": "Show on the org chart"
   },
   "comingUp": {

@@ -56,6 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<Features.Reports.ReportService>();
         services.AddScoped<Features.People.PeopleExport>();
         services.AddScoped<Features.People.PeopleInvitations>();
+        services.AddScoped<Features.People.HiringContextReader>();
         services.AddScoped<Features.Workforce.Services.WorkforceInvitationSender>();
         services.AddHostedService<Features.People.PeopleInvitationsWorker>();
         services.AddScoped<ISettingsSectionRegistry, SettingsSectionRegistry>();

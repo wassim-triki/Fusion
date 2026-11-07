@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-313.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-314.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -33,7 +33,13 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In progress
 
-None.
+- [ ] **B-313** The person record and who sees it, as one batch (user 2026-11-07): branded notification emails, Access › History, on leave, roles reaching "their unit" · Core HR, Performance, Identity · 2026-11-07
+      Plan: [plans/B-229-batch-leave-history-reach-emails.md](plans/B-229-batch-leave-history-reach-emails.md). Explorer first (session 0), then three builds, one commit each: 1 B-204 + B-231, 2 B-229, 3 B-212.
+  - [ ] **B-204** Notification emails from Core HR and Performance in the company's brand (name, logo, colour), as invitations are since B-176; the modules don't hold the brand, so Identity serves it to them · Core HR, Performance, Identity · 2026-10-30
+  - [ ] **B-231** Access tab › History (the drawn account story: invited by, accepted, signed in); Identity has no per-person account history read yet · Identity, Core HR · 2026-10-31
+  - [ ] **B-229** On leave: dates and a type on a person, shown wherever the person appears (Performance included); slice 6's row, not in this session's ask · Core HR, Performance · 2026-10-31
+  - [ ] **B-212** Reach "their unit" for roles (D-25 draws it): Core HR's record reads and Performance resolve the viewer's unit and the units under it, then the Jobs, Personal and Plans areas offer it. Not offered in B-177 because nothing enforces it yet (`performance.cycle.view@OrgUnit` is unseeded and treated as a team) · Core HR, Performance, Identity · 2026-10-30
+    User 2026-10-31 (B-179 screen 11 vs the drawing): the band's glance row gets manager, team, time with the company and location even though the left rail repeats them (keep the rail); a ⋯ menu at the band's top right like the drawing (empty if nothing fits); sections stacked one under another as drawn, not the newspaper grid, titles inside their sections (B-225); "do as the reference, we agreed on it for a reason". Tabs and filters: active state in the tenant's theme, outline with a subtle fill (as configured before); date pickers per B-227.
 
 ### Rebuild program tracking
 
@@ -95,7 +101,6 @@ None waiting.
 
 - [ ] **B-203** Brand changes in Change history: a save in Settings › Brand is stored in Identity and isn't in Core HR's change history yet; fold into the unified audit (see the audit-history-deferred note) · Identity, Core HR · 2026-10-30
 
-- [ ] **B-204** Notification emails from Core HR and Performance in the company's brand (name, logo, colour), as invitations are since B-176; the modules don't hold the brand, so Identity serves it to them · Core HR, Performance, Identity · 2026-10-30
 
 - [ ] **B-202** `fusion-dev` script that adds an EF migration without stopping the running service (build to the artifacts path, then `dotnet ef … --no-build` against it); B-175 had to stop CoreHR for it · Tooling · 2026-10-30
       Recipe that worked in the B-287 batch (2026-11-07), to wrap in the script: environment `UseArtifactsOutput=true` and `ArtifactsPath=<temp folder>`, `dotnet restore <project>`, then `dotnet ef migrations add <Name> --project … --startup-project … --output-dir Infrastructure/Persistence/Migrations`.
@@ -130,14 +135,10 @@ These keep their original scope and connection to B-167/B-192; they are not numb
 - [ ] **B-198** One tab and view-switch pattern across Fusion, matching the target design: every tab strip and view switch today is reused old UI (the Organization lenses are the latest example). Define it once in `@repo/ds` from the accepted grammar (D-01 band tabs, D-17 views), first where a slice draws tabs (B-180's person page or B-183's Organization, whichever comes first), then replace every other use; B-192 checks none is left · All · 2026-10-30
       2026-10-31: defined as `LinkTabs` in `@repo/ds/shell` (active = company color, outline + subtle fill) and used on the person page (B-180); every other tab strip and view switch still to move.
 
-- [ ] **B-212** Reach "their unit" for roles (D-25 draws it): Core HR's record reads and Performance resolve the viewer's unit and the units under it, then the Jobs, Personal and Plans areas offer it. Not offered in B-177 because nothing enforces it yet (`performance.cycle.view@OrgUnit` is unseeded and treated as a team) · Core HR, Performance, Identity · 2026-10-30
-  User 2026-10-31 (B-179 screen 11 vs the drawing): the band's glance row gets manager, team, time with the company and location even though the left rail repeats them (keep the rail); a ⋯ menu at the band's top right like the drawing (empty if nothing fits); sections stacked one under another as drawn, not the newspaper grid, titles inside their sections (B-225); "do as the reference, we agreed on it for a reason". Tabs and filters: active state in the tenant's theme, outline with a subtle fill (as configured before); date pickers per B-227.
 
-- [ ] **B-229** On leave: dates and a type on a person, shown wherever the person appears (Performance included); slice 6's row, not in this session's ask · Core HR, Performance · 2026-10-31
 
 - [ ] **B-230** Parked by the user, 2026-11-06; don't offer it again unprompted. Demo photos for Carthage's people (slice 6's row); every page draws initials today · Core HR · 2026-10-31
 
-- [ ] **B-231** Access tab › History (the drawn account story: invited by, accepted, signed in); Identity has no per-person account history read yet · Identity, Core HR · 2026-10-31
 
 - [ ] **B-201** Make the Places table richer: it does its job but reads lackluster (user 2026-10-30, not urgent) · Core HR · 2026-10-30
 

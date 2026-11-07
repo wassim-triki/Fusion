@@ -68,6 +68,28 @@ describe("shell /api proxy — successful parity", () => {
     await expect(response.text()).resolves.toBe(upstreamBody);
   });
 
+  it("sends the Gateway one client address and drops other address claims", async () => {
+    const captured: { init?: RequestInit } = {};
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((_url: string, init: RequestInit) => {
+        captured.init = init;
+        return Promise.resolve(new Response(null, { status: 204 }));
+      }),
+    );
+
+    await GET(
+      req("/api/identity/sso/discover", {
+        headers: { "x-forwarded-for": "203.0.113.9, 127.0.0.1", forwarded: "for=203.0.113.9", "x-real-ip": "203.0.113.9" },
+      }),
+    );
+
+    const fwd = new Headers(captured.init?.headers);
+    expect(fwd.get("x-forwarded-for")).toBe("127.0.0.1");
+    expect(fwd.get("forwarded")).toBeNull();
+    expect(fwd.get("x-real-ip")).toBeNull();
+  });
+
   it("passes through a 204 No Content unchanged", async () => {
     vi.stubGlobal(
       "fetch",

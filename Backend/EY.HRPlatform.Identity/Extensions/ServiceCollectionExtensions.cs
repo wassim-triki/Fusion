@@ -260,10 +260,8 @@ public static class ServiceCollectionExtensions
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             options.AddPolicy(Controllers.SsoController.RateLimitPolicy, context => System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
-                // Browser traffic arrives through the gateway, which names the caller first in X-Forwarded-For.
-                context.Request.Headers["X-Forwarded-For"].ToString().Split(',')[0].Trim() is { Length: > 0 } forwarded
-                    ? forwarded
-                    : context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                // Set from the Gateway's X-Forwarded-For by UseForwardedHeaders, never from what a caller sends.
+                context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
                 _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
                 {
                     PermitLimit = ssoPermitsPerMinute,

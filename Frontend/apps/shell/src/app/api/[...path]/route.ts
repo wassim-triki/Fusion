@@ -24,6 +24,9 @@ const UPSTREAM_UNAVAILABLE_CODE = "upstream_unavailable";
 // Hop-by-hop and length/encoding headers are per-connection: forwarding them
 // corrupts the proxied message (fetch recomputes length and decodes the body).
 const STRIPPED_REQUEST_HEADERS = new Set(["host", "connection", "content-length"]);
+// Who the caller is comes from the shell, never from the caller: X-Forwarded-For carries the one address
+// `instrumentation.ts` stamped from the socket, and other ways of claiming an address are dropped.
+const CLIENT_ADDRESS_HEADERS = new Set(["forwarded", "x-forwarded-for", "x-real-ip"]);
 function buildUpstreamUrl(request: NextRequest): string {
   // Preserve the full path after the shell origin and the exact query string.
   const { pathname, search } = request.nextUrl;
@@ -33,10 +36,13 @@ function buildUpstreamUrl(request: NextRequest): string {
 function forwardRequestHeaders(request: NextRequest): Headers {
   const headers = new Headers();
   request.headers.forEach((value, key) => {
-    if (!STRIPPED_REQUEST_HEADERS.has(key.toLowerCase())) {
+    const name = key.toLowerCase();
+    if (!STRIPPED_REQUEST_HEADERS.has(name) && !CLIENT_ADDRESS_HEADERS.has(name)) {
       headers.set(key, value);
     }
   });
+  const client = request.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim();
+  if (client) headers.set("x-forwarded-for", client);
   return headers;
 }
 

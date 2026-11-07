@@ -58,6 +58,8 @@ None waiting.
 
 ## Ready
 
+- [ ] **B-310** Before hosting: the Gateway and Identity trust a forwarded client address only from loopback, so once the shell, Gateway and Identity run on separate machines each needs its hop's address in `KnownProxies`, and a shell behind a load balancer needs the stamp to take the balancer's address instead of the socket · Shell, Gateway, Identity · 2026-11-07
+
 ### Rebuild slices
 
 ### Other work
@@ -68,14 +70,11 @@ None waiting.
       Found while re-planning B-191. A reset by emailed one-time link (Mailpit locally), refused for addresses whose company requires its provider, unless the person is an administrator.
 - [ ] **B-296** Prove a single sign-on domain by DNS before Fusion is hosted: today the first company to pass a test sign-in from a domain proves it, so a company running its own provider could claim another company's unclaimed domain and show its button on that domain's sign-in page · Identity, Core HR · 2026-11-05
       Found in the B-191 security review (accepted rung 2 in the plan, D9). A claim never signs anyone in across companies; the risk is the sign-in page steering another company's people to that provider. Fix: a DNS TXT record per domain, checked before it counts as proved.
-- [ ] **B-297** Rate limits trust a client-sent `X-Forwarded-For` (shell proxy forwards it), so single sign-on's discover and flow-start limits can be dodged by changing the header · Shell, Gateway, Identity · 2026-11-05
-
 - [ ] **B-299** Administrator Suspend/Reactivate and the `TenantAdministrator` invitation purpose are now unreachable from the product: only tests and a database constraint keep them. Remove them, or say what they are for · Identity · 2026-11-06
 
 - [ ] **B-300** The backend still says "Tenant Administrator" in role names, mail and audit, while screens say "Administrator" since B-192 · Identity · 2026-11-06
 
 - [ ] **B-301** "Growth goal" and "development goal" both appear for the same idea; pick one (left out of B-192's fix list) · Performance · 2026-11-06
-      Found in the B-191 security review. Local only today; before hosting, the edge sets the client address and the shell proxy drops any incoming value.
 - [ ] **B-287** Open roles remember who filled them, so the front page can show "Filled · Ons Khemiri, Monday" as drawn (D-30); today a filled role keeps no link to the hire or date · Core HR · 2026-11-04
       From B-285: the open roles model has Open/OnHold/Filled/Closed only.
 

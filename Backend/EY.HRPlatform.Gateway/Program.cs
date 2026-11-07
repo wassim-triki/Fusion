@@ -2,6 +2,7 @@ using System.Text;
 using EY.HRPlatform.Gateway.Middleware;
 using EY.HRPlatform.SharedKernel.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -94,6 +95,9 @@ var app = builder.Build();
 app.MapHealthChecks("/health").AllowAnonymous();
 
 // Middleware pipeline (ORDER MATTERS!)
+// The client address is the one the shell forwarded, and only when the request came from it (a loopback hop
+// by default); anything a caller adds before that is ignored. YARP then sets X-Forwarded-For to it (B-297).
+app.UseForwardedHeaders(new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedFor, ForwardLimit = 1 });
 app.UseCors("AllowFrontend");
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseAuthentication();

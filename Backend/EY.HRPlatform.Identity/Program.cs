@@ -3,6 +3,7 @@ using EY.HRPlatform.Identity.Extensions;
 using EY.HRPlatform.Identity.Features.AccessProfiles;
 using EY.HRPlatform.Identity.Infrastructure.Persistence;
 using EY.HRPlatform.Identity.Middleware;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using EY.HRPlatform.SharedKernel.Security;
@@ -78,6 +79,10 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
 
 // Health endpoint
 app.MapHealthChecks("/health").AllowAnonymous();
+
+// The client address is the last one the Gateway forwarded, and only when the request came from it (a
+// loopback hop by default); anything a caller adds before that is ignored. Rate limits key on it (B-297).
+app.UseForwardedHeaders(new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedFor, ForwardLimit = 1 });
 
 // Before routing and model binding: the signature on internal routes is
 // body-bound, and a request stream can only be read once.

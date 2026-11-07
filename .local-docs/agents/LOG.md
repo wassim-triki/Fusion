@@ -1,5 +1,6 @@
 # LOG — the one history
 
+- ✓ **B-319** accepted, 2026-11-08 (user: "approved"): **B-315** the manager hears about a report's leave, **B-316** ended leave in Person › Job › History.
 - ○ **B-317** closed on evidence, 2026-11-07: shell Home tests stub `TopBarSearch` like `TopBarPreferences`; `pnpm --filter shell exec vitest run src/features/home` 26/26 (18 were failing).
 - **B-319 B-315 + B-316** built, 2026-11-07, **In review** (no screen, see the board):
   - **B-315** `CoreNotificationKind.TeamLeave`: `CoreChangeNotifications.StageLeaveAsync` tells the person's primary manager today when leave is set (on apply: HR at once, an approved request, or a proposal that needs no approval), changed in place (`changed`) or ended early (`endedEarly`, a started leave's last day moved earlier); leave cancellation now goes through `StageCancelledAsync` (answers the latest leave notification once). Skips the actor, the proposer whose request was approved, and the person. Revisions dedupe per occasion (`CoreNotification.For(..., occasion)`). Words en/fr/ar with the type and return day; no Upcoming entry for leave.

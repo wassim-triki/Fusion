@@ -105,9 +105,10 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<ApiResponse<AuthResponse>>> Refresh(
         [FromBody] RefreshTokenRequest request)
     {
-        // Find the refresh token in database
+        // Find the refresh token by its hash; only the hash is stored (B-294)
+        var presentedHash = RefreshToken.HashOf(request.RefreshToken ?? string.Empty);
         var storedToken = await _dbContext.RefreshTokens
-            .FirstOrDefaultAsync(rt => rt.Token == request.RefreshToken);
+            .FirstOrDefaultAsync(rt => rt.TokenHash == presentedHash);
 
         if (storedToken is null || !storedToken.IsActive)
         {

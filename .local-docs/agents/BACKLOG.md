@@ -62,7 +62,7 @@ None waiting.
 
 ### Other work
 
-- [ ] **B-294** Refresh tokens are stored in plain text (`RefreshToken.Token`); store a hash and look up by it, so a database read can't hand out sessions · Identity · 2026-11-05
+- [ ] **B-309** Two refreshes racing with the same refresh token can both succeed (read, revoke, save without a lock or concurrency check), so one stolen token can fork a second session; make the revoke conditional · Identity · 2026-11-07
       Found while re-planning B-191. Small, backend only; a migration invalidates existing sessions (acceptable, no backward compatibility).
 - [ ] **B-295** Password reset: there is none, and sign-in shows a dead "Forgot password" link (B-191 removes the link) · Identity, Shell · 2026-11-05
       Found while re-planning B-191. A reset by emailed one-time link (Mailpit locally), refused for addresses whose company requires its provider, unless the person is an administrator.

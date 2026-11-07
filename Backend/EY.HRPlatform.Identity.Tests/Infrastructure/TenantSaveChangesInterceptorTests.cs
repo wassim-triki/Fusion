@@ -238,7 +238,7 @@ public class TenantSaveChangesInterceptorTests
         ctx.RefreshTokens.Add(new RefreshToken
         {
             UserId = Guid.NewGuid(),
-            Token = "test-token",
+            TokenHash = RefreshToken.HashOf("test-token"),
             ExpiresAt = DateTime.UtcNow.AddDays(7)
         });
 

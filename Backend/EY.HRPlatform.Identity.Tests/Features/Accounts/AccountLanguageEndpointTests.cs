@@ -17,7 +17,8 @@ namespace EY.HRPlatform.Identity.Tests.Features.Accounts;
 
 /// <summary>
 /// A person's language as the browser meets it: what sign-in and refresh report,
-/// and what the self-service endpoint lets a caller change.
+/// and what the self-service endpoint lets a caller change. Also how refresh tokens
+/// are kept: only their hash is stored (B-294).
 ///
 /// These go through the real endpoints because the rules under test are about the
 /// caller: whose account a token can change, and what a later session sees.
@@ -121,6 +122,70 @@ public sealed class AccountLanguageEndpointTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var refreshed = (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("data");
         Assert.Equal("fr", refreshed.GetProperty("language").GetString());
+    }
+
+    // ── Refresh tokens are stored as hashes (B-294) ──────
+
+    [SkippableFact]
+    public async Task Refresh_works_with_the_raw_token_and_the_store_holds_only_its_hash()
+    {
+        Skip.IfNot(Available, "No PostgreSQL connection configured.");
+        await using var factory = await NewApiAsync();
+        var tenantId = await AddTenantAsync(factory, "en-US");
+        var rim = await AddMemberAsync(factory, "rim@atlas.example", tenantId);
+        var client = factory.CreateClient();
+        var raw = (await LoginAsync(client, "rim@atlas.example")).GetProperty("refreshToken").GetString()!;
+
+        Assert.Equal([RefreshToken.HashOf(raw)], await StoredHashesAsync(factory, rim));
+
+        var response = await client.PostAsJsonAsync("/api/identity/auth/refresh", new { refreshToken = raw });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var rotated = (await response.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("data").GetProperty("refreshToken").GetString()!;
+
+        var stored = await StoredHashesAsync(factory, rim);
+        Assert.Equal(2, stored.Count);
+        Assert.Contains(RefreshToken.HashOf(rotated), stored);
+        Assert.DoesNotContain(stored, hash => hash == raw || hash == rotated);
+
+        // Rotation is one-time use, as before.
+        var replay = await client.PostAsJsonAsync("/api/identity/auth/refresh", new { refreshToken = raw });
+        Assert.Equal(HttpStatusCode.Unauthorized, replay.StatusCode);
+    }
+
+    [SkippableFact]
+    public async Task A_stored_hash_presented_as_a_refresh_token_is_refused()
+    {
+        Skip.IfNot(Available, "No PostgreSQL connection configured.");
+        await using var factory = await NewApiAsync();
+        var tenantId = await AddTenantAsync(factory, "en-US");
+        var rim = await AddMemberAsync(factory, "rim@atlas.example", tenantId);
+        await LoginAsync(factory.CreateClient(), "rim@atlas.example");
+        var hash = (await StoredHashesAsync(factory, rim)).Single();
+
+        var response = await factory.CreateClient()
+            .PostAsJsonAsync("/api/identity/auth/refresh", new { refreshToken = hash });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [SkippableFact]
+    public async Task Logout_ends_the_refresh_token()
+    {
+        Skip.IfNot(Available, "No PostgreSQL connection configured.");
+        await using var factory = await NewApiAsync();
+        var tenantId = await AddTenantAsync(factory, "en-US");
+        await AddMemberAsync(factory, "rim@atlas.example", tenantId);
+        var client = factory.CreateClient();
+        var session = await LoginAsync(client, "rim@atlas.example");
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", session.GetProperty("accessToken").GetString());
+
+        Assert.Equal(HttpStatusCode.OK, (await client.PostAsync("/api/identity/auth/logout", null)).StatusCode);
+        var response = await factory.CreateClient().PostAsJsonAsync("/api/identity/auth/refresh",
+            new { refreshToken = session.GetProperty("refreshToken").GetString() });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     // ── Setting it ───────────────────────────────────────
@@ -399,6 +464,16 @@ public sealed class AccountLanguageEndpointTests : IAsyncLifetime
             .Where(user => user.Id == accountId)
             .Select(user => user.PreferredLanguage)
             .SingleAsync();
+    }
+
+    private static async Task<List<string>> StoredHashesAsync(LanguageApiFactory factory, Guid accountId)
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppIdentityDbContext>();
+        return await db.RefreshTokens.AsNoTracking()
+            .Where(token => token.UserId == accountId)
+            .Select(token => token.TokenHash)
+            .ToListAsync();
     }
 
     private static async Task<JsonElement> LoginAsync(HttpClient client, string email)

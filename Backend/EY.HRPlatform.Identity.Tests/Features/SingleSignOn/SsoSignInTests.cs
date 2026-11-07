@@ -37,7 +37,7 @@ public sealed class SsoSignInTests(SsoFixture fixture)
         Assert.Equal($"{SsoFixture.Origin}/auth/sso/complete", landing.ToString());
         Assert.NotNull(Sso.Session(data));
         var refresh = Sso.Session(data, "refreshToken");
-        Assert.Equal("sso:google", await _sso.WithDbAsync(db => db.RefreshTokens.Where(item => item.Token == refresh).Select(item => item.Method).SingleAsync()));
+        Assert.Equal("sso:google", await _sso.WithDbAsync(db => db.RefreshTokens.Where(item => item.TokenHash == RefreshToken.HashOf(refresh!)).Select(item => item.Method).SingleAsync()));
         Assert.Equal(1, await _sso.CountAsync(db => db.ExternalLogins.Where(item => item.UserId == person.Id && item.Provider == "google")));
         Assert.Equal(1, await _sso.CountAsync(db => db.AccessAuditEvents.IgnoreQueryFilters().Where(item => item.TenantId == tenantId && item.Action == SsoAuditActions.LinkCreated)));
 

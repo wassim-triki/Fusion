@@ -121,11 +121,11 @@ public class AppIdentityDbContext : IdentityDbContext<ApplicationUser, IdentityR
         {
             entity.HasKey(rt => rt.Id);
 
-            entity.Property(rt => rt.Token)
-                .HasMaxLength(500)
+            entity.Property(rt => rt.TokenHash)
+                .HasMaxLength(64)
                 .IsRequired();
 
-            entity.HasIndex(rt => rt.Token)
+            entity.HasIndex(rt => rt.TokenHash)
                 .IsUnique();
 
             entity.HasIndex(rt => rt.UserId);

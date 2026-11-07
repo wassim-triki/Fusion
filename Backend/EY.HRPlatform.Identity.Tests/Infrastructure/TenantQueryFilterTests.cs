@@ -166,8 +166,8 @@ public class TenantQueryFilterTests
         await using (var seedCtx = TestDbContextFactory.CreateWithoutTenant(dbName))
         {
             seedCtx.RefreshTokens.AddRange(
-                new RefreshToken { UserId = Guid.NewGuid(), Token = "token1", ExpiresAt = DateTime.UtcNow.AddDays(7) },
-                new RefreshToken { UserId = Guid.NewGuid(), Token = "token2", ExpiresAt = DateTime.UtcNow.AddDays(7) });
+                new RefreshToken { UserId = Guid.NewGuid(), TokenHash = RefreshToken.HashOf("token1"), ExpiresAt = DateTime.UtcNow.AddDays(7) },
+                new RefreshToken { UserId = Guid.NewGuid(), TokenHash = RefreshToken.HashOf("token2"), ExpiresAt = DateTime.UtcNow.AddDays(7) });
             await seedCtx.SaveChangesAsync();
         }
 

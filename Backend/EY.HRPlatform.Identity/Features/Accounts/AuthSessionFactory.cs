@@ -56,7 +56,7 @@ public sealed class AuthSessionFactory(
         dbContext.RefreshTokens.Add(new RefreshToken
         {
             UserId = user.Id,
-            Token = refreshTokenString,
+            TokenHash = RefreshToken.HashOf(refreshTokenString),
             Method = method,
             ExpiresAt = DateTime.UtcNow.AddDays(
                 int.Parse(configuration["Jwt:RefreshTokenExpirationInDays"]!)),

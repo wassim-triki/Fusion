@@ -384,7 +384,7 @@ public sealed class TenantContinuityTests : IAsyncLifetime
         world.Db.RefreshTokens.Add(new RefreshToken
         {
             UserId = userId,
-            Token = Guid.NewGuid().ToString("N"),
+            TokenHash = RefreshToken.HashOf(Guid.NewGuid().ToString("N")),
             ExpiresAt = DateTime.UtcNow.AddDays(7),
         });
         await world.Db.SaveChangesAsync();
@@ -418,7 +418,7 @@ public sealed class TenantContinuityTests : IAsyncLifetime
 
         var userId = await world.Db.TenantMemberships.IgnoreQueryFilters()
             .Where(item => item.Id == membershipId).Select(item => item.UserId).SingleAsync();
-        world.Db.RefreshTokens.Add(new RefreshToken { UserId = userId, Token = Guid.NewGuid().ToString("N"), ExpiresAt = DateTime.UtcNow.AddDays(7) });
+        world.Db.RefreshTokens.Add(new RefreshToken { UserId = userId, TokenHash = RefreshToken.HashOf(Guid.NewGuid().ToString("N")), ExpiresAt = DateTime.UtcNow.AddDays(7) });
         await world.Db.SaveChangesAsync();
         var before = await RevisionAsync(world.Db, membershipId);
 

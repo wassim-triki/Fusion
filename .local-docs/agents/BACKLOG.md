@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-314.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-315.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -35,6 +35,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 - [ ] **B-313** The person record and who sees it, as one batch (user 2026-11-07): branded notification emails, Access › History, on leave, roles reaching "their unit" · Core HR, Performance, Identity · 2026-11-07
       Plan: [plans/B-229-batch-leave-history-reach-emails.md](plans/B-229-batch-leave-history-reach-emails.md). Explorer first (session 0), then three builds, one commit each: 1 B-204 + B-231, 2 B-229, 3 B-212.
+      Session 0 done 2026-11-07: [plans/B-313-explorer.html](plans/B-313-explorer.html) (https://claude.ai/artifact/45gU5RWQJR8gqbekvF8Uy7), seven screens and seven questions; **waiting for the user's picks**.
   - [ ] **B-204** Notification emails from Core HR and Performance in the company's brand (name, logo, colour), as invitations are since B-176; the modules don't hold the brand, so Identity serves it to them · Core HR, Performance, Identity · 2026-10-30
   - [ ] **B-231** Access tab › History (the drawn account story: invited by, accepted, signed in); Identity has no per-person account history read yet · Identity, Core HR · 2026-10-31
   - [ ] **B-229** On leave: dates and a type on a person, shown wherever the person appears (Performance included); slice 6's row, not in this session's ask · Core HR, Performance · 2026-10-31
@@ -70,6 +71,7 @@ None waiting.
 
 ### Other work
 
+- [ ] **B-314** Access › History tells role grants too (given by whom, when; removed): removing a grant deletes its row today, so grants need a kept history first; B-231 ships the account story without them · Identity, Core HR · 2026-11-07
 - [ ] **B-311** Later check: rules defined once, not redefined. Password rules first, then anything like them (address checks, length limits, …): find each rule's copies across the backend and frontends, keep one source, and make the rest read from it · Identity, Shell, Core HR · 2026-11-07
       User 2026-11-07: park it, check and fix later; main things first. Known copies of the password rules: Identity's `AccountPasswordPolicy` (the source, sent to forms as `passwordRequirements`); its checklist re-coded in the shell's `lib/activation.ts` (`passwordChecks`) and again in `@repo/auth` `password-reset-page.tsx` (`requirementChecks`, B-295), each with its own words; `@repo/ds` `PasswordStrengthField` scores strength on its own assumed minimum of 10.
 

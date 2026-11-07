@@ -1,0 +1,859 @@
+<title>Leave, History, Reach, Email</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Lora:wght@400;500;600&display=swap">
+<style>
+/* Explorer chrome: one reading column; the screen is a 1440px Fusion frame scaled to fit, notes and questions under it. */
+:root {
+  --bg: #101012; --surface: #19191c; --inlay: #222226; --fg: #ececef; --muted: #a2a2ab; --line: #2d2d33;
+  --accent: #ffd21f; --accent-ink: #1b1600; --keep: #4cc98a; --keep-soft: #16301f; --merge: #8fb4ff; --merge-soft: #18233a;
+  --build: #e59cff; --build-soft: #2e1a35; --focus: #7aa7ff;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --r-surface: 20px; --r-control: 12px;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f4f4f6; --surface: #ffffff; --inlay: #f0f0f3; --fg: #18181b; --muted: #5d5d66; --line: #e2e2e7;
+    --accent: #f2c200; --accent-ink: #1b1600; --keep: #157347; --keep-soft: #e3f4ea; --merge: #2f5fb8; --merge-soft: #e6eefc;
+    --build: #8a2fa8; --build-soft: #f6e8fb; --focus: #2f6fdb; color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f4f4f6; --surface: #ffffff; --inlay: #f0f0f3; --fg: #18181b; --muted: #5d5d66; --line: #e2e2e7;
+  --accent: #f2c200; --accent-ink: #1b1600; --keep: #157347; --keep-soft: #e3f4ea; --merge: #2f5fb8; --merge-soft: #e6eefc;
+  --build: #8a2fa8; --build-soft: #f6e8fb; --focus: #2f6fdb; color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.x-wrap { max-width: 1320px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.x h1, .x h2, .x h3 { font-family: var(--font-display); line-height: 1.15; margin: 0; text-wrap: balance; }
+.x h1 { font-size: 40px; letter-spacing: -0.01em; }
+.x h2 { font-size: 26px; }
+.x h3 { font-size: 17px; }
+.x p { margin: 0; }
+.x button { font: inherit; color: inherit; }
+.x :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+.lede { font-size: 17px; color: var(--muted); max-width: 760px; }
+.x-header { display: grid; gap: 14px; }
+.x-bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.x-bar-in { padding-block: 10px; display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.x-ctl { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+.x-seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 18px; padding: 2px; gap: 2px; }
+.x-seg button { border: 0; background: none; padding: 4px 12px; border-radius: 999px; font-size: 13px; cursor: pointer; color: var(--muted); }
+.x-seg button[aria-pressed="true"] { background: var(--inlay); color: var(--fg); font-weight: 600; }
+.x-seg .rec { color: var(--keep); font-size: 11px; font-weight: 700; margin-left: 4px; }
+main.x-wrap { padding-block: 28px 120px; display: grid; gap: 40px; }
+.x-stage { border-radius: var(--r-surface); overflow: hidden; border: 1px solid var(--line); background: #0b0b0d; }
+.x-scale { transform-origin: 0 0; width: 1440px; }
+.x-below { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 36px; align-items: start; }
+@media (max-width: 900px) { .x-below { grid-template-columns: minmax(0, 1fr); } }
+.x-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-surface); padding: 20px; display: grid; gap: 14px; min-width: 0; }
+.x-notes { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 14.5px; }
+.x-notes b { font-weight: 600; }
+.muted { color: var(--muted); }
+.x-why { font-size: 14px; color: var(--muted); }
+.x-rec { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--keep); background: var(--keep-soft); border-radius: 999px; padding: 3px 10px; justify-self: start; }
+.x-q { display: grid; gap: 8px; }
+.x-q .q { font-weight: 600; font-size: 14px; }
+.x-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.x-opts button { border: 1px solid var(--line); background: var(--bg); border-radius: var(--r-control); padding: 7px 12px; font-size: 13px; cursor: pointer; text-align: left; }
+.x-opts button[aria-pressed="true"] { border-color: var(--fg); background: var(--inlay); font-weight: 600; }
+.x-opts .rec { font-size: 11px; color: var(--keep); font-weight: 700; margin-left: 6px; }
+.x-copy { justify-self: start; border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 600; border-radius: var(--r-control); padding: 8px 14px; cursor: pointer; font-size: 14px; }
+#xcopied { font-size: 13px; color: var(--muted); }
+.x-research { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 900px) { .x-research { grid-template-columns: minmax(0, 1fr); } }
+.x-research h3 { font-size: 16px; }
+.x-research p { font-size: 14px; color: var(--muted); }
+.x-research .take { color: var(--fg); }
+.x-vs { display: grid; gap: 8px; }
+.x-vs div { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 12px; align-items: baseline; font-size: 14px; }
+.x-vs .tag { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 10px; text-align: center; }
+.tag.parity { background: var(--inlay); color: var(--muted); }
+.tag.improvement { background: var(--merge-soft); color: var(--merge); }
+.tag.new { background: var(--build-soft); color: var(--build); }
+
+/* ---------- Fusion mock: tokens copied from Frontend/packages/ds/src/styles/tokens.css ---------- */
+.fx, .fx[data-mode="light"] .force-dark {
+  --background: oklch(0.141 0.005 285.823); --foreground: oklch(0.985 0 0);
+  --card: oklch(0.21 0.006 285.885); --section: oklch(0.175 0.006 285.9); --inlay: oklch(0.235 0.006 285.9); --popover: oklch(0.245 0.006 285.95);
+  --secondary: oklch(0.274 0.006 286.033); --muted-foreground: oklch(0.705 0.015 286.067);
+  --border: oklch(1 0 0 / 10%); --input: oklch(1 0 0 / 15%);
+  --success: oklch(0.78 0.15 162); --info: oklch(0.75 0.12 264); --destructive: oklch(0.704 0.191 22.216);
+  --warning: oklch(0.795 0.184 86.047);
+  --identity-1: oklch(0.76 0.12 255); --identity-2: oklch(0.78 0.1 185); --identity-3: oklch(0.8 0.15 140); --identity-4: oklch(0.75 0.14 295); --identity-5: oklch(0.76 0.15 340);
+  --sidebar: oklch(0.175 0.006 285.9);
+  --primary: var(--acc-d, oklch(0.795 0.184 86.047)); --primary-foreground: var(--acc-df, oklch(0.421 0.095 57.708)); --primary-ink: var(--acc-d, oklch(0.795 0.184 86.047));
+  --primary-tint: color-mix(in oklab, var(--primary) 12%, transparent); --primary-ring: color-mix(in oklab, var(--primary) 30%, transparent);
+  color-scheme: dark;
+}
+.fx[data-mode="light"], .fx .force-light {
+  --background: oklch(0.985 0.001 286.375); --foreground: oklch(0.141 0.005 285.823);
+  --card: oklch(1 0 0); --section: oklch(1 0 0); --inlay: oklch(0.975 0.001 286.375); --popover: oklch(1 0 0);
+  --secondary: oklch(0.967 0.001 286.375); --muted-foreground: oklch(0.552 0.016 285.938);
+  --border: oklch(0.92 0.004 286.32); --input: oklch(0.92 0.004 286.32);
+  --success: oklch(0.6 0.15 160); --info: oklch(0.55 0.13 264); --destructive: oklch(0.577 0.245 27.325);
+  --warning: oklch(0.72 0.17 75);
+  --identity-1: oklch(0.52 0.15 255); --identity-2: oklch(0.52 0.1 185); --identity-3: oklch(0.53 0.14 140); --identity-4: oklch(0.52 0.17 295); --identity-5: oklch(0.55 0.18 340);
+  --sidebar: oklch(0.985 0 0);
+  --primary: var(--acc-l, oklch(0.852 0.199 91.936)); --primary-foreground: var(--acc-lf, oklch(0.421 0.095 57.708)); --primary-ink: var(--acc-li, oklch(0.78 0.18 91.936));
+  --primary-tint: color-mix(in oklab, var(--primary) 22%, transparent); --primary-ring: color-mix(in oklab, var(--primary) 42%, transparent);
+  color-scheme: light;
+}
+.fx {
+  --f-sans: "Geist", "Noto Sans Arabic", ui-sans-serif, system-ui, sans-serif;
+  --f-serif: "Lora", "Noto Sans Arabic", Georgia, serif;
+  --f-mono: "Geist Mono", ui-monospace, Consolas, monospace;
+  --r-control: 12px; --r-surface: 20px; --r-menu: 16px; --r-detail: 6px;
+  --dur: 200ms; --ease: cubic-bezier(0.2, 0, 0, 1);
+  width: 1440px; min-height: 900px; display: grid; grid-template-columns: 264px minmax(0, 1fr);
+  background: var(--background); color: var(--foreground); font-family: var(--f-sans); font-size: 14px; line-height: 1.5; text-align: start;
+  -webkit-font-smoothing: antialiased; position: relative;
+}
+@supports (corner-shape: squircle) {
+  .fx { --r-control: 22px; --r-surface: 36px; --r-menu: 26px; }
+  .fx .sq { corner-shape: squircle; }
+}
+.fx * { box-sizing: border-box; transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease); }
+.fx p, .fx h1, .fx h2, .fx h3, .fx ol, .fx ul { margin: 0; padding: 0; }
+.fx ol, .fx ul { list-style: none; }
+.fx a { color: inherit; text-decoration: none; }
+.fx button, .fx input { font: inherit; color: inherit; }
+.fx .i { width: 16px; height: 16px; flex: none; }
+.fx .mf { color: var(--muted-foreground); }
+.fx .t-display { font-family: var(--f-serif); font-size: 1.875rem; line-height: 1.15; font-weight: 500; letter-spacing: -0.015em; text-wrap: balance; }
+.fx .t-page { font-family: var(--f-serif); font-size: 1.5rem; line-height: 1.2; font-weight: 500; letter-spacing: -0.015em; }
+.fx .t-section { font-size: 1.125rem; line-height: 1.4; font-weight: 600; letter-spacing: -0.01em; }
+.fx .t-subsection { font-size: 0.875rem; line-height: 1.4; font-weight: 600; }
+.fx .t-panel { font-size: 1rem; line-height: 1.4; font-weight: 500; }
+.fx .t-body { font-size: 0.875rem; line-height: 1.5; }
+.fx .t-narrative { font-family: var(--f-serif); font-size: 1rem; line-height: 1.6; max-width: 70ch; letter-spacing: -0.005em; }
+.fx .t-label { font-size: 0.875rem; line-height: 1.25; font-weight: 500; }
+.fx .t-meta { font-size: 0.75rem; line-height: 1.4; }
+.fx .t-meta-strong { font-size: 0.75rem; line-height: 1.4; font-weight: 600; }
+.fx .t-eyebrow { font-size: 0.6875rem; line-height: 1.3; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+.fx .t-metric { font-size: 1.5rem; line-height: 1; font-weight: 600; font-variant-numeric: tabular-nums; }
+.fx .t-code { font-family: var(--f-mono); font-size: 0.8125rem; }
+/* controls */
+.fx .btn { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: var(--r-control); border: 1px solid transparent; font-size: 14px; font-weight: 500; white-space: nowrap; cursor: pointer; background: none; }
+.fx .btn.sm { height: 30px; padding: 0 10px; font-size: 13px; }
+.fx .btn.primary { background: var(--primary); color: var(--primary-foreground); }
+.fx .btn.outline { border-color: var(--border); background: var(--card); }
+.fx .btn.ghost { color: var(--muted-foreground); }
+.fx .btn.ghost:hover { color: var(--foreground); background: var(--secondary); }
+.fx .ib { width: 34px; height: 34px; display: inline-grid; place-items: center; border-radius: var(--r-control); border: 1px solid transparent; background: none; color: var(--muted-foreground); cursor: pointer; }
+.fx .ib.boxed { border-color: var(--border); background: var(--card); color: var(--foreground); }
+.fx .ib.sm { width: 28px; height: 28px; }
+.fx .seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: var(--r-control); background: var(--inlay); border: 1px solid var(--border); }
+.fx .seg button { height: 30px; padding: 0 12px; border: 1px solid transparent; border-radius: calc(var(--r-control) - 3px); background: none; color: var(--muted-foreground); display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 500; }
+.fx .seg button.on { background: var(--primary-tint); border-color: var(--primary-ring); color: var(--primary-ink); }
+.fx .input { height: 38px; width: 100%; border-radius: var(--r-control); border: 1px solid var(--input); background: var(--card); padding: 0 12px; font-size: 14px; outline: none; }
+.fx .input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+.fx .chip { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 999px; background: var(--inlay); border: 1px solid var(--border); font-size: 12px; font-weight: 500; }
+.fx .av { --s: 32px; width: var(--s); height: var(--s); flex: none; border-radius: 999px; display: inline-grid; place-items: center; font-weight: 600; font-size: calc(var(--s) * 0.36); letter-spacing: 0.01em; color: var(--hue); background: color-mix(in oklab, var(--hue) 16%, var(--card)); border: 1.5px solid color-mix(in oklab, var(--hue) 60%, transparent); }
+.fx .h1 { --hue: var(--identity-1); } .fx .h2 { --hue: var(--identity-2); } .fx .h3 { --hue: var(--identity-3); } .fx .h4 { --hue: var(--identity-4); } .fx .h5 { --hue: var(--identity-5); }
+.fx .stack { display: inline-flex; }
+.fx .stack .av { margin-inline-start: -8px; box-shadow: 0 0 0 2px var(--bandbg, var(--background)); }
+.fx .stack .av:first-child { margin-inline-start: 0; }
+.fx .sd { width: 8px; height: 8px; border-radius: 999px; display: inline-block; flex: none; }
+.fx .sd.ok { background: var(--success); } .fx .sd.warn { background: var(--warning); } .fx .sd.info { background: var(--info); }
+.fx .card { background: var(--card); border-radius: var(--r-surface); }
+.fx .pinwrap { position: relative; }
+/* shell */
+.fx .side { background: var(--sidebar); border-inline-end: 1px solid var(--border); display: flex; flex-direction: column; padding: 14px 12px; gap: 2px; min-height: 100%; }
+.fx .brand { display: flex; align-items: center; gap: 10px; padding: 2px 4px 14px; }
+.fx .logo { width: 36px; height: 36px; flex: none; border-radius: var(--r-control); overflow: hidden; display: grid; place-items: center; background: var(--primary); color: var(--primary-foreground); font-weight: 700; font-size: 16px; }
+.fx .logo svg { width: 100%; height: 100%; display: block; }
+.fx .logo.has { background: none; }
+.fx .brand-name { font-weight: 600; font-size: 14px; line-height: 1.25; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fx .nav { display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 10px; border-radius: var(--r-control); color: var(--muted-foreground); font-size: 14px; position: relative; white-space: nowrap; }
+.fx .nav .i { width: 18px; height: 18px; }
+.fx .nav .count { margin-inline-start: auto; min-width: 22px; height: 20px; padding: 0 6px; border-radius: 6px; background: var(--inlay); color: var(--foreground); font-size: 12px; font-weight: 600; display: grid; place-items: center; border: 1px solid var(--border); }
+.fx .nav.on { background: var(--secondary); color: var(--foreground); font-weight: 600; }
+.fx .nav.on::before { content: ""; position: absolute; inset-inline-start: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 3px; background: var(--primary); }
+.fx .side .rule { height: 1px; background: var(--border); margin: 8px 4px; }
+.fx .side .eb { padding: 14px 10px 6px; color: var(--muted-foreground); }
+.fx .switch { display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 10px; margin: 6px 0 4px; border-radius: var(--r-control); border: 1px solid var(--border); background: var(--card); font-weight: 600; }
+.fx .switch .tile { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: var(--primary-tint); color: var(--primary-ink); }
+.fx .switch .i.updown { margin-inline-start: auto; color: var(--muted-foreground); }
+.fx .side .me { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px 6px 0; border-top: 1px solid var(--border); }
+.fx .side .me .t-meta { white-space: nowrap; }
+.fx .main { display: flex; flex-direction: column; min-width: 0; }
+.fx .top { height: 52px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 0 20px 0 24px; }
+.fx .crumbs { display: flex; align-items: center; gap: 8px; color: var(--muted-foreground); font-size: 14px; flex: 1; }
+.fx .crumbs b { color: var(--foreground); font-weight: 600; }
+.fx .crumbs .i { width: 14px; height: 14px; }
+.fx .search { width: 300px; height: 34px; border-radius: var(--r-control); border: 1px solid var(--border); background: var(--card); display: flex; align-items: center; gap: 8px; padding: 0 10px; color: var(--muted-foreground); font-size: 13px; }
+.fx .search kbd { margin-inline-start: auto; font: 500 11px var(--f-sans); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; }
+.fx .lang { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: var(--muted-foreground); padding: 0 6px; }
+.fx .page { padding: 36px 40px 56px; }
+
+/* ---------- B-313 ---------- */
+.fx { --acc-d: oklch(0.62 0.17 262); --acc-df: #ffffff; }
+.fx .page { position: relative; }
+.fx .sb { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.fx .sb::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: currentColor; }
+.fx .sb.info { color: var(--info); background: color-mix(in oklab, var(--info) 14%, transparent); }
+.fx .sb.ok { color: var(--success); background: color-mix(in oklab, var(--success) 14%, transparent); }
+.fx .sb.warn { color: var(--warning); background: color-mix(in oklab, var(--warning) 14%, transparent); }
+.fx .sb.mute { color: var(--muted-foreground); background: var(--inlay); }
+.fx .sb.bad { color: var(--destructive); background: color-mix(in oklab, var(--destructive) 14%, transparent); }
+.fx .sb.nodot::before { display: none; }
+.fx .link { color: var(--primary-ink); font-weight: 500; cursor: pointer; }
+/* person band (D-01, as built in worker-profile.tsx) */
+.fx .pg { max-width: 1072px; }
+.fx .back { display: inline-flex; align-items: center; gap: 6px; color: var(--muted-foreground); font-size: 12px; margin-bottom: 14px; }
+.fx .back .i { width: 14px; height: 14px; }
+.fx .band { background: var(--section); border-radius: var(--r-surface); padding: 32px 32px 0; display: grid; grid-template-columns: 168px minmax(0, 1fr); column-gap: 32px; }
+.fx .band .av.big { --s: 168px; font-family: var(--f-serif); font-weight: 500; font-size: 56px; border-width: 2px; box-shadow: 0 0 0 6px var(--section); grid-row: span 3; position: relative; }
+.fx .band .leave-dot { position: absolute; right: 8px; bottom: 8px; width: 40px; height: 40px; border-radius: 999px; background: var(--card); box-shadow: 0 0 0 4px var(--section); display: grid; place-items: center; color: var(--info); }
+.fx .band .leave-dot .i { width: 20px; height: 20px; }
+.fx .bt { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; }
+.fx .bn { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.fx .bn h1 { font-family: var(--f-serif); font-size: 2.25rem; line-height: 1.2; font-weight: 500; letter-spacing: -0.015em; }
+.fx .gl { display: flex; flex-wrap: wrap; gap: 16px 32px; margin-top: 20px; align-items: center; }
+.fx .gl .c { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.fx .gl .c .t-meta { color: var(--muted-foreground); display: block; }
+.fx .gl .c .t-label { display: block; white-space: nowrap; }
+.fx .gl .tile { width: 36px; height: 36px; border-radius: var(--r-control); display: grid; place-items: center; background: var(--primary-tint); color: var(--primary-ink); flex: none; }
+.fx .gl .tile.lv { background: color-mix(in oklab, var(--info) 16%, transparent); color: var(--info); }
+.fx .gl .c.lvc { padding: 6px 14px 6px 6px; margin: -6px 0; border-radius: 16px; background: color-mix(in oklab, var(--info) 7%, transparent); }
+.fx .tabs { display: flex; gap: 4px; margin-top: 24px; padding-bottom: 20px; grid-column: 2; }
+.fx .tabs span { height: 34px; padding: 0 14px; border-radius: var(--r-control); display: inline-flex; align-items: center; font-size: 14px; color: var(--muted-foreground); border: 1px solid transparent; }
+.fx .tabs span.on { color: var(--primary-ink); background: var(--primary-tint); border-color: var(--primary-ring); font-weight: 600; }
+.fx .low { display: grid; grid-template-columns: 256px minmax(0, 1fr); gap: 40px; margin-top: 32px; align-items: start; }
+.fx .rail .grp { padding: 16px 0; border-top: 1px solid var(--border); display: grid; gap: 6px; }
+.fx .rail .grp:first-child { border-top: 0; padding-top: 0; }
+.fx .rail .ln { display: flex; gap: 10px; align-items: center; font-size: 14px; }
+.fx .rail .ln .i { color: var(--muted-foreground); }
+.fx .rail .lab { color: var(--muted-foreground); font-size: 14px; font-weight: 500; }
+.fx .col { display: grid; gap: 20px; min-width: 0; }
+.fx .sec { background: var(--section); border-radius: var(--r-surface); padding: 22px 24px 24px; display: grid; gap: 16px; }
+.fx .sec-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 28px; }
+.fx .cu { display: grid; gap: 8px; }
+.fx .cu .it { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 10px 12px; border-radius: 16px; background: var(--card); }
+.fx .ct { width: 56px; border-radius: 12px; background: var(--inlay); text-align: center; overflow: hidden; }
+.fx .ct small { display: block; font-size: 10.5px; font-weight: 600; padding: 3px 0 1px; background: var(--primary-tint); color: var(--primary-ink); }
+.fx .ct.lv small { background: color-mix(in oklab, var(--info) 18%, transparent); color: var(--info); }
+.fx .ct b { display: block; font-size: 20px; line-height: 1.15; font-weight: 600; padding-top: 2px; font-variant-numeric: tabular-nums; }
+.fx .ct span { display: block; font-size: 10.5px; color: var(--muted-foreground); padding-bottom: 4px; }
+.fx .hist { display: grid; }
+.fx .hist .r { display: grid; grid-template-columns: 112px 28px minmax(0, 1fr); gap: 12px; align-items: start; padding: 9px 0; position: relative; }
+.fx .hist .r .w { font-size: 12px; color: var(--muted-foreground); padding-top: 3px; font-variant-numeric: tabular-nums; }
+.fx .hist .r .dot { width: 28px; height: 28px; border-radius: 999px; display: grid; place-items: center; background: var(--card); color: var(--muted-foreground); position: relative; z-index: 1; }
+.fx .hist .r .dot .i { width: 15px; height: 15px; }
+.fx .hist .r .dot.lv { color: var(--info); background: color-mix(in oklab, var(--info) 14%, var(--card)); }
+.fx .hist .r .dot.ok { color: var(--success); background: color-mix(in oklab, var(--success) 14%, var(--card)); }
+.fx .hist .r .dot.bad { color: var(--destructive); background: color-mix(in oklab, var(--destructive) 14%, var(--card)); }
+.fx .hist .r::after { content: ""; position: absolute; left: 137px; top: 30px; bottom: -10px; width: 1.5px; background: var(--border); }
+.fx .hist .r:last-child::after { display: none; }
+.fx .hist .r .t-meta { color: var(--muted-foreground); margin-top: 2px; }
+/* sheet */
+.fx .scrim { position: absolute; inset: 0; background: rgb(0 0 0 / .55); z-index: 30; }
+.fx .sheet { position: absolute; top: 0; right: 0; bottom: 0; width: 520px; z-index: 31; background: var(--popover); border-inline-start: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: -24px 0 60px -20px rgb(0 0 0 / .6); }
+.fx .sheet .sh { padding: 22px 24px 18px; display: grid; gap: 14px; border-bottom: 1px solid var(--border); }
+.fx .sheet .sb2 { padding: 22px 24px; display: grid; gap: 22px; align-content: start; flex: 1; overflow: auto; }
+.fx .sheet .sf { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.fx .kinds { display: flex; gap: 6px; flex-wrap: wrap; }
+.fx .kinds span { height: 30px; padding: 0 12px; border-radius: var(--r-control); border: 1px solid var(--border); display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted-foreground); background: var(--card); }
+.fx .kinds span.on { background: var(--primary-tint); border-color: var(--primary-ring); color: var(--primary-ink); font-weight: 600; }
+.fx .fld { display: grid; gap: 8px; }
+.fx .lab2 { font-size: 13px; font-weight: 500; }
+.fx .lab2 .o { color: var(--muted-foreground); font-weight: 400; }
+.fx .qp { display: flex; flex-wrap: wrap; gap: 6px; }
+.fx .qp button { height: 32px; padding: 0 12px; border-radius: var(--r-control); border: 1px solid var(--border); background: var(--card); font-size: 13px; cursor: pointer; color: var(--foreground); display: inline-flex; align-items: center; gap: 6px; }
+.fx .qp button.on { background: var(--primary-tint); border-color: var(--primary-ring); color: var(--primary-ink); font-weight: 600; }
+.fx .qp button .i { width: 14px; height: 14px; }
+.fx .area { min-height: 64px; border-radius: var(--r-control); border: 1px solid var(--input); background: var(--background); padding: 10px 12px; font-size: 14px; color: var(--muted-foreground); }
+.fx .eff { background: var(--card); border-radius: 16px; padding: 14px 16px; display: grid; gap: 10px; }
+.fx .eff .ln { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; }
+.fx .eff .ln .i { margin-top: 2px; color: var(--muted-foreground); }
+.fx .summ { font-size: 13.5px; color: var(--muted-foreground); flex: 1; }
+.fx .summ b { color: var(--foreground); font-weight: 600; }
+.fx .ftoast { position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 50; background: var(--popover); border: 1px solid var(--border); border-radius: var(--r-control); padding: 10px 14px; display: flex; gap: 10px; align-items: center; box-shadow: 0 18px 44px -14px rgb(0 0 0 / .7); white-space: nowrap; animation: fx-pop 200ms var(--ease); }
+.fx .ftoast .i { color: var(--success); }
+@keyframes fx-pop { from { opacity: 0; transform: translate(-50%, 4px); } to { opacity: 1; transform: translate(-50%, 0); } }
+/* board: where the person appears */
+.fx.board { grid-template-columns: minmax(0, 1fr); }
+.fx .bd { padding: 36px 40px 48px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; align-content: start; }
+.fx .bd .where { display: flex; align-items: center; gap: 8px; color: var(--muted-foreground); margin-bottom: -6px; }
+.fx .bd .where .i { width: 14px; height: 14px; }
+.fx .bd .cell { display: grid; gap: 12px; align-content: start; }
+.fx .bd .cell.wide { grid-column: span 2; }
+.fx .tbl { background: var(--section); border-radius: var(--r-surface); padding: 6px 8px; }
+.fx .tbl .tr { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.5fr) minmax(0, 1.3fr) minmax(0, 1.6fr); gap: 14px; align-items: center; padding: 10px 12px; border-top: 1px solid var(--border); font-size: 13.5px; }
+.fx .tbl .tr:first-child { border-top: 0; }
+.fx .tbl .tr.th { color: var(--muted-foreground); font-size: 12px; font-weight: 500; padding-block: 8px; }
+.fx .tbl .who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.fx .tbl .who > div { min-width: 0; }
+.fx .tbl .t-label, .fx .tbl .t-meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fx .avw { position: relative; display: inline-flex; flex: none; }
+.fx .avw .badge { position: absolute; right: -3px; bottom: -3px; width: 16px; height: 16px; border-radius: 999px; background: var(--card); display: grid; place-items: center; color: var(--info); box-shadow: 0 0 0 2px var(--section); }
+.fx .avw .badge .i { width: 11px; height: 11px; }
+.fx .dcards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.fx .dcard { background: var(--section); border-radius: 20px; padding: 18px 14px 14px; display: grid; justify-items: center; gap: 4px; text-align: center; }
+.fx .dcard .t-meta { color: var(--muted-foreground); }
+.fx .org { background: var(--section); border-radius: var(--r-surface); padding: 20px; display: grid; justify-items: center; }
+.fx .onode { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: var(--card); min-width: 0; width: 100%; }
+.fx .onode > div { min-width: 0; }
+.fx .onode .t-label, .fx .onode .t-meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.fx .onode.mgr { width: auto; }
+.fx .onode.dim { opacity: .62; }
+.fx .vl { width: 1.5px; height: 16px; background: var(--border); }
+.fx .kids { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: 100%; padding-top: 16px; border-top: 1.5px solid var(--border); }
+.fx .list { background: var(--section); border-radius: var(--r-surface); padding: 8px; display: grid; gap: 2px; }
+.fx .list .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 14px; }
+.fx .list .row.hl { background: var(--card); }
+.fx .list .row .who { display: flex; gap: 10px; align-items: center; min-width: 0; }
+.fx .list .row .who > div { min-width: 0; }
+.fx .nothing { font-size: 12.5px; color: var(--muted-foreground); display: flex; gap: 8px; align-items: center; }
+.fx .nothing .i { width: 14px; height: 14px; }
+/* access */
+.fx dl.acc { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 40px; margin: 0; }
+.fx dl.acc dt { font-size: 14px; color: var(--muted-foreground); font-weight: 500; }
+.fx dl.acc dd { margin: 6px 0 0; display: grid; gap: 6px; justify-items: start; }
+.fx .rolechips { display: flex; gap: 8px; flex-wrap: wrap; }
+.fx .rolechip { display: grid; gap: 2px; padding: 10px 14px; border-radius: 14px; background: var(--card); min-width: 180px; }
+.fx .rolechip .t-meta { color: var(--muted-foreground); }
+/* roles table (roles-table.tsx) */
+.fx .rt { background: var(--section); border-radius: var(--r-surface); padding: 8px 18px 14px; overflow: hidden; }
+.fx .rt table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.fx .rt th, .fx .rt td { text-align: start; padding: 11px 10px; vertical-align: middle; }
+.fx .rt thead th { vertical-align: top; padding-top: 16px; padding-bottom: 14px; }
+.fx .rt td:first-child, .fx .rt th:first-child { width: 190px; padding-inline-start: 6px; }
+.fx .rt tbody tr { border-top: 1px solid var(--border); }
+.fx .rt tr.grp td { padding-top: 18px; padding-bottom: 6px; color: var(--muted-foreground); font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+.fx .rt tr.grp { border-top: 0; }
+.fx .rt .rh { display: grid; gap: 6px; padding: 10px; margin: -10px; border-radius: var(--r-menu); }
+.fx .rt .rh.new { background: color-mix(in oklab, var(--primary) 9%, transparent); box-shadow: inset 0 0 0 1px var(--primary-ring); }
+.fx .rt .col-new { background: color-mix(in oklab, var(--primary) 5%, transparent); }
+.fx .cellv { display: grid; grid-template-columns: auto auto; justify-content: start; align-items: center; column-gap: 8px; white-space: nowrap; font-size: 13px; font-weight: 500; }
+.fx .cellv .r { grid-column: 2; font-size: 12.5px; }
+.fx .cellv .r { color: var(--muted-foreground); font-weight: 400; }
+.fx .cellv .r.unit { color: var(--primary-ink); font-weight: 600; }
+.fx .pips { display: inline-flex; gap: 3px; }
+.fx .pips i { width: 12px; height: 8px; border-radius: 3px; border: 1px solid var(--input); background: var(--inlay); display: block; }
+.fx .pips i.f { background: color-mix(in oklab, var(--foreground) 78%, transparent); border-color: transparent; }
+/* role page */
+.fx .rp { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 28px; align-items: start; }
+.fx .sent { list-style: none; margin: 0; padding: 0; }
+.fx .sent li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 54px; border-top: 1px solid var(--border); padding: 8px 0; font-size: 14px; }
+.fx .sent li:first-child { border-top: 0; }
+.fx .pick { height: 30px; padding: 0 8px 0 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); display: inline-flex; align-items: center; gap: 4px; font-size: 13.5px; font-weight: 600; cursor: pointer; position: relative; }
+.fx .pick .i { width: 14px; height: 14px; color: var(--muted-foreground); }
+.fx .pick.open { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+.fx .pick.mut { color: var(--muted-foreground); font-weight: 500; }
+.fx .menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; width: 330px; background: var(--popover); border: 1px solid var(--border); border-radius: var(--r-menu); box-shadow: 0 18px 44px -14px rgb(0 0 0 / .7); padding: 6px; cursor: default; font-weight: 400; }
+.fx .mi { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 10px; padding: 8px 10px; border-radius: 10px; cursor: pointer; align-items: start; }
+.fx .mi:hover { background: var(--secondary); }
+.fx .mi.on { background: var(--primary-tint); }
+.fx .mi .i { margin-top: 2px; }
+.fx .mi .t-meta { color: var(--muted-foreground); }
+.fx .pvw { background: var(--section); border-radius: var(--r-surface); padding: 20px 22px; display: grid; gap: 14px; position: sticky; top: 20px; }
+.fx .tree { display: grid; gap: 2px; }
+.fx .tree .u { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 7px 10px; border-radius: 10px; font-size: 13.5px; }
+.fx .tree .u.in { background: color-mix(in oklab, var(--primary) 8%, transparent); }
+.fx .tree .u.out { color: var(--muted-foreground); }
+.fx .tree .u .nm { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.fx .tree .u .nm .i { width: 14px; height: 14px; color: var(--muted-foreground); }
+/* email */
+.fx.mail { grid-template-columns: minmax(0, 1fr); background: #e9e9ee; color: #16161d; min-height: 900px; }
+.fx .mails { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; padding: 32px 40px 40px; align-items: start; }
+.fx .mhead { font-family: var(--f-sans); font-size: 13px; color: #55555f; margin-bottom: 10px; display: flex; justify-content: space-between; }
+.fx .mhead b { color: #16161d; }
+.fx .inbox { background: #fff; border-radius: 14px 14px 0 0; padding: 12px 16px; border: 1px solid #dcdce3; border-bottom: 0; font-size: 13px; display: grid; gap: 2px; }
+.fx .inbox .from { font-weight: 600; }
+.fx .inbox .t-meta { color: #6b6b76; }
+.fx .mbody { background: #f4f4f6; padding: 24px 20px 28px; border: 1px solid #dcdce3; border-radius: 0 0 14px 14px; font-family: "Segoe UI", Helvetica, Arial, sans-serif; }
+.fx .mcard { background: #fff; border: 1px solid #e2e2e8; border-radius: 14px; max-width: 560px; margin: 0 auto; }
+.fx .mcard .p { padding: 22px 32px 0; }
+.fx .mcard .p:first-child { padding-top: 28px; }
+.fx .mcard h2 { margin: 0; font-size: 24px; line-height: 32px; font-weight: 700; color: #16161d; }
+.fx .mcard .lead { margin: 14px 0 0; font-size: 15px; line-height: 24px; color: #4a4a55; }
+.fx .mcard .btnm { display: inline-block; font-size: 15px; font-weight: 600; line-height: 20px; padding: 14px 24px; border-radius: 10px; }
+.fx .mcard .foot { padding: 22px 32px 28px; border-top: 1px solid #ececf1; margin-top: 24px; }
+.fx .mcard .foot p { margin: 12px 0 0; font-size: 12px; line-height: 19px; color: #6b6b76; }
+.fx .mcard .foot p:first-child { margin-top: 0; }
+.fx .mcard .foot a { color: #16161d; }
+.fx .mcard .wm { font-size: 15px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #16161d; }
+.fx .mcard .co { display: flex; align-items: center; gap: 12px; font-size: 17px; font-weight: 700; color: #16161d; }
+.fx .mcard .co .lg { width: 44px; height: 44px; border-radius: 10px; overflow: hidden; flex: none; }
+.fx .mcard .co .lg svg { width: 100%; height: 100%; display: block; }
+.fx .mcard .bar { height: 6px; border-radius: 14px 14px 0 0; margin: -1px -1px 0; }
+.fx .mcard .fact { margin: 20px 32px 0; border: 1px solid #e2e2e8; border-radius: 10px; padding: 14px 16px; background: #fafafb; }
+.fx .mcard .fact small { display: block; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: #6b6b76; }
+.fx .mcard .fact b { display: block; margin-top: 4px; font-size: 15px; color: #16161d; }
+
+.fx .band .gl, .fx .band .bt { grid-column: 2; }
+</style>
+
+<div class="x">
+<header class="x-wrap" style="padding-block: 40px 24px;">
+  <div class="x-header">
+    <p class="eyebrow">Fusion · Core HR, Performance, Identity · B-313</p>
+    <h1>On leave, account history, "their unit" and branded emails</h1>
+    <p class="lede">Four pieces that deepen the person record and who sees it, drawn on Carthage as it stood on 7 Nov 2026. Aicha Bouazizi, a QA Automation Engineer in Mariam Gharbi's team, is the person throughout; Mouna Kooli, HR, makes the changes. Pick a screen, try its states, then choose below.</p>
+  </div>
+</header>
+
+<div class="x-bar">
+  <div class="x-wrap x-bar-in">
+    <div class="x-ctl">Screen <span class="x-seg" id="scrSeg"></span></div>
+    <div class="x-ctl" id="stCtl">State <span class="x-seg" id="stSeg"></span></div>
+    <div class="x-ctl" id="vwCtl">Viewer <span class="x-seg" id="vwSeg"></span></div>
+  </div>
+</div>
+
+<main class="x-wrap">
+  <section style="display:grid;gap:18px">
+    <div class="x-stage" id="stage"><div class="x-scale" id="scale"><div class="fx" id="frame"></div></div></div>
+    <div class="x-below">
+      <div class="x-card" id="notes"></div>
+      <div class="x-card">
+        <h3>Your picks</h3>
+        <p class="x-why">Recommended answers are preselected; the screens follow your picks where they change what is drawn.</p>
+        <div id="qs" style="display:grid;gap:16px"></div>
+        <button class="x-copy" id="copy">Copy my picks</button>
+        <span id="xcopied" role="status"></span>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:grid;gap:18px">
+    <h2>How others do it</h2>
+    <div class="x-research">
+      <div class="x-card"><h3>BambooHR</h3>
+        <p>Time off is its own module with balances and requests; the person page shows "Out" with the return date, and Who's Out lists the week. Access levels are per employee group, scoped to "employees who report to them" or to everyone.</p>
+        <p class="take">We take: "Out until" with the return day wherever the person shows, without building balances.</p></div>
+      <div class="x-card"><h3>HiBob</h3>
+        <p>A lifecycle status "On leave" with effective dates sits beside Employed and Terminated, and permission groups can reach "people in my department and below". The employee's activity log keeps account events.</p>
+        <p class="take">We take: leave as a dated state, and reach by department subtree.</p></div>
+      <div class="x-card"><h3>Personio</h3>
+        <p>Absences carry a type; who sees the type is a permission (colleagues see only "absent"). Notification emails carry the company's logo and colour.</p>
+        <p class="take">We take: the type stays with HR and the manager; emails in the company's brand.</p></div>
+    </div>
+    <div class="x-card x-vs">
+      <div><span class="tag parity">Parity</span><span>Leave with a type and dates, shown on the person, the directory and the team; roles reaching a unit and the units under it; branded notification emails.</span></div>
+      <div><span class="tag improvement">Improvement</span><span>Leave is a dated change like a job change: scheduled, cancelled, approved if the company asks, and visible in Performance without pausing anything. The Access tab tells the account's story with names.</span></div>
+      <div><span class="tag new">New</span><span>The role page previews a real person's reach: which units and how many people "their unit" covers for Mariam.</span></div>
+    </div>
+  </section>
+</main>
+</div>
+
+<script>
+const ICONS = {"Alert02":"<path d=\"M13.9248 21H10.0752C5.44476 21 3.12955 21 2.27636 19.4939C1.42317 17.9879 2.60736 15.9914 4.97574 11.9985L6.90057 8.75333C9.17559 4.91778 10.3131 3 12 3C13.6869 3 14.8244 4.91777 17.0994 8.75332L19.0243 11.9985C21.3926 15.9914 22.5768 17.9879 21.7236 19.4939C20.8704 21 18.5552 21 13.9248 21Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M12 9V13\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M12.125 16.75H12M12.25 16.75C12.25 16.8881 12.1381 17 12 17C11.8619 17 11.75 16.8881 11.75 16.75C11.75 16.6119 11.8619 16.5 12 16.5C12.1381 16.5 12.25 16.6119 12.25 16.75Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","ArrowDown01":"<path d=\"M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Search01":"<path d=\"M17 17L21 21\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19C15.4183 19 19 15.4183 19 11Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Tick02":"<path d=\"M5 14L8.5 17.5L19 6.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","ArrowLeft01":"<path d=\"M15 6C15 6 9.00001 10.4189 9 12C8.99999 13.5812 15 18 15 18\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","ArrowRight01":"<path d=\"M9.00005 6C9.00005 6 15 10.4189 15 12C15 13.5812 9 18 9 18\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","UserCircle":"<path d=\"M18.4984 19.1511C17.3377 17.4018 15.2947 16.2009 12.9313 16.0569L11.9984 16C11.6652 16.0083 11.3547 16.0194 11.0617 16.0325C8.71722 16.1376 6.66598 17.3796 5.5 19.1511\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M14.9961 10C14.9961 11.6569 13.6529 13 11.9961 13C10.3392 13 8.99609 11.6569 8.99609 10C8.99609 8.34315 10.3392 7 11.9961 7C13.6529 7 14.9961 8.34315 14.9961 10Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Briefcase01":"<path d=\"M2.00127 8.5L1.99911 13.997C1.99782 17.2979 1.99717 18.9484 3.02235 19.974C4.04754 20.9996 5.69801 20.9996 8.99895 20.9997L15 20.9998C18.2994 20.9999 19.949 21 20.9741 19.9751C21.9992 18.9502 21.9996 17.3005 22.0002 14.0012L22.0013 8.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M8.49857 6.5C8.49857 5.09554 8.49857 4.39331 8.83563 3.88886C8.98154 3.67048 9.16904 3.48298 9.38743 3.33706C9.89187 3 10.5941 3 11.9986 3C13.403 3 14.1053 3 14.6097 3.33706C14.8281 3.48298 15.0156 3.67048 15.1615 3.88886C15.4986 4.39331 15.4986 5.09554 15.4986 6.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M19.998 6.50016L3.99885 6.5C2.8944 6.50007 1.99876 7.39568 1.99866 8.50013C1.99876 10.7091 3.79005 12.5004 5.99901 12.5006H17.9978C20.2068 12.5005 21.998 10.7093 21.9981 8.5003C21.998 7.39582 21.1024 6.50023 19.998 6.50016Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M9.99857 12.5V13.5C9.99857 13.965 9.99857 14.1975 10.0497 14.3882C10.1884 14.9059 10.5927 15.3102 11.1103 15.4489C11.3011 15.5 11.5336 15.5 11.9986 15.5C12.4636 15.5 12.696 15.5 12.8868 15.4489C13.4044 15.3102 13.8088 14.9059 13.9475 14.3882C13.9986 14.1975 13.9986 13.965 13.9986 13.5V12.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Hierarchy":"<path d=\"M9.89128 7.55559C9.34109 7.8715 7.89853 8.51654 8.77715 9.32371C9.20634 9.71801 9.68436 10 10.2853 10H13.7147C14.3156 10 14.7937 9.71801 15.2229 9.32371C16.1015 8.51654 14.6589 7.8715 14.1087 7.55559C12.8185 6.8148 11.1815 6.8148 9.89128 7.55559Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M13.5 3.5C13.5 4.32843 12.8284 5 12 5C11.1716 5 10.5 4.32843 10.5 3.5C10.5 2.67157 11.1716 2 12 2C12.8284 2 13.5 2.67157 13.5 3.5Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M16.3913 19.5556C15.8411 19.8715 14.3985 20.5165 15.2771 21.3237C15.7063 21.718 16.1844 22 16.7853 22H20.2147C20.8156 22 21.2937 21.718 21.7229 21.3237C22.6015 20.5165 21.1589 19.8715 20.6087 19.5556C19.3185 18.8148 17.6815 18.8148 16.3913 19.5556Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M20 15.5C20 16.3284 19.3284 17 18.5 17C17.6716 17 17 16.3284 17 15.5C17 14.6716 17.6716 14 18.5 14C19.3284 14 20 14.6716 20 15.5Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M3.39128 19.5556C2.84109 19.8715 1.39853 20.5165 2.27715 21.3237C2.70634 21.718 3.18436 22 3.78534 22H7.21466C7.81564 22 8.29366 21.718 8.72285 21.3237C9.60147 20.5165 8.15891 19.8715 7.60872 19.5556C6.31854 18.8148 4.68146 18.8148 3.39128 19.5556Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M7 15.5C7 16.3284 6.32843 17 5.5 17C4.67157 17 4 16.3284 4 15.5C4 14.6716 4.67157 14 5.5 14C6.32843 14 7 14.6716 7 15.5Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M12 13V15.5M12 15.5L14.5 17M12 15.5L9.5 17\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Location01":"<path d=\"M13.6177 21.367C13.1841 21.773 12.6044 22 12.0011 22C11.3978 22 10.8182 21.773 10.3845 21.367C6.41302 17.626 1.09076 13.4469 3.68627 7.37966C5.08963 4.09916 8.45834 2 12.0011 2C15.5439 2 18.9126 4.09916 20.316 7.37966C22.9082 13.4393 17.599 17.6389 13.6177 21.367Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M15.5 11C15.5 12.933 13.933 14.5 12 14.5C10.067 14.5 8.5 12.933 8.5 11C8.5 9.067 10.067 7.5 12 7.5C13.933 7.5 15.5 9.067 15.5 11Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/>","Calendar03":"<path d=\"M16 2V6M8 2V6\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M13 4H11C7.22876 4 5.34315 4 4.17157 5.17157C3 6.34315 3 8.22876 3 12V14C3 17.7712 3 19.6569 4.17157 20.8284C5.34315 22 7.22876 22 11 22H13C16.7712 22 18.6569 22 19.8284 20.8284C21 19.6569 21 17.7712 21 14V12C21 8.22876 21 6.34315 19.8284 5.17157C18.6569 4 16.7712 4 13 4Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M3 10H21\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M12.1258 14H12.0008M12.1258 18H12.0008M7.625 14H7.5M7.625 18H7.5M16.625 14H16.5M12.2508 14C12.2508 14.1381 12.1389 14.25 12.0008 14.25C11.8628 14.25 11.7508 14.1381 11.7508 14C11.7508 13.8619 11.8628 13.75 12.0008 13.75C12.1389 13.75 12.2508 13.8619 12.2508 14ZM12.2508 18C12.2508 18.1381 12.1389 18.25 12.0008 18.25C11.8628 18.25 11.7508 18.1381 11.7508 18C11.7508 17.8619 11.8628 17.75 12.0008 17.75C12.1389 17.75 12.2508 17.8619 12.2508 18ZM7.75 14C7.75 14.1381 7.63807 14.25 7.5 14.25C7.36193 14.25 7.25 14.1381 7.25 14C7.25 13.8619 7.36193 13.75 7.5 13.75C7.63807 13.75 7.75 13.8619 7.75 14ZM7.75 18C7.75 18.1381 7.63807 18.25 7.5 18.25C7.36193 18.25 7.25 18.1381 7.25 18C7.25 17.8619 7.36193 17.75 7.5 17.75C7.63807 17.75 7.75 17.8619 7.75 18ZM16.75 14C16.75 14.1381 16.6381 14.25 16.5 14.25C16.3619 14.25 16.25 14.1381 16.25 14C16.25 13.8619 16.3619 13.75 16.5 13.75C16.6381 13.75 16.75 13.8619 16.75 14Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Cancel01":"<path d=\"M18 6L6.00081 17.9992M17.9992 18L6 6.00085\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Add01":"<path d=\"M12.001 5.00003V19.002\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M19.002 12.002L4.99998 12.002\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","UserAdd01":"<path d=\"M3 20.5002C3.28417 16.8058 6.3 13.7193 10.0008 13.5379C10.3134 13.5226 10.6446 13.5097 11 13.5L11.995 13.5663C12.6939 13.6129 13.3665 13.7543 14 13.9777\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M18 15.5V21.5M21 18.5L15 18.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><circle cx=\"11\" cy=\"6.5\" r=\"4\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Mail01":"<path d=\"M2 6L8.91302 9.91697C11.4616 11.361 12.5384 11.361 15.087 9.91697L22 6\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M2.01577 13.4756C2.08114 16.5412 2.11383 18.0739 3.24496 19.2094C4.37608 20.3448 5.95033 20.3843 9.09883 20.4634C11.0393 20.5122 12.9607 20.5122 14.9012 20.4634C18.0497 20.3843 19.6239 20.3448 20.7551 19.2094C21.8862 18.0739 21.9189 16.5412 21.9842 13.4756C22.0053 12.4899 22.0053 11.5101 21.9842 10.5244C21.9189 7.45886 21.8862 5.92609 20.7551 4.79066C19.6239 3.65523 18.0497 3.61568 14.9012 3.53657C12.9607 3.48781 11.0393 3.48781 9.09882 3.53656C5.95033 3.61566 4.37608 3.65521 3.24495 4.79065C2.11382 5.92608 2.08114 7.45885 2.01576 10.5244C1.99474 11.5101 1.99475 12.4899 2.01577 13.4756Z\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","SidebarLeft":"<path d=\"M2 12C2 8.31087 2 6.4663 2.81382 5.15877C3.1149 4.67502 3.48891 4.25427 3.91891 3.91554C5.08116 3 6.72077 3 10 3H14C17.2792 3 18.9188 3 20.0811 3.91554C20.5111 4.25427 20.8851 4.67502 21.1862 5.15877C22 6.4663 22 8.31087 22 12C22 15.6891 22 17.5337 21.1862 18.8412C20.8851 19.325 20.5111 19.7457 20.0811 20.0845C18.9188 21 17.2792 21 14 21H10C6.72077 21 5.08116 21 3.91891 20.0845C3.48891 19.7457 3.1149 19.325 2.81382 18.8412C2 17.5337 2 15.6891 2 12Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M9.5 3L9.5 21\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M5 7H6M5 10H6\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Home01":"<path d=\"M3 11.9896V14.5C3 17.7998 3 19.4497 4.02513 20.4749C5.05025 21.5 6.70017 21.5 10 21.5H14C17.2998 21.5 18.9497 21.5 19.9749 20.4749C21 19.4497 21 17.7998 21 14.5V11.9896C21 10.3083 21 9.46773 20.6441 8.74005C20.2882 8.01237 19.6247 7.49628 18.2976 6.46411L16.2976 4.90855C14.2331 3.30285 13.2009 2.5 12 2.5C10.7991 2.5 9.76689 3.30285 7.70242 4.90855L5.70241 6.46411C4.37533 7.49628 3.71179 8.01237 3.3559 8.74005C3 9.46773 3 10.3083 3 11.9896Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","UserMultiple02":"<path d=\"M18.5 7C18.5 9.20914 16.7091 11 14.5 11C12.2909 11 10.5 9.20914 10.5 7C10.5 4.79086 12.2909 3 14.5 3C16.7091 3 18.5 4.79086 18.5 7Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M8 11C6.34315 11 5 9.65685 5 8C5 6.34315 6.34315 5 8 5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M14.5 14C9.8125 14 7 16.5 7 19C7 20.1046 7.83947 21 8.875 21H20.125C21.1605 21 22 20.1046 22 19C22 16.5 19.1875 14 14.5 14Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M4 19.9992H3.5C2.67157 19.9992 2 19.2317 2 18.2849C2 16.673 3.27307 15.0612 5.5 14.3613\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","UserGroup":"<path d=\"M18.4995 20.5C18.2663 17.5685 15.8417 15.2477 12.808 15.0521L11.9995 15C11.7107 15.0076 11.4416 15.0178 11.1877 15.0298C8.18075 15.1723 5.7304 17.5974 5.49951 20.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M15.2495 9.25C15.2495 11.0449 13.7944 12.5 11.9995 12.5C10.2046 12.5 8.74952 11.0449 8.74952 9.25C8.74952 7.45507 10.2046 6 11.9995 6C13.7944 6 15.2495 7.45507 15.2495 9.25Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M5.50249 8.5C5.17908 7.99485 4.99158 7.39432 4.99158 6.75C4.99158 4.95507 6.44665 3.5 8.24157 3.5C8.68752 3.5 9.1125 3.58982 9.49939 3.75235\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M18.4963 8.5C18.8197 7.99485 19.0072 7.39432 19.0072 6.75C19.0072 4.95507 17.5521 3.5 15.7572 3.5C15.3113 3.5 14.8863 3.58982 14.4994 3.75235\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M22.0007 17.9996C21.8208 15.7374 19.9995 13.5 17.9995 13\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M1.99927 17.9996C2.17923 15.7374 4.00049 13.5 6.00049 13\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Target02":"<path d=\"M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/><path d=\"M14 2.20004C13.3538 2.06886 12.6849 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 11.3151 21.9311 10.6462 21.8 10\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/><path d=\"M12.0303 11.9625L16.5832 7.4096M19.7404 4.34462L19.1872 2.35748C19.0853 2.03011 18.6914 1.89965 18.4259 2.11662C16.9898 3.29018 15.4254 4.87091 16.703 7.36419C19.2771 8.56455 20.7466 6.94584 21.8733 5.5853C22.0975 5.3146 21.9623 4.90767 21.6247 4.81005L19.7404 4.34462Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","ChartColumn":"<path d=\"M8 9V17\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M13 5V17\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M18 13V17\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M3 3V13C3 16.7712 3 18.6569 4.17157 19.8284C5.34315 21 7.22876 21 11 21H21\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Settings02":"<path d=\"M15.5 12C15.5 13.933 13.933 15.5 12 15.5C10.067 15.5 8.5 13.933 8.5 12C8.5 10.067 10.067 8.5 12 8.5C13.933 8.5 15.5 10.067 15.5 12Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M21.011 14.0965C21.5329 13.9558 21.7939 13.8854 21.8969 13.7508C22 13.6163 22 13.3998 22 12.9669V11.0332C22 10.6003 22 10.3838 21.8969 10.2493C21.7938 10.1147 21.5329 10.0443 21.011 9.90358C19.0606 9.37759 17.8399 7.33851 18.3433 5.40087C18.4817 4.86799 18.5509 4.60156 18.4848 4.44529C18.4187 4.28902 18.2291 4.18134 17.8497 3.96596L16.125 2.98673C15.7528 2.77539 15.5667 2.66972 15.3997 2.69222C15.2326 2.71472 15.0442 2.90273 14.6672 3.27873C13.208 4.73448 10.7936 4.73442 9.33434 3.27864C8.95743 2.90263 8.76898 2.71463 8.60193 2.69212C8.43489 2.66962 8.24877 2.77529 7.87653 2.98663L6.15184 3.96587C5.77253 4.18123 5.58287 4.28891 5.51678 4.44515C5.45068 4.6014 5.51987 4.86787 5.65825 5.4008C6.16137 7.3385 4.93972 9.37763 2.98902 9.9036C2.46712 10.0443 2.20617 10.1147 2.10308 10.2492C2 10.3838 2 10.6003 2 11.0332V12.9669C2 13.3998 2 13.6163 2.10308 13.7508C2.20615 13.8854 2.46711 13.9558 2.98902 14.0965C4.9394 14.6225 6.16008 16.6616 5.65672 18.5992C5.51829 19.1321 5.44907 19.3985 5.51516 19.5548C5.58126 19.7111 5.77092 19.8188 6.15025 20.0341L7.87495 21.0134C8.24721 21.2247 8.43334 21.3304 8.6004 21.3079C8.76746 21.2854 8.95588 21.0973 9.33271 20.7213C10.7927 19.2644 13.2088 19.2643 14.6689 20.7212C15.0457 21.0973 15.2341 21.2853 15.4012 21.3078C15.5682 21.3303 15.7544 21.2246 16.1266 21.0133L17.8513 20.034C18.2307 19.8187 18.4204 19.711 18.4864 19.5547C18.5525 19.3984 18.4833 19.132 18.3448 18.5991C17.8412 16.6616 19.0609 14.6226 21.011 14.0965Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/>","Notification03":"<path d=\"M20 18.5011L18.349 7.93407C17.8603 4.80601 15.166 2.5 12 2.5C8.83398 2.5 6.13971 4.80601 5.65098 7.93407L4 18.5011\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M20 18.5C20 16.8431 16.4183 15.5 12 15.5C7.58172 15.5 4 16.8431 4 18.5C4 20.1569 7.58172 21.5 12 21.5C16.4183 21.5 20 20.1569 20 18.5Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M13 18.5H11\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Translate":"<path d=\"M5 5.82759H7.7M11 5.82759H9.5M7.7 5.82759H9.5M7.7 5.82759V5M9.5 5.82759C9.18351 6.95937 8.52075 8.02923 7.76429 8.96946M5.83571 11C6.44723 10.4377 7.13788 9.74802 7.76429 8.96946M7.76429 8.96946C7.37857 8.51724 6.83857 7.78558 6.68429 7.45455M7.76429 8.96946L8.92143 10.1724\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M13.5 19L14.3333 17M18.5 19L17.6667 17M14.3333 17L16 13L17.6667 17M14.3333 17H17.6667\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M14 10V8C14 5.17157 14 3.75736 13.1213 2.87868C12.2426 2 10.8284 2 8 2C5.17157 2 3.75736 2 2.87868 2.87868C2 3.75736 2 5.17157 2 8C2 10.8284 2 12.2426 2.87868 13.1213C3.75736 14 5.17157 14 8 14H10\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/><path d=\"M10 16C10 13.1716 10 11.7574 10.8787 10.8787C11.7574 10 13.1716 10 16 10C18.8284 10 20.2426 10 21.1213 10.8787C22 11.7574 22 13.1716 22 16C22 18.8284 22 20.2426 21.1213 21.1213C20.2426 22 18.8284 22 16 22C13.1716 22 11.7574 22 10.8787 21.1213C10 20.2426 10 18.8284 10 16Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M4 16.5C4 17.9045 4 18.6067 4.33706 19.1111C4.48298 19.3295 4.67048 19.517 4.88886 19.6629C5.39331 20 6.09554 20 7.5 20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M20 7.5C20 6.09554 20 5.39331 19.6629 4.88886C19.517 4.67048 19.3295 4.48298 19.1111 4.33706C18.6067 4 17.9045 4 16.5 4\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Moon02":"<path d=\"M21.5 14.0784C20.3003 14.7189 18.9301 15.0821 17.4751 15.0821C12.7491 15.0821 8.91792 11.2509 8.91792 6.52485C8.91792 5.06986 9.28105 3.69968 9.92163 2.5C5.66765 3.49698 2.5 7.31513 2.5 11.8731C2.5 17.1899 6.8101 21.5 12.1269 21.5C16.6849 21.5 20.503 18.3324 21.5 14.0784Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","CheckmarkCircle02":"<path d=\"M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M8 12.5L10.5 15L16 9\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Beach":"<path d=\"M10.5128 8.50195L7.49414 15.5004\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M12.9036 2.97659C10.5213 1.95129 7.84887 2.63719 6.20986 4.48844C5.68751 5.07843 5.42633 5.37342 5.53667 5.87689C5.64701 6.38035 6.08935 6.57072 6.97403 6.95147L14.2225 10.0711C15.1098 10.4529 15.5534 10.6439 15.9872 10.3728C16.4211 10.1018 16.447 9.70476 16.4988 8.91071C16.661 6.42691 15.2841 4.0011 12.9036 2.97659Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M3 16.5C3 16.5 4.61581 15.5 7.5 15.5C12 15.5 15 18 21 18\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M3 20.5H21\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Clock01":"<circle cx=\"12\" cy=\"12\" r=\"10\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M12 8V12L14 14\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Login03":"<path d=\"M6 18C6 18.4644 6 18.6965 6.022 18.8918C6.20482 20.5145 7.48545 21.7952 9.10814 21.978C9.30345 22 9.53562 22 9.99998 22H13C16.2998 22 17.9497 22 18.9749 20.9749C20 19.9498 20 18.2998 20 15L20 8.99998C20 5.70016 20 4.05024 18.9748 3.02512C17.9497 2 16.2998 2 13 2H9.99998C9.53563 2 9.30345 2 9.10814 2.02201C7.48545 2.20483 6.20482 3.48547 6.022 5.10816C6 5.30347 6 5.53565 6 6\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M4.07612 11.1183C4 11.3021 4 11.535 4 12.001C4 12.4669 4 12.6999 4.07612 12.8837C4.17761 13.1287 4.37229 13.3234 4.61732 13.4249C4.80109 13.501 5.03406 13.501 5.5 13.501H10.5C10.5002 15.2503 10.511 16.1299 11.0623 16.3858C11.0829 16.3954 11.1037 16.4042 11.1249 16.4124C11.7045 16.6353 12.3999 16.0139 13.7907 14.7711C15.2576 13.4602 15.9912 12.7851 16 11.957C15.9912 11.1289 15.2576 10.4538 13.7907 9.14301C12.3999 7.90018 11.7045 7.27876 11.1249 7.50171C11.1037 7.50985 11.0829 7.51869 11.0623 7.52822C10.5018 7.78844 10.5 8.69318 10.5 10.501H5.5C5.03406 10.501 4.80109 10.501 4.61732 10.5771C4.37229 10.6786 4.17761 10.8733 4.07612 11.1183Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","MailSend01":"<path d=\"M22 12.5C22 12.0086 21.9947 11.0172 21.9842 10.5244C21.9189 7.45883 21.8862 5.92606 20.7551 4.79063C19.6239 3.6552 18.0497 3.61565 14.9012 3.53654C12.9607 3.48778 11.0393 3.48778 9.09882 3.53653C5.95033 3.61563 4.37608 3.65518 3.24495 4.79062C2.11382 5.92605 2.08114 7.45882 2.01576 10.5243C1.99474 11.51 1.99475 12.4899 2.01577 13.4756C2.08114 16.5411 2.11383 18.0739 3.24496 19.2093C4.37608 20.3448 5.95033 20.3843 9.09883 20.4634C9.90159 20.4836 10.7011 20.4954 11.5 20.4989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M2 6L8.91302 9.92462C11.4387 11.3585 12.5613 11.3585 15.087 9.92462L22 6\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M22 17.5L14 17.5M22 17.5C22 16.7998 20.0057 15.4915 19.5 15M22 17.5C22 18.2002 20.0057 19.5085 19.5 20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","MailRemove01":"<path d=\"M2 5L8.91302 8.92462C11.4387 10.3585 12.5613 10.3585 15.087 8.92462L22 5\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M21.9928 11C22.0047 10.1743 22.0019 10.3514 21.9842 9.52439C21.9189 6.45886 21.8862 4.92609 20.7551 3.79066C19.6239 2.65523 18.0497 2.61568 14.9012 2.53657C12.9607 2.48781 11.0393 2.48781 9.09882 2.53656C5.95033 2.61566 4.37608 2.65521 3.24495 3.79065C2.11382 4.92608 2.08114 6.45885 2.01576 9.52438C1.99474 10.5101 1.99475 11.4899 2.01577 12.4756C2.08114 15.5412 2.11383 17.0739 3.24496 18.2094C4.37608 19.3448 5.95033 19.3843 9.09883 19.4634C10.0691 19.4878 10.0345 19.5 11 19.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M14 14.5L17.5 18M17.5 18L21 21.5M17.5 18L14 21.5M17.5 18L21 14.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","MailOpen":"<path d=\"M5.00035 7L3.78154 7.81253C2.90783 8.39501 2.47097 8.68625 2.23422 9.13041C1.99747 9.57457 1.99923 10.0966 2.00273 11.1406C2.00696 12.3975 2.01864 13.6782 2.05099 14.9741C2.12773 18.0487 2.16611 19.586 3.29651 20.7164C4.42691 21.8469 5.98497 21.8858 9.10108 21.9637C11.0397 22.0121 12.9611 22.0121 14.8996 21.9637C18.0158 21.8858 19.5738 21.8469 20.7042 20.7164C21.8346 19.586 21.873 18.0487 21.9497 14.9741C21.9821 13.6782 21.9937 12.3975 21.998 11.1406C22.0015 10.0966 22.0032 9.57456 21.7665 9.13041C21.5297 8.68625 21.0929 8.39501 20.2191 7.81253L19.0003 7\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M2 10L8.91302 14.1478C10.417 15.0502 11.169 15.5014 12 15.5014C12.831 15.5014 13.583 15.0502 15.087 14.1478L22 10\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M4.99998 12V6C4.99998 4.11438 4.99998 3.17157 5.58577 2.58579C6.17156 2 7.11437 2 8.99998 2H15C16.8856 2 17.8284 2 18.4142 2.58579C19 3.17157 19 4.11438 19 6V12\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M10 10H14M10 6H14\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","MoreHorizontal":"<path d=\"M6.00449 12.5V12M18.0045 12.5V12M12.0045 12.5V12M7.00449 12.5C7.00449 11.9477 6.55677 11.5 6.00449 11.5C5.4522 11.5 5.00449 11.9477 5.00449 12.5C5.00449 13.0523 5.4522 13.5 6.00449 13.5C6.55677 13.5 7.00449 13.0523 7.00449 12.5ZM19.0045 12.5C19.0045 11.9477 18.5568 11.5 18.0045 11.5C17.4522 11.5 17.0045 11.9477 17.0045 12.5C17.0045 13.0523 17.4522 13.5 18.0045 13.5C18.5568 13.5 19.0045 13.0523 19.0045 12.5ZM13.0045 12.5C13.0045 11.9477 12.5568 11.5 12.0045 11.5C11.4522 11.5 11.0045 11.9477 11.0045 12.5C11.0045 13.0523 11.4522 13.5 12.0045 13.5C12.5568 13.5 13.0045 13.0523 13.0045 12.5Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Edit02":"<path d=\"M14.0737 3.88545C14.8189 3.07808 15.1915 2.6744 15.5874 2.43893C16.5427 1.87076 17.7191 1.85309 18.6904 2.39232C19.0929 2.6158 19.4769 3.00812 20.245 3.79276C21.0131 4.5774 21.3972 4.96972 21.6159 5.38093C22.1438 6.37312 22.1265 7.57479 21.5703 8.5507C21.3398 8.95516 20.9446 9.33578 20.1543 10.097L10.7506 19.1543C9.25288 20.5969 8.504 21.3182 7.56806 21.6837C6.63212 22.0493 5.6032 22.0224 3.54536 21.9686L3.26538 21.9613C2.63891 21.9449 2.32567 21.9367 2.14359 21.73C1.9615 21.5234 1.98636 21.2043 2.03608 20.5662L2.06308 20.2197C2.20301 18.4235 2.27297 17.5255 2.62371 16.7182C2.97444 15.9109 3.57944 15.2555 4.78943 13.9445L14.0737 3.88545Z\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M13 4L20 11\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M14 22L22 22\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","SquareLock02":"<path d=\"M12 14.5V17.5M13 14.5C13 15.0523 12.5523 15.5 12 15.5C11.4477 15.5 11 15.0523 11 14.5C11 13.9477 11.4477 13.5 12 13.5C12.5523 13.5 13 13.9477 13 14.5Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M16.5 9V6.5C16.5 4.01472 14.4853 2 12 2C9.51471 2 7.49999 4.01472 7.49999 6.5V9\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M4.2678 18.8447C4.49268 20.515 5.87612 21.8235 7.55965 21.9009C8.97627 21.966 10.4153 22 12 22C13.5847 22 15.0237 21.966 16.4403 21.9009C18.1239 21.8235 19.5073 20.515 19.7322 18.8447C19.8789 17.7547 20 16.6376 20 15.5C20 14.3624 19.8789 13.2453 19.7322 12.1553C19.5073 10.485 18.1239 9.17649 16.4403 9.09909C15.0237 9.03397 13.5847 9 12 9C10.4153 9 8.97627 9.03397 7.55965 9.09909C5.87612 9.17649 4.49268 10.485 4.2678 12.1553C4.12104 13.2453 3.99999 14.3624 3.99999 15.5C3.99999 16.6376 4.12104 17.7547 4.2678 18.8447Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","UserCheck01":"<path d=\"M3 21.0001C3.28417 17.3057 6.3 14.2192 10.0008 14.0378C10.3134 14.0225 10.6446 14.0096 11 13.9999L11.995 14.0662C13.0751 14.1382 14.0925 14.4366 15 14.9146\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><circle cx=\"11\" cy=\"6.99988\" r=\"4\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M14 19.3332C14 19.3332 14.875 19.3332 15.75 20.9999C15.75 20.9999 18.5294 16.8332 21 15.9999\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","UserBlock01":"<path d=\"M11.995 13.5663L11 13.5C10.6446 13.5097 10.3134 13.5226 10.0008 13.5379C6.3 13.7193 3.28417 16.8058 3 20.5002\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><circle cx=\"11\" cy=\"6.5\" r=\"4\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M15.5 16L19.5 20M21 18C21 16.067 19.433 14.5 17.5 14.5C15.567 14.5 14 16.067 14 18C14 19.933 15.567 21.5 17.5 21.5C19.433 21.5 21 19.933 21 18Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","InformationCircle":"<circle cx=\"12\" cy=\"12\" r=\"10\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M12 16V12\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M12.125 8.25H12M12.25 8.25C12.25 8.11193 12.1381 8 12 8C11.8619 8 11.75 8.11193 11.75 8.25C11.75 8.38807 11.8619 8.5 12 8.5C12.1381 8.5 12.25 8.38807 12.25 8.25Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Building06":"<path d=\"M12 2H6C3.518 2 3 2.518 3 5V22H15V5C15 2.518 14.482 2 12 2Z\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M18 8H15V22H21V11C21 8.518 20.482 8 18 8Z\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M8 6L10 6M8 9L10 9M8 12L10 12\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M11.5 22V18C11.5 17.0572 11.5 16.5858 11.2071 16.2929C10.9142 16 10.4428 16 9.5 16H8.5C7.55719 16 7.08579 16 6.79289 16.2929C6.5 16.5858 6.5 17.0572 6.5 18V22\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Calendar01":"<path d=\"M16 2V6M8 2V6\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M13 4H11C7.22876 4 5.34315 4 4.17157 5.17157C3 6.34315 3 8.22876 3 12V14C3 17.7712 3 19.6569 4.17157 20.8284C5.34315 22 7.22876 22 11 22H13C16.7712 22 18.6569 22 19.8284 20.8284C21 19.6569 21 17.7712 21 14V12C21 8.22876 21 6.34315 19.8284 5.17157C18.6569 4 16.7712 4 13 4Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M3 10H21\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M10 18.5002L9.99999 13.8474C9.99999 13.6557 9.86325 13.5002 9.69458 13.5002H9M14 18.4983L15.4855 13.8923C15.4951 13.8626 15.5 13.8315 15.5 13.8002C15.5 13.6346 15.3657 13.5002 15.2 13.5002L13 13.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Airplane01":"<path d=\"M15.8667 3.7804C16.7931 3.03188 17.8307 2.98644 18.9644 3.00233C19.5508 3.01055 19.844 3.01467 20.0792 3.10588C20.4524 3.2506 20.7494 3.54764 20.8941 3.92081C20.9853 4.15601 20.9894 4.4492 20.9977 5.03557C21.0136 6.16926 20.9681 7.20686 20.2196 8.13326C19.5893 8.91337 18.5059 9.32101 17.9846 10.1821C17.5866 10.8395 17.772 11.5203 17.943 12.2209L19.2228 17.4662C19.4779 18.5115 19.2838 19.1815 18.5529 19.9124C18.164 20.3013 17.8405 20.2816 17.5251 19.779L13.6627 13.6249L11.8181 15.0911C11.1493 15.6228 10.8149 15.8886 10.6392 16.2627C10.2276 17.1388 10.4889 18.4547 10.5022 19.4046C10.5096 19.9296 10.0559 20.9644 9.41391 20.9993C9.01756 21.0209 8.88283 20.5468 8.75481 20.2558L7.52234 17.4544C7.2276 16.7845 7.21552 16.7724 6.54556 16.4777L3.74415 15.2452C3.45318 15.1172 2.97914 14.9824 3.00071 14.5861C3.03565 13.9441 4.07036 13.4904 4.59536 13.4978C5.54532 13.5111 6.86122 13.7724 7.73734 13.3608C8.11142 13.1851 8.37724 12.8507 8.90888 12.1819L10.3751 10.3373L4.22103 6.47489C3.71845 6.15946 3.69872 5.83597 4.08755 5.44715C4.8185 4.7162 5.48851 4.52214 6.53377 4.77718L11.7791 6.05703C12.4797 6.22798 13.1605 6.41343 13.8179 6.0154C14.679 5.49411 15.0866 4.41074 15.8667 3.7804Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Sun03":"<path d=\"M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M12 2V3.5M12 20.5V22M19.0708 19.0713L18.0101 18.0106M5.98926 5.98926L4.9286 4.9286M22 12H20.5M3.5 12H2M19.0713 4.92871L18.0106 5.98937M5.98975 18.0107L4.92909 19.0714\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/>","ArrowUpRight01":"<path d=\"M9 6.65032C9 6.65032 15.9383 6.10759 16.9154 7.08463C17.8924 8.06167 17.3496 15 17.3496 15M16.5 7.5L6.5 17.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","PencilEdit02":"<path d=\"M16.4249 4.60509L17.4149 3.6151C18.2351 2.79497 19.5648 2.79497 20.3849 3.6151C21.205 4.43524 21.205 5.76493 20.3849 6.58507L19.3949 7.57506M16.4249 4.60509L9.76558 11.2644C9.25807 11.772 8.89804 12.4078 8.72397 13.1041L8 16L10.8959 15.276C11.5922 15.102 12.228 14.7419 12.7356 14.2344L19.3949 7.57506M16.4249 4.60509L19.3949 7.57506\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M18.9999 13.5C18.9999 16.7875 18.9999 18.4312 18.092 19.5376C17.9258 19.7401 17.7401 19.9258 17.5375 20.092C16.4312 21 14.7874 21 11.4999 21H11C7.22876 21 5.34316 21 4.17159 19.8284C3.00003 18.6569 3 16.7712 3 13V12.5C3 9.21252 3 7.56879 3.90794 6.46244C4.07417 6.2599 4.2599 6.07417 4.46244 5.90794C5.56879 5 7.21252 5 10.5 5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Delete02":"<path d=\"M19.5 5.5L18.8803 15.5251C18.7219 18.0864 18.6428 19.3671 18.0008 20.2879C17.6833 20.7431 17.2747 21.1273 16.8007 21.416C15.8421 22 14.559 22 11.9927 22C9.42312 22 8.1383 22 7.17905 21.4149C6.7048 21.1257 6.296 20.7408 5.97868 20.2848C5.33688 19.3626 5.25945 18.0801 5.10461 15.5152L4.5 5.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/><path d=\"M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C14.215 2.3321 14.1231 2.27454 14.027 2.2247C13.5939 2 13.0741 2 12.0345 2C10.9688 2 10.436 2 9.99568 2.23412C9.8981 2.28601 9.80498 2.3459 9.71729 2.41317C9.32164 2.7167 9.10063 3.20155 8.65861 4.17126L8.05292 5.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/><path d=\"M9.5 16.5L9.5 10.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/><path d=\"M14.5 16.5L14.5 10.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/>","Message01":"<path d=\"M8.5 14.5H15.5M8.5 9.5H12\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M14.1706 20.8905C18.3536 20.6125 21.6856 17.2332 21.9598 12.9909C22.0134 12.1607 22.0134 11.3009 21.9598 10.4707C21.6856 6.22838 18.3536 2.84913 14.1706 2.57107C12.7435 2.47621 11.2536 2.47641 9.8294 2.57107C5.64639 2.84913 2.31441 6.22838 2.04024 10.4707C1.98659 11.3009 1.98659 12.1607 2.04024 12.9909C2.1401 14.536 2.82343 15.9666 3.62791 17.1746C4.09501 18.0203 3.78674 19.0758 3.30021 19.9978C2.94941 20.6626 2.77401 20.995 2.91484 21.2351C3.05568 21.4752 3.37026 21.4829 3.99943 21.4982C5.24367 21.5285 6.08268 21.1757 6.74868 20.6846C7.1264 20.4061 7.31527 20.2668 7.44544 20.2508C7.5756 20.2348 7.83177 20.3403 8.34401 20.5513C8.8044 20.7409 9.33896 20.8579 9.8294 20.8905C11.2536 20.9852 12.7435 20.9854 14.1706 20.8905Z\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","Tick01":"<path d=\"M5 14.5C5 14.5 6.5 14.5 8.5 18C8.5 18 14.0588 8.83333 19 7\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","FlowConnection":"<path d=\"M2.5 5.5C2.5 3.85008 2.5 3.02513 3.01256 2.51256C3.52513 2 4.35008 2 6 2C7.64992 2 8.47487 2 8.98744 2.51256C9.5 3.02513 9.5 3.85008 9.5 5.5C9.5 7.14992 9.5 7.97487 8.98744 8.48744C8.47487 9 7.64992 9 6 9C4.35008 9 3.52513 9 3.01256 8.48744C2.5 7.97487 2.5 7.14992 2.5 5.5Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M3.65685 15.6569C4.76142 14.5523 5.31371 14 6 14C6.68629 14 7.23858 14.5523 8.34315 15.6569C9.44772 16.7614 10 17.3137 10 18C10 18.6863 9.44772 19.2386 8.34315 20.3431C7.23858 21.4477 6.68629 22 6 22C5.31371 22 4.76142 21.4477 3.65685 20.3431C2.55228 19.2386 2 18.6863 2 18C2 17.3137 2.55228 16.7614 3.65685 15.6569Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M6 9V14M10 18H15\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M15 18C15 16.3501 15 15.5251 15.5126 15.0126C16.0251 14.5 16.8501 14.5 18.5 14.5C20.1499 14.5 20.9749 14.5 21.4874 15.0126C22 15.5251 22 16.3501 22 18C22 19.6499 22 20.4749 21.4874 20.9874C20.9749 21.5 20.1499 21.5 18.5 21.5C16.8501 21.5 16.0251 21.5 15.5126 20.9874C15 20.4749 15 19.6499 15 18Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/>"};
+const ic = (name, cls = "") => `<svg class="i ${cls}" viewBox="0 0 24 24" fill="none" aria-hidden="true">${ICONS[name] || ""}</svg>`;
+const LOGO = `<svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" fill="#4a1640"/><circle cx="24" cy="23" r="12.5" fill="none" stroke="#6fd0c5" stroke-width="4.5"/><rect x="21.2" y="33" width="5.6" height="8" fill="#4a1640"/><rect x="22.6" y="36" width="2.8" height="12" fill="#6fd0c5"/><circle cx="24" cy="23" r="4.2" fill="#f3e6ee"/></svg>`;
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const hueOf = (s) => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return (h % 5) + 1; };
+const initials = (n) => { const w = n.trim().split(/\s+/); return (w[0][0] + (w.length > 1 ? w[w.length - 1][0] : "")).toUpperCase(); };
+const av = (n, s = 32, cls = "") => `<span class="av h${hueOf(n)} ${cls}" style="--s:${s}px" title="${esc(n)}">${esc(initials(n))}</span>`;
+const D = (iso) => new Date(iso + "T00:00:00Z");
+const fd = (s, o = {}) => D(s).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC", ...o });
+const fdy = (s) => D(s).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+const dm = (s) => D(s).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+const TODAY = "2026-11-07";
+const diff = (a, b) => Math.round((D(b) - D(a)) / 864e5);
+const workdays = (a, b) => { let n = 0; for (let d = D(a); d <= D(b); d.setUTCDate(d.getUTCDate() + 1)) { const w = d.getUTCDay(); if (w && w < 6) n++; } return n; };
+
+// ---------- Carthage, 7 Nov 2026 ----------
+const A = { n: "Aicha Bouazizi", first: "Aicha", job: "QA Automation Engineer", unit: "Product", parent: "Product & Engineering", num: "CDG-027", place: "Ariana", mail: "aicha.bouazizi@example.test", since: "2 April 2022", tenure: "4 years, 7 months" };
+const TEAM = [["Yasmine Trabelsi", "Product Manager"], ["Aicha Bouazizi", "QA Automation Engineer"], ["Ons Khemiri", "Backend Engineer"], ["Meriem Hamrouni", "Software Engineer"], ["Sofiene Jebali", "Project Manager"]];
+const TYPES = ["Annual leave", "Sick leave", "Maternity leave", "Paternity leave", "Unpaid leave"];
+const LEAVES = {
+  scheduled: { label: "Scheduled", type: "Annual leave", from: "2026-11-16", until: "2026-11-27", back: "2026-11-30" },
+  now: { label: "On leave now", type: "Annual leave", from: "2026-11-02", until: "2026-11-20", back: "2026-11-23" },
+  back: { label: "Back", type: "Annual leave", from: "2026-10-19", until: "2026-11-06", back: "2026-11-09" },
+};
+const VIEWERS = { hr: { n: "Mouna Kooli", t: "Recruitment Partner", label: "Mouna, HR" }, mgr: { n: "Mariam Gharbi", t: "VP, Product", label: "Mariam, her manager" }, mate: { n: "Yasmine Trabelsi", t: "Product Manager", label: "Yasmine, a teammate" } };
+const HSTATES = { active: "Signs in", waiting: "Invited, not accepted", withdrawn: "Invitation withdrawn" };
+
+const SCREENS = {
+  form: "Set leave",
+  person: "Aicha's page",
+  around: "Everywhere else",
+  access: "Access › History",
+  roles: "Roles table",
+  role: "Role page",
+  mail: "Email",
+};
+const S = { scr: "form", lv: "now", vw: "hr", hs: "active", f: { type: "Annual leave", from: "2026-11-16", until: "2026-11-27", open: false }, saved: false, menu: true, reach: "unit" };
+
+// picks
+const QS = [
+  { id: "type", q: "Who sees the leave type?", o: [["hrmgr", "HR and the manager; others see \"On leave\"", true], ["all", "Everyone who sees the person"]] },
+  { id: "band", q: "How does the person's band show it?", o: [["line", "Pill by the name and a glance cell", true], ["pill", "Pill by the name only"]] },
+  { id: "open", q: "Leave without an end date?", o: [["yes", "Allowed: \"Until: not known yet\"", true], ["no", "Always needs an end date"]] },
+  { id: "approve", q: "Does leave go through approvals?", o: [["rules", "Like other changes: the company's approval rules decide", true], ["direct", "Never: whoever may set it, sets it"]] },
+  { id: "order", q: "Access › History order", o: [["new", "Newest first", true], ["old", "Oldest first, as a story"]] },
+  { id: "unit", q: "What is \"their unit\"?", o: [["sub", "The unit they work in and every unit under it", true], ["chosen", "A unit chosen for each holder"]] },
+  { id: "mail", q: "Branded email", o: [["inv", "As the invitation: logo, name, button in the brand colour", true], ["bar", "Also a brand-colour bar across the top"]] },
+];
+let picks = {};
+try { picks = JSON.parse(localStorage.getItem("b313-picks") || "{}"); } catch {}
+QS.forEach((q) => { if (!picks[q.id]) picks[q.id] = q.o.find((o) => o[2])[0]; });
+const showType = () => S.vw !== "mate" || picks.type === "all";
+
+// ---------- shell ----------
+function side(on, me = VIEWERS.hr) {
+  const nav = (icon, label, k, count) => `<a class="nav sq ${on === k ? "on" : ""}">${ic(icon)}<span class="lbl">${label}</span>${count ? `<span class="count">${count}</span>` : ""}</a>`;
+  const perf = on === "perf";
+  return `<aside class="side"><div class="brand"><span class="logo sq has">${LOGO}</span><span class="brand-name">Carthage Digital Gr…<span class="t-meta mf" style="display:block;font-weight:400">Fusion</span></span><button class="ib sm" aria-label="Collapse">${ic("SidebarLeft")}</button></div>
+    ${nav("Home01", "Home", "home", 9)}<div class="rule"></div>
+    <div class="switch sq"><span class="tile">${ic(perf ? "Target02" : "UserGroup")}</span><span class="lbl">${perf ? "Performance" : "Core HR"}</span>${ic("ArrowDown01", "updown")}</div>
+    <p class="eb t-eyebrow">People</p>
+    ${nav("Target02", "Overview", "ov")}${nav("UserCircle", "My Profile", "me")}${nav("UserMultiple02", "My Team", "team")}${nav("UserGroup", "People", "people")}${nav("Hierarchy", "Organization", "org")}${nav("Tick02", "Changes and approvals", "chg", 1)}${nav("ChartColumn", "Reports", "rep")}
+    <p class="eb t-eyebrow">Administration</p>${nav("Settings02", "Settings", "set")}
+    <div class="me">${av(me.n, 34)}<div><p class="t-label">${me.n}</p><p class="t-meta mf">${me.t}</p></div></div></aside>`;
+}
+const topbar = (crumbs) => `<header class="top"><nav class="crumbs">${crumbs.map((c, i) => (i === crumbs.length - 1 ? `<b>${c}</b>` : `<span>${c}</span>${ic("ArrowRight01")}`)).join("")}</nav>
+  <div class="search sq">${ic("Search01")}<span>Search people, teams, anything</span><kbd>Ctrl K</kbd></div>
+  <button class="ib" aria-label="Notifications">${ic("Notification03")}</button><span class="lang">${ic("Translate")}EN</span><button class="ib" aria-label="Theme">${ic("Moon02")}</button></header>`;
+
+// ---------- leave words ----------
+const L = () => LEAVES[S.lv] || LEAVES.back;
+const lvType = (l) => (showType() ? l.type : "Leave");
+function lvPill(l) {
+  if (S.lv === "none") return "";
+  if (S.lv === "now") return `<span class="sb info">On leave</span>`;
+  if (S.lv === "scheduled" && picks.band === "pill") return `<span class="sb mute">Leave from ${dm(l.from)}</span>`;
+  return "";
+}
+function lvGlance(l) {
+  if (S.lv === "none" || picks.band !== "line" || S.lv === "back") return "";
+  const top = S.lv === "now" ? `${showType() ? l.type : "On leave"}` : `${showType() ? l.type : "Leave"} from ${fd(l.from)}`;
+  const bottom = S.lv === "now" ? `Back ${fd(l.back)}` : `Back ${fd(l.back)}`;
+  return `<div class="c lvc"><span class="tile lv">${ic("Beach")}</span><span><span class="t-meta">${top}</span><span class="t-label">${bottom}</span></span></div>`;
+}
+
+// ---------- person page ----------
+function band(tab, actions) {
+  const l = L();
+  const faces = TEAM.filter((t) => t[0] !== A.n).slice(0, 5);
+  return `<div class="band">
+    <span class="av big h${hueOf(A.n)}">${initials(A.n)}${S.lv === "now" ? `<span class="leave-dot" title="On leave">${ic("Beach")}</span>` : ""}</span>
+    <div class="bt"><div><div class="bn"><h1>${A.n}</h1>${lvPill(l)}</div>
+      <p class="t-subsection" style="margin-top:6px;font-size:1rem">${A.job}</p><p class="t-body mf" style="margin-top:4px">${A.unit} in ${A.parent}</p></div>
+      <div class="acts" style="display:flex;gap:8px">${actions}</div></div>
+    <div class="gl">
+      <div class="c">${av("Mariam Gharbi", 36)}<span><span class="t-meta">Manager</span><span class="t-label">Mariam Gharbi</span></span></div>
+      <div class="c"><span class="stack" style="--bandbg:var(--section)">${faces.map((f) => av(f[0], 28)).join("")}</span><span><span class="t-meta">Mariam's team</span><span class="t-label">6 people</span></span></div>
+      <div class="c"><span><span class="t-meta">With Carthage Digital Group since Apr 2022</span><span class="t-label">${A.tenure}</span></span></div>
+      ${lvGlance(l)}
+      <div class="c"><span class="tile">${ic("Location01")}</span><span><span class="t-meta">Place</span><span class="t-label">${A.place}</span></span></div>
+    </div>
+    <div class="tabs">${["Overview", "Job", "Personal", "Performance", "Documents", "Access"].map((t) => `<span class="${t === tab ? "on" : ""}">${t}</span>`).join("")}</div>
+  </div>`;
+}
+function rail() {
+  const mates = TEAM.filter((t) => t[0] !== A.n);
+  return `<aside class="rail">
+    <div class="grp"><div class="ln">${ic("Mail01")}<span>${A.mail}</span></div><div class="ln">${ic("Location01")}<span>${A.place}</span></div></div>
+    <div class="grp"><p class="lab">Hire date</p><p class="t-body">${A.since}</p><p class="t-meta mf">${A.tenure}</p></div>
+    <div class="grp" style="grid-template-columns:1fr 1fr"><div><p class="lab">Employee number</p><p class="t-code">${A.num}</p></div><div><p class="lab">Contract</p><p class="t-body">Full-time</p></div></div>
+    <div class="grp"><p class="lab">Manager</p><div class="ln">${av("Mariam Gharbi", 28)}<span class="t-label">Mariam Gharbi</span></div></div>
+    <div class="grp"><p class="lab" style="display:flex;justify-content:space-between">Teammates <span class="t-meta">${mates.length}</span></p><span class="stack" style="--bandbg:var(--background)">${mates.map((m) => av(m[0], 28)).join("")}</span></div>
+    <div class="grp"><span class="ln mf">${ic("Hierarchy")}<span class="t-label">Org chart</span></span></div>
+  </aside>`;
+}
+const ctile = (iso, lv) => `<span class="ct ${lv ? "lv" : ""}"><small>${D(iso).toLocaleDateString("en-GB", { weekday: "short", timeZone: "UTC" })}</small><b>${D(iso).getUTCDate()}</b><span>${D(iso).toLocaleDateString("en-GB", { month: "short", timeZone: "UTC" })}</span></span>`;
+function comingUp() {
+  const l = L(), hr = S.vw === "hr", items = [];
+  if (S.lv === "none") {}
+  else if (S.lv === "scheduled") items.push([l.from, true, `${lvType(l)}, ${workdays(l.from, l.until)} working days`, `${fd(l.from)} – ${fd(l.until)} · back ${fd(l.back)}`, hr ? `<button class="btn ghost sm sq">Change</button><button class="btn ghost sm sq">Cancel leave</button>` : ""]);
+  if (S.lv === "now") items.push([l.back, true, `Back from ${showType() ? l.type.toLowerCase() : "leave"}`, `On leave since ${fd(l.from)} · last day off ${fd(l.until)}`, hr ? `<button class="btn ghost sm sq">Change</button><button class="btn ghost sm sq">End early</button>` : ""]);
+  if (S.vw !== "mate") items.push(["2026-11-12", false, "1:1 with Mariam Gharbi", S.lv === "now" ? "Every two weeks · falls during the leave, stays booked" : "Every two weeks", ""]);
+  if (S.vw !== "mate") items.push(["2026-11-30", false, "November check-in", "Plans and check-ins · FY2027", ""]);
+  if (S.lv === "back") items.unshift(["2026-11-09", true, "Back from leave", `${showType() ? l.type : "Leave"} ${dm(l.from)} – ${dm(l.until)}`, ""]);
+  items.sort((a, b) => a[0].localeCompare(b[0]));
+  return `<div class="sec"><div class="sec-h"><h3 class="t-section">Coming up</h3></div><div class="cu">${items.map(([d, lv, t, m, act]) => `<div class="it">${ctile(d, lv)}<div><p class="t-label">${t}</p><p class="t-meta mf">${m}</p></div><div style="display:flex;gap:4px">${act}</div></div>`).join("")}</div></div>`;
+}
+function jobHistory() {
+  const l = L(), rows = [];
+  if (S.lv === "now" || S.lv === "back") rows.push([S.lv === "now" ? `Since ${dm(l.from)}` : `${dm(l.from)} – ${dm(l.until)}`, "Beach", "lv", S.lv === "now" ? `On ${showType() ? l.type.toLowerCase() : "leave"} until ${fd(l.until)}` : `${showType() ? l.type : "Leave"}, ${workdays(l.from, l.until)} working days`, S.vw === "hr" ? "Set by Mouna Kooli on 28 Oct" : ""]);
+  if (S.lv === "scheduled") rows.push([`From ${dm(l.from)}`, "Beach", "lv", `${showType() ? l.type : "Leave"} until ${fd(l.until)}`, S.vw === "hr" ? "Scheduled by Mouna Kooli today" : "Scheduled"]);
+  rows.push(["Sep 2026", "Hierarchy", "", "Moved to Product, Mariam Gharbi's team", ""]);
+  rows.push(["Apr 2022", "Briefcase01", "", "Joined as QA Automation Engineer", ""]);
+  return `<div class="sec"><div class="sec-h"><h3 class="t-section">Job and history</h3><span class="link t-label">Open Job</span></div><div class="hist">${rows.map(([w, i, c, t, m]) => `<div class="r"><span class="w">${w}</span><span class="dot ${c}">${ic(i)}</span><div><p class="t-label">${t}</p>${m ? `<p class="t-meta">${m}</p>` : ""}</div></div>`).join("")}</div></div>`;
+}
+const personActions = () => (S.vw === "hr" ? `<button class="btn outline sq">${ic("PencilEdit02")}Make a change</button><button class="ib boxed sq" aria-label="More">${ic("MoreHorizontal")}</button>` : `<button class="ib boxed sq" aria-label="More">${ic("MoreHorizontal")}</button>`);
+function personPage(tab = "Overview", main) {
+  const v = VIEWERS[S.vw];
+  return `${side(S.vw === "hr" ? "people" : "team", v)}<div class="main">${topbar(["Core", "People", A.n])}<div class="page"><div class="pg">
+    <span class="back">${ic("ArrowLeft01")}People</span>${band(tab, personActions())}
+    <div class="low">${rail()}<div class="col">${main ?? comingUp() + jobHistory()}</div></div></div></div></div>`;
+}
+
+// ---------- set leave (Make a change › Leave) ----------
+const FROMS = [["2026-11-09", "Mon 9 Nov"], ["2026-11-16", "Mon 16 Nov"]];
+const UNTILS = [["2026-11-20", "Fri 20 Nov"], ["2026-11-27", "Fri 27 Nov"]];
+function formPage() {
+  const f = S.f, back = f.open ? null : nextWorkday(f.until), days = f.open ? null : workdays(f.from, f.until);
+  const effect = `Scheduled for <b>${fd(f.from)}</b>`;
+  const sheet = `<div class="scrim"></div><aside class="sheet">
+    <div class="sh"><div style="display:flex;justify-content:space-between;align-items:center"><div style="display:flex;gap:12px;align-items:center">${av(A.n, 40)}<div><p class="t-panel">${A.n}</p><p class="t-meta mf">${A.job} · ${A.unit}</p></div></div><button class="ib" aria-label="Close">${ic("Cancel01")}</button></div>
+      <div class="kinds"><span>Change job</span><span>Change manager</span><span class="on">${ic("Beach")}Leave</span><span>End employment</span></div></div>
+    <div class="sb2">
+      <div class="fld"><p class="lab2">Type</p><div class="qp">${TYPES.map((t) => `<button class="${f.type === t ? "on" : ""}" data-act="ftype" data-v="${t}">${t}</button>`).join("")}</div></div>
+      <div class="fld"><p class="lab2">From</p><div class="qp">${FROMS.map(([v, l]) => `<button class="${f.from === v ? "on" : ""}" data-act="ffrom" data-v="${v}">${l}</button>`).join("")}<button>${ic("Calendar03")}Other date</button></div></div>
+      <div class="fld"><p class="lab2">Until <span class="o">last day off</span></p><div class="qp">${UNTILS.map(([v, l]) => `<button class="${!f.open && f.until === v ? "on" : ""}" data-act="funtil" data-v="${v}">${l}</button>`).join("")}<button>${ic("Calendar03")}Other date</button>${picks.open === "yes" ? `<button class="${f.open ? "on" : ""}" data-act="fopen">Not known yet</button>` : ""}</div>
+        <p class="t-meta mf">${f.open ? "Open-ended: HR sets the return day when it is known. Fusion reminds HR after 30 days." : `${days} working days · back ${fd(back)}`}</p></div>
+      <div class="fld"><p class="lab2">Note <span class="o">optional, HR only</span></p><div class="area">Add a note</div></div>
+      <div class="fld"><p class="lab2">Also changes</p><div class="eff">
+        <div class="ln">${ic("UserGroup")}<span>Shows as on leave on Aicha's page, in People, the org chart and Mariam's team${picks.type === "hrmgr" ? "; colleagues see \"On leave\", not the type" : ""}.</span></div>
+        <div class="ln">${ic("Notification03")}<span>Mariam Gharbi is told; Aicha sees it on her own page.</span></div>
+        ${picks.approve === "rules" ? `<div class="ln">${ic("Tick02")}<span>Applies straight away because you approve changes. When Mariam proposes leave for her team, it waits for HR as her other changes do.</span></div>` : `<div class="ln">${ic("Tick02")}<span>Applies straight away, whoever sets it, Mariam included.</span></div>`}
+        <div class="ln">${ic("Target02")}<span>Performance: plans, check-ins and 1:1s carry on; Mariam sees the leave beside them.</span></div>
+      </div></div>
+    </div>
+    <div class="sf"><p class="summ">${effect}</p><button class="btn ghost sq">Cancel</button><button class="btn primary sq" data-act="fsave">Schedule for ${fd(f.from)}</button></div>
+  </aside>${S.saved ? `<div class="ftoast">${ic("CheckmarkCircle02")}<span class="t-label">Aicha's leave is scheduled for ${fd(f.from)}</span><span class="link" data-act="undo">Undo</span></div>` : ""}`;
+  const keep = S.lv, kv = S.vw; S.lv = "none"; S.vw = "hr";
+  const html = personPage() + sheet;
+  S.lv = keep; S.vw = kv;
+  return html;
+}
+function nextWorkday(iso) { const d = D(iso); do d.setUTCDate(d.getUTCDate() + 1); while (d.getUTCDay() === 0 || d.getUTCDay() === 6); return d.toISOString().slice(0, 10); }
+
+// ---------- everywhere else ----------
+function around() {
+  const l = L(), now = S.lv === "now", sch = S.lv === "scheduled", back = S.lv === "back";
+  const typ = showType() ? l.type : "Leave";
+  const chip = now ? `<span class="sb info">On leave · back ${dm(l.back)}</span>` : sch ? `<span class="sb mute">${typ} from ${dm(l.from)}</span>` : "";
+  const avL = (s) => `<span class="avw">${av(A.n, s)}${now ? `<span class="badge">${ic("Beach")}</span>` : ""}</span>`;
+  const where = (i, t) => `<p class="where t-eyebrow">${ic(i)}${t}</p>`;
+  const people = `<div class="cell">${where("UserGroup", "People · the list")}<div class="tbl">
+      <div class="tr th"><span>Name</span><span>Job</span><span>Unit</span><span>Status</span></div>
+      ${[["Yasmine Trabelsi", "Product Manager"], [A.n, A.job], ["Ons Khemiri", "Backend Engineer"]].map(([n, j]) => `<div class="tr"><span class="who">${n === A.n ? avL(30) : av(n, 30)}<div><p class="t-label">${n}</p><p class="t-meta mf">${n === "Ons Khemiri" ? "CDG-103" : n === A.n ? A.num : "CDG-031"}</p></div></span><span class="t-body">${j}</span><span class="t-body mf">Product</span><span>${n === A.n && chip ? chip : `<span class="sb ok nodot" style="background:none;padding:0;color:var(--muted-foreground);font-weight:500">Active</span>`}</span></div>`).join("")}
+    </div></div>`;
+  const cards = `<div class="cell">${where("UserGroup", "People · cards, as a colleague sees them")}<div class="dcards">${[["Yasmine Trabelsi", "Product Manager"], [A.n, A.job], ["Meriem Hamrouni", "Software Engineer"]].map(([n, j]) => `<div class="dcard">${n === A.n ? avL(64) : av(n, 64)}<p class="t-label" style="margin-top:8px">${n}</p><p class="t-meta">${j}</p>${n === A.n && (now || sch) ? `<span class="sb ${now ? "info" : "mute"}" style="margin-top:6px">${now ? `Back ${dm(l.back)}` : `Away from ${dm(l.from)}`}</span>` : ""}</div>`).join("")}</div></div>`;
+  const org = `<div class="cell">${where("Hierarchy", "Organization · org chart")}<div class="org"><div class="onode mgr">${av("Mariam Gharbi", 34)}<div><span class="t-label">Mariam Gharbi</span><span class="t-meta mf">VP, Product</span></div></div><div class="vl"></div>
+      <div class="kids">${TEAM.slice(0, 3).map(([n, j]) => `<div class="onode">${n === A.n ? avL(30) : av(n, 30)}<div><span class="t-label">${n}</span><span class="t-meta" style="color:${n === A.n && now ? "var(--info)" : "var(--muted-foreground)"}">${n === A.n && now ? `On leave · back ${dm(l.back)}` : j}</span></div></div>`).join("")}</div></div></div>`;
+  const myteam = `<div class="cell">${where("UserMultiple02", "My Team · as Mariam sees it")}<div class="list">${TEAM.slice(0, 4).map(([n, j]) => `<div class="row ${n === A.n ? "hl" : ""}"><span class="who">${n === A.n ? avL(32) : av(n, 32)}<div><p class="t-label">${n}</p><p class="t-meta mf">${n === A.n && (now || sch) ? `${l.type} · ${dm(l.from)} – ${dm(l.until)}` : j}</p></div></span>${n === A.n ? chip : ""}</div>`).join("")}</div></div>`;
+  const homeItems = [];
+  if (sch) homeItems.push([l.from, true, `Aicha starts ${l.type.toLowerCase()}`, `${fd(l.from)} – ${fd(l.until)} · ${workdays(l.from, l.until)} working days`]);
+  if (now) homeItems.push([l.back, true, "Aicha is back", `From ${l.type.toLowerCase()} · away since ${fd(l.from)}`]);
+  if (back) homeItems.push([l.back, true, "Aicha is back", `From ${l.type.toLowerCase()}, ${dm(l.from)} – ${dm(l.until)}`]);
+  homeItems.push(["2026-11-10", false, "1:1 with Amira Khelifi", "Weekly"], ["2026-11-12", false, "1:1 with Aicha Bouazizi", now ? "During her leave · move it or keep it" : "Every two weeks"], ["2026-11-16", false, "Ons Khemiri's first anniversary", "1 year at Carthage"]);
+  homeItems.sort((a, b) => a[0].localeCompare(b[0]));
+  const home = `<div class="cell">${where("Home01", "Home · Mariam's coming up")}<div class="sec" style="padding:18px 20px"><div class="cu">${homeItems.slice(0, 4).map(([d, lv, t, m]) => `<div class="it" style="grid-template-columns:56px minmax(0,1fr)">${ctile(d, lv)}<div><p class="t-label">${t}</p><p class="t-meta mf">${m}</p></div></div>`).join("")}</div></div></div>`;
+  const perf = `<div class="cell wide">${where("Target02", "Performance · Your people, as Mariam sees it")}<div class="tbl">
+      <div class="tr th" style="grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1.2fr) minmax(0,1.6fr)"><span>Person</span><span>Plan</span><span>Next check-in</span><span></span></div>
+      ${[["Yasmine Trabelsi", "Approved", "Due 30 Nov"], [A.n, "Approved", "Due 30 Nov"], ["Ons Khemiri", "Draft", "First one after approval"]].map(([n, p, c]) => `<div class="tr" style="grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1.2fr) minmax(0,1.6fr)"><span class="who">${n === A.n ? avL(30) : av(n, 30)}<div><p class="t-label">${n}</p><p class="t-meta mf">${n === A.n ? A.job : TEAM.find((t) => t[0] === n)[1]}</p></div></span><span><span class="sb ${p === "Approved" ? "ok" : "mute"}">${p}</span></span><span class="t-body">${c}</span><span>${n === A.n ? chip : ""}</span></div>`).join("")}
+    </div><p class="nothing">${ic("InformationCircle")}Nothing pauses: the check-in stays due and nudges go out as usual; Mariam decides what to move.</p></div>`;
+  return `<div class="main"><div class="bd">${people}${cards}${org}${myteam}${home}<div class="cell">${where("UserCircle", "Aicha's own page")}<div class="sec" style="padding:18px 20px"><p class="t-label">${now ? `You're on ${l.type.toLowerCase()} until ${fd(l.until)}` : sch ? `Your ${l.type.toLowerCase()} starts ${fd(l.from)}` : "Welcome back"}</p><p class="t-meta mf">${now || sch ? `Back ${fd(l.back)} · set by Mouna Kooli, HR` : `${l.type}, ${dm(l.from)} – ${dm(l.until)}`}</p></div></div>${perf}</div></div>`;
+}
+
+// ---------- access › history ----------
+function history() {
+  const hs = S.hs, ev = [];
+  if (hs === "active") {
+    ev.push(["Today, 13:08", "Login03", "ok", "Signed in", "Last time Aicha signed in; Fusion keeps only the latest"]);
+    ev.push(["20 Oct, 11:03", "UserCheck01", "ok", "Accepted the invitation and set a password", ""]);
+    ev.push(["20 Oct, 11:03", "MailOpen", "", `Invitation delivered to ${A.mail}`, ""]);
+    ev.push(["20 Oct, 11:03", "MailSend01", "", "Invited by Amira Khelifi", "With the Employees role"]);
+  } else if (hs === "waiting") {
+    ev.push(["5 Nov, 09:40", "MailOpen", "", `Delivered to ${A.mail}`, "Link valid until 12 Nov"]);
+    ev.push(["5 Nov, 09:40", "MailSend01", "", "Sent again by Mouna Kooli", "The earlier link stopped working"]);
+    ev.push(["2 Nov, 16:12", "MailRemove01", "bad", "Could not be delivered", "The address did not exist then: aicha.bouazizi@exemple.test"]);
+    ev.push(["2 Nov, 16:12", "MailSend01", "", "Invited by Amira Khelifi", "With the Employees role"]);
+  } else {
+    ev.push(["6 Nov, 10:21", "UserBlock01", "bad", "Invitation withdrawn by Mouna Kooli", "The link stopped working"]);
+    ev.push(["2 Nov, 16:13", "MailOpen", "", `Delivered to ${A.mail}`, ""]);
+    ev.push(["2 Nov, 16:12", "MailSend01", "", "Invited by Amira Khelifi", "With the Employees role"]);
+  }
+  if (picks.order === "old") ev.reverse();
+  const status = hs === "active" ? `<span class="sb ok">Signs in</span>` : hs === "waiting" ? `<span class="sb warn">Invited</span>` : `<span class="sb mute">No account</span>`;
+  const act = hs === "active" ? `<span class="link t-meta">Manage access</span>` : hs === "waiting" ? `<span style="display:flex;gap:6px"><button class="btn outline sm sq">Send again</button><button class="btn ghost sm sq">Withdraw</button></span>` : `<button class="btn outline sm sq">Invite</button>`;
+  const detail = hs === "active" ? "Since 20 Oct 2026 · last signed in today" : hs === "waiting" ? "Sent again 5 Nov · waiting for Aicha" : "Withdrawn 6 Nov";
+  return `<div class="sec"><div class="sec-h"><h3 class="t-section">Fusion access</h3></div><dl class="acc">
+      <div><dt>Status</dt><dd>${status}<span class="t-meta mf">${detail}</span>${act}</dd></div>
+      <div><dt>Work email</dt><dd><span class="t-body">${A.mail}</span></dd></div>
+      <div><dt>Signs in with</dt><dd><span class="t-body">Password</span></dd></div></dl></div>
+    <div class="sec"><div class="sec-h"><h3 class="t-section">Roles</h3></div><div class="rolechips"><div class="rolechip"><span class="t-label">Employees</span><span class="t-meta">Everyone in the company</span></div></div></div>
+    <div class="sec"><div class="sec-h"><h3 class="t-section">History</h3><span class="t-meta mf">${picks.order === "old" ? "Oldest first" : "Newest first"}</span></div>
+      <div class="hist">${ev.map(([w, i, c, t, m]) => `<div class="r"><span class="w">${w}</span><span class="dot ${c}">${ic(i)}</span><div><p class="t-label">${t}</p>${m ? `<p class="t-meta">${m}</p>` : ""}</div></div>`).join("")}</div></div>`;
+}
+function accessPage() {
+  const keep = S.vw, kl = S.lv; S.vw = "hr"; S.lv = "none";
+  const h = personPage("Access", history());
+  S.vw = keep; S.lv = kl;
+  return h;
+}
+
+// ---------- roles ----------
+const AREAS = [["core", "Core HR"], ["job", "Jobs and history"], ["personal", "Personal details"], ["org", "Organization"], ["approve", "Approving changes"], ["reports", "Reports"], ["signin", "Invitations and sign-in"], ["perf", "Performance"], ["plans", "Plans and check-ins"], ["cycles", "Cycles and calibration"], ["company", "Company"], ["brand", "Brand, fields and lists"], ["roles", "Roles"]];
+const W = { See: 1, Propose: 1, Change: 2, Approve: 2, Build: 2 };
+const ROLES = [
+  { n: "Employees", who: "Everyone", faces: ["Aicha Bouazizi", "Leila Baccouche", "Khaled Sassi"], count: 100, c: { job: ["See", "everyone"], personal: ["Change", "themselves"], org: ["See"], plans: ["Change", "themselves"] } },
+  { n: "Managers", who: "Anyone with a team", faces: ["Mariam Gharbi", "Omar Mansour", "Walid Dridi"], count: 21, c: { job: ["See", "their team"], personal: ["See", "their team"], org: ["See"], approve: ["Propose", "their team"], reports: ["Build", "their team"], plans: ["Change", "their team"] } },
+  { n: "Product leads", who: "Chosen: Mariam Gharbi", faces: ["Mariam Gharbi"], count: 1, isNew: true, c: { job: ["See", "U"], personal: ["See", "U"], org: ["See"], approve: ["Propose", "U"], reports: ["Build", "U"], plans: ["See", "U"] } },
+  { n: "HR", who: "Chosen: 2 people", faces: ["Amira Khelifi", "Mouna Kooli"], count: 2, c: { job: ["Change", "everyone"], personal: ["Change", "everyone"], org: ["Change"], approve: ["Approve", "everyone"], reports: ["Build", "everyone"], signin: ["Change", "everyone"], plans: ["See", "everyone"] } },
+  { n: "Payroll desk", who: "Rule: job is Finance Analyst", faces: ["Elyes Jaziri", "Emna Chaker"], count: 3, c: { personal: ["See", "everyone"], reports: ["See", "everyone"] } },
+  { n: "Administrators", who: "Chosen: 2 people", faces: ["Amira Khelifi", "Mouna Kooli"], count: 2, admin: true, c: Object.fromEntries(AREAS.filter((a) => !["core", "perf", "company"].includes(a[0])).map((a) => [a[0], [a[0] === "approve" ? "Approve" : a[0] === "reports" ? "Build" : "Change", ["org", "brand", "roles", "cycles"].includes(a[0]) ? null : "everyone"]])) },
+];
+const unitWord = () => (picks.unit === "sub" ? "their unit" : "Product");
+function cellv(v) {
+  if (!v) return `<span class="mf">—</span>`;
+  const [lvl, reach] = v, w = W[lvl] || 1;
+  const r = reach === "U" ? `<span class="r unit">${unitWord()}</span>` : reach ? `<span class="r">${reach}</span>` : "";
+  return `<span class="cellv"><span class="pips"><i class="f"></i><i class="${w > 1 ? "f" : ""}"></i></span>${lvl}${r}</span>`;
+}
+function rolesPage() {
+  const head = `<tr><th></th>${ROLES.map((r) => `<th class="${r.isNew ? "col-new" : ""}"><div class="rh ${r.isNew ? "new" : ""}"><span class="t-panel" style="display:flex;gap:6px;align-items:center">${r.n}${r.admin ? ic("SquareLock02") : ""}</span><span class="t-meta mf" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.who}</span><span style="display:flex;gap:8px;align-items:center"><span class="stack" style="--bandbg:var(--section)">${r.faces.map((f) => av(f, 22)).join("")}</span><span class="t-meta mf">${r.count}</span></span></div></th>`).join("")}</tr>`;
+  const body = AREAS.map(([id, label]) => (["core", "perf", "company"].includes(id) ? `<tr class="grp"><td colspan="${ROLES.length + 1}">${label}</td></tr>` : `<tr><td class="t-label">${label}</td>${ROLES.map((r) => `<td class="${r.isNew ? "col-new" : ""}">${cellv(r.c[id])}</td>`).join("")}</tr>`)).join("");
+  return `${side("set")}<div class="main">${topbar(["Settings", "Roles"])}<div class="page">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px"><div><h1 class="t-page">Roles</h1><p class="t-body mf" style="margin-top:4px">What each role can do, and for whom</p></div><button class="btn primary sq">${ic("Add01")}New role</button></div>
+    <div class="rt"><table><thead>${head}</thead><tbody>${body}</tbody></table></div></div></div>`;
+}
+const REACHES = [["self", "themselves", "Only their own record"], ["team", "their team", "People who report to them"], ["unit", "their unit", "Product and the 4 units under it, for Mariam"], ["everyone", "everyone", "The whole company"]];
+function rolePage() {
+  const u = picks.unit === "sub";
+  const pick = (v, open) => `<span class="pick ${open ? "open" : ""}" data-act="menu">${v}${ic("ArrowDown01")}${open ? `<div class="menu">${REACHES.map(([k, l, d]) => `<div class="mi ${S.reach === k ? "on" : ""}" data-act="reach" data-v="${k}">${S.reach === k ? ic("Tick02") : "<span></span>"}<div><p class="t-label">${k === "unit" && !u ? "a unit" : l}</p><p class="t-meta">${k === "unit" && !u ? "Chosen for each person who holds the role" : d}</p></div></div>`).join("")}</div>` : ""}</span>`;
+  const reachLabel = S.reach === "unit" ? unitWord() : REACHES.find((r) => r[0] === S.reach)[1];
+  const rows = [
+    ["See", "jobs and history", true],
+    ["See", "personal details", false, "their unit"],
+    ["See", "the organization", null],
+    ["Propose", "changes", false, "their unit"],
+    ["Build", "reports", false, "their unit"],
+    ["See", "plans and check-ins", false, "their unit"],
+  ];
+  const sentence = rows.map(([l, w, open, r], i) => `<li><span class="pick">${l}${ic("ArrowDown01")}</span><span>${w}</span>${open === null ? "" : `<span class="mf">for</span>${open ? pick(reachLabel, S.menu) : `<span class="pick">${u ? r : "Product"}${ic("ArrowDown01")}</span>`}`}</li>`).join("") + `<li><span class="pick mut">No access${ic("ArrowDown01")}</span><span class="mf">invitations and sign-in</span></li>`;
+  const units = [["Product & Engineering", 0, "out", "Amira's unit, above"], ["Product", 1, "in", "6 people, Mariam included"], ["Product A", 2, "in", ""], ["Product A Core", 3, "in", "6 people"], ["Product A Platform", 3, "in", "nobody yet"], ["Product B", 2, "in", ""], ["Product B Core", 3, "in", "nobody yet"], ["Product B Platform", 3, "in", "5 people"], ["Engineering", 1, "out", "beside, not under"]];
+  const cnt = S.reach === "unit" ? 16 : S.reach === "team" ? 5 : S.reach === "self" ? 0 : 99;
+  const pv = `<aside class="pvw"><div style="display:flex;gap:10px;align-items:center">${av("Mariam Gharbi", 36)}<div><p class="t-label">As Mariam Gharbi</p><p class="t-meta mf">VP, Product · holds Product leads</p></div></div>
+    <p class="t-section" style="font-size:1.05rem">${S.reach === "self" ? "Only her own record" : S.reach === "everyone" ? "All 99 other people" : `${cnt} people besides herself`}</p>
+    ${S.reach === "unit" ? `<div class="tree">${units.map(([n, d, c, m]) => `<div class="u ${c}" style="padding-inline-start:${10 + d * 16}px"><span class="nm">${ic(d === 3 ? "UserGroup" : "Building06")}<span>${n}</span></span><span class="t-meta">${m}</span></div>`).join("")}</div><p class="t-meta mf">Her team (5) is in Product. The unit adds Kais Zouari, Tarek Ayari, Fares Lachheb and 8 more in the teams under it. When someone moves into or out of these units, the reach follows.</p>` : S.reach === "team" ? `<div class="tree">${TEAM.map(([n, j]) => `<div class="u in"><span class="nm">${av(n, 22)}<span>${n}</span></span><span class="t-meta">${j}</span></div>`).join("")}</div>` : ""}
+  </aside>`;
+  return `${side("set")}<div class="main">${topbar(["Settings", "Roles", "Product leads"])}<div class="page">
+    <span class="back">${ic("ArrowLeft01")}Roles</span>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px"><div><h1 class="t-page">Product leads</h1><p class="t-body mf" style="margin-top:4px">Who has it: chosen · Mariam Gharbi</p></div><div style="display:flex;gap:8px"><button class="btn ghost sq">Discard</button><button class="btn primary sq">Save role</button></div></div>
+    <div class="rp"><div class="col"><div class="sec"><div class="sec-h"><h3 class="t-section">Core HR</h3></div><ul class="sent">${sentence}</ul></div>
+      <div class="sec"><div class="sec-h"><h3 class="t-section">Performance</h3></div><ul class="sent"><li><span class="pick">See${ic("ArrowDown01")}</span><span>plans and check-ins</span><span class="mf">for</span><span class="pick">${u ? "their unit" : "Product"}${ic("ArrowDown01")}</span></li><li><span class="pick mut">No access${ic("ArrowDown01")}</span><span class="mf">cycles and calibration</span></li></ul></div></div>${pv}</div></div></div>`;
+}
+
+// ---------- email ----------
+function mailCard(branded) {
+  const accent = branded ? "#2f5fd0" : "#f4c414", ink = branded ? "#ffffff" : "#2a1b00";
+  const id = branded ? `<div class="co"><span class="lg">${LOGO}</span>Carthage Digital Group</div>` : `<div class="wm">Fusion</div>`;
+  return `<div class="mcard">${branded && picks.mail === "bar" ? `<div class="bar" style="background:${accent}"></div>` : ""}
+    <div class="p">${id}</div>
+    <div class="p"><h2>Mouna Kooli approved your request for Aicha Bouazizi</h2><p class="lead">It applies on 16 Nov 2026.</p></div>
+    <div class="p" style="padding-top:24px"><span class="btnm" style="background:${accent};color:${ink}">Open the request</span></div>
+    <div class="foot"><p>If the button does not work, copy this address into your browser:<br><span style="color:#16161d">http://localhost:3000/core/changes?request=…</span></p>
+      <p>You get these emails for Team and job changes. You can turn them off in your notification settings.</p>
+      ${branded ? "" : "<p>Sent by Fusion for Carthage Digital Group.</p>"}<p><a>Notification settings</a></p>${branded ? "<p>Sent by Carthage Digital Group with Fusion</p>" : ""}</div></div>`;
+}
+function mailPage() {
+  const col = (b) => `<div><div class="mhead"><b>${b ? "Branded (B-204)" : "Today"}</b><span>${b ? "as invitations look since B-176" : "Core HR and Performance emails"}</span></div>
+    <div class="inbox"><span class="from">${b ? "Carthage Digital Group" : "Fusion"} &lt;notifications@fusion.local&gt;</span><span>Mouna Kooli approved your request for Aicha Bouazizi</span><span class="t-meta">To Mariam Gharbi · today 14:20</span></div><div class="mbody">${mailCard(b)}</div></div>`;
+  return `<div class="main"><div class="mails">${col(false)}${col(true)}</div></div>`;
+}
+
+// ---------- render ----------
+const frame = document.getElementById("frame");
+function render() {
+  frame.className = "fx" + (S.scr === "around" ? " board" : S.scr === "mail" ? " mail" : "");
+  frame.innerHTML = S.scr === "form" ? formPage() : S.scr === "person" ? personPage() : S.scr === "around" ? around() : S.scr === "access" ? accessPage() : S.scr === "roles" ? rolesPage() : S.scr === "role" ? rolePage() : mailPage();
+  fit();
+  bar();
+}
+frame.addEventListener("click", (e) => {
+  const t = e.target.closest("[data-act]");
+  if (!t) return;
+  const a = t.dataset.act, v = t.dataset.v;
+  if (a === "ftype") S.f.type = v;
+  else if (a === "ffrom") { S.f.from = v; if (!S.f.open && S.f.until < v) S.f.until = "2026-11-27"; }
+  else if (a === "funtil") { S.f.until = v; S.f.open = false; if (v < S.f.from) S.f.from = "2026-11-09"; }
+  else if (a === "fopen") S.f.open = !S.f.open;
+  else if (a === "fsave") S.saved = true;
+  else if (a === "undo") S.saved = false;
+  else if (a === "menu") { if (e.target.closest(".menu")) return; S.menu = !S.menu; }
+  else if (a === "reach") { S.reach = v; S.menu = false; e.stopPropagation(); }
+  if (a !== "fsave" && a !== "undo") S.saved = false;
+  render();
+});
+
+// ---------- explorer chrome ----------
+const NOTES = {
+  form: { h: "Set leave from Make a change", rec: true, li: [
+    "<b>Leave is a fourth kind of change</b> beside job, manager and end of employment, so it inherits what changes already do: a date, scheduling, cancel and undo, the change history, and approval when the company's rules ask for it.",
+    "<b>Type from the company's Leave types list</b> (Settings › Lists already holds Annual, Sick, Maternity, Paternity and Unpaid leave). No balances or requests: that is a time-off module, out of this batch.",
+    "<b>Until is the last day off</b>; Fusion works out the return day from the company's work week. \"Not known yet\" covers sick and parental leave.",
+    "<b>Also changes</b> says what the leave touches before saving, as the job change does today.",
+  ], why: "Why this way: one way to change a person keeps the record's history whole, and the approval rules already exist." },
+  person: { h: "Aicha's page while she's away", rec: true, li: [
+    "<b>On leave now:</b> a pill by the name, a small mark on the photo and a glance cell with the return day. Scheduled leave shows only in the glance cell and Coming up; after it ends, only Job and history keeps it.",
+    "<b>Coming up</b> carries the leave with Change, End early or Cancel for HR; the 1:1 that falls during the leave stays booked.",
+    "<b>Switch the viewer</b>: Yasmine, a teammate, sees \"On leave\" and the return day, not the type (your first pick decides).",
+  ], why: "The pill answers \"can I reach her?\" at a glance; the glance cell answers \"until when?\" without opening anything." },
+  around: { h: "Everywhere else the person appears", rec: true, li: [
+    "<b>One rule everywhere</b>: on leave now = a small mark on the photo plus \"back &lt;day&gt;\"; scheduled = a quiet \"from &lt;day&gt;\" where lists have room.",
+    "<b>Mariam's Home</b> lists the leave in Coming up like joiners and last days (D-12) and flags the 1:1 that falls in it.",
+    "<b>Performance reads it from Core HR's snapshot</b> and only shows it: the check-in stays due, nothing is paused (P5).",
+  ], why: "Leave is a fact about the person, so it travels with them; Performance shows it and leaves the decisions to the manager." },
+  access: { h: "Access › History, the account's story", rec: true, li: [
+    "<b>Built from what Identity already keeps:</b> each invitation (who sent it, delivered or failed, sent again, withdrawn), acceptance, and the last sign-in. Fusion doesn't keep every sign-in, so the latest stands at the top and says so.",
+    "<b>Names, not system words:</b> \"Invited by Amira Khelifi\", \"Sent again by Mouna Kooli\", with the address when delivery failed.",
+    "<b>Try the states:</b> signs in, invited but not accepted (one failed delivery, then sent again), withdrawn.",
+    "Role grants are not in History yet: removed grants aren't kept, so it would tell half the story. It goes on the board.",
+  ], why: "HR's first question when someone can't sign in is \"what happened to their invitation?\"; this answers it without asking IT." },
+  roles: { h: "\"Their unit\" in the roles table", rec: true, li: [
+    "<b>A fourth reach</b> between \"their team\" and \"everyone\", offered where it means something: jobs and history, personal details, approving changes, reports, plans and check-ins.",
+    "<b>Product leads</b> is an example role (Mariam Gharbi, chosen) to show it in place; Carthage's other roles keep their reach. The cells of the existing roles are sketched; their names, holders and rules are Carthage's.",
+    "Managers stay on \"their team\": the unit someone works in can include their own manager, so it fits a role given to the person who leads it, not to every manager.",
+  ], why: "Today OrgUnit exists underneath but is treated as a team; B-212 makes it real and enforces it in Core HR and Performance." },
+  role: { h: "The role page says whom it reaches", rec: true, li: [
+    "<b>The reach menu</b> explains each choice in one line; \"their unit\" names Mariam's unit so the meaning is concrete.",
+    "<b>The preview</b> shows the units counted and how many people, from Carthage's tree: Product (6) and the teams under it, 16 people besides Mariam against 5 in her team.",
+    "<b>It follows the organization:</b> a move into or out of these units changes who she sees, the same day.",
+  ], why: "Reach is the easiest thing to get wrong in a role; showing the actual units and people makes the choice checkable." },
+  mail: { h: "One Core HR email, today and branded", rec: true, li: [
+    "<b>Same layout as invitations since B-176:</b> Carthage's logo and name at the top, the button in Carthage's colour (#2f5fd0), and \"Sent by Carthage Digital Group with Fusion\" at the end.",
+    "<b>Identity serves the brand</b> to Core HR and Performance; if it doesn't answer, the email goes out in Fusion's look rather than waiting.",
+    "Every Core HR and Performance email changes the same way; this is the approval Mariam receives.",
+  ], why: "People recognise their company's emails; the invitation already does this, so the rest should match it." },
+};
+function bar() {
+  document.getElementById("scrSeg").innerHTML = Object.entries(SCREENS).map(([k, l]) => `<button data-scr="${k}" aria-pressed="${S.scr === k}">${l}</button>`).join("");
+  const lvOn = ["person", "around"].includes(S.scr), hOn = S.scr === "access";
+  document.getElementById("stCtl").style.display = lvOn || hOn ? "" : "none";
+  document.getElementById("stSeg").innerHTML = lvOn ? Object.entries(LEAVES).map(([k, s]) => `<button data-lv="${k}" aria-pressed="${S.lv === k}">${s.label}</button>`).join("") : hOn ? Object.entries(HSTATES).map(([k, l]) => `<button data-hs="${k}" aria-pressed="${S.hs === k}">${l}</button>`).join("") : "";
+  document.getElementById("vwCtl").style.display = S.scr === "person" ? "" : "none";
+  document.getElementById("vwSeg").innerHTML = Object.entries(VIEWERS).map(([k, v]) => `<button data-vw="${k}" aria-pressed="${S.vw === k}">${v.label}</button>`).join("");
+  const n = NOTES[S.scr];
+  document.getElementById("notes").innerHTML = `<h3>${n.h}</h3>${n.rec ? `<span class="x-rec">Recommended</span>` : ""}<ul class="x-notes">${n.li.map((l) => `<li>${l}</li>`).join("")}</ul><p class="x-why">${n.why}</p>`;
+}
+document.querySelector(".x-bar").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.scr) { S.scr = b.dataset.scr; if (S.scr === "around" && S.vw === "hr") S.vw = "mgr"; }
+  if (b.dataset.lv) S.lv = b.dataset.lv;
+  if (b.dataset.hs) S.hs = b.dataset.hs;
+  if (b.dataset.vw) S.vw = b.dataset.vw;
+  render();
+});
+function renderQs() {
+  document.getElementById("qs").innerHTML = QS.map((q) => `<div class="x-q"><p class="q">${q.q}</p><div class="x-opts">${q.o.map(([v, l, r]) => `<button data-q="${q.id}" data-v="${v}" aria-pressed="${picks[q.id] === v}">${esc(l)}${r ? '<span class="rec">rec</span>' : ""}</button>`).join("")}</div></div>`).join("") + `<div class="x-q"><p class="q">Anything else</p><textarea id="xnote" style="width:100%;min-height:70px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:var(--r-control);padding:10px 12px;font:inherit;font-size:14px">${esc(picks.note || "")}</textarea></div>`;
+}
+document.getElementById("qs").addEventListener("click", (e) => { const b = e.target.closest("[data-q]"); if (!b) return; picks[b.dataset.q] = b.dataset.v; save(); renderQs(); render(); });
+document.getElementById("qs").addEventListener("input", (e) => { if (e.target.id === "xnote") { picks.note = e.target.value; save(); } });
+function save() { try { localStorage.setItem("b313-picks", JSON.stringify(picks)); } catch {} }
+document.getElementById("copy").addEventListener("click", async () => {
+  const txt = "B-313 picks: " + QS.map((q) => `${q.q} ${q.o.find((o) => o[0] === picks[q.id])[1]}`).join("; ") + (picks.note ? `. Notes: ${picks.note}` : "");
+  const out = document.getElementById("xcopied");
+  try { await navigator.clipboard.writeText(txt); out.textContent = "Copied. Paste it in the chat."; }
+  catch { out.textContent = txt; }
+});
+const stage = document.getElementById("stage"), scale = document.getElementById("scale");
+function fit() { const k = Math.min(1, stage.clientWidth / 1440); scale.style.transform = `scale(${k})`; stage.style.height = `${Math.ceil(frame.offsetHeight * k)}px`; }
+new ResizeObserver(fit).observe(stage);
+renderQs();
+render();
+</script>

@@ -33,7 +33,12 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In progress
 
-None.
+- [ ] **B-239** Restyle the Add a person page (B-199's `/core/people/add`) · Core HR · 2026-10-31
+      User 2026-10-31 (B-182 review): "mark add person screen for restyling later".
+      2026-11-07: canvas first, then build. Directions explorer sent ([explorer](plans/B-239-add-person.html), https://claude.ai/artifact/BjbZDN2Lx3fT4VUjgF5Va7); user picked **C** (the record band before it exists); next session builds it. B-312 folded in as a child.
+  - [ ] **B-312** Fill a role where the hiring happens: Add person offers the open roles under the chosen manager ("Fills the open QA Automation Engineer role") and marks it filled from the first day; Your team shows the filled role as its drawing does ("QA Automation Engineer, filled by Ons") · Core HR · 2026-11-07
+        From B-287: today a role is marked filled from its panel on the chart, after the hire.
+
 
 ### Rebuild program tracking
 
@@ -63,9 +68,6 @@ None waiting.
 ### Rebuild slices
 
 ### Other work
-
-- [ ] **B-312** Fill a role where the hiring happens: Add person offers the open roles under the chosen manager ("Fills the open QA Automation Engineer role") and marks it filled from the first day; Your team shows the filled role as its drawing does ("QA Automation Engineer, filled by Ons") · Core HR · 2026-11-07
-      From B-287: today a role is marked filled from its panel on the chart, after the hire.
 
 - [ ] **B-311** Later check: rules defined once, not redefined. Password rules first, then anything like them (address checks, length limits, …): find each rule's copies across the backend and frontends, keep one source, and make the rest read from it · Identity, Shell, Core HR · 2026-11-07
       User 2026-11-07: park it, check and fix later; main things first. Known copies of the password rules: Identity's `AccountPasswordPolicy` (the source, sent to forms as `passwordRequirements`); its checklist re-coded in the shell's `lib/activation.ts` (`passwordChecks`) and again in `@repo/auth` `password-reset-page.tsx` (`requirementChecks`, B-295), each with its own words; `@repo/ds` `PasswordStrengthField` scores strength on its own assumed minimum of 10.
@@ -155,9 +157,6 @@ Explicitly deferred; no change to the deferral or review verdict.
 
   - [ ] **B-274** Redesign the sidebar toggle after rejected review attempts · Shared · 2026-11-03
         Deferred with B-250. Compact header chevrons did not resolve the user's concern.
-
-- [ ] **B-239** Restyle the Add a person page (B-199's `/core/people/add`) · Core HR · 2026-10-31
-      User 2026-10-31 (B-182 review): "mark add person screen for restyling later".
 
 ## Needs discussion
 

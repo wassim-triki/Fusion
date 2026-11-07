@@ -217,12 +217,20 @@ public sealed class ReviewWorkTests
             await using var db = world.Factory.Store.NewContext();
             return db.Notifications.Count(n => n.Kind == PerformanceNotificationKind.ReviewReminder && n.ResourceId == aicha);
         };
-        Assert.Equal(0, await reminded(6));
-        Assert.Equal(1, await reminded(7));
+        // A reminder goes out on its day, or on the Friday before when its day falls at a weekend (the Friday send covers
+        // the weekend), so the days are counted from the release rather than assumed to be weekdays.
+        static int SentOn(int day) => Today.AddDays(day).DayOfWeek switch
+        {
+            DayOfWeek.Saturday => day - 1,
+            DayOfWeek.Sunday => day - 2,
+            _ => day,
+        };
+        Assert.Equal(0, await reminded(SentOn(7) - 1));
+        Assert.Equal(1, await reminded(SentOn(7)));
         Assert.Equal(1, await reminded(10));
-        Assert.Equal(2, await reminded(14));
+        Assert.Equal(2, await reminded(SentOn(14)));
         await Data(await world.As(world.Aicha).PostAsJsonAsync($"/api/performance/reviews/{aicha}/acknowledge", new { comment = (string?)null }));
-        Assert.Equal(2, await reminded(21));
+        Assert.Equal(2, await reminded(SentOn(21)));
     }
 
     [MailpitFact]

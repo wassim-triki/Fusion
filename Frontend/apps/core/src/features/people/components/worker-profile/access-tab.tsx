@@ -16,6 +16,7 @@ export function AccessTab({
   workEmailAction,
   roles,
   signInWith,
+  history,
 }: {
   view: WorkerProfileView;
   state: "loading" | "error" | "ready";
@@ -28,6 +29,8 @@ export function AccessTab({
   roles?: ReactNode;
   /** How the person's account signs in (B-191). */
   signInWith?: ReactNode;
+  /** The account's story, for those who see sign-in access (B-231). */
+  history?: ReactNode;
 }) {
   const t = useTranslations("profile");
   const access = view.access;
@@ -73,6 +76,7 @@ export function AccessTab({
         )}
       </Section>
       {roles}
+      {history}
     </div>
   );
 }

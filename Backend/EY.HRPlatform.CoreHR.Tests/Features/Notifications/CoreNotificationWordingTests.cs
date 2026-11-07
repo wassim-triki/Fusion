@@ -63,8 +63,14 @@ public sealed class CoreNotificationWordingTests
         var notification = CoreNotification.For(Guid.NewGuid(), Nour.EmployeeId, moment.Kind, Guid.NewGuid(),
             CoreChangeMoments.Words(moment, CoreMomentTense.Recorded, Today, "Amira Haddad"), DateTime.UtcNow);
 
-        var email = CoreNotificationRenderer.Email(notification, FusionLanguages.French, "http://localhost:3000", "Asteria");
+        var email = CoreNotificationRenderer.Email(notification, FusionLanguages.French, "http://localhost:3000",
+            new NotificationCompany("Asteria", "#2F5FD0", [0x89, 0x50, 0x4E, 0x47]));
         Assert.StartsWith("Hana Trabelsi sera votre responsable", email.Subject);
+        // The company's brand, as on its invitations (B-204): logo and name on top, its colour on the button, its sign-off.
+        Assert.Contains("cid:" + FusionNotificationEmail.LogoContentId, email.Html);
+        Assert.Contains("#2f5fd0", email.Html);
+        Assert.Contains("Envoyé par Asteria avec Fusion", email.Text);
+        Assert.Equal(FusionNotificationEmail.LogoContentId, Assert.Single(email.Images).ContentId);
         Assert.Contains("http://localhost:3000/core/profile", email.Html);
         Assert.Contains("Équipe et changements de poste", email.Text);
 

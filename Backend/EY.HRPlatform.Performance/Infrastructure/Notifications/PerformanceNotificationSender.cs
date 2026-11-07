@@ -33,7 +33,7 @@ public static class PerformanceNotificationRenderer
     }
 
     /// <summary>The email for one reader. <paramref name="defaults"/> are the company's modes (null: Fusion's).</summary>
-    public static RenderedEmail Email(PerformanceNotification notification, string language, string shellBaseUrl, string companyName,
+    public static RenderedEmail Email(PerformanceNotification notification, string language, string shellBaseUrl, NotificationCompany company,
         NotificationDefaults? defaults = null)
     {
         if (!Uri.TryCreate(shellBaseUrl, UriKind.Absolute, out var shell) || shell.Scheme is not ("https" or "http"))
@@ -51,7 +51,7 @@ public static class PerformanceNotificationRenderer
             $"{shellBaseUrl.TrimEnd('/')}{notification.Href}",
             new NotificationEmailGroup(Catalog.Text(language, $"group.{group}") ?? group,
                 NotificationDefaults.ModeOf(defaults, group) != NotificationEmailMode.Required),
-            companyName, shellBaseUrl);
+            company, shellBaseUrl);
     }
 
     /// <summary>The one-click link that turns off this email's group; none for a group the company requires or without a key.</summary>

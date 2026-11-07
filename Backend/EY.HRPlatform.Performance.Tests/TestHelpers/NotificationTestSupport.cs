@@ -33,5 +33,5 @@ public static class NotificationText
 
     /// <summary>The email as an English recipient gets it.</summary>
     public static RenderedEmail EnglishEmail(this PerformanceNotification notification)
-        => PerformanceNotificationRenderer.Email(notification, FusionLanguages.English, "http://localhost:3000", "Carthage Industries");
+        => PerformanceNotificationRenderer.Email(notification, FusionLanguages.English, "http://localhost:3000", new NotificationCompany("Carthage Industries"));
 }

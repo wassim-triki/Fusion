@@ -86,8 +86,6 @@
     "noAccount": "Aucun compte Fusion associé",
     "additional": "Accès supplémentaires",
     "adminNote": "Les droits d’administrateur de l’organisation se gèrent dans Administrateurs et sont conservés ici.",
-    "audit": "Piste d’audit",
-    "recent": "Activité récente",
     "baselineIs": "Profil : {baseline}",
     "pendingNote": "Cette invitation est toujours en attente. Choisissez d’envoyer un nouveau lien ou de la laisser telle quelle.",
     "resend": "Renvoyer l’invitation",

@@ -2,7 +2,7 @@
   "action.open": "فتح",
   "footer.why": "تصلك هذه الرسائل من أجل: {group}. يمكنك إيقافها من إعدادات الإشعارات.",
   "footer.locked": "{group}: تُرسل دائمًا بالبريد الإلكتروني.",
-  "footer.company": "أُرسلت من Fusion لصالح {company}.",
+  "footer.sentBy": "أرسلتها {company} عبر Fusion",
   "footer.settings": "إعدادات الإشعارات",
   "footer.fallback": "إذا لم يعمل الزر، انسخ هذا العنوان في متصفحك:"
 }

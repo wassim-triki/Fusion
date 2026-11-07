@@ -452,19 +452,19 @@ public class WorkforceController(
             ok ? "Workforce access restored." : message, null)));
     }
 
-    [HttpGet("access-subjects/{employeeId:guid}/audit")]
-    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<WorkforceAccessAuditLineDto>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAccessAudit(Guid employeeId, CancellationToken cancellationToken)
+    /// <summary>The person's account story for Person › Access › History (B-231), for those who see sign-in access.</summary>
+    [HttpGet("access-subjects/{employeeId:guid}/history")]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<WorkforceAccountHistoryEventDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAccessHistory(Guid employeeId, CancellationToken cancellationToken)
     {
         if (!accessPolicy.CanViewAccess(User)) return Forbid();
         var employee = await workforceContractService.GetEmployeeAsync(employeeId, User, cancellationToken);
         if (employee is null)
             return NotFound(ApiResponse.Failure("Employee was not found or is not visible in the current scope."));
-        var lines = await workforceAccessClient.GetAuditAsync(employee.EmployeeId, cancellationToken);
-        var mapped = lines
-            .Select(l => new WorkforceAccessAuditLineDto(l.Action, l.ActorName, l.ActorRole, l.OccurredAt, l.Summary))
-            .ToList();
-        return Ok(ApiResponse<IReadOnlyList<WorkforceAccessAuditLineDto>>.Success(mapped));
+        var events = await workforceAccessClient.GetHistoryAsync(employee.EmployeeId, cancellationToken);
+        return Ok(ApiResponse<IReadOnlyList<WorkforceAccountHistoryEventDto>>.Success(events
+            .Select(item => new WorkforceAccountHistoryEventDto(item.Kind, item.OccurredAt, item.ActorName, item.Email, item.ValidUntil))
+            .ToList()));
     }
 
     [HttpPost("access-subjects/bulk-activate")]

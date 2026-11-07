@@ -115,6 +115,17 @@ public class WorkforceControllerAuthorizationTests
         Assert.True(service.AccessSubjectSelectionPreviewCalled);
     }
 
+    [Fact]
+    public async Task AccessHistory_WithoutSignInAccess_ReturnsForbid_BeforeReadingAnyone()
+    {
+        // The stubbed employee lookup and Identity client throw, so Forbid proves nothing was read.
+        var controller = CreateController(new StubWorkforceContractService(), canViewAccess: false, canManageAccess: false);
+
+        var result = await controller.GetAccessHistory(Guid.NewGuid(), CancellationToken.None);
+
+        Assert.IsType<ForbidResult>(result);
+    }
+
     private static WorkforceController CreateController(
         StubWorkforceContractService service,
         bool canViewAccess,
@@ -253,7 +264,7 @@ public class WorkforceControllerAuthorizationTests
             => throw new NotImplementedException();
         public Task<bool> WithdrawInviteAsync(Guid employeeId, CancellationToken cancellationToken)
             => throw new NotImplementedException();
-        public Task<IReadOnlyList<WorkforceAccessAuditLine>> GetAuditAsync(Guid employeeId, CancellationToken cancellationToken)
+        public Task<IReadOnlyList<WorkforceAccountHistoryEvent>> GetHistoryAsync(Guid employeeId, CancellationToken cancellationToken)
             => throw new NotImplementedException();
         public Task<IdentityRoleChange?> GetLatestRoleChangeAsync(CancellationToken cancellationToken)
             => throw new NotImplementedException();

@@ -281,5 +281,27 @@
     "emptyCanAdd": "لا توجد مستندات بعد. ملفات PDF أو صور، حتى 10 ميغابايت.",
     "loadFailed": "تعذر تحميل المستندات.",
     "retry": "إعادة المحاولة"
+  },
+  "accessHistory": {
+    "title": "السجل",
+    "newestFirst": "الأحدث أولًا",
+    "today": "اليوم",
+    "unavailable": "تعذّر تحميل السجل",
+    "retry": "إعادة المحاولة",
+    "empty": "لم تُرسل أي دعوة بعد",
+    "invited": "أُرسلت الدعوة",
+    "invitedBy": "دعاه {name}",
+    "sentAgain": "أُعيد الإرسال",
+    "sentAgainBy": "أعاد {name} الإرسال",
+    "delivered": "وصلت الدعوة إلى {email}",
+    "validUntil": "الرابط صالح حتى {date}",
+    "notDelivered": "تعذّر التسليم",
+    "sentTo": "أُرسلت إلى {email}",
+    "withdrawn": "سُحبت الدعوة",
+    "withdrawnBy": "سحب {name} الدعوة",
+    "linkStopped": "توقف الرابط عن العمل",
+    "accepted": "قبل الدعوة",
+    "signedIn": "سجّل الدخول",
+    "signedInNote": "آخر مرة سجّل فيها {name} الدخول؛ يحتفظ Fusion بالأحدث فقط"
   }
 }

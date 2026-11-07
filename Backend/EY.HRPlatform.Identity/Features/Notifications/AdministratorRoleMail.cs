@@ -62,11 +62,13 @@ public sealed class AdministratorRoleMail(AppIdentityDbContext db, IAccountMailS
                 .Select(user => new { user.Email, user.PreferredLanguage }).FirstOrDefaultAsync(cancellationToken);
             var tenant = await db.Tenants.IgnoreQueryFilters().AsNoTracking().Where(item => item.Id == change.TenantId)
                 .Select(item => new { item.Name, item.Locale }).FirstOrDefaultAsync(cancellationToken);
+            var brand = await Branding.CompanyBrandReader.ForInvitationAsync(db, change.TenantId, cancellationToken);
             if (person is null || tenant is null || string.IsNullOrWhiteSpace(person.Email)) return;
             var actor = await db.Users.IgnoreQueryFilters().AsNoTracking().Where(user => user.Id == change.ActorUserId)
                 .Select(user => (user.FirstName + " " + user.LastName).Trim()).FirstOrDefaultAsync(cancellationToken);
 
-            var email = Render(change, FusionLanguages.Resolve(person.PreferredLanguage, tenant.Locale), tenant.Name,
+            var email = Render(change, FusionLanguages.Resolve(person.PreferredLanguage, tenant.Locale),
+                new NotificationCompany(tenant.Name, brand.Brand.Color, brand.Brand.LogoPng),
                 string.IsNullOrWhiteSpace(actor) ? null : actor, ShellBaseUrl());
             await sender.SendAsync(new FusionOutgoingEmail(person.Email, email,
                 $"<{Guid.NewGuid():N}@fusion-identity>"), cancellationToken);
@@ -113,9 +115,10 @@ public sealed class AdministratorRoleMail(AppIdentityDbContext db, IAccountMailS
     }
 
     /// <summary>The words only name the role, the company and who acted; nothing about what the role allows.</summary>
-    public static RenderedEmail Render(AdministratorRoleChange change, string language, string companyName, string? actorName,
+    public static RenderedEmail Render(AdministratorRoleChange change, string language, NotificationCompany company, string? actorName,
         string shellBaseUrl)
     {
+        var companyName = company.Name;
         var self = change.ActorUserId == change.UserId;
         var values = new Dictionary<string, string>
         {
@@ -128,7 +131,7 @@ public sealed class AdministratorRoleMail(AppIdentityDbContext db, IAccountMailS
                 Text.Text(language, "action")!),
             $"{shellBaseUrl.TrimEnd('/')}/",
             new NotificationEmailGroup(Text.Text(language, "group")!, CanTurnOff: false),
-            companyName, shellBaseUrl);
+            company, shellBaseUrl);
     }
 
     private string ShellBaseUrl() => configuration["Application:PublicBaseUrl"] is { Length: > 0 } url ? url : "http://localhost:3000";

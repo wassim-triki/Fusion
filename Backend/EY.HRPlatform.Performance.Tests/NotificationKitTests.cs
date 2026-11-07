@@ -132,9 +132,14 @@ public sealed class NotificationKitTests
         Assert.Contains("Nour &lt;b&gt;Trabelsi&lt;/b&gt;", english.Html);
         Assert.Contains("You get these emails for Plans and goals.", english.Text);
         Assert.Contains("http://localhost:3000/settings/notifications", english.Text);
-        Assert.Contains("Sent by Fusion for Carthage Industries.", english.Text);
+        Assert.Contains("Sent by Carthage Industries with Fusion", english.Text);
+        Assert.DoesNotContain("cid:", english.Html);
+        Assert.Contains(FusionEmailLayout.FusionAccent, english.Html);
 
-        var arabic = PerformanceNotificationRenderer.Email(notification, "ar", "http://localhost:3000", "Carthage");
+        var arabic = PerformanceNotificationRenderer.Email(notification, "ar", "http://localhost:3000",
+            new NotificationCompany("Carthage", "#2f5fd0", [0x89, 0x50]));
+        Assert.Contains("#2f5fd0", arabic.Html);
+        Assert.Contains("cid:" + FusionNotificationEmail.LogoContentId, arabic.Html);
         Assert.Contains("dir=\"rtl\"", arabic.Html);
         Assert.Equal("خطة بانتظار مراجعتك", arabic.Subject);
         Assert.Contains("الخطط والأهداف", arabic.Text);

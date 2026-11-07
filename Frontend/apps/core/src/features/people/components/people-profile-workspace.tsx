@@ -71,6 +71,7 @@ import { PersonRoles } from "@/features/settings/roles/person-roles";
 import { AccessTab } from "./worker-profile/access-tab";
 import { PersonSignInLinks } from "@/features/settings/sso/person-sign-in";
 import { AccountInspector } from "@/features/workforce-access/components/account-inspector";
+import { AccessHistory } from "./worker-profile/access-history";
 import { IdentityCorrection } from "@/features/workforce-access/components/identity-correction";
 import { JobTab } from "./worker-profile/job-tab";
 import { PersonalTab, useSeenBy } from "./worker-profile/personal-tab";
@@ -313,6 +314,11 @@ export default function PeopleProfileWorkspace({
       workEmailAction={workEmailAction}
       roles={<PersonRoles employeeId={employee.identity.employeeId} />}
       signInWith={<PersonSignInLinks userId={access.data?.userId} />}
+      history={
+        canViewWorkforceAccess(user) ? (
+          <AccessHistory employeeId={employee.identity.employeeId} firstName={view.displayName.split(" ")[0] ?? view.displayName} />
+        ) : undefined
+      }
     />
   ) : tab === "job" ? (
     <JobTab

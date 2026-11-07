@@ -171,7 +171,7 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
             Assert.StartsWith("أُلغي انضمام Karim Zayed", (await feed.PageAsync(ctx.YoussefId, null, null, "ar", default)).Items[0].Title);
             Assert.All((await feed.PageAsync(ctx.AminaId, null, null, "en", default)).Items, item => Assert.DoesNotContain("cancelled", item.Title));
 
-            var email = CoreNotificationRenderer.Email(notices[1], "en", "http://localhost:3000", "Asteria");
+            var email = CoreNotificationRenderer.Email(notices[1], "en", "http://localhost:3000", new NotificationCompany("Asteria"));
             Assert.Equal($"Karim Zayed's move to your team on {day} was cancelled", email.Subject);
             Assert.Contains("Open your team", email.Text);
             Assert.Equal(0, await other.Db.Notifications.CountAsync());

@@ -2,7 +2,7 @@
   "action.open": "Ouvrir",
   "footer.why": "Vous recevez ces e-mails pour : {group}. Vous pouvez les désactiver dans vos paramètres de notification.",
   "footer.locked": "{group} : toujours envoyés par e-mail.",
-  "footer.company": "Envoyé par Fusion pour {company}.",
+  "footer.sentBy": "Envoyé par {company} avec Fusion",
   "footer.settings": "Paramètres de notification",
   "footer.fallback": "Si le bouton ne fonctionne pas, copiez cette adresse dans votre navigateur :"
 }

@@ -2,7 +2,6 @@
 
 import { ADMINISTRATORS_PATH } from "@/features/settings/roles/paths";
 import { useStatusWord } from "@/i18n/words";
-import { useFormat } from "@repo/ds/lib/use-format";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState } from "react";
@@ -27,14 +26,11 @@ import { StatusBadge, PageSkeleton } from "@repo/ds/shell";
 import {
   AlertTriangle,
   ArrowUpRight,
-  Check,
-  Clock3,
   Mail,
   ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
-  useAccessAudit,
   useAccessCandidate,
   useActivateAccess,
   useConnectAccess,
@@ -150,7 +146,6 @@ function InspectorContent({
 }) {
   const t = useTranslations("wfAccess");
   const words = useWorkforceAccessWords();
-  const format = useFormat();
   const statusWord = useStatusWord();
   const english = useLocale() === "en";
   const [baseline, setBaseline] = useState<WorkforceBaselineChoice>(
@@ -160,7 +155,6 @@ function InspectorContent({
   const isSuspended = accessState === "Suspended";
   const isActiveAccount = accessState === "ActiveAccount";
 
-  const audit = useAccessAudit(data.employeeId);
   const resend = useResendInvite();
   const withdraw = useWithdrawInvite();
   const suspend = useSuspendAccess();
@@ -376,31 +370,6 @@ function InspectorContent({
             </div>
           </InspectorSection>
 
-          {audit.data && audit.data.length > 0 ? (
-            <InspectorSection eyebrow={t("inspector.audit")} title={t("inspector.recent")}>
-              <ol className="mt-4 space-y-4">
-                {audit.data.slice(0, 5).map((line, index) => (
-                  <li key={index} className="relative flex gap-3">
-                    <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                      {index === 0 ? (
-                        <Clock3 className="size-3" aria-hidden="true" />
-                      ) : (
-                        <Check className="size-3" aria-hidden="true" />
-                      )}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="type-label text-foreground">
-                        {line.summary}
-                      </p>
-                      <p className="mt-0.5 type-meta text-muted-foreground">
-                        {format.date(line.occurredAt)}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </InspectorSection>
-          ) : null}
         </div>
       </div>
 

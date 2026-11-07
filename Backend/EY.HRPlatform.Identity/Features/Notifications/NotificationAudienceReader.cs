@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace EY.HRPlatform.Identity.Features.Notifications;
 
 /// <summary>
-/// What a module needs to write someone an email: their account language, and the company's name and time zone.
+/// What a module needs to write someone an email: their account language, and the company's name, time zone and brand.
 /// Reads only within the named tenant, through that tenant's memberships.
 /// </summary>
 public sealed class NotificationAudienceReader(AppIdentityDbContext db)
@@ -15,7 +15,7 @@ public sealed class NotificationAudienceReader(AppIdentityDbContext db)
     {
         var tenant = await db.Tenants.IgnoreQueryFilters().AsNoTracking()
             .Where(candidate => candidate.Id == request.TenantId)
-            .Select(candidate => new { candidate.Name, candidate.Locale, candidate.TimeZone })
+            .Select(candidate => new { candidate.Name, candidate.Locale, candidate.TimeZone, candidate.BrandColor, candidate.LogoVersion })
             .FirstOrDefaultAsync(cancellationToken);
         if (tenant is null) return null;
 
@@ -31,6 +31,8 @@ public sealed class NotificationAudienceReader(AppIdentityDbContext db)
             .Select(group => new NotificationRecipientLanguage(group.Key,
                 FusionLanguages.Resolve(group.Select(row => row.PreferredLanguage).FirstOrDefault(FusionLanguages.IsSupported), tenant.Locale)))
             .ToList();
-        return new NotificationAudience(tenant.Name, tenant.TimeZone, company, recipients);
+        var logo = tenant.LogoVersion is null ? null : await db.TenantLogos.IgnoreQueryFilters().AsNoTracking()
+            .Where(item => item.TenantId == request.TenantId).Select(item => item.Content).FirstOrDefaultAsync(cancellationToken);
+        return new NotificationAudience(tenant.Name, tenant.TimeZone, company, recipients, tenant.BrandColor, logo);
     }
 }

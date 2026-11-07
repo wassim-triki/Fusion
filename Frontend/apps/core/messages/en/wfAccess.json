@@ -86,8 +86,6 @@
     "noAccount": "No Fusion account linked",
     "additional": "Additional access",
     "adminNote": "Administrator rights are managed under Administrators and stay as they are.",
-    "audit": "Audit trail",
-    "recent": "Recent activity",
     "baselineIs": "Baseline: {baseline}",
     "pendingNote": "This invitation is still pending. Choose whether to send a fresh link or leave it untouched.",
     "resend": "Resend invitation",

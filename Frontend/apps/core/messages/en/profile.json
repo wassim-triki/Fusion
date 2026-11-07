@@ -281,5 +281,27 @@
     "emptyCanAdd": "No documents yet. PDF or images, up to 10 MB.",
     "loadFailed": "Documents couldn't be loaded.",
     "retry": "Try again"
+  },
+  "accessHistory": {
+    "title": "History",
+    "newestFirst": "Newest first",
+    "today": "Today",
+    "unavailable": "History couldn't load",
+    "retry": "Retry",
+    "empty": "No invitation sent yet",
+    "invited": "Invited",
+    "invitedBy": "Invited by {name}",
+    "sentAgain": "Sent again",
+    "sentAgainBy": "Sent again by {name}",
+    "delivered": "Invitation delivered to {email}",
+    "validUntil": "Link valid until {date}",
+    "notDelivered": "Could not be delivered",
+    "sentTo": "Sent to {email}",
+    "withdrawn": "Invitation withdrawn",
+    "withdrawnBy": "Invitation withdrawn by {name}",
+    "linkStopped": "The link stopped working",
+    "accepted": "Accepted the invitation",
+    "signedIn": "Signed in",
+    "signedInNote": "Last time {name} signed in; Fusion keeps only the latest"
   }
 }

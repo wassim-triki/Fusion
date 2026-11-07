@@ -281,5 +281,27 @@
     "emptyCanAdd": "Aucun document pour l'instant. PDF ou images, 10 Mo au plus.",
     "loadFailed": "Les documents n'ont pas pu être chargés.",
     "retry": "Réessayer"
+  },
+  "accessHistory": {
+    "title": "Historique",
+    "newestFirst": "Plus récent d’abord",
+    "today": "Aujourd’hui",
+    "unavailable": "Impossible de charger l’historique",
+    "retry": "Réessayer",
+    "empty": "Aucune invitation envoyée",
+    "invited": "Invitation envoyée",
+    "invitedBy": "Invitation envoyée par {name}",
+    "sentAgain": "Renvoyée",
+    "sentAgainBy": "Renvoyée par {name}",
+    "delivered": "Invitation remise à {email}",
+    "validUntil": "Lien valable jusqu’au {date}",
+    "notDelivered": "N’a pas pu être remise",
+    "sentTo": "Envoyée à {email}",
+    "withdrawn": "Invitation retirée",
+    "withdrawnBy": "Invitation retirée par {name}",
+    "linkStopped": "Le lien ne fonctionne plus",
+    "accepted": "Invitation acceptée",
+    "signedIn": "Connexion",
+    "signedInNote": "Dernière connexion de {name} ; Fusion ne garde que la plus récente"
   }
 }

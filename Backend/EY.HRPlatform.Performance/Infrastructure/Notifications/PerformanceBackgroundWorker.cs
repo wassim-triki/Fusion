@@ -73,7 +73,7 @@ public sealed class PerformanceNotificationDispatcher(PerformanceDbContext db, I
                     var config = options.Value;
                     var reader = await audience.ReadAsync([message.RecipientEmployeeId], cancellationToken);
                     var content = PerformanceNotificationRenderer.Email(notification, reader.LanguageOf(message.RecipientEmployeeId),
-                        config.ShellBaseUrl, reader.TenantName, defaults);
+                        config.ShellBaseUrl, reader.Company(), defaults);
                     await sender.SendAsync(new FusionOutgoingEmail(email, content, $"<{message.Id:N}@fusion-performance>",
                         PerformanceNotificationRenderer.UnsubscribeUrl(message, config.ShellBaseUrl, config.UnsubscribeKey, defaults)), cancellationToken);
                     message.MarkDispatched(PerformanceClock.UtcNow);

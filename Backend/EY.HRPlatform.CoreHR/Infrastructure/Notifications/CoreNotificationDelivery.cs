@@ -35,7 +35,7 @@ public static class CoreNotificationRenderer
     }
 
     /// <summary>The email for one reader. <paramref name="defaults"/> are the company's modes (null: Fusion's).</summary>
-    public static RenderedEmail Email(CoreNotification notification, string language, string shellBaseUrl, string companyName,
+    public static RenderedEmail Email(CoreNotification notification, string language, string shellBaseUrl, NotificationCompany company,
         CoreNotificationDefaults? defaults = null)
     {
         if (!Uri.TryCreate(shellBaseUrl, UriKind.Absolute, out var shell) || shell.Scheme is not ("https" or "http"))
@@ -55,7 +55,7 @@ public static class CoreNotificationRenderer
             $"{shellBaseUrl.TrimEnd('/')}{notification.Href}",
             new NotificationEmailGroup(Catalog.Text(language, $"group.{group}") ?? group,
                 CanTurnOff: CoreNotificationDefaults.ModeOf(defaults, group) != NotificationEmailMode.Required),
-            companyName, shellBaseUrl);
+            company, shellBaseUrl);
     }
 
     /// <summary>The one-click link that turns off this email's group; none for a group the company requires or without a key.</summary>
@@ -80,7 +80,7 @@ public sealed class SmtpCoreNotificationSender(IOptions<CoreNotificationOptions>
         => FusionMailer.SendAsync(options.Value.Smtp, email, cancellationToken);
 }
 
-/// <summary>Asks Identity for the company's name and each recipient's account language (B-002 N12); Core HR keeps no copy.</summary>
+/// <summary>Asks Identity for the company's name and brand and each recipient's account language (B-002 N12, B-204); Core HR keeps no copy.</summary>
 public interface ICoreNotificationAudienceClient
 {
     Task<NotificationAudience> ReadAsync(IReadOnlyList<Guid> employeeIds, CancellationToken cancellationToken);
@@ -135,7 +135,7 @@ public sealed class CoreNotificationDispatcher(CoreHRDbContext db, ITenantContex
                 {
                     var reader = await audience.ReadAsync([notification.RecipientEmployeeId], cancellationToken);
                     var content = CoreNotificationRenderer.Email(notification, reader.LanguageOf(notification.RecipientEmployeeId),
-                        config.ShellBaseUrl, reader.TenantName, defaults);
+                        config.ShellBaseUrl, reader.Company(), defaults);
                     await sender.SendAsync(new FusionOutgoingEmail(email, content, $"<{notification.Id:N}@fusion-corehr>",
                         CoreNotificationRenderer.UnsubscribeUrl(notification, config.ShellBaseUrl, config.UnsubscribeKey, defaults)), cancellationToken);
                     notification.MarkEmailSent(DateTime.UtcNow);

@@ -9,7 +9,7 @@ import {
   corePeopleQueryKeys,
   createCorePeopleApi,
   createPlatformApiClient,
-  type WorkforceAccessAuditLineDto,
+  type WorkforceAccountHistoryEventDto,
   type WorkforceAccessBulkRequest,
   type WorkforceAccessBulkResultDto,
   type WorkforceAccessCandidateDto,
@@ -300,13 +300,14 @@ export const useSuspendAccess = () =>
 export const useRestoreAccess = () =>
   useInviteLifecycleMutation(coreWorkforceAccessPaths.restore);
 
-export function useAccessAudit(employeeId: string | null, enabled = true) {
+/** The person's account story for Person › Access › History (B-231), newest first. */
+export function useAccessHistory(employeeId: string | null, enabled = true) {
   const client = useMemo(() => createPlatformApiClient(), []);
   const queryFn = useCallback(
     async (signal: AbortSignal) => {
       if (!employeeId) throw new Error("Employee is required.");
-      return client.get<WorkforceAccessAuditLineDto[]>(
-        coreWorkforceAccessPaths.audit(employeeId),
+      return client.get<WorkforceAccountHistoryEventDto[]>(
+        coreWorkforceAccessPaths.history(employeeId),
         { signal }
       );
     },
@@ -314,8 +315,8 @@ export function useAccessAudit(employeeId: string | null, enabled = true) {
   );
   return useApiQuery(
     employeeId
-      ? coreWorkforceAccessQueryKeys.audit(employeeId)
-      : ([...coreWorkforceAccessQueryKeys.all(), "audit", "pending"] as const),
+      ? coreWorkforceAccessQueryKeys.history(employeeId)
+      : ([...coreWorkforceAccessQueryKeys.all(), "history", "pending"] as const),
     queryFn,
     { enabled: enabled && !!employeeId }
   );

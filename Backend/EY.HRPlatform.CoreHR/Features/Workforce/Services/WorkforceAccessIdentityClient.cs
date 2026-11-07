@@ -29,9 +29,9 @@ public sealed record WorkforceAccessMutationOutcomeResult(
     int? AccessRevision,
     string Message);
 
-/// <summary>One append-only workforce-access audit line as Identity records it.</summary>
-public sealed record WorkforceAccessAuditLine(
-    string Action, string ActorName, string? ActorRole, DateTime OccurredAt, string Summary);
+/// <summary>One moment of a person's account story as Identity tells it (B-231).</summary>
+public sealed record WorkforceAccountHistoryEvent(
+    string Kind, DateTime OccurredAt, string? ActorName, string? Email, DateTime? ValidUntil);
 
 /// <summary>The newest change to the tenant's roles in Identity's access audit (B-107).</summary>
 public sealed record IdentityRoleChange(DateTime OccurredAt, string ActorName);
@@ -65,8 +65,8 @@ public interface IWorkforceAccessIdentityClient
     /// <summary>Revokes the pending invitation so the outstanding link stops resolving.</summary>
     Task<bool> WithdrawInviteAsync(Guid employeeId, CancellationToken cancellationToken);
 
-    /// <summary>Reads the recent append-only workforce-access audit for one Employee.</summary>
-    Task<IReadOnlyList<WorkforceAccessAuditLine>> GetAuditAsync(Guid employeeId, CancellationToken cancellationToken);
+    /// <summary>The Employee's account story, newest first: invitations, deliveries, acceptance, last sign-in.</summary>
+    Task<IReadOnlyList<WorkforceAccountHistoryEvent>> GetHistoryAsync(Guid employeeId, CancellationToken cancellationToken);
 
     /// <summary>The newest role created, edited or deleted in the tenant; null when none, or when Identity can't answer.</summary>
     Task<IdentityRoleChange?> GetLatestRoleChangeAsync(CancellationToken cancellationToken);
@@ -208,15 +208,14 @@ public sealed class WorkforceAccessIdentityClient(
     public async Task<bool> WithdrawInviteAsync(Guid employeeId, CancellationToken cancellationToken)
         => await SendAccountsAsync(HttpMethod.Post, $"{AccountsBase}/{employeeId}/withdraw", cancellationToken);
 
-    public async Task<IReadOnlyList<WorkforceAccessAuditLine>> GetAuditAsync(
+    public async Task<IReadOnlyList<WorkforceAccountHistoryEvent>> GetHistoryAsync(
         Guid employeeId, CancellationToken cancellationToken)
     {
         var tenantId = ResolvedTenantId();
         using var response = await SendSignedAsync(
-            HttpMethod.Get, $"{AccountsBase}/{employeeId}/access-audit", null, tenantId, cancellationToken);
-        if (!response.IsSuccessStatusCode)
-            return [];
-        var envelope = await response.Content.ReadFromJsonAsync<AuditEnvelope>(cancellationToken: cancellationToken);
+            HttpMethod.Get, $"{AccountsBase}/{employeeId}/history", null, tenantId, cancellationToken);
+        response.EnsureSuccessStatusCode();
+        var envelope = await response.Content.ReadFromJsonAsync<HistoryEnvelope>(cancellationToken: cancellationToken);
         return envelope?.Data ?? [];
     }
 
@@ -312,7 +311,7 @@ public sealed class WorkforceAccessIdentityClient(
 
     private sealed record MutationDto(string Outcome, string AccountState, Guid? MembershipId, int? AccessRevision, string Message);
 
-    private sealed record AuditEnvelope(List<WorkforceAccessAuditLine> Data);
+    private sealed record HistoryEnvelope(List<WorkforceAccountHistoryEvent> Data);
 
     private sealed record RoleChangeEnvelope(IdentityRoleChange? Data);
 

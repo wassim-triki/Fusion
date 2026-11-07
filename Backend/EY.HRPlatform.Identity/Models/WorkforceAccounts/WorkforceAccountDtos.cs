@@ -87,12 +87,28 @@ public sealed class WorkforceAccountBulkProvisionResultDto
 }
 
 /// <summary>One brief append-only workforce-access audit line for the account inspector.</summary>
-public sealed record WorkforceAccessAuditLineDto(
-    string Action,
-    string ActorName,
-    string? ActorRole,
+/// <summary>
+/// One moment in a person's account story (B-231). <paramref name="Kind"/> is one of
+/// <see cref="WorkforceAccountHistoryKinds"/>; <paramref name="ActorName"/> is who did it, when someone did;
+/// <paramref name="Email"/> is where an invitation went; <paramref name="ValidUntil"/> is when a still-open link stops.
+/// </summary>
+public sealed record WorkforceAccountHistoryEventDto(
+    string Kind,
     DateTime OccurredAt,
-    string Summary);
+    string? ActorName = null,
+    string? Email = null,
+    DateTime? ValidUntil = null);
+
+public static class WorkforceAccountHistoryKinds
+{
+    public const string Invited = "Invited";
+    public const string SentAgain = "SentAgain";
+    public const string Delivered = "Delivered";
+    public const string NotDelivered = "NotDelivered";
+    public const string Withdrawn = "Withdrawn";
+    public const string Accepted = "Accepted";
+    public const string SignedIn = "SignedIn";
+}
 
 public sealed class WorkforceAccountSummaryDto
 {

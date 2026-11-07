@@ -457,30 +457,81 @@ public sealed class WorkforceAccountsController(
         return Ok(ApiResponse<WorkforceAccountStatusDto>.Success(await BuildInviteStatusAsync(employeeId, invite, cancellationToken)));
     }
 
-    [HttpGet("{employeeId:guid}/access-audit")]
-    [ProducesResponseType(typeof(ApiResponse<List<WorkforceAccessAuditLineDto>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<List<WorkforceAccessAuditLineDto>>>> GetAccessAudit(
+    /// <summary>
+    /// The person's account story, newest first (B-231): each invitation (who sent it, delivered or not, sent again,
+    /// withdrawn), its acceptance, and the last sign-in, which is the only one Identity keeps. Read inside the signed
+    /// tenant only, so another company's employee has no story here.
+    /// </summary>
+    [HttpGet("{employeeId:guid}/history")]
+    [ProducesResponseType(typeof(ApiResponse<List<WorkforceAccountHistoryEventDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<List<WorkforceAccountHistoryEventDto>>>> GetHistory(
         Guid employeeId, CancellationToken cancellationToken)
     {
         if (!await internalAuthorizer.AuthorizeAsync(Request, cancellationToken))
             return Unauthorized();
 
         if (!TryGetTenantId(out var tenantId, out var tenantError))
-            return BadRequest(ApiResponse<List<WorkforceAccessAuditLineDto>>.Failure(tenantError));
+            return BadRequest(ApiResponse<List<WorkforceAccountHistoryEventDto>>.Failure(tenantError));
 
-        // Workforce audit events carry correlationId = employeeId, so the whole per-person
-        // history reads back with one indexed filter — invitation, activation, and binding.
-        var key = employeeId.ToString();
-        var lines = await dbContext.AccessAuditEvents
-            .AsNoTracking()
-            .Where(e => e.TenantId == tenantId && e.CorrelationId == key)
-            .OrderByDescending(e => e.OccurredAt)
-            .Take(8)
-            .Select(e => new WorkforceAccessAuditLineDto(
-                e.Action, e.ActorName, e.ActorRole, e.OccurredAt, e.Summary))
+        var invites = await dbContext.InviteTokens.IgnoreQueryFilters().AsNoTracking()
+            .Where(invite => invite.TenantId == tenantId && invite.EmployeeId == employeeId)
+            .OrderBy(invite => invite.CreatedAt)
             .ToListAsync(cancellationToken);
+        var key = employeeId.ToString();
+        var acts = await dbContext.AccessAuditEvents.IgnoreQueryFilters().AsNoTracking()
+            .Where(e => e.TenantId == tenantId && e.CorrelationId == key
+                && (e.Action == WorkforceAccessAuditActions.InvitationResent || e.Action == WorkforceAccessAuditActions.InvitationWithdrawn))
+            .Select(e => new { e.Action, e.ResourceId, e.ActorUserId, e.OccurredAt })
+            .ToListAsync(cancellationToken);
+        var lastSignIn = await dbContext.TenantMemberships.IgnoreQueryFilters().AsNoTracking()
+            .Where(membership => membership.TenantId == tenantId && membership.EmployeeId == employeeId)
+            .Select(membership => membership.User!.LastLoginAt)
+            .FirstOrDefaultAsync(cancellationToken);
 
-        return Ok(ApiResponse<List<WorkforceAccessAuditLineDto>>.Success(lines));
+        var actorIds = invites.Select(invite => invite.CreatedByUserId)
+            .Concat(acts.Where(act => act.ActorUserId.HasValue).Select(act => act.ActorUserId!.Value))
+            .Where(id => id != Guid.Empty).Distinct().ToList();
+        var names = await dbContext.Users.IgnoreQueryFilters().AsNoTracking()
+            .Where(user => actorIds.Contains(user.Id))
+            .Select(user => new { user.Id, Name = (user.FirstName + " " + user.LastName).Trim(), user.Email })
+            .ToDictionaryAsync(user => user.Id, user => user.Name.Length > 0 ? user.Name : user.Email ?? string.Empty, cancellationToken);
+        string? NameOf(Guid? userId)
+            => userId is { } id && names.TryGetValue(id, out var name) && name.Length > 0 ? name : null;
+
+        var events = new List<WorkforceAccountHistoryEventDto>();
+        for (var index = 0; index < invites.Count; index++)
+        {
+            var invite = invites[index];
+            var id = invite.Id.ToString();
+            events.Add(new(index == 0 ? WorkforceAccountHistoryKinds.Invited : WorkforceAccountHistoryKinds.SentAgain,
+                invite.CreatedAt, NameOf(invite.CreatedByUserId), invite.Email));
+            // A resend of a still-open link renews this same invitation; a resend after withdrawal is the next one.
+            foreach (var resend in acts.Where(act => act.Action == WorkforceAccessAuditActions.InvitationResent
+                         && act.ResourceId == id && act.OccurredAt > invite.CreatedAt.AddMinutes(1)))
+                events.Add(new(WorkforceAccountHistoryKinds.SentAgain, resend.OccurredAt, NameOf(resend.ActorUserId), invite.Email));
+            if (invite.DeliveryRecordedAt is { } delivered)
+            {
+                var failed = string.Equals(invite.DeliveryStatus, "Failed", StringComparison.OrdinalIgnoreCase);
+                events.Add(new(failed ? WorkforceAccountHistoryKinds.NotDelivered : WorkforceAccountHistoryKinds.Delivered,
+                    delivered, Email: invite.Email, ValidUntil: !failed && invite.State == InvitationState.Pending ? invite.ExpiresAt : null));
+            }
+            if (invite.RevokedAt is { } withdrawn)
+            {
+                var actor = acts.Where(act => act.Action == WorkforceAccessAuditActions.InvitationWithdrawn && act.ResourceId == id)
+                    .OrderByDescending(act => act.OccurredAt).FirstOrDefault()?.ActorUserId;
+                events.Add(new(WorkforceAccountHistoryKinds.Withdrawn, withdrawn, NameOf(actor)));
+            }
+            if (invite.AcceptedAt is { } accepted)
+                events.Add(new(WorkforceAccountHistoryKinds.Accepted, accepted));
+        }
+        if (lastSignIn is { } signedIn)
+            events.Add(new(WorkforceAccountHistoryKinds.SignedIn, signedIn));
+
+        // Same-moment steps keep their story order (invited, then delivered, then accepted) when read newest first.
+        var ordered = events.Select((item, order) => (item, order))
+            .OrderByDescending(pair => pair.item.OccurredAt).ThenByDescending(pair => pair.order)
+            .Select(pair => pair.item).ToList();
+        return Ok(ApiResponse<List<WorkforceAccountHistoryEventDto>>.Success(ordered));
     }
 
     [HttpPut("{employeeId:guid}/invite-profiles")]

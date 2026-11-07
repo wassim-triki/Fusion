@@ -185,7 +185,7 @@ public sealed partial class FirstPersonTests
         public Task<WorkforceAccessMutationOutcomeResult> CorrectAsync(Guid sourceEmployeeId, Guid targetEmployeeId, string baseline, string reason, int expectedRevision, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<bool> ResendInviteAsync(Guid employeeId, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<bool> WithdrawInviteAsync(Guid employeeId, CancellationToken cancellationToken) => throw new NotImplementedException();
-        public Task<IReadOnlyList<WorkforceAccessAuditLine>> GetAuditAsync(Guid employeeId, CancellationToken cancellationToken) => throw new NotImplementedException();
+        public Task<IReadOnlyList<WorkforceAccountHistoryEvent>> GetHistoryAsync(Guid employeeId, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<IdentityRoleChange?> GetLatestRoleChangeAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<(bool Ok, string Message)> SuspendAccountAsync(Guid employeeId, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<(bool Ok, string Message)> RestoreAccountAsync(Guid employeeId, CancellationToken cancellationToken) => throw new NotImplementedException();

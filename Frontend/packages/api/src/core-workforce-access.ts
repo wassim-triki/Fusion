@@ -138,13 +138,27 @@ export interface WorkforceAccessCommandResultDto {
   version: number | null;
 }
 
-/** A brief append-only audit line for the single-person account inspector. */
-export interface WorkforceAccessAuditLineDto {
-  action: string;
-  actorName: string;
-  actorRole: string | null;
+/** What happened to a person's account, as Person › Access › History tells it (B-231). */
+export type WorkforceAccountHistoryKind =
+  | "Invited"
+  | "SentAgain"
+  | "Delivered"
+  | "NotDelivered"
+  | "Withdrawn"
+  | "Accepted"
+  /** The last sign-in; Fusion keeps only the latest. */
+  | "SignedIn";
+
+/** One moment of the account story, newest first from the server. */
+export interface WorkforceAccountHistoryEventDto {
+  kind: WorkforceAccountHistoryKind;
   occurredAt: string;
-  summary: string;
+  /** Who did it, when someone did. */
+  actorName: string | null;
+  /** Where the invitation went. */
+  email: string | null;
+  /** When a still-open link stops working. */
+  validUntil: string | null;
 }
 
 /**
@@ -252,8 +266,8 @@ export const coreWorkforceAccessPaths = {
     `/corehr/workforce/access-subjects/${employeeId}/resend`,
   withdraw: (employeeId: string) =>
     `/corehr/workforce/access-subjects/${employeeId}/withdraw`,
-  audit: (employeeId: string) =>
-    `/corehr/workforce/access-subjects/${employeeId}/audit`,
+  history: (employeeId: string) =>
+    `/corehr/workforce/access-subjects/${employeeId}/history`,
   bulkInvite: () => "/corehr/workforce/access-subjects/bulk-invite",
 } as const;
 
@@ -265,6 +279,6 @@ export const coreWorkforceAccessQueryKeys = {
     [...coreWorkforceAccessQueryKeys.all(), "candidate", employeeId] as const,
   confirmation: (employeeId: string) =>
     [...coreWorkforceAccessQueryKeys.all(), "confirmation", employeeId] as const,
-  audit: (employeeId: string) =>
-    [...coreWorkforceAccessQueryKeys.all(), "audit", employeeId] as const,
+  history: (employeeId: string) =>
+    [...coreWorkforceAccessQueryKeys.all(), "history", employeeId] as const,
 } as const;

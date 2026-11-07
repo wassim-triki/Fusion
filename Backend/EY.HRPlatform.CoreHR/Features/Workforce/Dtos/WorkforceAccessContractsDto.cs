@@ -119,13 +119,16 @@ public sealed record WorkforceAccessCommandResultDto(
     string Message,
     uint? Version);
 
-/// <summary>A brief append-only audit line for the single-person account inspector.</summary>
-public sealed record WorkforceAccessAuditLineDto(
-    string Action,
-    string ActorName,
-    string? ActorRole,
+/// <summary>
+/// One moment of the person's account story on Person › Access › History (B-231). <c>Kind</c>: Invited, SentAgain,
+/// Delivered, NotDelivered, Withdrawn, Accepted or SignedIn (the last sign-in; only the latest is kept).
+/// </summary>
+public sealed record WorkforceAccountHistoryEventDto(
+    string Kind,
     DateTime OccurredAt,
-    string Summary);
+    string? ActorName,
+    string? Email,
+    DateTime? ValidUntil);
 
 /// <summary>One reviewed line in a bulk Activation Plan: an Employee reference and the
 /// reviewed Employee/Manager baseline. No forgeable Employee identity fact is carried.</summary>

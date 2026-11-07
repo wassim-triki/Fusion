@@ -127,6 +127,46 @@ public sealed class WorkforceInvitationLifecycleTests : IAsyncLifetime
         }
     }
 
+    [SkippableFact]
+    public async Task History_tells_the_account_story_newest_first_with_names_and_only_inside_its_tenant()
+    {
+        Skip.IfNot(_databases.Available, "No PostgreSQL connection configured.");
+        var (db, invite, _) = await ArrangeAsync();
+        var hrId = Guid.NewGuid();
+        db.Users.AddRange(
+            new ApplicationUser { Id = invite.CreatedByUserId, FirstName = "Amira", LastName = "Khelifi", Email = "amira@example.test", UserName = "amira@example.test" },
+            new ApplicationUser { Id = hrId, FirstName = "Mouna", LastName = "Kooli", Email = "mouna@example.test", UserName = "mouna@example.test" });
+        await db.SaveChangesAsync();
+        var employeeId = invite.EmployeeId!.Value;
+        var sender = new CaptureSender();
+        Status(await Controller(db, invite.TenantId, sender, hrId).WithdrawInvite(employeeId, CancellationToken.None));
+        db.ChangeTracker.Clear();
+        Status(await Controller(db, invite.TenantId, sender, hrId).ResendInvite(employeeId, CancellationToken.None));
+        var recipient = _databases.Connect(db);
+        Assert.Equal(WorkforceAcceptanceOutcome.Accepted, (await Acceptance(recipient)
+            .AcceptAsync(new WorkforceAcceptanceRequest(sender.Credential, null, null, null, "LifecyclePass123"))).Outcome);
+        var signedIn = DateTime.UtcNow.AddMinutes(5);
+        await recipient.Users.Where(user => user.Email == "lifecycle@example.test")
+            .ExecuteUpdateAsync(set => set.SetProperty(user => user.LastLoginAt, signedIn));
+        db.ChangeTracker.Clear();
+
+        var story = History(await Controller(db, invite.TenantId).GetHistory(employeeId, CancellationToken.None));
+        Assert.Equal(
+            [WorkforceAccountHistoryKinds.SignedIn, WorkforceAccountHistoryKinds.Accepted, WorkforceAccountHistoryKinds.Delivered,
+                WorkforceAccountHistoryKinds.SentAgain, WorkforceAccountHistoryKinds.Withdrawn, WorkforceAccountHistoryKinds.Invited],
+            story.Select(item => item.Kind));
+        Assert.Equal("Amira Khelifi", story[^1].ActorName);
+        Assert.Equal("Mouna Kooli", story[4].ActorName);
+        Assert.Equal("Mouna Kooli", story[3].ActorName);
+        Assert.Equal("lifecycle@example.test", story[2].Email);
+
+        // Another company's signed caller hears nothing about this person.
+        Assert.Empty(History(await Controller(db, Guid.NewGuid()).GetHistory(employeeId, CancellationToken.None)));
+    }
+
+    private static List<WorkforceAccountHistoryEventDto> History(ActionResult<ApiResponse<List<WorkforceAccountHistoryEventDto>>> response)
+        => Assert.IsType<ApiResponse<List<WorkforceAccountHistoryEventDto>>>(Assert.IsType<OkObjectResult>(response.Result).Value).Data!;
+
     private async Task<(AppIdentityDbContext Db, InviteToken Invite, string Credential)> ArrangeAsync(bool legacy = false)
     {
         var db = await _databases.CreateAsync("fusion_withdraw");
@@ -152,11 +192,12 @@ public sealed class WorkforceInvitationLifecycleTests : IAsyncLifetime
     private static AccessProfileService Profiles(AppIdentityDbContext db)
         => new(db, RelationalTestDatabase.CreateUserManager(db));
 
-    private static WorkforceAccountsController Controller(AppIdentityDbContext db, Guid tenantId, CaptureSender? sender = null)
+    private static WorkforceAccountsController Controller(AppIdentityDbContext db, Guid tenantId, CaptureSender? sender = null,
+        Guid? actingUserId = null)
     {
         var context = new DefaultHttpContext();
         context.Request.Headers["X-Tenant-Id"] = tenantId.ToString();
-        context.Request.Headers["X-Acting-User-Id"] = Guid.NewGuid().ToString();
+        context.Request.Headers["X-Acting-User-Id"] = (actingUserId ?? Guid.NewGuid()).ToString();
         return new(db, Profiles(db), new ConfigurationBuilder().Build(), new TenantContinuityCommandExecutor(db),
             new AuthorizedCaller(), sender ?? new CaptureSender())
         {

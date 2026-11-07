@@ -2,7 +2,7 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { Briefcase, Building2, ChevronDown, ChevronUp, Crosshair, Mail, MapPin, MoreHorizontal, Users } from "lucide-react";
+import { Briefcase, Building2, ChevronDown, ChevronUp, Crosshair, Mail, MapPin, MoreHorizontal, TreePalm, Users } from "lucide-react";
 import type { OrgChartPersonDto } from "@repo/api";
 import { usePhoto } from "@repo/api/query";
 import { Spinner, cn } from "@repo/ds";
@@ -69,6 +69,19 @@ function Badge({ person, ctx }: { person: OrgChartPersonDto; ctx: CardContext })
   return null;
 }
 
+/** On leave today: "On leave · back <day>" under the job, in the leave colour (B-229). */
+function OnLeave({ person, className }: { person: OrgChartPersonDto; className?: string }) {
+  const t = useTranslations("changes.badge");
+  const format = useFormat();
+  if (!person.leave?.now) return null;
+  return (
+    <span className={cn("oc-lv", className)}>
+      <TreePalm aria-hidden />
+      {person.leave.back ? t("onLeave", { date: format.date(person.leave.back) }) : t("onLeaveOpen")}
+    </span>
+  );
+}
+
 function Actions({ person, ctx }: { person: OrgChartPersonDto; ctx: CardContext }) {
   const t = useTranslations("orgChart.card");
   return (
@@ -117,6 +130,7 @@ export function LeadCard({ id, ctx }: { id: string; ctx: CardContext }) {
       <Actions person={person} ctx={ctx} />
       <span className="oc-nm">{person.displayName}</span>
       {person.jobTitle ? <span className="oc-ti">{person.jobTitle}</span> : null}
+      <OnLeave person={person} className="oc-ti" />
       <div className="oc-chips">
         {showsPlace(ctx.lensKey) ? (
           <>
@@ -168,6 +182,7 @@ export function PersonCard({ id, ctx }: { id: string; ctx: CardContext }) {
       <span className="oc-t">
         <b>{person.displayName}</b>
         {person.jobTitle ? <span>{person.jobTitle}</span> : null}
+        <OnLeave person={person} />
         {showsPlace(ctx.lensKey) ? (
           facts || dotted.length ? (
             <span className="oc-m">

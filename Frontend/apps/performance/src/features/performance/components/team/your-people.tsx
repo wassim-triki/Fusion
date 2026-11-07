@@ -136,6 +136,12 @@ function StateLine({ tone, label, detail }: { tone: Tone; label: ReactNode; deta
 
 const column = createDataTableColumnHelper<TeamRosterMemberDto>();
 
+/** Leave from Core HR beside the person (B-229): shown, never pausing their plan or check-ins. */
+function LeaveChip({ leave, say }: { leave: NonNullable<TeamRosterMemberDto["leave"]>; say: Say }) {
+  if (!leave.now) return <StatusBadge tone="neutral">{say("leave.from", { day: day(leave.from) })}</StatusBadge>;
+  return <StatusBadge tone="info" dot>{leave.back ? say("leave.now", { day: day(leave.back) }) : say("leave.open")}</StatusBadge>;
+}
+
 function personColumn(showOrgUnit: boolean, say: Say) {
   return column.accessor((m) => displayName(m, say), {
     id: "person",
@@ -152,6 +158,7 @@ function personColumn(showOrgUnit: boolean, say: Say) {
             </Avatar>
           }
           primary={
+            <span className="inline-flex min-w-0 items-center gap-2">
             <Link
               href={`/people/${m.employeeId}`}
               onClick={(event) => event.stopPropagation()}
@@ -159,6 +166,8 @@ function personColumn(showOrgUnit: boolean, say: Say) {
             >
               {displayName(m, say)}
             </Link>
+            {m.leave ? <LeaveChip leave={m.leave} say={say} /> : null}
+            </span>
           }
           secondary={context || undefined}
         />

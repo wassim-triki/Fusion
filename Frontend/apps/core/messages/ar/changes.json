@@ -4,7 +4,8 @@
     "manager": "تغيير المدير",
     "end": "إنهاء العمل",
     "start": "استئناف العمل",
-    "change": "إجراء تغيير"
+    "change": "إجراء تغيير",
+    "leave": "تسجيل إجازة"
   },
   "close": "إغلاق",
   "reportsTo": "يتبع",
@@ -111,13 +112,28 @@
     "edit": "تعديل",
     "cancel": "إلغاء التغيير",
     "view": "عرض الملف",
-    "today": "اليوم"
+    "today": "اليوم",
+    "leaveUntil": "{type} حتى {until}",
+    "leaveOpen": "{type}، موعد العودة غير معروف بعد",
+    "leaveBack": "العودة من {type}",
+    "leaveNowOpen": "في {type}، موعد العودة غير معروف بعد",
+    "leaveDates": "{from} – {until} · العودة {back}",
+    "leaveSince": "في إجازة منذ {from} · آخر يوم إجازة {until}",
+    "leaveSinceOpen": "في إجازة منذ {from}",
+    "leaveFromOpen": "ابتداءً من {from}",
+    "leaveGeneric": "إجازة",
+    "changeLeave": "تعديل",
+    "endEarly": "إنهاء مبكر",
+    "cancelLeave": "إلغاء الإجازة"
   },
   "badge": {
     "moves": "ينتقل {date}",
     "changes": "يتغير {date}",
     "joins": "ينضم {date}",
-    "leaves": "يغادر {date}"
+    "leaves": "يغادر {date}",
+    "onLeave": "في إجازة · العودة {date}",
+    "onLeaveOpen": "في إجازة",
+    "leaveFrom": "إجازة من {date}"
   },
   "cancel": {
     "move": "إلغاء انتقال {name} في {date}؟",
@@ -133,7 +149,11 @@
     "keep": "الإبقاء على التغيير",
     "confirm": "إلغاء التغيير",
     "done": "تم إلغاء التغيير",
-    "failed": "تعذر إلغاء التغيير."
+    "failed": "تعذر إلغاء التغيير.",
+    "leave": "إلغاء إجازة {name} ابتداءً من {date}؟",
+    "leaveStays": "يعمل {name} كالمعتاد في تلك الأيام.",
+    "keepLeave": "الإبقاء على الإجازة",
+    "confirmLeave": "إلغاء الإجازة"
   },
   "menu": {
     "changeJob": "تغيير الوظيفة",
@@ -147,7 +167,8 @@
     "giveFeedback": "إبداء ملاحظات",
     "asOf": "العرض في تاريخ آخر",
     "copyLink": "نسخ الرابط",
-    "linkCopied": "تم نسخ الرابط"
+    "linkCopied": "تم نسخ الرابط",
+    "setLeave": "تسجيل إجازة"
   },
   "dotted": {
     "since": "خط منقط · منذ {date}",
@@ -181,7 +202,8 @@
     "manager": "تغييرات المدير",
     "place": "تغييرات المكان",
     "leaving": "آخر أيام العمل",
-    "homeAddress": "عناوين السكن"
+    "homeAddress": "عناوين السكن",
+    "leave": "الإجازات"
   },
   "request": {
     "sent": "أُرسل للموافقة. تغيير {name} بانتظار الرد.",
@@ -208,7 +230,8 @@
       "noManager": "{name} بلا مدير",
       "place": "{name} يعمل في {summary}",
       "leaving": "آخر يوم لـ{name} في {date}",
-      "address": "عنوان {name} الجديد"
+      "address": "عنوان {name} الجديد",
+      "leave": "{name} في {summary} ابتداءً من {date}"
     },
     "meta": "طلب من {actor} · ابتداءً من {date}",
     "metaReason": "{reason} · طلب من {actor} · ابتداءً من {date}",
@@ -260,7 +283,8 @@
       "manager": "المدير",
       "place": "المكان",
       "leaving": "آخر يوم",
-      "homeAddress": "عنوان السكن من صاحبه"
+      "homeAddress": "عنوان السكن من صاحبه",
+      "leave": "إجازة"
     }
   },
   "pending": {
@@ -269,5 +293,24 @@
     "withdraw": "سحب",
     "withdrawn": "سُحب",
     "open": "فتح"
+  },
+  "leave": {
+    "type": "النوع",
+    "from": "من",
+    "until": "إلى",
+    "lastDayOff": "آخر يوم إجازة",
+    "notKnown": "غير معروف بعد",
+    "days": "{count, plural, one {يوم عمل واحد} two {يوما عمل} few {# أيام عمل} many {# يوم عمل} other {# يوم عمل}} · العودة {back}",
+    "open": "دون تاريخ نهاية: حدّد آخر يوم عندما يُعرف.",
+    "started": "بدأت في {date}. يبقى اليوم الأول؛ آخر يوم أبكر ينهيها مبكرًا.",
+    "alsoTitle": "ما يتغيّر أيضًا",
+    "shows": "يظهر في إجازة على صفحة {name} وفي الأشخاص والهيكل التنظيمي وفريق مديره. يرى الزملاء «في إجازة» دون النوع.",
+    "performance": "يستمر الأداء: الخطط والمتابعات ولقاءات 1:1 تبقى كما هي.",
+    "summary": "إجازة من <b>{date}</b>",
+    "summaryChange": "إجازة من <b>{date}</b>، معدّلة",
+    "save": "حفظ الإجازة",
+    "saved": "تبدأ إجازة {name} في {date}",
+    "changed": "عُدّلت الإجازة",
+    "noTypes": "أضف أنواع الإجازات أولًا في الإعدادات › القوائم."
   }
 }

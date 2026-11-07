@@ -48,11 +48,22 @@ public sealed record JoinChangeRequest(
     Guid? EmploymentTypeId = null,
     [MaxLength(1000)] string? Note = null);
 
-/// <summary>Replaces a scheduled change with a new one of the same kind; exactly one part is set.</summary>
+/// <summary>
+/// Leave of a type from the company's Leave types: <paramref name="From"/> is the first day off, <paramref name="Until"/>
+/// the last (null = not known yet).
+/// </summary>
+public sealed record LeaveChangeRequest(
+    Guid LeaveTypeId,
+    DateTime From,
+    DateTime? Until = null,
+    [MaxLength(1000)] string? Note = null);
+
+/// <summary>Replaces a scheduled change with a new one of the same kind; exactly one part is set. Leave is revised in place.</summary>
 public sealed record EditChangeRequest(
     JobChangeRequest? Job = null,
     EndEmploymentChangeRequest? End = null,
-    JoinChangeRequest? Join = null);
+    JoinChangeRequest? Join = null,
+    LeaveChangeRequest? Leave = null);
 
 // --- Read model -----------------------------------------------------------------------------------
 
@@ -101,7 +112,12 @@ public sealed record WorkforceChangeDetails(
     bool EmploymentTypeChanged = false,
     /// <summary>Why, from the company's change reasons; the label as it was then.</summary>
     Guid? ReasonId = null,
-    string? Reason = null)
+    string? Reason = null,
+    /// <summary>Leave: its type from the company's Leave types, the label as it was then.</summary>
+    Guid? LeaveTypeId = null,
+    string? LeaveType = null,
+    /// <summary>Leave: the last day off, null while not known.</summary>
+    DateOnly? LeaveUntil = null)
 {
     /// <summary>A change a reporting admin may make: it touches only who the person (and their team) report to.</summary>
     public bool IsReportingOnly => !UnitChanged && !TitleChanged && !LocationChanged && !EmploymentTypeChanged;
@@ -110,6 +126,7 @@ public sealed record WorkforceChangeDetails(
     public IReadOnlyList<string> ApprovalTypes(WorkforceChangeKind kind)
     {
         if (kind == WorkforceChangeKind.EndEmployment) return [ChangeApprovalTypes.Leaving];
+        if (kind == WorkforceChangeKind.Leave) return [ChangeApprovalTypes.Leave];
         var types = new List<string>();
         if (UnitChanged || TitleChanged || EmploymentTypeChanged) types.Add(ChangeApprovalTypes.Job);
         if (ManagerChanged || TeamOutcome == "Stays") types.Add(ChangeApprovalTypes.Manager);
@@ -118,6 +135,8 @@ public sealed record WorkforceChangeDetails(
     }
 }
 
+/// <param name="LastDay">Leave: the last day off (null = not known yet).</param>
+/// <param name="Back">Leave: the first working day after it, from the company's work week.</param>
 public sealed record WorkforceChangeDto(
     Guid Id,
     WorkforceChangeKind Kind,
@@ -129,7 +148,9 @@ public sealed record WorkforceChangeDto(
     string? CreatedBy,
     DateTime CreatedAt,
     string? Note,
-    WorkforceChangeDetails Details);
+    WorkforceChangeDetails Details,
+    DateOnly? LastDay = null,
+    DateOnly? Back = null);
 
 /// <summary>A report of someone ending employment and what happens to them.</summary>
 /// <param name="Outcome">"Reassign" (needs a manager from the day after), "LeavesFirst" or "MovesFirst".</param>

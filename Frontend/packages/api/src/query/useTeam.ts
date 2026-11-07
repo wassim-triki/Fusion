@@ -76,6 +76,7 @@ export function useTeamBand({ performance = true }: { performance?: boolean } = 
         events: team.data!.comingUp.filter((event) => event.employeeKey === person.employeeKey),
         oneOnOneAt: meetings.get(person.employeeId) ?? null,
         attention: kind === "offTrack" || kind === "atRisk" ? kind : null,
+        away: Boolean(person.leave?.now),
       };
     });
   }, [team.data, perf.oneOnOnes.data, perf.roster.data, photos]);

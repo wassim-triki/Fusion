@@ -120,7 +120,9 @@ public sealed record InternalWorkforceEmployeeSnapshotDto(
     InternalWorkforceOrgSnapshotDto? OrgUnit,
     InternalWorkforceManagerSnapshotDto? Manager,
     DateOnly? EmploymentStart = null,
-    string? PhotoUrl = null);
+    string? PhotoUrl = null,
+    /// <summary>Leave they are on today, or their next; the type is left out.</summary>
+    EY.HRPlatform.CoreHR.Features.People.Changes.PersonLeaveDto? Leave = null);
 
 public sealed record InternalWorkforceOrgSnapshotDto(
     Guid OrgUnitId,

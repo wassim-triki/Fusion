@@ -17,7 +17,11 @@ public sealed record WorkforceSnapshot(
     WorkforceOrgSnapshot? OrgUnit,
     WorkforceManagerSnapshot? Manager,
     DateOnly? EmploymentStart = null,
-    string? PhotoUrl = null);
+    string? PhotoUrl = null,
+    WorkforceLeaveSnapshot? Leave = null);
+
+/// <summary>Leave the person is on today (<paramref name="Now"/>), or their next; Performance shows it and pauses nothing.</summary>
+public sealed record WorkforceLeaveSnapshot(DateOnly From, DateOnly? Until, DateOnly? Back, bool Now);
 
 public sealed record WorkforceOrgSnapshot(Guid OrgUnitId, string Name);
 

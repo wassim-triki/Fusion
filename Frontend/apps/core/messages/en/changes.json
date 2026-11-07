@@ -4,7 +4,8 @@
     "manager": "Change manager",
     "end": "End employment",
     "start": "Start employment",
-    "change": "Make a change"
+    "change": "Make a change",
+    "leave": "Set leave"
   },
   "close": "Close",
   "reportsTo": "Reports to",
@@ -111,13 +112,28 @@
     "edit": "Edit",
     "cancel": "Cancel change",
     "view": "View profile",
-    "today": "Today"
+    "today": "Today",
+    "leaveUntil": "{type} until {until}",
+    "leaveOpen": "{type}, return not known yet",
+    "leaveBack": "Back from {type}",
+    "leaveNowOpen": "On {type}, return not known yet",
+    "leaveDates": "{from} – {until} · back {back}",
+    "leaveSince": "On leave since {from} · last day off {until}",
+    "leaveSinceOpen": "On leave since {from}",
+    "leaveFromOpen": "From {from}",
+    "leaveGeneric": "leave",
+    "changeLeave": "Change",
+    "endEarly": "End early",
+    "cancelLeave": "Cancel leave"
   },
   "badge": {
     "moves": "Moves {date}",
     "changes": "Changes {date}",
     "joins": "Joins {date}",
-    "leaves": "Leaves {date}"
+    "leaves": "Leaves {date}",
+    "onLeave": "On leave · back {date}",
+    "onLeaveOpen": "On leave",
+    "leaveFrom": "Leave from {date}"
   },
   "cancel": {
     "move": "Cancel {name}'s move on {date}?",
@@ -133,7 +149,11 @@
     "keep": "Keep the change",
     "confirm": "Cancel change",
     "done": "Change cancelled",
-    "failed": "The change could not be cancelled."
+    "failed": "The change could not be cancelled.",
+    "leave": "Cancel {name}'s leave from {date}?",
+    "leaveStays": "{name} works as usual on those days.",
+    "keepLeave": "Keep the leave",
+    "confirmLeave": "Cancel leave"
   },
   "menu": {
     "changeJob": "Change job",
@@ -147,7 +167,8 @@
     "giveFeedback": "Give feedback",
     "asOf": "See it on another date",
     "copyLink": "Copy link",
-    "linkCopied": "Link copied"
+    "linkCopied": "Link copied",
+    "setLeave": "Set leave"
   },
   "dotted": {
     "since": "Dotted line · since {date}",
@@ -181,7 +202,8 @@
     "manager": "manager changes",
     "place": "place changes",
     "leaving": "last days",
-    "homeAddress": "home addresses"
+    "homeAddress": "home addresses",
+    "leave": "leave"
   },
   "request": {
     "sent": "Sent for approval. {name}'s change waits for an answer.",
@@ -208,7 +230,8 @@
       "noManager": "{name} stops reporting to a manager",
       "place": "{name} works from {summary}",
       "leaving": "{name}'s last day on {date}",
-      "address": "{name}'s new home address"
+      "address": "{name}'s new home address",
+      "leave": "{name} on {summary} from {date}"
     },
     "meta": "{actor} asks · from {date}",
     "metaReason": "{reason} · {actor} asks · from {date}",
@@ -260,7 +283,8 @@
       "manager": "Manager",
       "place": "Place",
       "leaving": "Last day",
-      "homeAddress": "A person's own home address"
+      "homeAddress": "A person's own home address",
+      "leave": "Leave"
     }
   },
   "pending": {
@@ -269,5 +293,24 @@
     "withdraw": "Withdraw",
     "withdrawn": "Withdrawn",
     "open": "Open"
+  },
+  "leave": {
+    "type": "Type",
+    "from": "From",
+    "until": "Until",
+    "lastDayOff": "last day off",
+    "notKnown": "Not known yet",
+    "days": "{count, plural, one {# working day} other {# working days}} · back {back}",
+    "open": "Open-ended: set the last day when it is known.",
+    "started": "Started {date}. The first day stays; an earlier last day ends it early.",
+    "alsoTitle": "Also changes",
+    "shows": "Shows as on leave on {name}'s page, in People, the org chart and their manager's team. Colleagues see \"On leave\", not the type.",
+    "performance": "Performance carries on: plans, check-ins and 1:1s stay as they are.",
+    "summary": "Leave from <b>{date}</b>",
+    "summaryChange": "Leave from <b>{date}</b>, changed in place",
+    "save": "Save leave",
+    "saved": "{name}'s leave is set from {date}",
+    "changed": "Leave changed",
+    "noTypes": "Add leave types in Settings › Lists first."
   }
 }

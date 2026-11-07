@@ -46,6 +46,7 @@
   "Request.noManager": "{name} n'a plus de responsable",
   "Request.place": "{name} travaille à {summary}",
   "Request.leaving": "Dernier jour de {name} le {date:date}",
+  "Request.leave": "{name} en {summary} à partir du {date:date}",
   "Request.address": "Nouvelle adresse de {name}",
   "Request.context": "Demandé par {actor} · à partir du {date:date}",
   "Request.context.reason": "{reason} · demandé par {actor} · à partir du {date:date}",

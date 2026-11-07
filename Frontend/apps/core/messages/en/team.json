@@ -28,7 +28,10 @@
     "anniversaryMeta": "Work anniversary",
     "birthday": "{name}'s birthday",
     "oneOnOne": "1:1 with {name}",
-    "agenda": "{count, plural, =0 {Nothing on the agenda yet} one {# item on the agenda} other {# items on the agenda}}"
+    "agenda": "{count, plural, =0 {Nothing on the agenda yet} one {# item on the agenda} other {# items on the agenda}}",
+    "leaveStarts": "{name}'s leave starts",
+    "leaveEnds": "{name} is back",
+    "leaveEndsMeta": "From {type}"
   },
   "year": {
     "title": "The team's year",

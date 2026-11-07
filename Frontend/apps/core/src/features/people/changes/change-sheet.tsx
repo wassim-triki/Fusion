@@ -9,7 +9,7 @@ import { ChangePanel, type ChangeKind } from "./change-panel";
 
 type Open = { employeeKey: string; kind: ChangeKind; editing: WorkforceChangeDto | null };
 
-const KINDS: Record<string, ChangeKind> = { job: "job", end: "end", start: "start" };
+const KINDS: Record<string, ChangeKind> = { job: "job", end: "end", start: "start", leave: "leave" };
 
 /**
  * The change panel as a right-hand sheet, for pages that aren't the chart. `?change=job|end|start` on a profile
@@ -36,7 +36,7 @@ export function useChangeSheet(deepLinkKey?: string) {
   /** Edit reopens the change's own kind, filled in. */
   const edit = useCallback((change: WorkforceChangeDto) => setOpen({
     employeeKey: change.person.employeeKey,
-    kind: change.kind === "EndEmployment" ? "end" : change.kind === "Join" ? "start" : "job",
+    kind: change.kind === "EndEmployment" ? "end" : change.kind === "Join" ? "start" : change.kind === "Leave" ? "leave" : "job",
     editing: change,
   }), []);
 

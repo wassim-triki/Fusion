@@ -303,5 +303,14 @@
     "accepted": "Invitation acceptée",
     "signedIn": "Connexion",
     "signedInNote": "Dernière connexion de {name} ; Fusion ne garde que la plus récente"
+  },
+  "leave": {
+    "pill": "Absent",
+    "mark": "Absent",
+    "now": "Absent",
+    "back": "Retour le {date}",
+    "backOpen": "Retour pas encore connu",
+    "from": "Absent à partir du {date}",
+    "typeFrom": "{type} à partir du {date}"
   }
 }

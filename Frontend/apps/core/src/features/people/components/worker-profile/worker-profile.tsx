@@ -4,12 +4,14 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import type { ReactNode, Ref } from "react";
 import { PersonAvatar } from "@repo/ds";
+import type { PersonLeaveDto } from "@repo/api";
 import { LinkTabs, PageContainer, StatusBadge } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { usePhoto, useTenantSummary } from "@repo/api/query";
-import { Mail, MapPin, Phone, Workflow } from "lucide-react";
+import { Mail, MapPin, Phone, TreePalm, Workflow } from "lucide-react";
 import { useSay } from "@repo/ds/lib/say";
 import { Monogram, useWorkforceDate } from "../workforce-ui";
+import { LeaveMark } from "../leave";
 import {
   formatEmploymentType,
   tenure,
@@ -90,6 +92,7 @@ export function WorkerProfile({
             className="size-24 border-2 font-editorial text-3xl font-medium ring-[6px] ring-section sm:size-[10.5rem] sm:text-[3.5rem]"
           />
           {photoAction ? <div className="absolute end-[4%] bottom-[4%]">{photoAction}</div> : null}
+          {view.leave?.now ? <LeaveMark className="absolute start-[4%] bottom-[4%] size-9 ring-4 ring-section sm:size-10" /> : null}
         </div>
 
         <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4 sm:col-start-2">
@@ -103,6 +106,7 @@ export function WorkerProfile({
                   {view.status.label}
                 </StatusBadge>
               ) : null}
+              {view.leave?.now ? <StatusBadge tone="info" dot>{t("leave.pill")}</StatusBadge> : null}
               {nameBadge}
             </div>
             {view.jobTitle ? (
@@ -193,6 +197,7 @@ function Glance({ view, teammates }: { view: WorkerProfileView; teammates?: Work
           <span className="block type-label text-foreground">{since}</span>
         </div>
       ) : null}
+      {view.leave ? <LeaveGlance leave={view.leave} /> : null}
       {view.workLocation ? (
         <div className="flex items-center gap-2.5">
           <span className="grid size-9 shrink-0 place-items-center rounded-control bg-primary-tint text-primary-ink">
@@ -204,6 +209,28 @@ function Glance({ view, teammates }: { view: WorkerProfileView; teammates?: Work
           </span>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+/** Leave in the glance row: the type (or "On leave") and the day they are back; scheduled leave says when it starts. */
+function LeaveGlance({ leave }: { leave: PersonLeaveDto }) {
+  const t = useTranslations("profile.leave");
+  const format = useFormat();
+  const top = leave.now
+    ? leave.type ?? t("now")
+    : leave.type ? t("typeFrom", { type: leave.type, date: format.date(leave.from) }) : t("from", { date: format.date(leave.from) });
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className="grid size-9 shrink-0 place-items-center rounded-control bg-info-subtle text-info">
+        <TreePalm className="size-4" aria-hidden />
+      </span>
+      <span className="min-w-0">
+        <span className="block type-meta text-muted-foreground">{top}</span>
+        <span className="block truncate type-label text-foreground">
+          {leave.back ? t("back", { date: format.date(leave.back, { weekday: true }) }) : t("backOpen")}
+        </span>
+      </span>
     </div>
   );
 }

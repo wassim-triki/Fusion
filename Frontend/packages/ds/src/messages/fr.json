@@ -283,14 +283,17 @@
         "oneOnOneToday": "1:1 aujourd'hui {time}",
         "atRisk": "Objectif à risque",
         "offTrack": "Objectif en retard",
-        "none": "Rien de prévu"
+        "none": "Rien de prévu",
+        "LeaveStarts": "Absent à partir du {date}",
+        "LeaveEnds": "Retour le {date}"
       },
       "givePraise": "Féliciter",
       "tabs": {
         "overview": "Vue d'ensemble",
         "performance": "Performance",
         "orgChart": "Organigramme"
-      }
+      },
+      "away": "Absent"
     }
   }
 }

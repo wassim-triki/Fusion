@@ -16,6 +16,10 @@ public enum TeamEventKind
     NewJob = 5,
     Anniversary = 6,
     Birthday = 7,
+    /// <summary>Leave starts (the date is the first day off).</summary>
+    LeaveStarts = 8,
+    /// <summary>Back from leave (the date is the first working day after it).</summary>
+    LeaveEnds = 9,
 }
 
 /// <param name="JoinsOn">Set for someone who joins the team later (a hire or a move in); null for today's team.</param>
@@ -28,10 +32,16 @@ public sealed record TeamPersonDto(
     string? Place,
     string? PhotoUrl,
     DateOnly? StartedOn,
-    DateOnly? JoinsOn);
+    DateOnly? JoinsOn,
+    /// <summary>Leave they are on, or their next, with its type: the manager sees it.</summary>
+    Changes.PersonLeaveDto? Leave = null);
 
-/// <summary>Something in the team's next 30 days. <paramref name="Years"/> for an anniversary, <paramref name="JobTitle"/> for a new job.</summary>
-public sealed record TeamEventDto(TeamEventKind Kind, DateOnly Date, string EmployeeKey, int? Years = null, string? JobTitle = null);
+/// <summary>
+/// Something in the team's next 30 days. <paramref name="Years"/> for an anniversary, <paramref name="JobTitle"/> for a new
+/// job, <paramref name="LeaveType"/> for leave.
+/// </summary>
+public sealed record TeamEventDto(TeamEventKind Kind, DateOnly Date, string EmployeeKey, int? Years = null, string? JobTitle = null,
+    string? LeaveType = null);
 
 /// <param name="FilledBy">Set when the role was filled lately: the first name of who took it.</param>
 public sealed record TeamOpenRoleDto(Guid Id, string JobTitle, string? PlaceName, DateOnly? TargetStartDate, string? FilledBy = null);
@@ -111,6 +121,7 @@ public sealed class MyTeamQueryHandler(CoreHRDbContext dbContext) : IQueryHandle
                 EmployeePhotos.UrlFor(employee.StableEmployeeKey, employee.PhotoKey), started, joinsOn);
         }
 
+        var away = await Changes.LeaveReader.CurrentAsync(dbContext, lineOf.Keys.ToList(), today, cancellationToken);
         var members = new List<TeamPersonDto>();
         var events = new List<TeamEventDto>();
         foreach (var (id, line) in lineOf)
@@ -119,8 +130,15 @@ public sealed class MyTeamQueryHandler(CoreHRDbContext dbContext) : IQueryHandle
                 continue;
             var from = DateOnly.FromDateTime(line.EffectiveFrom);
             var joinsOn = from > today ? from : (DateOnly?)null;
-            var person = Person(id, joinsOn);
+            var person = Person(id, joinsOn) with { Leave = away.GetValueOrDefault(id) };
             members.Add(person);
+            if (person.Leave is { } leave)
+            {
+                if (!leave.Now && leave.From <= end)
+                    events.Add(new TeamEventDto(TeamEventKind.LeaveStarts, leave.From, person.EmployeeKey, LeaveType: leave.Type));
+                if (leave.Back is { } back && back <= end)
+                    events.Add(new TeamEventDto(TeamEventKind.LeaveEnds, back, person.EmployeeKey, LeaveType: leave.Type));
+            }
             var employment = employments.GetValueOrDefault(id);
 
             if (joinsOn is { } joins)

@@ -28,7 +28,10 @@
     "anniversaryMeta": "Anniversaire d'entrée",
     "birthday": "Anniversaire de {name}",
     "oneOnOne": "1:1 avec {name}",
-    "agenda": "{count, plural, =0 {Rien à l'ordre du jour} one {# point à l'ordre du jour} other {# points à l'ordre du jour}}"
+    "agenda": "{count, plural, =0 {Rien à l'ordre du jour} one {# point à l'ordre du jour} other {# points à l'ordre du jour}}",
+    "leaveStarts": "Début de l'absence de {name}",
+    "leaveEnds": "Retour de {name}",
+    "leaveEndsMeta": "Après {type}"
   },
   "year": {
     "title": "L'année de l'équipe",

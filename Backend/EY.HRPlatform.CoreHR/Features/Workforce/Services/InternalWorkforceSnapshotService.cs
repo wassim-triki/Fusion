@@ -382,6 +382,8 @@ public sealed class InternalWorkforceSnapshotService(CoreHRDbContext dbContext) 
                 .Where(orgUnit => orgUnitIds.Contains(orgUnit.Id))
                 .ToDictionaryAsync(orgUnit => orgUnit.Id, cancellationToken);
 
+        var leaves = await EY.HRPlatform.CoreHR.Features.People.Changes.LeaveReader.CurrentAsync(
+            dbContext, employees.Select(employee => employee.Id).ToList(), DateOnly.FromDateTime(DateTime.UtcNow), cancellationToken);
         return employees
             .Select(employee =>
             {
@@ -411,7 +413,8 @@ public sealed class InternalWorkforceSnapshotService(CoreHRDbContext dbContext) 
                                 activeManagerIds.Contains(manager.Id))
                             : null,
                     employmentStartByEmployee.TryGetValue(employee.Id, out var started) ? DateOnly.FromDateTime(started) : null,
-                    EY.HRPlatform.CoreHR.Features.People.EmployeePhotos.UrlFor(employee.StableEmployeeKey, employee.PhotoKey));
+                    EY.HRPlatform.CoreHR.Features.People.EmployeePhotos.UrlFor(employee.StableEmployeeKey, employee.PhotoKey),
+                    leaves.TryGetValue(employee.Id, out var leave) ? leave.WithoutType() : null);
             })
             .ToList();
     }

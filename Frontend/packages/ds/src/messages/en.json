@@ -283,14 +283,17 @@
         "oneOnOneToday": "1:1 today {time}",
         "atRisk": "Objective at risk",
         "offTrack": "Objective off track",
-        "none": "Nothing coming up"
+        "none": "Nothing coming up",
+        "LeaveStarts": "Leave from {date}",
+        "LeaveEnds": "Back {date}"
       },
       "givePraise": "Give praise",
       "tabs": {
         "overview": "Overview",
         "performance": "Performance",
         "orgChart": "Org chart"
-      }
+      },
+      "away": "On leave"
     }
   }
 }

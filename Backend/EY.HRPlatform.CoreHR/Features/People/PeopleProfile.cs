@@ -72,7 +72,9 @@ public sealed record PeopleProfileDto(
     /// <summary>Change records from today on (scheduled, or today's while it can be undone); Today view only.</summary>
     IReadOnlyList<Changes.WorkforceChangeDto> ComingUp,
     /// <summary>Dotted-line (secondary) managers on the viewed date, beside the primary chain.</summary>
-    IReadOnlyList<PeopleDottedLineManagerDto> DottedLineManagers);
+    IReadOnlyList<PeopleDottedLineManagerDto> DottedLineManagers,
+    /// <summary>Leave they are on, or their next (Today view only); a colleague sees it without the type.</summary>
+    Changes.PersonLeaveDto? Leave = null);
 
 /// <summary>A dotted-line manager on the profile; the id is what the dotted-line end command takes.</summary>
 public sealed record PeopleDottedLineManagerDto(
@@ -247,6 +249,12 @@ public sealed class PeopleProfileQueryHandler(
         var comingUp = isAsOf || request.Audience == EmployeeReadAudience.Employee
             ? []
             : await changeReader.ComingUpAsync(employee.Id, cancellationToken);
+        var leave = isAsOf ? null
+            : (await Changes.LeaveReader.CurrentAsync(dbContext, [employee.Id], DateOnly.FromDateTime(today), cancellationToken))
+                .GetValueOrDefault(employee.Id);
+        // HR, the manager and the person see the leave type; colleagues see that they are on leave.
+        if (leave is not null && request.Audience == EmployeeReadAudience.Employee && employee.Id != request.ViewerEmployeeId)
+            leave = leave.WithoutType();
 
         // The mobile follows the Personal tab: the person, and whoever sees personal details for them.
         var seesMobile = employee.Id == request.ViewerEmployeeId
@@ -284,7 +292,8 @@ public sealed class PeopleProfileQueryHandler(
             isAsOf ? asOf!.Value : today,
             isAsOf,
             comingUp,
-            dottedLineManagers);
+            dottedLineManagers,
+            leave);
 
         // A plain colleague sees workforce-directory context only: identity, current
         // work, org, and reporting relationships — never employment tenure/type or

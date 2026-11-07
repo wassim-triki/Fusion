@@ -22,7 +22,7 @@ vi.mock("./use-changes", () => ({
   useLineEffects: () => ({ data: undefined }),
   useManagerOptions: () => ({ data: [], isLoading: false }),
   useEndEmploymentPreview: () => ({ data: undefined, isLoading: false }),
-  useApprovalSettings: () => ({ data: { types: [{ type: "job", required: true }], approvers: [{ employeeId: "amira-id", displayName: "Amira Khelifi" }], canManage: false } }),
+  useApprovalSettings: () => ({ data: { types: [{ type: "job", required: true }, { type: "leave", required: true }], approvers: [{ employeeId: "amira-id", displayName: "Amira Khelifi" }], canManage: false } }),
   useChangeDraft: () => ({ isLoading: false, mutateAsync: draft }),
   useProposeChange: () => ({ isLoading: false, mutateAsync: vi.fn() }),
 }));
@@ -32,7 +32,12 @@ vi.mock("@/features/catalog/api/use-catalog", () => ({
   useCompanyLists: () => ({ data: [
     { id: "change-reasons", values: [{ id: "promo", key: "promotion", label: "Promotion", sortOrder: 0, isRetired: false, usageCount: 0, inUse: false }] },
     { id: "employment-types", values: [{ id: "full", key: "full-time", label: "Full-time", sortOrder: 0, isRetired: false, usageCount: 0, inUse: false }] },
+    { id: "leave-types", values: [{ id: "annual", key: "annual-leave", label: "Annual leave", sortOrder: 0, isRetired: false, usageCount: 0, inUse: false }] },
   ] }),
+}));
+vi.mock("@repo/api/query", async (original) => ({
+  ...(await original<typeof import("@repo/api/query")>()),
+  useCompanyWorkWeek: () => ({ data: { workingDays: [1, 2, 3, 4, 5] } }),
 }));
 vi.mock("../api/use-people", () => ({ usePeopleProfile: () => ({ data: person() }) }));
 vi.mock("@/features/organization/api/use-organization", () => ({ useOrganizationHierarchy: () => ({ data: { roots: [] }, isLoading: false }) }));
@@ -73,7 +78,29 @@ const move: WorkforceChangeDto = {
   }),
 };
 
+const leaveNow: WorkforceChangeDto = {
+  ...move, id: "l1", kind: "Leave", effectiveDate: "2026-11-02", status: "InEffect", canCancel: false, canEdit: true,
+  lastDay: "2099-11-20", back: "2099-11-23",
+  details: details({ leaveTypeId: "annual", leaveType: "Annual leave", leaveUntil: "2099-11-20", isReportingOnly: false }),
+};
+
 describe("people changes", () => {
+  it("names leave under way by its return, and HR ends it early rather than cancelling it", () => {
+    render(<ComingUpCard change={leaveNow} canChange onEdit={vi.fn()} />);
+    expect(screen.getByText("Back from annual leave")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "End early" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Cancel leave" })).not.toBeInTheDocument();
+  });
+
+  it("sends a manager's leave for their report for approval when the company approves leave", () => {
+    Object.assign(rights, { people: false, propose: true });
+    render(<ChangePanel employeeKey="HELA" kind="leave" onClose={vi.fn()} />);
+    expect(screen.getByText("Annual leave")).toBeInTheDocument();
+    expect(screen.getByText("Amira Khelifi approves")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Send for approval" })).toBeEnabled();
+    Object.assign(rights, { people: true, propose: false });
+  });
+
   it("names a coming move and its ripple, with Edit and Cancel", () => {
     render(<ComingUpCard change={move} canChange onEdit={vi.fn()} />);
     expect(screen.getByText("Moves to Amira Khelifi's team")).toBeInTheDocument();

@@ -295,7 +295,10 @@
       "title": "فريقك",
       "open": "فتح",
       "count": "{count, plural, one {شخص واحد} other {# أشخاص}}",
-      "joins": "ينضم {name} يوم {day}"
+      "joins": "ينضم {name} يوم {day}",
+      "away": "{name} في إجازة، يعود {day}",
+      "awayOpen": "{name} في إجازة",
+      "leaveFrom": "{name} في إجازة ابتداءً من {day}"
     },
     "firstWeek": {
       "title": "أسبوعك الأول",

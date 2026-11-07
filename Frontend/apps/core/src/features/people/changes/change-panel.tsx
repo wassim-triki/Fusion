@@ -14,7 +14,8 @@ import type {
   PeopleProfileDto,
   WorkforceChangeDto,
 } from "@repo/api";
-import { Check, MessageSquare, Pencil, Sparkles, Stamp, Target, Undo2, X } from "lucide-react";
+import { Check, MessageSquare, Pencil, Sparkles, Stamp, Target, Undo2, UserRound, X } from "lucide-react";
+import { useCompanyWorkWeek } from "@repo/api/query";
 import { useRefusal } from "@/i18n/words";
 import { JobPicker, PlacePicker } from "@/features/catalog/components/catalog-pickers";
 import { useCompanyLists, useJobs } from "@/features/catalog/api/use-catalog";
@@ -34,7 +35,7 @@ import {
   useManagerOptions,
 } from "./use-changes";
 
-export type ChangeKind = "job" | "end" | "start";
+export type ChangeKind = "job" | "end" | "start" | "leave";
 
 /** What the chart previews while the panel is open: where the person (and their team) will sit. */
 export interface ChangeDraft {
@@ -69,7 +70,7 @@ export function ChangePanel({
   const t = useTranslations("changes");
   const rights = useChangeRights();
   const person = profile.data;
-  const title = kind === "end" ? t("kind.end") : kind === "start" ? t("kind.start")
+  const title = kind === "end" ? t("kind.end") : kind === "start" ? t("kind.start") : kind === "leave" ? t("kind.leave")
     : rights.people || rights.propose ? t("kind.change") : t("kind.manager");
 
   return (
@@ -95,6 +96,8 @@ export function ChangePanel({
         <EndForm person={person} editing={editing ?? null} onClose={onClose} />
       ) : kind === "start" ? (
         <StartForm person={person} editing={editing ?? null} onClose={onClose} />
+      ) : kind === "leave" ? (
+        <LeaveForm person={person} editing={editing ?? null} onClose={onClose} />
       ) : (
         <JobForm person={person} editing={editing ?? null} initialManagerKey={initialManagerKey ?? null} onClose={onClose} onDraft={onDraft} reportingOnly={!rights.people && !rights.propose} />
       )}
@@ -725,6 +728,153 @@ function StartForm({ person, editing, onClose }: { person: PeopleProfileDto; edi
         <Button type="button" variant="ghost" onClick={onClose}>{t("action.cancel")}</Button>
         <Button type="button" disabled={!unit || !jobId || startEmployment.isLoading || editChange.isLoading} onClick={() => void save()}>
           {isToday ? t("action.save") : t("action.schedule", { date: format.date(date) })}
+        </Button>
+      </Footer>
+    </>
+  );
+}
+
+// --- Leave ----------------------------------------------------------------------------------------
+
+const DAY_MS = 86_400_000;
+const dayOf = (value: string) => { const [y, m, d] = value.split("-").map(Number); return new Date(Date.UTC(y!, m! - 1, d!)); };
+const isoUtc = (date: Date) => date.toISOString().slice(0, 10);
+/** The Monday on or after a day, and the Friday of its week. */
+const mondayFrom = (value: string) => { const day = dayOf(value); while (day.getUTCDay() !== 1) day.setUTCDate(day.getUTCDate() + 1); return isoUtc(day); };
+const plusDays = (value: string, days: number) => isoUtc(new Date(dayOf(value).getTime() + days * DAY_MS));
+
+/** Working days from the first day to the last, and the first working day after it, in the company's week (0 = Sunday). */
+function leaveSpan(from: string, until: string, week: readonly number[]) {
+  const works = (day: Date) => week.length === 0 || week.includes(day.getUTCDay());
+  let count = 0;
+  for (let day = dayOf(from); day <= dayOf(until); day = new Date(day.getTime() + DAY_MS)) if (works(day)) count += 1;
+  let back = new Date(dayOf(until).getTime() + DAY_MS);
+  while (!works(back)) back = new Date(back.getTime() + DAY_MS);
+  return { count, back: isoUtc(back) };
+}
+
+/**
+ * Leave (B-229): a type from the company's Leave types, a first day and a last day off, or "Not known yet". HR's
+ * leave applies at once; a manager's waits when the company approves leave. Editing changes it in place: once it has
+ * started, only its type and last day move (an earlier last day ends it early).
+ */
+function LeaveForm({ person, editing, onClose }: { person: PeopleProfileDto; editing: WorkforceChangeDto | null; onClose: () => void }) {
+  const t = useTranslations("changes");
+  const format = useFormat();
+  const refusal = useRefusal();
+  const rights = useChangeRights();
+  const key = person.identity.employeeKey;
+  const { editChange } = useChangeMutations(key);
+  const propose = useProposeChange(key);
+  const approvals = useApprovalSettings(!editing);
+  const week = useCompanyWorkWeek().data?.workingDays ?? [1, 2, 3, 4, 5];
+  const lists = useCompanyLists(true);
+  const today = todayIso();
+  const started = Boolean(editing && editing.effectiveDate <= today);
+
+  const [typeId, setTypeId] = useState<string | null>(editing?.details.leaveTypeId ?? null);
+  const types = (lists.data?.find((list) => list.id === "leave-types")?.values ?? [])
+    .filter((value) => !value.isRetired || value.id === editing?.details.leaveTypeId);
+  const nextMonday = mondayFrom(addDay(today));
+  const [from, setFrom] = useState(editing?.effectiveDate ?? nextMonday);
+  const [until, setUntil] = useState<string | null>(editing ? editing.lastDay ?? null : plusDays(nextMonday, 4));
+  const [note, setNote] = useState(editing?.note ?? "");
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => { if (!typeId && types[0]) setTypeId(types[0].id); }, [typeId, types]);
+
+  const earliestUntil = started ? plusDays(today, -1) > from ? plusDays(today, -1) : from : from;
+  const untilOptions = [plusDays(mondayFrom(from) === from ? from : mondayFrom(from), 4), plusDays(mondayFrom(from) === from ? from : mondayFrom(from), 11)]
+    .filter((day) => day >= earliestUntil);
+  const span = until && until >= from ? leaveSpan(from, until, week) : null;
+  const required = new Set(approvals.data?.types.filter((type) => type.required).map((type) => type.type) ?? []);
+  const describes = !editing && (rights.people || rights.propose);
+  const waits = describes && !rights.people && required.has("leave");
+  const approvers = (approvals.data?.approvers ?? []).filter((approver) => approver.employeeId !== rights.employeeId);
+  const busy = propose.isLoading || editChange.isLoading;
+  const valid = Boolean(typeId) && (until === null || until >= earliestUntil);
+
+  const save = async () => {
+    setError(null);
+    const request = { leaveTypeId: typeId!, from, until, note: note.trim() || null };
+    try {
+      if (editing) {
+        await editChange.mutateAsync({ id: editing.id, request: { leave: request } });
+        toast.success(t("leave.changed"));
+      } else {
+        const result = await propose.mutateAsync({ leave: request });
+        if (result.request) toast.success(t("request.sent", { name: firstName(person.identity.displayName) }));
+        else toast.success(t("leave.saved", { name: firstName(person.identity.displayName), date: format.date(from) }));
+      }
+      onClose();
+    } catch (caught) {
+      setError(refusal(caught, t("failed")));
+    }
+  };
+
+  return (
+    <>
+      <div className="min-h-0 flex-1 overflow-y-auto px-[22px] pb-4 pt-1.5">
+        <Block title={t("leave.type")}>
+          {lists.isLoading ? <Skeleton className="h-9" /> : types.length === 0 ? (
+            <p className="type-meta text-muted-foreground">{t("leave.noTypes")}</p>
+          ) : (
+            <QuickPicks label={t("leave.type")} value={typeId ?? ""} onPick={setTypeId}
+              options={types.map((value) => ({ value: value.id, label: value.label }))} />
+          )}
+        </Block>
+        <Block title={t("leave.from")}>
+          {started ? (
+            <p className="type-meta text-muted-foreground">{t("leave.started", { date: format.date(from) })}</p>
+          ) : (
+            <DateChoice label={t("leave.from")} value={from}
+              onChange={(next) => { setFrom(next); if (until && until < next) setUntil(next); }}
+              options={[nextMonday, plusDays(nextMonday, 7)]} />
+          )}
+        </Block>
+        <Block title={t("leave.until")} aside={t("leave.lastDayOff")}>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="w-44">
+              <DatePicker value={until ?? undefined} min={earliestUntil} onChange={(next) => { if (next) setUntil(next); }} placeholder={t("when.otherDate")} />
+            </div>
+            <QuickPicks label={t("leave.until")} value={until ?? "open"} onPick={(next) => setUntil(next === "open" ? null : next)}
+              options={[...untilOptions.map((day) => ({ value: day, label: format.date(day) })), { value: "open", label: t("leave.notKnown") }]} />
+          </div>
+          <p className="type-meta text-muted-foreground">
+            {span ? t("leave.days", { count: span.count, back: format.date(span.back) }) : until === null ? t("leave.open") : null}
+          </p>
+        </Block>
+        <Block title={t("leave.alsoTitle")}>
+          <div className="grid gap-2">
+            <Effect icon={<UserRound className="size-[15px]" />}>{t("leave.shows", { name: firstName(person.identity.displayName) })}</Effect>
+            <Effect icon={<Target className="size-[15px]" />}>{t("leave.performance")}</Effect>
+          </div>
+        </Block>
+        <Block>
+          <label htmlFor="leave-note" className="type-label font-semibold">
+            {t("request.note")} <span className="font-normal text-muted-foreground">{t("request.optional")}</span>
+          </label>
+          <Textarea id="leave-note" value={note} onChange={(event) => setNote(event.target.value)} rows={2} maxLength={1000} className="resize-none" />
+        </Block>
+        {waits ? (
+          <div className="mt-1 flex items-center gap-3 rounded-inset border bg-inlay px-3.5 py-3">
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-muted"><Stamp className="size-4 text-muted-foreground" /></span>
+            <div className="min-w-0 flex-1">
+              <p className="type-label font-semibold">
+                {approvers.length === 0 ? t("request.approverUnknown")
+                  : approvers.length === 1 ? t("request.approver", { name: approvers[0]!.displayName })
+                  : t("request.approvers", { name: approvers[0]!.displayName, count: approvers.length - 1 })}
+              </p>
+              <p className="type-meta text-muted-foreground">{t("request.why", { types: t("types.leave") })}</p>
+            </div>
+          </div>
+        ) : null}
+        {error ? <p role="alert" className="pt-2 type-body text-destructive">{error}</p> : null}
+      </div>
+      <Footer summary={waits ? t.rich("summary.onceApproved", { date: format.date(from), b })
+        : editing ? t.rich("leave.summaryChange", { date: format.date(from), b }) : t.rich("leave.summary", { date: format.date(from), b })}>
+        <Button type="button" variant="ghost" onClick={onClose}>{t("action.cancel")}</Button>
+        <Button type="button" disabled={!valid || busy} onClick={() => void save()}>
+          {waits ? t("request.send") : editing ? t("leave.save") : from === today ? t("action.save") : t("action.schedule", { date: format.date(from) })}
         </Button>
       </Footer>
     </>

@@ -4,7 +4,8 @@
     "manager": "Changer de manager",
     "end": "Fin d'emploi",
     "start": "Reprise d'emploi",
-    "change": "Faire un changement"
+    "change": "Faire un changement",
+    "leave": "Définir une absence"
   },
   "close": "Fermer",
   "reportsTo": "Rattaché à",
@@ -111,13 +112,28 @@
     "edit": "Modifier",
     "cancel": "Annuler le changement",
     "view": "Voir le profil",
-    "today": "Aujourd'hui"
+    "today": "Aujourd'hui",
+    "leaveUntil": "{type} jusqu'au {until}",
+    "leaveOpen": "{type}, retour pas encore connu",
+    "leaveBack": "Retour de {type}",
+    "leaveNowOpen": "En {type}, retour pas encore connu",
+    "leaveDates": "{from} – {until} · retour le {back}",
+    "leaveSince": "Absent depuis le {from} · dernier jour d'absence le {until}",
+    "leaveSinceOpen": "Absent depuis le {from}",
+    "leaveFromOpen": "À partir du {from}",
+    "leaveGeneric": "absence",
+    "changeLeave": "Modifier",
+    "endEarly": "Terminer plus tôt",
+    "cancelLeave": "Annuler l'absence"
   },
   "badge": {
     "moves": "Change le {date}",
     "changes": "Change le {date}",
     "joins": "Arrive le {date}",
-    "leaves": "Part le {date}"
+    "leaves": "Part le {date}",
+    "onLeave": "Absent · retour le {date}",
+    "onLeaveOpen": "Absent",
+    "leaveFrom": "Absent à partir du {date}"
   },
   "cancel": {
     "move": "Annuler le changement d'équipe de {name} le {date} ?",
@@ -133,7 +149,11 @@
     "keep": "Garder le changement",
     "confirm": "Annuler le changement",
     "done": "Changement annulé",
-    "failed": "Le changement n'a pas pu être annulé."
+    "failed": "Le changement n'a pas pu être annulé.",
+    "leave": "Annuler l'absence de {name} à partir du {date} ?",
+    "leaveStays": "{name} travaille normalement ces jours-là.",
+    "keepLeave": "Garder l'absence",
+    "confirmLeave": "Annuler l'absence"
   },
   "menu": {
     "changeJob": "Changer de poste",
@@ -147,7 +167,8 @@
     "giveFeedback": "Donner un feedback",
     "asOf": "Voir à une autre date",
     "copyLink": "Copier le lien",
-    "linkCopied": "Lien copié"
+    "linkCopied": "Lien copié",
+    "setLeave": "Définir une absence"
   },
   "dotted": {
     "since": "Lien en pointillé · depuis le {date}",
@@ -181,7 +202,8 @@
     "manager": "les changements de manager",
     "place": "les changements de lieu",
     "leaving": "les derniers jours",
-    "homeAddress": "les adresses personnelles"
+    "homeAddress": "les adresses personnelles",
+    "leave": "absences"
   },
   "request": {
     "sent": "Envoyé pour approbation. Le changement de {name} attend une réponse.",
@@ -208,7 +230,8 @@
       "noManager": "{name} n'a plus de manager",
       "place": "{name} travaille à {summary}",
       "leaving": "Dernier jour de {name} le {date}",
-      "address": "Nouvelle adresse de {name}"
+      "address": "Nouvelle adresse de {name}",
+      "leave": "{name} en {summary} à partir du {date}"
     },
     "meta": "Demandé par {actor} · à partir du {date}",
     "metaReason": "{reason} · demandé par {actor} · à partir du {date}",
@@ -260,7 +283,8 @@
       "manager": "Manager",
       "place": "Lieu",
       "leaving": "Dernier jour",
-      "homeAddress": "L'adresse personnelle, par la personne"
+      "homeAddress": "L'adresse personnelle, par la personne",
+      "leave": "Absence"
     }
   },
   "pending": {
@@ -269,5 +293,24 @@
     "withdraw": "Retirer",
     "withdrawn": "Retiré",
     "open": "Ouvrir"
+  },
+  "leave": {
+    "type": "Type",
+    "from": "Du",
+    "until": "Au",
+    "lastDayOff": "dernier jour d'absence",
+    "notKnown": "Pas encore connu",
+    "days": "{count, plural, one {# jour ouvré} other {# jours ouvrés}} · retour le {back}",
+    "open": "Sans date de fin : indiquez le dernier jour dès qu’il est connu.",
+    "started": "Commencée le {date}. Le premier jour reste ; un dernier jour plus tôt la termine.",
+    "alsoTitle": "Effets",
+    "shows": "Apparaît comme absent sur la page de {name}, dans Personnes, l'organigramme et l'équipe de son responsable. Les collègues voient « Absent », pas le type.",
+    "performance": "La performance continue : plans, points d’étape et 1:1 restent tels quels.",
+    "summary": "Absence à partir du <b>{date}</b>",
+    "summaryChange": "Absence à partir du <b>{date}</b>, modifiée",
+    "save": "Enregistrer l'absence",
+    "saved": "L'absence de {name} commence le {date}",
+    "changed": "Absence modifiée",
+    "noTypes": "Ajoutez d'abord des types d'absence dans Paramètres › Listes."
   }
 }

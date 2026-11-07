@@ -80,6 +80,8 @@ export interface PeopleRowDto {
   /** Only for viewers who may see Fusion access. */
   signIn?: PeopleSignInDto | null;
   employeeId?: string | null;
+  /** Leave they are on, or their next; the type is left out. */
+  leave?: PersonLeaveDto | null;
 }
 
 export interface PeoplePageDto {
@@ -115,6 +117,8 @@ export interface PeopleDirectoryPersonDto {
   startingSoon: boolean;
   /** The company's Tags fields everyone sees (skills, languages), for search. */
   tags: string[];
+  /** Leave they are on, or their next; colleagues don't see the type. */
+  leave?: PersonLeaveDto | null;
 }
 
 export interface PeopleDirectoryDto {
@@ -386,6 +390,8 @@ export interface PeopleProfileDto {
   comingUp: WorkforceChangeDto[];
   /** Dotted-line (secondary) managers on the viewed date, beside the primary chain. */
   dottedLineManagers: PeopleDottedLineManagerDto[];
+  /** Leave they are on, or their next (today's view only); a colleague sees it without the type. */
+  leave?: PersonLeaveDto | null;
 }
 
 export interface MaintenanceResultDto {
@@ -401,7 +407,21 @@ export interface DottedLineRequestBody {
 
 // --- People changes: one record per decision (join, job change, end of employment) ----------------
 
-export type WorkforceChangeKind = "Join" | "JobChange" | "EndEmployment";
+export type WorkforceChangeKind = "Join" | "JobChange" | "EndEmployment" | "Leave";
+
+/**
+ * A person's leave where they appear (B-229): the leave they are on today (`now`), or else their next one. `type` is
+ * null for viewers who only see that they are on leave; `back` is the first working day after `until` (null while
+ * open-ended).
+ */
+export interface PersonLeaveDto {
+  changeId: string;
+  type: string | null;
+  from: string;
+  until: string | null;
+  back: string | null;
+  now: boolean;
+}
 export type WorkforceChangeStatus = "Scheduled" | "InEffect" | "Cancelled";
 
 export interface ChangePersonRef {
@@ -457,6 +477,10 @@ export interface WorkforceChangeDetails {
   /** Why, from the company's change reasons; the label as it was then. */
   reasonId?: string | null;
   reason?: string | null;
+  /** Leave: its type from the company's Leave types, the label as it was then, and the last day off. */
+  leaveTypeId?: string | null;
+  leaveType?: string | null;
+  leaveUntil?: string | null;
   isReportingOnly: boolean;
 }
 
@@ -473,6 +497,9 @@ export interface WorkforceChangeDto {
   createdAt: string;
   note: string | null;
   details: WorkforceChangeDetails;
+  /** Leave: the last day off (null = not known yet) and the first working day after it. */
+  lastDay?: string | null;
+  back?: string | null;
 }
 
 export interface TeamOutcomeRequest {
@@ -519,10 +546,20 @@ export interface JoinChangeRequest {
   note?: string | null;
 }
 
+/** Leave of a type from the company's Leave types; `until` is the last day off (null = not known yet). */
+export interface LeaveChangeRequest {
+  leaveTypeId: string;
+  from: string;
+  until?: string | null;
+  note?: string | null;
+}
+
+/** Leave is revised in place: an earlier `until` ends it early. */
 export interface EditChangeRequest {
   job?: JobChangeRequest;
   end?: EndEmploymentChangeRequest;
   join?: JoinChangeRequest;
+  leave?: LeaveChangeRequest;
 }
 
 export interface EndEmploymentReportDto {

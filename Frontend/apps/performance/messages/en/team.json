@@ -247,7 +247,12 @@
     "noneOpen": "None open",
     "reviewPersonPlan": "Review {name}’s plan",
     "reviewPerson": "Review {name}",
-    "theNextOne": "the next one"
+    "theNextOne": "the next one",
+    "leave": {
+      "now": "On leave · back {day}",
+      "open": "On leave",
+      "from": "Leave from {day}"
+    }
   },
   "activity": {
     "DraftUpdated": "Draft updated",

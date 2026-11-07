@@ -173,6 +173,10 @@ function eventWords(event: TeamEventDto, name: string, jobTitle: string | null, 
       return { title: t("anniversary", { name, count: event.years ?? 1 }), meta: t("anniversaryMeta") };
     case "Birthday":
       return { title: t("birthday", { name }) };
+    case "LeaveStarts":
+      return { title: t("leaveStarts", { name }), meta: event.leaveType ?? undefined };
+    case "LeaveEnds":
+      return { title: t("leaveEnds", { name }), meta: event.leaveType ? t("leaveEndsMeta", { type: event.leaveType.toLocaleLowerCase() }) : undefined };
   }
 }
 

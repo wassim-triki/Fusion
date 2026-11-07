@@ -125,7 +125,12 @@ public sealed class PeopleQueryHandler(
             : candidates;
         var total = matching.Count;
         var skip = (int)Math.Min(int.MaxValue, (long)(page - 1) * pageSize);
-        var items = matching.Skip(skip).Take(pageSize).Select(item => item.Row).ToList();
+        var slice = matching.Skip(skip).Take(pageSize).ToList();
+        var leaves = await Changes.LeaveReader.CurrentAsync(
+            dbContext, slice.Select(item => item.EmployeeId).ToList(), DateOnly.FromDateTime(DateTime.UtcNow), cancellationToken);
+        var items = slice.Select(item => leaves.TryGetValue(item.EmployeeId, out var leave)
+            ? item.Row with { Leave = leave.WithoutType() }
+            : item.Row).ToList();
 
         return Result.Success(new PeoplePageDto(
             items,

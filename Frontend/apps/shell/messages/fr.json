@@ -295,7 +295,10 @@
       "title": "Votre équipe",
       "open": "Ouvrir",
       "count": "{count, plural, one {# personne} other {# personnes}}",
-      "joins": "{name} arrive {day}"
+      "joins": "{name} arrive {day}",
+      "away": "{name} est absent, retour {day}",
+      "awayOpen": "{name} est absent",
+      "leaveFrom": "{name} est absent à partir de {day}"
     },
     "firstWeek": {
       "title": "Votre première semaine",

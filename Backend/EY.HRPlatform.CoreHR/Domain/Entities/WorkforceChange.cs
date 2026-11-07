@@ -8,6 +8,8 @@ public enum WorkforceChangeKind
     Join = 1,
     JobChange = 2,
     EndEmployment = 3,
+    /// <summary>Time off of a type from the company's Leave types, from <see cref="WorkforceChange.EffectiveDate"/> to its last day.</summary>
+    Leave = 4,
 }
 
 public enum WorkforceChangeStatus
@@ -41,6 +43,12 @@ public sealed class WorkforceChange : BaseEntity, ITenantEntity
     /// <summary>The first day the change is in effect (for an end of employment, the day after the last day).</summary>
     public DateOnly EffectiveDate { get; private set; }
 
+    /// <summary>
+    /// Leave only: the last day off; null while it isn't known yet. Leave writes no rows of its own, so it never
+    /// orders or blocks the person's other changes.
+    /// </summary>
+    public DateOnly? LastDay { get; private set; }
+
     public string? Note { get; private set; }
     public string PayloadJson { get; private set; } = "{}";
     public bool IsCancelled { get; private set; }
@@ -57,7 +65,8 @@ public sealed class WorkforceChange : BaseEntity, ITenantEntity
         string? note,
         string payloadJson,
         string? actor,
-        IEnumerable<WorkforceChangeEffect> effects)
+        IEnumerable<WorkforceChangeEffect> effects,
+        DateOnly? lastDay = null)
     {
         if (tenantId == Guid.Empty || employeeId == Guid.Empty)
             throw new ArgumentException("Tenant and employee are required.");
@@ -68,6 +77,7 @@ public sealed class WorkforceChange : BaseEntity, ITenantEntity
             EmployeeId = employeeId,
             Kind = kind,
             EffectiveDate = effectiveDate,
+            LastDay = kind == WorkforceChangeKind.Leave ? lastDay : null,
             Note = string.IsNullOrWhiteSpace(note) ? null : note.Trim(),
             PayloadJson = string.IsNullOrWhiteSpace(payloadJson) ? "{}" : payloadJson,
             CreatedBy = actor,
@@ -84,6 +94,22 @@ public sealed class WorkforceChange : BaseEntity, ITenantEntity
         => IsCancelled ? WorkforceChangeStatus.Cancelled
             : EffectiveDate > today ? WorkforceChangeStatus.Scheduled
             : WorkforceChangeStatus.InEffect;
+
+    /// <summary>Leave is changed in place: a new type, dates or note, or an earlier last day to end it early.</summary>
+    public void ReviseLeave(DateOnly from, DateOnly? lastDay, string? note, string payloadJson, string? actor)
+    {
+        if (Kind != WorkforceChangeKind.Leave || IsCancelled)
+            throw new InvalidOperationException("Only leave that stands can be revised.");
+        if (lastDay is { } last && last < from)
+            throw new ArgumentException("The last day off can't come before the first.");
+
+        EffectiveDate = from;
+        LastDay = lastDay;
+        Note = string.IsNullOrWhiteSpace(note) ? null : note.Trim();
+        PayloadJson = payloadJson;
+        UpdatedAt = DateTime.UtcNow;
+        UpdatedBy = actor;
+    }
 
     public void Cancel(string? actor)
     {

@@ -147,7 +147,11 @@ public static class YourPeople
                 : member).ToList();
         }
 
-        return roster;
+        // Leave shows beside the plan; Performance pauses nothing for it.
+        var leave = (await workforce.ResolveAsync(PerformanceClock.UtcNow, roster.Select(member => member.EmployeeId).ToList(), cancellationToken))
+            .Where(snapshot => snapshot.Leave is not null)
+            .ToDictionary(snapshot => snapshot.EmployeeId, snapshot => snapshot.Leave);
+        return roster.Select(member => leave.TryGetValue(member.EmployeeId, out var away) ? member with { Leave = away } : member).ToList();
     }
 }
 

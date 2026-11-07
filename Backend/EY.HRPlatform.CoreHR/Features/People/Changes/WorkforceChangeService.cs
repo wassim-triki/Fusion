@@ -399,6 +399,106 @@ public sealed class WorkforceChangeService(
             PlaceToId: work?.PlaceId,
             EmploymentTypeId: employment.EmploymentTypeId);
 
+    // --- Leave ------------------------------------------------------------------------------------
+
+    /// <summary>
+    /// Leave writes no workforce rows: it is the record itself, from its first day to its last (or open-ended), so it
+    /// neither waits for nor blocks the person's other changes. Overlapping leave is refused.
+    /// </summary>
+    public async Task<Result<WorkforceChange>> StageLeaveAsync(
+        Employee subject, LeaveChangeRequest request, string actor, CancellationToken cancellationToken)
+    {
+        var from = DateOnly.FromDateTime(request.From);
+        var refused = ValidateDate(from);
+        if (refused is not null)
+            return Result.Failure<WorkforceChange>(refused);
+        var details = await LeaveDetailsAsync(subject, request, null, cancellationToken);
+        if (details.IsFailure)
+            return Result.Failure<WorkforceChange>(details.Error);
+
+        var change = WorkforceChange.Create(tenantContext.TenantId, subject.Id, WorkforceChangeKind.Leave, from, request.Note,
+            JsonSerializer.Serialize(details.Value, WorkforceChangeRecorder.Json), actor, [], details.Value.LeaveUntil);
+        dbContext.WorkforceChanges.Add(change);
+        return Result.Success(change);
+    }
+
+    /// <summary>
+    /// HR changes leave in place: anything while it is scheduled; once it has started, its type and last day (an earlier
+    /// last day ends it early, down to yesterday). Over, it stays as it was.
+    /// </summary>
+    public async Task<Result<WorkforceChange>> StageLeaveRevisionAsync(
+        WorkforceChange change, LeaveChangeRequest request, string actor, bool canManageEmployees, CancellationToken cancellationToken)
+    {
+        if (!canManageEmployees)
+            return Result.Failure<WorkforceChange>(new Error(ForbiddenCode, "Only HR can change someone's leave."));
+        if (change.IsCancelled)
+            return Fail<WorkforceChange>("Change.AlreadyCancelled", "This leave was cancelled.");
+        var today = Today;
+        if (change.LastDay is { } over && over < today)
+            return Fail<WorkforceChange>("Change.InEffect", "This leave is over.");
+
+        var from = DateOnly.FromDateTime(request.From);
+        if (change.EffectiveDate <= today)
+        {
+            if (from != change.EffectiveDate)
+                return Fail<WorkforceChange>("Leave.Started", "This leave has started, so its first day stays.");
+            if (request.Until is { } until && DateOnly.FromDateTime(until) < today.AddDays(-1))
+                return Fail<WorkforceChange>("Leave.PastLastDay", "The last day off can be yesterday at the earliest.");
+        }
+        else if (ValidateDate(from) is { } past)
+            return Result.Failure<WorkforceChange>(past);
+
+        var subject = await dbContext.Employees.AsNoTracking().FirstAsync(item => item.Id == change.EmployeeId, cancellationToken);
+        var details = await LeaveDetailsAsync(subject, request, change, cancellationToken);
+        if (details.IsFailure)
+            return Result.Failure<WorkforceChange>(details.Error);
+        change.ReviseLeave(from, details.Value.LeaveUntil, request.Note,
+            JsonSerializer.Serialize(details.Value, WorkforceChangeRecorder.Json), actor);
+        return Result.Success(change);
+    }
+
+    /// <summary>The leave's own account, once its type, dates and employment check out and it overlaps no other leave.</summary>
+    private async Task<Result<WorkforceChangeDetails>> LeaveDetailsAsync(
+        Employee subject, LeaveChangeRequest request, WorkforceChange? revising, CancellationToken cancellationToken)
+    {
+        var from = DateOnly.FromDateTime(request.From);
+        DateOnly? until = request.Until is { } last ? DateOnly.FromDateTime(last) : null;
+        if (until < from)
+            return Fail<WorkforceChangeDetails>("Leave.UntilBeforeFrom", "The last day off can't come before the first.");
+
+        // A type still offered, or the one the leave already has.
+        var keptType = revising is null ? null : ReadDetails(revising).LeaveTypeId;
+        var type = await dbContext.CompanyListValues.AsNoTracking()
+            .FirstOrDefaultAsync(item => item.Id == request.LeaveTypeId && item.List == CompanyList.LeaveTypes
+                && (!item.IsRetired || item.Id == keptType), cancellationToken);
+        if (type is null)
+            return Fail<WorkforceChangeDetails>("Leave.UnknownType", "Choose a type from your company's leave types.");
+
+        var at = At(from);
+        var employment = await dbContext.Employments.AsNoTracking()
+            .FirstOrDefaultAsync(item => item.EmployeeId == subject.Id && item.EffectiveFrom <= at
+                && (item.EffectiveTo == null || at < item.EffectiveTo), cancellationToken);
+        if (employment is null)
+            return Fail<WorkforceChangeDetails>("Change.NotEmployed", $"{subject.DisplayName} is not employed on {from:d MMM yyyy}.");
+        if (employment.EffectiveTo is { } end && (until is null || At(until.Value) >= end))
+            return Fail<WorkforceChangeDetails>("Leave.AfterLastDay",
+                $"{subject.DisplayName}'s last day is {DateOnly.FromDateTime(end).AddDays(-1):d MMM yyyy}, so the leave ends by then.");
+
+        var revisingId = revising?.Id;
+        var overlap = await dbContext.WorkforceChanges.AsNoTracking()
+            .Where(item => item.EmployeeId == subject.Id && item.Kind == WorkforceChangeKind.Leave && !item.IsCancelled
+                && item.Id != revisingId
+                && (until == null || item.EffectiveDate <= until)
+                && (item.LastDay == null || item.LastDay >= from))
+            .OrderBy(item => item.EffectiveDate)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (overlap is not null)
+            return Fail<WorkforceChangeDetails>("Leave.Overlaps",
+                $"{subject.DisplayName} already has leave from {overlap.EffectiveDate:d MMM yyyy}. Change that one instead.");
+
+        return Result.Success(new WorkforceChangeDetails(LeaveTypeId: type.Id, LeaveType: type.Label, LeaveUntil: until));
+    }
+
     // --- Cancel -----------------------------------------------------------------------------------
 
     /// <summary>
@@ -415,12 +515,25 @@ public sealed class WorkforceChangeService(
         if (change.IsCancelled)
             return Fail<WorkforceChange>("Change.AlreadyCancelled", "This change was already cancelled.");
         var today = Today;
+        if (change.Kind == WorkforceChangeKind.Leave)
+        {
+            // Leave wrote no rows, so it goes alone, whatever else is scheduled; once it starts it can only end early.
+            if (change.EffectiveDate < today)
+                return Fail<WorkforceChange>("Change.InEffect", "This leave has started. End it early instead.");
+            change.Cancel(actor);
+            dbContext.WorkforceAuditEntries.Add(WorkforceAuditEntry.Record(
+                tenantContext.TenantId, "WorkforceChange", change.Id, WorkforceAuditAction.WorkforceChangeCancelled,
+                WorkforceSourceType.Manual, actor, At(change.EffectiveDate),
+                changeDetails: $"Leave from {change.EffectiveDate:yyyy-MM-dd} cancelled."));
+            return Result.Success(change);
+        }
         var lastDayInEffect = change.Kind == WorkforceChangeKind.EndEmployment ? change.EffectiveDate.AddDays(-1) : change.EffectiveDate;
         if (lastDayInEffect < today)
             return Fail<WorkforceChange>("Change.InEffect", "This change is already in effect. Correcting the past is a separate operation.");
 
         var later = await dbContext.WorkforceChanges.AsNoTracking()
             .Where(item => item.EmployeeId == change.EmployeeId && item.Id != change.Id && !item.IsCancelled
+                && item.Kind != WorkforceChangeKind.Leave
                 && (item.EffectiveDate > change.EffectiveDate || (item.EffectiveDate == change.EffectiveDate && item.CreatedAt > change.CreatedAt)))
             .OrderBy(item => item.EffectiveDate)
             .FirstOrDefaultAsync(cancellationToken);
@@ -565,7 +678,8 @@ public sealed class WorkforceChangeService(
         var today = Today;
         var todayAt = At(today);
         var lastChange = await dbContext.WorkforceChanges.AsNoTracking()
-            .Where(item => item.EmployeeId == employeeId && !item.IsCancelled && item.EffectiveDate >= today)
+            .Where(item => item.EmployeeId == employeeId && !item.IsCancelled && item.EffectiveDate >= today
+                && item.Kind != WorkforceChangeKind.Leave)
             .MaxAsync(item => (DateOnly?)item.EffectiveDate, cancellationToken);
         var lastLine = await dbContext.ManagerRelationships.AsNoTracking()
             .Where(item => item.SubjectEmployeeId == employeeId && item.Type == ReportingRelationshipType.PrimaryManager && item.EffectiveFrom > todayAt)

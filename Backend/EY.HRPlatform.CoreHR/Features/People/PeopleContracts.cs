@@ -126,7 +126,9 @@ public sealed record PeopleRowDto(
     /// <summary>Only for viewers who may see Fusion access.</summary>
     PeopleSignInDto? SignIn = null,
     /// <summary>The worker's id, which invitations and other modules key by.</summary>
-    Guid? EmployeeId = null);
+    Guid? EmployeeId = null,
+    /// <summary>Leave they are on, or their next; the type is left out.</summary>
+    Changes.PersonLeaveDto? Leave = null);
 
 public sealed record PeoplePageDto(
     IReadOnlyList<PeopleRowDto> Items,

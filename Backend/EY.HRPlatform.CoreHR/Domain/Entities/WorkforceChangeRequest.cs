@@ -9,6 +9,7 @@ public enum WorkforceChangeRequestKind
     EndEmployment = 2,
     /// <summary>A person's own new home address, waiting for HR.</summary>
     HomeAddress = 3,
+    Leave = 4,
 }
 
 public enum WorkforceChangeRequestStatus
@@ -31,8 +32,9 @@ public static class ChangeApprovalTypes
     public const string Place = "place";
     public const string Leaving = "leaving";
     public const string HomeAddress = "homeAddress";
+    public const string Leave = "leave";
 
-    public static readonly IReadOnlyList<string> All = [Job, Manager, Place, Leaving, HomeAddress];
+    public static readonly IReadOnlyList<string> All = [Job, Manager, Place, Leave, Leaving, HomeAddress];
 
     public static bool IsKnown(string type) => All.Contains(type, StringComparer.Ordinal);
 }

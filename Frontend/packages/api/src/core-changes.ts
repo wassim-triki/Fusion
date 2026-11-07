@@ -2,6 +2,7 @@ import type { ApiClient } from "./types";
 import type {
   EndEmploymentChangeRequest,
   JobChangeRequest,
+  LeaveChangeRequest,
   PeopleHomeAddressDto,
   WorkforceChangeDetails,
   WorkforceChangeDto,
@@ -9,12 +10,12 @@ import type {
 
 // --- Changes and approvals (B-179, D-15/D-16) --------------------------------------------------------
 
-export type ChangeRequestKind = "JobChange" | "EndEmployment" | "HomeAddress";
+export type ChangeRequestKind = "JobChange" | "EndEmployment" | "HomeAddress" | "Leave";
 export type ChangeRequestStatus = "Pending" | "Approved" | "Declined" | "Withdrawn";
 /** The parts of a change a company can ask approval for. */
-export type ChangeApprovalType = "job" | "manager" | "place" | "leaving" | "homeAddress";
+export type ChangeApprovalType = "job" | "manager" | "place" | "leave" | "leaving" | "homeAddress";
 
-export const CHANGE_APPROVAL_TYPES: readonly ChangeApprovalType[] = ["job", "manager", "place", "leaving", "homeAddress"];
+export const CHANGE_APPROVAL_TYPES: readonly ChangeApprovalType[] = ["job", "manager", "place", "leave", "leaving", "homeAddress"];
 
 export interface ChangeRequestActorRef {
   employeeId: string | null;
@@ -51,6 +52,7 @@ export interface ChangeRequestDto {
 export interface ProposeChangeRequest {
   job?: JobChangeRequest | null;
   end?: EndEmploymentChangeRequest | null;
+  leave?: LeaveChangeRequest | null;
   /** The sentence it was described in. */
   description?: string | null;
 }

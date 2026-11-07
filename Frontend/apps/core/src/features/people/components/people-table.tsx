@@ -43,6 +43,7 @@ import { usePeople } from "../api/use-people";
 import { useInvitationMutations, usePeopleDirectory, usePeopleExport } from "../api/use-people-directory";
 import { useChangeSheet } from "../changes/change-sheet";
 import { ChangeBadge } from "../changes/coming-up";
+import { LeaveBadge, WithLeaveMark } from "./leave";
 import { useChangeRights, useUpcomingChanges } from "../changes/use-changes";
 import { Monogram, useWorkforceDate } from "./workforce-ui";
 import { LayoutSwitch } from "./people-layout";
@@ -142,7 +143,7 @@ function PersonCell({ person, coming }: { person: PeopleRowDto; coming?: Workfor
   const starting = person.employmentState === "Scheduled" && person.employmentStart;
   return (
     <div className="flex min-w-0 items-center gap-3">
-      <Monogram name={person.displayName} photoUrl={person.photoUrl} size="sm" />
+      <WithLeaveMark leave={person.leave}><Monogram name={person.displayName} photoUrl={person.photoUrl} size="sm" /></WithLeaveMark>
       <div className="min-w-0">
         <p className="flex min-w-0 items-center gap-2">
           <Link
@@ -154,6 +155,7 @@ function PersonCell({ person, coming }: { person: PeopleRowDto; coming?: Workfor
           {leaving ? <StatusBadge tone="warning">{t("leaves", { date: day(person.employmentEnd) })}</StatusBadge> : null}
           {starting ? <StatusBadge tone="info">{t("starts", { date: day(person.employmentStart) })}</StatusBadge> : null}
           {coming && !leaving && !starting ? <ChangeBadge change={coming} /> : null}
+          {person.leave && (person.leave.now || !coming) ? <LeaveBadge leave={person.leave} /> : null}
         </p>
         <p className="truncate type-meta text-muted-foreground">
           {[person.work?.jobTitle, person.work?.organizationName].filter(Boolean).join(" · ") || t("noJob")}
@@ -325,7 +327,9 @@ export function PeopleTable({ header }: { header: (count: number | null) => Reac
 
   const coming = useMemo(() => {
     const map = new Map<string, WorkforceChangeDto>();
-    for (const change of upcoming.data ?? []) if (!map.has(change.person.employeeKey)) map.set(change.person.employeeKey, change);
+    // Leave shows from the row itself, whatever else is coming.
+    for (const change of upcoming.data ?? [])
+      if (change.kind !== "Leave" && !map.has(change.person.employeeKey)) map.set(change.person.employeeKey, change);
     return map;
   }, [upcoming.data]);
 

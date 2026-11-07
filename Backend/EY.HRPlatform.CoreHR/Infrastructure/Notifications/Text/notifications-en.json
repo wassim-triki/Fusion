@@ -46,6 +46,7 @@
   "Request.noManager": "{name} stops reporting to a manager",
   "Request.place": "{name} works from {summary}",
   "Request.leaving": "{name}'s last day on {date:date}",
+  "Request.leave": "{name} on {summary} from {date:date}",
   "Request.address": "{name}'s new home address",
   "Request.context": "{actor} asks · from {date:date}",
   "Request.context.reason": "{reason} · {actor} asks · from {date:date}",

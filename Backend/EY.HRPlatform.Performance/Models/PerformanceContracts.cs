@@ -1,3 +1,4 @@
+using EY.HRPlatform.Performance.Infrastructure.Core;
 using EY.HRPlatform.Performance.Domain.Settings;
 using EY.HRPlatform.Performance.Domain.Cycles;
 using EY.HRPlatform.Performance.Domain.Objectives;
@@ -782,7 +783,9 @@ public sealed record TeamRosterMemberDto(
     RosterReviewDto? Review = null,
     // What needs the manager in this phase (see YourPeoplePageDto.Groups) and the phase's facts.
     string? Group = null,
-    RosterPhaseFactsDto? Facts = null);
+    RosterPhaseFactsDto? Facts = null,
+    // Leave they are on, or their next, from Core HR: shown beside the plan, pausing nothing (B-229).
+    WorkforceLeaveSnapshot? Leave = null);
 
 /// <summary>Why a person needs their manager during execution: `planWaiting`, `offTrack`, `atRisk`, `noUpdate`, `openRequest` or `notApproved`.</summary>
 public sealed record RosterAttentionDto(string Kind, Guid? ObjectiveId, string? ObjectiveTitle, string? Reason, DateTime? Since, int? Days);

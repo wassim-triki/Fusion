@@ -22,6 +22,17 @@ export function YourTeamCard() {
   if (!team.data || members.length === 0) return null;
   const joining = team.data.comingUp.find((event) => event.kind === "Joins" || event.kind === "MovesIn");
   const joiner = joining ? members.find((person) => person.employeeKey === joining.employeeKey) : null;
+  // Who is away now, or the next leave in the 30 days (B-229).
+  const starts = new Set(team.data.comingUp.filter((event) => event.kind === "LeaveStarts").map((event) => event.employeeKey));
+  const away = members.find((person) => person.leave?.now) ?? members
+    .filter((person) => person.leave && !person.leave.now && starts.has(person.employeeKey))
+    .sort((a, b) => a.leave!.from.localeCompare(b.leave!.from))[0];
+  const dayName = (iso: string) => format.dateTime(new Date(`${iso}T00:00:00`), { weekday: "long" });
+  const leaveWords = away?.leave
+    ? away.leave.now
+      ? away.leave.back ? t("away", { name: away.displayName.split(" ")[0]!, day: dayName(away.leave.back) }) : t("awayOpen", { name: away.displayName.split(" ")[0]! })
+      : t("leaveFrom", { name: away.displayName.split(" ")[0]!, day: dayName(away.leave.from) })
+    : null;
   return (
     <section aria-labelledby="team-title" className="grid gap-3.5 rounded-surface bg-card px-[22px] py-5">
       <div className="flex items-baseline justify-between gap-3">
@@ -47,6 +58,7 @@ export function YourTeamCard() {
         {joiner && joining
           ? ` · ${t("joins", { name: joiner.displayName, day: format.dateTime(new Date(`${joining.date}T00:00:00`), { weekday: "long" }) })}`
           : ""}
+        {leaveWords ? ` · ${leaveWords}` : ""}
       </p>
     </section>
   );

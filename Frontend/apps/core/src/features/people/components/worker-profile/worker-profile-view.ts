@@ -4,6 +4,7 @@ import type {
   PeopleProfileDto,
   PeopleProfileEmploymentDto,
   PeopleTimelineEventDto,
+  PersonLeaveDto,
 } from "@repo/api";
 import { englishSay, type Say } from "@repo/ds/lib/say";
 import { englishMessages } from "@/i18n/messages";
@@ -79,6 +80,8 @@ export interface WorkerProfileView {
   /** Viewing a non-Today snapshot (People temporal); the snapshot is read-only. */
   isAsOf: boolean;
   viewedDate: string | null;
+  /** Leave they are on, or their next (B-229); the type only for HR, the manager and the person. */
+  leave?: PersonLeaveDto | null;
 }
 
 /** Shared tone mapping for Fusion account/access states. */
@@ -198,6 +201,7 @@ export function fromPeopleProfile(
 
     isAsOf: profile.isAsOf,
     viewedDate: profile.viewedDate,
+    leave: profile.leave ?? null,
   };
 }
 

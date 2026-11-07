@@ -14,6 +14,7 @@ import { usePeopleDirectory } from "../api/use-people-directory";
 import { Monogram } from "./workforce-ui";
 import { LayoutSwitch } from "./people-layout";
 import { PeoplePendingContent } from "./people-page-skeleton";
+import { LeaveBadge, LeaveMark } from "./leave";
 
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const NO_COLUMNS: never[] = [];
@@ -46,12 +47,15 @@ function PersonCard({ person, tag, mine }: { person: PeopleDirectoryPersonDto; t
         <span className="absolute end-3 top-3 rounded-full bg-primary-tint px-2 py-0.5 type-meta font-medium text-primary-ink">{tag}</span>
       ) : null}
       <div className="flex min-w-0 flex-col items-center px-4 pb-4 pt-6 text-center">
-        <Monogram
-          name={person.displayName}
-          photoUrl={person.photoUrl}
-          size="xl"
-          className="mb-2.5 size-[4.25rem] border-2 font-editorial text-[1.4375rem] font-medium"
-        />
+        <span className="relative mb-2.5">
+          <Monogram
+            name={person.displayName}
+            photoUrl={person.photoUrl}
+            size="xl"
+            className="size-[4.25rem] border-2 font-editorial text-[1.4375rem] font-medium"
+          />
+          {person.leave?.now ? <LeaveMark className="absolute -bottom-0.5 -end-0.5 size-6 ring-2 ring-card" /> : null}
+        </span>
         <Link
           href={`/people/${person.employeeKey}`}
           className="max-w-full truncate type-label text-[0.9375rem] font-semibold outline-none after:absolute after:inset-0 focus-visible:underline"
@@ -59,6 +63,7 @@ function PersonCard({ person, tag, mine }: { person: PeopleDirectoryPersonDto; t
           {person.displayName}
         </Link>
         <p className="mt-0.5 max-w-full truncate type-meta text-muted-foreground">{person.jobTitle ?? t("noJob")}</p>
+        {person.leave ? <div className="mt-1.5"><LeaveBadge leave={person.leave} /></div> : null}
         <div className="mt-2.5 flex w-full min-w-0 justify-center gap-1.5">
           {person.unitName ? <Chip icon={<Building2 aria-hidden />}>{person.unitName}</Chip> : null}
           {person.place ? <Chip icon={<MapPin aria-hidden />}>{person.place}</Chip> : null}

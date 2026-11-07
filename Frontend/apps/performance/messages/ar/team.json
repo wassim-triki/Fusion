@@ -247,7 +247,12 @@
     "noneOpen": "لا شيء مفتوح",
     "reviewPersonPlan": "مراجعة خطة {name}",
     "reviewPerson": "تقييم {name}",
-    "theNextOne": "التالي"
+    "theNextOne": "التالي",
+    "leave": {
+      "now": "في إجازة · العودة {day}",
+      "open": "في إجازة",
+      "from": "إجازة من {day}"
+    }
   },
   "activity": {
     "DraftUpdated": "حُدّثت المسودة",

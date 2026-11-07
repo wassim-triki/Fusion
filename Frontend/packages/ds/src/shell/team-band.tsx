@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { AlertTriangle, ArrowRightLeft, BriefcaseBusiness, Cake, Coffee, Gift, LogOut, PartyPopper, UserPlus, type LucideIcon } from "lucide-react";
+import { AlertTriangle, ArrowRightLeft, BriefcaseBusiness, Cake, Coffee, Gift, LogOut, PartyPopper, TreePalm, UserPlus, type LucideIcon } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { PersonAvatar } from "../components/ui/person-avatar";
@@ -11,7 +11,16 @@ import { dateFormatter } from "../lib/dates";
 import { cn } from "../lib/utils";
 import { LinkTabs } from "./link-tabs";
 
-export type TeamBandEventKind = "Joins" | "MovesIn" | "Leaves" | "MovesOut" | "NewJob" | "Anniversary" | "Birthday";
+export type TeamBandEventKind =
+  | "Joins"
+  | "MovesIn"
+  | "Leaves"
+  | "MovesOut"
+  | "NewJob"
+  | "Anniversary"
+  | "Birthday"
+  | "LeaveStarts"
+  | "LeaveEnds";
 
 /** A person on the band: what their "what's next" is chosen from. Dates are ISO days; `oneOnOneAt` is an instant. */
 export interface TeamBandPerson {
@@ -23,6 +32,8 @@ export interface TeamBandPerson {
   events: { kind: TeamBandEventKind; date: string; years: number | null }[];
   oneOnOneAt: string | null;
   attention: "offTrack" | "atRisk" | null;
+  /** On leave today: a mark on the photo (B-229). */
+  away?: boolean;
   href?: string;
 }
 
@@ -65,6 +76,8 @@ const ICON: Record<TeamNext["kind"], LucideIcon> = {
   NewJob: BriefcaseBusiness,
   Anniversary: Gift,
   Birthday: Cake,
+  LeaveStarts: TreePalm,
+  LeaveEnds: TreePalm,
   OneOnOne: Coffee,
   atRisk: AlertTriangle,
   offTrack: AlertTriangle,
@@ -161,7 +174,15 @@ export function TeamBand({ manager, people, tabs, current, praiseHref, actions }
                 const Icon = next ? ICON[next.kind] : null;
                 const card = (
                   <>
-                    <PersonAvatar name={person.name} photo={person.photo} size="lg" className={cn("size-12", person.joinsOn && "border-dashed")} />
+                    <span className="relative">
+                      <PersonAvatar name={person.name} photo={person.photo} size="lg" className={cn("size-12", person.joinsOn && "border-dashed")} />
+                      {person.away ? (
+                        <span role="img" aria-label={t("away")} title={t("away")}
+                          className="absolute -bottom-1 -end-1 grid size-5 place-items-center rounded-full bg-card text-info shadow-raised ring-2 ring-card">
+                          <TreePalm className="size-3" aria-hidden />
+                        </span>
+                      ) : null}
+                    </span>
                     <div className="grid w-full gap-0.5">
                       <p className="truncate type-label text-foreground">{person.name}</p>
                       <p className="line-clamp-2 min-h-[31px] type-meta leading-[1.3] text-muted-foreground">{person.jobTitle ?? ""}</p>

@@ -1,3 +1,4 @@
+import type { PersonLeaveDto } from "./core-people";
 import type { ApiClient } from "./types";
 
 /** A person on the org chart, shaped for the viewer by Core HR (fields the tenant hides from them are null). */
@@ -23,6 +24,8 @@ export interface OrgChartPersonDto {
   totalCount: number;
   /** API-relative photo address with a cache version (fetch it as a blob through the client); null without a photo. */
   photoUrl: string | null;
+  /** Leave they are on, or their next (today's chart only); the type is left out. */
+  leave?: PersonLeaveDto | null;
 }
 
 export interface OrgChartUnitDto {

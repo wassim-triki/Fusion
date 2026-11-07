@@ -139,10 +139,18 @@ public sealed class EditWorkforceChangeCommandHandler(CoreHRDbContext dbContext,
         {
             WorkforceChangeKind.JobChange => request.Job is not null,
             WorkforceChangeKind.EndEmployment => request.End is not null,
+            WorkforceChangeKind.Leave => request.Leave is not null,
             _ => request.Join is not null,
         };
         if (!matches)
             return Result.Failure<WorkforceChangeDto>(Error.Validation("Change.KindMismatch", "An edit keeps the kind of change."));
+
+        if (change.Kind == WorkforceChangeKind.Leave)
+        {
+            var revised = await ChangeSupport.RunAsync(dbContext, [() => changes.StageLeaveRevisionAsync(
+                change, request.Leave!, command.Actor, command.CanManageEmployees, cancellationToken)], cancellationToken);
+            return revised.IsFailure ? Result.Failure<WorkforceChangeDto>(revised.Error) : Result.Success(await reader.ProjectAsync(revised.Value, cancellationToken));
+        }
 
         var subject = await dbContext.Employees.FirstAsync(item => item.Id == change.EmployeeId, cancellationToken);
         var result = await ChangeSupport.RunAsync(dbContext,
@@ -178,7 +186,8 @@ public sealed class UpcomingWorkforceChangesQueryHandler(CoreHRDbContext dbConte
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var upcoming = await dbContext.WorkforceChanges.AsNoTracking()
-            .Where(item => !item.IsCancelled && item.EffectiveDate >= today)
+            .Where(item => !item.IsCancelled && (item.EffectiveDate >= today
+                || item.Kind == WorkforceChangeKind.Leave && (item.LastDay == null || item.LastDay >= today)))
             .OrderBy(item => item.EffectiveDate).ThenBy(item => item.CreatedAt)
             .Take(200)
             .ToListAsync(cancellationToken);
@@ -215,22 +224,33 @@ public sealed class WorkforceChangeReader(CoreHRDbContext dbContext)
             .Where(item => people.Contains(item.Id))
             .ToDictionaryAsync(item => item.Id, cancellationToken);
         var open = await dbContext.WorkforceChanges.AsNoTracking()
-            .Where(item => people.Contains(item.EmployeeId) && !item.IsCancelled && item.EffectiveDate >= today)
+            .Where(item => people.Contains(item.EmployeeId) && !item.IsCancelled && item.EffectiveDate >= today
+                && item.Kind != WorkforceChangeKind.Leave)
             .Select(item => new { item.Id, item.EmployeeId, item.EffectiveDate, item.CreatedAt })
             .ToListAsync(cancellationToken);
         var latest = open.GroupBy(item => item.EmployeeId)
             .Select(group => group.OrderByDescending(item => item.EffectiveDate).ThenByDescending(item => item.CreatedAt).First().Id)
             .ToHashSet();
+        var week = changes.Any(item => item.Kind == WorkforceChangeKind.Leave) ? await LeaveReader.WorkWeekAsync(dbContext, cancellationToken) : [];
 
         return changes.Select(change =>
         {
             var details = WorkforceChangeService.ReadDetails(change);
             var status = change.StatusOn(today);
-            var lastDayInEffect = change.Kind == WorkforceChangeKind.EndEmployment ? change.EffectiveDate.AddDays(-1) : change.EffectiveDate;
-            var canCancel = !change.IsCancelled && lastDayInEffect >= today && latest.Contains(change.Id);
             var person = employees.TryGetValue(change.EmployeeId, out var employee)
                 ? WorkforceChangeService.Ref(employee)
                 : new ChangePersonRef(change.EmployeeId, "", "");
+            if (change.Kind == WorkforceChangeKind.Leave)
+            {
+                // Leave stands alone: cancelled until it starts, changed (or ended early) until it is over.
+                var standing = !change.IsCancelled && (change.LastDay is null || change.LastDay >= today);
+                return new WorkforceChangeDto(
+                    change.Id, change.Kind, change.EffectiveDate, status, standing && change.EffectiveDate >= today, standing,
+                    person, ChangeSupport.ActorName(change.CreatedBy), change.CreatedAt, change.Note, details,
+                    change.LastDay, LeaveReader.Back(change.LastDay, week));
+            }
+            var lastDayInEffect = change.Kind == WorkforceChangeKind.EndEmployment ? change.EffectiveDate.AddDays(-1) : change.EffectiveDate;
+            var canCancel = !change.IsCancelled && lastDayInEffect >= today && latest.Contains(change.Id);
             return new WorkforceChangeDto(
                 change.Id, change.Kind, change.EffectiveDate, status, canCancel, canCancel && !details.IsHire,
                 person, ChangeSupport.ActorName(change.CreatedBy), change.CreatedAt, change.Note, details);
@@ -241,7 +261,8 @@ public sealed class WorkforceChangeReader(CoreHRDbContext dbContext)
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var changes = await dbContext.WorkforceChanges.AsNoTracking()
-            .Where(item => item.EmployeeId == employeeId && !item.IsCancelled && item.EffectiveDate >= today)
+            .Where(item => item.EmployeeId == employeeId && !item.IsCancelled && (item.EffectiveDate >= today
+                || item.Kind == WorkforceChangeKind.Leave && (item.LastDay == null || item.LastDay >= today)))
             .OrderBy(item => item.EffectiveDate).ThenBy(item => item.CreatedAt)
             .ToListAsync(cancellationToken);
         return await ProjectAsync(changes, cancellationToken);

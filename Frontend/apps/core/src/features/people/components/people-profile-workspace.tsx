@@ -51,7 +51,7 @@ import {
   MoreHorizontal,
   RotateCcw,
   UserRoundPlus,
-  UserRoundX,
+  TreePalm, UserRoundX,
   Workflow,
 } from "lucide-react";
 import {
@@ -398,6 +398,11 @@ export default function PeopleProfileWorkspace({
         >
           <Link2 className="size-4" /> {tc("copyLink")}
         </DropdownMenuItem>
+        {showActions && (canManage || proposesHere) && !isFormer ? (
+          <DropdownMenuItem onSelect={() => changeSheet.start(employeeKey, "leave")}>
+            <TreePalm className="size-4" /> {tc("setLeave")}
+          </DropdownMenuItem>
+        ) : null}
         {showActions && canManage && !isFormer ? (
           <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => changeSheet.start(employeeKey, "end")}>
             <UserRoundX className="size-4" /> {tc("endEmployment")}

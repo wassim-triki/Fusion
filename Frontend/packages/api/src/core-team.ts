@@ -1,6 +1,17 @@
+import type { PersonLeaveDto } from "./core-people";
 import type { ApiClient } from "./types";
 
-export type TeamEventKind = "Joins" | "MovesIn" | "Leaves" | "MovesOut" | "NewJob" | "Anniversary" | "Birthday";
+/** `LeaveStarts` is dated the first day off, `LeaveEnds` the day they are back. */
+export type TeamEventKind =
+  | "Joins"
+  | "MovesIn"
+  | "Leaves"
+  | "MovesOut"
+  | "NewJob"
+  | "Anniversary"
+  | "Birthday"
+  | "LeaveStarts"
+  | "LeaveEnds";
 
 /** `joinsOn` is set for someone who joins the team later; `startedOn` is their first day with the company. */
 export interface TeamPersonDto {
@@ -12,6 +23,8 @@ export interface TeamPersonDto {
   photoUrl: string | null;
   startedOn: string | null;
   joinsOn: string | null;
+  /** Leave they are on, or their next, with its type. */
+  leave?: PersonLeaveDto | null;
 }
 
 /** Something in the team's next 30 days: `years` for an anniversary, `jobTitle` for a new job. */
@@ -21,6 +34,7 @@ export interface TeamEventDto {
   employeeKey: string;
   years: number | null;
   jobTitle: string | null;
+  leaveType?: string | null;
 }
 
 export interface TeamOpenRoleDto {

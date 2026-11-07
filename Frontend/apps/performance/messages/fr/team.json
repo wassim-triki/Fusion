@@ -247,7 +247,12 @@
     "noneOpen": "Aucun ouvert",
     "reviewPersonPlan": "Revoir le plan de {name}",
     "reviewPerson": "Évaluer {name}",
-    "theNextOne": "la suivante"
+    "theNextOne": "la suivante",
+    "leave": {
+      "now": "Absent · retour {day}",
+      "open": "Absent",
+      "from": "Absent à partir de {day}"
+    }
   },
   "activity": {
     "DraftUpdated": "Brouillon mis à jour",

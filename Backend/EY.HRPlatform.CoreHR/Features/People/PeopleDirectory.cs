@@ -25,7 +25,9 @@ public sealed record PeopleDirectoryPersonDto(
     /// <summary>Added before their first day; colleagues don't see the date.</summary>
     bool StartingSoon,
     /// <summary>Values of the company's Tags fields that everyone sees (skills, languages), for search.</summary>
-    IReadOnlyList<string> Tags);
+    IReadOnlyList<string> Tags,
+    /// <summary>Leave they are on, or their next; colleagues don't see the type.</summary>
+    Changes.PersonLeaveDto? Leave = null);
 
 public sealed record PeopleDirectoryDto(string? ViewerEmployeeKey, IReadOnlyList<PeopleDirectoryPersonDto> People);
 
@@ -61,7 +63,8 @@ public sealed class PeopleDirectoryQueryHandler(ISender sender, CoreHRDbContext 
             row.PrimaryManager,
             row.WorkEmail,
             row.EmploymentState == PeopleEmploymentState.Scheduled,
-            ids.TryGetValue(row.EmployeeKey, out var id) && tags.TryGetValue(id, out var held) ? held : []))
+            ids.TryGetValue(row.EmployeeKey, out var id) && tags.TryGetValue(id, out var held) ? held : [],
+            row.Leave))
             .OrderBy(person => person.DisplayName, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
         return Result.Success(new PeopleDirectoryDto(viewerKey, people));

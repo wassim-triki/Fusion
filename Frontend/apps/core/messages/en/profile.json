@@ -303,5 +303,14 @@
     "accepted": "Accepted the invitation",
     "signedIn": "Signed in",
     "signedInNote": "Last time {name} signed in; Fusion keeps only the latest"
+  },
+  "leave": {
+    "pill": "On leave",
+    "mark": "On leave",
+    "now": "On leave",
+    "back": "Back {date}",
+    "backOpen": "Return not known yet",
+    "from": "Leave from {date}",
+    "typeFrom": "{type} from {date}"
   }
 }

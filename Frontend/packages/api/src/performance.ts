@@ -1528,6 +1528,8 @@ export interface TeamRosterMemberDto {
   /** What needs the manager in this phase: one of the page's `groups`. */
   group?: string | null;
   facts?: RosterPhaseFactsDto | null;
+  /** Leave they are on (`now`), or their next, from Core HR; Performance pauses nothing for it. */
+  leave?: { from: string; until: string | null; back: string | null; now: boolean } | null;
 }
 
 export type RosterAttentionKind = "planWaiting" | "offTrack" | "atRisk" | "noUpdate" | "openRequest" | "notApproved";

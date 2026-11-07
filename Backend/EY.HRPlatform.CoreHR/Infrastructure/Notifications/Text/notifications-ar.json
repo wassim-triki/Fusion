@@ -46,6 +46,7 @@
   "Request.noManager": "{name} بلا مدير",
   "Request.place": "{name} يعمل في {summary}",
   "Request.leaving": "آخر يوم لـ{name} في {date:date}",
+  "Request.leave": "{name} في {summary} ابتداءً من {date:date}",
   "Request.address": "عنوان {name} الجديد",
   "Request.context": "طلب من {actor} · ابتداءً من {date:date}",
   "Request.context.reason": "{reason} · طلب من {actor} · ابتداءً من {date:date}",

@@ -25,8 +25,15 @@ import { useCancelChange } from "./use-changes";
 
 const first = (name: string) => name.split(" ")[0] ?? name;
 
-/** The day a change is about: the last day for an end of employment, the first day otherwise. */
+/** Leave the person is on today, rather than leave still to come. */
+const onLeaveNow = (change: WorkforceChangeDto) => change.kind === "Leave" && change.status === "InEffect";
+
+/**
+ * The day a change is about: the last day for an end of employment, the return day for leave already under way, the
+ * first day otherwise.
+ */
 export function changeDay(change: WorkforceChangeDto): string {
+  if (onLeaveNow(change)) return change.back ?? change.effectiveDate;
   return change.kind === "EndEmployment" && change.details.lastDay ? change.details.lastDay : change.effectiveDate;
 }
 
@@ -36,6 +43,12 @@ export function useDescribeChange() {
   const format = useFormat();
   return (change: WorkforceChangeDto): string => {
     const d = change.details;
+    if (change.kind === "Leave") {
+      const type = d.leaveType ?? t("leaveGeneric");
+      const lower = type.toLocaleLowerCase();
+      if (onLeaveNow(change)) return change.back ? t("leaveBack", { type: lower }) : t("leaveNowOpen", { type: lower });
+      return change.lastDay ? t("leaveUntil", { type, until: format.date(change.lastDay) }) : t("leaveOpen", { type });
+    }
     if (change.kind === "EndEmployment") return t("leaves", { date: format.date(changeDay(change)) });
     if (change.kind === "Join") {
       if (d.managerTo) return d.isHire ? t("joins", { manager: d.managerTo.displayName }) : t("startsAgain", { manager: d.managerTo.displayName });
@@ -54,6 +67,10 @@ export function ChangeBadge({ change }: { change: WorkforceChangeDto }) {
   const t = useTranslations("changes.badge");
   const format = useFormat();
   const date = format.date(changeDay(change));
+  if (change.kind === "Leave") {
+    if (!onLeaveNow(change)) return <StatusBadge tone="neutral">{t("leaveFrom", { date })}</StatusBadge>;
+    return <StatusBadge tone="info" dot>{change.back ? t("onLeave", { date }) : t("onLeaveOpen")}</StatusBadge>;
+  }
   if (change.kind === "Join") return <StatusBadge tone="info" dot>{t("joins", { date })}</StatusBadge>;
   if (change.kind === "EndEmployment") return <StatusBadge tone="danger" dot>{t("leaves", { date })}</StatusBadge>;
   return <StatusBadge tone="warning" dot>{change.details.managerChanged ? t("moves", { date }) : t("changes", { date })}</StatusBadge>;
@@ -72,6 +89,7 @@ export function CalendarTile({ date }: { date: string }) {
 /** The before → after chips of a change: only what it changes. */
 function Diffs({ change }: { change: WorkforceChangeDto }) {
   const t = useTranslations("changes.coming");
+  const format = useFormat();
   const d = change.details;
   const chips: ReactNode[] = [];
   const chip = (key: string, children: ReactNode, plain = false) => (
@@ -80,6 +98,15 @@ function Diffs({ change }: { change: WorkforceChangeDto }) {
     </span>
   );
   const arrow = <ArrowRight className="size-3.5" aria-hidden />;
+  if (change.kind === "Leave") {
+    const from = format.date(change.effectiveDate);
+    const words = onLeaveNow(change)
+      ? change.lastDay ? t("leaveSince", { from, until: format.date(change.lastDay) }) : t("leaveSinceOpen", { from })
+      : change.lastDay && change.back
+        ? t("leaveDates", { from, until: format.date(change.lastDay), back: format.date(change.back) })
+        : t("leaveFromOpen", { from });
+    return <div className="flex flex-wrap gap-2">{chip("leave", words, true)}</div>;
+  }
   if (change.kind === "JobChange" && d.managerChanged) {
     chips.push(chip("manager", (
       <>
@@ -124,7 +151,18 @@ export function ComingUpCard({
   const describe = useDescribeChange();
   const format = useFormat();
   const [cancelling, setCancelling] = useState(false);
-  const actions = action ?? (canChange && change.canCancel ? (
+  // Leave is changed while it stands, cancelled before it starts and ended early once it has.
+  const leaveActions = change.kind === "Leave" && canChange && change.canEdit ? (
+    <div className="flex shrink-0 gap-2">
+      {onEdit ? (
+        <Button type="button" size="sm" variant="outline" onClick={() => onEdit(change)}>
+          <Pencil className="size-3.5" /> {change.canCancel ? t("changeLeave") : t("endEarly")}
+        </Button>
+      ) : null}
+      {change.canCancel ? <Button type="button" size="sm" variant="ghost" onClick={() => setCancelling(true)}>{t("cancelLeave")}</Button> : null}
+    </div>
+  ) : null;
+  const actions = action ?? leaveActions ?? (change.kind !== "Leave" && canChange && change.canCancel ? (
     <div className="flex shrink-0 gap-2">
       {change.canEdit && onEdit ? (
         <Button type="button" size="sm" variant="outline" onClick={() => onEdit(change)}>
@@ -167,11 +205,14 @@ export function CancelChangeDialog({ change, onClose }: { change: WorkforceChang
   const d = change.details;
   const name = change.person.displayName;
   const date = format.date(changeDay(change));
-  const title = change.kind === "EndEmployment" ? t("end", { name })
+  const leave = change.kind === "Leave";
+  const title = leave ? t("leave", { name, date })
+    : change.kind === "EndEmployment" ? t("end", { name })
     : change.kind === "Join" ? t("join", { name, date })
     : d.managerChanged ? t("move", { name, date })
     : t("change", { name, date });
-  const stays = change.kind === "EndEmployment" ? t("staysEmployed", { name: first(name) })
+  const stays = leave ? t("leaveStays", { name: first(name) })
+    : change.kind === "EndEmployment" ? t("staysEmployed", { name: first(name) })
     : change.kind === "Join" ? (d.isHire ? t("notHired", { name }) : t("notStarting", { name: first(name) }))
     : d.managerChanged && d.managerFrom
       ? d.teamOutcome === "Stays" && d.teamCount
@@ -195,13 +236,13 @@ export function CancelChangeDialog({ change, onClose }: { change: WorkforceChang
           <AlertDialogDescription>{stays}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{t("keep")}</AlertDialogCancel>
+          <AlertDialogCancel>{leave ? t("keepLeave") : t("keep")}</AlertDialogCancel>
           <AlertDialogAction
             className="bg-destructive text-white hover:bg-destructive/90"
             disabled={cancel.isLoading}
             onClick={(event) => { event.preventDefault(); void confirm(); }}
           >
-            {t("confirm")}
+            {leave ? t("confirmLeave") : t("confirm")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

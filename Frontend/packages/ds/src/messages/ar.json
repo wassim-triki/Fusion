@@ -283,14 +283,17 @@
         "oneOnOneToday": "لقاء فردي اليوم {time}",
         "atRisk": "هدف معرّض للخطر",
         "offTrack": "هدف متأخر",
-        "none": "لا شيء قادم"
+        "none": "لا شيء قادم",
+        "LeaveStarts": "إجازة من {date}",
+        "LeaveEnds": "العودة {date}"
       },
       "givePraise": "قدّم ثناءً",
       "tabs": {
         "overview": "نظرة عامة",
         "performance": "الأداء",
         "orgChart": "الهيكل التنظيمي"
-      }
+      },
+      "away": "في إجازة"
     }
   }
 }

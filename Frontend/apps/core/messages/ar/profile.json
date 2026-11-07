@@ -303,5 +303,14 @@
     "accepted": "قبل الدعوة",
     "signedIn": "سجّل الدخول",
     "signedInNote": "آخر مرة سجّل فيها {name} الدخول؛ يحتفظ Fusion بالأحدث فقط"
+  },
+  "leave": {
+    "pill": "في إجازة",
+    "mark": "في إجازة",
+    "now": "في إجازة",
+    "back": "العودة {date}",
+    "backOpen": "موعد العودة غير معروف بعد",
+    "from": "إجازة من {date}",
+    "typeFrom": "{type} من {date}"
   }
 }

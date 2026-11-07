@@ -801,7 +801,7 @@ function OrgChart({ data, asOf, replaying }: { data: OrgChartDto; asOf: string |
             canAddRole={managesRoles && !tree.ghosts.has(selected)}
             onAddRole={() => addRoleUnder(tree.people.get(selected)!)}
             onChangeJob={() => setChange({ id: selected, kind: "job", managerKey: null, editing: null })}
-            onEdit={(item) => setChange({ id: selected, kind: item.kind === "EndEmployment" ? "end" : item.kind === "Join" ? "start" : "job", managerKey: null, editing: item })}
+            onEdit={(item) => setChange({ id: selected, kind: item.kind === "EndEmployment" ? "end" : item.kind === "Join" ? "start" : item.kind === "Leave" ? "leave" : "job", managerKey: null, editing: item })}
             onClose={() => { setSelected(null); setLit(null); setAnimate(false); }}
             onGoTo={goTo}
             onCentre={centreOn}

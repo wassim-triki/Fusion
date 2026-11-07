@@ -29,11 +29,12 @@ public sealed record ChangeActor(string UserId, Guid? EmployeeId, string Name, b
 
 // --- Contracts --------------------------------------------------------------------------------------
 
-/// <summary>A job change or an end of employment, as described and drafted; exactly one part is set.</summary>
+/// <summary>A job change, an end of employment or leave, as described and drafted; exactly one part is set.</summary>
 public sealed record ProposeChangeRequest(
     JobChangeRequest? Job = null,
     EndEmploymentChangeRequest? End = null,
-    string? Description = null);
+    string? Description = null,
+    LeaveChangeRequest? Leave = null);
 
 public sealed record DeclineChangeRequestBody(string? Reason);
 
@@ -168,8 +169,8 @@ public sealed class ChangeRequestService(
     public async Task<Result<ProposeChangeResultDto>> ProposeAsync(
         string employeeKey, ProposeChangeRequest body, ChangeActor actor, CancellationToken cancellationToken)
     {
-        if ((body.Job is null) == (body.End is null))
-            return Fail<ProposeChangeResultDto>("ChangeRequest.OnePart", "Describe one change: a new job or a last day.");
+        if (new object?[] { body.Job, body.End, body.Leave }.Count(part => part is not null) != 1)
+            return Fail<ProposeChangeResultDto>("ChangeRequest.OnePart", "Describe one change: a new job, a last day or leave.");
         var subject = await ChangeSupport.FindEmployeeAsync(db, employeeKey, cancellationToken);
         if (subject is null)
             return ChangeSupport.NotFound<ProposeChangeResultDto>();
@@ -177,16 +178,26 @@ public sealed class ChangeRequestService(
         if (refused is not null)
             return Result.Failure<ProposeChangeResultDto>(refused);
 
-        Task<Result<WorkforceChange>> Stage(Employee person, string audit) => body.Job is { } job
-            ? changes.StageJobChangeAsync(person, job, audit, canManageEmployees: true, cancellationToken)
-            : changes.StageEndEmploymentAsync(person, body.End!, audit, cancellationToken);
+        Task<Result<WorkforceChange>> Stage(Employee person, string audit) => body switch
+        {
+            { Job: { } job } => changes.StageJobChangeAsync(person, job, audit, canManageEmployees: true, cancellationToken),
+            { Leave: { } leave } => changes.StageLeaveAsync(person, leave, audit, cancellationToken),
+            _ => changes.StageEndEmploymentAsync(person, body.End!, audit, cancellationToken),
+        };
 
         // HR's own changes apply at once.
         if (actor.ManagesPeople)
             return await ApplyNowAsync(() => Stage(subject, actor.Audit), cancellationToken);
 
-        var kind = body.Job is not null ? WorkforceChangeKind.JobChange : WorkforceChangeKind.EndEmployment;
-        var date = body.Job is { } asked ? DateOnly.FromDateTime(asked.EffectiveDate) : DateOnly.FromDateTime(body.End!.LastDay);
+        var kind = body.Job is not null ? WorkforceChangeKind.JobChange
+            : body.Leave is not null ? WorkforceChangeKind.Leave
+            : WorkforceChangeKind.EndEmployment;
+        var date = body switch
+        {
+            { Job: { } asked } => DateOnly.FromDateTime(asked.EffectiveDate),
+            { Leave: { } leave } => DateOnly.FromDateTime(leave.From),
+            _ => DateOnly.FromDateTime(body.End!.LastDay),
+        };
         var basis = await BasisAsync(subject.Id, date, cancellationToken);
 
         // The same rules that apply it, rolled back: what it would do, or why it can't be done.
@@ -210,12 +221,22 @@ public sealed class ChangeRequestService(
                 $"A change for {subject.DisplayName} is already waiting for approval. Withdraw it first, or wait for the answer."));
 
         var reason = details.ReasonId is { } reasonId && details.Reason is { } label ? (reasonId, label) : ((Guid, string)?)null;
-        var note = body.Job?.Note ?? body.End?.Note;
+        var note = body.Job?.Note ?? body.End?.Note ?? body.Leave?.Note;
         var request = WorkforceChangeRequest.Ask(
             tenant.TenantId, subject.Id,
-            kind == WorkforceChangeKind.JobChange ? WorkforceChangeRequestKind.JobChange : WorkforceChangeRequestKind.EndEmployment,
+            kind switch
+            {
+                WorkforceChangeKind.JobChange => WorkforceChangeRequestKind.JobChange,
+                WorkforceChangeKind.Leave => WorkforceChangeRequestKind.Leave,
+                _ => WorkforceChangeRequestKind.EndEmployment,
+            },
             date, types,
-            body.Job is { } payloadJob ? JsonSerializer.Serialize(payloadJob, Json) : JsonSerializer.Serialize(body.End, Json),
+            body switch
+            {
+                { Job: { } payloadJob } => JsonSerializer.Serialize(payloadJob, Json),
+                { Leave: { } payloadLeave } => JsonSerializer.Serialize(payloadLeave, Json),
+                _ => JsonSerializer.Serialize(body.End, Json),
+            },
             JsonSerializer.Serialize(details, Json), basis, body.Description, note, reason,
             actor.UserId, actor.EmployeeId, actor.Name);
         db.WorkforceChangeRequests.Add(request);
@@ -280,11 +301,15 @@ public sealed class ChangeRequestService(
             else
             {
                 // The change is the requester's, made with the approver's yes.
-                var staged = request.Kind == WorkforceChangeRequestKind.JobChange
-                    ? await changes.StageJobChangeAsync(subject, JsonSerializer.Deserialize<JobChangeRequest>(request.PayloadJson, Json)!,
-                        requester, canManageEmployees: true, cancellationToken)
-                    : await changes.StageEndEmploymentAsync(subject, JsonSerializer.Deserialize<EndEmploymentChangeRequest>(request.PayloadJson, Json)!,
-                        requester, cancellationToken);
+                var staged = request.Kind switch
+                {
+                    WorkforceChangeRequestKind.JobChange => await changes.StageJobChangeAsync(subject,
+                        JsonSerializer.Deserialize<JobChangeRequest>(request.PayloadJson, Json)!, requester, canManageEmployees: true, cancellationToken),
+                    WorkforceChangeRequestKind.Leave => await changes.StageLeaveAsync(subject,
+                        JsonSerializer.Deserialize<LeaveChangeRequest>(request.PayloadJson, Json)!, requester, cancellationToken),
+                    _ => await changes.StageEndEmploymentAsync(subject,
+                        JsonSerializer.Deserialize<EndEmploymentChangeRequest>(request.PayloadJson, Json)!, requester, cancellationToken),
+                };
                 if (staged.IsFailure)
                 {
                     if (transaction is not null) await transaction.RollbackAsync(cancellationToken);
@@ -473,7 +498,8 @@ public sealed class ChangeRequestService(
             .Where(item => item.EmployeeId == employeeId && item.EffectiveFrom <= at && (item.EffectiveTo == null || at < item.EffectiveTo))
             .Select(item => new { item.Id, item.EffectiveTo }).FirstOrDefaultAsync(cancellationToken);
         var latest = await db.WorkforceChanges.AsNoTracking()
-            .Where(item => item.EmployeeId == employeeId && !item.IsCancelled && item.EffectiveDate >= today)
+            .Where(item => item.EmployeeId == employeeId && !item.IsCancelled && item.EffectiveDate >= today
+                && item.Kind != WorkforceChangeKind.Leave)
             .OrderByDescending(item => item.EffectiveDate).ThenByDescending(item => item.CreatedAt)
             .Select(item => (Guid?)item.Id).FirstOrDefaultAsync(cancellationToken);
         return $"{assignment:N}|{line:N}|{employment?.Id:N}:{employment?.EffectiveTo:yyyyMMdd}|{latest:N}";
@@ -593,6 +619,11 @@ public sealed class ChangeRequestService(
         string what;
         if (kind == WorkforceChangeRequestKind.HomeAddress) what = "address";
         else if (kind == WorkforceChangeRequestKind.EndEmployment) what = "leaving";
+        else if (kind == WorkforceChangeRequestKind.Leave)
+        {
+            what = "leave";
+            values["summary"] = details?.LeaveType ?? "";
+        }
         else if (details is { TitleChanged: true } or { UnitChanged: true })
         {
             what = "job";

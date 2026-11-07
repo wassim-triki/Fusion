@@ -27,6 +27,16 @@ One interactive artifact, dark 1440×900, Carthage data, recommendation marked:
 - One branded Core HR notification email next to today's.
 User picks; then sessions 1–3 build, each its own commit with the board files.
 
+**Picks (user 2026-11-07, "yup all good proceed": every recommendation in `plans/B-313-explorer.html`):**
+- Leave type seen by HR and the manager (and the person); everyone else sees "On leave" and the return day.
+- Person band: "On leave" pill by the name (now) and a glance cell with the type/return day (scheduled and now); the photo gets a small leave mark while on leave. Lists, cards, org chart, My team, Performance: mark on the photo + "back <day>" (now), quiet "from <day>" where there's room (scheduled).
+- Leave can be open-ended ("Not known yet"); "Until" is the last day off, the return day comes from the work week.
+- Leave is a `WorkforceChangeKind` like the others and follows the company's approval rules (HR applies directly; a manager's proposal waits).
+- Coming up (person page, the manager's Home) lists the leave; HR gets Change / End early / Cancel. Performance shows it, pauses nothing.
+- Access › History newest first, from the invitation chain, deliveries, acceptance and the last sign-in (only the latest is kept; say so). Role grants not included (B-314).
+- "Their unit" = the unit the holder works in and every unit under it, updating with the organization; offered on jobs and history, personal details, approving changes, reports, plans and check-ins; Managers keep "their team". The role page's reach menu explains each choice and the preview shows the units and count.
+- Branded email exactly like the invitation (logo + name, button in the brand colour, "Sent by <company> with Fusion"); no colour bar.
+
 ## Session 1 — B-204 + B-231 (Identity-centred)
 - **B-204**: Identity `GET internal/identity/brand/email?tenantId=` → name, colour, logo PNG bytes (reuse `CompanyBrandReader`); a small cached client in SharedKernel (or per module, following the existing internal-client pattern) used by Core and Performance delivery to pass `FusionEmailBrand` into `FusionNotificationEmail.Render` (add the brand parameter there). Fallback to Fusion's look when Identity doesn't answer.
 - **B-231**: Identity `GET internal/identity/workforce-access/{employeeId}/history` built from the employee's `InviteToken` chain + delivery attempts + `LastLoginAt` (names of who invited from Identity users); Core endpoint `GET api/corehr/employees/people/{key}/access-history` gated like the Access tab (sign-in area); frontend History section on the Access tab per the drawing.

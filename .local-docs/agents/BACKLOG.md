@@ -35,7 +35,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 - [ ] **B-313** The person record and who sees it, as one batch (user 2026-11-07): branded notification emails, Access › History, on leave, roles reaching "their unit" · Core HR, Performance, Identity · 2026-11-07
       Plan: [plans/B-229-batch-leave-history-reach-emails.md](plans/B-229-batch-leave-history-reach-emails.md). Explorer first (session 0), then three builds, one commit each: 1 B-204 + B-231, 2 B-229, 3 B-212.
-      Session 0 done 2026-11-07: [plans/B-313-explorer.html](plans/B-313-explorer.html) (https://claude.ai/artifact/45gU5RWQJR8gqbekvF8Uy7), seven screens and seven questions; **waiting for the user's picks**.
+      Session 0 done 2026-11-07: [plans/B-313-explorer.html](plans/B-313-explorer.html) (https://claude.ai/artifact/45gU5RWQJR8gqbekvF8Uy7), seven screens and seven questions; user took every recommendation (picks in the plan). Next: session 1 (B-204 + B-231).
   - [ ] **B-204** Notification emails from Core HR and Performance in the company's brand (name, logo, colour), as invitations are since B-176; the modules don't hold the brand, so Identity serves it to them · Core HR, Performance, Identity · 2026-10-30
   - [ ] **B-231** Access tab › History (the drawn account story: invited by, accepted, signed in); Identity has no per-person account history read yet · Identity, Core HR · 2026-10-31
   - [ ] **B-229** On leave: dates and a type on a person, shown wherever the person appears (Performance included); slice 6's row, not in this session's ask · Core HR, Performance · 2026-10-31

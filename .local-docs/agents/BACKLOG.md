@@ -52,12 +52,7 @@ None waiting.
 
 ### Other reviews
 
-- [ ] **B-313** The person record and who sees it, as one batch (user 2026-11-07): branded notification emails, Access › History, on leave, roles reaching "their unit" · Core HR, Performance, Identity · 2026-11-07
-      Plan: [plans/B-313-batch-leave-history-reach-emails.md](plans/B-313-batch-leave-history-reach-emails.md). Explorer first (session 0), then three builds, one commit each: 1 B-204 + B-231, 2 B-229, 3 B-212.
-      Session 0 done 2026-11-07: [plans/B-313-explorer.html](plans/B-313-explorer.html) (https://claude.ai/artifact/45gU5RWQJR8gqbekvF8Uy7), seven screens and seven questions; user took every recommendation (picks in the plan).
-      Session 1 accepted 2026-11-07: B-204 + B-231 (✓, LOG). Session 2 accepted 2026-11-07: B-229 (✓, LOG). Session 3 built 2026-11-07: B-212, In review.
-  - [ ] **B-212** Reach "their unit" for roles (D-25 draws it), **built 2026-11-07, In review**: look at Settings › Roles › a role › the reach menu (each choice explained) and the preview's unit tree (screen `plans/B-212-screens/01-role-their-unit.png`); one deviation to judge: Plans "See · everyone" now also reads put-forward plans on a person's Performance tab, like "their unit" (it showed nothing before). Core HR's record reads and Performance resolve the viewer's unit and the units under it, then the Jobs, Personal and Plans areas offer it. Not offered in B-177 because nothing enforces it yet (`performance.cycle.view@OrgUnit` is unseeded and treated as a team) · Core HR, Performance, Identity · 2026-10-30
-    User 2026-10-31 (B-179 screen 11 vs the drawing): the band's glance row gets manager, team, time with the company and location even though the left rail repeats them (keep the rail); a ⋯ menu at the band's top right like the drawing (empty if nothing fits); sections stacked one under another as drawn, not the newspaper grid, titles inside their sections (B-225); "do as the reference, we agreed on it for a reason". Tabs and filters: active state in the tenant's theme, outline with a subtle fill (as configured before); date pickers per B-227.
+None waiting.
 
 ## Ready
 

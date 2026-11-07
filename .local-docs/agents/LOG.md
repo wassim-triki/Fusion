@@ -1,5 +1,6 @@
 # LOG — the one history
 
+- ✓ **B-212** accepted, 2026-11-07 (user: "sure, proceed"): roles reach "their unit"; "See · everyone" for plans reads put-forward plans on the Performance tab too. Closes **B-313** (✓): branded emails, Access › History, on leave, their unit.
 - **B-313 session 3: B-212 Their unit** built, 2026-11-07, **In review** (screen `plans/B-212-screens/01-role-their-unit.png`):
   - Scopes rank Self 1 · DirectReports 2 · OrgUnit 3 · Tenant/Module 4 · Platform 5 (backend `PermissionScopes`, `@repo/auth`, the role editor): a unit covers the holder's team, so a team role and a unit role together hold the unit. `RoleReaches.Unit` options: Jobs see, Personal see, Approving changes propose, Reports see/build, Plans see; the catalogue allows `OrgUnit` on those keys.
   - Core HR `ViewerReach` (`Features/Security/ViewerReach.cs`): their branch plus everyone whose primary assignment today is in the unit they work in or a unit under it, never themselves, tenant-filtered. Used by the profile (manager read inside the reach), timeline, personal details (`PersonalGrant.Unit`) and job history, custom fields, reports and the front page (`ReportViewer.Partial`), and proposals (`ChangeActor.ProposesForUnit`). `GET api/corehr/roles/reach/{employeeId}` (role editors) describes the units and people for the role page.

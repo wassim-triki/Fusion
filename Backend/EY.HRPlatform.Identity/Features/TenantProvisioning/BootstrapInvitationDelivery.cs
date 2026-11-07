@@ -1,5 +1,6 @@
 using EY.HRPlatform.Identity.Domain.Entities;
 using EY.HRPlatform.Identity.Domain.Enums;
+using EY.HRPlatform.Identity.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using EY.HRPlatform.Identity.Infrastructure.Persistence;
 using EY.HRPlatform.Identity.Infrastructure.Services;
@@ -39,8 +40,6 @@ public sealed class BootstrapInvitationDelivery(
         Guid initiatedByAccountId,
         CancellationToken cancellationToken = default)
     {
-        var link = BootstrapActivationLinkBuilder.Build(configuration, credential.RawValue);
-
         InvitationDeliveryAttempt attempt;
         try
         {
@@ -61,8 +60,13 @@ public sealed class BootstrapInvitationDelivery(
                         .Where(tenant => tenant.Id == item.TenantId)
                         .Select(tenant => tenant.Name)
                         .FirstOrDefault(),
+                    TenantSlug = dbContext.Tenants.IgnoreQueryFilters()
+                        .Where(tenant => tenant.Id == item.TenantId)
+                        .Select(tenant => tenant.Slug)
+                        .FirstOrDefault(),
                 })
                 .FirstOrDefaultAsync(cancellationToken);
+            var link = BootstrapActivationLinkBuilder.Build(configuration, credential.RawValue, context?.TenantSlug);
 
             var message = new BootstrapInvitationMessage(
                 TenantName: context?.TenantName ?? string.Empty,
@@ -177,10 +181,10 @@ public static class BootstrapActivationLinkBuilder
     private const string DefaultPublicBaseUrl = "http://localhost:3000";
     private const string ActivationPath = "/activate-invitation";
 
-    public static string Build(IConfiguration configuration, string credential)
-        => Build(configuration["Application:PublicBaseUrl"], credential);
+    public static string Build(IConfiguration configuration, string credential, string? company = null)
+        => Build(configuration["Application:PublicBaseUrl"], credential, company);
 
-    public static string Build(string? publicBaseUrl, string credential)
+    public static string Build(string? publicBaseUrl, string credential, string? company = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(credential);
 
@@ -188,6 +192,6 @@ public static class BootstrapActivationLinkBuilder
             ? DefaultPublicBaseUrl
             : publicBaseUrl.TrimEnd('/');
 
-        return $"{baseUrl}{ActivationPath}?credential={Uri.EscapeDataString(credential)}";
+        return $"{baseUrl}{ActivationPath}?credential={Uri.EscapeDataString(credential)}{InvitationLinkBuilder.CompanyQuery(company)}";
     }
 }

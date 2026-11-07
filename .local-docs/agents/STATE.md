@@ -1,7 +1,11 @@
 # STATE - live handoff
 
-**Last finished:** B-295 password reset by emailed one-time link, 2026-11-07, In review.
+**Last finished:** batch B-205, B-287, B-240, B-200, B-236 (invitation pages in the company's frame, filled roles, directory card, list drag, tenant export), 2026-11-07, In review.
 
 ## Active work
 
 None.
+
+## Next
+
+Not set: take it from the user or the board.

@@ -3,6 +3,7 @@ using EY.HRPlatform.Identity.Domain.Enums;
 using EY.HRPlatform.Identity.Features.Branding;
 using EY.HRPlatform.Identity.Features.TenantProvisioning;
 using EY.HRPlatform.Identity.Infrastructure.Persistence;
+using EY.HRPlatform.Identity.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -48,8 +49,6 @@ public sealed class AdministrativeInvitationDelivery(
         Guid initiatedByAccountId,
         CancellationToken cancellationToken = default)
     {
-        var link = AdministrativeAcceptanceLinkBuilder.Build(configuration, credential.RawValue);
-
         InvitationDeliveryAttempt attempt;
         try
         {
@@ -64,8 +63,13 @@ public sealed class AdministrativeInvitationDelivery(
                         .Where(tenant => tenant.Id == item.TenantId)
                         .Select(tenant => tenant.Name)
                         .FirstOrDefault(),
+                    TenantSlug = dbContext.Tenants.IgnoreQueryFilters()
+                        .Where(tenant => tenant.Id == item.TenantId)
+                        .Select(tenant => tenant.Slug)
+                        .FirstOrDefault(),
                 })
                 .FirstOrDefaultAsync(cancellationToken);
+            var link = AdministrativeAcceptanceLinkBuilder.Build(configuration, credential.RawValue, context?.TenantSlug);
 
             // The purpose is carried into the message so the canonical renderer emits
             // the additional-administrator or recovery variant — never bootstrap's
@@ -135,10 +139,10 @@ public static class AdministrativeAcceptanceLinkBuilder
     private const string DefaultPublicBaseUrl = "http://localhost:3000";
     private const string RecoveryPath = "/recover-administrator-access";
 
-    public static string Build(IConfiguration configuration, string credential)
-        => Build(configuration["Application:PublicBaseUrl"], credential);
+    public static string Build(IConfiguration configuration, string credential, string? company = null)
+        => Build(configuration["Application:PublicBaseUrl"], credential, company);
 
-    public static string Build(string? publicBaseUrl, string credential)
+    public static string Build(string? publicBaseUrl, string credential, string? company = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(credential);
 
@@ -146,6 +150,6 @@ public static class AdministrativeAcceptanceLinkBuilder
             ? DefaultPublicBaseUrl
             : publicBaseUrl.TrimEnd('/');
 
-        return $"{baseUrl}{RecoveryPath}?credential={Uri.EscapeDataString(credential)}";
+        return $"{baseUrl}{RecoveryPath}?credential={Uri.EscapeDataString(credential)}{InvitationLinkBuilder.CompanyQuery(company)}";
     }
 }

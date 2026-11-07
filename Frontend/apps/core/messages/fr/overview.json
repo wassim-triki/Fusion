@@ -100,6 +100,11 @@
         "chart": "Effectif par unité, chaque mois. Utilisez les flèches pour explorer.",
         "outside": "Hors unité"
       }
-    }
+    },
+    "filledCount": "{count, plural, one {# pourvu} other {# pourvus}}",
+    "filled": "Pourvu",
+    "open": "Ouvert",
+    "filledBy": "{name}, {day}",
+    "filledOn": "Arrivée {day}"
   }
 }

@@ -47,41 +47,28 @@
     "failed": "We couldn't finish setting up your account. Try again in a moment or contact your administrator."
   },
   "workforce": {
-    "eyebrow": "Your access",
-    "lead": "Activate the account connected to your employee record. Your company owns the identity and work details shown in Fusion.",
-    "access": "Access",
-    "accountEmail": "Account email",
-    "security": "This invitation is secure and tied to your work email address. Only you can use this link.",
+    "access": "Your access",
     "roles": {
       "Employee": "Employee",
       "Manager": "Manager"
     },
-    "heading": "Activate your account",
-    "formLead": "{tenant} has set up your Fusion access. Choose a password to activate your account.",
-    "submit": "Activate account",
+    "heading": "Join {tenant}",
+    "submit": "Activate my account",
     "submitting": "Activating your account…",
     "email": "Work email",
-    "formLeadProvider": "{tenant} has set up your Fusion access. Continue with your company's account to activate it."
+    "formLeadProvider": "Continue with your company's account to activate it.",
+    "name": "Your name"
   },
   "administrator": {
-    "eyebrow": "You're invited",
     "heading": "Join {tenant}",
-    "lead": "You've been invited to set up your Fusion account and get started with {tenant}.",
-    "role": "Assigned role",
-    "roleValue": "Administrator",
-    "sentTo": "Invitation sent to",
-    "security": "This invitation is secure and tied to the invited email address. Only the intended recipient can use this link.",
-    "formHeading": "Set up your account",
-    "formLead": "Accept your invitation from {tenant} to create your Fusion account.",
-    "submit": "Set up account",
+    "role": "Your role",
+    "submit": "Create my account",
     "submitting": "Creating your account…",
-    "email": "Invitation email"
+    "email": "Work email",
+    "roleValue": "Administrator"
   },
-  "organization": "Company",
-  "footer": "People work together",
   "firstName": "First name",
   "lastName": "Last name",
-  "readOnly": "Read only",
   "createPassword": "Create password",
   "confirmPassword": "Confirm password",
   "showCharacters": "Show characters",

@@ -13,7 +13,8 @@ namespace EY.HRPlatform.CoreHR.Features.OrgChart;
 /// <summary>
 /// An open role in a manager's line: a job from the catalogue and, optionally, a place. A new role starts Open or
 /// On hold; Filled and Closed take it off the chart. <paramref name="TargetStartDate"/> may be left empty; when set
-/// on a new role it can't be in the past.
+/// on a new role it can't be in the past. Filled names who filled it (<paramref name="FilledByKey"/>) and the day they
+/// start in it (<paramref name="FilledOn"/>), someone working here that day; any other status ignores both.
 /// </summary>
 public sealed record OpenRoleRequest(
     Guid JobId,
@@ -21,7 +22,9 @@ public sealed record OpenRoleRequest(
     Guid OrgUnitId,
     DateOnly? TargetStartDate = null,
     OpenRoleStatus Status = OpenRoleStatus.Open,
-    Guid? PlaceId = null);
+    Guid? PlaceId = null,
+    string? FilledByKey = null,
+    DateOnly? FilledOn = null);
 
 /// <summary>An open role as the chart draws it: a dashed Hiring card under <paramref name="ManagerKey"/>.</summary>
 public sealed record OrgChartOpenRoleDto(
@@ -33,10 +36,13 @@ public sealed record OrgChartOpenRoleDto(
     OpenRoleStatus Status,
     Guid? JobId = null,
     Guid? PlaceId = null,
-    string? PlaceName = null)
+    string? PlaceName = null,
+    string? FilledByKey = null,
+    DateOnly? FilledOn = null)
 {
-    public static OrgChartOpenRoleDto From(OpenRole role, string managerKey, OrgChartUnitDto? unit)
-        => new(role.Id, role.JobTitle, managerKey, unit, role.TargetStartDate, role.Status, role.JobId, role.PlaceId, role.PlaceName);
+    public static OrgChartOpenRoleDto From(OpenRole role, string managerKey, OrgChartUnitDto? unit, string? filledByKey = null)
+        => new(role.Id, role.JobTitle, managerKey, unit, role.TargetStartDate, role.Status, role.JobId, role.PlaceId, role.PlaceName,
+            filledByKey, role.FilledOn);
 }
 
 public sealed record CreateOpenRoleCommand(OpenRoleRequest Request, string Actor) : ICommand<Result<OrgChartOpenRoleDto>>;
@@ -108,10 +114,21 @@ public sealed class UpdateOpenRoleCommandHandler(CoreHRDbContext dbContext, ITen
         var place = await catalog.PlaceAsync(request.PlaceId, role.PlaceId, cancellationToken);
         if (place.IsFailure)
             return Result.Failure<OrgChartOpenRoleDto>(place.Error);
+        (Guid EmployeeId, DateOnly On)? filledBy = null;
+        string? filledByKey = null;
+        if (request.Status == OpenRoleStatus.Filled)
+        {
+            var filler = await OpenRoleSupport.ResolveFillerAsync(dbContext, request, cancellationToken);
+            if (filler.IsFailure)
+                return Result.Failure<OrgChartOpenRoleDto>(filler.Error);
+            filledBy = (filler.Value.Id, request.FilledOn!.Value);
+            filledByKey = filler.Value.Key;
+        }
 
-        role.Update(job.Value, place.Value, placement.Value.ManagerId, request.OrgUnitId, request.TargetStartDate, request.Status, command.Actor);
+        role.Update(job.Value, place.Value, placement.Value.ManagerId, request.OrgUnitId, request.TargetStartDate, request.Status,
+            filledBy, command.Actor);
         await dbContext.SaveChangesAsync(cancellationToken);
-        return Result.Success(await OpenRoleSupport.ProjectAsync(dbContext, role, placement.Value.ManagerKey, today, cancellationToken));
+        return Result.Success(await OpenRoleSupport.ProjectAsync(dbContext, role, placement.Value.ManagerKey, today, cancellationToken, filledByKey));
     }
 }
 
@@ -149,10 +166,37 @@ internal static class OpenRoleSupport
         static Result<(Guid, string)> Fail(string code, string message) => Result.Failure<(Guid, string)>(Error.Validation(code, message));
     }
 
+    /// <summary>
+    /// Who filled the role must work here on the day they start in it (a joiner who starts later counts). The read runs
+    /// inside the tenant query filter, so another tenant's person is refused like one that doesn't exist.
+    /// </summary>
+    public static async Task<Result<(Guid Id, string Key)>> ResolveFillerAsync(
+        CoreHRDbContext dbContext, OpenRoleRequest request, CancellationToken cancellationToken)
+    {
+        var key = (request.FilledByKey ?? string.Empty).Trim().ToUpperInvariant();
+        if (key.Length == 0)
+            return Fail("OpenRole.FilledBy", "Pick who filled the role.");
+        if (request.FilledOn is not { } on)
+            return Fail("OpenRole.FilledOn", "Pick the day they start in the role.");
+
+        var at = on.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var person = await dbContext.Employees.AsNoTracking()
+            .Where(item => item.StableEmployeeKey == key)
+            .Select(item => new { item.Id, item.StableEmployeeKey })
+            .FirstOrDefaultAsync(cancellationToken);
+        var employed = person is not null && await dbContext.Employments.AsNoTracking()
+            .AnyAsync(item => item.EmployeeId == person.Id && item.EffectiveFrom <= at && (item.EffectiveTo == null || at < item.EffectiveTo), cancellationToken);
+        return employed
+            ? Result.Success((person!.Id, person.StableEmployeeKey))
+            : Fail("OpenRole.FilledBy", "Pick someone who works here on that day.");
+
+        static Result<(Guid, string)> Fail(string code, string message) => Result.Failure<(Guid, string)>(Error.Validation(code, message));
+    }
+
     public static async Task<OrgChartOpenRoleDto> ProjectAsync(
-        CoreHRDbContext dbContext, OpenRole role, string managerKey, DateOnly today, CancellationToken cancellationToken)
+        CoreHRDbContext dbContext, OpenRole role, string managerKey, DateOnly today, CancellationToken cancellationToken, string? filledByKey = null)
     {
         var units = await OrgChartQueryHandler.LoadUnitsAsync(dbContext, today, cancellationToken);
-        return OrgChartOpenRoleDto.From(role, managerKey, units.GetValueOrDefault(role.OrgUnitId));
+        return OrgChartOpenRoleDto.From(role, managerKey, units.GetValueOrDefault(role.OrgUnitId), filledByKey);
     }
 }

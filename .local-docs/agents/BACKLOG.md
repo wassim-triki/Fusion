@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-311.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-313.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -54,8 +54,18 @@ None waiting.
 
 ### Other reviews
 
-- [ ] **B-295** Password reset by an emailed one-time link · Identity, Shell · 2026-11-07
-      Look at: [screen](plans/B-295-screens/reset-password.png) (the reset form in Carthage's frame). To try it: http://localhost:3000/auth/signin → `leila.baccouche@example.test` → Continue → "Forgot password?" by the password label → Send link → open the "Choose a new password" mail in Mailpit (http://localhost:8025) → its button. Password: `FUSION_LOCAL_PASSWORD` (choosing it again keeps her sign-in as is). Judge the words of "Check your email" and the ended states (expired, used, invalid, company signs you in), and the two mails.
+Batch of 2026-11-07, one session. Every local password is `FUSION_LOCAL_PASSWORD`.
+
+- [ ] **B-205** The invitation acceptance and activation pages in the company's brand (the same frame as sign-in); fits B-188's activation redraw · Shell, Core HR · 2026-10-30
+      Look at: [screen](plans/B-205-screens/invitation.png) (Yasmine Trabelsi's invitation in Carthage's frame, beside D-10's drawing). To try it: her pending invitation in Mailpit (http://localhost:8025, "yasmine.trabelsi@example.test"), its button, signed out. The administrator activation and recovery pages use the same frame and facts row.
+- [ ] **B-287** Open roles remember who filled them, so the front page can show "Filled · Ons Khemiri, Monday" as drawn (D-30) · Core HR · 2026-11-04
+      Look at: [screen](plans/B-287-screens/filled-role.png) (Open roles: "2 open · 1 filled", "Product · Ons Khemiri, Tuesday"). To try marking one filled: http://localhost:3000/core/organization as `amira.khelifi@example.test` → an open role's card → Status Filled → Starts in the role, Filled by.
+- [ ] **B-240** Directory card as drawn (D-28): initials in Fusion's serif, the footer's org chart icon as drawn · Core HR · 2026-10-31
+      Look at: [screen](plans/B-240-screens/directory-card.png) (People as Aicha Bouazizi; compare with the card in D-28's drawing).
+- [ ] **B-200** Reorder list values by drag and drop (a handle on each row) in Settings › Lists · Core HR · 2026-10-30
+      Try: http://localhost:3000/core/settings/lists as `amira.khelifi@example.test`, drag a value by the handle at its start (or focus the handle, Space, arrows, Space).
+- [ ] **B-236** Platform's tenant list exports through the table kit's `DataTableExport` · Platform · 2026-10-31
+      Try: http://localhost:3000/platform/tenants as `admin@ey-hr.com` → Export saves the CSV at once. CSV only: Excel would need Identity to write spreadsheets; say if you want it.
 
 ## Ready
 
@@ -65,6 +75,12 @@ None waiting.
 
 ### Other work
 
+- [ ] **B-312** Fill a role where the hiring happens: Add person offers the open roles under the chosen manager ("Fills the open QA Automation Engineer role") and marks it filled from the first day; Your team shows the filled role as its drawing does ("QA Automation Engineer, filled by Ons") · Core HR · 2026-11-07
+      From B-287: today a role is marked filled from its panel on the chart, after the hire.
+
+- [ ] **B-311** Later check: rules defined once, not redefined. Password rules first, then anything like them (address checks, length limits, …): find each rule's copies across the backend and frontends, keep one source, and make the rest read from it · Identity, Shell, Core HR · 2026-11-07
+      User 2026-11-07: park it, check and fix later; main things first. Known copies of the password rules: Identity's `AccountPasswordPolicy` (the source, sent to forms as `passwordRequirements`); its checklist re-coded in the shell's `lib/activation.ts` (`passwordChecks`) and again in `@repo/auth` `password-reset-page.tsx` (`requirementChecks`, B-295), each with its own words; `@repo/ds` `PasswordStrengthField` scores strength on its own assumed minimum of 10.
+
 - [ ] **B-296** Prove a single sign-on domain by DNS before Fusion is hosted: today the first company to pass a test sign-in from a domain proves it, so a company running its own provider could claim another company's unclaimed domain and show its button on that domain's sign-in page · Identity, Core HR · 2026-11-05
       Found in the B-191 security review (accepted rung 2 in the plan, D9). A claim never signs anyone in across companies; the risk is the sign-in page steering another company's people to that provider. Fix: a DNS TXT record per domain, checked before it counts as proved.
 - [ ] **B-299** Administrator Suspend/Reactivate and the `TenantAdministrator` invitation purpose are now unreachable from the product: only tests and a database constraint keep them. Remove them, or say what they are for · Identity · 2026-11-06
@@ -72,8 +88,6 @@ None waiting.
 - [ ] **B-300** The backend still says "Tenant Administrator" in role names, mail and audit, while screens say "Administrator" since B-192 · Identity · 2026-11-06
 
 - [ ] **B-301** "Growth goal" and "development goal" both appear for the same idea; pick one (left out of B-192's fix list) · Performance · 2026-11-06
-- [ ] **B-287** Open roles remember who filled them, so the front page can show "Filled · Ons Khemiri, Monday" as drawn (D-30); today a filled role keeps no link to the hire or date · Core HR · 2026-11-04
-      From B-285: the open roles model has Open/OnHold/Filled/Closed only.
 
 - [ ] **B-277** Resolve archive collisions for completed review plans · Tooling · 2026-11-03
       Stack startup repeatedly reports `archive/plans/B-189-reports.md exists; left B-189-reports.md in plans/`. Compare and preserve both copies’ information before clearing the completed plan from the active folder.
@@ -83,11 +97,6 @@ None waiting.
 - [ ] **B-249** The brand studio's Home preview draws the real Home (day one's guide, the company card) instead of its stand-in (from B-188's notes) · Core HR · 2026-11-01
 
 - [ ] **B-245** The import groups titles into job families when the files have no family column (D-23 widened the AI to it): suggestions marked with the sparkle, each family changeable on the chart's Jobs view · Core HR · 2026-11-01
-
-- [ ] **B-240** Directory card as drawn (D-28): initials in Fusion's serif on every face, and the card footer's org chart icon matching the drawing's (Hugeicons Hierarchy; Core's chrome is still Lucide, so pick the match or move this icon). Long names already end in an ellipsis · Core HR · 2026-10-31
-      User 2026-10-31 (B-182 review, card compared with `plans/B-182-screens/ref-directory-card.png`).
-
-- [ ] **B-236** Platform's tenant list keeps its own CSV export; move it onto the table kit's `DataTableExport` (B-182's one Export) · Platform · 2026-10-31
 
 - [ ] **B-228** Performance's object lists keep their headings on the canvas (My Plan's sections, the review record's sections, Feedback's request lists, the person summary's Performance parts): each is a list of standalone rich cards, so putting the title inside means the objects become rows or inlays in one frame. Recommendation: rows with the rich detail in the drawer, as Needs you does. Left out of B-225's sweep for that reason · Performance · 2026-10-31
 
@@ -102,9 +111,8 @@ None waiting.
 
 - [ ] **B-204** Notification emails from Core HR and Performance in the company's brand (name, logo, colour), as invitations are since B-176; the modules don't hold the brand, so Identity serves it to them · Core HR, Performance, Identity · 2026-10-30
 
-- [ ] **B-205** The invitation acceptance and activation pages in the company's brand (the same frame as sign-in); fits B-188's activation redraw · Shell, Core HR · 2026-10-30
-
 - [ ] **B-202** `fusion-dev` script that adds an EF migration without stopping the running service (build to the artifacts path, then `dotnet ef … --no-build` against it); B-175 had to stop CoreHR for it · Tooling · 2026-10-30
+      Recipe that worked in the B-287 batch (2026-11-07), to wrap in the script: environment `UseArtifactsOutput=true` and `ArtifactsPath=<temp folder>`, `dotnet restore <project>`, then `dotnet ef migrations add <Name> --project … --startup-project … --output-dir Infrastructure/Persistence/Migrations`.
 
 - [ ] **B-090** Product tour: an interactive walkthrough that takes a new tenant from the platform admin's invite through its first real use of Fusion · Shell, Core, Performance · 2026-10-20
       User: another wow factor that, done right, also carries a realistic demo from the tenant's point of view, "taking over after the initial platform admin invite". Open: where it starts and ends, who it's for (tenant admin, HR, manager, employee), guided steps vs. checklist vs. contextual hints, and whether it runs on real or demo data. Best after B-089 and the demo seeder, so it walks finished screens.
@@ -112,9 +120,6 @@ None waiting.
       User 2026-10-30: "i would want a product tour, its a good prio feature". Next up; starts with a decision page (where it starts and ends, who it guides, how it moves through real screens) before any code.
       User 2026-10-30, later: the tour needs cleanly engineered features first, so it follows B-164; its storyline is B-166's journey, and the explorer marks the tour-worthy moments.
       User 2026-10-30, checkpoint 2: consolidate with B-164's setup guide (F1). One guidance system: the setup guide on Home is the tour's administrator track; each step opens the real screen where the tour takes over. B-167 builds the guide for the tour to extend.
-
-- [ ] **B-065** Rebuild Performance from first principles into a complete, integrated, demo-ready module · Performance · 2026-10-15
-      2026-10-26: all seven slices (B-070), Settings (B-071) and English/French/Arabic are done and committed. What's left: the user's hand pass (B-104, In review); the polish itself (B-089) is done. Inventory done ([B-067](plans/B-067-performance-inventory.md)); decisions accepted ([B-068](plans/B-068-decisions.md)). With Claude. Research → feature catalogue and decisions → surface architecture and role × state design → contracts → implementation. The agent owns product knowledge, architecture, contracts, implementation and surface design; the user agrees add-ons and wow features from the agent's recommendations. Settings is reworked once, last. See [plan](plans/B-065-performance-first-principles-rework.md).
 
 - [ ] **B-105** Real internationalization: English, French and Arabic fully configured across our modules (Arabic means right-to-left layouts too); screens are done in all three, only server text (B-116) is left and parked · Shell, Core HR, Performance, Platform · 2026-10-23
       From B-071 C-6: the switch lives in Settings > Preferences. 2026-10-24, user: wants EN/FR/AR later, so "remove the switch" is off the table. To discuss: how translations are stored and loaded, dates and numbers per locale, RTL in `@repo/ds`, server text (emails, notifications, errors), and how it meets B-110 (a tenant's default language).
@@ -147,8 +152,6 @@ These keep their original scope and connection to B-167/B-192; they are not numb
 - [ ] **B-230** Parked by the user, 2026-11-06; don't offer it again unprompted. Demo photos for Carthage's people (slice 6's row); every page draws initials today · Core HR · 2026-10-31
 
 - [ ] **B-231** Access tab › History (the drawn account story: invited by, accepted, signed in); Identity has no per-person account history read yet · Identity, Core HR · 2026-10-31
-
-- [ ] **B-200** Reorder list values by drag and drop (a handle on each row) instead of up and down arrows, in Settings › Lists; reuse the milestone editor's drag if it fits · Core HR · 2026-10-30
 
 - [ ] **B-201** Make the Places table richer: it does its job but reads lackluster (user 2026-10-30, not urgent) · Core HR · 2026-10-30
 

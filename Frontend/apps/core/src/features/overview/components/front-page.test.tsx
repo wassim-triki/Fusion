@@ -70,6 +70,9 @@ const data: FrontPageDto = {
       unit: "Engineering",
       targetStartDate: null,
       managerKey: null,
+      status: "Open",
+      filledByKey: null,
+      filledOn: null,
     },
   ],
   recordsToComplete: [
@@ -124,6 +127,26 @@ describe("Core HR's front page", () => {
       "href",
       "/people/ada?tab=personal"
     );
+  });
+  it("names who filled a role lately and the day they start, only when the viewer sees them (B-287)", () => {
+    const filled = {
+      ...data.openRoles[0]!,
+      id: "f",
+      job: "QA Engineer",
+      status: "Filled" as const,
+      filledByKey: "bo",
+      filledOn: "2026-01-05",
+    };
+    render(
+      <FrontPageContent
+        data={{ ...data, openRoles: [data.openRoles[0]!, filled, { ...filled, id: "h", job: "Tester", filledByKey: null }] }}
+      />
+    );
+    expect(screen.getByText("1 open · 2 filled")).toBeInTheDocument();
+    expect(screen.getByText("Engineering · Bo Kim, Monday")).toBeInTheDocument();
+    expect(screen.getByText("Engineering · Starts Monday")).toBeInTheDocument();
+    expect(screen.getAllByText("Filled")).toHaveLength(2);
+    expect(screen.getByText("Open")).toBeInTheDocument();
   });
   it("omits regrouping by fields that Reports did not make visible, and renders empty data", () => {
     render(

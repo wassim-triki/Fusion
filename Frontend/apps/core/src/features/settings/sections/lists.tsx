@@ -1,6 +1,23 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type CSSProperties, type FormEvent, type ReactNode } from "react";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { ApiError, type CompanyListDto, type CompanyListValueDto, type FusionSettingsSection } from "@repo/api";
@@ -15,7 +32,7 @@ import {
   cn,
 } from "@repo/ds";
 import { SettingsBlock, SettingsPage, SettingsRows, StatusBadge, useSettingsSectionName } from "@repo/ds/shell";
-import { Archive, ArrowDown, ArrowUp, MoreHorizontal, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { Archive, GripVertical, MoreHorizontal, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useCompanyLists, useListMutations } from "@/features/catalog/api/use-catalog";
 import { PageFailure } from "@repo/auth";
 
@@ -52,8 +69,18 @@ function ListBlock({ list, editable }: { list: CompanyListDto; editable: boolean
   const mutations = useListMutations();
   const [label, setLabel] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const active = list.values.filter((value) => !value.isRetired);
+  const saved = list.values.filter((value) => !value.isRetired);
   const retired = list.values.filter((value) => value.isRetired);
+  // A dropped order shows at once and holds until the list comes back from the server (or the save fails).
+  const [order, setOrder] = useState<string[] | null>(null);
+  useEffect(() => setOrder(null), [list.values]);
+  const active = order
+    ? order.flatMap((id) => saved.find((value) => value.id === id) ?? [])
+    : saved;
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   async function add(event: FormEvent) {
     event.preventDefault();
@@ -69,26 +96,33 @@ function ListBlock({ list, editable }: { list: CompanyListDto; editable: boolean
     }
   }
 
-  function move(index: number, by: -1 | 1) {
+  function drop({ active: dragged, over }: DragEndEvent) {
+    if (!over || dragged.id === over.id) return;
     const ids = active.map((value) => value.id);
-    [ids[index], ids[index + by]] = [ids[index + by]!, ids[index]!];
-    mutations.reorder.mutate({ list: list.id, ids: [...ids, ...retired.map((value) => value.id)] });
+    const next = arrayMove(ids, ids.indexOf(String(dragged.id)), ids.indexOf(String(over.id)));
+    setOrder(next);
+    mutations.reorder.mutateAsync({ list: list.id, ids: [...next, ...retired.map((value) => value.id)] }).catch(() => {
+      setOrder(null);
+      toast.error(t("didNotSave"));
+    });
   }
+  const sortable = editable && active.length > 1;
 
   return (
     <SettingsBlock title={t(`name.${list.id}`)} meta={active.length || undefined}>
       <SettingsRows>
         {active.length === 0 ? <p className="px-5 py-4 type-body text-muted-foreground">{t("empty")}</p> : null}
-        {active.map((value, index) => (
-          <ValueRow
-            key={value.id}
-            list={list.id}
-            value={value}
-            editable={editable}
-            onUp={index > 0 ? () => move(index, -1) : undefined}
-            onDown={index < active.length - 1 ? () => move(index, 1) : undefined}
-          />
-        ))}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={drop}>
+          <SortableContext items={active.map((value) => value.id)} strategy={verticalListSortingStrategy}>
+            {active.map((value) =>
+              sortable ? (
+                <SortableValueRow key={value.id} list={list.id} value={value} />
+              ) : (
+                <ValueRow key={value.id} list={list.id} value={value} editable={editable} />
+              ),
+            )}
+          </SortableContext>
+        </DndContext>
         {retired.map((value) => (
           <ValueRow key={value.id} list={list.id} value={value} editable={editable} />
         ))}
@@ -117,18 +151,50 @@ function ListBlock({ list, editable }: { list: CompanyListDto; editable: boolean
   );
 }
 
+/** An active value in a list of two or more: dragged by the handle at its start, or moved with the keyboard on it. */
+function SortableValueRow({ list, value }: { list: CompanyListDto["id"]; value: CompanyListValueDto }) {
+  const t = useTranslations("catalog.lists");
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: value.id });
+  return (
+    <ValueRow
+      list={list}
+      value={value}
+      editable
+      rowRef={setNodeRef}
+      style={{ transform: CSS.Translate.toString(transform), transition }}
+      dragging={isDragging}
+      handle={
+        <button
+          ref={setActivatorNodeRef}
+          type="button"
+          className="-ms-2 flex size-7 shrink-0 cursor-grab touch-none items-center justify-center rounded-control-sm text-muted-foreground/60 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
+          aria-label={t("reorder", { label: value.label })}
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="size-4" aria-hidden />
+        </button>
+      }
+    />
+  );
+}
+
 function ValueRow({
   list,
   value,
   editable,
-  onUp,
-  onDown,
+  handle,
+  rowRef,
+  style,
+  dragging = false,
 }: {
   list: CompanyListDto["id"];
   value: CompanyListValueDto;
   editable: boolean;
-  onUp?: () => void;
-  onDown?: () => void;
+  handle?: ReactNode;
+  rowRef?: (node: HTMLElement | null) => void;
+  style?: CSSProperties;
+  dragging?: boolean;
 }) {
   const t = useTranslations("catalog.lists");
   const words = useTranslations("catalog");
@@ -175,7 +241,12 @@ function ValueRow({
     : null;
 
   return (
-    <div className="flex min-h-[52px] items-center gap-3 px-5 py-2">
+    <div
+      ref={rowRef}
+      style={style}
+      className={cn("flex min-h-[52px] items-center gap-3 px-5 py-2", dragging && "relative z-10 bg-card shadow-overlay")}
+    >
+      {handle}
       {renaming ? (
         <form onSubmit={(event) => void rename(event)} className="flex min-w-0 flex-1 items-center gap-2">
           <Input
@@ -203,16 +274,6 @@ function ValueRow({
       {usage ? <span className="shrink-0 type-meta tabular-nums text-muted-foreground">{usage}</span> : null}
       {editable && !renaming ? (
         <span className="flex shrink-0 items-center gap-0.5">
-          {!value.isRetired ? (
-            <>
-              <Button variant="ghost" size="icon-sm" aria-label={t("moveUp")} disabled={!onUp} onClick={onUp}>
-                <ArrowUp className="size-3.5" aria-hidden />
-              </Button>
-              <Button variant="ghost" size="icon-sm" aria-label={t("moveDown")} disabled={!onDown} onClick={onDown}>
-                <ArrowDown className="size-3.5" aria-hidden />
-              </Button>
-            </>
-          ) : null}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon-sm" aria-label={words("more")}>

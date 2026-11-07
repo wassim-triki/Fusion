@@ -128,44 +128,33 @@
       "valueNotAccepted": "This was not accepted.",
       "retry": "Your account could not be created just now. Try again."
     },
-    "context": {
-      "eyebrow": "You're invited",
-      "heading": "Join {tenant}",
-      "lead": "You've been invited to set up your Fusion account and get started with {tenant}.",
-      "organization": "Organization",
-      "role": "Assigned role",
-      "sentTo": "Invitation sent to",
-      "security": "This invitation is secure and tied to the invited email address. Only the intended recipient can use this link.",
-      "footer": "People work together"
-    },
     "form": {
       "firstName": "First name",
       "lastName": "Last name",
       "workEmail": "Work email",
-      "readOnly": "Read only",
       "createPassword": "Create password",
       "confirmPassword": "Confirm password",
       "showCharacters": "Show characters",
       "hideCharacters": "Hide characters",
       "passwordsMatch": "Passwords match",
       "passwordsDoNotMatch": "Passwords do not match yet",
-      "submit": "Set up account",
+      "submit": "Create my account",
       "haveAccount": "Already have a Fusion account? <signIn>Sign in</signIn> to continue",
       "worksHere": "Do you work at {tenant}?",
       "worksHereYes": "Yes, I work here",
       "worksHereNo": "No, I'm setting it up for them",
       "jobTitle": "Your job title",
-      "orCreatePassword": "or create a password"
+      "orCreatePassword": "or create a password",
+      "yourRole": "Your role"
     },
     "journeys": {
       "bootstrap": {
         "role": "Administrator",
-        "heading": "Set up your account",
-        "lead": "Accept your invitation from {tenant} to create your Fusion account."
+        "heading": "Join {tenant}"
       },
       "recovery": {
         "role": "Administrator",
-        "heading": "Set up your account",
+        "heading": "Restore access to {tenant}",
         "lead": "Restore administrator access for {tenant} by creating your Fusion account.",
         "terminal": {
           "expired": {

@@ -70,14 +70,6 @@ export function exportFileName(now: Date = new Date()): string {
 }
 
 /** A BOM so Excel reads the file as UTF-8 rather than mangling accented names. */
-export function downloadCsv(csv: string, fileName: string): void {
-  const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-
-  anchor.href = url;
-  anchor.download = fileName;
-  anchor.click();
-
-  URL.revokeObjectURL(url);
+export function csvFile(csv: string): Blob {
+  return new Blob(["﻿", csv], { type: "text/csv;charset=utf-8" });
 }

@@ -4,7 +4,19 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { ApiError, type AccountPasswordRequirementsDto, type SsoProviderKey, type SsoRefusalDto } from "@repo/api";
-import { InvitationEnd, login as apiLogin, persistAuth, ProviderButton, startSsoFlow, takeSsoRefusal, useSsoRefusalText } from "@repo/auth";
+import {
+  InvitationEnd,
+  InvitationFacts,
+  InvitationFrame,
+  InvitationHeading,
+  InvitationLoading,
+  login as apiLogin,
+  persistAuth,
+  ProviderButton,
+  startSsoFlow,
+  takeSsoRefusal,
+  useSsoRefusalText,
+} from "@repo/auth";
 import type { AuthUser, StoredAuth } from "@repo/auth";
 import {
   Alert,
@@ -19,30 +31,12 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-  InputGroupText,
   Spinner,
   cn,
 } from "@repo/ds";
-import {
-  InvitationContextPanel,
-  InvitationTransactionFrame,
-  InvitationTransactionLoading,
-  PasswordStrengthField,
-  type PasswordCheck,
-} from "@repo/ds/shell";
+import { PasswordStrengthField, type PasswordCheck } from "@repo/ds/shell";
 import type { PageStateDrawingKind } from "@repo/ds/shell";
-import {
-  ArrowRight,
-  Building2,
-  Check,
-  Eye,
-  EyeOff,
-  Lock,
-  Mail,
-  TriangleAlert,
-  Users,
-  X,
-} from "lucide-react";
+import { ArrowRight, Check, Eye, EyeOff, Lock, TriangleAlert, X } from "lucide-react";
 import {
   useValidateInvite,
   useAcceptInvite,
@@ -202,7 +196,8 @@ interface FormValues {
   confirmPassword: string;
 }
 
-export function InviteAcceptanceForm({ token }: { token: string | null }) {
+/** `company`: the company's slug the link names (B-205), so every state wears its brand. */
+export function InviteAcceptanceForm({ token, company = null }: { token: string | null; company?: string | null }) {
   const {
     data: invite,
     isLoading: isValidating,
@@ -212,23 +207,24 @@ export function InviteAcceptanceForm({ token }: { token: string | null }) {
   const isInviteLoading = !!token && (isValidating || (!invite && !validateError));
 
   const screen = (() => {
-    if (!token) return <TerminalScreen descriptor={INVALID_LINK} />;
-    if (isInviteLoading) return <InvitationTransactionLoading />;
+    if (!token) return <TerminalScreen descriptor={INVALID_LINK} company={company} />;
+    if (isInviteLoading) return <InvitationLoading company={company} />;
     const validationTerminalState = validationTerminal(validateError);
-    if (validationTerminalState) return <TerminalScreen descriptor={validationTerminalState} />;
-    if (!invite) return <TerminalScreen descriptor={{ ...VERIFY_FAILED, detail: "refresh" }} />;
-    if (invite.isExpired) return <TerminalScreen descriptor={EXPIRED} />;
-    if (invite.isUsed) return <TerminalScreen descriptor={ALREADY_USED} />;
-    return <AcceptanceForm token={token} invite={invite} />;
+    if (validationTerminalState) return <TerminalScreen descriptor={validationTerminalState} company={company} />;
+    if (!invite) return <TerminalScreen descriptor={{ ...VERIFY_FAILED, detail: "refresh" }} company={company} />;
+    if (invite.isExpired) return <TerminalScreen descriptor={EXPIRED} company={company} />;
+    if (invite.isUsed) return <TerminalScreen descriptor={ALREADY_USED} company={company} />;
+    return <AcceptanceForm token={token} invite={invite} company={company} />;
   })();
 
   return screen;
 }
 
-function TerminalScreen({ descriptor }: { descriptor: TerminalDescriptor }) {
+function TerminalScreen({ descriptor, company }: { descriptor: TerminalDescriptor; company: string | null }) {
   const t = useTranslations("invite.terminal");
   return (
     <InvitationEnd
+      company={company}
       drawing={descriptor.drawing}
       title={t(`${descriptor.state}.title`)}
       detail={descriptor.detail ? t(descriptor.detail) : t(`${descriptor.state}.detail`)}
@@ -246,8 +242,10 @@ type Progress = "idle" | "creating" | "signing-in" | "opening";
 function AcceptanceForm({
   token,
   invite,
+  company,
 }: {
   token: string;
+  company: string | null;
   // Narrowed to the validated invite shape the form needs.
   invite: NonNullable<ReturnType<typeof useValidateInvite>["data"]>;
 }) {
@@ -262,6 +260,7 @@ function AcceptanceForm({
   const isWorkforce = invite.role === "Employee" || invite.role === "Manager";
   const accessLabel = t(invite.role === "Manager" ? "workforce.roles.Manager" : "workforce.roles.Employee");
   const tenantName = invite.tenantName || t("yourOrganization");
+  const fullName = [invite.firstName, invite.lastName].filter(Boolean).join(" ");
 
   const [form, setForm] = useState<FormValues>(() => ({
     firstName: invite.firstName ?? "",
@@ -312,7 +311,9 @@ function AcceptanceForm({
     setLeaving(true);
     const refused = await startSsoFlow(
       { purpose: "invitation", provider, invitation: { kind: "workforce", credential: token } },
-      { origin: `${window.location.pathname}?token=${encodeURIComponent(token)}` },
+      {
+        origin: `${window.location.pathname}?token=${encodeURIComponent(token)}${company ? `&company=${encodeURIComponent(company)}` : ""}`,
+      },
     );
     if (refused) {
       setLeaving(false);
@@ -387,48 +388,28 @@ function AcceptanceForm({
   }
 
   return (
-    <InvitationTransactionFrame
-      context={
-        isWorkforce ? (
-          <InvitationContextPanel
-            eyebrow={t("workforce.eyebrow")}
-            heading={tenantName}
-            lead={t("workforce.lead")}
-            rows={[
-              { icon: Building2, label: t("organization"), value: tenantName },
-              { icon: Users, label: t("workforce.access"), value: accessLabel },
-              { icon: Mail, label: t("workforce.accountEmail"), value: invite.email },
-            ]}
-            securityNote={t("workforce.security")}
-            footerLabel={t("footer")}
-          />
-        ) : (
-          <InvitationContextPanel
-            eyebrow={t("administrator.eyebrow")}
-            heading={t("administrator.heading", { tenant: tenantName })}
-            lead={t("administrator.lead", { tenant: tenantName })}
-            rows={[
-              { icon: Building2, label: t("organization"), value: tenantName },
-              { icon: Users, label: t("administrator.role"), value: t("administrator.roleValue") },
-              { icon: Mail, label: t("administrator.sentTo"), value: invite.email },
-            ]}
-            securityNote={t("administrator.security")}
-            footerLabel={t("footer")}
-          />
-        )
-      }
-    >
+    <InvitationFrame company={company} companyName={invite.tenantName || null}>
       <form onSubmit={submit} noValidate>
-        <header>
-          <h2 className="font-heading text-[1.875rem] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">
-            {isWorkforce ? t("workforce.heading") : t("administrator.formHeading")}
-          </h2>
-          <p className="mt-2 text-[0.9375rem] leading-6 text-muted-foreground">
-            {isWorkforce
-              ? t(passwordOffered ? "workforce.formLead" : "workforce.formLeadProvider", { tenant: tenantName })
-              : t("administrator.formLead", { tenant: tenantName })}
-          </p>
-        </header>
+        <InvitationHeading
+          title={t(isWorkforce ? "workforce.heading" : "administrator.heading", { tenant: tenantName })}
+          lead={passwordOffered ? undefined : t("workforce.formLeadProvider")}
+        />
+        <div className="mt-5">
+          <InvitationFacts
+            facts={
+              isWorkforce
+                ? [
+                    ...(fullName ? [{ label: t("workforce.name"), value: fullName }] : []),
+                    { label: t("workforce.access"), value: accessLabel },
+                    { label: t("workforce.email"), value: invite.email, wide: Boolean(fullName) },
+                  ]
+                : [
+                    { label: t("administrator.role"), value: t("administrator.roleValue") },
+                    { label: t("administrator.email"), value: invite.email },
+                  ]
+            }
+          />
+        </div>
 
         {serverErrors.length > 0 ? (
           <Alert
@@ -495,32 +476,6 @@ function AcceptanceForm({
               />
             </div>
           ) : null}
-
-          <Field>
-            <FieldLabel htmlFor="workEmail">
-              {isWorkforce ? t("workforce.email") : t("administrator.email")}
-            </FieldLabel>
-            {/* The invited address as a fact, not a field to change: the recipient
-                confirms the invitation is theirs and sees the address they will
-                sign in with. */}
-            <InputGroup className="h-11 bg-inlay dark:bg-inlay">
-              <InputGroupInput
-                id="workEmail"
-                type="email"
-                value={invite.email}
-                readOnly
-                tabIndex={-1}
-                aria-readonly="true"
-                autoComplete="email"
-                className="text-muted-foreground"
-              />
-              <InputGroupAddon align="inline-end">
-                <InputGroupText className="text-[0.6875rem] font-medium uppercase tracking-[0.1em]">
-                  {t("readOnly")}
-                </InputGroupText>
-              </InputGroupAddon>
-            </InputGroup>
-          </Field>
 
           <PasswordStrengthField
             id="password"
@@ -617,7 +572,7 @@ function AcceptanceForm({
         </FieldGroup>
         ) : null}
       </form>
-    </InvitationTransactionFrame>
+    </InvitationFrame>
   );
 }
 

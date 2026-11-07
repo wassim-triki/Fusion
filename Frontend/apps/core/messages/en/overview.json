@@ -100,6 +100,11 @@
         "chart": "Headcount by unit, every month. Use the arrow keys to explore.",
         "outside": "Not in a unit"
       }
-    }
+    },
+    "filledCount": "{count} filled",
+    "filled": "Filled",
+    "open": "Open",
+    "filledBy": "{name}, {day}",
+    "filledOn": "Starts {day}"
   }
 }

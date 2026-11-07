@@ -41,6 +41,7 @@ import {
   departmentLead,
   frontEvents,
   groupPeople,
+  nearDay,
   OUTSIDE_DEPARTMENTS,
   peopleOn,
   yearBefore,
@@ -247,6 +248,11 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
     peopleOn(data.people, data.today).map((p) => [p.employeeKey, p])
   );
   const canOpenPeople = canAccessCorePeople(user);
+  // Who filled a role may only start later, so names come from everyone on the page, not today's people.
+  const names = new Map(data.people.map((p) => [p.employeeKey, p.name]));
+  const open = data.openRoles.filter((role) => role.status === "Open").length;
+  const filled = data.openRoles.length - open;
+  const startDay = (iso: string) => nearDay(iso, data.today, format, locale);
   const eventTitle = (event: FrontEvent) =>
     t(event.kind, {
       name: event.person.name,
@@ -594,7 +600,9 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
         </Section>
         <Section
           title={t("openRoles")}
-          meta={t("rolesCount", { count: data.openRoles.length })}
+          meta={[t("rolesCount", { count: open }), filled ? t("filledCount", { count: filled }) : null]
+            .filter(Boolean)
+            .join(" · ")}
           flush={data.openRoles.length > 0}
         >
           {data.openRoles.length ? (
@@ -609,29 +617,51 @@ export function FrontPageContent({ data }: { data: FrontPageDto }) {
                   ) : (
                     <BriefcaseBusiness className="size-5 shrink-0 text-muted-foreground" />
                   )}
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="truncate type-label">
                       {role.job ?? t("openRole")}
                     </p>
                     <p className="truncate type-meta text-muted-foreground">
-                      {[
-                        role.unit,
-                        managers.get(role.managerKey ?? "")
-                          ? t("hiringFor", {
-                              name: managers.get(role.managerKey ?? "")!.name,
-                            })
-                          : null,
-                        role.place,
-                        role.targetStartDate
-                          ? t("from", {
-                              date: format.date(role.targetStartDate),
-                            })
-                          : null,
-                      ]
+                      {(role.status === "Filled"
+                        ? [
+                            role.unit,
+                            role.filledOn
+                              ? names.get(role.filledByKey ?? "")
+                                ? t("filledBy", {
+                                    name: names.get(role.filledByKey ?? "")!,
+                                    day: startDay(role.filledOn),
+                                  })
+                                : t("filledOn", { day: startDay(role.filledOn) })
+                              : null,
+                          ]
+                        : [
+                            role.unit,
+                            managers.get(role.managerKey ?? "")
+                              ? t("hiringFor", {
+                                  name: managers.get(role.managerKey ?? "")!.name,
+                                })
+                              : null,
+                            role.place,
+                            role.targetStartDate
+                              ? t("from", {
+                                  date: format.date(role.targetStartDate),
+                                })
+                              : null,
+                          ]
+                      )
                         .filter(Boolean)
                         .join(" · ")}
                     </p>
                   </div>
+                  <span
+                    className={
+                      role.status === "Filled"
+                        ? "inline-flex h-6 shrink-0 items-center rounded-full border border-primary-ring bg-primary-tint px-[9px] type-meta font-medium text-primary-ink"
+                        : "inline-flex h-6 shrink-0 items-center rounded-full border border-border bg-inlay px-[9px] type-meta font-medium"
+                    }
+                  >
+                    {t(role.status === "Filled" ? "filled" : "open")}
+                  </span>
                 </li>
               ))}
             </ul>

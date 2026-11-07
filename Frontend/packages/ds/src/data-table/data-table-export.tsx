@@ -31,12 +31,17 @@ export function saveFile(blob: Blob, fileName: string) {
  * (usually the server, so it holds only what the viewer may see); this control saves it and owns the
  * pending and failed states.
  */
+const ALL_FORMATS: readonly DataTableExportFormat[] = ["csv", "xlsx"];
+
 export function DataTableExport({
   onExport,
   disabled,
+  formats = ALL_FORMATS,
 }: {
   onExport: (format: DataTableExportFormat) => Promise<{ blob: Blob; fileName: string }>;
   disabled?: boolean;
+  /** The files this table can give; with one, Export saves it straight away instead of asking. */
+  formats?: readonly DataTableExportFormat[];
 }) {
   const t = useTranslations("ds.table.export");
   const [pending, setPending] = useState(false);
@@ -62,18 +67,35 @@ export function DataTableExport({
           {t("failed")}
         </span>
       ) : null}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" disabled={disabled || pending} aria-busy={pending || undefined}>
-            {pending ? <Spinner aria-hidden /> : <Download aria-hidden />}
-            {t("button")}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onSelect={() => void run("csv")}>{t("csv")}</DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => void run("xlsx")}>{t("xlsx")}</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {formats.length === 1 ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={disabled || pending}
+          aria-busy={pending || undefined}
+          aria-label={t("as", { format: t(formats[0]!) })}
+          onClick={() => void run(formats[0]!)}
+        >
+          {pending ? <Spinner aria-hidden /> : <Download aria-hidden />}
+          {t("button")}
+        </Button>
+      ) : (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" disabled={disabled || pending} aria-busy={pending || undefined}>
+              {pending ? <Spinner aria-hidden /> : <Download aria-hidden />}
+              {t("button")}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {formats.map((format) => (
+              <DropdownMenuItem key={format} onSelect={() => void run(format)}>
+                {t(format)}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </div>
   );
 }

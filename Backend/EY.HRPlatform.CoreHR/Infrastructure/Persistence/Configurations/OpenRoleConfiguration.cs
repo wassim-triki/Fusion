@@ -31,6 +31,10 @@ public sealed class OpenRoleConfiguration : IEntityTypeConfiguration<OpenRole>
             .WithMany()
             .HasForeignKey(role => role.OrgUnitId)
             .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Employee>()
+            .WithMany()
+            .HasForeignKey(role => role.FilledByEmployeeId)
+            .OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Job>().WithMany().HasForeignKey(role => role.JobId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Place>().WithMany().HasForeignKey(role => role.PlaceId).OnDelete(DeleteBehavior.Restrict);
     }

@@ -186,11 +186,6 @@
       "actions": "Actions"
     },
     "administratorNotRecorded": "Administrator not recorded",
-    "export": {
-      "failed": "Export failed. Try again.",
-      "label": "Export the matching tenants as CSV",
-      "button": "Export"
-    },
     "empty": {
       "title": "No tenants yet",
       "description": "No customer tenant has been provisioned."

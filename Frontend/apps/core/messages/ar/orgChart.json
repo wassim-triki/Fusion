@@ -141,11 +141,13 @@
     "saved": {
       "added": "أضيفت {title} إلى فريق {name}",
       "updated": "حُفظت الوظيفة",
-      "filled": "شُغلت {title}",
+      "filled": "شغل {name} دور {title}",
       "closed": "أُغلقت {title}"
     },
     "failed": "لم تُحفظ الوظيفة.",
-    "place": "مكان العمل"
+    "place": "مكان العمل",
+    "starts": "يبدأ في الدور",
+    "filledBy": "شغله"
   },
   "levelCount": {
     "Division": "{count, plural, =0 {بلا أقسام رئيسية} one {قسم رئيسي واحد} other {# أقسام رئيسية}}",

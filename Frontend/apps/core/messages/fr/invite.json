@@ -47,41 +47,28 @@
     "failed": "La création de votre compte n’a pas pu aboutir. Réessayez dans un instant ou contactez votre administrateur."
   },
   "workforce": {
-    "eyebrow": "Votre accès",
-    "lead": "Activez le compte lié à votre fiche collaborateur. Votre entreprise gère l’identité et les informations professionnelles affichées dans Fusion.",
-    "access": "Accès",
-    "accountEmail": "E-mail du compte",
-    "security": "Cette invitation est sécurisée et liée à votre adresse e-mail professionnelle. Ce lien ne peut être utilisé que par vous.",
+    "access": "Votre accès",
     "roles": {
       "Employee": "Collaborateur",
       "Manager": "Manager"
     },
-    "heading": "Activez votre compte",
-    "formLead": "{tenant} a préparé votre accès à Fusion. Choisissez un mot de passe pour activer votre compte.",
+    "heading": "Rejoindre {tenant}",
     "submit": "Activer mon compte",
     "submitting": "Activation de votre compte…",
     "email": "E-mail professionnel",
-    "formLeadProvider": "{tenant} a préparé votre accès à Fusion. Continuez avec le compte de votre entreprise pour l’activer."
+    "formLeadProvider": "Continuez avec le compte de votre entreprise pour l’activer.",
+    "name": "Votre nom"
   },
   "administrator": {
-    "eyebrow": "Votre invitation",
-    "heading": "Rejoignez {tenant}",
-    "lead": "Vous avez reçu une invitation à créer votre compte Fusion pour démarrer avec {tenant}.",
-    "role": "Rôle attribué",
-    "roleValue": "Administrateur",
-    "sentTo": "Invitation envoyée à",
-    "security": "Cette invitation est sécurisée et liée à l’adresse e-mail invitée. Seul son destinataire peut utiliser ce lien.",
-    "formHeading": "Créez votre compte",
-    "formLead": "Acceptez l’invitation de {tenant} pour créer votre compte Fusion.",
+    "heading": "Rejoindre {tenant}",
+    "role": "Votre rôle",
     "submit": "Créer mon compte",
     "submitting": "Création de votre compte…",
-    "email": "E-mail de l’invitation"
+    "email": "E-mail professionnel",
+    "roleValue": "Administrateur"
   },
-  "organization": "Entreprise",
-  "footer": "Travailler ensemble",
   "firstName": "Prénom",
   "lastName": "Nom",
-  "readOnly": "Lecture seule",
   "createPassword": "Créer un mot de passe",
   "confirmPassword": "Confirmer le mot de passe",
   "showCharacters": "Afficher les caractères",

@@ -128,44 +128,33 @@
       "valueNotAccepted": "لم تُقبل هذه القيمة.",
       "retry": "تعذّر إنشاء حسابك الآن. أعد المحاولة."
     },
-    "context": {
-      "eyebrow": "أنت مدعو",
-      "heading": "انضم إلى {tenant}",
-      "lead": "تمت دعوتك لإعداد حسابك في Fusion والبدء مع {tenant}.",
-      "organization": "المؤسسة",
-      "role": "الدور المسند",
-      "sentTo": "أُرسلت الدعوة إلى",
-      "security": "هذه الدعوة آمنة ومرتبطة بالبريد الإلكتروني المدعو. لا يمكن استخدام هذا الرابط إلا من قِبل المستلم المقصود.",
-      "footer": "الناس يعملون معًا"
-    },
     "form": {
       "firstName": "الاسم الأول",
       "lastName": "اسم العائلة",
       "workEmail": "البريد المهني",
-      "readOnly": "للقراءة فقط",
       "createPassword": "إنشاء كلمة مرور",
       "confirmPassword": "تأكيد كلمة المرور",
       "showCharacters": "إظهار الأحرف",
       "hideCharacters": "إخفاء الأحرف",
       "passwordsMatch": "كلمتا المرور متطابقتان",
       "passwordsDoNotMatch": "كلمتا المرور غير متطابقتين بعد",
-      "submit": "إعداد الحساب",
+      "submit": "إنشاء حسابي",
       "haveAccount": "لديك حساب في Fusion؟ <signIn>سجّل الدخول</signIn> للمتابعة",
       "worksHere": "هل تعمل في {tenant}؟",
       "worksHereYes": "نعم، أعمل هنا",
       "worksHereNo": "لا، أقوم بالإعداد لهم",
       "jobTitle": "مسمّاك الوظيفي",
-      "orCreatePassword": "أو أنشئ كلمة مرور"
+      "orCreatePassword": "أو أنشئ كلمة مرور",
+      "yourRole": "دورك"
     },
     "journeys": {
       "bootstrap": {
         "role": "مسؤول",
-        "heading": "إعداد حسابك",
-        "lead": "اقبل دعوة {tenant} لإنشاء حسابك في Fusion."
+        "heading": "انضم إلى {tenant}"
       },
       "recovery": {
         "role": "مسؤول",
-        "heading": "إعداد حسابك",
+        "heading": "استعادة الوصول إلى {tenant}",
         "lead": "استعد صلاحيات المسؤول لـ{tenant} بإنشاء حسابك في Fusion.",
         "terminal": {
           "expired": {

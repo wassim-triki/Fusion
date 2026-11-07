@@ -86,6 +86,9 @@ export interface OrgChartOpenRoleDto {
   jobId?: string | null;
   placeId?: string | null;
   placeName?: string | null;
+  /** While Filled: who filled it and the day they start in it (yyyy-mm-dd). */
+  filledByKey?: string | null;
+  filledOn?: string | null;
 }
 
 /** `POST /api/corehr/org-chart/open-roles` and `PUT …/{id}` (people admins). A new role is Open or OnHold. */
@@ -96,6 +99,9 @@ export interface OpenRoleRequest {
   orgUnitId: string;
   targetStartDate?: string | null;
   status?: OpenRoleStatus;
+  /** Filled only: who filled it (someone working here on `filledOn`) and the day they start in it. */
+  filledByKey?: string | null;
+  filledOn?: string | null;
 }
 
 export type OrgChartChangeKind = "Join" | "Leave" | "Move";

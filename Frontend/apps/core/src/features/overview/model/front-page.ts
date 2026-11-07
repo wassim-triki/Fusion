@@ -201,3 +201,19 @@ export function growthMonths(data: FrontPageDto) {
     .sort()
     .map((date) => ({ date, people: peopleOn(data.people, date) }));
 }
+
+/**
+ * A day near today as people say it: "today", "tomorrow", "yesterday", the weekday within a week either side
+ * ("Monday"), else the date ("20 Oct").
+ */
+export function nearDay(
+  iso: string,
+  today: string,
+  format: { date: (value: string) => string; parts: (value: string, options: Intl.DateTimeFormatOptions) => string },
+  locale: string,
+): string {
+  const days = Math.round(dayNumber(iso) - dayNumber(today));
+  if (Math.abs(days) <= 1) return new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(days, "day");
+  if (Math.abs(days) < 7) return format.parts(iso, { weekday: "long" });
+  return format.date(iso);
+}

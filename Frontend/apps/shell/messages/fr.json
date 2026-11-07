@@ -128,21 +128,10 @@
       "valueNotAccepted": "Cette valeur n’a pas été acceptée.",
       "retry": "Votre compte n’a pas pu être créé pour le moment. Réessayez."
     },
-    "context": {
-      "eyebrow": "Votre invitation",
-      "heading": "Rejoignez {tenant}",
-      "lead": "Vous avez reçu une invitation à créer votre compte Fusion pour démarrer avec {tenant}.",
-      "organization": "Organisation",
-      "role": "Rôle attribué",
-      "sentTo": "Invitation envoyée à",
-      "security": "Cette invitation est sécurisée et liée à l’adresse e-mail invitée. Seul son destinataire peut utiliser ce lien.",
-      "footer": "Travailler ensemble"
-    },
     "form": {
       "firstName": "Prénom",
       "lastName": "Nom",
       "workEmail": "E-mail professionnel",
-      "readOnly": "Lecture seule",
       "createPassword": "Créer un mot de passe",
       "confirmPassword": "Confirmer le mot de passe",
       "showCharacters": "Afficher les caractères",
@@ -155,17 +144,17 @@
       "worksHereYes": "Oui, j’y travaille",
       "worksHereNo": "Non, je la configure pour eux",
       "jobTitle": "Votre poste",
-      "orCreatePassword": "ou créez un mot de passe"
+      "orCreatePassword": "ou créez un mot de passe",
+      "yourRole": "Votre rôle"
     },
     "journeys": {
       "bootstrap": {
         "role": "Administrateur",
-        "heading": "Créez votre compte",
-        "lead": "Acceptez l’invitation de {tenant} pour créer votre compte Fusion."
+        "heading": "Rejoindre {tenant}"
       },
       "recovery": {
         "role": "Administrateur",
-        "heading": "Créez votre compte",
+        "heading": "Rétablir l’accès à {tenant}",
         "lead": "Rétablissez l’accès administrateur de {tenant} en créant votre compte Fusion.",
         "terminal": {
           "expired": {

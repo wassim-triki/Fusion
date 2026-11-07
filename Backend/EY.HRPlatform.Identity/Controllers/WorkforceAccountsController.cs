@@ -1050,7 +1050,7 @@ public sealed class WorkforceAccountsController(
 
         await dbContext.SaveChangesAsync(cancellationToken);
         await accessProfileService.SetInviteAccessProfilesAsync(tenantId, invite.Id, [selectedProfile.Id], cancellationToken);
-        await DeliverInviteAsync(invite, tenant.Name, credential.RawValue, cancellationToken);
+        await DeliverInviteAsync(invite, tenant.Name, tenant.Slug, credential.RawValue, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
         return invite;
     }
@@ -1060,13 +1060,14 @@ public sealed class WorkforceAccountsController(
         IReadOnlyCollection<BulkInvitationCreation> creations,
         CancellationToken cancellationToken)
     {
-        var tenantName = await dbContext.Tenants
+        var company = await dbContext.Tenants
             .IgnoreQueryFilters()
             .AsNoTracking()
             .Where(tenant => tenant.Id == tenantId && tenant.IsActive && !tenant.IsArchived)
-            .Select(tenant => tenant.Name)
+            .Select(tenant => new { tenant.Name, tenant.Slug })
             .FirstOrDefaultAsync(cancellationToken)
             ?? throw new InvalidOperationException("Tenant not found or inactive.");
+        var tenantName = company.Name;
         var branding = await CompanyBrandReader.ForInvitationAsync(dbContext, tenantId, cancellationToken);
         var actorId = GetActingUserId();
         var prepared = new List<PreparedBulkInvitation>(creations.Count);
@@ -1123,7 +1124,7 @@ public sealed class WorkforceAccountsController(
                         item.Invite.EmployeeId,
                         item.Invite.Email,
                         BuildFullName(item.Invite.FirstName, item.Invite.LastName),
-                        BuildInviteLink(item.RawCredential),
+                        BuildInviteLink(item.RawCredential, company.Slug),
                         item.Invite.ExpiresAt,
                         [item.Creation.Profile.Name],
                         branding),
@@ -1326,8 +1327,8 @@ public sealed class WorkforceAccountsController(
             Account = account
         };
 
-    private string BuildInviteLink(string rawCredential)
-        => InvitationLinkBuilder.Build(configuration, rawCredential);
+    private string BuildInviteLink(string rawCredential, string? tenantSlug)
+        => InvitationLinkBuilder.Build(configuration, rawCredential, tenantSlug);
 
     // Resend/refresh of an existing invitation: rotate the credential (invalidating the old
     // link), then deliver the new one. The raw secret lives only for this call.
@@ -1335,20 +1336,20 @@ public sealed class WorkforceAccountsController(
         InviteToken invite,
         CancellationToken cancellationToken)
     {
-        var tenantName = await dbContext.Tenants
+        var company = await dbContext.Tenants
             .IgnoreQueryFilters()
             .Where(tenant => tenant.Id == invite.TenantId)
-            .Select(tenant => tenant.Name)
-            .FirstOrDefaultAsync(cancellationToken)
-            ?? "your organization";
+            .Select(tenant => new { tenant.Name, tenant.Slug })
+            .FirstOrDefaultAsync(cancellationToken);
 
         var credential = IssueRotatedCredential(invite);
-        await DeliverInviteAsync(invite, tenantName, credential.RawValue, cancellationToken);
+        await DeliverInviteAsync(invite, company?.Name ?? "your organization", company?.Slug, credential.RawValue, cancellationToken);
     }
 
     private async Task DeliverInviteAsync(
         InviteToken invite,
         string tenantName,
+        string? tenantSlug,
         string rawCredential,
         CancellationToken cancellationToken)
     {
@@ -1362,7 +1363,7 @@ public sealed class WorkforceAccountsController(
                 invite.EmployeeId,
                 invite.Email,
                 BuildFullName(invite.FirstName, invite.LastName),
-                BuildInviteLink(rawCredential),
+                BuildInviteLink(rawCredential, tenantSlug),
                 invite.ExpiresAt,
                 accessProfiles.Select(profile => profile.Name).ToList(),
                 branding),

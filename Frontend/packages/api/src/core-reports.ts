@@ -77,6 +77,20 @@ export interface FrontPagePersonDto {
   spans: FrontPageSpanDto[];
 }
 export type CompanyUnitLevel = "Division" | "Department" | "Unit";
+/** managerKey and filledByKey only when the viewer already sees that person on the page. */
+export interface FrontPageRoleDto {
+  id: string;
+  job: string | null;
+  place: string | null;
+  unit: string | null;
+  targetStartDate: string | null;
+  managerKey: string | null;
+  status: "Open" | "Filled";
+  filledByKey: string | null;
+  /** The day the person who filled it starts in it (yyyy-mm-dd). */
+  filledOn: string | null;
+}
+
 export interface FrontPageDto {
   today: string;
   firstDate: string;
@@ -86,7 +100,8 @@ export interface FrontPageDto {
   unitLevel: CompanyUnitLevel;
   fields: string[];
   people: FrontPagePersonDto[];
-  openRoles: { id: string; job: string | null; place: string | null; unit: string | null; targetStartDate: string | null; managerKey: string | null }[];
+  /** Open roles, then roles filled lately (their person starts within 30 days back or later). */
+  openRoles: FrontPageRoleDto[];
   recordsToComplete: { employeeKey: string; displayName: string; jobTitle: string | null; missing: string[] }[];
 }
 

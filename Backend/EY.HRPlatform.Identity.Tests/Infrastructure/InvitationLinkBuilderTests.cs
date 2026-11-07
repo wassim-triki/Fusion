@@ -37,4 +37,16 @@ public class InvitationLinkBuilderTests
 
         Assert.Equal("http://localhost:3000/invite/accept?token=a%2Bb%2Fc%3F%3D", link);
     }
+
+    [Fact]
+    public void Every_invitation_link_names_its_company_so_the_page_wears_its_brand()
+    {
+        Assert.Equal("http://localhost:3000/invite/accept?token=abc123&company=carthage-digital",
+            InvitationLinkBuilder.Build("http://localhost:3000", "abc123", "carthage-digital"));
+        Assert.Equal("http://localhost:3000/activate-invitation?credential=abc123&company=carthage-digital",
+            EY.HRPlatform.Identity.Features.TenantProvisioning.BootstrapActivationLinkBuilder.Build("http://localhost:3000", "abc123", "carthage-digital"));
+        Assert.Equal("http://localhost:3000/recover-administrator-access?credential=abc123&company=carthage-digital",
+            EY.HRPlatform.Identity.Features.TenantAdministration.AdministrativeAcceptanceLinkBuilder.Build("http://localhost:3000", "abc123", "carthage-digital"));
+        Assert.Equal("http://localhost:3000/invite/accept?token=abc123", InvitationLinkBuilder.Build("http://localhost:3000", "abc123", " "));
+    }
 }

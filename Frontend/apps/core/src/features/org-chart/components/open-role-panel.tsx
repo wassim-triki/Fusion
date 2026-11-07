@@ -56,6 +56,10 @@ export function OpenRolePanel({
     editing?.unit ? { id: editing.unit.id, name: editing.unit.name } : managerUnit);
   const [start, setStart] = useState<string>(editing?.targetStartDate ?? "");
   const [status, setStatus] = useState<OpenRoleStatus>(editing?.status ?? "Open");
+  // Filled (B-287): who took the role and the day they start in it; the picker offers people working that day.
+  const [filledOn, setFilledOn] = useState<string>(editing?.filledOn ?? editing?.targetStartDate ?? today);
+  const [filledBy, setFilledBy] = useState<ChangePersonRef | null>(null);
+  const filling = status === "Filled";
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -64,15 +68,18 @@ export function OpenRolePanel({
   useEffect(() => () => onDraft(null), [onDraft]);
 
   const saving = create.isLoading || update.isLoading;
-  const ready = Boolean(reportsTo && unit && job) && !saving;
+  const ready = Boolean(reportsTo && unit && job) && (!filling || Boolean(filledBy && filledOn)) && !saving;
   const save = async () => {
     if (!reportsTo || !unit || !job) return;
     setError(null);
-    const request = { jobId: job.id, placeId, managerKey: reportsTo.employeeKey, orgUnitId: unit.id, targetStartDate: start || null, status };
+    const request = {
+      jobId: job.id, placeId, managerKey: reportsTo.employeeKey, orgUnitId: unit.id, targetStartDate: start || null, status,
+      ...(filling && filledBy ? { filledByKey: filledBy.employeeKey, filledOn } : {}),
+    };
     try {
       if (editing) {
         await update.mutateAsync({ id: editing.id, request });
-        toast.success(status === "Filled" ? t("saved.filled", { title: job.title })
+        toast.success(status === "Filled" ? t("saved.filled", { title: job.title, name: filledBy?.displayName ?? "" })
           : status === "Closed" ? t("saved.closed", { title: job.title })
           : t("saved.updated"));
       } else {
@@ -128,6 +135,16 @@ export function OpenRolePanel({
             options={(editing ? STATUSES : STATUSES.slice(0, 2)).map((option) => ({ value: option, label: t(`status.${option}`) }))}
           />
         </Block>
+        {filling ? (
+          <>
+            <Block title={t("starts")}>
+              <DatePicker value={filledOn} onChange={(next) => setFilledOn(next ?? today)} placeholder={t("pickDate")} />
+            </Block>
+            <Block title={t("filledBy")}>
+              <PersonPicker date={filledOn} value={filledBy} onChange={setFilledBy} />
+            </Block>
+          </>
+        ) : null}
         {error ? <p role="alert" className="pt-2 type-body text-destructive">{error}</p> : null}
       </div>
       <Footer summary={summary}>

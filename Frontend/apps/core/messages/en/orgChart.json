@@ -141,11 +141,13 @@
     "saved": {
       "added": "{title} added to {name}'s team",
       "updated": "Open role saved",
-      "filled": "{title} marked filled",
+      "filled": "{title} filled by {name}",
       "closed": "{title} closed"
     },
     "failed": "The open role wasn't saved.",
-    "place": "Place"
+    "place": "Place",
+    "starts": "Starts in the role",
+    "filledBy": "Filled by"
   },
   "levelCount": {
     "Division": "{count, plural, =0 {no divisions} one {# division} other {# divisions}}",

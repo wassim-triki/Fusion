@@ -67,6 +67,7 @@ public sealed class BootstrapInvitationDeliveryTests : IAsyncLifetime
         Assert.Contains("Atlas Group", captured.Html);
         Assert.Contains(InvitedEmail, captured.Text);
         Assert.Contains("/activate-invitation?credential=", captured.ActivationLink);
+        Assert.Contains("&company=", captured.ActivationLink);
 
         var invitation = await db.InviteTokens.IgnoreQueryFilters().SingleAsync(i => i.Id == invitationId);
         Assert.Contains(

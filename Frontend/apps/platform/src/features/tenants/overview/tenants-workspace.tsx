@@ -10,7 +10,6 @@ import {
   Blocks,
   Building2,
   CalendarDays,
-  Download,
   Plus,
 } from "@/lib/icons";
 import { Button } from "@repo/ds/components/ui/button";
@@ -18,6 +17,7 @@ import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import {
   DataTable,
   DataTableCellStack,
+  DataTableExport,
   createDataTableColumnHelper,
   type DataTableDateRange,
   type DataTableFilterField,
@@ -26,7 +26,7 @@ import {
   type SortingState,
 } from "@repo/ds/data-table";
 import { cn } from "@repo/ds/lib/utils";
-import { AsyncButton, PageContainer, PageEmpty, PageHeader } from "@repo/ds/shell";
+import { PageContainer, PageEmpty, PageHeader } from "@repo/ds/shell";
 import type {
   OverviewFilter,
   TenantOverviewQuery,
@@ -40,7 +40,7 @@ import { TenantsPageSkeleton } from "./tenants-page-skeleton";
 import { RecoveryFailure } from "../recovery-dialog";
 import { activationSummary } from "./tenant-activation";
 import { TenantActivitySection } from "./tenant-activity";
-import { downloadCsv, exportFileName, toCsv } from "./tenant-export";
+import { csvFile, exportFileName, toCsv } from "./tenant-export";
 import { TenantModulesCell } from "./tenant-modules-cell";
 import { TenantMonogram } from "./tenant-monogram";
 import { TenantRowActions } from "./tenant-row-actions";
@@ -108,6 +108,11 @@ export function TenantsWorkspace() {
   const [actionError, setActionError] = useState<Error | null>(null);
   const t = useTranslations("tenants.overview");
   const words = useTenantWords();
+  // The file holds every tenant the query matches, not only the page on screen.
+  const exportTenants = useCallback(async () => {
+    const result = await listAllMatchingTenants(query);
+    return { blob: csvFile(toCsv(result.rows, words)), fileName: exportFileName() };
+  }, [query, words]);
   // setActionError is stable, so the columns are rebuilt only when the language changes.
   const columns = useMemo(() => tenantColumns(setActionError, t, words), [t, words]);
   const filterFields = useMemo(() => tenantFilterFields(t), [t]);
@@ -183,7 +188,13 @@ export function TenantsWorkspace() {
         isRefreshing={isFetching && !isLoading}
         skeletonRows={query.pageSize}
         searchPlaceholder={t("search")}
-        actions={<ExportButton query={query} disabled={Boolean(error)} />}
+        actions={
+          <DataTableExport
+            formats={["csv"]}
+            disabled={Boolean(error)}
+            onExport={exportTenants}
+          />
+        }
         notice={actionError ? <RecoveryFailure error={actionError} /> : null}
         error={
           error ? <TenantsFailure error={error} onRetry={refetch} /> : null
@@ -424,62 +435,6 @@ function ActivationCell({ row }: { row: TenantOverviewRow }) {
         />
         {detail}
       </p>
-    </div>
-  );
-}
-
-/**
- * The file describes the whole current query, not the page on screen, so it
- * refetches every matching tenant before writing. The control carries its own
- * progress and cannot be pressed twice into two downloads.
- */
-function ExportButton({
-  query,
-  disabled,
-}: {
-  query: TenantOverviewQuery;
-  disabled: boolean;
-}) {
-  const [isExporting, setIsExporting] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const t = useTranslations("tenants.overview.export");
-  const words = useTenantWords();
-
-  async function run() {
-    setIsExporting(true);
-    setFailed(false);
-
-    try {
-      const result = await listAllMatchingTenants(query);
-      downloadCsv(toCsv(result.rows, words), exportFileName());
-    } catch {
-      // The list on screen is untouched: only the download failed.
-      setFailed(true);
-    } finally {
-      setIsExporting(false);
-    }
-  }
-
-  return (
-    <div className="flex items-center gap-2">
-      {failed ? (
-        <span role="alert" className="text-sm text-destructive">
-          {t("failed")}
-        </span>
-      ) : null}
-      {/* The convention forbids progressive wording beside a spinner, so the
-          label is held in place and hidden rather than swapped for "Exporting…". */}
-      <AsyncButton
-        variant="outline"
-        onClick={run}
-        disabled={disabled}
-        pending={isExporting}
-        aria-label={t("label")}
-        pendingLabel={t("label")}
-      >
-        <Download aria-hidden="true" className="size-4" />
-        {t("button")}
-      </AsyncButton>
     </div>
   );
 }

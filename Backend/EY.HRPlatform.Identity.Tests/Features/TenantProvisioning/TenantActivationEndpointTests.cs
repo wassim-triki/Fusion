@@ -411,7 +411,7 @@ public sealed class TenantActivationEndpointTests : IAsyncLifetime
         // The credential the recipient actually has: taken from the delivered
         // message, never read out of the database.
         var query = new Uri(captured!.ActivationLink).Query;
-        return Uri.UnescapeDataString(query["?credential=".Length..]);
+        return Uri.UnescapeDataString(query["?credential=".Length..].Split('&')[0]);
     }
 
     private static async Task SeedAccountAsync(ActivationApiFactory factory, string email)

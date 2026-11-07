@@ -216,9 +216,6 @@
       "met": " — مستوفى",
       "notMet": " — غير مستوفى بعد"
     },
-    "invitation": {
-      "loading": "جارٍ تحميل الدعوة"
-    },
     "table": {
       "search": "بحث…",
       "clearSearch": "مسح البحث",
@@ -248,6 +245,7 @@
         "button": "تصدير",
         "csv": "CSV",
         "xlsx": "Excel",
+        "as": "تصدير بصيغة {format}",
         "failed": "لم يتم تنزيل الملف. أعد المحاولة."
       },
       "addFilterFor": "التصفية حسب {field}"

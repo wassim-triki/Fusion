@@ -1217,6 +1217,12 @@ namespace EY.HRPlatform.CoreHR.Infrastructure.Persistence.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<Guid?>("FilledByEmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly?>("FilledOn")
+                        .HasColumnType("date");
+
                     b.Property<Guid>("JobId")
                         .HasColumnType("uuid");
 
@@ -1257,6 +1263,8 @@ namespace EY.HRPlatform.CoreHR.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FilledByEmployeeId");
 
                     b.HasIndex("JobId");
 
@@ -2585,6 +2593,11 @@ namespace EY.HRPlatform.CoreHR.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("EY.HRPlatform.CoreHR.Domain.Entities.OpenRole", b =>
                 {
+                    b.HasOne("EY.HRPlatform.CoreHR.Domain.Entities.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("FilledByEmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("EY.HRPlatform.CoreHR.Domain.Entities.Job", null)
                         .WithMany()
                         .HasForeignKey("JobId")

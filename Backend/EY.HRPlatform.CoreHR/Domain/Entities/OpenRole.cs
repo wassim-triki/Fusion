@@ -41,6 +41,12 @@ public sealed class OpenRole : BaseEntity, ITenantEntity
 
     public OpenRoleStatus Status { get; private set; }
 
+    /// <summary>Who took the role, while it is Filled.</summary>
+    public Guid? FilledByEmployeeId { get; private set; }
+
+    /// <summary>The day the person who filled it starts in the role, while it is Filled.</summary>
+    public DateOnly? FilledOn { get; private set; }
+
     /// <summary>Filled and Closed take the role off the chart.</summary>
     public bool IsActive => Status is OpenRoleStatus.Open or OpenRoleStatus.OnHold;
 
@@ -71,13 +77,20 @@ public sealed class OpenRole : BaseEntity, ITenantEntity
         Guid orgUnitId,
         DateOnly? targetStartDate,
         OpenRoleStatus status,
+        (Guid EmployeeId, DateOnly On)? filledBy,
         string? actor)
     {
         if (!Enum.IsDefined(status))
             throw new ArgumentException("Unknown status.");
+        if ((status == OpenRoleStatus.Filled) != filledBy.HasValue)
+            throw new ArgumentException("A filled role names who filled it and when; no other role does.");
+        if (filledBy is { EmployeeId: var filler } && filler == Guid.Empty)
+            throw new ArgumentException("Who filled the role is required.");
 
         Set(job, place, managerEmployeeId, orgUnitId, targetStartDate);
         Status = status;
+        FilledByEmployeeId = filledBy?.EmployeeId;
+        FilledOn = filledBy?.On;
         UpdatedAt = DateTime.UtcNow;
         UpdatedBy = actor;
     }

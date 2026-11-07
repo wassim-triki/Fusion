@@ -90,6 +90,7 @@ export {
 export type { CustomerModule } from "./customer-workspace-access";
 export type { CustomerWorkspaceAccessState } from "./customer-workspace-access";
 export { InvitationEnd } from "./components/invitation-end";
+export { InvitationFacts, InvitationFrame, InvitationHeading, InvitationLoading } from "./components/invitation-frame";
 export { ModuleGate } from "./components/module-gate";
 export { PageFailure, PageGone, PageNotFound, PageRefusal } from "./components/page-failure";
 export type { FailurePageApp, PageFailureProps } from "./components/page-failure";

@@ -17,17 +17,23 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-  InputGroupText,
   Spinner,
   cn,
 } from "@repo/ds";
+import { PasswordStrengthField } from "@repo/ds/shell";
 import {
-  InvitationContextPanel,
-  InvitationTransactionFrame,
-  InvitationTransactionLoading,
-  PasswordStrengthField,
-} from "@repo/ds/shell";
-import { InvitationEnd, login, persistAuth, ProviderButton, startSsoFlow, takeSsoRefusal, useSsoRefusalText } from "@repo/auth";
+  InvitationEnd,
+  InvitationFacts,
+  InvitationFrame,
+  InvitationHeading,
+  InvitationLoading,
+  login,
+  persistAuth,
+  ProviderButton,
+  startSsoFlow,
+  takeSsoRefusal,
+  useSsoRefusalText,
+} from "@repo/auth";
 import { OptionCards } from "@repo/ds/choice";
 import {
   createPlatformApiClient,
@@ -36,18 +42,7 @@ import {
   type SsoProviderKey,
   type SsoRefusalDto,
 } from "@repo/api";
-import {
-  ArrowRight,
-  Building2,
-  Check,
-  Eye,
-  EyeOff,
-  Lock,
-  Mail,
-  TriangleAlert,
-  Users,
-  X,
-} from "lucide-react";
+import { ArrowRight, Check, Eye, EyeOff, Lock, TriangleAlert, X } from "lucide-react";
 import {
   BOOTSTRAP_JOURNEY,
   journeyTerminalState,
@@ -85,6 +80,8 @@ export function ActivateInvitation({
   // reading them on every render would hand the request an empty credential the
   // moment the credential is removed from the URL.
   const [credential] = useState(() => searchParams.get("credential") ?? "");
+  // The company the link names (B-205): the page wears its brand, as its sign-in does.
+  const [company] = useState(() => searchParams.get("company"));
 
   const [phase, setPhase] = useState<Phase>({ kind: "loading" });
 
@@ -123,89 +120,32 @@ export function ActivateInvitation({
     };
   }, [credential, journey.inspectPath]);
 
-  // A terminal invitation carries no tenant name — the service withholds it so a
-  // wrong credential cannot be used to discover which tenants exist. With nothing
-  // to put in the context panel, those states use the focused single column
-  // instead of a split with an empty half.
+  // A terminal invitation carries no tenant name: the service withholds it so a
+  // wrong credential cannot be used to discover which tenants exist. Only the
+  // brand the link itself names is shown.
   if (phase.kind === "terminal") {
     return (
       <div lang={locale} className="contents">
-        <Terminal outcome={phase.outcome} journey={journey} />
+        <Terminal outcome={phase.outcome} journey={journey} company={company} />
       </div>
     );
   }
 
   if (phase.kind === "loading") {
-    return <InvitationTransactionLoading />;
+    return <InvitationLoading company={company} />;
   }
 
   return (
     <div lang={locale} className="contents">
-      <InvitationTransactionFrame
-        context={<TenantContext entry={phase.entry} journey={journey} />}
-      >
+      <InvitationFrame company={company} companyName={phase.entry.tenantName}>
         <AccountForm
           entry={phase.entry}
           credential={credential}
           journey={journey}
           onTerminal={(outcome) => setPhase({ kind: "terminal", outcome })}
         />
-      </InvitationTransactionFrame>
+      </InvitationFrame>
     </div>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/* Context panel                                                              */
-/* -------------------------------------------------------------------------- */
-
-/**
- * The invitation as an orientation, not a form: who invited the recipient, into
- * which organization, with which access, sent to which address. Each fact is
- * stated once, plainly, so the recipient can check the invitation is theirs
- * before choosing a password on the other half of the split.
- */
-function TenantContext({
-  entry,
-  journey,
-}: {
-  entry: ActivationEntry;
-  journey: ActivationJourney;
-}) {
-  const say = useActivationSay();
-  const locale = useLocale();
-  const tenantName = entry.tenantName ?? say("yourOrganization");
-  // Prefer the role the invitation carries when it is a presentable label;
-  // fall back to the journey's default rather than surfacing a raw role key.
-  // The service names roles in English, so other languages use the journey's.
-  const role =
-    locale === "en" && entry.role && entry.role.includes(" ")
-      ? entry.role
-      : say(`journeys.${journey.key}.role`);
-
-  return (
-    <InvitationContextPanel
-      eyebrow={say("context.eyebrow")}
-      // The organization carries the display size: it is what the recipient
-      // is checking, so the tenant is the hero.
-      heading={say("context.heading", { tenant: tenantName })}
-      lead={say("context.lead", { tenant: tenantName })}
-      rows={[
-        { icon: Building2, label: say("context.organization"), value: tenantName },
-        { icon: Users, label: say("context.role"), value: role },
-        ...(entry.invitedEmail
-          ? [
-              {
-                icon: Mail,
-                label: say("context.sentTo"),
-                value: entry.invitedEmail,
-              },
-            ]
-          : []),
-      ]}
-      securityNote={say("context.security")}
-      footerLabel={say("context.footer")}
-    />
   );
 }
 
@@ -216,15 +156,18 @@ function TenantContext({
 function Terminal({
   outcome,
   journey,
+  company,
 }: {
   outcome: ActivationOutcome;
   journey: ActivationJourney;
+  company: string | null;
 }) {
   const say = useActivationSay();
   const state = journeyTerminalState(journey, outcome, say);
 
   return (
     <InvitationEnd
+      company={company}
       // Activation went through here, so there is nothing to draw.
       drawing={outcome === "session_unavailable" ? undefined : outcome === "existing_account" ? "refused" : "gone"}
       title={state.title}
@@ -299,7 +242,11 @@ function AccountForm({
   const passwordError = errorFor(errors, "password");
   const confirmError = errorFor(errors, "confirmPassword");
   const tenantName = entry.tenantName ?? say("yourOrganization");
-  const lead = say(`journeys.${journey.key}.lead`, { tenant: tenantName });
+  // The service names roles in English, so other languages use the journey's.
+  const role =
+    locale === "en" && entry.role && entry.role.includes(" ")
+      ? entry.role
+      : say(`journeys.${journey.key}.role`);
 
   // The CTA is only actionable once every field the recipient controls is
   // valid; the service still revalidates on submit.
@@ -419,14 +366,18 @@ function AccountForm({
 
   return (
     <form onSubmit={submit} noValidate>
-      <header>
-        <h2 className="font-heading text-[1.875rem] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">
-          {say(`journeys.${journey.key}.heading`)}
-        </h2>
-        <p className="mt-2 text-[0.9375rem] leading-6 text-muted-foreground">
-          {lead}
-        </p>
-      </header>
+      <InvitationHeading
+        title={say(`journeys.${journey.key}.heading`, { tenant: tenantName })}
+        lead={journey.key === BOOTSTRAP_JOURNEY.key ? undefined : say(`journeys.${journey.key}.lead`, { tenant: tenantName })}
+      />
+      <div className="mt-5">
+        <InvitationFacts
+          facts={[
+            { label: say("form.yourRole"), value: role },
+            ...(entry.invitedEmail ? [{ label: say("form.workEmail"), value: entry.invitedEmail }] : []),
+          ]}
+        />
+      </div>
 
       {retryable ? (
         <Alert
@@ -490,32 +441,6 @@ function AccountForm({
             onChange={(value) => update("lastName", value)}
           />
         </div>
-
-        {entry.invitedEmail ? (
-          <Field>
-            <FieldLabel htmlFor="workEmail">{say("form.workEmail")}</FieldLabel>
-            {/* The invited address as a fact, not a field to change. It is shown
-                so the recipient can confirm the invitation is theirs and see the
-                address they will sign in with. */}
-            <InputGroup className="h-11 bg-inlay dark:bg-inlay">
-              <InputGroupInput
-                id="workEmail"
-                type="email"
-                value={entry.invitedEmail}
-                readOnly
-                tabIndex={-1}
-                aria-readonly="true"
-                autoComplete="email"
-                className="text-muted-foreground"
-              />
-              <InputGroupAddon align="inline-end">
-                <InputGroupText className="text-[0.6875rem] font-medium uppercase tracking-[0.1em]">
-                  {say("form.readOnly")}
-                </InputGroupText>
-              </InputGroupAddon>
-            </InputGroup>
-          </Field>
-        ) : null}
 
         <PasswordStrengthField
           id="password"
@@ -608,7 +533,7 @@ function AccountForm({
         <p className="text-center text-sm text-muted-foreground">
           {t.rich("haveAccount", {
             signIn: (chunks) => (
-              <a href="/auth/signin" className="font-medium text-primary hover:underline">
+              <a href="/auth/signin" className="font-medium text-primary-ink hover:underline">
                 {chunks}
               </a>
             ),

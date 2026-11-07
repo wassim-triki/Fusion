@@ -1,5 +1,8 @@
 {
   "auth": {
+    "invitation": {
+      "loading": "Chargement de l’invitation"
+    },
     "signIn": {
       "title": "Connexion",
       "subtitle": "Connectez-vous à votre compte",

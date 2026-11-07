@@ -186,11 +186,6 @@
       "actions": "Actions"
     },
     "administratorNotRecorded": "Administrateur non renseigné",
-    "export": {
-      "failed": "Échec de l’export. Réessayez.",
-      "label": "Exporter les organisations correspondantes en CSV",
-      "button": "Exporter"
-    },
     "empty": {
       "title": "Aucune organisation pour l’instant",
       "description": "Aucune organisation cliente n’a encore été créée."

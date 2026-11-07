@@ -17,14 +17,22 @@ public sealed record FrontPageSpanDto(DateOnly From, DateOnly? To, string? Job, 
     Guid? DepartmentId, string? Department, string? Parent, string? ManagerKey);
 /// <summary>Each person once, with their dated stretches, instead of everyone at every boundary.</summary>
 public sealed record FrontPagePersonDto(string EmployeeKey, string Name, string? PhotoUrl, IReadOnlyList<FrontPageSpanDto> Spans);
-/// <summary>ManagerKey: the hiring manager, only when the viewer can already see them on this page.</summary>
-public sealed record FrontPageRoleDto(Guid Id, string? Job, string? Place, string? Unit, DateOnly? TargetStartDate, string? ManagerKey);
+/// <summary>
+/// An open role, or one filled lately (it starts within <see cref="ReportEngine.FilledRoleDays"/> days back or later).
+/// ManagerKey: the hiring manager, and FilledByKey: who filled it, each only when the viewer can already see them on
+/// this page; FilledOn: the day they start in it.
+/// </summary>
+public sealed record FrontPageRoleDto(Guid Id, string? Job, string? Place, string? Unit, DateOnly? TargetStartDate, string? ManagerKey,
+    OpenRoleStatus Status, string? FilledByKey, DateOnly? FilledOn);
 public sealed record FrontPageDto(DateOnly Today, DateOnly FirstDate, DateOnly LastDate, bool TeamOnly,
     IReadOnlyList<string> Fields, IReadOnlyList<FrontPagePersonDto> People, IReadOnlyList<FrontPageRoleDto> OpenRoles,
     IReadOnlyList<EmployeeFieldMissingPersonDto> RecordsToComplete, string UnitLevel);
 
 public sealed partial class ReportEngine
 {
+    /// <summary>How long a filled role stays on the front page after its person starts.</summary>
+    public const int FilledRoleDays = 30;
+
     public async Task<FrontPageDto> FrontPageAsync(ReportViewer viewer, EmployeeFieldService employeeFields, CancellationToken ct)
     {
         if (!viewer.CanSee) throw new UnauthorizedAccessException();
@@ -39,14 +47,20 @@ public sealed partial class ReportEngine
             ? EmployeeReadAudience.Manager : EmployeeReadAudience.Employee;
         var jobAudience = viewer.JobHr ? EmployeeReadAudience.HrAdmin : audience;
         var missing = await employeeFields.VisibleRecordsAsync(currentIds, audience, jobAudience, ct);
-        var roles = await db.OpenRoles.AsNoTracking().Where(r => r.Status == OpenRoleStatus.Open
-            && (viewer.Scope == PermissionScopes.Tenant || currentIds.Contains(r.ManagerEmployeeId) || r.ManagerEmployeeId == viewer.EmployeeId)).ToListAsync(ct);
+        var filledSince = today.AddDays(-FilledRoleDays);
+        var roles = await db.OpenRoles.AsNoTracking()
+            .Where(r => (r.Status == OpenRoleStatus.Open || (r.Status == OpenRoleStatus.Filled && r.FilledOn >= filledSince))
+                && (viewer.Scope == PermissionScopes.Tenant || currentIds.Contains(r.ManagerEmployeeId) || r.ManagerEmployeeId == viewer.EmployeeId))
+            .ToListAsync(ct);
+        // Open roles first (oldest first), then filled ones by the day their person starts.
+        roles = roles.OrderBy(r => r.Status == OpenRoleStatus.Filled).ThenBy(r => r.FilledOn).ThenBy(r => r.CreatedAt).ToList();
+        string? KeyOf(Guid? id) => id is { } known ? projection.People.GetValueOrDefault(known)?.StableEmployeeKey : null;
         var units = projection.UnitsOn(today);
         return new(today, projection.First, projection.Last, viewer.Scope == PermissionScopes.DirectReports,
             projection.Fields, projection.Spans(),
             roles.Select(r => new FrontPageRoleDto(r.Id, projection.Fields.Contains("job") ? r.JobTitle : null,
                 projection.Fields.Contains("place") ? r.PlaceName : null, units.GetValueOrDefault(r.OrgUnitId)?.Name, r.TargetStartDate,
-                projection.People.GetValueOrDefault(r.ManagerEmployeeId)?.StableEmployeeKey)).ToList(), missing, projection.UnitLevel);
+                KeyOf(r.ManagerEmployeeId), r.Status, KeyOf(r.FilledByEmployeeId), r.FilledOn)).ToList(), missing, projection.UnitLevel);
     }
 
     private sealed class FrontPageProjection

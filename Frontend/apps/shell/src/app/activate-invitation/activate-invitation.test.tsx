@@ -3,13 +3,48 @@ import { afterEach, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { ActivateInvitation } from "./activate-invitation";
 
+let search = "credential=test-credential";
 vi.mock("next/navigation", () => ({
-  useSearchParams: () => new URLSearchParams("credential=test-credential"),
+  useSearchParams: () => new URLSearchParams(search),
 }));
 
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  search = "credential=test-credential";
+  document.getElementById("fusion-brand")?.remove();
+});
+
+const json = (data: unknown) =>
+  new Response(JSON.stringify({ isSuccess: true, data, errors: [] }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
+
+it("wears the company the link names, and says what the invitation is for (B-205)", async () => {
+  search = "credential=test-credential&company=carthage";
+  const fetchMock = vi.fn(async (input: RequestInfo | URL) =>
+    String(input).includes("/identity/brand/companies/carthage")
+      ? json({ name: "Carthage Digital Group", slug: "carthage", color: "#2f5fd0", logoUrl: null, language: "en" })
+      : json({
+          state: "account_creation",
+          tenantName: "Carthage Digital Group",
+          invitedEmail: "amira.khelifi@example.test",
+          expiresAt: null,
+          firstName: "Amira",
+          lastName: "Khelifi",
+          passwordRequirements: null,
+        })
+  );
+  vi.stubGlobal("fetch", fetchMock);
+  render(<ActivateInvitation />);
+
+  expect(await screen.findByRole("heading", { level: 1, name: "Join Carthage Digital Group" })).toBeTruthy();
+  expect(await screen.findByRole("heading", { level: 2, name: "Carthage Digital Group" })).toBeTruthy();
+  expect(screen.getByText("Your role")).toBeTruthy();
+  expect(screen.getByText("Administrator")).toBeTruthy();
+  expect(screen.getByText("amira.khelifi@example.test")).toBeTruthy();
+  expect(document.getElementById("fusion-brand")?.textContent).toContain("--primary:#2f5fd0");
 });
 
 it("keeps the first administrator's work choice and conditional job title connected", async () => {

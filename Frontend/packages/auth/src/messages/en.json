@@ -1,5 +1,8 @@
 {
   "auth": {
+    "invitation": {
+      "loading": "Loading invitation"
+    },
     "signIn": {
       "title": "Sign in",
       "subtitle": "Sign in to your account",

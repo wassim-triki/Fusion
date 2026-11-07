@@ -177,7 +177,7 @@ public sealed class WorkforceInvitationLifecycleTests : IAsyncLifetime
         public string Credential { get; private set; } = string.Empty;
         public Task<WorkforceInvitationDeliveryResult> SendInviteAsync(WorkforceInvitationEmailMessage invitation, CancellationToken cancellationToken)
         {
-            Credential = Uri.UnescapeDataString(invitation.InviteLink.Split("token=")[1]);
+            Credential = Uri.UnescapeDataString(invitation.InviteLink.Split("token=")[1].Split('&')[0]);
             return Task.FromResult(WorkforceInvitationDeliveryResult.Sent());
         }
     }

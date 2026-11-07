@@ -7,7 +7,9 @@ import { useTranslations } from "next-intl";
 import { Button, cn } from "@repo/ds";
 import { DataTableFilters, DataTableSearch, useDataTable, type DataTableFilterField, type DataTableFilterState } from "@repo/ds/data-table";
 import type { PeopleDirectoryPersonDto } from "@repo/api";
-import { Building2, Briefcase, Mail, MapPin, Workflow } from "lucide-react";
+import { Building2, Briefcase, Mail, MapPin } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { HierarchyIcon } from "@hugeicons/core-free-icons";
 import { usePeopleDirectory } from "../api/use-people-directory";
 import { Monogram } from "./workforce-ui";
 import { LayoutSwitch } from "./people-layout";
@@ -44,7 +46,12 @@ function PersonCard({ person, tag, mine }: { person: PeopleDirectoryPersonDto; t
         <span className="absolute end-3 top-3 rounded-full bg-primary-tint px-2 py-0.5 type-meta font-medium text-primary-ink">{tag}</span>
       ) : null}
       <div className="flex min-w-0 flex-col items-center px-4 pb-4 pt-6 text-center">
-        <Monogram name={person.displayName} photoUrl={person.photoUrl} size="xl" className="mb-3" />
+        <Monogram
+          name={person.displayName}
+          photoUrl={person.photoUrl}
+          size="xl"
+          className="mb-2.5 size-[4.25rem] border-2 font-serif text-[1.4375rem] font-medium"
+        />
         <Link
           href={`/people/${person.employeeKey}`}
           className="max-w-full truncate type-label text-[0.9375rem] font-semibold outline-none after:absolute after:inset-0 focus-visible:underline"
@@ -77,7 +84,8 @@ function PersonCard({ person, tag, mine }: { person: PeopleDirectoryPersonDto; t
         ) : null}
         <Button asChild size="icon-sm" variant="ghost" className="relative z-10">
           <Link href={`/organization?view=people&focus=${encodeURIComponent(person.employeeKey)}`} aria-label={t("onChart", { name: person.displayName })}>
-            <Workflow aria-hidden />
+            {/* The drawing's org chart glyph (D-28): people in a tree, not Lucide's boxes. */}
+            <HugeiconsIcon icon={HierarchyIcon} strokeWidth={1.5} aria-hidden />
           </Link>
         </Button>
       </div>

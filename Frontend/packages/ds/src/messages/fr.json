@@ -216,9 +216,6 @@
       "met": " — respecté",
       "notMet": " — pas encore respecté"
     },
-    "invitation": {
-      "loading": "Chargement de l’invitation"
-    },
     "table": {
       "search": "Rechercher…",
       "clearSearch": "Effacer la recherche",
@@ -248,6 +245,7 @@
         "button": "Exporter",
         "csv": "CSV",
         "xlsx": "Excel",
+        "as": "Exporter en {format}",
         "failed": "Le fichier n'a pas été téléchargé. Réessayez."
       },
       "addFilterFor": "Filtrer par {field}"

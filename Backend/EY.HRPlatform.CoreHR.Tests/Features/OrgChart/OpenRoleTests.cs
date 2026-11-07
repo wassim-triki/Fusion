@@ -13,6 +13,7 @@ using EY.HRPlatform.SharedKernel.Results;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 
 namespace EY.HRPlatform.CoreHR.Tests.Features.OrgChart;
@@ -122,6 +123,9 @@ public sealed class OpenRoleTests
         DateOnly? start = null, OpenRoleStatus status = OpenRoleStatus.Open)
         => new(world.Jobs.GetValueOrDefault(title, Guid.NewGuid()), world.Keys[manager].ToLowerInvariant(), unit ?? world.Team, start, status);
 
+    private static OpenRoleRequest FilledBy(World world, string person, DateOnly? on = null)
+        => Role(world, status: OpenRoleStatus.Filled) with { FilledByKey = world.Keys[person].ToLowerInvariant(), FilledOn = on ?? Today };
+
     [Fact]
     public async Task HR_adds_a_role_under_a_manager_and_everyone_sees_it_in_that_line_from_today_on()
     {
@@ -148,7 +152,7 @@ public sealed class OpenRoleTests
         Assert.Empty((await ChartAsync(world, viewer: world.Ids["Aicha"])).OpenRoles);
         Assert.Single((await ChartAsync(world, hr: true)).OpenRoles);
 
-        Assert.True((await UpdateAsync(world, held.Id, Role(world, status: OpenRoleStatus.Filled))).IsSuccess);
+        Assert.True((await UpdateAsync(world, held.Id, FilledBy(world, "Aicha"))).IsSuccess);
         Assert.Empty((await ChartAsync(world, hr: true)).OpenRoles);
         Assert.True((await UpdateAsync(world, held.Id, Role(world, status: OpenRoleStatus.Open))).IsSuccess);
         Assert.Single((await ChartAsync(world, viewer: world.Ids["Aicha"])).OpenRoles);
@@ -204,6 +208,49 @@ public sealed class OpenRoleTests
     }
 
     [Fact]
+    public async Task A_filled_role_remembers_who_filled_it_and_the_day_they_start_and_reopening_forgets_both()
+    {
+        var world = await SeedAsync();
+        var role = (await CreateAsync(world, Role(world))).Value;
+
+        var filled = await UpdateAsync(world, role.Id, FilledBy(world, "Aicha", Today.AddDays(5)));
+        Assert.True(filled.IsSuccess);
+        Assert.Equal((OpenRoleStatus.Filled, world.Keys["Aicha"], (DateOnly?)Today.AddDays(5)),
+            (filled.Value.Status, filled.Value.FilledByKey, filled.Value.FilledOn));
+        await using (var read = TestDbContextFactory.Create(TestTenantContext.WithTenant(TenantA), world.Db))
+        {
+            var stored = await read.OpenRoles.SingleAsync();
+            Assert.Equal((world.Ids["Aicha"], (DateOnly?)Today.AddDays(5)), (stored.FilledByEmployeeId!.Value, stored.FilledOn));
+        }
+
+        var reopened = await UpdateAsync(world, role.Id, Role(world) with { FilledByKey = world.Keys["Aicha"], FilledOn = Today });
+        Assert.True(reopened.IsSuccess);
+        Assert.Equal((OpenRoleStatus.Open, (string?)null, (DateOnly?)null), (reopened.Value.Status, reopened.Value.FilledByKey, reopened.Value.FilledOn));
+        await using (var read = TestDbContextFactory.Create(TestTenantContext.WithTenant(TenantA), world.Db))
+            Assert.Null((await read.OpenRoles.SingleAsync()).FilledByEmployeeId);
+    }
+
+    [Fact]
+    public async Task Filling_needs_someone_who_works_here_on_the_day_they_start()
+    {
+        var world = await SeedAsync();
+        var role = (await CreateAsync(world, Role(world))).Value;
+        async Task Refused(OpenRoleRequest request, string code)
+        {
+            var result = await UpdateAsync(world, role.Id, request);
+            Assert.True(result.IsFailure);
+            Assert.Equal(code, result.Error.Code);
+        }
+
+        await Refused(Role(world, status: OpenRoleStatus.Filled), "OpenRole.FilledBy");
+        await Refused(FilledBy(world, "Aicha") with { FilledOn = null }, "OpenRole.FilledOn");
+        await Refused(FilledBy(world, "Aicha") with { FilledByKey = "NOPE-1" }, "OpenRole.FilledBy");
+        // Omar's last day was yesterday: he can't start in a role today, but could have filled one last month.
+        await Refused(FilledBy(world, "Omar"), "OpenRole.FilledBy");
+        Assert.True((await UpdateAsync(world, role.Id, FilledBy(world, "Omar", Today.AddDays(-30)))).IsSuccess);
+    }
+
+    [Fact]
     public async Task Nothing_crosses_tenants()
     {
         var world = await SeedAsync();
@@ -214,6 +261,8 @@ public sealed class OpenRoleTests
         var role = (await CreateAsync(world, Role(world))).Value;
         // Another tenant's job is refused as unknown.
         Assert.Equal("Job.NotFound", (await CreateAsync(world, Role(world, title: "Taken"))).Error.Code);
+        // Another tenant's person can't fill the role.
+        Assert.Equal("OpenRole.FilledBy", (await UpdateAsync(world, role.Id, FilledBy(world, "Zed"))).Error.Code);
         var fromB = await UpdateAsync(world, role.Id, new OpenRoleRequest(world.Jobs["Taken"], world.Keys["Zed"], world.UnitB), TenantB);
         Assert.Equal(OpenRoleErrors.NotFoundCode, fromB.Error.Code);
         Assert.Empty((await ChartAsync(world, hr: true, tenant: TenantB)).OpenRoles);

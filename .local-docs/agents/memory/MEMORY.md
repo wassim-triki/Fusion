@@ -6,6 +6,7 @@
 - [Dont reset demo passwords](dont-reset-demo-passwords.md) — never rewrite identity password hashes; try known pw, then ask.
 - [OpenSpec CLI](openspec-cli.md) — 1.14.2 via pnpm global (Git Bash needs pnpm dir on PATH); openspec/ gitignored; main specs strict-valid (gate archives).
 - [fusion-dev skill](fusion-dev-skill.md) — stack, backend tests (relational + no lock), read-only SQL, API helper; replaces dev-stack.ps1.
+- [EF migration while running](ef-migration-while-running.md) — `UseArtifactsOutput`/`ArtifactsPath` env vars + restore, then `dotnet ef migrations add`; service keeps its lock (B-202).
 - [Next dev/build output split](next-dev-build-output-split.md) — dev → `.next-dev`, build → `.next`; fixes "CSS bugged" dev corruption.
 - [Machine memory & checks](machine-memory-checks.md) — 13.9 GB RAM; checks one package at a time, vitest --maxWorkers=2; free memory yourself (stop the frontend for backend stretches).
 - [Rendered verification via Playwright](rendered-verification-playwright.md) — only when the user asks; repo Playwright, hydration-tolerant sign-in.

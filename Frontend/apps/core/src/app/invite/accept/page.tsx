@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 export default async function InvitePage({
   searchParams,
 }: {
-  searchParams: Promise<{ token?: string }>;
+  searchParams: Promise<{ token?: string; company?: string }>;
 }) {
-  const { token } = await searchParams;
+  const { token, company } = await searchParams;
 
-  return <InviteAcceptanceForm token={token ?? null} />;
+  return <InviteAcceptanceForm token={token ?? null} company={company ?? null} />;
 }

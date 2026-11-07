@@ -7,6 +7,7 @@ using EY.HRPlatform.CoreHR.Features.Workforce.Services;
 using EY.HRPlatform.CoreHR.Tests.TestHelpers;
 using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using EY.HRPlatform.SharedKernel.Auth;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using System.Security.Claims;
 
@@ -93,6 +94,47 @@ public sealed class ReportTests
         Assert.Equal(Today.AddYears(-1).AddDays(5), team.FirstDate);
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => engine.FrontPageAsync(viewer with { Scope = null }, fields, default));
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => engine.FrontPageAsync(viewer with { EmployeeId = null }, fields, default));
+    }
+
+    [Fact]
+    public async Task Front_page_shows_roles_filled_lately_naming_who_filled_them_only_to_viewers_who_see_that_person()
+    {
+        var world = await Seed();
+        await using (var all = TestDbContextFactory.CreateWithoutTenant(world.Db))
+        {
+            // Person0 manages; Person1 reports to them; Person2 left 19 days ago. The other company fills a role too.
+            var people = all.Employees.IgnoreQueryFilters().Where(e => e.TenantId == Tenant).ToDictionary(e => e.FirstName, e => e.Id);
+            var unit = all.OrgUnits.IgnoreQueryFilters().Single(u => u.TenantId == Tenant).Id;
+            void Filled(Guid tenant, Guid manager, Guid unitId, Guid filler, DateOnly on, string title)
+            {
+                var job = TestCatalog.Job(tenant, title);
+                var role = OpenRole.Create(tenant, job, null, manager, unitId, null, OpenRoleStatus.Open, "test");
+                role.Update(job, null, manager, unitId, null, OpenRoleStatus.Filled, (filler, on), "test");
+                all.OpenRoles.Add(role);
+            }
+            Filled(Tenant, people["Person0"], unit, people["Person1"], Today.AddDays(3), "Designer");
+            Filled(Tenant, people["Person0"], unit, people["Person2"], Today.AddDays(-25), "Tester");
+            Filled(Tenant, people["Person0"], unit, people["Person1"], Today.AddDays(-31), "Long ago");
+            var other = all.Employees.IgnoreQueryFilters().First(e => e.TenantId == OtherTenant).Id;
+            Filled(OtherTenant, other, all.OrgUnits.IgnoreQueryFilters().Single(u => u.TenantId == OtherTenant).Id, other, Today, "Secret role");
+            await all.SaveChangesAsync();
+        }
+
+        await using var db = TestDbContextFactory.Create(TestTenantContext.WithTenant(Tenant), world.Db);
+        var engine = new ReportEngine(db, Settings().Object);
+        var fields = new EY.HRPlatform.CoreHR.Features.EmployeeFields.EmployeeFieldService(db, TestTenantContext.WithTenant(Tenant));
+        var key = db.Employees.ToDictionary(e => e.FirstName, e => e.StableEmployeeKey);
+
+        var hr = await engine.FrontPageAsync(Hr, fields, default);
+        Assert.Equal(new[] { "Analyst", "Tester", "Designer" }, hr.OpenRoles.Select(r => r.Job));
+        Assert.Equal(new[] { OpenRoleStatus.Open, OpenRoleStatus.Filled, OpenRoleStatus.Filled }, hr.OpenRoles.Select(r => r.Status));
+        Assert.Equal(new[] { null, key["Person2"], key["Person1"] }, hr.OpenRoles.Select(r => r.FilledByKey));
+        Assert.Equal(new DateOnly?[] { null, Today.AddDays(-25), Today.AddDays(3) }, hr.OpenRoles.Select(r => r.FilledOn));
+
+        // The manager sees their roles, but not the leaver who filled one.
+        var team = await engine.FrontPageAsync(new(Guid.NewGuid(), world.Manager, PermissionScopes.DirectReports, false, false), fields, default);
+        Assert.Equal(new[] { null, null, key["Person1"] }, team.OpenRoles.Select(r => r.FilledByKey));
+        Assert.DoesNotContain(team.OpenRoles, r => r.Job == "Secret role");
     }
 
     [Fact]

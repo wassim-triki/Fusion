@@ -23,11 +23,176 @@
     },
     "search": {
       "label": "Search",
-      "placeholder": "Go to…",
-      "places": "Places",
-      "home": "Home",
-      "settings": "Settings",
-      "nothing": "Nothing matches"
+      "placeholder": "Search people, teams, anything",
+      "scopeLabel": "Search in",
+      "searching": "Searching…",
+      "nothing": "Nothing matches <b>{q}</b>",
+      "nothingHint": "Names, jobs, teams, places and employee numbers are all searched.",
+      "seeAll": "See all {count} people for “{q}”",
+      "peopleCount": "{count, plural, one {# person} other {# people}}",
+      "oneOnOneWith": "1:1s with {name}",
+      "groups": {
+        "do": "Do",
+        "people": "People",
+        "teams": "Teams and places",
+        "jobs": "Jobs",
+        "performance": "Performance",
+        "pages": "Pages",
+        "yourPeople": "Your people",
+        "recent": "Recent",
+        "goTo": "Go to"
+      },
+      "scopes": {
+        "all": "All",
+        "people": "People",
+        "teams": "Teams and places",
+        "performance": "Performance",
+        "pages": "Pages and actions"
+      },
+      "relation": {
+        "Self": "You",
+        "Manager": "Your manager",
+        "Report": "Reports to you",
+        "Teammate": "On your team"
+      },
+      "sub": {
+        "team": "Team · {count, plural, one {# person} other {# people}}",
+        "place": "Place · {count, plural, one {# person} other {# people}}",
+        "job": "Job · {count, plural, one {# person} other {# people}}",
+        "companyObjective": "Company objective",
+        "teamObjective": "Team objective",
+        "yourObjective": "Your objective",
+        "objective": "Objective",
+        "oneOnOne": "1:1s",
+        "reviewRound": "Review round",
+        "cycle": "Performance cycle",
+        "report": "Saved report",
+        "chooseWho": "Choose who"
+      },
+      "actions": {
+        "orgChart": "Show on org chart",
+        "praise": "Give {name} praise",
+        "feedback": "Ask {name} for feedback",
+        "oneOnOne": "1:1s with {name}",
+        "change": "Propose a change",
+        "givePraise": "Give praise",
+        "askFeedback": "Ask for feedback",
+        "hire": "Hire someone"
+      },
+      "keys": {
+        "move": "move",
+        "open": "open",
+        "actions": "actions",
+        "close": "close"
+      },
+      "verbs": {
+        "praise": "praise thank kudos",
+        "feedback": "feedback ask",
+        "oneOnOne": "1:1",
+        "hire": "hire"
+      },
+      "pages": {
+        "home": {
+          "label": "Home",
+          "path": "Home",
+          "keywords": "start dashboard"
+        },
+        "people": {
+          "label": "People",
+          "path": "Core HR › People",
+          "keywords": "directory everyone staff employees colleagues"
+        },
+        "orgChart": {
+          "label": "Org chart",
+          "path": "Core HR › Org chart",
+          "keywords": "organisation organization tree hierarchy chart"
+        },
+        "profile": {
+          "label": "My profile",
+          "path": "Core HR › My profile",
+          "keywords": "me my page personal address bank"
+        },
+        "team": {
+          "label": "My team",
+          "path": "Core HR › Team",
+          "keywords": "team reports direct"
+        },
+        "changes": {
+          "label": "Changes and approvals",
+          "path": "Core HR › Changes",
+          "keywords": "changes approvals requests pending"
+        },
+        "organization": {
+          "label": "Organization",
+          "path": "Core HR › Organization",
+          "keywords": "units structure departments teams"
+        },
+        "jobs": {
+          "label": "Jobs",
+          "path": "Core HR › Organization › Jobs",
+          "keywords": "jobs titles levels families"
+        },
+        "places": {
+          "label": "Places",
+          "path": "Core HR › Organization › Places",
+          "keywords": "places offices locations sites"
+        },
+        "reports": {
+          "label": "Reports",
+          "path": "Core HR › Reports",
+          "keywords": "reports analytics export headcount"
+        },
+        "hire": {
+          "label": "Hire someone",
+          "path": "Core HR › People › Hire",
+          "keywords": "hire add new person employee onboard"
+        },
+        "roles": {
+          "label": "Roles",
+          "path": "Core HR › Settings › Roles",
+          "keywords": "roles access permissions administrators rights"
+        },
+        "coreSettings": {
+          "label": "Core HR settings",
+          "path": "Core HR › Settings",
+          "keywords": "settings company brand fields lists"
+        },
+        "plan": {
+          "label": "My plan",
+          "path": "Performance › My plan",
+          "keywords": "goals objectives plan"
+        },
+        "oneOnOnes": {
+          "label": "1:1s",
+          "path": "Performance › 1:1s",
+          "keywords": "one on one 1:1 meeting"
+        },
+        "feedback": {
+          "label": "Feedback",
+          "path": "Performance › Feedback",
+          "keywords": "praise feedback kudos"
+        },
+        "reviews": {
+          "label": "Reviews",
+          "path": "Performance › Reviews",
+          "keywords": "review appraisal evaluation"
+        },
+        "teamPerformance": {
+          "label": "Team performance",
+          "path": "Performance › Team",
+          "keywords": "team plans approve"
+        },
+        "cycle": {
+          "label": "Cycle",
+          "path": "Performance › Cycle",
+          "keywords": "cycle phases deadline"
+        },
+        "settings": {
+          "label": "Settings",
+          "path": "Settings",
+          "keywords": "language theme dark light notifications email"
+        }
+      }
     },
     "viewAs": {
       "seeing": "Seeing Fusion as {name}",

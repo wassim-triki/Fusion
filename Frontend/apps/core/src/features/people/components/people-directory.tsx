@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button, cn } from "@repo/ds";
-import { DataTableFilters, DataTableSearch, useDataTable, type DataTableFilterField } from "@repo/ds/data-table";
+import { DataTableFilters, DataTableSearch, useDataTable, type DataTableFilterField, type DataTableFilterState } from "@repo/ds/data-table";
 import type { PeopleDirectoryPersonDto } from "@repo/api";
 import { Building2, Briefcase, Mail, MapPin, Workflow } from "lucide-react";
 import { usePeopleDirectory } from "../api/use-people-directory";
@@ -92,6 +93,15 @@ function CardGrid({ children }: { children: ReactNode }) {
 export function PeopleDirectory({ canSwitch, header }: { canSwitch: boolean; header: (count: number | null) => ReactNode }) {
   const t = useTranslations("people.directory");
   const directory = usePeopleDirectory();
+  // The top bar search lands here with what was typed, or a team, place or job (B-211).
+  const searchParams = useSearchParams();
+  const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
+  const [filterState, setFilterState] = useState<DataTableFilterState>(() =>
+    Object.fromEntries(["unit", "place", "job"].flatMap((key) => {
+      const value = searchParams.get(key);
+      return value ? [[key, [value]]] : [];
+    }))
+  );
   const people = directory.data?.people;
   const viewerKey = directory.data?.viewerEmployeeKey ?? null;
 
@@ -126,6 +136,10 @@ export function PeopleDirectory({ canSwitch, header }: { canSwitch: boolean; hea
     getRowId: (person) => person.employeeKey,
     search: (person) => [person.displayName, person.jobTitle, person.unitName, person.place, ...person.tags].filter(Boolean).join(" "),
     filters,
+    filterState,
+    onFilterStateChange: setFilterState,
+    searchQuery: query,
+    onSearchQueryChange: setQuery,
     pageSize: 100_000,
   });
   const shown = model.table.getRowModel().rows.map((row) => row.original);

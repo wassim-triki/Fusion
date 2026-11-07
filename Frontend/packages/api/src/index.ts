@@ -61,3 +61,4 @@ export * from "./fusion-settings";
 export * from "./core-reports";
 
 export * from "./company-home";
+export * from "./fusion-search";

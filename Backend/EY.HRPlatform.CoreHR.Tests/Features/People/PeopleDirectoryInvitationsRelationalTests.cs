@@ -4,6 +4,7 @@ using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Features.Employees.Services;
 using EY.HRPlatform.CoreHR.Features.Organization;
 using EY.HRPlatform.CoreHR.Features.People;
+using EY.HRPlatform.CoreHR.Features.Search;
 using EY.HRPlatform.CoreHR.Features.TenantSettings.Dtos;
 using EY.HRPlatform.CoreHR.Features.TenantSettings.Services;
 using EY.HRPlatform.CoreHR.Features.Workforce.Dtos;
@@ -178,6 +179,69 @@ public sealed class PeopleDirectoryInvitationsRelationalTests
             company.Statuses.Set(company.Karim, "InvitePending", invitedDaysAgo: 9, inviteId: Guid.NewGuid());
             await company.Invitations.RunAutomaticAsync(default);
             company.Access.Verify(a => a.ResendInviteAsync(company.Karim, It.IsAny<CancellationToken>()), Times.Once);
+        });
+    }
+
+    // ── Top bar search (B-211) ──────────────────────────────────────────────
+
+    private static CoreSearchQueryHandler SearchIn(Company company, CoreHRDbContext? db = null, Guid? tenantId = null)
+    {
+        var database = db ?? company.Db;
+        var tenant = TestTenantContext.WithTenant(tenantId ?? company.TenantId);
+        var sender = new Mock<ISender>();
+        sender.Setup(s => s.Send(It.IsAny<PeopleQuery>(), It.IsAny<CancellationToken>()))
+            .Returns((PeopleQuery query, CancellationToken token) => new PeopleQueryHandler(database, tenant, company.Statuses).Handle(query, token));
+        sender.Setup(s => s.Send(It.IsAny<PeopleDirectoryQuery>(), It.IsAny<CancellationToken>()))
+            .Returns((PeopleDirectoryQuery query, CancellationToken token) => new PeopleDirectoryQueryHandler(sender.Object, database).Handle(query, token));
+        return new CoreSearchQueryHandler(sender.Object, database);
+    }
+
+    private static async Task<CoreSearchDto> SearchAsync(Company company, string text, Guid? viewer, bool hr = false)
+        => (await SearchIn(company).Handle(new CoreSearchQuery(text, viewer, hr), default)).Value;
+
+    [RelationalDatabaseFact]
+    public async Task Search_finds_people_by_word_start_and_says_what_they_are_to_the_viewer()
+    {
+        await WithCompanyAsync(async company =>
+        {
+            // Karim, an employee: accent- and case-insensitive, by word start, over name, job and team.
+            var amira = Assert.Single((await SearchAsync(company, "ÄMI khél", company.Karim)).People);
+            Assert.Equal(("Amira Khelifi", CoreSearchRelations.Manager, company.Amira), (amira.DisplayName, amira.Relation, amira.EmployeeId));
+            Assert.Equal(CoreSearchRelations.Teammate, Assert.Single((await SearchAsync(company, "ons", company.Karim)).People).Relation);
+            Assert.Equal(CoreSearchRelations.Self, Assert.Single((await SearchAsync(company, "karim", company.Karim)).People).Relation);
+            Assert.Equal(4, (await SearchAsync(company, "eng", company.Karim)).PeopleTotal);
+            Assert.Empty((await SearchAsync(company, "ngin", company.Karim)).People);
+            Assert.Equal(CoreSearchRelations.Report, Assert.Single((await SearchAsync(company, "karim", company.Amira)).People).Relation);
+
+            // A team comes back with its people; jobs and employee numbers are HR's.
+            var unit = Assert.Single((await SearchAsync(company, "carth", company.Karim)).Units);
+            Assert.Equal(("Carthage", 4), (unit.Name, unit.People));
+            Assert.Empty((await SearchAsync(company, "eng", company.Karim)).Jobs);
+            var job = Assert.Single((await SearchAsync(company, "eng", company.Amira, hr: true)).Jobs);
+            Assert.Equal(("Engineer", 4), (job.Name, job.People));
+            var number = await company.Db.Employees.Where(e => e.Id == company.Karim).Select(e => e.EmployeeNumber).SingleAsync();
+            Assert.Empty((await SearchAsync(company, number, company.Ons)).People);
+            Assert.Equal("Karim Ben Ali", Assert.Single((await SearchAsync(company, number, company.Amira, hr: true)).People).DisplayName);
+        });
+    }
+
+    [RelationalDatabaseFact]
+    public async Task Before_typing_search_brings_the_viewers_own_people_and_nobody_from_another_company()
+    {
+        await WithCompanyAsync(async company =>
+        {
+            // A manager gets their reports; someone who leads nobody, their manager then their teammates.
+            Assert.Equal(["Karim Ben Ali", "Ons Khemiri"], (await SearchAsync(company, "", company.Amira)).People.Select(p => p.DisplayName).Order());
+            Assert.Equal(["Amira Khelifi", "Ons Khemiri"], (await SearchAsync(company, " ", company.Karim)).People.Select(p => p.DisplayName));
+            // An account without an employee record finds people, but nobody is anything to it.
+            Assert.Empty((await SearchAsync(company, "", null)).People);
+            Assert.All((await SearchAsync(company, "a", null)).People, person => Assert.Null(person.Relation));
+
+            await using var otherDb = company.OtherTenantDb();
+            var other = (await SearchIn(company, otherDb, company.OtherTenantId).Handle(new CoreSearchQuery("amira", null, true), default)).Value;
+            Assert.Empty(other.People);
+            Assert.Empty(other.Units);
+            Assert.Empty(other.Jobs);
         });
     }
 

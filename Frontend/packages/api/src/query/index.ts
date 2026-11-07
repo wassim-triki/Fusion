@@ -69,3 +69,4 @@ export { useMyTeam, useTeamBand, useTeamPerformance, type TeamBandMember } from 
 export { useSetupGuide, type SetupGuide, type SetupStep, type SetupStepKey } from "./useSetupGuide";
 
 export * from "./useCompanyHome";
+export { useFusionSearch } from "./useFusionSearch";

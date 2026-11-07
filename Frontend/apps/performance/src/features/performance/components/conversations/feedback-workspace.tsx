@@ -29,6 +29,7 @@ import { usePersonSummary } from "../../api/use-performance";
 import { formatDay } from "../one-on-ones/one-on-one-lib";
 import { ContentUnavailable } from "../content-unavailable";
 import { PlanDocument, SidebarSection } from "../plan/plan-layout";
+import type { PickedColleague } from "./colleague-picker";
 import { FeedbackComposer, PraiseComposer, RequestComposer, type FixedObjective } from "./composers";
 import { ByMonth, DueBlock, SubjectChip, firstName } from "./conversation-parts";
 import { FeedbackDrawer, PraiseDrawer } from "./drawers";
@@ -40,7 +41,7 @@ import { useLanding } from "@/lib/use-landing";
 type Tab = "received" | "given" | "requests" | "praise" | "team";
 const TABS: readonly { value: Tab }[] = [{ value: "received" }, { value: "given" }, { value: "requests" }, { value: "praise" }];
 
-type Composing = { kind: "feedback"; to?: string } | { kind: "request"; objective?: FixedObjective } | { kind: "praise"; value?: string } | null;
+type Composing = { kind: "feedback"; to?: string } | { kind: "request"; objective?: FixedObjective; to?: string } | { kind: "praise"; value?: string; to?: string } | null;
 
 /**
  * The Feedback workspace (S-12): Received · Given · Requests · Praise, each in the address so notifications and other
@@ -57,8 +58,13 @@ export function FeedbackWorkspace() {
   const requestedTab = TABS.find((t) => t.value === params.get("tab"))?.value ?? (params.get("tab") === "team" ? "team" : null);
   // `?give=<employeeId>` opens feedback for that person: the person page's "Give feedback" lands here (B-180).
   const giveTo = params.get("give");
+  // `?compose=praise|ask&to=<employeeId>` opens praise or a request for that person: the top bar search lands here (B-211).
+  const composeTo = params.get("to") ?? undefined;
   const [composing, setComposing] = useState<Composing>(
-    giveTo ? { kind: "feedback", to: giveTo } : params.get("compose") === "praise" ? { kind: "praise" } : null
+    giveTo ? { kind: "feedback", to: giveTo }
+      : params.get("compose") === "praise" ? { kind: "praise", to: composeTo }
+        : params.get("compose") === "ask" ? { kind: "request", to: composeTo }
+          : null
   );
   const summary = useFeedbackSummary();
   const oneOnOnes = useOneOnOnes();
@@ -139,9 +145,17 @@ export function FeedbackWorkspace() {
         )
       ) : null}
       {composing?.kind === "request" ? (
-        <RequestComposer objective={composing.objective} onClose={() => setComposing(null)} onSent={(id) => router.push(`/feedback/requests/${id}`)} />
+        <ComposeFor employeeId={composing.to}>
+          {(people) => (
+            <RequestComposer objective={composing.objective} people={people} onClose={() => setComposing(null)} onSent={(id) => router.push(`/feedback/requests/${id}`)} />
+          )}
+        </ComposeFor>
       ) : null}
-      {composing?.kind === "praise" ? <PraiseComposer initialValue={composing.value} onClose={() => setComposing(null)} /> : null}
+      {composing?.kind === "praise" ? (
+        <ComposeFor employeeId={composing.to}>
+          {(people) => <PraiseComposer initialValue={composing.value} people={people} onClose={() => setComposing(null)} />}
+        </ComposeFor>
+      ) : null}
     </PageContainer>
   );
 }
@@ -724,6 +738,15 @@ function PraisePage({
 
 
 /** Feedback for one named person, once their name is known; someone the viewer can't see opens an empty composer. */
+/** A composer started for one person: waits for their name, then opens with them chosen. */
+function ComposeFor({ employeeId, children }: { employeeId?: string; children: (people: PickedColleague[] | undefined) => ReactNode }) {
+  const person = usePersonSummary(employeeId ?? "", null, Boolean(employeeId));
+  if (!employeeId) return <>{children(undefined)}</>;
+  if (person.isLoading && !person.data) return null;
+  const data = person.data;
+  return <>{children(data?.displayName ? [{ employeeId: data.employeeId, displayName: data.displayName, subtitle: data.jobTitle }] : undefined)}</>;
+}
+
 function FeedbackTo({ employeeId, onClose }: { employeeId: string; onClose: () => void }) {
   const person = usePersonSummary(employeeId);
   if (person.isLoading && !person.data) return null;

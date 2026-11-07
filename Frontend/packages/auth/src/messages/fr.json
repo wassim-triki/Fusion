@@ -23,11 +23,176 @@
     },
     "search": {
       "label": "Rechercher",
-      "placeholder": "Aller à…",
-      "places": "Pages",
-      "home": "Accueil",
-      "settings": "Paramètres",
-      "nothing": "Aucun résultat"
+      "placeholder": "Rechercher des personnes, des équipes, tout",
+      "scopeLabel": "Rechercher dans",
+      "searching": "Recherche…",
+      "nothing": "Aucun résultat pour <b>{q}</b>",
+      "nothingHint": "Noms, postes, équipes, lieux et matricules sont tous recherchés.",
+      "seeAll": "Voir les {count} personnes pour « {q} »",
+      "peopleCount": "{count, plural, one {# personne} other {# personnes}}",
+      "oneOnOneWith": "1:1 avec {name}",
+      "groups": {
+        "do": "Faire",
+        "people": "Personnes",
+        "teams": "Équipes et lieux",
+        "jobs": "Postes",
+        "performance": "Performance",
+        "pages": "Pages",
+        "yourPeople": "Vos collègues",
+        "recent": "Récents",
+        "goTo": "Aller à"
+      },
+      "scopes": {
+        "all": "Tout",
+        "people": "Personnes",
+        "teams": "Équipes et lieux",
+        "performance": "Performance",
+        "pages": "Pages et actions"
+      },
+      "relation": {
+        "Self": "Vous",
+        "Manager": "Votre manager",
+        "Report": "Rattaché à vous",
+        "Teammate": "Votre équipe"
+      },
+      "sub": {
+        "team": "Équipe · {count, plural, one {# personne} other {# personnes}}",
+        "place": "Lieu · {count, plural, one {# personne} other {# personnes}}",
+        "job": "Poste · {count, plural, one {# personne} other {# personnes}}",
+        "companyObjective": "Objectif de l’entreprise",
+        "teamObjective": "Objectif d’équipe",
+        "yourObjective": "Votre objectif",
+        "objective": "Objectif",
+        "oneOnOne": "1:1",
+        "reviewRound": "Campagne d’évaluation",
+        "cycle": "Cycle de performance",
+        "report": "Rapport enregistré",
+        "chooseWho": "Choisir qui"
+      },
+      "actions": {
+        "orgChart": "Voir dans l’organigramme",
+        "praise": "Féliciter {name}",
+        "feedback": "Demander un avis à {name}",
+        "oneOnOne": "1:1 avec {name}",
+        "change": "Proposer un changement",
+        "givePraise": "Féliciter",
+        "askFeedback": "Demander un avis",
+        "hire": "Recruter"
+      },
+      "keys": {
+        "move": "naviguer",
+        "open": "ouvrir",
+        "actions": "actions",
+        "close": "fermer"
+      },
+      "verbs": {
+        "praise": "féliciter bravo merci praise",
+        "feedback": "avis demander feedback",
+        "oneOnOne": "1:1",
+        "hire": "recruter embaucher hire"
+      },
+      "pages": {
+        "home": {
+          "label": "Accueil",
+          "path": "Accueil",
+          "keywords": "début tableau"
+        },
+        "people": {
+          "label": "Personnes",
+          "path": "Core HR › Personnes",
+          "keywords": "annuaire tous collaborateurs employés collègues"
+        },
+        "orgChart": {
+          "label": "Organigramme",
+          "path": "Core HR › Organigramme",
+          "keywords": "organisation arbre hiérarchie"
+        },
+        "profile": {
+          "label": "Mon profil",
+          "path": "Core HR › Mon profil",
+          "keywords": "moi ma page personnel adresse banque"
+        },
+        "team": {
+          "label": "Mon équipe",
+          "path": "Core HR › Équipe",
+          "keywords": "équipe directs"
+        },
+        "changes": {
+          "label": "Changements et validations",
+          "path": "Core HR › Changements",
+          "keywords": "changements validations demandes attente"
+        },
+        "organization": {
+          "label": "Organisation",
+          "path": "Core HR › Organisation",
+          "keywords": "unités structure départements équipes"
+        },
+        "jobs": {
+          "label": "Postes",
+          "path": "Core HR › Organisation › Postes",
+          "keywords": "postes intitulés niveaux familles"
+        },
+        "places": {
+          "label": "Lieux",
+          "path": "Core HR › Organisation › Lieux",
+          "keywords": "lieux bureaux sites"
+        },
+        "reports": {
+          "label": "Rapports",
+          "path": "Core HR › Rapports",
+          "keywords": "rapports analyses export effectifs"
+        },
+        "hire": {
+          "label": "Recruter",
+          "path": "Core HR › Personnes › Recruter",
+          "keywords": "recruter ajouter nouveau employé"
+        },
+        "roles": {
+          "label": "Rôles",
+          "path": "Core HR › Paramètres › Rôles",
+          "keywords": "rôles accès droits administrateurs"
+        },
+        "coreSettings": {
+          "label": "Paramètres Core HR",
+          "path": "Core HR › Paramètres",
+          "keywords": "paramètres entreprise marque champs listes"
+        },
+        "plan": {
+          "label": "Mon plan",
+          "path": "Performance › Mon plan",
+          "keywords": "objectifs plan"
+        },
+        "oneOnOnes": {
+          "label": "1:1",
+          "path": "Performance › 1:1",
+          "keywords": "entretien individuel réunion"
+        },
+        "feedback": {
+          "label": "Avis",
+          "path": "Performance › Avis",
+          "keywords": "félicitations avis feedback"
+        },
+        "reviews": {
+          "label": "Évaluations",
+          "path": "Performance › Évaluations",
+          "keywords": "évaluation entretien annuel"
+        },
+        "teamPerformance": {
+          "label": "Performance de l’équipe",
+          "path": "Performance › Équipe",
+          "keywords": "équipe plans valider"
+        },
+        "cycle": {
+          "label": "Cycle",
+          "path": "Performance › Cycle",
+          "keywords": "cycle phases échéance"
+        },
+        "settings": {
+          "label": "Paramètres",
+          "path": "Paramètres",
+          "keywords": "langue thème sombre clair notifications e-mail"
+        }
+      }
     },
     "viewAs": {
       "seeing": "Vous voyez Fusion comme {name}",

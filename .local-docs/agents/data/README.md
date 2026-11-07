@@ -70,6 +70,8 @@ B-278 accepted and closed 2026-11-03. Reusable shell verification remains below.
 
 
 
+- [journey-b211-search.cjs](journey-b211-search.cjs): the top bar search's Core HR and Performance reads through shell :3000, read-only. Amira Khelifi (administrator), Mariam Gharbi (manager) and Aicha Bouazizi (employee); jobs and cycles only for administrators; the Fresh preset's Leila and a forged Carthage tenant header find none of Carthage's people or objectives; no token 401. 2026-11-07: **12/0**.
+- [screens-b211.cjs](screens-b211.cjs): one screen of the top bar search as Mariam Gharbi on Home, dark 1440×900 via :3000, query argument (default "product") with the second action lit; saves `plans/B-211-screens/01-search.png`. Changes no data.
 - [journey-b247-b248.cjs](journey-b247-b248.cjs): work-week saves/validation/concurrency and self-manager authorization through shell :3000. Signed-out, ordinary employee, other-person/date and cross-tenant selector/header negatives. Restores Carthage’s starting work week, confirms invitation defaults unchanged, and provisions one fictional current joiner through hire/invite/accept. Final 2026-11-03: **30/0/0**; fixture in `b247-b248.local.json` (local only), Ons Khemiri at `ons.b248.mw0k6p5z@example.test`, Employee/self permissions only. Use within the first seven calendar days to review the Home manager card; after that it correctly recedes.
 - [screens-b247-b248.cjs](screens-b247-b248.cjs): only Settings › Details (Carthage administrator), Home’s company card (existing Fresh preset administrator, setup guide still open) and joiner Home (the above fixture), dark 1440×900 via :3000. Saves in `plans/B-247-screens/` and `plans/B-248-screens/`; changes no product data.
 

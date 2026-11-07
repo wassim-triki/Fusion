@@ -58,11 +58,12 @@ export function useApis() {
 }
 
 /** One person's performance as the caller may see it (D-32). */
-export function usePersonSummary(employeeId: string, cycleId?: string | null) {
+export function usePersonSummary(employeeId: string, cycleId?: string | null, enabled = true) {
   const { performance } = useApis();
   return useApiQuery(
     performanceQueryKeys.personSummary(employeeId, cycleId),
     (signal) => performance.getPersonSummary(employeeId, cycleId, signal),
+    { enabled: enabled && Boolean(employeeId) },
   );
 }
 

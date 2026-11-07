@@ -290,12 +290,12 @@ export function FeedbackComposer({
 }
 
 /** Ask 1–5 colleagues one question by a date (D-13), about one of your objectives, a value, or nothing specific. */
-export function RequestComposer({ objective, onClose, onSent }: { objective?: FixedObjective; onClose: () => void; onSent?: (id: string) => void }) {
+export function RequestComposer({ objective, people: initialPeople, onClose, onSent }: { objective?: FixedObjective; people?: PickedColleague[]; onClose: () => void; onSent?: (id: string) => void }) {
   const t = useTranslations("conversations.RequestComposer");
   const { user } = useAuth();
   const ask = useAskForFeedback();
   const [id] = useState(newClientId);
-  const [people, setPeople] = useState<PickedColleague[]>([]);
+  const [people, setPeople] = useState<PickedColleague[]>(initialPeople ?? []);
   const [question, setQuestion] = useState("");
   const [subject, setSubject] = useState<Subject>(NOTHING);
   const due = new Date();
@@ -365,14 +365,14 @@ export function RequestComposer({ objective, onClose, onSent }: { objective?: Fi
  * Praise 1–10 colleagues for one company value (D-14). Praise is public, so the composer shows it as everyone will
  * see it while it's written.
  */
-export function PraiseComposer({ initialValue, onClose }: { initialValue?: string; onClose: () => void }) {
+export function PraiseComposer({ initialValue, people: initialPeople, onClose }: { initialValue?: string; people?: PickedColleague[]; onClose: () => void }) {
   const t = useTranslations("conversations.PraiseComposer");
   const { user } = useAuth();
   const give = useGivePraise();
   const values = useCompanyValues();
   const toneOf = useValueTones();
   const [id] = useState(newClientId);
-  const [people, setPeople] = useState<PickedColleague[]>([]);
+  const [people, setPeople] = useState<PickedColleague[]>(initialPeople ?? []);
   const [value, setValue] = useState<string | null>(initialValue ?? null);
   const [message, setMessage] = useState("");
   const ready = people.length > 0 && value && message.trim().length > 0;

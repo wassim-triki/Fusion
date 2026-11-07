@@ -54,7 +54,8 @@ None waiting.
 
 ### Other reviews
 
-None waiting.
+- [ ] **B-211** Search in the top bar, made real: people first, then records and settings, as one place to find anything; a candidate small wow · Shell, Core HR, Performance · 2026-10-30
+      User 2026-10-30: "we should even have that search bar like we exactly have it in the artifacts … could be part of a small wow factor." Wired 2026-10-30 under B-176 (places only). Design accepted 2026-11-06 ([explorer](https://claude.ai/artifact/4nuqMWcJkD1EcxnVXcTFhg)); built 2026-11-07 ([plan](plans/B-211-top-bar-search.md)). **Look at:** `plans/B-211-screens/01-search.png` beside the explorer, or open http://localhost:3000 as `mariam.gharbi@example.test` (password in `FUSION_LOCAL_PASSWORD`), press Ctrl K, try "product", "praise aicha", → on a person.
 
 ## Ready
 
@@ -62,8 +63,7 @@ None waiting.
 
 ### Other work
 
-- [ ] **B-211** Search in the top bar, made real: people first, then records and settings, as one place to find anything; a candidate small wow · Shell, Core HR, Performance · 2026-10-30
-      User 2026-10-30: "we should even have that search bar like we exactly have it in the artifacts … could be part of a small wow factor." Wired 2026-10-30 under B-176 (places only). Design accepted 2026-11-06 ([explorer](https://claude.ai/artifact/4nuqMWcJkD1EcxnVXcTFhg)); build next, fresh session, high effort, from the recipe in the [plan](plans/B-211-top-bar-search.md).
+- [ ] **B-308** A Performance test fails on today's date: `ReviewWorkTests.An_unacknowledged_result_is_reminded_on_its_day_then_weekly` expects no reminder six days after release but gets one; it fails on untouched `wassim/develop` too (found 2026-11-07 during B-211). Likely a date boundary in the acknowledgement reminder schedule or the test's day arithmetic · Performance · 2026-11-07
 
 - [ ] **B-294** Refresh tokens are stored in plain text (`RefreshToken.Token`); store a hash and look up by it, so a database read can't hand out sessions · Identity · 2026-11-05
       Found while re-planning B-191. Small, backend only; a migration invalidates existing sessions (acceptable, no backward compatibility).

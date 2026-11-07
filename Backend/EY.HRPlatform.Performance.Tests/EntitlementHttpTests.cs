@@ -14,6 +14,7 @@ public sealed class EntitlementHttpTests
     [Theory]
     [InlineData("/api/performance/context")]
     [InlineData("/api/performance/settings")]
+    [InlineData("/api/performance/search?q=a")]
     [InlineData("/api/performance/cycles/11111111-1111-1111-1111-111111111111/population")]
     [InlineData("/api/performance/cycles/11111111-1111-1111-1111-111111111111/strategy")]
     [InlineData("/api/performance/cycles/11111111-1111-1111-1111-111111111111/goals")]

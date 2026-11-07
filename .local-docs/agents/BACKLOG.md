@@ -54,18 +54,7 @@ None waiting.
 
 ### Other reviews
 
-Batch of 2026-11-07, one session. Every local password is `FUSION_LOCAL_PASSWORD`.
-
-- [ ] **B-205** The invitation acceptance and activation pages in the company's brand (the same frame as sign-in); fits B-188's activation redraw · Shell, Core HR · 2026-10-30
-      Look at: [screen](plans/B-205-screens/invitation.png) (Yasmine Trabelsi's invitation in Carthage's frame, beside D-10's drawing). To try it: her pending invitation in Mailpit (http://localhost:8025, "yasmine.trabelsi@example.test"), its button, signed out. The administrator activation and recovery pages use the same frame and facts row.
-- [ ] **B-287** Open roles remember who filled them, so the front page can show "Filled · Ons Khemiri, Monday" as drawn (D-30) · Core HR · 2026-11-04
-      Look at: [screen](plans/B-287-screens/filled-role.png) (Open roles: "2 open · 1 filled", "Product · Ons Khemiri, Tuesday"). To try marking one filled: http://localhost:3000/core/organization as `amira.khelifi@example.test` → an open role's card → Status Filled → Starts in the role, Filled by.
-- [ ] **B-240** Directory card as drawn (D-28): initials in Fusion's serif, the footer's org chart icon as drawn · Core HR · 2026-10-31
-      Look at: [screen](plans/B-240-screens/directory-card.png) (People as Aicha Bouazizi; compare with the card in D-28's drawing).
-- [ ] **B-200** Reorder list values by drag and drop (a handle on each row) in Settings › Lists · Core HR · 2026-10-30
-      Try: http://localhost:3000/core/settings/lists as `amira.khelifi@example.test`, drag a value by the handle at its start (or focus the handle, Space, arrows, Space).
-- [ ] **B-236** Platform's tenant list exports through the table kit's `DataTableExport` · Platform · 2026-10-31
-      Try: http://localhost:3000/platform/tenants as `admin@ey-hr.com` → Export saves the CSV at once. CSV only: Excel would need Identity to write spreadsheets; say if you want it.
+None waiting.
 
 ## Ready
 

@@ -1,5 +1,6 @@
 # LOG — the one history
 
+- ○ **B-318** closed on evidence, 2026-11-07: the `Manager` platform role is a label only. It is set in `AccessProfileService` and `WorkforceAccountsController` and read by the account label; no module authorizes on it (Training's admin controllers need `PlatformAdmin`/`HRAdmin`; Interview and the colleague frontends don't read it). A unit holder labelled Manager gains nothing.
 - ✓ **B-212** accepted, 2026-11-07 (user: "sure, proceed"): roles reach "their unit"; "See · everyone" for plans reads put-forward plans on the Performance tab too. Closes **B-313** (✓): branded emails, Access › History, on leave, their unit.
 - **B-313 session 3: B-212 Their unit** built, 2026-11-07, **In review** (screen `plans/B-212-screens/01-role-their-unit.png`):
   - Scopes rank Self 1 · DirectReports 2 · OrgUnit 3 · Tenant/Module 4 · Platform 5 (backend `PermissionScopes`, `@repo/auth`, the role editor): a unit covers the holder's team, so a team role and a unit role together hold the unit. `RoleReaches.Unit` options: Jobs see, Personal see, Approving changes propose, Reports see/build, Plans see; the catalogue allows `OrgUnit` on those keys.

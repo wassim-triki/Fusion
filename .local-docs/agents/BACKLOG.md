@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-319.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-320.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -32,6 +32,11 @@ Open work only. Agents keep it current from the conversation; closed items leave
 | 19 · B-298 | Carthage as the one company to walk around in | Accepted and closed |
 
 ## In progress
+
+- [ ] **B-319** Leave and Home follow-ups, one batch (user 2026-11-07: "batch em") · Core HR, Shell · 2026-11-07
+  - [ ] **B-315** Tell the manager when leave is set for someone on their team (the Leave sheet's drawing lists it under "Also changes"): a Core notification and email like team joining/leaving · Core HR · 2026-11-07
+  - [ ] **B-316** Past leave on the person's Job and history (the drawing keeps ended leave there); Job information is built from job rows today · Core HR · 2026-11-07
+  - [ ] **B-317** Shell Home tests fail since the top-bar search (`20c3f0b1`): `fusion-home.test.tsx` renders `TopBarSearch`, which needs an `AuthProvider` (18 failing, unrelated to B-229) · Shell · 2026-11-07
 
 ### Rebuild program tracking
 
@@ -56,10 +61,6 @@ None waiting.
 
 ## Ready
 
-- [ ] **B-318** Identity labels anyone who sees jobs for a team or wider as the `Manager` platform role, so "their unit" holders get it too; check what colleague modules (Learning, Recruitment, Interview, Onboarding) give that label before more unit roles exist · Identity · 2026-11-07
-- [ ] **B-315** Tell the manager when leave is set for someone on their team (the Leave sheet's drawing lists it under "Also changes"): a Core notification and email like team joining/leaving · Core HR · 2026-11-07
-- [ ] **B-316** Past leave on the person's Job and history (the drawing keeps ended leave there); Job information is built from job rows today · Core HR · 2026-11-07
-- [ ] **B-317** Shell Home tests fail since the top-bar search (`20c3f0b1`): `fusion-home.test.tsx` renders `TopBarSearch`, which needs an `AuthProvider` (18 failing, unrelated to B-229) · Shell · 2026-11-07
 - [ ] **B-310** Before hosting: the Gateway and Identity trust a forwarded client address only from loopback, so once the shell, Gateway and Identity run on separate machines each needs its hop's address in `KnownProxies`, and a shell behind a load balancer needs the stamp to take the balancer's address instead of the socket · Shell, Gateway, Identity · 2026-11-07
 
 ### Rebuild slices

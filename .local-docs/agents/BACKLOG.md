@@ -36,7 +36,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 - [ ] **B-313** The person record and who sees it, as one batch (user 2026-11-07): branded notification emails, Access › History, on leave, roles reaching "their unit" · Core HR, Performance, Identity · 2026-11-07
       Plan: [plans/B-229-batch-leave-history-reach-emails.md](plans/B-229-batch-leave-history-reach-emails.md). Explorer first (session 0), then three builds, one commit each: 1 B-204 + B-231, 2 B-229, 3 B-212.
       Session 0 done 2026-11-07: [plans/B-313-explorer.html](plans/B-313-explorer.html) (https://claude.ai/artifact/45gU5RWQJR8gqbekvF8Uy7), seven screens and seven questions; user took every recommendation (picks in the plan).
-      Session 1 built 2026-11-07: B-204 + B-231, In review below. Next: session 2 (B-229), fresh.
+      Session 1 accepted 2026-11-07: B-204 + B-231 (✓, LOG). Next: session 2 (B-229), fresh.
   - [ ] **B-229** On leave: dates and a type on a person, shown wherever the person appears (Performance included); slice 6's row, not in this session's ask · Core HR, Performance · 2026-10-31
   - [ ] **B-212** Reach "their unit" for roles (D-25 draws it): Core HR's record reads and Performance resolve the viewer's unit and the units under it, then the Jobs, Personal and Plans areas offer it. Not offered in B-177 because nothing enforces it yet (`performance.cycle.view@OrgUnit` is unseeded and treated as a team) · Core HR, Performance, Identity · 2026-10-30
     User 2026-10-31 (B-179 screen 11 vs the drawing): the band's glance row gets manager, team, time with the company and location even though the left rail repeats them (keep the rail); a ⋯ menu at the band's top right like the drawing (empty if nothing fits); sections stacked one under another as drawn, not the newspaper grid, titles inside their sections (B-225); "do as the reference, we agreed on it for a reason". Tabs and filters: active state in the tenant's theme, outline with a subtle fill (as configured before); date pickers per B-227.
@@ -53,12 +53,6 @@ These are umbrella outcomes, not additional slices.
         Order and per-session effort accepted 2026-10-30 (user asked for the next prompt). B-175 done (✓ 2026-10-30); B-176 done (✓ 2026-10-30); B-177 done (✓ 2026-10-31); B-178 done (✓ 2026-10-31); B-179 done (✓ 2026-10-31); B-180 done (✓ 2026-10-31); B-181 done (✓ 2026-10-31); B-182 done (✓ 2026-10-31); B-183 done (✓ 2026-11-01); B-184 done (✓ 2026-11-01); B-185 done (✓ 2026-11-01); B-186 done (✓ 2026-11-01); B-187 done (✓ 2026-11-01); B-188 done (✓ 2026-11-01); B-189 Reports done (✓ 2026-11-03); B-190 Core HR’s front page done (✓ 2026-11-04).
 
 ## In review
-
-- [ ] **B-313 · session 1** Branded notification emails and Access › History, built 2026-11-07 (parent B-313 stays In progress for sessions 2–3)
-      Look at: `plans/B-231-screens/access-history.png` (Aicha Bouazizi's Access tab as Amira, History at the bottom) and `plans/B-204-screens/branded-email.png` (Mariam's praise to Aicha as Mailpit shows it), each beside the explorer's "Access › History" and "Email" screens. Live: http://localhost:3000/core/people → Aicha Bouazizi → Access, as `amira.khelifi@example.test` (local password).
-      One difference from the drawing: "Invited by …" carries no "With the Employees role" line (the invitation's roles aren't part of History; roles stay in the section above).
-  - [ ] **B-204** Notification emails from Core HR and Performance in the company's brand (name, logo, colour), as invitations are since B-176 · Core HR, Performance, Identity · 2026-10-30
-  - [ ] **B-231** Access tab › History (the account story: invited by, delivered, sent again, withdrawn, accepted, last sign-in) · Identity, Core HR · 2026-10-31
 
 ### Rebuild slices
 

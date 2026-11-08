@@ -28,15 +28,7 @@ None.
 
 ## In review
 
-- [ ] **B-325** Polish batch: the board's Polish group (user 2026-11-08: "lets target the full polish bag") · Core HR, Performance, Shared · 2026-11-08
-      Built. [plan](plans/B-325-polish-batch.md)
-  - [ ] **B-323** Change history says who was chosen for a role or taken off it · Core HR · 2026-11-08
-        Look at: `plans/B-325-screens/01-change-history-chosen.png` ("Gave Aicha Bouazizi the Managers role", "Took the Managers role from Aicha Bouazizi", opened: Held → Not held). Saves before today keep "Changed the Managers role".
-  - [ ] **B-321** The 1:1 record and Reviews: lists with their titles inside the frame, like B-228 · Performance · 2026-11-08
-        Look at: `02-one-on-one.png` (Talking points, From Aicha's year, Actions, Notes, earlier meetings as frames; suggestions as inlays) and `03-reviews.png` (Your year, Your team, rounds, asked of you, past results); the round page's By team table the same.
-  - [ ] **B-250** The sidebar's fold control · Shared · 2026-11-03
-        User 2026-11-08 picked from the explorer (https://claude.ai/artifact/SdXW6Evs1Nusik87exUEMc): the company mark is the switch; the edge tab folds it, the folded mark turns into the sliding-pane icon to open it; Ctrl+B (⌘B) does both, named in the tooltips. Look at: `04-sidebar-open.png`, `05-sidebar-folded.png`.
-    - [ ] **B-274** Redesign the sidebar toggle after rejected review attempts · Shared · 2026-11-03
+None waiting.
 
 ## Ready
 

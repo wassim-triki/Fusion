@@ -33,6 +33,18 @@ export interface PlaceDto {
   peopleCount: number;
   openRoleCount: number;
   inUse: boolean;
+  /** How many teams have people working here today. */
+  teamCount: number;
+  /** The first few people working here, those with a photo first. */
+  faces: PlacePersonDto[];
+}
+
+/** One of the people working at a place, as its row draws them. */
+export interface PlacePersonDto {
+  employeeKey: string;
+  displayName: string;
+  /** API-relative photo address; null without a photo. */
+  photoUrl: string | null;
 }
 
 /** `usageCount` counts jobs for levels and families, people employed today for employment types. */

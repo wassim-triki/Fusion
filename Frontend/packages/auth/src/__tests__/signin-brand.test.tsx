@@ -9,10 +9,10 @@ const mockSearchParamGet = vi.fn<(key: string) => string | null>();
 vi.mock("next/navigation", () => ({ useSearchParams: () => ({ get: mockSearchParamGet }) }));
 const fetchMock = vi.fn();
 
-function brandResponse(color: string | null) {
+function brandResponse(color: string | null, welcomeLine: string | null = null) {
   return new Response(
     JSON.stringify({
-      data: { name: "Carthage Digital Group", slug: "carthage", color, logoUrl: null, language: "en" },
+      data: { name: "Carthage Digital Group", slug: "carthage", color, logoUrl: null, language: "en", welcomeLine },
       isSuccess: true,
       errors: [],
     }),
@@ -44,11 +44,12 @@ function renderPage() {
 describe("sign-in in the company's brand (B-176)", () => {
   it("wears the company the link names: its name, its colour on the page", async () => {
     mockSearchParamGet.mockImplementation((key) => (key === "company" ? "carthage" : null));
-    fetchMock.mockResolvedValue(brandResponse("#2f5fd0"));
+    fetchMock.mockResolvedValue(brandResponse("#2f5fd0", "Good to see you."));
 
     renderPage();
 
     expect(await screen.findByRole("heading", { level: 2, name: "Carthage Digital Group" })).toBeInTheDocument();
+    expect(screen.getByText("Good to see you.")).toBeInTheDocument();
     expect(screen.getByText("to Carthage Digital Group")).toBeInTheDocument();
     expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/identity/brand/companies/carthage");
     expect(document.getElementById("fusion-brand")?.textContent).toContain("--primary:#2f5fd0");

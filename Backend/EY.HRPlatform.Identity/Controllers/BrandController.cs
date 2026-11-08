@@ -68,7 +68,7 @@ public class BrandController(AppIdentityDbContext dbContext, IConfiguration conf
                 LogoChange.Remove => null,
                 _ => tenant.LogoVersion,
             };
-            tenant.Rebrand(name, request.Color, request.Language ?? string.Empty, logoVersion);
+            tenant.Rebrand(name, request.Color, request.Language ?? string.Empty, logoVersion, request.WelcomeLine);
         }
         catch (ArgumentException exception)
         {
@@ -107,7 +107,8 @@ public class BrandController(AppIdentityDbContext dbContext, IConfiguration conf
             tenant.TimeZone,
             tenant.BrandColor,
             BrandAddresses.LogoUrl(tenant.Id, tenant.LogoVersion),
-            BrandAddresses.LanguageOf(tenant))));
+            BrandAddresses.LanguageOf(tenant),
+            tenant.WelcomeLine)));
     }
 
     /// <summary>
@@ -168,7 +169,8 @@ public class BrandController(AppIdentityDbContext dbContext, IConfiguration conf
             tenant.Slug,
             tenant.BrandColor,
             BrandAddresses.LogoUrl(tenant.Id, tenant.LogoVersion),
-            BrandAddresses.LanguageOf(tenant))));
+            BrandAddresses.LanguageOf(tenant),
+            tenant.WelcomeLine)));
     }
 
     /// <summary>The logo at its versioned address, cached for good; another version of it is not served.</summary>

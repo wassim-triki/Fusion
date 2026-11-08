@@ -12,4 +12,5 @@ public sealed record TenantSummaryDto(
     string? TimeZone = null,
     string? BrandColor = null,
     string? LogoUrl = null,
-    string? Language = null);
+    string? Language = null,
+    string? WelcomeLine = null);

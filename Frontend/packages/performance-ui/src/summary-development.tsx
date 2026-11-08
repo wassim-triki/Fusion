@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { usePerformanceWords } from "./use-words";
 
 /**
- * The person's growth goals for the cycle, each with its status and, while open, when it's aimed for.
+ * The person's development goals for the cycle, each with its status and, while open, when it's aimed for.
  * The mark carries the status by shape and colour: an empty ring, a half-filled ring, a filled check.
  */
 export function SummaryDevelopment({ development, renderLink }: { development: PersonSummaryDevelopmentDto; renderLink: RenderSummaryLink }) {

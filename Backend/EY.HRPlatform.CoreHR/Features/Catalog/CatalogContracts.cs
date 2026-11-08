@@ -41,6 +41,10 @@ public sealed record JobDto(
     int OpenRoleCount,
     bool InUse);
 
+/// <summary>
+/// A place and who works there today (B-201): the count, how many teams have people there, and the first few of
+/// them by name for the faces.
+/// </summary>
 public sealed record PlaceDto(
     Guid Id,
     string Name,
@@ -49,7 +53,12 @@ public sealed record PlaceDto(
     bool IsRetired,
     int PeopleCount,
     int OpenRoleCount,
-    bool InUse);
+    bool InUse,
+    int TeamCount,
+    IReadOnlyList<PlacePersonDto> Faces);
+
+/// <summary>One of the people working at a place, as its row draws them.</summary>
+public sealed record PlacePersonDto(string EmployeeKey, string DisplayName, string? PhotoUrl);
 
 /// <summary>
 /// One value of a company list. <paramref name="UsageCount"/> counts what uses it now: jobs for levels and

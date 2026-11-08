@@ -1,5 +1,11 @@
 # LOG — the one history
 
+- **B-320 session 3: B-210 + B-201 + B-301** built, 2026-11-08, **In review** (screens `plans/B-320-screens/07-sign-in-column.png`, `08-places.png`):
+  - **B-210** Identity `Tenant.WelcomeLine` (≤160, trimmed, empty clears; migration `AddBrandWelcomeLine`) saved with the brand, on `PublicBrandDto` and the tenant summary. `SignInFrame` shows it under the name and draws a ring shape in the company colour; Settings › Brand has the field (en/fr/ar) and the sign-in preview shows it.
+  - **B-201** CoreHR `PlaceDto.TeamCount` and `Faces` (up to 4 people working there today, photos first). Places table: tinted pin, faces + count, share of the company (bar scaled to the largest place, % of everyone), teams, open roles.
+  - **B-301** "growth goal(s)" → "development goal(s)" in Performance Overview, Team and cycle setup (en/ar; fr already said développement), and in code comments.
+  - Checks: Identity brand 17/0/0 (+1 welcome line), CoreHR catalog 18/0/0; auth signin-brand 4/4, core brand studio 3/3; type-check @repo/api, @repo/auth, core clean. Data: `data/set-carthage-welcome-line.cjs` (run).
+- ✓ **B-228** accepted, 2026-11-08 (user: "yeah sure, proceed"): Performance lists as rows inside one frame with a drawer; the review keeps its items as boxes (B-320 session 2).
 - ✓ **B-198** accepted, 2026-11-08 (user: "yeah sure proceed"): one tab pattern, `LinkTabs` for parts of a page and `Segmented` for views and panel sections (B-320 session 1).
 - **B-320 session 1: B-198 one tab pattern** built, 2026-11-08, **In review** (screen `plans/B-320-screens/01-feedback-tabs.png`):
   - Parts of a page = `LinkTabs` (tab in the address, counts after labels): Changes and approvals (`?view=answered`, the opened request kept beside it), Feedback (`?tab=`, Requests shows what's to answer), Cycle (`?view=insights`, was a hand-made underline strip).

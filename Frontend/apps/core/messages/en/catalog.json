@@ -117,6 +117,8 @@
     "col": {
       "place": "Place",
       "people": "People",
+      "share": "Share of the company",
+      "teams": "Teams",
       "openRoles": "Open roles"
     },
     "filter": {

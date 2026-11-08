@@ -124,7 +124,7 @@ export function InviteSheet({ open, onClose }: { open: boolean; onClose: () => v
     const data = summary.data;
     if (!data) return null;
     const language = data.language === "fr" || data.language === "ar" ? data.language : "en";
-    return { name: data.name, color: data.brandColor ?? null, language, logoSrc: data.logoUrl ?? null } as const;
+    return { name: data.name, color: data.brandColor ?? null, language, logoSrc: data.logoUrl ?? null, welcomeLine: data.welcomeLine ?? null } as const;
   }, [summary.data]);
 
   const submit = async () => {

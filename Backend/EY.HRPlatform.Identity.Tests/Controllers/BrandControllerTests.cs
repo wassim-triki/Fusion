@@ -69,8 +69,8 @@ public class BrandControllerTests
     }
 
     private static SaveBrandRequest Request(string name = "Carthage", string? color = "#3e63dd", string language = "ar",
-        string logo = LogoChange.Keep, string? png = null)
-        => new(name, color, language, logo, png);
+        string logo = LogoChange.Keep, string? png = null, string? welcome = null)
+        => new(name, color, language, logo, png, welcome);
 
     private static async Task<Tenant> ReadAsync(string db, Guid id)
     {
@@ -201,6 +201,29 @@ public class BrandControllerTests
     }
 
     [Fact]
+    public async Task The_welcome_line_is_saved_trimmed_shown_on_sign_in_and_cleared_when_empty()
+    {
+        var arranged = await SeedAsync();
+        var save = Controller(arranged.Db, arranged.Own, Manage);
+        await save.Save(Request(welcome: "  Good to see you.  "), CancellationToken.None);
+        var tenant = await ReadAsync(arranged.Db, arranged.Own);
+        Assert.Equal("Good to see you.", tenant.WelcomeLine);
+
+        var brand = Assert.IsType<ApiResponse<PublicBrandDto>>(Assert.IsType<OkObjectResult>(
+            (await Controller(arranged.Db, null).GetPublicBrand(tenant.Slug, CancellationToken.None)).Result).Value).Data!;
+        Assert.Equal("Good to see you.", brand.WelcomeLine);
+
+        var tooLong = await Controller(arranged.Db, arranged.Own, Manage)
+            .Save(Request(welcome: new string('a', Tenant.WelcomeLineMaxLength + 1)), CancellationToken.None);
+        Assert.Equal("Keep the welcome line to 160 characters.",
+            Assert.Single(Assert.IsType<ApiResponse>(Assert.IsType<BadRequestObjectResult>(tooLong.Result).Value).Errors));
+        Assert.Equal("Good to see you.", (await ReadAsync(arranged.Db, arranged.Own)).WelcomeLine);
+
+        await Controller(arranged.Db, arranged.Own, Manage).Save(Request(welcome: " "), CancellationToken.None);
+        Assert.Null((await ReadAsync(arranged.Db, arranged.Own)).WelcomeLine);
+    }
+
+    [Fact]
     public async Task Only_a_png_within_size_is_a_logo()
     {
         var arranged = await SeedAsync();
@@ -229,7 +252,7 @@ public class BrandControllerTests
             Assert.IsType<OkObjectResult>((await anonymous.GetPublicBrand(tenant.Slug.ToUpperInvariant(), CancellationToken.None)).Result).Value).Data!;
         Assert.Equal(("Carthage", "#3e63dd", "ar"), (brand.Name, brand.Color, brand.Language));
         Assert.Equal(typeof(PublicBrandDto).GetProperties().Select(p => p.Name).Order(),
-            new[] { "Color", "Language", "LogoUrl", "Name", "Slug" });
+            new[] { "Color", "Language", "LogoUrl", "Name", "Slug", "WelcomeLine" });
         Assert.IsType<NotFoundObjectResult>((await anonymous.GetPublicBrand("nobody", CancellationToken.None)).Result);
 
         var logo = Assert.IsType<FileContentResult>(await anonymous.GetLogo(arranged.Own, tenant.LogoVersion!, CancellationToken.None));

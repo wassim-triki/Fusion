@@ -138,6 +138,7 @@ public class TenantContextController(
             tenant.TimeZone,
             tenant.BrandColor,
             BrandAddresses.LogoUrl(tenant.Id, tenant.LogoVersion),
-            BrandAddresses.LanguageOf(tenant))));
+            BrandAddresses.LanguageOf(tenant),
+            tenant.WelcomeLine)));
     }
 }

@@ -208,7 +208,7 @@ public sealed record GetTeamResultsQuery(Guid CycleId, PlanActorContext Actor) :
 
 /// <summary>
 /// The released results of the caller's own recorded team (performance-team-workspace, D-R2): final levels with the
-/// people at each, acknowledgement, calibration changes and open growth goals. Only reviews the caller is the
+/// people at each, acknowledgement, calibration changes and open development goals. Only reviews the caller is the
 /// recorded reviewer of, only once released, never the caller's own; empty before release. No averages.
 /// </summary>
 public sealed class GetTeamResultsHandler(PerformanceDbContext db) : IQueryHandler<GetTeamResultsQuery, Result<TeamResultsDto>>

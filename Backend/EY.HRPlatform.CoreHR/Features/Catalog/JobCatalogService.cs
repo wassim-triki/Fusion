@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Exceptions;
+using EY.HRPlatform.CoreHR.Features.People;
 using EY.HRPlatform.CoreHR.Features.TenantSettings.Services;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence;
 using EY.HRPlatform.SharedKernel.Auth;
@@ -132,11 +133,27 @@ public sealed class JobCatalogService(
     {
         var places = await dbContext.Places.AsNoTracking().OrderBy(place => place.Name).ToListAsync(cancellationToken);
         var today = Today;
-        var holders = await dbContext.WorkAssignments.AsNoTracking()
+        var current = await dbContext.WorkAssignments.AsNoTracking()
             .Where(item => item.PlaceId != null && item.IsPrimary && item.EffectiveFrom <= today && (item.EffectiveTo == null || today < item.EffectiveTo))
-            .GroupBy(item => item.PlaceId!.Value)
-            .Select(group => new { group.Key, Count = group.Select(item => item.EmployeeId).Distinct().Count() })
-            .ToDictionaryAsync(item => item.Key, item => item.Count, cancellationToken);
+            .Select(item => new { PlaceId = item.PlaceId!.Value, item.EmployeeId, item.OrgUnitId })
+            .ToListAsync(cancellationToken);
+        var employeeIds = current.Select(item => item.EmployeeId).Distinct().ToList();
+        var people = await dbContext.Employees.AsNoTracking()
+            .Where(employee => employeeIds.Contains(employee.Id))
+            .ToDictionaryAsync(employee => employee.Id, cancellationToken);
+        var byPlace = current.GroupBy(item => item.PlaceId).ToDictionary(group => group.Key, group =>
+        {
+            var here = group.Select(item => item.EmployeeId).Distinct().Where(people.ContainsKey).Select(id => people[id])
+                .Select(person => new PlacePersonDto(
+                    person.StableEmployeeKey, person.DisplayName, EmployeePhotos.UrlFor(person.StableEmployeeKey, person.PhotoKey)))
+                .ToList();
+            return (
+                Count: group.Select(item => item.EmployeeId).Distinct().Count(),
+                Teams: group.Select(item => item.OrgUnitId).Distinct().Count(),
+                // Those with a photo first, so the faces show faces where there are any.
+                Faces: (IReadOnlyList<PlacePersonDto>)here.OrderBy(person => person.PhotoUrl is null)
+                    .ThenBy(person => person.DisplayName, StringComparer.CurrentCulture).Take(PlaceFaces).ToList());
+        });
         var everUsed = (await dbContext.WorkAssignments.AsNoTracking().Where(item => item.PlaceId != null)
             .Select(item => item.PlaceId!.Value).Distinct().ToListAsync(cancellationToken)).ToHashSet();
         var roleRows = await dbContext.OpenRoles.AsNoTracking().Where(role => role.PlaceId != null)
@@ -144,11 +161,19 @@ public sealed class JobCatalogService(
         var roles = roleRows.Where(role => role.Status is OpenRoleStatus.Open or OpenRoleStatus.OnHold)
             .GroupBy(role => role.PlaceId).ToDictionary(group => group.Key, group => group.Count());
 
-        return places.Select(place => new PlaceDto(
-            place.Id, place.Name, place.City, place.Country, place.IsRetired,
-            holders.GetValueOrDefault(place.Id), roles.GetValueOrDefault(place.Id),
-            everUsed.Contains(place.Id) || roleRows.Any(role => role.PlaceId == place.Id))).ToList();
+        return places.Select(place =>
+        {
+            var here = byPlace.GetValueOrDefault(place.Id);
+            return new PlaceDto(
+                place.Id, place.Name, place.City, place.Country, place.IsRetired,
+                here.Count, roles.GetValueOrDefault(place.Id),
+                everUsed.Contains(place.Id) || roleRows.Any(role => role.PlaceId == place.Id),
+                here.Teams, here.Faces ?? []);
+        }).ToList();
     }
+
+    /// <summary>How many people a place's row draws.</summary>
+    private const int PlaceFaces = 4;
 
     public async Task<PlaceDto> CreatePlaceAsync(PlaceRequest request, ClaimsPrincipal user, CancellationToken cancellationToken)
     {

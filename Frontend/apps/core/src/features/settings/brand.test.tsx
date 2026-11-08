@@ -84,7 +84,7 @@ afterEach(() => {
 });
 
 describe("Brand studio", () => {
-  it("changes nothing until the save, then sends name, colour, language and the logo together", async () => {
+  it("changes nothing until the save, then sends name, colour, language, the logo and the welcome line together", async () => {
     mocks.save.mockResolvedValue({ ...SUMMARY, name: "Carthage", brandColor: "#2f5fd0", language: "ar" });
     const user = userEvent.setup();
     renderStudio("manage");
@@ -94,6 +94,7 @@ describe("Brand studio", () => {
     await user.type(name, "Carthage");
     await user.click(screen.getByRole("button", { name: "#2f5fd0" }));
     await user.click(screen.getByRole("radio", { name: "العربية" }));
+    await user.type(screen.getByLabelText("Welcome line"), "  Good to see you. ");
     expect(mocks.save).not.toHaveBeenCalled();
     expect(screen.getByText("Unsaved changes")).toBeInTheDocument();
 
@@ -106,6 +107,7 @@ describe("Brand studio", () => {
         language: "ar",
         logo: "keep",
         logoPng: null,
+        welcomeLine: "Good to see you.",
       }),
     );
   });

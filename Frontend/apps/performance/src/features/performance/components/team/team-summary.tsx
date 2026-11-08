@@ -129,7 +129,7 @@ export function TeamSummary({ data }: { data: YourPeoplePageDto }) {
 
 /**
  * The released results of the manager's own team: how many at each level and who, acknowledgements,
- * calibration changes and open growth goals. Final ratings only, no averages, nothing before release.
+ * calibration changes and open development goals. Final ratings only, no averages, nothing before release.
  */
 export function TeamResultsPanel({ results }: { results: TeamResultsDto }) {
   const t = useTranslations("team.TeamResultsPanel");

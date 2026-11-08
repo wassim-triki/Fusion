@@ -38,13 +38,20 @@ interface BrandDraft {
   color: string | null;
   language: CompanyLanguage;
   logo: string | null;
+  welcomeLine: string;
 }
 
 type PreviewKind = "home" | "signin" | "email";
 
 function toDraft(summary: FusionTenantSummaryDto): BrandDraft {
   const language = summary.language === "fr" || summary.language === "ar" ? summary.language : "en";
-  return { name: summary.name, color: summary.brandColor ?? null, language, logo: summary.logoUrl ?? null };
+  return {
+    name: summary.name,
+    color: summary.brandColor ?? null,
+    language,
+    logo: summary.logoUrl ?? null,
+    welcomeLine: summary.welcomeLine ?? "",
+  };
 }
 
 function Control({ label, htmlFor, children, hint }: { label: string; htmlFor?: string; children: ReactNode; hint?: string }) {
@@ -120,6 +127,7 @@ export function BrandSettings({ section }: { section: FusionSettingsSection }) {
         language: draft.language,
         logo: !logoChanged ? "keep" : draft.logo ? "replace" : "remove",
         logoPng: logoChanged ? draft.logo : null,
+        welcomeLine: draft.welcomeLine.trim() || null,
       });
       queryClient.setQueryData(fusionNavigationQueryKeys.tenant(result.tenantId), result);
       await queryClient.invalidateQueries({ queryKey: fusionNavigationQueryKeys.tenant(result.tenantId) });
@@ -168,7 +176,7 @@ export function BrandSettings({ section }: { section: FusionSettingsSection }) {
   };
 
   const view: BrandDraftView | null = draft
-    ? { name: draft.name, color: draft.color, language: draft.language, logoSrc: draft.logo }
+    ? { name: draft.name, color: draft.color, language: draft.language, logoSrc: draft.logo, welcomeLine: draft.welcomeLine.trim() || null }
     : null;
   const nameValid = (draft?.name.trim().length ?? 0) >= 2;
   const firstName = viewer?.fullName?.split(" ")[0] ?? "";
@@ -260,6 +268,17 @@ export function BrandSettings({ section }: { section: FusionSettingsSection }) {
                   disabled={!editable}
                   aria-invalid={!nameValid}
                   onChange={(event) => set({ name: event.target.value })}
+                />
+              </Control>
+
+              <Control label={t("welcomeLine")} htmlFor="brand-welcome" hint={t("welcomeLineHint")}>
+                <Input
+                  id="brand-welcome"
+                  value={draft.welcomeLine}
+                  maxLength={160}
+                  disabled={!editable}
+                  placeholder={t("welcomeLinePlaceholder")}
+                  onChange={(event) => set({ welcomeLine: event.target.value })}
                 />
               </Control>
 

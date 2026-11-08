@@ -208,7 +208,8 @@ public sealed class CatalogTests
         {
             var (jobs, _) = Services(db);
             var tunis = Assert.Single(await jobs.GetPlacesAsync(default));
-            Assert.Equal(("Tunis", 1, true), (tunis.Name, tunis.PeopleCount, tunis.InUse));
+            Assert.Equal(("Tunis", 1, true, 1), (tunis.Name, tunis.PeopleCount, tunis.InUse, tunis.TeamCount));
+            Assert.Equal("Nour Ben Ali", Assert.Single(tunis.Faces).DisplayName);
             await Assert.ThrowsAsync<CatalogConflictException>(() => jobs.DeletePlaceAsync(tunis.Id, Admin, default));
             await Assert.ThrowsAsync<DuplicateEntityException>(() => jobs.CreatePlaceAsync(new PlaceRequest("TUNIS"), Admin, default));
 

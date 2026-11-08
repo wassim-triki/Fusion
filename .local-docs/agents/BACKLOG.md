@@ -34,11 +34,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ## In progress
 
 - [ ] **B-320** UI and design batch: one tab pattern, Performance lists with titles inside, a fuller sign-in company column, a richer Places table, one word for growth goals (user 2026-11-08: "batch the most from ui and design in 1 batch without losing quality") · Shell, Core HR, Performance, `@repo/ds` · 2026-11-08
-      Sessions: 0 explorer (drawings for every taste piece) → 1 B-198 tabs (✓ 2026-11-08) → 2 B-228 Performance lists (In review) → 3 B-210 + B-201 + B-301. Left out: B-230 (parked), B-250/B-274 sidebar toggle (deferred after rejected attempts). [plan](plans/B-320-ui-design-batch.md)
-  - [ ] **B-210** Sign-in's company column feels empty (logo and name on a wash); give it more, canvas first · Shell · 2026-10-30
-        User 2026-10-30 on the Arabic sign-in: "looks clean, still lacking … especially the empty column holding the title of the organization". Revisit later, not urgent (user, same day).
-  - [ ] **B-201** Make the Places table richer: it does its job but reads lackluster (user 2026-10-30, not urgent) · Core HR · 2026-10-30
-  - [ ] **B-301** "Growth goal" and "development goal" both appear for the same idea; pick one (left out of B-192's fix list) · Performance · 2026-11-06
+      Sessions: 0 explorer (drawings for every taste piece) → 1 B-198 tabs (✓ 2026-11-08) → 2 B-228 Performance lists (✓ 2026-11-08) → 3 B-210 + B-201 + B-301 (In review). Left out: B-230 (parked), B-250/B-274 sidebar toggle (deferred after rejected attempts). [plan](plans/B-320-ui-design-batch.md)
 
 ### Rebuild program tracking
 
@@ -59,8 +55,8 @@ None waiting.
 
 ### Other reviews
 
-- [ ] **B-228** Performance lists with their titles inside the frame (part of B-320) · Performance · 2026-10-31, built 2026-11-08
-      Look at (dark, 1440×900, `plans/B-320-screens/`): 02 My Plan, objectives and development goals as rows (Mid-year, Aicha Bouazizi, the employee); 03 a development goal's drawer; 04 Feedback › Requests with a request's drawer (Carthage, Leila Baccouche, the employee); 05 the year-end review, items as boxes inside the frame with rating and comment (Year-end, Aicha); 06 a person's Performance tab, sections with rows inside (Mid-year, Mariam Gharbi, the manager, on Aicha). Clicking an objective row opens the existing objective drawer. A manager's pending request now sits under the objective's title.
+- [ ] **B-210 · B-201 · B-301** (B-320 session 3) Sign-in's company column (B-210), a richer Places table (B-201), one word for growth goals (B-301) · Shell, Core HR, Performance · built 2026-11-08
+      Look at (dark, 1440×900, `plans/B-320-screens/`): 07 Carthage's sign-in, its welcome line (new Settings › Brand › Welcome line, set by `data/set-carthage-welcome-line.cjs`) and the ring shape in its colour; 08 Settings › Places as Amira Khelifi, the administrator: faces, share of the company, teams. B-301 is wording only: Performance's Overview and Team now say "development goals" (en/ar; fr already did). Deviation: the shape is one ring drawing in the company colour, not traced from each logo.
 
 ## Ready
 

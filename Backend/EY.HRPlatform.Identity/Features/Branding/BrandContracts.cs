@@ -13,9 +13,10 @@ public static class LogoChange
 
 /// <summary>
 /// The brand studio's one save. <c>Color</c> is <c>#rrggbb</c> or null for Fusion's own; <c>Language</c> is en, fr or
-/// ar; <c>Logo</c> is a <see cref="LogoChange"/>; <c>LogoPng</c> (base64) is read only when it is replace.
+/// ar; <c>Logo</c> is a <see cref="LogoChange"/>; <c>LogoPng</c> (base64) is read only when it is replace;
+/// <c>WelcomeLine</c> is the sign-in page's optional sentence.
 /// </summary>
-public sealed record SaveBrandRequest(string Name, string? Color, string Language, string Logo, string? LogoPng);
+public sealed record SaveBrandRequest(string Name, string? Color, string Language, string Logo, string? LogoPng, string? WelcomeLine = null);
 
 /// <summary>Draft values the email preview renders, before anything is saved.</summary>
 public sealed record BrandEmailPreviewRequest(string Name, string? Color, string Language, bool HasLogo);
@@ -26,7 +27,7 @@ public sealed record BrandEmailPreviewDto(string Subject, string Html, string Lo
 /// A company's brand as anyone may see it before signing in: what its sign-in page shows. Nothing else about the
 /// company leaves through it.
 /// </summary>
-public sealed record PublicBrandDto(string Name, string Slug, string? Color, string? LogoUrl, string Language);
+public sealed record PublicBrandDto(string Name, string Slug, string? Color, string? LogoUrl, string Language, string? WelcomeLine);
 
 public static class BrandAddresses
 {

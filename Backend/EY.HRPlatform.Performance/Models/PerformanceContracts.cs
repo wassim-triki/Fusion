@@ -801,7 +801,7 @@ public sealed record RosterPeersDto(bool Enabled, int Asked, int Answered, int P
 public sealed record RosterReviewFactsDto(string SelfState, DateTime? SelfSubmittedAt, DateOnly? SelfDue, RosterPeersDto Peers,
     string YourReview, DateTime? YourDraftSavedAt);
 
-/// <summary>A released result: the final level, the manager's own when calibration changed it, acknowledgement and open growth goals.</summary>
+/// <summary>A released result: the final level, the manager's own when calibration changed it, acknowledgement and open development goals.</summary>
 public sealed record RosterClosedFactsDto(Guid ReviewId, int Level, string Label, int? YourLevel, DateTime? AcknowledgedAt,
     bool AcknowledgedWithComment, int OpenGrowthGoals);
 
@@ -886,7 +886,7 @@ public sealed record TeamCalibrationChangeDto(Guid EmployeeId, string Name, int 
 
 /// <summary>
 /// The released results of the caller's own recorded team in a cycle (D-R2): people per final level, acknowledgement,
-/// calibration changes and open growth goals. Empty before release; never another team; no averages.
+/// calibration changes and open development goals. Empty before release; never another team; no averages.
 /// </summary>
 public sealed record TeamResultsDto(
     Guid CycleId,

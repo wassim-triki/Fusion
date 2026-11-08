@@ -48,6 +48,11 @@ public class Tenant
     /// <summary>The stored logo's version (a content hash, part of its address); null when the company has no logo.</summary>
     public string? LogoVersion { get; private set; }
 
+    /// <summary>One sentence the company writes for its sign-in page (B-210); null shows none.</summary>
+    public string? WelcomeLine { get; private set; }
+
+    public const int WelcomeLineMaxLength = 160;
+
     /// <summary>Whether people here may sign in with Microsoft work or school accounts (B-191); on by default.</summary>
     public bool AllowMicrosoftSignIn { get; private set; } = true;
 
@@ -260,17 +265,21 @@ public class Tenant
     /// half a brand. The language becomes the locale unless the locale already speaks it (<c>fr-FR</c> stays for
     /// French); people who chose their own language keep it.
     /// </summary>
-    public void Rebrand(string name, string? brandColor, string language, string? logoVersion)
+    public void Rebrand(string name, string? brandColor, string language, string? logoVersion, string? welcomeLine)
     {
         ValidateName(name);
         if (!FusionLanguages.IsSupported(language))
             throw new ArgumentException("Choose English, French or Arabic.", nameof(language));
+        var welcome = string.IsNullOrWhiteSpace(welcomeLine) ? null : welcomeLine.Trim();
+        if (welcome?.Length > WelcomeLineMaxLength)
+            throw new ArgumentException($"Keep the welcome line to {WelcomeLineMaxLength} characters.", nameof(welcomeLine));
 
         Name = name.Trim();
         BrandColor = NormalizeBrandColor(brandColor);
         if (FusionLanguages.FromLocale(Locale) != language)
             Locale = language;
         LogoVersion = string.IsNullOrWhiteSpace(logoVersion) ? null : logoVersion.Trim();
+        WelcomeLine = welcome;
         UpdatedAt = DateTime.UtcNow;
     }
 

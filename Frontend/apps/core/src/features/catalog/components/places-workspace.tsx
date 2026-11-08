@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { FusionSettingsSection, PlaceDto } from "@repo/api";
+import { usePhotos } from "@repo/api/query";
 import {
   Button,
   DropdownMenu,
@@ -11,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  PersonAvatar,
 } from "@repo/ds";
 import {
   DataTable,
@@ -28,7 +30,10 @@ import { placeContext } from "./catalog-pickers";
 
 const column = createDataTableColumnHelper<PlaceDto>();
 
-/** Where people work (Settings › Places): each place with its city and country and who works there today. */
+/**
+ * Where people work (Settings › Places, B-201): each place with its city and country and who works there today: a few
+ * faces and the count, its share of the company, how many teams have people there, and its open roles.
+ */
 export function PlacesWorkspace({ section }: { section: FusionSettingsSection }) {
   const t = useTranslations("catalog");
   const canManage = section.access === "manage";
@@ -43,6 +48,11 @@ export function PlacesWorkspace({ section }: { section: FusionSettingsSection })
     () => places.data && [...places.data].sort((a, b) => Number(a.isRetired) - Number(b.isRetired) || b.peopleCount - a.peopleCount || a.name.localeCompare(b.name)),
     [places.data],
   );
+  const photos = usePhotos((places.data ?? []).flatMap((place) => place.faces.map((face) => face.photoUrl)));
+  const share = useMemo(() => {
+    const all = places.data ?? [];
+    return { total: all.reduce((sum, place) => sum + place.peopleCount, 0), most: Math.max(0, ...all.map((place) => place.peopleCount)) };
+  }, [places.data]);
 
   function edit(place: PlaceDto | null) {
     setEditing(place);
@@ -67,7 +77,13 @@ export function PlacesWorkspace({ section }: { section: FusionSettingsSection })
           return (
             <DataTableCellStack
               leading={
-                <span className="grid size-8 shrink-0 place-items-center rounded-control bg-inlay text-muted-foreground">
+                <span
+                  className={
+                    place.isRetired
+                      ? "grid size-[34px] shrink-0 place-items-center rounded-control bg-inlay text-muted-foreground"
+                      : "grid size-[34px] shrink-0 place-items-center rounded-control bg-primary-tint text-primary-ink"
+                  }
+                >
                   <MapPin className="size-4" aria-hidden />
                 </span>
               }
@@ -81,17 +97,61 @@ export function PlacesWorkspace({ section }: { section: FusionSettingsSection })
             />
           );
         },
-        meta: { width: "62%" },
+        meta: { width: "30%" },
       }),
       column.accessor("peopleCount", {
         header: t("places.col.people"),
+        cell: ({ row }) => {
+          const place = row.original;
+          return (
+            <span className="flex items-center gap-2.5">
+              {place.faces.length > 0 ? (
+                <span className="flex items-center" aria-hidden>
+                  {place.faces.map((face, index) => (
+                    <PersonAvatar
+                      key={face.employeeKey}
+                      name={face.displayName}
+                      photo={face.photoUrl ? photos.get(face.photoUrl) : undefined}
+                      size="xs"
+                      className={index > 0 ? "-ms-1.5 ring-2 ring-card" : "ring-2 ring-card"}
+                    />
+                  ))}
+                </span>
+              ) : null}
+              <CountCell value={place.peopleCount} />
+            </span>
+          );
+        },
+        meta: { width: "20%" },
+      }),
+      column.display({
+        id: "share",
+        header: t("places.col.share"),
+        cell: ({ row }) => {
+          const people = row.original.peopleCount;
+          const percent = share.total > 0 ? Math.round((people / share.total) * 100) : 0;
+          return (
+            <span className="flex items-center gap-2.5">
+              <span className="h-1.5 w-28 overflow-hidden rounded-full bg-muted-foreground/15" aria-hidden>
+                {people > 0 && share.most > 0 ? (
+                  <span className="block h-full rounded-full bg-primary" style={{ width: `${(people / share.most) * 100}%` }} />
+                ) : null}
+              </span>
+              <span className="type-meta tabular-nums text-muted-foreground">{percent}%</span>
+            </span>
+          );
+        },
+        meta: { width: "20%", hideBelow: "md" },
+      }),
+      column.accessor("teamCount", {
+        header: t("places.col.teams"),
         cell: ({ getValue }) => <CountCell value={getValue()} />,
-        meta: { width: "15%", align: "end" },
+        meta: { width: "12%", align: "end", hideBelow: "md" },
       }),
       column.accessor("openRoleCount", {
         header: t("places.col.openRoles"),
         cell: ({ getValue }) => <CountCell value={getValue()} />,
-        meta: { width: "15%", align: "end", hideBelow: "md" },
+        meta: { width: "12%", align: "end", hideBelow: "md" },
       }),
       ...(canManage
         ? [
@@ -113,7 +173,7 @@ export function PlacesWorkspace({ section }: { section: FusionSettingsSection })
         : []),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps -- handlers only open dialogs; the columns change with the words
-    [t, canManage],
+    [t, canManage, photos, share],
   );
 
   const filters = useMemo<DataTableFilterField<PlaceDto>[]>(

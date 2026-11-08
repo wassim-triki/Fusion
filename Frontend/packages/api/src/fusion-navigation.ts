@@ -216,6 +216,8 @@ export interface FusionTenantSummaryDto {
   logoUrl?: string | null;
   /** The company's default language: en, fr or ar. */
   language?: string;
+  /** The sign-in page's welcome line; null shows none. */
+  welcomeLine?: string | null;
 }
 
 export const fusionNavigationPaths = {

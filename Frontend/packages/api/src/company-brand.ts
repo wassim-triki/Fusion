@@ -16,6 +16,8 @@ export interface SaveCompanyBrandRequest {
   logo: LogoChange;
   /** A PNG as base64 (a data URL is fine), read only when `logo` is "replace". */
   logoPng?: string | null;
+  /** The sign-in page's optional sentence (B-210); empty clears it. */
+  welcomeLine: string | null;
 }
 
 export interface BrandEmailPreviewRequest {
@@ -39,6 +41,8 @@ export interface PublicCompanyBrandDto {
   color: string | null;
   logoUrl: string | null;
   language: CompanyLanguage;
+  /** One sentence the company wrote for its sign-in page; null shows none. */
+  welcomeLine: string | null;
 }
 
 /** Where the browser remembers the last company signed in to, so its sign-in page wears that company's brand. */

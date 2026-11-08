@@ -23,6 +23,7 @@ export interface BrandDraftView {
   language: CompanyLanguage;
   /** What to show as the logo: the draft's data URL or the saved address; null without one. */
   logoSrc: string | null;
+  welcomeLine: string | null;
 }
 
 const SIGN_IN_TEXT = { en: authEn.auth.signIn, fr: authFr.auth.signIn, ar: authAr.auth.signIn };
@@ -171,7 +172,7 @@ export function SignInPreview({ draft, label }: { draft: BrandDraftView; label: 
   );
   return (
     <ScaledScreen draft={draft} label={label}>
-      <SignInFrame brand={{ name: draft.name || "—", logoUrl: draft.logoSrc }} className="h-full">
+      <SignInFrame brand={{ name: draft.name || "—", logoUrl: draft.logoSrc, welcomeLine: draft.welcomeLine }} className="h-full">
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-1">
             <h1 className="type-page-title">{text.title}</h1>

@@ -969,6 +969,10 @@ namespace EY.HRPlatform.Identity.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("WelcomeLine")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AdministratorActivationStatus");

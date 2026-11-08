@@ -406,11 +406,13 @@ export function SignInPage({ onSuccess }: SignInPageProps) {
 export interface SignInBrand {
   name: string;
   logoUrl: string | null;
+  /** The company's own sentence under its name (B-210). */
+  welcomeLine?: string | null;
 }
 
 /**
- * Sign-in's frame (D-02): the company's side (logo and name, in a wash of its colour) beside the form; Fusion's own
- * side when no company is named. Forced dark like every page before sign-in. The brand studio previews this frame.
+ * Sign-in's frame (D-02, B-210): the company's side (logo, name and its welcome line, in a wash of its colour, with a
+ * ring shape drawn in that colour behind them) beside the form; Fusion's own side when no company is named. Forced dark like every page before sign-in. The brand studio previews this frame.
  */
 export function SignInFrame({
   brand,
@@ -428,8 +430,9 @@ export function SignInFrame({
 }) {
   return (
     <div className={`dark grid bg-background text-foreground lg:grid-cols-2 ${className ?? "min-h-screen"}`}>
-      <aside className="hidden flex-col justify-between bg-[color-mix(in_oklab,var(--primary)_16%,var(--section))] px-16 py-14 lg:flex">
-        <div className="flex flex-col gap-7">
+      <aside className="relative hidden flex-col justify-between overflow-hidden bg-[color-mix(in_oklab,var(--primary)_16%,var(--section))] px-16 py-14 lg:flex">
+        {pending ? null : <BrandMark />}
+        <div className="relative flex flex-col items-start gap-7">
           {pending ? (
             <>
               <span className="size-[84px] animate-pulse rounded-surface bg-inlay" />
@@ -438,19 +441,40 @@ export function SignInFrame({
           ) : brand ? (
             <>
               <BrandLogo name={brand.name} logoUrl={brand.logoUrl} />
-              <h2 className="max-w-[32rem] font-editorial text-5xl font-medium leading-[1.1] tracking-tight">{brand.name}</h2>
+              <h2 className="max-w-[30rem] font-editorial text-5xl font-medium leading-[1.1] tracking-tight">{brand.name}</h2>
+              {brand.welcomeLine ? (
+                <p className="max-w-[26rem] font-editorial text-xl leading-normal text-foreground/80">{brand.welcomeLine}</p>
+              ) : null}
             </>
           ) : (
             <Wordmark />
           )}
         </div>
-        <p className="type-meta text-muted-foreground">Fusion</p>
+        <p className="relative type-meta text-muted-foreground">Fusion</p>
       </aside>
       <main className="relative flex items-center justify-center px-6 py-16">
         {language ? <div className="absolute end-8 top-8">{language}</div> : null}
         <div className="w-full max-w-[26rem]">{children}</div>
       </main>
     </div>
+  );
+}
+
+/** The column's shape: the rings of the logo's circle, in the company colour, running off the corner. */
+function BrandMark() {
+  return (
+    <svg
+      viewBox="0 0 760 760"
+      aria-hidden
+      className="pointer-events-none absolute -bottom-[220px] -end-[180px] size-[760px] text-primary"
+    >
+      <g fill="none" stroke="currentColor" strokeOpacity={0.22}>
+        <circle cx="380" cy="380" r="300" strokeWidth="70" />
+        <circle cx="380" cy="380" r="170" strokeWidth="2" />
+        <circle cx="380" cy="380" r="370" strokeWidth="2" />
+      </g>
+      <rect x="350" y="80" width="60" height="150" rx="14" fill="currentColor" fillOpacity={0.18} />
+    </svg>
   );
 }
 

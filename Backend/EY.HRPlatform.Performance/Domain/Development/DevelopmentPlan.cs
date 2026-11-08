@@ -14,7 +14,7 @@ public sealed record DevelopmentGoalContent(
     DevelopmentGoalStatus Status);
 
 /// <summary>
-/// A participant's development plan for one Cycle (D-34, S-08): up to five growth goals the employee and
+/// A participant's development plan for one Cycle (D-34, S-08): up to five development goals the employee and
 /// their responsible reviewer keep together, with no submission or approval. It lives beside the objective
 /// plan rather than inside it, so either person's edits never collide with the objective plan's lifecycle,
 /// and it exists from the first goal even when no objective does. Open goals carry into a later Cycle; a
@@ -121,7 +121,7 @@ public sealed class DevelopmentPlan : PerformanceAggregate
         => _goals.FirstOrDefault(goal => goal.Id == goalId) ?? throw new KeyNotFoundException("That goal is not part of this plan.");
 }
 
-/// <summary>One growth goal: title, optional competency, actions, optional target date and status.</summary>
+/// <summary>One development goal: title, optional competency, actions, optional target date and status.</summary>
 public sealed class DevelopmentGoal : PerformanceChildEntity
 {
     public const int MaxTitleLength = 200;

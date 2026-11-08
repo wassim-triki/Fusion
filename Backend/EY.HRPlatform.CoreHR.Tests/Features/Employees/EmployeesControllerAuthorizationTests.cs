@@ -19,12 +19,7 @@ public class EmployeesControllerAuthorizationTests
     [Theory]
     [InlineData(nameof(EmployeesController.GetAll))]
     [InlineData(nameof(EmployeesController.GetReadinessSummary))]
-    [InlineData(nameof(EmployeesController.Create))]
     [InlineData(nameof(EmployeesController.GetById))]
-    [InlineData(nameof(EmployeesController.Update))]
-    [InlineData(nameof(EmployeesController.Terminate))]
-    [InlineData(nameof(EmployeesController.Rehire))]
-    [InlineData(nameof(EmployeesController.ChangeManager))]
     public void PermissionControlledEndpoints_DoNotDeclareMethodRoleAttributes(string methodName)
     {
         var method = GetControllerMethod(methodName);

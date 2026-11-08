@@ -2,6 +2,7 @@
   "yourOrganization": "your company",
   "password": {
     "minimumLength": "{count} characters or more",
+    "letter": "A letter",
     "uppercase": "An uppercase letter",
     "lowercase": "A lowercase letter",
     "number": "A number",
@@ -47,11 +48,6 @@
     "failed": "We couldn't finish setting up your account. Try again in a moment or contact your administrator."
   },
   "workforce": {
-    "access": "Your access",
-    "roles": {
-      "Employee": "Employee",
-      "Manager": "Manager"
-    },
     "heading": "Join {tenant}",
     "submit": "Activate my account",
     "submitting": "Activating your account…",
@@ -59,16 +55,6 @@
     "formLeadProvider": "Continue with your company's account to activate it.",
     "name": "Your name"
   },
-  "administrator": {
-    "heading": "Join {tenant}",
-    "role": "Your role",
-    "submit": "Create my account",
-    "submitting": "Creating your account…",
-    "email": "Work email",
-    "roleValue": "Administrator"
-  },
-  "firstName": "First name",
-  "lastName": "Last name",
   "createPassword": "Create password",
   "confirmPassword": "Confirm password",
   "showCharacters": "Show characters",

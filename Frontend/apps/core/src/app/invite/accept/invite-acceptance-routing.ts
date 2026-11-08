@@ -8,6 +8,7 @@ import {
   canManageCoreAccessProfiles,
   type AuthUser,
 } from "@repo/auth";
+import { ADMINISTRATORS_PATH } from "@/features/settings/roles/paths";
 
 export function resolveInviteAcceptanceDestination(
   user: AuthUser
@@ -17,7 +18,7 @@ export function resolveInviteAcceptanceDestination(
   }
 
   if (canAccessCoreAccess(user)) {
-    return "/access";
+    return ADMINISTRATORS_PATH;
   }
 
   if (canManageCoreAccessProfiles(user)) {

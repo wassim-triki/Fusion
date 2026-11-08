@@ -22,6 +22,43 @@ export interface PasswordCheck {
   satisfied: boolean;
 }
 
+/** The password rules the service says it enforces (Identity's `AccountPasswordPolicy.Describe`). */
+export interface PasswordRequirements {
+  minimumLength: number;
+  /** Upper bound; advisory on the client, enforced by the service. */
+  maximumLength?: number;
+  /** At least one letter of either case. */
+  requiresLetter?: boolean;
+  requiresDigit: boolean;
+  requiresLowercase: boolean;
+  requiresUppercase: boolean;
+  requiresSymbol: boolean;
+}
+
+/** A rule the checklist can show; each caller names it in its own words. */
+export type PasswordRule = "length" | "letter" | "uppercase" | "lowercase" | "number" | "symbol";
+
+/**
+ * The client's one copy of the rule tests, mirroring the service's validators so the outstanding rule is visible
+ * before submitting: a letter is any Unicode letter (`char.IsLetter`); upper, lower and digit are ASCII, as in Identity.
+ */
+export function passwordRuleChecks(
+  password: string,
+  requirements: PasswordRequirements | null | undefined,
+  label: (rule: PasswordRule, minimumLength: number) => string,
+): PasswordCheck[] {
+  if (!requirements) return [];
+  const row = (rule: PasswordRule, satisfied: boolean) => ({ label: label(rule, requirements.minimumLength), satisfied });
+  return [
+    row("length", password.length >= requirements.minimumLength),
+    ...(requirements.requiresLetter ? [row("letter", /\p{L}/u.test(password))] : []),
+    ...(requirements.requiresUppercase ? [row("uppercase", /[A-Z]/.test(password))] : []),
+    ...(requirements.requiresLowercase ? [row("lowercase", /[a-z]/.test(password))] : []),
+    ...(requirements.requiresDigit ? [row("number", /[0-9]/.test(password))] : []),
+    ...(requirements.requiresSymbol ? [row("symbol", /[^\p{L}0-9]/u.test(password))] : []),
+  ];
+}
+
 /**
  * Create-password field with live requirement feedback, after reui's c-input-23:
  * an advisory strength meter over the required requirement checklist.

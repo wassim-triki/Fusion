@@ -1,6 +1,5 @@
 import {
   CUSTOMER_MODULES,
-  canAccessCoreAccess,
   resolveCustomerWorkspaceAccessState,
   sanitizeInternalReturnPath,
   type AuthUser,
@@ -8,14 +7,6 @@ import {
 } from "@repo/auth";
 
 export type CoreWorkspaceAccessState = CustomerWorkspaceAccessState;
-
-export function isTenantLevelCoreRoute(pathname: string): boolean {
-  const path = pathname.replace(/^\/core/, "") || "/";
-  return (
-    path === "/access" ||
-    path.startsWith("/access/")
-  );
-}
 
 export function buildCoreCallbackUrl(pathname: string, query: string): string {
   const appPath = pathname === "/" ? "/core" : pathname.startsWith("/core") ? pathname : `/core${pathname}`;
@@ -25,20 +16,10 @@ export function buildCoreCallbackUrl(pathname: string, query: string): string {
 export function resolveCoreWorkspaceAccessState(input: {
   isLoading: boolean;
   user: AuthUser | null;
-  pathname?: string;
 }): CoreWorkspaceAccessState {
-  const baseState = resolveCustomerWorkspaceAccessState({
+  return resolveCustomerWorkspaceAccessState({
     isLoading: input.isLoading,
     user: input.user,
-    module: input.pathname && isTenantLevelCoreRoute(input.pathname)
-      ? undefined
-      : CUSTOMER_MODULES.coreHr,
+    module: CUSTOMER_MODULES.coreHr,
   });
-  if (baseState !== "allowed" || !input.pathname) return baseState;
-
-  const path = input.pathname.replace(/^\/core/, "") || "/";
-  if ((path === "/access" || path.startsWith("/access/")) && !canAccessCoreAccess(input.user)) {
-    return "forbidden";
-  }
-  return "allowed";
 }

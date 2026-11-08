@@ -27,18 +27,14 @@ public sealed record AdministratorCommand(
 
 public interface ITenantAdministratorLifecycleService
 {
-    Task<ContinuityResult<Guid>> SuspendAsync(AdministratorCommand command, CancellationToken cancellationToken = default);
-
-    Task<ContinuityResult<Guid>> ReactivateAsync(AdministratorCommand command, CancellationToken cancellationToken = default);
-
     Task<ContinuityResult<Guid>> GrantAuthorityAsync(AdministratorCommand command, CancellationToken cancellationToken = default);
 
     Task<ContinuityResult<Guid>> RevokeAuthorityAsync(AdministratorCommand command, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// The administrator lifecycle: suspension, reactivation, and the granting and
-/// revoking of canonical Tenant Administrator authority.
+/// The administrator lifecycle: granting and revoking canonical administrator
+/// authority.
 /// <para>
 /// Every command runs inside the tenant continuity boundary, so none of them can
 /// be the one that leaves a tenant with nobody able to administer it — including
@@ -50,83 +46,6 @@ public sealed class TenantAdministratorLifecycleService(
     ITenantContinuityCommandExecutor continuity,
     IAdministratorRoleMail? roleMail = null) : ITenantAdministratorLifecycleService
 {
-    public Task<ContinuityResult<Guid>> SuspendAsync(
-        AdministratorCommand command, CancellationToken cancellationToken = default)
-        => continuity.ExecuteAsync(command.TenantId, command.ActorUserId, async context =>
-        {
-            var membership = await LoadMembershipAsync(context, command, cancellationToken);
-
-            if (membership is null)
-            {
-                return ContinuityResult<Guid>.Refused(ContinuityFailure.NotFound);
-            }
-
-            if (!VersionMatches(membership, command))
-            {
-                return ContinuityResult<Guid>.Refused(ContinuityFailure.StaleState);
-            }
-
-            if (membership.Status == TenantMembershipStatus.Suspended)
-            {
-                return ContinuityResult<Guid>.Refused(
-                    ContinuityFailure.NotApplicable, "Access is already suspended.");
-            }
-
-            // Suspension is a tenant-scoped decision. It never touches the global
-            // Identity account, which belongs to the person rather than to this
-            // tenant's administration.
-            membership.Suspend(command.ActorUserId, command.Reason);
-            context.InvalidateTenantAccess(membership);
-
-            context.Audit(Event(
-                command, AccessAuditActions.MembershipSuspended, membership,
-                "Tenant access suspended. Account, membership, authority, and history are preserved.",
-                before: nameof(TenantMembershipStatus.Active),
-                after: nameof(TenantMembershipStatus.Suspended)));
-
-            return ContinuityResult<Guid>.Ok(membership.Id);
-        }, cancellationToken);
-
-    public Task<ContinuityResult<Guid>> ReactivateAsync(
-        AdministratorCommand command, CancellationToken cancellationToken = default)
-        => continuity.ExecuteAsync(command.TenantId, command.ActorUserId, async context =>
-        {
-            var membership = await LoadMembershipAsync(context, command, cancellationToken);
-
-            if (membership is null)
-            {
-                return ContinuityResult<Guid>.Refused(ContinuityFailure.NotFound);
-            }
-
-            if (!VersionMatches(membership, command))
-            {
-                return ContinuityResult<Guid>.Refused(ContinuityFailure.StaleState);
-            }
-
-            if (membership.Status == TenantMembershipStatus.Active)
-            {
-                return ContinuityResult<Guid>.Refused(
-                    ContinuityFailure.NotApplicable, "Access is already active.");
-            }
-
-            // Restores access from the authority this membership already holds. No
-            // account, membership, or assignment is created.
-            membership.Reactivate(command.ActorUserId);
-
-            // Reactivation bumps the revision too, so an access token issued before
-            // the suspension cannot come back to life. The person signs in again
-            // and receives a token carrying the current revision.
-            context.InvalidateTenantAccess(membership);
-
-            context.Audit(Event(
-                command, AccessAuditActions.MembershipReactivated, membership,
-                "Tenant access reactivated using existing Tenant Administrator authority.",
-                before: nameof(TenantMembershipStatus.Suspended),
-                after: nameof(TenantMembershipStatus.Active)));
-
-            return ContinuityResult<Guid>.Ok(membership.Id);
-        }, cancellationToken);
-
     public async Task<ContinuityResult<Guid>> GrantAuthorityAsync(
         AdministratorCommand command, CancellationToken cancellationToken = default)
     {
@@ -167,7 +86,7 @@ public sealed class TenantAdministratorLifecycleService(
 
             context.Audit(Event(
                 command, AccessAuditActions.AuthorityGranted, membership,
-                "Tenant Administrator authority granted.",
+                "Administrator authority granted.",
                 before: "None", after: TenantAdministratorAuthority.DisplayName));
 
             grantedTo = membership.UserId;
@@ -200,7 +119,7 @@ public sealed class TenantAdministratorLifecycleService(
             if (assignment is null)
             {
                 return ContinuityResult<Guid>.Refused(
-                    ContinuityFailure.NotApplicable, "This person does not hold Tenant Administrator authority.");
+                    ContinuityFailure.NotApplicable, "This person does not hold administrator authority.");
             }
 
             // The row is kept, not deleted: revoked authority is history a tenant
@@ -218,8 +137,8 @@ public sealed class TenantAdministratorLifecycleService(
                 isSelfRemoval ? AccessAuditActions.AuthoritySelfRemoved : AccessAuditActions.AuthorityRevoked,
                 membership,
                 isSelfRemoval
-                    ? "Tenant Administrator authority removed by the administrator themselves. Account, membership, and history remain."
-                    : "Tenant Administrator authority removed. Account, membership, and history remain.",
+                    ? "Administrator authority removed by the administrator themselves. Account, membership, and history remain."
+                    : "Administrator authority removed. Account, membership, and history remain.",
                 before: TenantAdministratorAuthority.DisplayName, after: "None"));
 
             revokedFrom = membership.UserId;

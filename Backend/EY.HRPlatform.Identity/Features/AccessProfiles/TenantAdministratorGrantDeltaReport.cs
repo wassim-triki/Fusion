@@ -61,7 +61,7 @@ public sealed class TenantAdministratorGrantDeltaReport(
                 .CountAsync(assignment => assignment.TenantId == tenantId && assignment.RevokedAt == null, cancellationToken);
 
             logger.LogInformation(
-                "Tenant Administrator grant delta for tenant {TenantId}: {AdministratorCount} administrator(s); "
+                "Administrator grant delta for tenant {TenantId}: {AdministratorCount} administrator(s); "
                 + "{AddedCount} grant(s) added [{Added}]; {RemovedCount} grant(s) removed [{Removed}].",
                 tenantId,
                 administrators,

@@ -15,7 +15,7 @@ public static class TenantAdministratorAuthority
     public const string InternalKey = "tenant-administrator";
 
     /// <summary>Business-facing name. Rendered directly.</summary>
-    public const string DisplayName = "Tenant Administrator";
+    public const string DisplayName = "Administrator";
 
     public const string Description =
         "Broad administration within the tenant across its enabled Fusion modules. "

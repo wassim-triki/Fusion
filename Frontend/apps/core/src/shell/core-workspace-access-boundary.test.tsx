@@ -90,24 +90,6 @@ describe("CoreWorkspaceAccessBoundary", () => {
     expect(await screen.findByText("Protected Core content")).toBeTruthy();
   });
 
-  it("renders a truthful permission denial for a tenant-level route", async () => {
-    mocks.pathname = "/access";
-    mocks.user = user({ moduleEntitlements: [] });
-    render(<CoreWorkspaceAccessBoundary><div>Tenant access content</div></CoreWorkspaceAccessBoundary>);
-    expect(await screen.findByRole("heading", { name: "You don't have access to this page" })).toBeTruthy();
-    expect(screen.queryByText("Tenant access content")).toBeNull();
-  });
-
-  it("allows authorized tenant Access without CoreHR entitlement", async () => {
-    mocks.pathname = "/access";
-    mocks.user = user({
-      moduleEntitlements: [],
-      effectivePermissions: [grant("access.assignments.view")],
-    });
-    render(<CoreWorkspaceAccessBoundary><div>Tenant access content</div></CoreWorkspaceAccessBoundary>);
-    expect(await screen.findByText("Tenant access content")).toBeTruthy();
-  });
-
   it("holds children while authentication is resolving", async () => {
     mocks.isLoading = true;
     render(<CoreWorkspaceAccessBoundary><div>Protected Core content</div></CoreWorkspaceAccessBoundary>);

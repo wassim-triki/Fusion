@@ -157,9 +157,11 @@ public sealed class AuthorityStateContractTests : IAsyncLifetime
         var world = await ArrangeAsync(administrators: 3);
         var revisionAtSignIn = await RevisionAsync(world.Db, world.SecondMembershipId!.Value);
 
-        await new TenantAdministratorLifecycleService(world.Db, new TenantContinuityCommandExecutor(world.Db))
-            .SuspendAsync(new AdministratorCommand(
-                world.TenantId, world.SecondMembershipId.Value, world.FirstAccountId));
+        // Suspended the way the workforce account path does it: membership status only.
+        (await world.Db.TenantMemberships.IgnoreQueryFilters()
+            .SingleAsync(item => item.Id == world.SecondMembershipId.Value)).Suspend(world.FirstAccountId);
+        await world.Db.SaveChangesAsync();
+        world.Db.ChangeTracker.Clear();
 
         var state = await AskAsync(world, revisionAtSignIn, world.SecondMembershipId.Value, world.SecondAccountId);
 

@@ -191,7 +191,7 @@ public sealed class TenantAccessController(
         {
             refusal = Problem(
                 type: "permission-denied",
-                title: "You do not have permission to manage Tenant Administrators.",
+                title: "You do not have permission to manage administrators.",
                 statusCode: StatusCodes.Status403Forbidden);
             return false;
         }

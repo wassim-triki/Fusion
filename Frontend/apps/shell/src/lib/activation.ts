@@ -1,6 +1,7 @@
 import type { SsoWaysInDto } from "@repo/api";
 import { formatDateTime } from "@repo/ds/lib/dates";
 import { englishSay, useSay, type Say } from "@repo/ds/lib/say";
+import { passwordRuleChecks, type PasswordCheck, type PasswordRequirements } from "@repo/ds/shell";
 import en from "../../messages/en.json";
 
 /**
@@ -11,7 +12,7 @@ import en from "../../messages/en.json";
  * by default.
  */
 
-export type { Say };
+export type { PasswordRequirements, Say };
 
 /** The catalogue in English, for code outside a translated tree (and tests). */
 export const sayInEnglish: Say = englishSay(en, "activation");
@@ -29,18 +30,6 @@ export type ActivationEntryState =
   | "superseded"
   | "already_accepted"
   | "existing_account";
-
-export interface PasswordRequirements {
-  minimumLength: number;
-  /** Upper bound; advisory on the client, enforced by the service. */
-  maximumLength?: number;
-  /** At least one letter of either case. */
-  requiresLetter?: boolean;
-  requiresDigit: boolean;
-  requiresLowercase: boolean;
-  requiresUppercase: boolean;
-  requiresSymbol: boolean;
-}
 
 export interface ActivationEntry {
   state: ActivationEntryState;
@@ -122,11 +111,6 @@ export function terminalState(outcome: ActivationOutcome, say: Say = sayInEnglis
   return terminalLines(`terminal.${TERMINAL_GROUP[outcome] ?? "invalid"}`, outcome, say);
 }
 
-export interface PasswordCheck {
-  label: string;
-  satisfied: boolean;
-}
-
 /**
  * The requirements as checkable state rather than a sentence, so the recipient
  * can see which one is outstanding while typing instead of after submitting.
@@ -136,35 +120,9 @@ export function passwordChecks(
   requirements: PasswordRequirements | null,
   say: Say = sayInEnglish
 ): PasswordCheck[] {
-  if (!requirements) return [];
-
-  const checks: PasswordCheck[] = [
-    {
-      label: say("password.minimumLength", { count: requirements.minimumLength }),
-      satisfied: password.length >= requirements.minimumLength,
-    },
-  ];
-
-  if (requirements.requiresLetter) {
-    checks.push({ label: say("password.letter"), satisfied: /[a-zA-Z]/.test(password) });
-  }
-  if (requirements.requiresUppercase) {
-    checks.push({ label: say("password.uppercase"), satisfied: /[A-Z]/.test(password) });
-  }
-  if (requirements.requiresLowercase) {
-    checks.push({ label: say("password.lowercase"), satisfied: /[a-z]/.test(password) });
-  }
-  if (requirements.requiresDigit) {
-    checks.push({ label: say("password.number"), satisfied: /[0-9]/.test(password) });
-  }
-  if (requirements.requiresSymbol) {
-    checks.push({
-      label: say("password.symbol"),
-      satisfied: /[^a-zA-Z0-9]/.test(password),
-    });
-  }
-
-  return checks;
+  return passwordRuleChecks(password, requirements, (rule, count) =>
+    rule === "length" ? say("password.minimumLength", { count }) : say(`password.${rule}`)
+  );
 }
 
 export interface ActivationForm {

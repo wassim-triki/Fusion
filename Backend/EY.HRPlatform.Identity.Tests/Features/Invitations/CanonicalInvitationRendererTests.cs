@@ -36,21 +36,6 @@ public sealed class CanonicalInvitationRendererTests
     }
 
     [Fact]
-    public void Additional_administrator_never_says_first_administrator()
-    {
-        var rendered = CanonicalInvitationRenderer.Render(
-            Invite(InvitationPurpose.TenantAdministrator, inviter: "Dana Ops"));
-
-        Assert.Equal("You're invited to administer Atlas Group in Fusion", rendered.Subject);
-        Assert.DoesNotContain("first administrator", rendered.Subject, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("first administrator", rendered.Html, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("first administrator", rendered.Text, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("Administrator invitation", rendered.Html);
-        Assert.Contains(">Accept administrator invitation</a>", rendered.Html);
-        Assert.Contains("You have been invited to join Atlas Group as a Fusion administrator.", rendered.Text);
-    }
-
-    [Fact]
     public void Recovery_restores_access_and_describes_no_new_tenant_or_first_admin()
     {
         var rendered = CanonicalInvitationRenderer.Render(

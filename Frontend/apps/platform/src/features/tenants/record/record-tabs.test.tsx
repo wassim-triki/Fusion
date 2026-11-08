@@ -48,7 +48,6 @@ function continuity(
     usableAdministrators: 2,
     activeAdministrators: 2,
     suspendedAdministrators: 0,
-    pendingAdministratorInvitations: 1,
     recoveryStatus: "NotRequired",
     latestRecoveryAttempt: null,
     ...overrides,

@@ -4,14 +4,11 @@ using EY.HRPlatform.CoreHR.Controllers;
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Domain.Enums;
 using EY.HRPlatform.CoreHR.Exceptions;
-using EY.HRPlatform.CoreHR.Features.Employees.Commands.ChangeEmployeeManager;
-using EY.HRPlatform.CoreHR.Features.Employees.Commands.RehireEmployee;
 using EY.HRPlatform.CoreHR.Features.Employees.Dtos;
 using EY.HRPlatform.CoreHR.Features.Employees.Services;
 using EY.HRPlatform.CoreHR.Features.People;
 using EY.HRPlatform.CoreHR.Features.Security;
 using EY.HRPlatform.CoreHR.Features.Workforce.Services;
-using EY.HRPlatform.CoreHR.Models.Requests;
 using EY.HRPlatform.CoreHR.Tests.TestHelpers;
 using EY.HRPlatform.SharedKernel.Auth;
 using EY.HRPlatform.SharedKernel.Results;
@@ -22,83 +19,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace EY.HRPlatform.CoreHR.Tests.Features.Employees;
 
 /// <summary>
-/// Deny-by-default authorization and tenant-scoping coverage for the terminate, rehire, and
-/// change-manager lifecycle actions (Section 5.5).
+/// Deny-by-default authorization for the dotted-line actions.
 /// </summary>
 public class EmployeesControllerLifecycleAuthorizationTests
 {
     private static readonly DateTime EffectiveDate = new(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc);
-
-    [Fact]
-    public async Task Rehire_WithoutManageEmployees_ReturnsForbid()
-    {
-        var sender = new RecordingSender();
-        var controller = CreateController(sender, new StubAccessPolicy(canManageEmployees: false, canManageReporting: true));
-
-        var result = await controller.Rehire(
-            Guid.NewGuid(),
-            new RehireEmployeeRequest(EffectiveDate, Guid.NewGuid(), Guid.NewGuid()),
-            "\"3\"",
-            CancellationToken.None);
-
-        Assert.IsType<ForbidResult>(result);
-        Assert.Null(sender.LastRequest);
-    }
-
-    [Fact]
-    public async Task Rehire_WithManageEmployees_SendsCommand()
-    {
-        var sender = new RecordingSender();
-        var controller = CreateController(sender, new StubAccessPolicy(canManageEmployees: true, canManageReporting: false));
-        var employeeId = Guid.NewGuid();
-
-        var result = await controller.Rehire(
-            employeeId,
-            new RehireEmployeeRequest(EffectiveDate, Guid.NewGuid(), Guid.NewGuid()),
-            "\"3\"",
-            CancellationToken.None);
-
-        Assert.IsNotType<ForbidResult>(result);
-        var command = Assert.IsType<RehireEmployeeCommand>(sender.LastRequest);
-        Assert.Equal(employeeId, command.EmployeeId);
-        Assert.Equal((uint)3, command.ExpectedVersion);
-    }
-
-    [Fact]
-    public async Task ChangeManager_WithoutAnyManagePermission_ReturnsForbid()
-    {
-        var sender = new RecordingSender();
-        var controller = CreateController(sender, new StubAccessPolicy(canManageEmployees: false, canManageReporting: false));
-
-        var result = await controller.ChangeManager(
-            Guid.NewGuid(),
-            new ChangeEmployeeManagerRequest(Guid.NewGuid(), EffectiveDate),
-            "\"3\"",
-            CancellationToken.None);
-
-        Assert.IsType<ForbidResult>(result);
-        Assert.Null(sender.LastRequest);
-    }
-
-    [Fact]
-    public async Task ChangeManager_WithReportingManagePermission_SendsCommand()
-    {
-        var sender = new RecordingSender();
-        var controller = CreateController(sender, new StubAccessPolicy(canManageEmployees: false, canManageReporting: true));
-        var employeeId = Guid.NewGuid();
-        var managerId = Guid.NewGuid();
-
-        var result = await controller.ChangeManager(
-            employeeId,
-            new ChangeEmployeeManagerRequest(managerId, EffectiveDate),
-            "\"3\"",
-            CancellationToken.None);
-
-        Assert.IsNotType<ForbidResult>(result);
-        var command = Assert.IsType<ChangeEmployeeManagerCommand>(sender.LastRequest);
-        Assert.Equal(employeeId, command.EmployeeId);
-        Assert.Equal(managerId, command.ManagerId);
-    }
 
     [Fact]
     public async Task DottedLines_WithoutAnyManagePermission_ReturnForbid()
@@ -128,56 +53,6 @@ public class EmployeesControllerLifecycleAuthorizationTests
         Assert.True(Assert.IsType<DottedLineCommand>(sender.LastRequest).End);
     }
 
-    [Fact]
-    public async Task Rehire_ForEmployeeInAnotherTenant_IsNotFound()
-    {
-        var (dbName, employee, version) = await SeedTerminatedEmployeeAsync();
-        var otherTenant = TestTenantContext.WithTenant(Guid.NewGuid());
-
-        await using var context = TestDbContextFactory.Create(otherTenant, dbName);
-        var handler = new RehireEmployeeCommandHandler(
-            context,
-            otherTenant,
-            new WorkforceMutationService(context, otherTenant, new WorkforceCanonicalResolver(context)),
-            new EmployeeDetailsReadModelService(context, new WorkforceCanonicalResolver(context), new StubTenantSettingsReader()));
-
-        await Assert.ThrowsAsync<EntityNotFoundException>(() => handler.Handle(
-            new RehireEmployeeCommand(employee.Id, version, EffectiveDate, Guid.NewGuid(), Guid.NewGuid()),
-            CancellationToken.None));
-    }
-
-    [Fact]
-    public async Task ChangeManager_ForEmployeeInAnotherTenant_IsNotFound()
-    {
-        var (dbName, employee, version) = await SeedTerminatedEmployeeAsync();
-        var otherTenant = TestTenantContext.WithTenant(Guid.NewGuid());
-
-        await using var context = TestDbContextFactory.Create(otherTenant, dbName);
-        var handler = new ChangeEmployeeManagerCommandHandler(
-            context,
-            otherTenant,
-            new WorkforceMutationService(context, otherTenant, new WorkforceCanonicalResolver(context)),
-            new EmployeeDetailsReadModelService(context, new WorkforceCanonicalResolver(context), new StubTenantSettingsReader()));
-
-        await Assert.ThrowsAsync<EntityNotFoundException>(() => handler.Handle(
-            new ChangeEmployeeManagerCommand(employee.Id, version, Guid.NewGuid(), EffectiveDate),
-            CancellationToken.None));
-    }
-
-    private static async Task<(string DbName, Employee Employee, uint Version)> SeedTerminatedEmployeeAsync()
-    {
-        var tenantId = Guid.NewGuid();
-        var dbName = Guid.NewGuid().ToString();
-        var hire = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-        await using var seed = TestDbContextFactory.CreateWithoutTenant(dbName);
-        var employee = Employee.Create(tenantId, "Jane", "Roe", "jane@example.com", hire, employeeNumber: TestEmployeeNumbers.Next());
-        seed.Employees.Add(employee);
-        await seed.SaveChangesAsync();
-
-        return (dbName, employee, employee.Version);
-    }
-
     private static EmployeesController CreateController(ISender sender, ICoreAccessPolicyService accessPolicy)
         => new(sender, accessPolicy)
         {
@@ -193,12 +68,6 @@ public class EmployeesControllerLifecycleAuthorizationTests
                 }
             }
         };
-
-    private sealed class StubTenantSettingsReader : EY.HRPlatform.CoreHR.Features.TenantSettings.Services.ITenantSettingsReadService
-    {
-        public Task<EY.HRPlatform.CoreHR.Features.TenantSettings.Dtos.TenantSettingsDto> GetCurrentAsync(CancellationToken cancellationToken)
-            => Task.FromResult(EY.HRPlatform.CoreHR.Features.TenantSettings.Dtos.TenantSettingsDto.Defaults);
-    }
 
     private sealed class StubAccessPolicy(bool canManageEmployees, bool canManageReporting) : ICoreAccessPolicyService
     {

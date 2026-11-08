@@ -48,7 +48,7 @@
 - [Invite surfaces unified](invite-surfaces-unified.md) — workforce invite matches shell activation via shared `@repo/ds/shell` parts.
 - [Home company and manager contracts](home-company-manager.md) — B-247/B-248: authoritative work week, self-only canonical manager and first-week Home card.
 - [Workforce invitation lifecycle](workforce-invitation-lifecycle.md) — B-235: tracked command lookup, withdrawal/acceptance row locking, credential rotation, People cache refresh and live regression journey.
-- [Administrators page redesign](administrators-page-redesign.md) — `/core/access` tabbed master-detail + provenance + removed admins.
+- [Administrators page redesign](administrators-page-redesign.md) — historical `/core/access` workspace; superseded by Settings › Roles › Administrators, its paths removed in B-326.
 - [Worker profile consolidation](worker-profile-consolidation.md) — one `WorkerProfile` behind `/core/profile` + `/core/people/{id}`.
 - [Workforce foundation hardening](workforce-foundation-hardening.md) — OpenSpec Employee→Employment→WorkAssignment→Manager; resume `/opsx:apply`.
 - [Workforce People Establishment Slice 1](workforce-people-establishment-slice1.md) — done, archived, committed on `refactor/temp-branch`.

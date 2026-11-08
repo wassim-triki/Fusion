@@ -19,6 +19,7 @@ import type { RecoveryAction } from "./api";
 import { failureKind } from "./api";
 import { useFailureMessage, useTenantWords } from "./language";
 import { useInvitationRecovery } from "./queries";
+import { isEmailAddress } from "@repo/ds/lib/email";
 
 /**
  * The confirmed recoveries, shared by the tenant detail and the directory's row
@@ -62,7 +63,7 @@ export function ConfirmRecoveryDialog({
   function confirm() {
     if (action === "replace") {
       const next = email.trim();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(next)) {
+      if (!isEmailAddress(next)) {
         setEmailError(t("emailInvalid"));
         return;
       }

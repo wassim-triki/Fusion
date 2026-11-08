@@ -32,25 +32,6 @@ public sealed class TenantContinuityTests : IAsyncLifetime
     // ── The invariant ────────────────────────────────────
 
     [SkippableFact]
-    public async Task Suspending_the_only_usable_administrator_is_refused()
-    {
-        Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var world = await ArrangeAsync();
-
-        var result = await Lifecycle(world.Db).SuspendAsync(
-            new AdministratorCommand(world.TenantId, world.FirstMembershipId, world.FirstAccountId));
-
-        Assert.False(result.Succeeded);
-        Assert.Equal(ContinuityFailure.TooFewAdministrators, result.Failure);
-
-        // Refused means nothing happened — not "happened, then reported".
-        world.Db.ChangeTracker.Clear();
-        var membership = await world.Db.TenantMemberships.IgnoreQueryFilters()
-            .SingleAsync(item => item.Id == world.FirstMembershipId);
-        Assert.Equal(TenantMembershipStatus.Active, membership.Status);
-    }
-
-    [SkippableFact]
     public async Task Removing_the_only_usable_administrators_authority_is_refused()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
@@ -66,7 +47,7 @@ public sealed class TenantContinuityTests : IAsyncLifetime
     }
 
     [SkippableFact]
-    public async Task Removing_or_suspending_one_of_two_administrators_is_refused()
+    public async Task Removing_one_of_two_administrators_is_refused()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
         var world = await ArrangeAsync(administrators: 2);
@@ -74,14 +55,11 @@ public sealed class TenantContinuityTests : IAsyncLifetime
 
         var removed = await Lifecycle(world.Db).RevokeAuthorityAsync(
             new AdministratorCommand(world.TenantId, second, world.FirstAccountId));
-        var suspended = await Lifecycle(world.Db).SuspendAsync(
-            new AdministratorCommand(world.TenantId, second, world.FirstAccountId));
         var steppedDown = await Lifecycle(world.Db).RevokeAuthorityAsync(
             new AdministratorCommand(world.TenantId, world.FirstMembershipId, world.FirstAccountId));
 
         // A company keeps at least two administrators once it has two (D-25).
         Assert.Equal(ContinuityFailure.TooFewAdministrators, removed.Failure);
-        Assert.Equal(ContinuityFailure.TooFewAdministrators, suspended.Failure);
         Assert.Equal(ContinuityFailure.TooFewAdministrators, steppedDown.Failure);
         world.Db.ChangeTracker.Clear();
         Assert.Equal(2, await UsableTenantAdministrator.CountAsync(world.Db, world.TenantId));
@@ -114,7 +92,7 @@ public sealed class TenantContinuityTests : IAsyncLifetime
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
         var world = await ArrangeAsync();
 
-        await Lifecycle(world.Db).SuspendAsync(
+        await Lifecycle(world.Db).RevokeAuthorityAsync(
             new AdministratorCommand(world.TenantId, world.FirstMembershipId, world.FirstAccountId));
 
         world.Db.ChangeTracker.Clear();
@@ -173,64 +151,6 @@ public sealed class TenantContinuityTests : IAsyncLifetime
     }
 
     // ── Lifecycle ────────────────────────────────────────
-
-    [SkippableFact]
-    public async Task Suspension_preserves_the_account_membership_authority_and_history()
-    {
-        Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var world = await ArrangeAsync(administrators: 3);
-
-        var result = await Lifecycle(world.Db).SuspendAsync(new AdministratorCommand(
-            world.TenantId, world.SecondMembershipId!.Value, world.FirstAccountId, Reason: "Leave of absence"));
-
-        Assert.True(result.Succeeded);
-        world.Db.ChangeTracker.Clear();
-
-        var membership = await world.Db.TenantMemberships.IgnoreQueryFilters()
-            .SingleAsync(item => item.Id == world.SecondMembershipId);
-
-        Assert.Equal(TenantMembershipStatus.Suspended, membership.Status);
-        Assert.NotNull(membership.SuspendedAt);
-        Assert.Equal("Leave of absence", membership.SuspensionReason);
-
-        // Everything that made this person an administrator survives, so
-        // reactivation restores access rather than rebuilding it.
-        Assert.NotNull(await world.Db.Users.IgnoreQueryFilters()
-            .FirstOrDefaultAsync(user => user.Id == membership.UserId));
-        Assert.True(await world.Db.TenantAdministratorAssignments.IgnoreQueryFilters()
-            .AnyAsync(item => item.TenantMembershipId == membership.Id && item.RevokedAt == null));
-
-        // A tenant-scoped decision never disables the global Identity account.
-        var account = await world.Db.Users.IgnoreQueryFilters().SingleAsync(user => user.Id == membership.UserId);
-        Assert.True(account.IsActive);
-    }
-
-    [SkippableFact]
-    public async Task Reactivation_restores_access_without_recreating_anything()
-    {
-        Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var world = await ArrangeAsync(administrators: 3);
-        var membershipId = world.SecondMembershipId!.Value;
-
-        await Lifecycle(world.Db).SuspendAsync(
-            new AdministratorCommand(world.TenantId, membershipId, world.FirstAccountId));
-
-        var assignmentsBefore = await world.Db.TenantAdministratorAssignments.IgnoreQueryFilters()
-            .CountAsync(item => item.TenantMembershipId == membershipId);
-
-        var result = await Lifecycle(world.Db).ReactivateAsync(
-            new AdministratorCommand(world.TenantId, membershipId, world.FirstAccountId));
-
-        Assert.True(result.Succeeded);
-        world.Db.ChangeTracker.Clear();
-
-        var membership = await world.Db.TenantMemberships.IgnoreQueryFilters()
-            .SingleAsync(item => item.Id == membershipId);
-        Assert.Equal(TenantMembershipStatus.Active, membership.Status);
-
-        Assert.Equal(assignmentsBefore, await world.Db.TenantAdministratorAssignments.IgnoreQueryFilters()
-            .CountAsync(item => item.TenantMembershipId == membershipId));
-    }
 
     [SkippableFact]
     public async Task Grant_revoke_and_re_grant_read_back_as_a_sequence()
@@ -367,7 +287,7 @@ public sealed class TenantContinuityTests : IAsyncLifetime
     // ── Immediate enforcement ────────────────────────────
 
     [SkippableFact]
-    public async Task Suspension_invalidates_the_current_access_token_and_refresh_grants()
+    public async Task Losing_administration_invalidates_the_current_access_token_and_refresh_grants()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
         var world = await ArrangeAsync(administrators: 3);
@@ -390,7 +310,7 @@ public sealed class TenantContinuityTests : IAsyncLifetime
         await world.Db.SaveChangesAsync();
         world.Db.ChangeTracker.Clear();
 
-        await Lifecycle(world.Db).SuspendAsync(
+        await Lifecycle(world.Db).RevokeAuthorityAsync(
             new AdministratorCommand(world.TenantId, membershipId, world.FirstAccountId));
 
         world.Db.ChangeTracker.Clear();
@@ -429,25 +349,6 @@ public sealed class TenantContinuityTests : IAsyncLifetime
         Assert.NotEmpty(await world.Db.RefreshTokens.Where(token => token.UserId == userId && token.RevokedAt == null).ToListAsync());
     }
 
-    [SkippableFact]
-    public async Task Reactivation_does_not_revive_the_old_token()
-    {
-        Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var world = await ArrangeAsync(administrators: 3);
-        var membershipId = world.SecondMembershipId!.Value;
-        var lifecycle = Lifecycle(world.Db);
-
-        var original = await RevisionAsync(world.Db, membershipId);
-
-        await lifecycle.SuspendAsync(new AdministratorCommand(world.TenantId, membershipId, world.FirstAccountId));
-        await lifecycle.ReactivateAsync(new AdministratorCommand(world.TenantId, membershipId, world.FirstAccountId));
-
-        // Reactivation moves the revision too, so a token issued before the
-        // suspension stays rejected. The person signs in again and receives one
-        // carrying the current revision.
-        Assert.True(await RevisionAsync(world.Db, membershipId) > original);
-    }
-
     // ── Stale state ──────────────────────────────────────
 
     [SkippableFact]
@@ -461,10 +362,10 @@ public sealed class TenantContinuityTests : IAsyncLifetime
         var staleVersion = await VersionAsync(world.Db, membershipId);
 
         // Someone else acts in between.
-        await Lifecycle(world.Db).SuspendAsync(
+        await Lifecycle(world.Db).RevokeAuthorityAsync(
             new AdministratorCommand(world.TenantId, membershipId, world.FirstAccountId));
 
-        var result = await Lifecycle(world.Db).ReactivateAsync(new AdministratorCommand(
+        var result = await Lifecycle(world.Db).GrantAuthorityAsync(new AdministratorCommand(
             world.TenantId, membershipId, world.FirstAccountId, ExpectedVersion: staleVersion));
 
         Assert.Equal(ContinuityFailure.StaleState, result.Failure);
@@ -480,7 +381,7 @@ public sealed class TenantContinuityTests : IAsyncLifetime
 
         // Naming a real membership under the wrong tenant finds nothing rather
         // than acting on it, so a forged tenant identifier is not a way in.
-        var result = await Lifecycle(world.Db).SuspendAsync(new AdministratorCommand(
+        var result = await Lifecycle(world.Db).RevokeAuthorityAsync(new AdministratorCommand(
             Guid.NewGuid(), world.SecondMembershipId!.Value, world.FirstAccountId));
 
         Assert.Equal(ContinuityFailure.NotFound, result.Failure);
@@ -513,16 +414,16 @@ public sealed class TenantContinuityTests : IAsyncLifetime
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
         var world = await ArrangeAsync(administrators: 3);
 
-        await Lifecycle(world.Db).SuspendAsync(new AdministratorCommand(
+        await Lifecycle(world.Db).RevokeAuthorityAsync(new AdministratorCommand(
             world.TenantId, world.SecondMembershipId!.Value, world.FirstAccountId));
 
         var recent = (await new TenantAccessProjection(world.Db).GetActivityPageAsync(world.TenantId, null, null, null, null, null)).Items;
-        var suspension = recent.First(item => item.Action == AccessAuditActions.MembershipSuspended);
+        var removal = recent.First(item => item.Action == AccessAuditActions.AuthorityRevoked);
 
         // Commands hold a user id, not an account, so the stored name is a
         // placeholder. Showing it would tell the reader we do not know who acted
         // while the account it points at is in the same database.
-        Assert.Equal("Ada Admin", suspension.ActorName);
+        Assert.Equal("Ada Admin", removal.ActorName);
     }
 
     [SkippableFact]
@@ -555,7 +456,6 @@ public sealed class TenantContinuityTests : IAsyncLifetime
 
         // Nobody has accepted it, so it administers nothing. Counting it would let
         // a tenant lock itself out on the strength of an unopened email.
-        Assert.Equal(1, summary.PendingInvitations);
         Assert.Equal(nameof(ContinuityState.AtRisk), summary.Continuity);
     }
 

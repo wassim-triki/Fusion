@@ -44,8 +44,8 @@ export type {
 export { ReferenceCode } from "./reference-code";
 export { PageStateDrawing } from "./page-state-drawings";
 export type { PageStateDrawingKind } from "./page-state-drawings";
-export { PasswordStrengthField } from "./password-strength-field";
-export type { PasswordCheck } from "./password-strength-field";
+export { PasswordStrengthField, passwordRuleChecks } from "./password-strength-field";
+export type { PasswordCheck, PasswordRequirements, PasswordRule } from "./password-strength-field";
 export { AsyncButton } from "./async-button";
 export { StatusBadge } from "./status-badge";
 export type { StatusBadgeProps, StatusTone } from "./status-badge";

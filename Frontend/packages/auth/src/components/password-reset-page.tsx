@@ -17,7 +17,7 @@ import {
   InputGroupInput,
   Spinner,
 } from "@repo/ds";
-import { LanguageMenu, PageStateDrawing, PasswordStrengthField } from "@repo/ds/shell";
+import { LanguageMenu, PageStateDrawing, PasswordStrengthField, passwordRuleChecks } from "@repo/ds/shell";
 import {
   ApiError,
   createPlatformApiClient,
@@ -191,14 +191,7 @@ function requirementChecks(
   requirements: AccountPasswordRequirementsDto,
   t: ReturnType<typeof useTranslations<"auth.passwordReset">>,
 ) {
-  return [
-    { label: t("rules.length", { count: requirements.minimumLength }), satisfied: password.length >= requirements.minimumLength },
-    ...(requirements.requiresLetter ? [{ label: t("rules.letter"), satisfied: /\p{L}/u.test(password) }] : []),
-    ...(requirements.requiresUppercase ? [{ label: t("rules.uppercase"), satisfied: /[A-Z]/.test(password) }] : []),
-    ...(requirements.requiresLowercase ? [{ label: t("rules.lowercase"), satisfied: /[a-z]/.test(password) }] : []),
-    ...(requirements.requiresDigit ? [{ label: t("rules.number"), satisfied: /[0-9]/.test(password) }] : []),
-    ...(requirements.requiresSymbol ? [{ label: t("rules.symbol"), satisfied: /[^\p{L}0-9]/u.test(password) }] : []),
-  ];
+  return passwordRuleChecks(password, requirements, (rule, count) => t(`rules.${rule}`, { count }));
 }
 
 /**

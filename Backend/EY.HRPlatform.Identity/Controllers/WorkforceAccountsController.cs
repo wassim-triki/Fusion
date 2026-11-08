@@ -692,7 +692,7 @@ public sealed class WorkforceAccountsController(
         if (deactivated.Failure == ContinuityFailure.TooFewAdministrators)
         {
             return Conflict(ApiResponse.Failure(
-                "This account belongs to the tenant's only usable Tenant Administrator. "
+                "This account belongs to the tenant's only usable administrator. "
                 + "Invite or restore another administrator first."));
         }
 

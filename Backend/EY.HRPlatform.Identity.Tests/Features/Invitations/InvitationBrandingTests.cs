@@ -56,8 +56,8 @@ public class InvitationBrandingTests
     [Fact]
     public void In_french_the_expiry_is_written_the_french_way()
     {
-        var rendered = CanonicalInvitationRenderer.Render(Invitation(InvitationPurpose.TenantAdministrator, "fr", null));
-        Assert.Equal("Vous êtes invité à administrer Carthage dans Fusion", rendered.Subject);
+        var rendered = CanonicalInvitationRenderer.Render(Invitation(InvitationPurpose.TenantAdministratorRecovery, "fr", null));
+        Assert.Equal("Rétablissez l'accès administrateur à Carthage", rendered.Subject);
         Assert.Contains("Cette invitation expire le 6 novembre 2026 à 09:30 UTC.", rendered.Text);
     }
 

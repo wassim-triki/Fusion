@@ -33,12 +33,12 @@ function grant(
 }
 
 describe("resolveInviteAcceptanceDestination", () => {
-  it("sends access operators to Access", () => {
+  it("sends access operators to Administrators", () => {
     expect(
       resolveInviteAcceptanceDestination(createAuthUser({
         effectivePermissions: [grant("core.access.manage", "Tenant")],
       }))
-    ).toBe("/access");
+    ).toBe("/settings/roles/administrators");
   });
 
   it("sends profile managers to Access Profiles", () => {

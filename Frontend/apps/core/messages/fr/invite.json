@@ -2,6 +2,7 @@
   "yourOrganization": "votre entreprise",
   "password": {
     "minimumLength": "{count} caractères ou plus",
+    "letter": "Une lettre",
     "uppercase": "Une majuscule",
     "lowercase": "Une minuscule",
     "number": "Un chiffre",
@@ -47,11 +48,6 @@
     "failed": "La création de votre compte n’a pas pu aboutir. Réessayez dans un instant ou contactez votre administrateur."
   },
   "workforce": {
-    "access": "Votre accès",
-    "roles": {
-      "Employee": "Collaborateur",
-      "Manager": "Manager"
-    },
     "heading": "Rejoindre {tenant}",
     "submit": "Activer mon compte",
     "submitting": "Activation de votre compte…",
@@ -59,16 +55,6 @@
     "formLeadProvider": "Continuez avec le compte de votre entreprise pour l’activer.",
     "name": "Votre nom"
   },
-  "administrator": {
-    "heading": "Rejoindre {tenant}",
-    "role": "Votre rôle",
-    "submit": "Créer mon compte",
-    "submitting": "Création de votre compte…",
-    "email": "E-mail professionnel",
-    "roleValue": "Administrateur"
-  },
-  "firstName": "Prénom",
-  "lastName": "Nom",
   "createPassword": "Créer un mot de passe",
   "confirmPassword": "Confirmer le mot de passe",
   "showCharacters": "Afficher les caractères",

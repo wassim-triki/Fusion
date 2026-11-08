@@ -152,7 +152,7 @@ const json = (value: unknown) => JSON.stringify(value);
 
 describe("Role changes in change history", () => {
   it("says who was made or stopped being an administrator, and who saw Fusion as someone (B-178)", () => {
-    const person = (name: string) => json({ state: "Tenant Administrator", person: name });
+    const person = (name: string) => json({ state: "Administrator", person: name });
     expect(roleChange("AdministratorAuthorityGranted", json({ state: "None", person: "Nour Ben Ali" }), person("Nour Ben Ali"))?.headline)
       .toBe("Made Nour Ben Ali an administrator");
     expect(roleChange("AdministratorAuthorityRevoked", person("Nour Ben Ali"), json({ state: "None", person: "Nour Ben Ali" }))?.headline)

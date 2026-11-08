@@ -1,6 +1,7 @@
 import { englishSay, type Say } from "@repo/ds/lib/say";
 import { englishMessages } from "@/i18n/messages";
 import { failureCode } from "../api";
+import { isEmailAddress } from "@repo/ds/lib/email";
 
 /** The `provisioning` catalogue in English, for pure helpers' defaults and tests. */
 export const sayProvisioningInEnglish: Say = englishSay(englishMessages, "provisioning");
@@ -105,7 +106,7 @@ export function validateDraft(
   const email = draft.administratorEmail.trim();
   if (email.length === 0) {
     errors.administratorEmail = say("validation.emailRequired");
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  } else if (!isEmailAddress(email)) {
     errors.administratorEmail = say("validation.emailInvalid");
   }
 

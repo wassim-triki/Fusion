@@ -84,7 +84,7 @@ public class TenantAdministratorAssignment : ITenantEntity
     {
         if (RevokedAt is not null)
         {
-            throw new InvalidOperationException("Tenant Administrator authority is already revoked.");
+            throw new InvalidOperationException("Administrator authority is already revoked.");
         }
 
         RevokedAt = revokedAt ?? DateTime.UtcNow;

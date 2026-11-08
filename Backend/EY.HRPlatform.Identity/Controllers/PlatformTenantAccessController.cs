@@ -62,7 +62,7 @@ public sealed class PlatformTenantAccessController(
             // administer itself.
             RecoveryOutcome.NotEligible => Problem(
                 "recovery-not-eligible",
-                "This tenant still has a usable Tenant Administrator.",
+                "This tenant still has a usable administrator.",
                 StatusCodes.Status409Conflict),
 
             RecoveryOutcome.AlreadyPending => Problem(

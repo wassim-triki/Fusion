@@ -421,8 +421,7 @@ public class InviteToken : ITenantEntity
     }
 
     /// <summary>
-    /// Creates an administrative or recovery invitation for a tenant that is
-    /// already active. Like bootstrap it carries no legacy raw token; the caller
+    /// Creates a recovery invitation for a tenant that is already active. Like bootstrap it carries no legacy raw token; the caller
     /// issues a selector plus digest credential.
     /// </summary>
     public static InviteToken CreateAdministrative(

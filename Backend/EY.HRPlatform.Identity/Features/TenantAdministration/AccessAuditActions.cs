@@ -18,15 +18,8 @@ public static class AccessAuditActions
     /// <summary>The tenant's initial administrator authority became canonical.</summary>
     public const string AuthorityRecognized = "AdministratorAuthorityRecognized";
 
-    public const string InvitationIssued = "AdministratorInvitationIssued";
     public const string InvitationResent = "AdministratorInvitationResent";
-    public const string InvitationEmailReplaced = "AdministratorInvitationEmailReplaced";
-    public const string InvitationRevoked = "AdministratorInvitationRevoked";
-    public const string InvitationAccepted = "AdministratorInvitationAccepted";
     public const string InvitationRejectedExistingAccount = "AdministratorInvitationRejectedExistingAccount";
-
-    public const string MembershipSuspended = "MembershipSuspended";
-    public const string MembershipReactivated = "MembershipReactivated";
 
     public const string AuthorityGranted = "AdministratorAuthorityGranted";
     public const string AuthorityRevoked = "AdministratorAuthorityRevoked";
@@ -46,26 +39,4 @@ public static class AccessAuditActions
     public const string PlatformRecoveryInvitationAccepted = "PlatformRecoveryInvitationAccepted";
     public const string PlatformRecoveryCompleted = "PlatformRecoveryCompleted";
     public const string PlatformRecoveryFailed = "PlatformRecoveryFailed";
-
-    public static readonly IReadOnlyList<string> All =
-    [
-        AuthorityRecognized,
-        InvitationIssued,
-        InvitationResent,
-        InvitationEmailReplaced,
-        InvitationRevoked,
-        InvitationAccepted,
-        InvitationRejectedExistingAccount,
-        MembershipSuspended,
-        MembershipReactivated,
-        AuthorityGranted,
-        AuthorityRevoked,
-        AuthoritySelfRemoved,
-        FinalAdministratorActionBlocked,
-        SeenAs,
-        PlatformRecoveryInitiated,
-        PlatformRecoveryInvitationAccepted,
-        PlatformRecoveryCompleted,
-        PlatformRecoveryFailed,
-    ];
 }

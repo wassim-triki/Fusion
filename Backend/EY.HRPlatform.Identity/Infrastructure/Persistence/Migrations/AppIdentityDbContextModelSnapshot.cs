@@ -550,10 +550,6 @@ namespace EY.HRPlatform.Identity.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasFilter("\"Purpose\" = 'OrganizationBootstrap' AND \"AcceptedAt\" IS NULL AND \"IsRevoked\" = false AND \"SupersededAt\" IS NULL");
 
-                    b.HasIndex(new[] { "TenantId", "Email" }, "IX_InviteTokens_TenantId_Email_AdministrativePending")
-                        .IsUnique()
-                        .HasFilter("\"Purpose\" IN ('TenantAdministrator', 'TenantAdministratorRecovery') AND \"AcceptedAt\" IS NULL AND \"IsRevoked\" = false AND \"SupersededAt\" IS NULL");
-
                     b.HasIndex(new[] { "TenantId", "Email" }, "IX_InviteTokens_TenantId_Email_Pending")
                         .IsUnique()
                         .HasFilter("\"Purpose\" = 'WorkforceAccount' AND \"AcceptedAt\" IS NULL AND \"IsRevoked\" = false");

@@ -39,7 +39,6 @@ public sealed record TenantContinuityHealthDto
     public int UsableAdministrators { get; init; }
     public int ActiveAdministrators { get; init; }
     public int SuspendedAdministrators { get; init; }
-    public int PendingAdministratorInvitations { get; init; }
     public string RecoveryStatus { get; init; } = string.Empty;
 
     /// <summary>The outstanding or most recent recovery attempt, when there is one.</summary>
@@ -85,16 +84,6 @@ public sealed class TenantContinuityHealthProjection(AppIdentityDbContext dbCont
             .Select(group => new { Status = group.Key, Count = group.Count() })
             .ToListAsync(cancellationToken);
 
-        var pendingInvitations = await dbContext.InviteTokens
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .CountAsync(item => item.TenantId == tenantId
-                && item.Purpose == InvitationPurpose.TenantAdministrator
-                && item.AcceptedAt == null
-                && !item.IsRevoked
-                && item.SupersededAt == null
-                && item.ExpiresAt > DateTime.UtcNow, cancellationToken);
-
         var recovery = await dbContext.InviteTokens
             .IgnoreQueryFilters()
             .AsNoTracking()
@@ -122,7 +111,6 @@ public sealed class TenantContinuityHealthProjection(AppIdentityDbContext dbCont
                 .Where(item => item.Status == TenantMembershipStatus.Active).Sum(item => item.Count),
             SuspendedAdministrators = byStatus
                 .Where(item => item.Status == TenantMembershipStatus.Suspended).Sum(item => item.Count),
-            PendingAdministratorInvitations = pendingInvitations,
             RecoveryStatus = ResolveStatus(activationStatus, usable, recovery?.State).ToString(),
             LatestRecoveryAttempt = attempt,
         };

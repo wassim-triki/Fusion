@@ -25,7 +25,6 @@ export interface TenantAccessSummaryDto {
   tenantName: string;
   activeAdministrators: number;
   suspendedAdministrators: number;
-  pendingInvitations: number;
   usableAdministrators: number;
   continuity: ContinuityState;
 }

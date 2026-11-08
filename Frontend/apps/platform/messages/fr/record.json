@@ -230,7 +230,6 @@
       "title": "Administrateurs",
       "usable": "Peuvent se connecter",
       "suspended": "Suspendus",
-      "pending": "Invitations en attente",
       "failed": "Impossible de lire l’accès des administrateurs.",
       "retry": "Réessayer",
       "noneCanSignIn": "Aucun administrateur ne peut se connecter.",

@@ -124,23 +124,6 @@ public class InviteTokenConfiguration : IEntityTypeConfiguration<InviteToken>
                 $"\"Purpose\" = '{nameof(Domain.Enums.InvitationPurpose.WorkforceAccount)}' "
                 + "AND \"AcceptedAt\" IS NULL AND \"IsRevoked\" = false");
 
-        // At most one pending administrative invitation per tenant and address.
-        //
-        // Like the bootstrap index above, the filter cannot test expiry: a partial
-        // index predicate must be immutable and expiry is a moving target. So an
-        // Expired administrative invitation still occupies this slot. That is
-        // reconciled deliberately rather than left as a trap — inviting the same
-        // address again is a reissue that supersedes the expired predecessor in
-        // one transaction, never a second live row and never a duplicate refusal.
-        builder.HasIndex(
-                [nameof(InviteToken.TenantId), nameof(InviteToken.Email)],
-                "IX_InviteTokens_TenantId_Email_AdministrativePending")
-            .IsUnique()
-            .HasFilter(
-                $"\"Purpose\" IN ('{nameof(Domain.Enums.InvitationPurpose.TenantAdministrator)}', "
-                + $"'{nameof(Domain.Enums.InvitationPurpose.TenantAdministratorRecovery)}') "
-                + "AND \"AcceptedAt\" IS NULL AND \"IsRevoked\" = false AND \"SupersededAt\" IS NULL");
-
         // At most one pending recovery per tenant, whatever the address. A second
         // recovery while one is in flight would put two people on a path to the
         // same tenant's administration.

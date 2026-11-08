@@ -62,12 +62,12 @@ public sealed class SsoInvitationTests(SsoFixture fixture)
     }
 
     [SkippableFact]
-    public async Task An_administrator_invitation_and_a_first_activation_accept_through_Microsoft()
+    public async Task A_recovery_invitation_and_a_first_activation_accept_through_Microsoft()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
         var tenantId = await _sso.AddTenantAsync();
         var adminEmail = $"youssef@{Sso.UniqueDomain()}";
-        var adminCredential = await AdministrativeInvitationAsync(tenantId, adminEmail, InvitationPurpose.TenantAdministrator);
+        var adminCredential = await AdministrativeInvitationAsync(tenantId, adminEmail, InvitationPurpose.TenantAdministratorRecovery);
 
         var administrator = await AcceptAsync("administrator", adminCredential, "microsoft", Sso.Person(adminEmail));
         var adminId = Guid.Parse(Sso.Session(administrator.Data, "userId")!);
@@ -97,7 +97,7 @@ public sealed class SsoInvitationTests(SsoFixture fixture)
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
         var tenantId = await _sso.AddTenantAsync();
         var existing = await _sso.AddMemberAsync(tenantId, $"taken@{Sso.UniqueDomain()}");
-        var credential = await AdministrativeInvitationAsync(tenantId, existing.Email!, InvitationPurpose.TenantAdministrator);
+        var credential = await AdministrativeInvitationAsync(tenantId, existing.Email!, InvitationPurpose.TenantAdministratorRecovery);
 
         var (refused, response) = await _sso.StartAsync(_sso.Browser(),
             new { purpose = "invitation", provider = "google", invitation = new { kind = "administrator", credential } });

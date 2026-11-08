@@ -164,7 +164,7 @@ public sealed class PlatformAdministratorRecoveryService(
                 {
                     return ContinuityResult<Guid>.Refused(
                         ContinuityFailure.NotApplicable,
-                        "Recovery applies only after bootstrap is complete and no usable Tenant Administrator remains.");
+                        "Recovery applies only after bootstrap is complete and no usable administrator remains.");
                 }
 
                 var pendingRecovery = await context.Db.InviteTokens

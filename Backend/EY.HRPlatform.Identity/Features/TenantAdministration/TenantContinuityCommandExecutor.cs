@@ -188,7 +188,7 @@ public sealed class TenantContinuityCommandExecutor(AppIdentityDbContext dbConte
 
             return ContinuityResult<T>.Refused(
                 ContinuityFailure.TooFewAdministrators,
-                "The tenant would be left with fewer than two usable Tenant Administrators.");
+                "The tenant would be left with fewer than two usable administrators.");
         }
 
         foreach (var auditEvent in context.AuditEvents)
@@ -270,7 +270,7 @@ public sealed class TenantContinuityCommandExecutor(AppIdentityDbContext dbConte
             AccessAuditActions.FinalAdministratorActionBlocked,
             blocked?.ResourceType ?? AccessAuditActions.ResourceTypeAdministrator,
             blocked?.ResourceId,
-            "Action refused: the tenant would have been left with fewer than two usable Tenant Administrators.",
+            "Action refused: the tenant would have been left with fewer than two usable administrators.",
             beforeJson: null,
             afterJson: null,
             correlationId: blocked?.CorrelationId));

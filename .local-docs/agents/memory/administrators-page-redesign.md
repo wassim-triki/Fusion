@@ -1,12 +1,14 @@
 ---
 name: administrators-page-redesign
-description: "/core/access (Administrators) rebuilt to tabbed master-detail per a design reference; added backend \"Added by\" provenance + Removed tab + activity-log route"
+description: "Historical (2026-09): the old /core/access Administrators workspace. Superseded by Settings › Roles › Administrators (B-178); /access, admin invitations and suspend/reactivate removed in B-326"
 metadata: 
   node_type: memory
   type: project
   originSessionId: 29d13547-63fc-43ba-a96a-71378d01d0fe
   modified: 2026-09-12T19:26:47.543Z
 ---
+
+**Superseded.** B-178 moved Administrators to Settings › Roles › Administrators (make/remove only, two-administrator rule). B-326 (2026-11-08) removed the `/access` routes, the `TenantAdministrator` invitation purpose (only platform recovery invites administrators now) and administrator suspend/reactivate. What follows is history; "Added by" provenance still drives the page.
 
 `/core/access` (the Tenant **Administrators** surface, see [[workforce-access-activation]] for the rename) fully redesigned 2026-09-12 from a single combined list into a **tabbed master-detail**, faithful to a user-supplied design reference. Uncommitted.
 

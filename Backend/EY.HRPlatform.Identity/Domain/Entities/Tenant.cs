@@ -254,7 +254,7 @@ public class Tenant
     public void CompleteAdministratorActivation()
     {
         if (AdministratorActivationStatus == TenantAdministratorActivationStatus.Active)
-            throw new InvalidOperationException("Tenant administrator activation is already complete.");
+            throw new InvalidOperationException("Administrator activation is already complete.");
 
         AdministratorActivationStatus = TenantAdministratorActivationStatus.Active;
         UpdatedAt = DateTime.UtcNow;

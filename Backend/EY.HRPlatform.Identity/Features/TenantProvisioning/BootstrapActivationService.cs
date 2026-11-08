@@ -368,7 +368,7 @@ public sealed class BootstrapActivationService(
             action: AccessAuditActions.AuthorityRecognized,
             resourceType: AccessAuditActions.ResourceTypeAdministrator,
             resourceId: membership.Id.ToString(),
-            summary: "Initial Tenant Administrator authority established through bootstrap activation.",
+            summary: "Initial administrator authority established through bootstrap activation.",
             beforeJson: null,
             afterJson: null,
             correlationId: correlationId.ToString()));

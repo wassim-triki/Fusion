@@ -26,7 +26,6 @@ import {
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-  Input,
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
@@ -34,7 +33,7 @@ import {
   Spinner,
   cn,
 } from "@repo/ds";
-import { PasswordStrengthField, type PasswordCheck } from "@repo/ds/shell";
+import { PasswordStrengthField, passwordRuleChecks, type PasswordCheck } from "@repo/ds/shell";
 import type { PageStateDrawingKind } from "@repo/ds/shell";
 import { ArrowRight, Check, Eye, EyeOff, Lock, TriangleAlert, X } from "lucide-react";
 import {
@@ -60,34 +59,9 @@ function passwordChecks(
   requirements: AccountPasswordRequirementsDto | null | undefined,
   t: InviteT
 ): PasswordCheck[] {
-  if (!requirements) return [];
-
-  const checks: PasswordCheck[] = [
-    {
-      label: t("password.minimumLength", { count: requirements.minimumLength }),
-      satisfied: password.length >= requirements.minimumLength,
-    },
-  ];
-  if (requirements.requiresUppercase) {
-    checks.push({
-      label: t("password.uppercase"),
-      satisfied: /[A-Z]/.test(password),
-    });
-  }
-  if (requirements.requiresLowercase) {
-    checks.push({
-      label: t("password.lowercase"),
-      satisfied: /[a-z]/.test(password),
-    });
-  }
-  if (requirements.requiresDigit) {
-    checks.push({ label: t("password.number"), satisfied: /[0-9]/.test(password) });
-  }
-  if (requirements.requiresSymbol) {
-    checks.push({ label: t("password.symbol"), satisfied: /[^a-zA-Z0-9]/.test(password) });
-  }
-
-  return checks;
+  return passwordRuleChecks(password, requirements, (rule, count) =>
+    rule === "length" ? t("password.minimumLength", { count }) : t(`password.${rule}`)
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -190,8 +164,6 @@ function submitErrorMessages(
 // ---------------------------------------------------------------------------
 
 interface FormValues {
-  firstName: string;
-  lastName: string;
   password: string;
   confirmPassword: string;
 }
@@ -254,17 +226,12 @@ function AcceptanceForm({
   const router = useRouter();
   const accept = useAcceptInvite();
 
-  // A workforce recipient's name is owned by their employee record, so they set
-  // a password only. Administrator invitations create a new account and collect
-  // the name here.
-  const isWorkforce = invite.role === "Employee" || invite.role === "Manager";
-  const accessLabel = t(invite.role === "Manager" ? "workforce.roles.Manager" : "workforce.roles.Employee");
+  // Only workforce invitations open here. The recipient's name is owned by their
+  // employee record, so they set a password only.
   const tenantName = invite.tenantName || t("yourOrganization");
   const fullName = [invite.firstName, invite.lastName].filter(Boolean).join(" ");
 
   const [form, setForm] = useState<FormValues>(() => ({
-    firstName: invite.firstName ?? "",
-    lastName: invite.lastName ?? "",
     password: "",
     confirmPassword: "",
   }));
@@ -285,11 +252,7 @@ function AcceptanceForm({
   const passwordsMatch =
     Boolean(form.password) && form.confirmPassword === form.password;
 
-  const nameReady =
-    isWorkforce ||
-    (form.firstName.trim().length > 0 && form.lastName.trim().length > 0);
   const canSubmit =
-    nameReady &&
     form.password.length > 0 &&
     checks.length > 0 &&
     checks.every((check) => check.satisfied) &&
@@ -336,12 +299,8 @@ function AcceptanceForm({
         token,
         request: {
           password: form.password,
-          firstName: isWorkforce
-            ? invite.firstName ?? null
-            : form.firstName.trim() || invite.firstName || null,
-          lastName: isWorkforce
-            ? invite.lastName ?? null
-            : form.lastName.trim() || invite.lastName || null,
+          firstName: invite.firstName ?? null,
+          lastName: invite.lastName ?? null,
         },
       } satisfies AcceptInvitePayload);
 
@@ -391,23 +350,15 @@ function AcceptanceForm({
     <InvitationFrame company={company} companyName={invite.tenantName || null}>
       <form onSubmit={submit} noValidate>
         <InvitationHeading
-          title={t(isWorkforce ? "workforce.heading" : "administrator.heading", { tenant: tenantName })}
+          title={t("workforce.heading", { tenant: tenantName })}
           lead={passwordOffered ? undefined : t("workforce.formLeadProvider")}
         />
         <div className="mt-5">
           <InvitationFacts
-            facts={
-              isWorkforce
-                ? [
-                    ...(fullName ? [{ label: t("workforce.name"), value: fullName }] : []),
-                    { label: t("workforce.access"), value: accessLabel },
-                    { label: t("workforce.email"), value: invite.email, wide: Boolean(fullName) },
-                  ]
-                : [
-                    { label: t("administrator.role"), value: t("administrator.roleValue") },
-                    { label: t("administrator.email"), value: invite.email },
-                  ]
-            }
+            facts={[
+              ...(fullName ? [{ label: t("workforce.name"), value: fullName }] : []),
+              { label: t("workforce.email"), value: invite.email },
+            ]}
           />
         </div>
 
@@ -456,27 +407,6 @@ function AcceptanceForm({
 
         {passwordOffered ? (
         <FieldGroup className="mt-6 gap-4">
-          {!isWorkforce ? (
-            <div className="grid gap-4 sm:grid-cols-2">
-              <TextField
-                id="firstName"
-                label={t("firstName")}
-                autoComplete="given-name"
-                value={form.firstName}
-                disabled={pending}
-                onChange={(value) => update("firstName", value)}
-              />
-              <TextField
-                id="lastName"
-                label={t("lastName")}
-                autoComplete="family-name"
-                value={form.lastName}
-                disabled={pending}
-                onChange={(value) => update("lastName", value)}
-              />
-            </div>
-          ) : null}
-
           <PasswordStrengthField
             id="password"
             label={t("createPassword")}
@@ -548,13 +478,11 @@ function AcceptanceForm({
                   ? t("signingIn")
                   : progress === "opening"
                     ? t("opening")
-                    : isWorkforce
-                      ? t("workforce.submitting")
-                      : t("administrator.submitting")}
+                    : t("workforce.submitting")}
               </span>
             ) : (
               <span className="inline-flex items-center gap-2">
-                {isWorkforce ? t("workforce.submit") : t("administrator.submit")}
+                {t("workforce.submit")}
                 <ArrowRight />
               </span>
             )}
@@ -573,35 +501,5 @@ function AcceptanceForm({
         ) : null}
       </form>
     </InvitationFrame>
-  );
-}
-
-function TextField({
-  id,
-  label,
-  value,
-  onChange,
-  autoComplete,
-  disabled,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  autoComplete?: string;
-  disabled?: boolean;
-}) {
-  return (
-    <Field>
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <Input
-        id={id}
-        value={value}
-        autoComplete={autoComplete}
-        disabled={disabled}
-        className="h-11"
-        onChange={(event) => onChange(event.target.value)}
-      />
-    </Field>
   );
 }

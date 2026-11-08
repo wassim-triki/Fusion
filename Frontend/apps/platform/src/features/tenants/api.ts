@@ -456,7 +456,6 @@ export interface TenantContinuityHealth {
   usableAdministrators: number;
   activeAdministrators: number;
   suspendedAdministrators: number;
-  pendingAdministratorInvitations: number;
   recoveryStatus: RecoveryStatusValue;
   latestRecoveryAttempt: RecoveryAttempt | null;
 }

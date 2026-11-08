@@ -26,7 +26,7 @@ export function CoreWorkspaceAccessBoundary({
   // the server's until hydration settles, then resolves access from session
   // claims — so this boundary can never drift back into a hydration mismatch.
   const { state, user } = useHydratedWorkspaceAccess(({ user, isLoading }) =>
-    resolveCoreWorkspaceAccessState({ user, isLoading, pathname }),
+    resolveCoreWorkspaceAccessState({ user, isLoading }),
   );
 
   useEffect(() => {

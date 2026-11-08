@@ -127,14 +127,13 @@ public sealed class PlatformRecoveryTests : IAsyncLifetime
         var world = await ArrangeAsync();
         await StripAdministrationAsync(world);
 
-        // The tenant recovers on its own — a suspended administrator is
+        // The tenant recovers on its own — a suspended administrator's access is
         // reactivated — before the operator submits. Eligibility is re-read under
         // the lock, so the recovery is refused rather than handing authority to a
         // stranger for a tenant that just fixed itself.
-        await new TenantAdministratorLifecycleService(
-                world.Db, new TenantContinuityCommandExecutor(world.Db))
-            .ReactivateAsync(new AdministratorCommand(
-                world.TenantId, world.FirstMembershipId, world.FirstAccountId));
+        (await world.Db.TenantMemberships.IgnoreQueryFilters()
+            .SingleAsync(item => item.Id == world.FirstMembershipId)).Reactivate(world.FirstAccountId);
+        await world.Db.SaveChangesAsync();
 
         world.Db.ChangeTracker.Clear();
 

@@ -28,7 +28,7 @@ import { useTenantRecord } from "./record-shell";
  * administrators can sign in today. It is not the Core HR employee directory
  * and never becomes one.
  *
- * Routine administration (inviting, suspending, removing authority) belongs to
+ * Routine administration (making and removing administrators) belongs to
  * the customer and happens in their own workspace. The only thing Platform may
  * do beyond the invitation is restore administration to a tenant that has lost
  * all of it, which hands control back to the customer rather than taking it.
@@ -294,7 +294,7 @@ function Administrators({ tenant }: { tenant: TenantDetail }) {
 
       {data ? (
         <>
-          <dl className="mt-4 grid gap-3 sm:grid-cols-3">
+          <dl className="mt-4 grid gap-3 sm:grid-cols-2">
             <Count
               label={t("usable")}
               value={format.count(data.usableAdministrators)}
@@ -302,10 +302,6 @@ function Administrators({ tenant }: { tenant: TenantDetail }) {
             <Count
               label={t("suspended")}
               value={format.count(data.suspendedAdministrators)}
-            />
-            <Count
-              label={t("pending")}
-              value={format.count(data.pendingAdministratorInvitations)}
             />
           </dl>
 

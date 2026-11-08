@@ -50,6 +50,7 @@ import { useOrganizationHierarchy } from "@/features/organization/api/use-organi
 import { OrganizationTree } from "@/features/organization/components/organization-tree";
 import { useHiringContext, usePeopleEstablishmentMutations } from "../api/use-people";
 import { useManagerOptions } from "../changes/use-changes";
+import { isEmailAddress } from "@repo/ds/lib/email";
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
@@ -378,7 +379,7 @@ export default function AddPerson() {
     const next: Errors = {};
     if (!form.firstName.trim()) next.firstName = t("errors.firstName");
     if (!form.lastName.trim()) next.lastName = t("errors.lastName");
-    if (email && !/^\S+@\S+\.\S+$/.test(email)) next.workEmail = t("errors.workEmail");
+    if (email && !isEmailAddress(email)) next.workEmail = t("errors.workEmail");
     if (form.numberMode === "Manual" && !form.employeeNumber.trim()) next.employeeNumber = t("errors.employeeNumber");
     if (!form.jobId) next.jobId = t("errors.job");
     if (!form.orgUnitId) next.orgUnitId = t("errors.unit");

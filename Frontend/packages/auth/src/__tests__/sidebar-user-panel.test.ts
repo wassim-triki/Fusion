@@ -20,7 +20,7 @@ function user(overrides: Partial<AuthUser> = {}): AuthUser {
 
 const tenantAdministratorProfile = {
   id: "profile-1",
-  name: "Tenant Administrator",
+  name: "Administrator",
   type: "System",
   isSystemProtected: true,
 };

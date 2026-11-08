@@ -397,7 +397,7 @@ export function canViewTenantAdministration(user: AuthUser | null): boolean {
   );
 }
 
-/** Inviting, suspending, reactivating, and changing Tenant Administrator authority. */
+/** Making and removing administrators. */
 export function canManageTenantAdministration(user: AuthUser | null): boolean {
   return hasCorePermission(
     user,

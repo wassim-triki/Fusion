@@ -140,7 +140,7 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
             .SingleAsync(item => item.UserId == account.Id);
         Assert.True(authority.IsActive);
         Assert.Equal(issued.InvitationId, authority.SourceInvitationId);
-        Assert.Equal(TenantAdministratorGrantActor.InvitationAcceptance, authority.GrantedByActorType);
+        Assert.Equal(TenantAdministratorGrantActor.PlatformRecovery, authority.GrantedByActorType);
 
         // The tenant was already active; acceptance is not a second activation.
         var tenant = await db.Tenants.IgnoreQueryFilters().SingleAsync(item => item.Id == tenantId);
@@ -208,7 +208,7 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
             .Where(user => user.NormalizedEmail == InvitedEmail.ToUpperInvariant()).ToListAsync());
         Assert.Single(await db.TenantAdministratorAssignments.IgnoreQueryFilters()
             .Where(item => item.TenantId == tenantId
-                && item.GrantedByActorType == TenantAdministratorGrantActor.InvitationAcceptance)
+                && item.GrantedByActorType == TenantAdministratorGrantActor.PlatformRecovery)
             .ToListAsync());
     }
 
@@ -236,7 +236,7 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
         Assert.Empty(await db.Users.IgnoreQueryFilters()
             .Where(user => user.NormalizedEmail == InvitedEmail.ToUpperInvariant()).ToListAsync());
         Assert.Empty(await db.TenantAdministratorAssignments.IgnoreQueryFilters()
-            .Where(item => item.GrantedByActorType == TenantAdministratorGrantActor.InvitationAcceptance)
+            .Where(item => item.GrantedByActorType == TenantAdministratorGrantActor.PlatformRecovery)
             .ToListAsync());
     }
 
@@ -330,8 +330,7 @@ public sealed class AdministratorInvitationTests : IAsyncLifetime
     private static Task<List<InviteToken>> PendingAdministrativeAsync(AppIdentityDbContext db, Guid tenantId)
         => db.InviteTokens.IgnoreQueryFilters()
             .Where(item => item.TenantId == tenantId
-                && (item.Purpose == InvitationPurpose.TenantAdministrator
-                    || item.Purpose == InvitationPurpose.TenantAdministratorRecovery)
+                && item.Purpose == InvitationPurpose.TenantAdministratorRecovery
                 && item.AcceptedAt == null
                 && !item.IsRevoked
                 && item.SupersededAt == null)

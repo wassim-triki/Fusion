@@ -7,7 +7,7 @@ export function getSidebarAccountLabel(user: AuthUser): string {
     return "Platform Admin";
   }
 
-  if (user.accessProfiles.some((profile) => profile.name === "Tenant Administrator")) {
+  if (user.accessProfiles.some((profile) => profile.name === "Administrator")) {
     return "Administrator";
   }
 

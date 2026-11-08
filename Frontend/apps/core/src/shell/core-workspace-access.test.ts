@@ -70,19 +70,7 @@ describe("resolveCoreWorkspaceAccessState", () => {
     expect(resolveCoreWorkspaceAccessState({
       isLoading: false,
       user: createUser(["Employee"], { moduleEntitlements: [] }),
-      pathname: "/core/employees",
     })).toBe("module-unavailable");
-  });
-
-  it("allows tenant-level Access without CoreHR entitlement when authorized", () => {
-    expect(resolveCoreWorkspaceAccessState({
-      isLoading: false,
-      user: createUser(["HRAdmin"], {
-        moduleEntitlements: [],
-        effectivePermissions: [grant("access.assignments.view")],
-      }),
-      pathname: "/core/access",
-    })).toBe("allowed");
   });
 
   it("restores the Core base path for a direct root request", () => {

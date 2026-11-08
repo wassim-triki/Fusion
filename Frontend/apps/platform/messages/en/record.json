@@ -230,7 +230,6 @@
       "title": "Administrators",
       "usable": "Can sign in",
       "suspended": "Suspended",
-      "pending": "Pending invitations",
       "failed": "Administrator access couldn't be read.",
       "retry": "Retry",
       "noneCanSignIn": "No administrator can sign in.",

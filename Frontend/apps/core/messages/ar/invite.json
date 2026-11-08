@@ -2,6 +2,7 @@
   "yourOrganization": "شركتك",
   "password": {
     "minimumLength": "{count} أحرف أو أكثر",
+    "letter": "حرف",
     "uppercase": "حرف كبير",
     "lowercase": "حرف صغير",
     "number": "رقم",
@@ -47,11 +48,6 @@
     "failed": "تعذّر إكمال إعداد حسابك. أعد المحاولة بعد قليل أو تواصل مع المسؤول."
   },
   "workforce": {
-    "access": "صلاحيتك",
-    "roles": {
-      "Employee": "موظف",
-      "Manager": "مدير"
-    },
     "heading": "انضم إلى {tenant}",
     "submit": "تفعيل حسابي",
     "submitting": "جارٍ تفعيل حسابك…",
@@ -59,16 +55,6 @@
     "formLeadProvider": "تابع بحساب شركتك لتفعيله.",
     "name": "اسمك"
   },
-  "administrator": {
-    "heading": "انضم إلى {tenant}",
-    "role": "دورك",
-    "submit": "إنشاء حسابي",
-    "submitting": "جارٍ إنشاء حسابك…",
-    "email": "البريد الإلكتروني للعمل",
-    "roleValue": "مسؤول"
-  },
-  "firstName": "الاسم الأول",
-  "lastName": "اسم العائلة",
   "createPassword": "إنشاء كلمة مرور",
   "confirmPassword": "تأكيد كلمة المرور",
   "showCharacters": "إظهار الأحرف",

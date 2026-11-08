@@ -18,8 +18,8 @@ public interface IAdministrativeInvitationAcceptanceService
 }
 
 /// <summary>
-/// Turns a valid administrative or recovery credential into durable Tenant
-/// Administrator access, in one transaction.
+/// Turns a valid recovery credential into durable administrator access, in one
+/// transaction.
 /// <para>
 /// Structurally parallel to bootstrap activation but deliberately not the same
 /// transition: this runs against a tenant that is already active, performs no
@@ -157,51 +157,39 @@ public sealed class AdministrativeInvitationAcceptanceService(
         dbContext.TenantAdministratorAssignments.Add(
             TenantAdministratorAssignment.Grant(
                 membership,
-                invitation.Purpose == InvitationPurpose.TenantAdministratorRecovery
-                    ? TenantAdministratorGrantActor.PlatformRecovery
-                    : TenantAdministratorGrantActor.InvitationAcceptance,
+                TenantAdministratorGrantActor.PlatformRecovery,
                 grantedByUserId: invitation.CreatedByUserId,
                 sourceInvitationId: invitation.Id));
 
         invitation.MarkAccepted(account.Id);
 
-        var isRecovery = invitation.Purpose == InvitationPurpose.TenantAdministratorRecovery;
-
         dbContext.AccessAuditEvents.Add(AccessAuditEvent.Create(
             tenantId: tenant.Id,
             // The recipient is the actor here, not the Platform Administrator who
-            // initiated a recovery; the initiation event already records them.
+            // initiated the recovery; the initiation event already records them.
             actorUserId: account.Id,
             // Left blank so the reader resolves the person's name. Stamping the
             // email here would put a raw address in an activity feed that names
             // people everywhere else.
             actorName: string.Empty,
             actorRole: TenantAdministratorAuthority.DisplayName,
-            action: isRecovery
-                ? AccessAuditActions.PlatformRecoveryInvitationAccepted
-                : AccessAuditActions.InvitationAccepted,
+            action: AccessAuditActions.PlatformRecoveryInvitationAccepted,
             resourceType: AccessAuditActions.ResourceTypeAdministrator,
             resourceId: membership.Id.ToString(),
-            summary: isRecovery
-                ? "Customer-controlled Tenant Administrator access restored through Platform recovery."
-                : "Tenant Administrator access established by accepting an administrator invitation.",
+            summary: "Customer-controlled administrator access restored through Platform recovery.",
             beforeJson: null,
             afterJson: null,
             correlationId: invitation.Id.ToString()));
 
-        if (isRecovery)
-        {
-            dbContext.AccessAuditEvents.Add(AccessAuditEvent.Create(
-                tenant.Id, account.Id, account.Email ?? string.Empty,
-                TenantAdministratorAuthority.DisplayName,
-                AccessAuditActions.PlatformRecoveryCompleted,
-                AccessAuditActions.ResourceTypeAdministrator,
-                membership.Id.ToString(),
-                "Platform-assisted administrator recovery completed.",
-                null, null, invitation.Id.ToString()));
-        }
+        dbContext.AccessAuditEvents.Add(AccessAuditEvent.Create(
+            tenant.Id, account.Id, account.Email ?? string.Empty,
+            TenantAdministratorAuthority.DisplayName,
+            AccessAuditActions.PlatformRecoveryCompleted,
+            AccessAuditActions.ResourceTypeAdministrator,
+            membership.Id.ToString(),
+            "Platform-assisted administrator recovery completed.",
+            null, null, invitation.Id.ToString()));
 
-        await dbContext.SaveChangesAsync(cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         if (transaction is not null)
@@ -247,7 +235,7 @@ public sealed class AdministrativeInvitationAcceptanceService(
             AccessAuditActions.InvitationRejectedExistingAccount,
             AccessAuditActions.ResourceTypeInvitation,
             invitation.Id.ToString(),
-            "Administrator invitation could not be accepted: the invited address already belongs to a Fusion account.",
+            "Recovery invitation could not be accepted: the invited address already belongs to a Fusion account.",
             null, null, invitation.Id.ToString()));
 
         await dbContext.SaveChangesAsync(cancellationToken);

@@ -10,25 +10,14 @@ public enum InvitationPurpose
     /// <summary>Existing Core workforce-account invitation. Business behavior unchanged.</summary>
     WorkforceAccount = 0,
 
-    /// <summary>Initial Tenant Administrator bootstrap invitation issued by Platform provisioning.</summary>
+    /// <summary>Initial administrator bootstrap invitation issued by Platform provisioning.</summary>
     OrganizationBootstrap = 1,
-
-    /// <summary>
-    /// An additional Tenant Administrator invited by an existing Tenant
-    /// Administrator, inside a tenant that is already active.
-    /// </summary>
-    TenantAdministrator = 2,
 
     /// <summary>
     /// Platform-assisted recovery of customer-controlled administration, issued by
     /// a Platform Administrator only while the tenant has no usable administrator.
-    /// <para>
-    /// Separate from <see cref="TenantAdministrator"/> rather than a flag on it:
-    /// the two differ in who may issue them, what must be true before issuing,
-    /// what the recipient is told, and how the event is audited. A shared value
-    /// with a discriminator would make every one of those checks read a field the
-    /// type could have carried.
-    /// </para>
+    /// The only administrative invitation: customers make administrators of people
+    /// who already sign in, without an invitation.
     /// </summary>
     TenantAdministratorRecovery = 3,
 }
@@ -44,18 +33,16 @@ public static class InvitationPurposes
     public static readonly IReadOnlyList<InvitationPurpose> CredentialBearing =
     [
         InvitationPurpose.OrganizationBootstrap,
-        InvitationPurpose.TenantAdministrator,
         InvitationPurpose.TenantAdministratorRecovery,
         InvitationPurpose.WorkforceAccount,
     ];
 
     /// <summary>
-    /// Purposes that establish Tenant Administrator authority. These may never be
+    /// Purposes that establish administrator authority. These may never be
     /// issued or accepted through a workforce route.
     /// </summary>
     public static readonly IReadOnlyList<InvitationPurpose> Administrative =
     [
-        InvitationPurpose.TenantAdministrator,
         InvitationPurpose.TenantAdministratorRecovery,
     ];
 

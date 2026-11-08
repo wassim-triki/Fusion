@@ -37,7 +37,6 @@ public sealed record TenantAccessSummary(
     string TenantName,
     int ActiveAdministrators,
     int SuspendedAdministrators,
-    int PendingInvitations,
     int UsableAdministrators,
     string Continuity);
 
@@ -177,16 +176,6 @@ public sealed class TenantAccessProjection(AppIdentityDbContext dbContext) : ITe
             .Select(group => new { Status = group.Key, Count = group.Count() })
             .ToListAsync(cancellationToken);
 
-        var pending = await dbContext.InviteTokens
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .CountAsync(item => item.TenantId == tenantId
-                && item.Purpose == InvitationPurpose.TenantAdministrator
-                && item.AcceptedAt == null
-                && !item.IsRevoked
-                && item.SupersededAt == null
-                && item.ExpiresAt > DateTime.UtcNow, cancellationToken);
-
         return new TenantAccessSummary(
             TenantName: tenantName,
             ActiveAdministrators: byStatus
@@ -195,7 +184,6 @@ public sealed class TenantAccessProjection(AppIdentityDbContext dbContext) : ITe
             SuspendedAdministrators: byStatus
                 .Where(item => item.Status == TenantMembershipStatus.Suspended)
                 .Sum(item => item.Count),
-            PendingInvitations: pending,
             UsableAdministrators: usable,
             Continuity: (usable switch
             {

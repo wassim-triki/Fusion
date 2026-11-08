@@ -1,5 +1,6 @@
 # LOG — the one history
 
+- ✓ **B-322** Access and history batch accepted, 2026-11-08 (user: "yeah yeah close"): with it **B-314** role grants in Access history, **B-203** Brand saves in Change history, **B-220** changes greyed with the reason while seeing Fusion as someone (✓).
 - **B-322 session 2: B-220** built, 2026-11-08, **In review** (screen `plans/B-322-screens/03-view-as-inert-change.png`):
   - `@repo/ds` write lock (`lib/write-lock.ts`, `setWriteLock`/`useWriteLock`, a module store, null on the server). `ViewingAsBar` sets it while seeing Fusion as someone ("You're seeing Fusion as {name}, so nothing can be changed", en/fr/ar) and clears it on leave. DS `Button` prop `writes`: locked, it renders a plain disabled button (a link keeps only its label) inside a focusable wrapper with the reason as a tooltip. `AsyncButton` is `writes` by default; the Settings save bar's Save is marked.
   - Swept write entry points: 64 save/submit/approve/decline/withdraw/remove buttons plus 34 openers (Propose a change, Add, Edit, Give praise, Ask for feedback, Request update, Record progress, Add objective, Start my plan, Home approve/decline/tick/give praise) across core, performance and shell. Left live on purpose: public invitation forms, the as-of "Show" date, Review access, and local edits inside a form whose save is marked. The server's refusal stays the guard.

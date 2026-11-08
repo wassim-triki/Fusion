@@ -19,7 +19,7 @@ import { useScheduleCommands } from "../../api/use-review-work";
 import { useApis } from "../../api/use-performance";
 import { ContentUnavailable } from "../content-unavailable";
 import { calibrationHref, reviewHref, withCycle } from "@/lib/performance-routes";
-import { CountTile, DueChip, SectionHeading, dayLabel } from "./review-parts";
+import { CountTile, DueChip, ReviewSection, dayLabel } from "./review-parts";
 import { RoundSetup } from "./round-setup";
 import { useRecentRecord } from "@repo/api/react";
 import { useTranslations } from "next-intl";
@@ -200,9 +200,8 @@ function RoundRunning({ round }: { round: ReviewRoundDto }) {
         {released ? <CountTile label={tr("released")} value={released.done} total={released.total} foot={round.calibrationEnabled ? tr("afterCalibration") : tr("readyToRelease", { count: progress.readyToFinalize })} /> : null}
       </div>
 
-      <section aria-labelledby="teams-heading">
-        <SectionHeading id="teams-heading" title={tr("byTeam")} count={progress.teams.length} aside={tr("furthestBehindFirst")} />
-        <div className="overflow-x-auto rounded-surface bg-card">
+      <ReviewSection id="teams" title={tr("byTeam")} count={progress.teams.length} aside={tr("furthestBehindFirst")} flush>
+        <div className="overflow-x-auto">
           <table className="w-full min-w-[52rem] text-start">
             <thead className="bg-inlay">
               <tr className="type-meta text-muted-foreground">
@@ -236,7 +235,7 @@ function RoundRunning({ round }: { round: ReviewRoundDto }) {
             </tbody>
           </table>
         </div>
-      </section>
+      </ReviewSection>
 
       <div className="grid gap-8 lg:grid-cols-3">
         <section aria-labelledby="reminders-heading">

@@ -109,6 +109,30 @@ public class CoreAccessControllerPermissionTests
         Assert.IsType<BadRequestObjectResult>((await controller.SaveRole(Guid.NewGuid(), SaveRequest(), "\"1\"", CancellationToken.None)).Result);
     }
 
+    [Fact]
+    public async Task A_role_save_records_who_is_chosen_by_name()
+    {
+        var audit = new StubAccessAuditService();
+        var chosen = Guid.NewGuid();
+        var roles = new StubRoleService
+        {
+            Saved = [new RoleHolderDto(chosen, Guid.NewGuid(), "Aicha Bouazizi", null, IsChosen: true, ByRule: false),
+                new RoleHolderDto(Guid.NewGuid(), Guid.NewGuid(), "Mariam Gharbi", null, IsChosen: false, ByRule: true)],
+        };
+        var controller = CreateController(null, null, null, (CorePermissions.AccessProfilesManageV2, PermissionScopes.Tenant));
+        controller = new CoreAccessController(new StubAccessProfileService(), audit, roles, TestTenantContext.WithTenant(Guid.NewGuid()), new SilentRoleMail())
+        {
+            ControllerContext = controller.ControllerContext,
+        };
+
+        Assert.IsType<OkObjectResult>((await controller.SaveRole(Guid.NewGuid(), SaveRequest(), "\"1\"", CancellationToken.None)).Result);
+
+        var after = System.Text.Json.JsonSerializer.Serialize(audit.After);
+        Assert.Contains($"\"chosen\":[{{\"userId\":\"{chosen}\",\"name\":\"Aicha Bouazizi\"}}]", after);
+        Assert.Contains("\"name\":\"Recruiters\"", after);
+        Assert.Contains("\"chosen\":[]", System.Text.Json.JsonSerializer.Serialize(audit.Before));
+    }
+
     private static SaveRoleRequest SaveRequest()
         => new("Recruiters", null, [], AccessProfileHolderKinds.Chosen, [], []);
 
@@ -209,8 +233,11 @@ public class CoreAccessControllerPermissionTests
 
     private sealed class StubRoleService : IRoleService
     {
-        private static RoleDetailDto Detail(Guid id, string name)
-            => new(new RoleSummaryDto(id, name, null, false, false, false, AccessProfileHolderKinds.Chosen, [], 0, [], [], 1, null), [], []);
+        /// <summary>Who holds the role once it's saved.</summary>
+        public IReadOnlyList<RoleHolderDto> Saved { get; init; } = [];
+
+        private static RoleDetailDto Detail(Guid id, string name, IReadOnlyList<RoleHolderDto>? holders = null)
+            => new(new RoleSummaryDto(id, name, null, false, false, false, AccessProfileHolderKinds.Chosen, [], 0, [], [], 1, null), [], holders ?? []);
 
         public Task<RolesOverviewDto> GetOverviewAsync(Guid tenantId, CancellationToken cancellationToken)
             => Task.FromResult(new RolesOverviewDto([], [], null));
@@ -222,7 +249,7 @@ public class CoreAccessControllerPermissionTests
             => Task.FromResult(Detail(Guid.NewGuid(), request.Name));
 
         public Task<RoleDetailDto> SaveRoleAsync(Guid tenantId, Guid roleId, uint expectedVersion, SaveRoleRequest request, CancellationToken cancellationToken)
-            => Task.FromResult(Detail(roleId, request.Name));
+            => Task.FromResult(Detail(roleId, request.Name, Saved));
 
         public Task DeleteRoleAsync(Guid tenantId, Guid roleId, CancellationToken cancellationToken)
             => Task.CompletedTask;
@@ -236,6 +263,9 @@ public class CoreAccessControllerPermissionTests
 
     private sealed class StubAccessAuditService : IAccessAuditService
     {
+        public object? Before { get; private set; }
+        public object? After { get; private set; }
+
         public Task RecordAsync(
             Guid tenantId,
             string action,
@@ -246,7 +276,11 @@ public class CoreAccessControllerPermissionTests
             object? after,
             ClaimsPrincipal actor,
             CancellationToken cancellationToken)
-            => Task.CompletedTask;
+        {
+            Before = before;
+            After = after;
+            return Task.CompletedTask;
+        }
 
         public Task<IReadOnlyList<AccessAuditEventDto>> GetRecentAsync(
             Guid tenantId,

@@ -23,7 +23,7 @@ import { Input } from "@repo/ds/components/ui/input";
 import { Label } from "@repo/ds/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@repo/ds/components/ui/select";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
-import { AsyncButton, PageContainer, PageHeader, StatusBadge, Said } from "@repo/ds/shell";
+import { AsyncButton, PageContainer, PageHeader, Section, StatusBadge, Said } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { AvatarStack, ObjectiveStatusBadge, PersonInitials, PlanDial } from "@repo/performance-ui";
 import { CalendarDays, Check, ChevronDown, Flag, Plus, X } from "@/lib/icons";
@@ -31,7 +31,7 @@ import { useOneOnOne, useOneOnOneCommands } from "../../api/use-conversations";
 import { usePersonSummary } from "../../api/use-performance";
 import { useLanding } from "@/lib/use-landing";
 import { ContentUnavailable } from "../content-unavailable";
-import { PlanDocument, PlanSection, SidebarSection } from "../plan/plan-layout";
+import { PlanDocument, SectionTitle, SidebarSection } from "../plan/plan-layout";
 import { NotesEditor } from "./notes-editor";
 import {
   CADENCES,
@@ -117,7 +117,7 @@ function SeriesView({ series }: { series: OneOnOneSeriesDto }) {
             series.ended || !upcoming ? (
               <History series={series} names={names} />
             ) : (
-              <div className="space-y-12">
+              <div className="space-y-6">
                 <UpcomingMeeting series={series} meeting={upcoming} me={me} other={other} names={names} />
                 {series.past.length > 0 ? <EarlierMeetings series={series} meetings={series.past} names={names} title={t("earlierMeetings")} /> : null}
               </div>
@@ -229,7 +229,7 @@ function UpcomingMeeting({
   const open = meeting.actions.filter((a) => !a.done).length;
   return (
     <>
-      <PlanSection label={t("talkingPoints")} count={meeting.agenda.length}>
+      <Section id="talking-points" title={<SectionTitle label={t("talkingPoints")} count={meeting.agenda.length} />} flush>
         <TalkingPoints
           items={meeting.agenda}
           myId={me.employeeId}
@@ -239,18 +239,21 @@ function UpcomingMeeting({
           onDiscussed={(item, discussed) => commands.setDiscussed.mutate({ meetingId: meeting.id, itemId: item.id, discussed })}
           onRemove={(item) => commands.removeAgendaItem.mutate({ meetingId: meeting.id, itemId: item.id })}
         />
-      </PlanSection>
+      </Section>
 
       {writable && meeting.suggestions.length > 0 ? (
-        <PlanSection label={series.viewerRole === "Manager" ? t("fromSYear", { reportFirstName: reportFirstName ?? "" }) : t("fromYourYear")} count={meeting.suggestions.length}>
+        <Section
+          id="from-the-year"
+          title={<SectionTitle label={series.viewerRole === "Manager" ? t("fromSYear", { reportFirstName: reportFirstName ?? "" }) : t("fromYourYear")} count={meeting.suggestions.length} />}
+        >
           <Suggestions
             suggestions={meeting.suggestions}
             onAdd={(s) => commands.addAgendaItem.mutate({ meetingId: meeting.id, request: { id: newClientId(), sourceKind: s.kind, sourceId: s.sourceId } })}
           />
-        </PlanSection>
+        </Section>
       ) : null}
 
-      <PlanSection label={t("actions")} count={open}>
+      <Section id="actions" title={<SectionTitle label={t("actions")} count={open} />} flush>
         <Actions
           actions={meeting.actions}
           names={names}
@@ -259,11 +262,11 @@ function UpcomingMeeting({
           onDone={(action, done) => commands.setActionDone.mutate({ actionId: action.id, done })}
           onAdd={(text, ownerEmployeeId, dueDate) => commands.addAction.mutate({ id: newClientId(), text, ownerEmployeeId, dueDate })}
         />
-      </PlanSection>
+      </Section>
 
-      <PlanSection label={t("notes")}>
+      <Section id="notes" title={t("notes")}>
         <MeetingNotes series={series} meeting={meeting} otherName={other.displayName} />
-      </PlanSection>
+      </Section>
     </>
   );
 }
@@ -295,7 +298,7 @@ function TalkingPoints({
     setDraft("");
   };
   return (
-    <ul className="divide-y divide-border overflow-hidden rounded-surface bg-card">
+    <ul className="divide-y divide-border">
       {items.length === 0 && !writable ? <li className="px-5 py-4 type-body-secondary text-muted-foreground">{t("nothingOnTheAgenda")}</li> : null}
       {items.map((item) => (
         <li key={item.id} className="group flex min-h-16 items-center gap-4 px-5 py-3">
@@ -366,7 +369,7 @@ function Suggestions({ suggestions, onAdd }: { suggestions: OneOnOneSuggestionDt
   return (
     <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
       {suggestions.map((s) => (
-        <li key={`${s.kind}:${s.sourceId}`} className="flex flex-col gap-3 rounded-surface border border-border p-4">
+        <li key={`${s.kind}:${s.sourceId}`} className="flex flex-col gap-3 rounded-inset bg-inlay p-4">
           <div className="flex items-center gap-2.5">
             <SourceWell kind={s.kind} status={s.status} size="sm" />
             <span className="type-meta text-muted-foreground">
@@ -414,7 +417,7 @@ function Actions({
     setDue("");
   };
   return (
-    <ul className="divide-y divide-border overflow-hidden rounded-surface bg-card">
+    <ul className="divide-y divide-border">
       {actions.length === 0 && !writable ? <li className="px-5 py-4 type-body-secondary text-muted-foreground">{t("noActions")}</li> : null}
       {actions.map((action) => (
         <li key={action.id} id={`action-${action.id}`} className="flex min-h-14 scroll-mt-24 items-center gap-4 px-5 py-3">
@@ -480,7 +483,7 @@ function MeetingNotes({ series, meeting, otherName }: { series: OneOnOneSeriesDt
   };
   return (
     <div className="grid gap-3 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-      <div className="rounded-surface bg-card p-5">
+      <div className="rounded-inset bg-inlay p-5">
         <NotesEditor
           id={`shared-${meeting.id}`}
           label={t("sharedWith", { value: (otherName.split(" ")[0]) ?? "" })}
@@ -492,7 +495,7 @@ function MeetingNotes({ series, meeting, otherName }: { series: OneOnOneSeriesDt
             revisionOf(await commands.setSharedNotes.mutateAsync({ meetingId: meeting.id, text, expectedRevision }), "shared")}
         />
       </div>
-      <div className="rounded-surface border border-border p-5">
+      <div className="rounded-inset border border-border p-5">
         <NotesEditor
           id={`private-${meeting.id}`}
           label={t("onlyYou")}
@@ -516,11 +519,11 @@ function History({ series, names }: { series: OneOnOneSeriesDto; names: Names })
   const last = series.past.find((m) => m.state === "Completed");
   const earlier = series.past.filter((m) => m !== last);
   return (
-    <div className="space-y-12">
+    <div className="space-y-6">
       {last ? (
-        <PlanSection label={t("lastMeeting")}>
-          <MeetingDetail series={series} meeting={last} names={names} />
-        </PlanSection>
+        <Section id="last-meeting" title={t("lastMeeting")}>
+          <MeetingDetail series={series} meeting={last} names={names} bare />
+        </Section>
       ) : (
         <p className="type-body-secondary text-muted-foreground">{t("noMeetingWasHeld")}</p>
       )}
@@ -532,8 +535,8 @@ function History({ series, names }: { series: OneOnOneSeriesDto; names: Names })
 function EarlierMeetings({ series, meetings, names, title }: { series: OneOnOneSeriesDto; meetings: OneOnOneMeetingDto[]; names: Names; title: string }) {
   const t = useTranslations("oneOnOnes.EarlierMeetings");
   return (
-    <PlanSection label={title} count={meetings.length}>
-      <ul className="divide-y divide-border overflow-hidden rounded-surface bg-card">
+    <Section id="earlier-meetings" title={<SectionTitle label={title} count={meetings.length} />} flush>
+      <ul className="divide-y divide-border">
         {meetings.map((meeting) => (
           <li key={meeting.id}>
             <Collapsible>
@@ -554,14 +557,14 @@ function EarlierMeetings({ series, meetings, names, title }: { series: OneOnOneS
                   <ChevronDown className="size-4 text-muted-foreground transition-transform group-data-[state=closed]:-rotate-90" aria-hidden />
                 )}
               </CollapsibleTrigger>
-              <CollapsibleContent className="border-t border-border bg-section/40 px-5 py-5">
+              <CollapsibleContent className="border-t border-border bg-inlay/40 px-5 py-5">
                 <MeetingDetail series={series} meeting={meeting} names={names} bare />
               </CollapsibleContent>
             </Collapsible>
           </li>
         ))}
       </ul>
-    </PlanSection>
+    </Section>
   );
 }
 

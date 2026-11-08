@@ -16,7 +16,7 @@ import { useDownloadReviewPdf, useReviewsWorkspace } from "../../api/use-review-
 import { ContentUnavailable } from "../content-unavailable";
 import { formatDate } from "../../lib";
 import { calibrationHref, newReviewRoundHref, peerRequestHref, reviewHref, roundHref, withCycle } from "@/lib/performance-routes";
-import { CountTile, DueChip, SectionHeading, StageTrack, dayLabel, dueIn, type Step } from "./review-parts";
+import { CountTile, DueChip, ReviewSection, StageTrack, dayLabel, dueIn, type Step } from "./review-parts";
 import { PeerListDrawer } from "./peer-list-drawer";
 import { useTranslations } from "next-intl";
 import { useFormat } from "@repo/ds/lib/use-format";
@@ -223,8 +223,7 @@ function YearFacts({ data }: { data: ReviewsWorkspaceDto }) {
     { value: String(year.oneOnOnes), label: t("n11sHeld") },
   ];
   return (
-    <section aria-labelledby="year-heading">
-      <SectionHeading id="year-heading" title={t("yourYearAlreadyInThe")} />
+    <ReviewSection id="year" title={t("yourYearAlreadyInThe")}>
       <dl className="flex flex-wrap gap-x-10 gap-y-3">
         {facts.map((fact) => (
           <div key={fact.label} className="flex items-baseline gap-2">
@@ -234,7 +233,7 @@ function YearFacts({ data }: { data: ReviewsWorkspaceDto }) {
           </div>
         ))}
       </dl>
-    </section>
+    </ReviewSection>
   );
 }
 
@@ -297,9 +296,8 @@ function FactTile({ label, children }: { label: string; children: ReactNode }) {
 function TeamTable({ rows, cycleId, title }: { rows: ReviewsWorkspaceTeamRowDto[]; cycleId: string | null; title: string }) {
   const t = useTranslations("reviews.TeamTable");
   return (
-    <section aria-labelledby="team-heading">
-      <SectionHeading id="team-heading" title={title} count={rows.length} />
-      <div className="overflow-x-auto rounded-surface bg-card">
+    <ReviewSection id="team" title={title} count={rows.length} flush>
+      <div className="overflow-x-auto">
         <table className="w-full min-w-[56rem] text-start">
           <thead className="bg-inlay">
             <tr className="type-meta text-muted-foreground">
@@ -316,7 +314,7 @@ function TeamTable({ rows, cycleId, title }: { rows: ReviewsWorkspaceTeamRowDto[
           </tbody>
         </table>
       </div>
-    </section>
+    </ReviewSection>
   );
 }
 
@@ -499,9 +497,8 @@ function RoundList({ rounds, cycleId, cycleName }: { rounds: ReviewsWorkspaceRou
   const format = useFormat();
   const t = useTranslations("reviews.RoundList");
   return (
-    <section aria-labelledby="rounds-heading">
-      <SectionHeading id="rounds-heading" title={t("rounds", { value: cycleName ?? "Cycle" })} count={rounds.length} />
-      <ul className="divide-y divide-border rounded-surface bg-card">
+    <ReviewSection id="rounds" title={t("rounds", { value: cycleName ?? "Cycle" })} count={rounds.length} flush>
+      <ul className="divide-y divide-border">
         {rounds.map((round) => {
           const self = round.stages.find((s) => s.stage === "SelfAssessment");
           const share = round.state === "Closed" ? (round.people ? round.released / round.people : 0) : self && self.total ? self.done / self.total : 0;
@@ -529,7 +526,7 @@ function RoundList({ rounds, cycleId, cycleName }: { rounds: ReviewsWorkspaceRou
           );
         })}
       </ul>
-    </section>
+    </ReviewSection>
   );
 }
 
@@ -553,9 +550,8 @@ function OwnCompact({ own, cycleId }: { own: ReviewsWorkspaceOwnDto; cycleId: st
   const t = useTranslations("reviews.OwnCompact");
   const writing = own.state === "SelfAssessment" && own.selfAssessmentEnabled;
   return (
-    <section aria-labelledby="own-heading">
-      <SectionHeading id="own-heading" title={t("yourOwnReview")} />
-      <div className="flex items-center gap-4 rounded-surface bg-card px-5 py-4">
+    <ReviewSection id="own" title={t("yourOwnReview")} flush>
+      <div className="flex items-center gap-4 px-5 py-4">
         <PersonInitials name={own.reviewerName} size="lg" />
         <div className="min-w-0 flex-1">
           <p className="type-label text-foreground">{t("reviewsYou", { reviewerName: own.reviewerName })}</p>
@@ -563,7 +559,7 @@ function OwnCompact({ own, cycleId }: { own: ReviewsWorkspaceOwnDto; cycleId: st
         </div>
         <Button size="sm" variant="outline" asChild><Link href={withCycle(reviewHref(own.reviewId), cycleId)}>{writing ? t("start") : t("open")}</Link></Button>
       </div>
-    </section>
+    </ReviewSection>
   );
 }
 
@@ -571,10 +567,9 @@ function AskedOfYou({ data }: { data: ReviewsWorkspaceDto }) {
   const format = useFormat();
   const t = useTranslations("reviews.AskedOfYou");
   return (
-    <section aria-labelledby="asked-heading">
-      {/* The count is what still waits on you; answered and declined requests stay listed without counting. */}
-      <SectionHeading id="asked-heading" title={t("askedOfYou")} count={data.askedOfYou.filter((r) => r.state === "Open").length || undefined} />
-      <ul className="divide-y divide-border rounded-surface bg-card">
+    // The count is what still waits on you; answered and declined requests stay listed without counting.
+    <ReviewSection id="asked" title={t("askedOfYou")} count={data.askedOfYou.filter((r) => r.state === "Open").length || undefined} flush>
+      <ul className="divide-y divide-border">
         {data.askedOfYou.map((request) => (
           <li key={request.requestId} className="flex items-center gap-4 px-5 py-4">
             <PersonInitials name={request.subjectDisplayName} size="lg" />
@@ -595,7 +590,7 @@ function AskedOfYou({ data }: { data: ReviewsWorkspaceDto }) {
           </li>
         ))}
       </ul>
-    </section>
+    </ReviewSection>
   );
 }
 
@@ -603,9 +598,8 @@ function PastResults({ data }: { data: ReviewsWorkspaceDto }) {
   const t = useTranslations("reviews.PastResults");
   const download = useDownloadReviewPdf();
   return (
-    <section aria-labelledby="past-heading">
-      <SectionHeading id="past-heading" title={t("pastResults")} />
-      <ul className="divide-y divide-border rounded-surface bg-card">
+    <ReviewSection id="past" title={t("pastResults")} flush>
+      <ul className="divide-y divide-border">
         {data.pastResults.filter((result) => result.reviewId !== data.own?.reviewId).map((result) => (
           <li key={result.reviewId} className="flex items-center gap-4 px-5 py-4">
             <div className="min-w-0 flex-1">
@@ -618,7 +612,7 @@ function PastResults({ data }: { data: ReviewsWorkspaceDto }) {
           </li>
         ))}
       </ul>
-    </section>
+    </ReviewSection>
   );
 }
 

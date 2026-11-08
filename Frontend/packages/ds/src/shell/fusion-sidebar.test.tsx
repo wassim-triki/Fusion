@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { BarChart3, BookOpen, BrainCircuit, LayoutDashboard, Users, UserRoundCheck } from "lucide-react";
 import { FusionSidebar } from "./fusion-sidebar";
 import type { FusionSidebarProps } from "./types";
@@ -143,5 +143,24 @@ describe("FusionSidebar", () => {
     expect(within(nav).getByRole("link", { name: "Overview" }).querySelector("span.rounded-full")).toBeNull();
     expect(within(nav).getByRole("button", { name: "Switch module, current: Performance" })).toBeInTheDocument();
     expect(within(nav).getByRole("button", { name: "Expand sidebar" })).toBeInTheDocument();
+  });
+
+  it("folds from the tab on its edge, opens from the company mark, and Ctrl+B does both outside text fields (B-250)", () => {
+    renderSidebar();
+    const nav = screen.getByRole("complementary", { name: "Fusion navigation" });
+    fireEvent.click(within(nav).getByRole("button", { name: "Collapse sidebar" }));
+    expect(nav).toHaveAttribute("data-collapsed", "true");
+
+    fireEvent.click(within(nav).getByRole("button", { name: "Expand sidebar" }));
+    expect(nav).toHaveAttribute("data-collapsed", "false");
+
+    act(() => { fireEvent.keyDown(window, { key: "b", ctrlKey: true }); });
+    expect(nav).toHaveAttribute("data-collapsed", "true");
+
+    const field = document.createElement("input");
+    document.body.appendChild(field);
+    act(() => { fireEvent.keyDown(field, { key: "b", ctrlKey: true }); });
+    expect(nav).toHaveAttribute("data-collapsed", "true");
+    field.remove();
   });
 });

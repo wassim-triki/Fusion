@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using EY.HRPlatform.Identity.Features.Notifications;
 using EY.HRPlatform.Identity.Features.AccessProfiles;
 using EY.HRPlatform.Identity.Features.Roles;
@@ -201,7 +203,7 @@ public sealed class CoreAccessController(
             var before = await roles.GetRoleAsync(tenantId.Value, roleId, cancellationToken);
             var after = await roles.SaveRoleAsync(tenantId.Value, roleId, version, request, cancellationToken);
             await accessAuditService.RecordAsync(tenantId.Value, "access.profile.updated", "AccessProfile", roleId.ToString(),
-                $"Role '{after.Role.Name}' updated.", before.Role, after.Role, User, cancellationToken);
+                $"Role '{after.Role.Name}' updated.", Recorded(before), Recorded(after), User, cancellationToken);
             await roleMail.SendProfileChangesAsync(tenantId.Value, User.GetUserId(), HolderChanges(roleId, before, after), cancellationToken);
             Response.Headers.ETag = $"\"{after.Role.Version}\"";
             return Ok(ApiResponse<RoleDetailDto>.Success(after));
@@ -267,6 +269,19 @@ public sealed class CoreAccessController(
     }
 
     /// <summary>Who gained or lost the role, for the administrator-role mail.</summary>
+    /// <summary>
+    /// The role as Change history keeps it: its summary, and who is chosen for it by name (B-323), so a save that only
+    /// chooses or drops people can say who.
+    /// </summary>
+    private static JsonObject Recorded(RoleDetailDto role)
+    {
+        var record = JsonSerializer.SerializeToNode(role.Role, JsonSerializerOptions.Web)!.AsObject();
+        record["chosen"] = JsonSerializer.SerializeToNode(
+            role.Holders.Where(holder => holder.IsChosen).Select(holder => new { holder.UserId, holder.Name }),
+            JsonSerializerOptions.Web);
+        return record;
+    }
+
     private static IReadOnlyList<(Guid UserId, IReadOnlyCollection<Guid> Before, IReadOnlyCollection<Guid> After)> HolderChanges(
         Guid roleId, RoleDetailDto before, RoleDetailDto after)
     {

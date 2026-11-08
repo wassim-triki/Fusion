@@ -18,39 +18,6 @@ export function PlanDocument({ main, sidebar }: { main: ReactNode; sidebar?: Rea
   );
 }
 
-/** A main-column section for the 1:1 record: a section title on the canvas with a quiet count, an optional summary and action, then its objects. */
-export function PlanSection({
-  label,
-  count,
-  summary,
-  action,
-  children,
-}: {
-  label: ReactNode;
-  count?: number;
-  summary?: ReactNode;
-  action?: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <section>
-      <div className="mb-4 flex min-h-9 flex-wrap items-center justify-between gap-x-6 gap-y-3">
-        <h2 className="flex items-baseline gap-2 type-section-title text-foreground">
-          {label}
-          {count !== undefined ? <span className="type-meta tabular-nums text-muted-foreground">{count}</span> : null}
-        </h2>
-        {summary || action ? (
-          <div className="flex items-center gap-4">
-            {summary}
-            {action}
-          </div>
-        ) : null}
-      </div>
-      {children}
-    </section>
-  );
-}
-
 /** A section's title with its quiet count, for the DS `Section` title line. */
 export function SectionTitle({ label, count }: { label: ReactNode; count?: number }) {
   return (

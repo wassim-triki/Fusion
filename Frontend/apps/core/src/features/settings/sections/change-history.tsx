@@ -200,6 +200,8 @@ interface RoleRecord {
   cells?: RoleCellDto[];
   holderKind?: string;
   conditions?: { kind: string; targetId: string }[];
+  /** Who is chosen for it by name (B-323); records before then don't say. */
+  chosen?: { userId: string; name: string }[];
 }
 
 function headlineOf(lines: ChangeLine[], say: Say): string {
@@ -271,6 +273,24 @@ function holderLines(role: string, before: RoleRecord | null, after: RoleRecord 
   }];
 }
 
+/** Who was chosen for the role by name or taken off it, one line each; nothing when either record predates the list. */
+function chosenLines(role: string, before: RoleRecord | null, after: RoleRecord | null, say: Say): ChangeLine[] {
+  if (!before?.chosen || !after?.chosen) return [];
+  const said = (key: string, values?: Record<string, string | number>) => say(`changeHistory.roles.${key}`, values);
+  const line = (person: string, gained: boolean): ChangeLine => ({
+    label: `${person} · ${role}`,
+    before: said(gained ? "notHeld" : "held"),
+    after: said(gained ? "held" : "notHeld"),
+    sentence: said(gained ? "gave" : "took", { person, role }),
+  });
+  const was = new Set(before.chosen.map((person) => person.userId));
+  const is = new Set(after.chosen.map((person) => person.userId));
+  return [
+    ...after.chosen.filter((person) => !was.has(person.userId)).map((person) => line(person.name, true)),
+    ...before.chosen.filter((person) => !is.has(person.userId)).map((person) => line(person.name, false)),
+  ];
+}
+
 /** Identity's administrator and seen-as actions, by the sentence each reads as. */
 const ADMINISTRATOR_ACTIONS: Record<string, string | undefined> = {
   AdministratorAuthorityGranted: "madeAdmin",
@@ -315,6 +335,7 @@ export function roleChange(
         : []),
       ...cellLines(is.name, was, is, say),
       ...holderLines(is.name, was, is, say),
+      ...chosenLines(is.name, was, is, say),
     ];
     if (lines.length) return { headline: headlineOf(lines, say), lines };
     const keys = (role: RoleRecord) => JSON.stringify((role.grants ?? []).map((grant) => grant.permissionKey).sort());

@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** B-322 Access and history batch (B-314 grants in Access history, B-203 Brand in Change history, B-220 inert changes while seeing Fusion as someone), 2026-11-08, accepted 2026-11-08.
+**Last finished:** B-325 Polish batch (B-323 chosen people in Change history, B-321 Performance lists inside the frame, B-250/B-274 sidebar fold), 2026-11-08, In review.
 
 ## Active work
 

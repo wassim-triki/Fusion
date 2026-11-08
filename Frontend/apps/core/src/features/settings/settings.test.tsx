@@ -248,6 +248,23 @@ describe("Role changes in change history", () => {
   });
 });
 
+describe("Who is chosen for a role in change history (B-323)", () => {
+  const role = (chosen?: { userId: string; name: string }[]) =>
+    json({ name: "Managers", cells: [], holderKind: "team", conditions: [], ...(chosen ? { chosen } : {}) });
+
+  it("says who was chosen or taken off, and keeps the plain line for older records", () => {
+    const aicha = { userId: "u1", name: "Aicha Bouazizi" };
+    const omar = { userId: "u2", name: "Omar Mansour" };
+    const change = roleChange("access.profile.updated", role([omar]), role([aicha]));
+    expect(change?.headline).toBe("Gave Aicha Bouazizi the Managers role, and 1 more");
+    expect(change?.lines.map((line) => line.sentence)).toEqual([
+      "Gave Aicha Bouazizi the Managers role",
+      "Took the Managers role from Omar Mansour",
+    ]);
+    expect(roleChange("access.profile.updated", role(), role([aicha]))?.headline).toBe("Changed the Managers role");
+  });
+});
+
 describe("Brand saves in change history (B-203)", () => {
   const brand = (values: Record<string, unknown> = {}) =>
     json({ name: "Carthage", color: null, language: "en", welcomeLine: null, logo: null, ...values });

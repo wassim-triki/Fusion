@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -22,8 +22,7 @@ import {
   Mail,
   MessageSquare,
   MessageSquareText,
-  ChevronsLeft,
-  ChevronsRight,
+  ChevronLeft,
   Settings,
   ShieldCheck,
   SlidersHorizontal,
@@ -45,6 +44,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
+import { Kbd } from "../components/ui/kbd";
 import { PersonAvatar } from "../components/ui/person-avatar";
 import { Skeleton } from "../components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../components/ui/tooltip";
@@ -168,6 +168,38 @@ function CompanyMark({ name, logoUrl }: { name?: string | null; logoUrl?: string
   return <>{name?.trim().charAt(0).toUpperCase() || "F"}</>;
 }
 
+/**
+ * A small sidebar: on the folded rail the company mark turns into it on hover, and its pane slides open to say what
+ * the click does (B-250).
+ */
+function PaneIcon() {
+  return (
+    <svg viewBox="0 0 20 20" aria-hidden className="size-5">
+      <rect x="1.5" y="2.5" width="17" height="15" rx="4" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <rect
+        x="4.2"
+        y="5.2"
+        height="9.6"
+        rx="1.3"
+        fill="currentColor"
+        className="w-[1.6px] transition-[width] duration-200 group-hover/mark:w-[6.5px] group-focus-visible/mark:w-[6.5px]"
+      />
+    </svg>
+  );
+}
+
+/** The fold's name with its shortcut, for both tooltips. */
+function FoldHint({ label }: { label: string }) {
+  const [mac, setMac] = useState(false);
+  useEffect(() => setMac(/Mac|iPhone|iPad/.test(navigator.platform)), []);
+  return (
+    <span className="flex items-center gap-2">
+      {label}
+      <Kbd>{mac ? "⌘" : "Ctrl"} B</Kbd>
+    </span>
+  );
+}
+
 function ActiveMark({ active }: { active: boolean }) {
   return active ? <span className="absolute top-1/2 inset-s-0 h-5 w-0.5 -translate-y-1/2 rounded-full bg-primary" /> : null;
 }
@@ -227,6 +259,20 @@ export function FusionSidebar({
   const onHome = !currentModuleKey && !inSettings;
   const current = inSettings ? undefined : modules.find((module) => module.key === currentModuleKey);
 
+  // Ctrl+B (⌘B) folds or opens it from anywhere but a text field, where the keys belong to the writing.
+  const collapsedRef = useRef(collapsed);
+  const chooseRef = useRef<(next: boolean) => void>(() => undefined);
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey || event.key.toLowerCase() !== "b") return;
+      if ((event.target as HTMLElement | null)?.closest?.("input, textarea, select, [contenteditable]:not([contenteditable='false'])")) return;
+      event.preventDefault();
+      chooseRef.current(!collapsedRef.current);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   useEffect(() => {
     // Every page outside Settings is where "Back to …" may need to return.
     if (!inSettings) rememberReturn();
@@ -252,6 +298,10 @@ export function FusionSidebar({
       // Storage off: the choice lasts for this page.
     }
   };
+  useEffect(() => {
+    collapsedRef.current = collapsed;
+    chooseRef.current = choose;
+  });
 
   const switcher = current ? (
     <DropdownMenu>
@@ -313,13 +363,36 @@ export function FusionSidebar({
           collapsed ? "w-[68px]" : "w-[264px]",
         )}
       >
-        {/* Brand: the company's logo and name */}
-        <div className={cn("flex items-center gap-2.5 px-4 pt-4 pb-3", collapsed && "flex-col justify-center px-0")}>
-          <span aria-hidden className={BRAND_MARK}>
-            <CompanyMark name={tenantName} logoUrl={tenantLogoUrl} />
-          </span>
-          {!collapsed ? (
+        {/* Brand: the company's logo and name. Open, a tab on the sidebar's edge folds it; folded, the mark opens it (B-250). */}
+        <div className={cn("flex items-center gap-2.5 pt-4 pb-3", collapsed ? "justify-center" : "ps-4")}>
+          {collapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => choose(false)}
+                  aria-label={t("expand")}
+                  aria-expanded={false}
+                  className={cn(BRAND_MARK, "group/mark relative outline-none focus-visible:ring-2 focus-visible:ring-ring")}
+                >
+                  <CompanyMark name={tenantName} logoUrl={tenantLogoUrl} />
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 grid place-items-center bg-inlay text-foreground opacity-0 transition-opacity duration-150 group-hover/mark:opacity-100 group-focus-visible/mark:opacity-100"
+                  >
+                    <PaneIcon />
+                  </span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <FoldHint label={t("expand")} />
+              </TooltipContent>
+            </Tooltip>
+          ) : (
             <>
+              <span aria-hidden className={BRAND_MARK}>
+                <CompanyMark name={tenantName} logoUrl={tenantLogoUrl} />
+              </span>
               <span className="flex min-w-0 flex-1 flex-col">
                 {tenantName ? (
                   <span className="truncate text-sm font-semibold leading-tight">{tenantName}</span>
@@ -328,22 +401,24 @@ export function FusionSidebar({
                 )}
                 <span className="truncate text-xs text-muted-foreground">Fusion</span>
               </span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => choose(true)}
+                    aria-label={t("collapse")}
+                    aria-expanded
+                    className="group/tab grid h-[30px] w-[22px] shrink-0 place-items-center rounded-s-control border border-e-0 border-border bg-inlay text-muted-foreground transition-[width,color] duration-150 hover:w-[26px] hover:text-foreground focus-visible:w-[26px] focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <ChevronLeft aria-hidden className="size-3.5 transition-transform duration-150 group-hover/tab:-translate-x-px rtl:rotate-180" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <FoldHint label={t("collapse")} />
+                </TooltipContent>
+              </Tooltip>
             </>
-          ) : null}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={() => choose(!collapsed)}
-                aria-label={t(collapsed ? "expand" : "collapse")}
-                aria-expanded={!collapsed}
-                className="grid size-8 shrink-0 place-items-center rounded-control text-muted-foreground transition-colors hover:bg-inlay hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {collapsed ? <ChevronsRight aria-hidden className="size-4 rtl:rotate-180" /> : <ChevronsLeft aria-hidden className="size-4 rtl:rotate-180" />}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side={collapsed ? "right" : "bottom"}>{t(collapsed ? "expand" : "collapse")}</TooltipContent>
-          </Tooltip>
+          )}
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 pb-3">

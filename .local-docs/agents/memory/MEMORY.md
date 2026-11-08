@@ -135,6 +135,7 @@
 - [Artifact db snapshots are frozen](artifact-db-snapshots-frozen.md) — clone `snap.data()` before using it as page state, or clicks silently do nothing.
 - [Scope with depth ladders](scope-with-depth-ladders.md) — big reworks: derive intent yourself, open long list, a 0–3 depth ladder per feature the user picks; no closed research spec.
 - [Brain dumps are examples](brain-dumps-are-examples.md) — named features/exclusions are signals, not rules; contextual questions draw out their thinking; keep process to yourself.
+- [Board categories](board-essentials-definition.md) — Ready/Needs discussion grouped: Big features · Polish · Before hosting · Cleanup and tooling · Parked.
 - [Graduation demo and report](graduation-demo-and-report.md) — jury audience, but build a real self-explanatory HRIS, no demo-story dumbing; time never constrains scope; report studies existing solutions → mark parity / improvement / new.
 - [Architecture-durable planning](architecture-durable-planning.md) — cycle-aware identity, one domain authz policy, capability composition not personas, no dubious aggregates.
 

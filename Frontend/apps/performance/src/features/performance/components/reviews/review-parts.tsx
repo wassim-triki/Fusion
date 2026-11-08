@@ -235,19 +235,6 @@ export function ProgressRing({ value, size = 48, tone }: { value: number | null;
   );
 }
 
-/** A section heading with its count and an optional note or action on the right. */
-export function SectionHeading({ title, count, aside, id }: { title: string; count?: ReactNode; aside?: ReactNode; id?: string }) {
-  return (
-    <div className="mb-3 flex flex-wrap items-baseline justify-between gap-3">
-      <h2 id={id} className="type-section-title text-foreground">
-        {title}
-        {count !== undefined ? <span className="ms-1.5 type-meta tabular-nums text-muted-foreground">{count}</span> : null}
-      </h2>
-      {aside ? <div className="type-meta text-muted-foreground">{aside}</div> : null}
-    </div>
-  );
-}
-
 /**
  * One section of a review record (B-228): the title, its count and a note sit inside the frame; a form's items sit
  * inside it as inlays, a read list runs edge to edge (`flush`).

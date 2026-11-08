@@ -1,5 +1,6 @@
 # LOG — the one history
 
+- ✓ **B-198** accepted, 2026-11-08 (user: "yeah sure proceed"): one tab pattern, `LinkTabs` for parts of a page and `Segmented` for views and panel sections (B-320 session 1).
 - **B-320 session 1: B-198 one tab pattern** built, 2026-11-08, **In review** (screen `plans/B-320-screens/01-feedback-tabs.png`):
   - Parts of a page = `LinkTabs` (tab in the address, counts after labels): Changes and approvals (`?view=answered`, the opened request kept beside it), Feedback (`?tab=`, Requests shows what's to answer), Cycle (`?view=insights`, was a hand-made underline strip).
   - Same data another way / panel sections = `Segmented`: Calibration's Distribution · Nine-box · People (was a hand-made strip), the Organization panel's Details · History (was shadcn `Tabs`; label "Unit sections" en/fr/ar).

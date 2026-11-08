@@ -22,15 +22,6 @@ Open work only. Agents keep it current from the conversation; closed items leave
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
-**Workstreams:** only the numbered slices in [B-167](plans/B-167-rebuild.md) are rebuild slices. Follow-ups, product features, maintenance and deferred UI are other work; grouping does not make them extra slices.
-
-| Rebuild slice | Task | Status |
-| --- | --- | --- |
-| 1–16 | Jobs/places/lists through the Core HR front page | Accepted and closed |
-| 17 · B-191 | Single sign-on | Accepted and closed |
-| 18 · B-192 | Seams and finish | Accepted and closed |
-| 19 · B-298 | Carthage as the one company to walk around in | Accepted and closed |
-
 ## In progress
 
 None.

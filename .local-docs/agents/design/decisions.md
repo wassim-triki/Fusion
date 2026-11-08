@@ -51,7 +51,7 @@ The user answered on the explorer (db doc `explorer/main`, version 288). Accepte
 
 ## Checkpoint 3b — the five redrawn (2026-10-30)
 
-Drawn on a separate page, [explorer 3b](https://claude.ai/artifact/Q2T82SYhfa4Y4AtSTkuToC) (`plans/B-164-explorer-3b.html`), answered in its db doc `explorer/3b` (version 99). Taste questions the user didn't press stand as recommended.
+Drawn on a separate page, [explorer 3b](https://claude.ai/artifact/Q2T82SYhfa4Y4AtSTkuToC) (`archive/plans/B-164-explorer-3b.html`, local), answered in its db doc `explorer/3b` (version 99). Taste questions the user didn't press stand as recommended.
 
 | ID | Decision | Verdict |
 | --- | --- | --- |
@@ -65,7 +65,7 @@ Drawn on a separate page, [explorer 3b](https://claude.ai/artifact/Q2T82SYhfa4Y4
 
 ## Checkpoint 3c — the last two refined (2026-10-30)
 
-Drawn on the same link as 3b (version 3, `plans/B-164-explorer-3c.html`), answered in db doc `explorer/3c` (version 2). With these, every screen in the journey has an accepted design; this file is complete as the authority for B-167.
+Drawn on the same link as 3b (version 3, `archive/plans/B-164-explorer-3c.html`, local), answered in db doc `explorer/3c` (version 2). With these, every screen in the journey has an accepted design; this file is complete as the authority for B-167.
 
 | ID | Decision | Verdict |
 | --- | --- | --- |

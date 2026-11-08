@@ -8,6 +8,7 @@ Fusion is a modular, multi-tenant HRIS: .NET 10 microservices behind a gateway, 
 - `STATE.md`: live handoff for the one piece of work in progress (goal, plan & progress, decisions, where it stands, open questions), plus `Last finished`. "None" when idle.
 - `LOG.md`: the one history, newest first. Closed items leave the board and end here: ✓ accepted by the user, ○ closed on evidence.
 - `plans/`: plans for big items and review files (`B-NNN-<slug>.md`); a closed item's file moves to `archive/`. Screens (`B-NNN-screens/`) live only while their item is In progress or In review. `fusion-dev`'s `prune-local-docs.ps1` applies both on every stack start.
+- `design/`: standing design references beyond `DESIGN.md`: the tenant experience's direction and its accepted decisions (D-01–D-30).
 - `data/`: demo and test data: who exists per tenant, and the scripts that create, change or clean it up.
 - `memory/`: durable notes on the user's preferences, design doctrine and gotchas, indexed in `memory/MEMORY.md`; read the index at session start (Claude loads it as its auto-memory).
 

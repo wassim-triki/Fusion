@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
-import { PageContainer, PageHeader } from "@repo/ds/shell";
+import { LinkTabs, PageContainer, PageHeader } from "@repo/ds/shell";
 import { CycleSurfaceSkeleton } from "@/features/performance/components/cycle-setup/setup-skeletons";
 import { ContentUnavailable } from "@/features/performance/components/content-unavailable";
 import { useCurrentCycle, useCycleClosure } from "@/features/performance/api/use-performance";
@@ -10,7 +10,6 @@ import { useWorkspaceContext } from "@/features/performance/api/use-workspace";
 import { ClosureSection, CloseCycleAction } from "@/features/performance/components/cycle/cycle-closure";
 import { MilestoneRail } from "@/features/performance/components/milestone-rail";
 import { CycleInsights } from "@/features/performance/components/cycle/cycle-insights";
-import { cn } from "@repo/ds/lib/utils";
 import { useTranslations } from "next-intl";
 import { PageRefusal } from "@repo/auth";
 
@@ -28,14 +27,16 @@ export default function CyclePage() {
   // Status and Insights share the record's address; the view and the Insights unit live in the URL.
   const view = params.get("view") === "insights" ? "insights" : "status";
   const unitId = params.get("unit");
-  const go = (changes: Record<string, string | null>) => {
+  const hrefFor = (changes: Record<string, string | null>) => {
     const next = new URLSearchParams(params.toString());
     for (const [key, value] of Object.entries(changes)) {
       if (value) next.set(key, value);
       else next.delete(key);
     }
-    router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+    const text = next.toString();
+    return text ? `${pathname}?${text}` : pathname;
   };
+  const go = (changes: Record<string, string | null>) => router.replace(hrefFor(changes), { scroll: false });
   const context = useWorkspaceContext();
   const canAdminister = context.data?.capabilities.administers ?? false;
   const detail = useCurrentCycle(canAdminister);
@@ -76,23 +77,15 @@ export default function CyclePage() {
         description={isActive ? t(`phase.${cycleDetail.phase ?? "Planning"}`) : t("closed")}
         actions={isActive ? <CloseCycleAction detail={cycleDetail} closure={closure.data} /> : null}
       />
-      <div role="tablist" aria-label={t("cycleViews")} className="mb-8 flex gap-6 border-b border-border">
-        {(["status", "insights"] as const).map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            role="tab"
-            aria-selected={view === tab}
-            onClick={() => go({ view: tab === "insights" ? "insights" : null, unit: tab === "insights" ? unitId : null })}
-            className={cn(
-              "-mb-px border-b-2 px-0.5 pb-3 type-label transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              view === tab ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {tab === "status" ? t("status") : t("insights")}
-          </button>
-        ))}
-      </div>
+      <LinkTabs
+        label={t("cycleViews")}
+        current={view}
+        className="mb-8"
+        tabs={[
+          { key: "status", label: t("status"), href: hrefFor({ view: null, unit: null }) },
+          { key: "insights", label: t("insights"), href: hrefFor({ view: "insights" }) },
+        ]}
+      />
       {view === "insights" ? (
         <CycleInsights cycleId={cycleDetail.cycle.id} unitId={unitId} onUnit={(unit) => go({ unit })} />
       ) : (

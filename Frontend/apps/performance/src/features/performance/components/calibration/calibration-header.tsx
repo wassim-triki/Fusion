@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import type { CalibrationFilter, CalibrationHeaderDto, CalibrationOptionDto, CalibrationSessionDto } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
+import { Segmented } from "@repo/ds/choice";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -139,19 +140,15 @@ export function SessionToolbar({ header, view, filter, onView, onFilter }: {
   const tabs = TABS.filter((tab) => tab.view !== "nine-box" || header.potentialEnabled);
   return (
     <div className="my-6 flex flex-wrap items-center justify-between gap-3">
-      <div role="tablist" aria-label={t("views")} className="inline-flex gap-1 rounded-control bg-card p-1">
-        {tabs.map((tab) => {
+      <Segmented
+        label={t("views")}
+        value={view}
+        onChange={onView}
+        options={tabs.map((tab) => {
           const Icon = tab.icon;
-          const selected = tab.view === view;
-          return (
-            <button key={tab.view} type="button" role="tab" aria-selected={selected} onClick={() => onView(tab.view)}
-              className={cn("inline-flex items-center gap-2 rounded-nested px-3.5 py-2 type-label transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                selected ? "bg-inlay text-foreground" : "text-muted-foreground hover:text-foreground")}>
-              <Icon className="size-4" aria-hidden />{t(`tabs.${tab.view}`)}
-            </button>
-          );
+          return { value: tab.view, label: t(`tabs.${tab.view}`), icon: <Icon aria-hidden /> };
         })}
-      </div>
+      />
       <div className="flex flex-wrap items-center gap-2">
         <OptionFilter label={t("unit")} value={filter.unit ?? null} options={header.units} onChange={(unit) => onFilter({ ...filter, unit })} />
         <OptionFilter label={t("manager")} value={filter.manager ?? null} options={header.managers} onChange={(manager) => onFilter({ ...filter, manager })} />

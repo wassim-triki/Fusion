@@ -32,10 +32,6 @@ import {
   DropdownMenuTrigger,
   Input,
   Skeleton,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
   cn,
 } from "@repo/ds";
 import type { UnitStaffingDto } from "@repo/api";
@@ -158,7 +154,7 @@ function InspectorContent({
 }) {
   const t = useTranslations("organization");
   const events = useOrganizationEvents();
-  const [tab, setTab] = useState("details");
+  const [tab, setTab] = useState<"details" | "history">("details");
   const unitPages = useStaffingAccess(asOf, today).unitPages;
   const detail = useOrganizationUnit(selectedId, asOf);
   const history = useOrganizationHistory(selectedId, Boolean(selectedId));
@@ -200,19 +196,20 @@ function InspectorContent({
             <X className="h-4 w-4" />
           </Button>
         </div>
-        <Tabs
-          value={tab}
-          onValueChange={setTab}
-          className="flex min-h-0 flex-1 flex-col"
-        >
-          <TabsList className="mx-4 mt-3 grid w-auto grid-cols-2">
-            <TabsTrigger value="details">{t("tabs.details")}</TabsTrigger>
-            <TabsTrigger value="history">{t("tabs.history")}</TabsTrigger>
-          </TabsList>
-          <TabsContent
-            value="details"
-            className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-3"
-          >
+        <div className="flex min-h-0 flex-1 flex-col">
+          <Segmented
+            label={t("tabs.label")}
+            value={tab}
+            onChange={setTab}
+            fill
+            className="mx-4 mt-3 w-auto"
+            options={[
+              { value: "details", label: t("tabs.details") },
+              { value: "history", label: t("tabs.history") },
+            ]}
+          />
+          {tab === "details" ? (
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-3">
             {detail.isLoading ? (
               <div className="space-y-3">
                 <Skeleton className="h-10 w-full" />
@@ -382,11 +379,9 @@ function InspectorContent({
                 </div>
               </>
             ) : null}
-          </TabsContent>
-          <TabsContent
-            value="history"
-            className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-3"
-          >
+          </div>
+          ) : (
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-3">
             {history.isLoading ? (
               <div className="space-y-4">
                 <Skeleton className="h-16 w-full" />
@@ -478,8 +473,9 @@ function InspectorContent({
                 </p>
               </div>
             )}
-          </TabsContent>
-        </Tabs>
+          </div>
+          )}
+        </div>
       </div>
   );
 }

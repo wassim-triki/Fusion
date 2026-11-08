@@ -15,6 +15,7 @@
   "loadingDetails": "جارٍ تحميل التفاصيل…",
   "closeInspector": "إغلاق لوحة التفاصيل",
   "tabs": {
+    "label": "أقسام الوحدة",
     "details": "التفاصيل",
     "history": "السجل"
   },

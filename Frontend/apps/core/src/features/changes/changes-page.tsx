@@ -2,12 +2,11 @@
 
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
 import { toast } from "sonner";
 import { Inbox } from "lucide-react";
 import type { ChangeRequestDto } from "@repo/api";
-import { Button, PersonAvatar, Skeleton, Tabs, TabsList, TabsTrigger } from "@repo/ds";
-import { PageContainer, PageHeader } from "@repo/ds/shell";
+import { Button, PersonAvatar, Skeleton } from "@repo/ds";
+import { LinkTabs, PageContainer, PageHeader } from "@repo/ds/shell";
 import { useRefusal } from "@/i18n/words";
 import { useChangeRequests, useRequestDecisions } from "@/features/people/changes/use-changes";
 import { RequestSheet, RequestStatus } from "./request-sheet";
@@ -25,25 +24,29 @@ export function ChangesPage() {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-  const [view, setView] = useState<View>("pending");
+  const view: View = params.get("view") === "answered" ? "decided" : "pending";
   const pending = useChangeRequests("pending");
   const decided = useChangeRequests("decided", null, view === "decided");
   const list = view === "pending" ? pending : decided;
   const opened = params.get("request");
-  const open = (id: string | null) => router.replace(id ? `${pathname}?request=${id}` : pathname, { scroll: false });
+  const open = (id: string | null) => {
+    const next = new URLSearchParams(params);
+    if (id) next.set("request", id);
+    else next.delete("request");
+    router.replace(next.size ? `${pathname}?${next}` : pathname, { scroll: false });
+  };
 
   return (
     <PageContainer width="narrow" className="space-y-6">
       <PageHeader title={t("title")} />
-      <Tabs value={view} onValueChange={(next) => setView(next as View)}>
-        <TabsList>
-          <TabsTrigger value="pending">
-            {t("waiting")}
-            {pending.data?.length ? <span className="ms-1.5 tabular-nums text-muted-foreground">{pending.data.length}</span> : null}
-          </TabsTrigger>
-          <TabsTrigger value="decided">{t("answered")}</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <LinkTabs
+        label={t("title")}
+        current={view}
+        tabs={[
+          { key: "pending", label: t("waiting"), href: pathname, count: pending.data?.length || undefined },
+          { key: "decided", label: t("answered"), href: `${pathname}?view=answered` },
+        ]}
+      />
 
       {list.error && !list.data ? (
         <PageFailure error={list.error} onRetry={() => void list.refetch()} />

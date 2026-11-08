@@ -1,5 +1,11 @@
 # LOG — the one history
 
+- **B-320 session 1: B-198 one tab pattern** built, 2026-11-08, **In review** (screen `plans/B-320-screens/01-feedback-tabs.png`):
+  - Parts of a page = `LinkTabs` (tab in the address, counts after labels): Changes and approvals (`?view=answered`, the opened request kept beside it), Feedback (`?tab=`, Requests shows what's to answer), Cycle (`?view=insights`, was a hand-made underline strip).
+  - Same data another way / panel sections = `Segmented`: Calibration's Distribution · Nine-box · People (was a hand-made strip), the Organization panel's Details · History (was shadcn `Tabs`; label "Unit sections" en/fr/ar).
+  - `@repo/ds` `components/ui/tabs.tsx` and its export deleted: nothing in any app imports it (colleague modules use `@repo/ui`). The Feedback tab's unused "to answer" string removed.
+  - Checks: performance conversations + calibration 16/16, core organization + changes 39/39 (tests now read links and radios); type-check core, performance clean. No route change, no cold build.
+
 - ✓ **B-319** accepted, 2026-11-08 (user: "approved"): **B-315** the manager hears about a report's leave, **B-316** ended leave in Person › Job › History.
 - ○ **B-317** closed on evidence, 2026-11-07: shell Home tests stub `TopBarSearch` like `TopBarPreferences`; `pnpm --filter shell exec vitest run src/features/home` 26/26 (18 were failing).
 - **B-319 B-315 + B-316** built, 2026-11-07, **In review** (no screen, see the board):

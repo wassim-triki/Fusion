@@ -10,8 +10,7 @@ import type { FeedbackDto, FeedbackRequestRowDto, FeedbackSummaryDto, FeedbackVi
 import { useReactToPraise } from "@repo/api/query";
 import { Button } from "@repo/ds/components/ui/button";
 import { FilterChips } from "@repo/ds/choice";
-import { Tabs, TabsList, TabsTrigger } from "@repo/ds/components/ui/tabs";
-import { PageContainer, PageHeader, StatusBadge, Said } from "@repo/ds/shell";
+import { LinkTabs, PageContainer, PageHeader, StatusBadge, Said } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { AvatarStack, PersonInitials, PraiseList, VALUE_TONE, ValueChip, useValueTones } from "@repo/performance-ui";
 import { ChevronRight, MessageSquare, Send, Star, Target } from "@/lib/icons";
@@ -84,6 +83,14 @@ export function FeedbackWorkspace() {
     const text = query.toString();
     router.replace(text ? `${pathname}?${text}` : pathname, { scroll: false });
   };
+  const tabHref = (value: Tab) => {
+    const query = new URLSearchParams(params.toString());
+    for (const key of ["feedback", "praise", "compose", "give", "to"]) query.delete(key);
+    if (value === "received") query.delete("tab");
+    else query.set("tab", value);
+    const text = query.toString();
+    return text ? `${pathname}?${text}` : pathname;
+  };
   const ask = (objective?: FixedObjective) => setComposing({ kind: "request", objective });
 
   return (
@@ -99,18 +106,17 @@ export function FeedbackWorkspace() {
           </>
         }
       />
-      <Tabs value={tab} onValueChange={(value) => update({ tab: value, feedback: null, praise: null })} className="mt-4">
-        <TabsList aria-label={tr("feedback")}>
-          {tabs.map((t) => (
-            <TabsTrigger key={t.value} value={t.value} className="gap-1.5 px-3">
-              {tr(`tabs.${t.value}`)}
-              {t.value === "requests" && toAnswer > 0 ? (
-                <span className="type-meta-strong tabular-nums text-primary-ink" aria-label={tr("toAnswer", { toAnswer })}>{toAnswer}</span>
-              ) : null}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      <LinkTabs
+        label={tr("feedback")}
+        current={tab}
+        className="mt-4"
+        tabs={tabs.map((t) => ({
+          key: t.value,
+          label: tr(`tabs.${t.value}`),
+          href: tabHref(t.value),
+          count: t.value === "requests" && toAnswer > 0 ? toAnswer : undefined,
+        }))}
+      />
       <div className="mt-6">
         {tab === "received" ? (
           <ReceivedTab

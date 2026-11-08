@@ -15,6 +15,7 @@
   "loadingDetails": "Loading details…",
   "closeInspector": "Close inspector",
   "tabs": {
+    "label": "Unit sections",
     "details": "Details",
     "history": "History"
   },

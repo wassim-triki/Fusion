@@ -8,7 +8,9 @@
 
 Session 0 done 2026-11-08: explorer `plans/B-320-explorer.html` (https://claude.ai/artifact/BP1E8vPVS7YcQDFtL67mjF), every recommendation picked; picks in the plan. B-249 left out.
 
-Cold pickup, session 1 (B-198 tabs): follow the plan's Picks 1 and Session 0 findings. Replace the shadcn `Tabs` on `changes-page.tsx` and `feedback-workspace.tsx` with `LinkTabs` (tab in the URL, counts after labels); `cycle/page.tsx` → `LinkTabs`; `calibration-header.tsx` and the Organization panel (`organization-workspace.tsx`) → `Segmented`. Delete `@repo/ds` `components/ui/tabs.tsx` only if nothing of ours imports it (Learning may: leave it then). Touched tests, a cold build of core and performance only if routes change, one screen of Feedback (dark 1440×900), one commit, In review.
+Session 1 done 2026-11-08: B-198 built and In review (see LOG); screen `plans/B-320-screens/01-feedback-tabs.png`.
+
+Cold pickup, session 2 (B-228 Performance lists): follow the plan's Pick 2 and the explorer. Lists you read become rows in one `Section` (title inside) with a drawer: My Plan objectives and development (`PlanSection`), Feedback request lists, the person summary's Performance parts. The review record keeps inlay items with rating and comment inside the frame. Touched tests, one screen per surface (dark 1440×900), one commit, In review.
 
 ## Next
 

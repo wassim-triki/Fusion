@@ -37,6 +37,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
       Sessions: 0 explorer (drawings for every taste piece) → 1 B-198 tabs → 2 B-228 Performance lists → 3 B-210 + B-201 + B-301. Left out: B-230 (parked), B-250/B-274 sidebar toggle (deferred after rejected attempts). [plan](plans/B-320-ui-design-batch.md)
   - [ ] **B-198** One tab and view-switch pattern across Fusion, matching the target design: every tab strip and view switch today is reused old UI (the Organization lenses are the latest example). Define it once in `@repo/ds` from the accepted grammar (D-01 band tabs, D-17 views), first where a slice draws tabs (B-180's person page or B-183's Organization, whichever comes first), then replace every other use; B-192 checks none is left · All · 2026-10-30
         2026-10-31: defined as `LinkTabs` in `@repo/ds/shell` (active = company color, outline + subtle fill) and used on the person page (B-180); every other tab strip and view switch still to move.
+        2026-11-08 (B-320 session 1): built, **In review**: Changes and approvals, Feedback and Cycle on `LinkTabs` (tab in the address); Calibration views and the Organization panel on `Segmented`; shadcn `Tabs` deleted from `@repo/ds`. Look at Feedback (screen `plans/B-320-screens/01-feedback-tabs.png`).
   - [ ] **B-228** Performance's object lists keep their headings on the canvas (My Plan's sections, the review record's sections, Feedback's request lists, the person summary's Performance parts): each is a list of standalone rich cards, so putting the title inside means the objects become rows or inlays in one frame. Recommendation: rows with the rich detail in the drawer, as Needs you does. Left out of B-225's sweep for that reason · Performance · 2026-10-31
   - [ ] **B-210** Sign-in's company column feels empty (logo and name on a wash); give it more, canvas first · Shell · 2026-10-30
         User 2026-10-30 on the Arabic sign-in: "looks clean, still lacking … especially the empty column holding the title of the organization". Revisit later, not urgent (user, same day).
@@ -62,7 +63,7 @@ None waiting.
 
 ### Other reviews
 
-None waiting.
+- **B-198** one tab pattern (B-320 session 1): see its line under In progress › B-320.
 
 ## Ready
 

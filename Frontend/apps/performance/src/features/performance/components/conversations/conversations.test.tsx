@@ -89,7 +89,7 @@ describe("Feedback workspace", () => {
       askAbout: [{ cycleId: "c1", objectiveId: "o1", title: "Ship the gateway", status: null, feedback: 0 }],
     };
     render(<FeedbackWorkspace />);
-    expect(screen.getByRole("tab", { name: "Received" }).getAttribute("data-state")).toBe("active");
+    expect(screen.getByRole("link", { name: "Received" }).getAttribute("aria-current")).toBe("page");
     expect(screen.getByText("No feedback yet")).toBeTruthy();
     expect(screen.getByText("Ask about Ship the gateway")).toBeTruthy();
   });
@@ -104,7 +104,7 @@ describe("Feedback workspace", () => {
     render(<FeedbackWorkspace />);
     expect(screen.getByLabelText("Your feedback at a glance").textContent).toContain("from 1 colleague");
     expect(screen.getByRole("button", { name: /1 to answer/ })).toBeTruthy();
-    expect(screen.getByLabelText("1 to answer")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Requests 1" })).toBeTruthy();
     expect(screen.getAllByText("Collaboration").length).toBeGreaterThan(0);
   });
 
@@ -122,9 +122,9 @@ describe("Feedback workspace", () => {
     render(<FeedbackWorkspace />);
     expect(screen.getByRole("heading", { name: "Asked of you" })).toBeTruthy();
     expect(screen.getByText("Nothing to answer")).toBeTruthy();
-    fireEvent.mouseDown(screen.getByRole("tab", { name: "Praise" }));
-    fireEvent.click(screen.getByRole("tab", { name: "Praise" }));
-    expect(state.replace).toHaveBeenCalled();
+    expect(screen.getByRole("link", { name: "Requests" }).getAttribute("aria-current")).toBe("page");
+    expect(screen.getByRole("link", { name: "Praise" }).getAttribute("href")).toBe("/feedback?tab=praise");
+    expect(screen.getByRole("link", { name: "Received" }).getAttribute("href")).toBe("/feedback");
   });
 });
 

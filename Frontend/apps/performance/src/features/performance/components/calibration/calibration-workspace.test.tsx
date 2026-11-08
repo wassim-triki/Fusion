@@ -125,7 +125,7 @@ describe("calibration session", () => {
 
   it("keeps the view and filters in the address", () => {
     render(<CalibrationSession session={session} header={header} roundId="round-1" mutations={mutations() as never} />);
-    fireEvent.click(screen.getByRole("tab", { name: "Distribution" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Distribution" }));
     expect(replace).toHaveBeenLastCalledWith("/reviews/rounds/round-1/calibration?view=distribution", { scroll: false });
     fireEvent.click(screen.getByRole("button", { name: "Flagged" }));
     expect(replace).toHaveBeenLastCalledWith("/reviews/rounds/round-1/calibration?flagged=true", { scroll: false });
@@ -162,6 +162,6 @@ describe("calibration session", () => {
     render(<CalibrationSession session={{ ...session, state: "Finalized", finalizedAt: "2027-09-27T10:00:00Z" }} header={header} roundId="round-1" mutations={mutations() as never} />);
     expect(screen.getByRole("link", { name: /Open the round to release/ })).toBeTruthy();
     expect(screen.getByText("Billing migration off track.")).toBeTruthy();
-    expect(screen.queryByRole("tablist")).toBeNull();
+    expect(screen.queryByRole("radiogroup", { name: "Views" })).toBeNull();
   });
 });

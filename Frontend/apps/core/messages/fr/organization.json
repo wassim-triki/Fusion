@@ -15,6 +15,7 @@
   "loadingDetails": "Chargement des informations…",
   "closeInspector": "Fermer le panneau",
   "tabs": {
+    "label": "Sections de l’unité",
     "details": "Informations",
     "history": "Historique"
   },

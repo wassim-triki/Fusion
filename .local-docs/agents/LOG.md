@@ -1,5 +1,6 @@
 # LOG — the one history
 
+- ○ **B-110** Tenant configurability closed as covered, 2026-11-08 (user: "close"): the branding half is built (Brand studio B-176, branded sign-in and welcome line B-210, branded emails B-204, invitation pages B-205, brand in Change history B-203); the company's own address went to B-111. The settings half stays with the features that need it (work week, fields and lists, roles exist that way) rather than a project of its own.
 - ○ **B-327** Rules still written more than once closed on evidence, 2026-11-08 (user: "adress what you found"):
   - Company import limits: `CORE_IMPORT_MAX_FILES` and `checkImportFiles` in `@repo/api` core-import, read by Core's drop and "understood" steps and the shell's Home setup guide (each had its own 12 files / 10 MB). CoreHR's upload size limit now derives from `CompanyImportService.MaxFiles` instead of a second 12. Documents, photo and logo limits each have one definition per side already, so they stay.
   - DS strength meter scores the required part from the caller's checklist (up to 3) plus upper case and symbol, instead of its own `length >= 10`; a valid password with no extras still reads medium.

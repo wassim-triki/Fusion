@@ -374,7 +374,7 @@ export function SettingsSaveBar({
               <Button size="sm" variant="ghost" onClick={onDiscard} disabled={saving}>
                 {t("discard")}
               </Button>
-              <Button size="sm" onClick={onSave} disabled={saving}>
+              <Button size="sm" onClick={onSave} disabled={saving} writes>
                 {saving ? <Spinner className="size-3.5" /> : null}
                 {saveLabel ?? t("save")}
               </Button>

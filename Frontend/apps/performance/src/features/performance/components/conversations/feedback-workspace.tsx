@@ -199,7 +199,7 @@ function ReceivedTab({
         <p className="type-label text-foreground">{t("noFeedbackYet")}</p>
         <p className="truncate type-meta text-muted-foreground">{t("askAbout", { title: askFirst.title })}</p>
       </div>
-      <Button size="sm" onClick={() => onAsk({ cycleId: askFirst.cycleId, objectiveId: askFirst.objectiveId, title: askFirst.title })}>
+      <Button writes size="sm" onClick={() => onAsk({ cycleId: askFirst.cycleId, objectiveId: askFirst.objectiveId, title: askFirst.title })}>
         {t("askForFeedback")}
       </Button>
     </div>
@@ -292,7 +292,7 @@ function ReceivedSidebar({ summary, onAsk }: { summary: FeedbackSummaryDto; onAs
                     {objective.feedback === 0 ? t("noFeedbackYet") : (objective.feedback === 1 ? t("pieceOfFeedback", { feedback: objective.feedback }) : t("piecesOfFeedback", { feedback: objective.feedback }))}
                   </span>
                 </span>
-                <Button size="sm" variant="outline" onClick={() => onAsk({ cycleId: objective.cycleId, objectiveId: objective.objectiveId, title: objective.title })}>
+                <Button writes size="sm" variant="outline" onClick={() => onAsk({ cycleId: objective.cycleId, objectiveId: objective.objectiveId, title: objective.title })}>
                   {t("ask")}
                 </Button>
               </li>
@@ -641,7 +641,7 @@ function GivePraiseBar({ onGive }: { onGive: (value?: string) => void }) {
           </button>
         ))}
       </div>
-      <Button onClick={() => onGive()}>
+      <Button writes onClick={() => onGive()}>
         <Star className="size-4" data-icon="inline-start" /> {t("givePraise")}
       </Button>
     </div>

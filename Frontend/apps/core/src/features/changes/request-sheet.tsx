@@ -148,12 +148,12 @@ export function RequestDetail({ request, onClose }: { request: ChangeRequestDto;
       {request.canDecide || request.canWithdraw ? (
         <footer className="flex items-center justify-end gap-2.5 border-t bg-popover px-[22px] py-3.5">
           {request.canWithdraw ? (
-            <Button type="button" variant="outline" disabled={busy}
+            <Button writes type="button" variant="outline" disabled={busy}
               onClick={() => void act(() => withdraw.mutateAsync(request.id), tr("withdrawn"))}>{tr("withdraw")}</Button>
           ) : declining ? (
             <>
               <Button type="button" variant="ghost" onClick={() => { setDeclining(false); setWhy(""); }}>{tr("back")}</Button>
-              <Button type="button" variant="destructive" disabled={!why.trim() || busy}
+              <Button writes type="button" variant="destructive" disabled={!why.trim() || busy}
                 onClick={() => void act(() => decline.mutateAsync({ id: request.id, reason: why.trim() }), tr("declined", { name: request.requestedBy.displayName.split(" ")[0] ?? "" }))}>
                 {tr("confirmDecline")}
               </Button>
@@ -161,7 +161,7 @@ export function RequestDetail({ request, onClose }: { request: ChangeRequestDto;
           ) : (
             <>
               <Button type="button" variant="ghost" disabled={busy} onClick={() => setDeclining(true)}>{tr("decline")}</Button>
-              <Button type="button" disabled={busy || Boolean(request.stale)}
+              <Button writes type="button" disabled={busy || Boolean(request.stale)}
                 onClick={() => void act(() => approve.mutateAsync(request.id),
                   request.kind === "HomeAddress" ? tr("approvedAddress") : tr("approved", { date: words.date }))}>
                 {tr("approve")}

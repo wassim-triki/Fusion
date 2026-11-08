@@ -76,7 +76,7 @@ export function ReviewDraftBlock({ reviewId, kind = "Summary", questionId, lens,
 
   if (state.kind === "idle") {
     return (
-      <Button type="button" variant="ghost" size="sm" className={cn("h-8 gap-1.5 px-2 text-primary-ink hover:text-primary-ink", className)} onClick={() => void run()}>
+      <Button writes type="button" variant="ghost" size="sm" className={cn("h-8 gap-1.5 px-2 text-primary-ink hover:text-primary-ink", className)} onClick={() => void run()}>
         <Sparkles className="size-3.5" aria-hidden />{kind === "Question" ? t("draft") : title}
       </Button>
     );

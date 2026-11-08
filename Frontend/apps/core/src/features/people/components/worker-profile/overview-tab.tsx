@@ -275,7 +275,7 @@ function AboutSection({
       title={t("about")}
       action={
         canEdit && !editing ? (
-          <Button variant="ghost" size="sm" onClick={() => { setDraft(view.about ?? ""); setEditing(true); }}>
+          <Button writes variant="ghost" size="sm" onClick={() => { setDraft(view.about ?? ""); setEditing(true); }}>
             {view.about ? t("edit") : t("add")}
           </Button>
         ) : undefined
@@ -299,7 +299,7 @@ function AboutSection({
             onChange={(event) => setDraft(event.target.value)}
           />
           <div className="flex items-center gap-2">
-            <Button type="submit" size="sm" disabled={update.isLoading}>{update.isLoading ? t("saving") : t("save")}</Button>
+            <Button writes type="submit" size="sm" disabled={update.isLoading}>{update.isLoading ? t("saving") : t("save")}</Button>
             <Button type="button" size="sm" variant="ghost" disabled={update.isLoading} onClick={() => setEditing(false)}>{t("cancel")}</Button>
             <span className="ms-auto type-meta tabular-nums text-muted-foreground">{draft.length}/{ABOUT_MAX}</span>
           </div>

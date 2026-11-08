@@ -313,7 +313,7 @@ function TalkingPoints({
             </p>
           </div>
           {writable && item.authorEmployeeId === myId ? (
-            <Button
+            <Button writes
               variant="ghost"
               size="icon-sm"
               aria-label={t("remove", { text: item.text })}
@@ -376,7 +376,7 @@ function Suggestions({ suggestions, onAdd }: { suggestions: OneOnOneSuggestionDt
           </div>
           <p className="type-label text-foreground">{s.label}</p>
           <div className="mt-auto flex items-center justify-between gap-2">
-            <Button size="sm" variant="outline" onClick={() => onAdd(s)} aria-label={t("addToTheTalkingPoints", { label: s.label })}>
+            <Button writes size="sm" variant="outline" onClick={() => onAdd(s)} aria-label={t("addToTheTalkingPoints", { label: s.label })}>
               <Plus className="size-4" data-icon="inline-start" /> {t("add")}
             </Button>
             {s.status ? <ObjectiveStatusBadge status={s.status} /> : null}

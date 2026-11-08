@@ -112,7 +112,7 @@ export default function FrontPage() {
           )}
         </div>
         {canManageCoreEmployees(user) && !viewing ? (
-          <Button asChild>
+          <Button writes asChild>
             <Link href="/people/add">
               <Plus />
               {t("addPeople")}

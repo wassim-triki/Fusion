@@ -70,7 +70,7 @@ export default function NewReviewRoundPage() {
         </div>
         <div className="mt-7 flex flex-wrap justify-end gap-2 border-t border-border pt-5">
           <Button type="button" variant="ghost" onClick={() => router.push(withCycle("/reviews", cycle.id))}>{t("cancel")}</Button>
-          <Button type="submit" disabled={pending || !name.trim() || !formStart || !formEnd || formEnd < formStart}>{pending ? t("creating") : t("createRound")}</Button>
+          <Button writes type="submit" disabled={pending || !name.trim() || !formStart || !formEnd || formEnd < formStart}>{pending ? t("creating") : t("createRound")}</Button>
         </div>
       </form>
     </PageContainer>

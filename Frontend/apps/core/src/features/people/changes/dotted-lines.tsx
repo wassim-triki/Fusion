@@ -74,7 +74,7 @@ export function DottedLines({ person, canEdit }: { person: PeopleProfileDto; can
           {lines.length > 0 ? <span /> : <span className="type-body text-muted-foreground">{t("none")}</span>}
           <Popover open={adding} onOpenChange={setAdding}>
             <PopoverTrigger asChild>
-              <Button type="button" variant="ghost" size="sm" className="justify-self-start px-0 text-muted-foreground hover:bg-transparent hover:text-foreground">
+              <Button writes type="button" variant="ghost" size="sm" className="justify-self-start px-0 text-muted-foreground hover:bg-transparent hover:text-foreground">
                 <Plus className="size-3.5" /> {t("add")}
               </Button>
             </PopoverTrigger>

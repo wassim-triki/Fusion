@@ -155,7 +155,7 @@ export function ComingUpCard({
   const leaveActions = change.kind === "Leave" && canChange && change.canEdit ? (
     <div className="flex shrink-0 gap-2">
       {onEdit ? (
-        <Button type="button" size="sm" variant="outline" onClick={() => onEdit(change)}>
+        <Button writes type="button" size="sm" variant="outline" onClick={() => onEdit(change)}>
           <Pencil className="size-3.5" /> {change.canCancel ? t("changeLeave") : t("endEarly")}
         </Button>
       ) : null}
@@ -165,7 +165,7 @@ export function ComingUpCard({
   const actions = action ?? leaveActions ?? (change.kind !== "Leave" && canChange && change.canCancel ? (
     <div className="flex shrink-0 gap-2">
       {change.canEdit && onEdit ? (
-        <Button type="button" size="sm" variant="outline" onClick={() => onEdit(change)}>
+        <Button writes type="button" size="sm" variant="outline" onClick={() => onEdit(change)}>
           <Pencil className="size-3.5" /> {t("edit")}
         </Button>
       ) : null}

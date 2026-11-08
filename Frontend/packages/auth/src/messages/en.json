@@ -202,7 +202,8 @@
       "seeing": "Seeing Fusion as {name}",
       "administrators": "Administrators",
       "readOnly": "Nothing can be changed",
-      "back": "Back to Roles"
+      "back": "Back to Roles",
+      "locked": "You're seeing Fusion as {name}, so nothing can be changed"
     },
     "sso": {
       "continueWith": "Continue with {provider}",

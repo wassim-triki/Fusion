@@ -188,7 +188,7 @@ export function IdentityCorrection({
             <p className="type-meta text-muted-foreground">
               {t("signInAgain")}
             </p>
-            <Button disabled={!canSubmit} onClick={() => void submit()}>
+            <Button writes disabled={!canSubmit} onClick={() => void submit()}>
               {correct.isLoading ? t("correcting") : t("submit")}
             </Button>
           </div>

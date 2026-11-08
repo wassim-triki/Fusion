@@ -218,7 +218,7 @@ export function InviteSheet({ open, onClose }: { open: boolean; onClose: () => v
                     <span className="min-w-0 flex-1 truncate type-meta">
                       {t("plannedRow", { when: atWords(new Date(item.sendAt)), count: item.people })}
                     </span>
-                    <Button size="sm" variant="ghost" disabled={cancel.isLoading} onClick={() => void cancel.mutateAsync(item.id).catch(() => toast.error(t("failed")))}>
+                    <Button writes size="sm" variant="ghost" disabled={cancel.isLoading} onClick={() => void cancel.mutateAsync(item.id).catch(() => toast.error(t("failed")))}>
                       {t("cancelPlanned")}
                     </Button>
                   </li>

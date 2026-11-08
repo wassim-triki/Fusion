@@ -19,6 +19,7 @@
     "./lib/use-relative": "./src/lib/use-relative.ts",
     "./lib/use-format": "./src/lib/use-format.ts",
     "./lib/say": "./src/lib/say.ts",
+    "./lib/write-lock": "./src/lib/write-lock.ts",
     "./i18n": "./src/i18n.ts",
     "./messages/en.json": "./src/messages/en.json",
     "./messages/fr.json": "./src/messages/fr.json",

@@ -129,7 +129,7 @@ export function RequestUpdateAction({ cycleId, planId, personName, objective, si
 
   return (
     <>
-      <Button variant="outline" size={size} onClick={() => setAsking(true)} disabled={requests.isLoading}>
+      <Button writes variant="outline" size={size} onClick={() => setAsking(true)} disabled={requests.isLoading}>
         <MessageSquare className="size-3.5" data-icon="inline-start" /> {t("requestUpdate")}
       </Button>
       {asking ? <RequestUpdateDialog cycleId={cycleId} planId={planId} personName={personName} objective={objective} onClose={() => setAsking(false)} /> : null}
@@ -158,7 +158,7 @@ export function RequestBand({ request, onRecord }: { request: UpdateRequestDto; 
         <p className="mt-1 type-meta text-muted-foreground">{t("recordingProgressAnswersIt")}</p>
       </div>
       {onRecord ? (
-        <Button size="sm" className="shrink-0" onClick={onRecord}>
+        <Button writes size="sm" className="shrink-0" onClick={onRecord}>
           <LineChart className="size-3.5" data-icon="inline-start" /> {t("recordProgress")}
         </Button>
       ) : null}

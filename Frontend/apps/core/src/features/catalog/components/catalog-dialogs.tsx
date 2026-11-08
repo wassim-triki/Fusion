@@ -100,7 +100,7 @@ export function JobDialog({ job, open, onOpenChange }: { job: JobDto | null; ope
         </form>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>{t("cancel")}</Button>
-          <Button form="job-form" type="submit" disabled={!title.trim() || saving}>
+          <Button writes form="job-form" type="submit" disabled={!title.trim() || saving}>
             {job ? t("saveChanges") : t("job.add")}
           </Button>
         </DialogFooter>
@@ -168,7 +168,7 @@ export function PlaceDialog({ place, open, onOpenChange }: { place: PlaceDto | n
         </form>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>{t("cancel")}</Button>
-          <Button form="place-form" type="submit" disabled={!name.trim() || saving}>
+          <Button writes form="place-form" type="submit" disabled={!name.trim() || saving}>
             {place ? t("saveChanges") : t("place.add")}
           </Button>
         </DialogFooter>

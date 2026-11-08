@@ -2,6 +2,7 @@
 // Theme tokens live in ./styles/tokens.css and are governed by the shadcn preset.
 
 export { cn } from "./lib/utils";
+export { setWriteLock, useWriteLock } from "./lib/write-lock";
 
 export * from "./components/ui/accordion";
 export * from "./components/ui/alert";

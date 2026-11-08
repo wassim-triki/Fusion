@@ -260,7 +260,7 @@ export default function PeopleProfileWorkspace({
       </Button>
     ) : undefined;
   const workEmailAction = canManageWorkEmail ? (
-    <Button
+    <Button writes
       variant="link"
       className="h-auto p-0 type-meta text-primary-ink"
       onClick={() => setWorkEmailEditorOpen(true)}
@@ -438,7 +438,7 @@ export default function PeopleProfileWorkspace({
         }
         photoAction={
           canChangePhoto ? (
-            <Button size="icon" variant="outline" className="size-9 rounded-full bg-popover shadow-raised" aria-label={tPhoto("changePhoto")} onClick={() => setPhotoOpen(true)}>
+            <Button writes size="icon" variant="outline" className="size-9 rounded-full bg-popover shadow-raised" aria-label={tPhoto("changePhoto")} onClick={() => setPhotoOpen(true)}>
               <Camera className="size-4" aria-hidden />
             </Button>
           ) : undefined
@@ -462,11 +462,11 @@ export default function PeopleProfileWorkspace({
             ) : null}
             {showActions ? (
               isFormer ? (
-                <Button variant="outline" onClick={() => changeSheet.start(employeeKey, "start")}>
+                <Button writes variant="outline" onClick={() => changeSheet.start(employeeKey, "start")}>
                   <UserRoundPlus className="size-4" /> {tc("startEmployment")}
                 </Button>
               ) : (
-                <Button onClick={() => changeSheet.start(employeeKey, "job")}>
+                <Button writes onClick={() => changeSheet.start(employeeKey, "job")}>
                   <ArrowLeftRight className="size-4" /> {canManage ? tc("makeChange") : proposesHere ? tc("propose") : tc("changeManager")}
                 </Button>
               )
@@ -694,7 +694,7 @@ function WorkEmailEditorDialog({
             >
               {t("cancel")}
             </Button>
-            <Button
+            <Button writes
               type="submit"
               disabled={!draft.trim() || updateWorkEmail.isLoading}
             >

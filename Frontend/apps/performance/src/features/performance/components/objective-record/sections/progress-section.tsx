@@ -65,7 +65,7 @@ export function ProgressSection({
         label={t("currentProgress")}
         action={
           onRecord ? (
-            <Button size="sm" className="shrink-0" onClick={onRecord}>
+            <Button writes size="sm" className="shrink-0" onClick={onRecord}>
               <LineChart className="size-3.5" data-icon="inline-start" /> {t("recordProgress")}
             </Button>
           ) : null

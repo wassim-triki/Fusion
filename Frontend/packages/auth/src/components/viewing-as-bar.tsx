@@ -1,18 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Eye } from "lucide-react";
+import { setWriteLock } from "@repo/ds";
 import { ADMINISTRATORS_ROLE, endViewAs, useViewAs } from "../view-as";
 
 /**
  * The bar across the top of every app while an administrator sees Fusion as someone (D-25, as drawn): who, their
- * roles, and the way back. Nothing renders otherwise. The view itself is enforced by the server, not by this bar.
+ * roles, and the way back. Nothing renders otherwise. It also locks the page's changes, which then show greyed with
+ * the reason; the view itself is enforced by the server, not by this bar.
  */
 export function ViewingAsBar() {
   const viewing = useViewAs();
   const t = useTranslations("auth.viewAs");
   const [leaving, setLeaving] = useState(false);
+  const lock = viewing ? t("locked", { name: viewing.personName }) : null;
+  // Buttons that change something read this and stay greyed with the reason (B-220); the server still refuses.
+  useEffect(() => {
+    setWriteLock(lock);
+    return () => setWriteLock(null);
+  }, [lock]);
   if (!viewing) return null;
 
   return (

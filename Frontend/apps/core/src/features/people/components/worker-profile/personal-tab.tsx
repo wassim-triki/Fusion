@@ -217,7 +217,7 @@ function SectionFrame({
         <div className="flex items-center gap-3">
           {props.seenBy ? <SeenBy>{props.seenBy}</SeenBy> : null}
           {!isEditing && props.canEdit && editable ? (
-            <Button
+            <Button writes
               variant="ghost"
               size="sm"
               disabled={props.editing !== null}
@@ -306,7 +306,7 @@ function FormActions({
         </p>
       ) : null}
       <div className="flex gap-2">
-        <Button type="submit" size="sm" disabled={saving || disabled}>
+        <Button writes type="submit" size="sm" disabled={saving || disabled}>
           {saving ? t("saving") : t("save")}
         </Button>
         <Button type="button" size="sm" variant="ghost" disabled={saving} onClick={onCancel}>
@@ -479,7 +479,7 @@ function PendingAddress({ pending }: { pending: PeoplePendingAddressDto }) {
       {rights.approve ? (
         <Button type="button" size="sm" variant="outline" onClick={() => setOpened(true)}>{t("open")}</Button>
       ) : (
-        <Button type="button" size="sm" variant="ghost" disabled={withdraw.isLoading}
+        <Button writes type="button" size="sm" variant="ghost" disabled={withdraw.isLoading}
           onClick={() => void withdraw.mutateAsync(pending.requestId).then(() => toast.success(t("withdrawn")), (caught) => toast.error(refusal(caught, t("withdraw"))))}>
           {t("withdraw")}
         </Button>

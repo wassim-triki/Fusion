@@ -273,7 +273,7 @@ function SayIt({ data, change }: { data: CompanyImportDto; change: Change }) {
               setMissed(false);
               setSaid(null);
             }} />
-          <Button type="submit" variant="outline" disabled={reading || !text.trim()}>{t("show")}</Button>
+          <Button writes type="submit" variant="outline" disabled={reading || !text.trim()}>{t("show")}</Button>
         </div>
       </form>
       {missed ? <p className="type-meta text-muted-foreground">{t("notUnderstood")}</p> : null}

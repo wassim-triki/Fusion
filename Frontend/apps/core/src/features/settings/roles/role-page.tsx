@@ -621,7 +621,7 @@ function RenameDialog({ open, name, onOpenChange, onRename, say }: { open: boole
           </div>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>{say("roles.cancel")}</Button>
-            <Button type="submit" disabled={!value.trim()}>{say("roles.renameAction")}</Button>
+            <Button writes type="submit" disabled={!value.trim()}>{say("roles.renameAction")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

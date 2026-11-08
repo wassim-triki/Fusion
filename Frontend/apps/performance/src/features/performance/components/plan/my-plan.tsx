@@ -326,7 +326,7 @@ function ObjectiveLedger({
           {/* Weights are settled at 100% once the plan is locked; the strip only guides drafting. */}
           {plan.isLocked ? null : <PlanWeightStrip segments={plan.objectives.map((o) => ({ weight: o.planWeight ?? 0, aligned: o.isAligned }))} />}
           {plan.canAuthor ? (
-            <Button size="sm" onClick={onAdd}>
+            <Button writes size="sm" onClick={onAdd}>
               <Plus className="size-4" data-icon="inline-start" /> {t("addObjective")}
             </Button>
           ) : null}
@@ -476,7 +476,7 @@ function PlanNotStarted({
           ))}
         </ul>
 
-        <Button size="lg" onClick={onStart} className="mt-8">
+        <Button writes size="lg" onClick={onStart} className="mt-8">
           <Plus data-icon="inline-start" aria-hidden />
           {t("startMyPlan")}
         </Button>

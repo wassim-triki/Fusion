@@ -23,6 +23,9 @@ import { cn } from "../lib/utils";
  *
  * The accessible name survives the swap through `aria-label`, and `aria-busy`
  * reports the state, so the control does not go quiet while it works.
+ *
+ * Its action changes something, so while changes are locked it stays greyed with the reason (`writes`, B-220);
+ * pass `writes={false}` for one that only reads.
  */
 export function AsyncButton({
   pending,
@@ -34,6 +37,7 @@ export function AsyncButton({
   pendingLabel,
   className,
   disabled,
+  writes = true,
   ...props
 }: ComponentProps<typeof Button> & {
   pending: boolean;
@@ -46,6 +50,7 @@ export function AsyncButton({
   return (
     <Button
       {...props}
+      writes={writes}
       disabled={disabled || pending}
       aria-busy={pending}
       aria-label={pending ? label : props["aria-label"]}

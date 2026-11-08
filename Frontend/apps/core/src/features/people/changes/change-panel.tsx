@@ -518,7 +518,7 @@ function JobForm({
       </div>
       <Footer summary={summary}>
         <Button type="button" variant="ghost" onClick={onClose}>{t("action.cancel")}</Button>
-        <Button type="button" disabled={!anything || (noManager === false && managerChanged && !chosen) || busy} onClick={() => void save()}>
+        <Button writes type="button" disabled={!anything || (noManager === false && managerChanged && !chosen) || busy} onClick={() => void save()}>
           {waits ? t("request.send") : isToday ? t("action.save") : t("action.schedule", { date: format.date(date) })}
         </Button>
       </Footer>
@@ -649,7 +649,7 @@ function EndForm({ person, editing, onClose }: { person: PeopleProfileDto; editi
         ? t.rich("summary.reportsMove", { count: toMove.length, date: format.date(boundary), b })
         : t.rich("summary.lastDay", { date: format.date(lastDay), b })}>
         <Button type="button" variant="ghost" onClick={onClose}>{t("action.cancel")}</Button>
-        <Button type="button" variant="destructive" disabled={missing || preview.isLoading || endEmployment.isLoading || editChange.isLoading} onClick={() => void save()}>
+        <Button writes type="button" variant="destructive" disabled={missing || preview.isLoading || endEmployment.isLoading || editChange.isLoading} onClick={() => void save()}>
           {t("action.end", { date: format.date(lastDay) })}
         </Button>
       </Footer>
@@ -726,7 +726,7 @@ function StartForm({ person, editing, onClose }: { person: PeopleProfileDto; edi
         ? t.rich("summary.joins", { manager: manager.displayName, date: format.date(date), b })
         : t.rich("summary.joinsNoManager", { date: format.date(date), b })}>
         <Button type="button" variant="ghost" onClick={onClose}>{t("action.cancel")}</Button>
-        <Button type="button" disabled={!unit || !jobId || startEmployment.isLoading || editChange.isLoading} onClick={() => void save()}>
+        <Button writes type="button" disabled={!unit || !jobId || startEmployment.isLoading || editChange.isLoading} onClick={() => void save()}>
           {isToday ? t("action.save") : t("action.schedule", { date: format.date(date) })}
         </Button>
       </Footer>
@@ -873,7 +873,7 @@ function LeaveForm({ person, editing, onClose }: { person: PeopleProfileDto; edi
       <Footer summary={waits ? t.rich("summary.onceApproved", { date: format.date(from), b })
         : editing ? t.rich("leave.summaryChange", { date: format.date(from), b }) : t.rich("leave.summary", { date: format.date(from), b })}>
         <Button type="button" variant="ghost" onClick={onClose}>{t("action.cancel")}</Button>
-        <Button type="button" disabled={!valid || busy} onClick={() => void save()}>
+        <Button writes type="button" disabled={!valid || busy} onClick={() => void save()}>
           {waits ? t("request.send") : editing ? t("leave.save") : from === today ? t("action.save") : t("action.schedule", { date: format.date(from) })}
         </Button>
       </Footer>

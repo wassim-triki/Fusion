@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { setWriteLock } from "@repo/ds";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { UpdateRequestDto } from "@repo/api";
 import { ObjectiveRequestMarker, RequestBand, RequestUpdateAction, RequestUpdateDialog } from "./update-requests";
@@ -62,6 +63,13 @@ describe("update requests", () => {
     expect(screen.queryByRole("button", { name: /Request update/ })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Withdraw" }));
     expect(state.withdraw.mutateAsync).toHaveBeenCalledWith({ requestId: "r1", expectedVersion: 4 });
+  });
+
+  it("keeps Request update greyed while seeing Fusion as someone (B-220)", () => {
+    act(() => setWriteLock("You're seeing Fusion as Nour, so nothing can be changed"));
+    render(<RequestUpdateAction cycleId="c1" planId="p1" personName="Nour" objective={{ id: "o1", title: "Integrate the vendor API" }} />);
+    expect((screen.getByRole("button", { name: /Request update/ }) as HTMLButtonElement).disabled).toBe(true);
+    act(() => setWriteLock(null));
   });
 
   it("keeps a plan request apart from an objective request", () => {

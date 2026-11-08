@@ -127,7 +127,7 @@ function NewRoleDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               {say("roles.cancel")}
             </Button>
-            <Button type="submit" disabled={!name.trim() || create.isLoading}>
+            <Button writes type="submit" disabled={!name.trim() || create.isLoading}>
               {say("roles.create")}
             </Button>
           </DialogFooter>

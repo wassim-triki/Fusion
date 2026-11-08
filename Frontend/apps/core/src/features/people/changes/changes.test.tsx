@@ -42,6 +42,7 @@ vi.mock("@repo/api/query", async (original) => ({
 vi.mock("../api/use-people", () => ({ usePeopleProfile: () => ({ data: person() }) }));
 vi.mock("@/features/organization/api/use-organization", () => ({ useOrganizationHierarchy: () => ({ data: { roots: [] }, isLoading: false }) }));
 
+import { setWriteLock } from "@repo/ds";
 import { CancelChangeDialog, ComingUpCard } from "./coming-up";
 import { ChangePanel } from "./change-panel";
 
@@ -85,6 +86,13 @@ const leaveNow: WorkforceChangeDto = {
 };
 
 describe("people changes", () => {
+  it("keeps a change greyed while seeing Fusion as someone (B-220)", () => {
+    act(() => setWriteLock("You're seeing Fusion as Hela, so nothing can be changed"));
+    render(<ComingUpCard change={leaveNow} canChange onEdit={vi.fn()} />);
+    expect(screen.getByRole("button", { name: "End early" })).toBeDisabled();
+    act(() => setWriteLock(null));
+  });
+
   it("names leave under way by its return, and HR ends it early rather than cancelling it", () => {
     render(<ComingUpCard change={leaveNow} canChange onEdit={vi.fn()} />);
     expect(screen.getByText("Back from annual leave")).toBeInTheDocument();

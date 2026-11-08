@@ -353,7 +353,7 @@ function UpdateRequestCell({ member, onRequestUpdate }: { member: TeamRosterMemb
   }
   if (member.facts?.execution?.attention?.kind === "noUpdate" && member.canRequestUpdate && onRequestUpdate) {
     return (
-      <Button size="sm" variant="outline" onClick={() => onRequestUpdate(member)}>
+      <Button writes size="sm" variant="outline" onClick={() => onRequestUpdate(member)}>
         {t("askForAnUpdate")}
       </Button>
     );

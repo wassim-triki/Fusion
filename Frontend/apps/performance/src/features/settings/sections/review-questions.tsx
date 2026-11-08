@@ -63,7 +63,7 @@ function QuestionRow({
           <Button variant="ghost" size="sm" onClick={() => { setText(question.text); setEditing(false); }}>
             {t("cancel")}
           </Button>
-          <Button
+          <Button writes
             size="sm"
             disabled={!text.trim() || text.trim() === question.text || commands.update.isLoading}
             onClick={() => run(commands.update.mutateAsync({ id: question.id, text: text.trim(), version: question.version }).then(() => setEditing(false)))}
@@ -91,16 +91,16 @@ function QuestionRow({
           <Button variant="ghost" size="icon-sm" aria-label={t("moveDown", { text: question.text })} disabled={last} onClick={() => run(commands.reorderMove(question, 1))}>
             <ArrowDown className="size-4" />
           </Button>
-          <Button variant="ghost" size="icon-sm" aria-label={t("edit", { text: question.text })} onClick={() => setEditing(true)}>
+          <Button writes variant="ghost" size="icon-sm" aria-label={t("edit", { text: question.text })} onClick={() => setEditing(true)}>
             <Pencil className="size-4" />
           </Button>
           {inUse ? (
-            <Button variant="ghost" size="icon-sm" aria-label={t("archive", { text: question.text })}
+            <Button writes variant="ghost" size="icon-sm" aria-label={t("archive", { text: question.text })}
               onClick={() => run(commands.archive.mutateAsync({ id: question.id, version: question.version }))}>
               <Archive className="size-4" />
             </Button>
           ) : (
-            <Button variant="ghost" size="icon-sm" aria-label={t("delete", { text: question.text })} className="text-destructive"
+            <Button writes variant="ghost" size="icon-sm" aria-label={t("delete", { text: question.text })} className="text-destructive"
               onClick={() => run(commands.remove.mutateAsync({ id: question.id, version: question.version }))}>
               <Trash2 className="size-4" />
             </Button>
@@ -135,7 +135,7 @@ function AddQuestion({ audience, commands, onSaved, onError }: { audience: Revie
         <Button variant="ghost" size="sm" onClick={() => { setText(""); setOpen(false); }}>
           {t("cancel")}
         </Button>
-        <Button
+        <Button writes
           size="sm"
           disabled={!text.trim() || commands.create.isLoading}
           onClick={() =>

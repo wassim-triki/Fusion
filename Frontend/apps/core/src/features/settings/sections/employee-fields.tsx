@@ -147,7 +147,7 @@ export function EmployeeFieldsSettings({ section }: { section: FusionSettingsSec
         <>
           <Button variant="outline" onClick={() => setEditing("new")}><Plus className="size-4" aria-hidden />{t("newField")}</Button>
           <Button variant="ghost" disabled={!dirty || update.isLoading} onClick={() => { setDraft(null); setError(null); }}>{t("discard")}</Button>
-          <Button disabled={!dirty || update.isLoading} onClick={() => void save()}><Save className="size-4" aria-hidden />{update.isLoading ? t("saving") : t("save")}</Button>
+          <Button writes disabled={!dirty || update.isLoading} onClick={() => void save()}><Save className="size-4" aria-hidden />{update.isLoading ? t("saving") : t("save")}</Button>
         </>
       ) : undefined}
     >

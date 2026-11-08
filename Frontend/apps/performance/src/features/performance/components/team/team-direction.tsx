@@ -324,7 +324,7 @@ function StrategicDirection({
             />
           </div>
           <div className="mt-auto pt-3">
-            <Button onClick={onCreate} disabled={!direction || !canCreate}>
+            <Button writes onClick={onCreate} disabled={!direction || !canCreate}>
               <Plus className="size-4" data-icon="inline-start" aria-hidden />
               {t("createTeamObjective")}
             </Button>
@@ -885,7 +885,7 @@ function TeamObjectivesEmpty({
       <p className="relative mx-auto mt-2 max-w-md type-body text-muted-foreground">
         {t("createAnObjectiveToDefine")}
       </p>
-      <Button
+      <Button writes
         onClick={onCreate}
         disabled={!canCreate}
         className="relative mt-6 h-10 px-5 shadow-[0_0_24px_-8px_var(--primary)]"

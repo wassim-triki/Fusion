@@ -46,7 +46,7 @@ export function RecordActions({
     <div className={cn("flex flex-wrap items-center justify-between gap-2", presentation === "sheet" ? "border-t border-border bg-inlay px-5 py-3.5 dark:bg-popover" : "py-2")}>
       <div className="flex items-center gap-1.5">
         {record.can.edit ? (
-          <Button variant="outline" size="sm" onClick={onEdit}>
+          <Button writes variant="outline" size="sm" onClick={onEdit}>
             <Pencil className="size-3.5" data-icon="inline-start" /> {t("edit")}
           </Button>
         ) : null}

@@ -435,7 +435,7 @@ export function SingleSignOnBlock() {
                     onChange={(event) => setNewDomain(event.target.value)}
                     className="h-9"
                   />
-                  <Button type="submit" size="sm" variant="outline" disabled={busy || newDomain.trim().length === 0}>
+                  <Button writes type="submit" size="sm" variant="outline" disabled={busy || newDomain.trim().length === 0}>
                     {say("sso.add")}
                   </Button>
                 </form>
@@ -692,7 +692,7 @@ function ConnectionFormView({
       </Field>
       {confirmedBySso ? <p className="type-meta text-success">{say("sso.form.confirmed")}</p> : null}
       <div className="flex gap-2">
-        <Button type="submit" disabled={busy || !ready}>
+        <Button writes type="submit" disabled={busy || !ready}>
           {locked ? say("sso.form.save") : say("sso.form.saveAndTest")}
         </Button>
         <Button type="button" variant="ghost" onClick={onCancel}>
@@ -779,7 +779,7 @@ function ConfirmDialog({
               {say("sso.form.cancel")}
             </Button>
             {settings.you.hasPassword ? (
-              <Button type="submit" variant={action === "saveConnection" ? "default" : "destructive"} disabled={busy || !password}>
+              <Button writes type="submit" variant={action === "saveConnection" ? "default" : "destructive"} disabled={busy || !password}>
                 {say(`sso.confirm.${action}.action`, values)}
               </Button>
             ) : null}
@@ -868,7 +868,7 @@ function SetPasswordDialog({
               {say("sso.form.cancel")}
             </Button>
             {confirmedBySso ? (
-              <Button type="submit" disabled={busy || password.length === 0}>
+              <Button writes type="submit" disabled={busy || password.length === 0}>
                 {say("sso.password.set")}
               </Button>
             ) : null}

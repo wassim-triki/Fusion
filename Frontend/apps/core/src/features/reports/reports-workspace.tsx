@@ -863,7 +863,7 @@ function ReportEditor({
                 onChange={(e) => setName(e.target.value)}
               />
               <DialogFooter>
-                <Button
+                <Button writes
                   disabled={busy || !name.trim()}
                   onClick={() =>
                     void act(async () => {
@@ -930,7 +930,7 @@ function ReportEditor({
                 </div>
               )}
               <DialogFooter>
-                <Button
+                <Button writes
                   disabled={
                     busy ||
                     roles.isLoading ||
@@ -977,7 +977,7 @@ function ReportEditor({
                 {t("deleteQuestion", { name: persisted?.name ?? title })}
               </p>
               <DialogFooter>
-                <Button
+                <Button writes
                   variant="destructive"
                   disabled={busy}
                   onClick={() =>

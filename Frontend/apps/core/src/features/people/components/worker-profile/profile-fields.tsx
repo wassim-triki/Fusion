@@ -89,7 +89,7 @@ function ProfileField({ employeeKey, field }: { employeeKey: string; field: Empl
             />
           )}
           <div className="flex gap-2">
-            <Button type="submit" size="sm" disabled={update.isLoading}>{t("save")}</Button>
+            <Button writes type="submit" size="sm" disabled={update.isLoading}>{t("save")}</Button>
             <Button type="button" size="sm" variant="ghost" disabled={update.isLoading} onClick={() => setEditing(false)}>
               {t("cancel")}
             </Button>

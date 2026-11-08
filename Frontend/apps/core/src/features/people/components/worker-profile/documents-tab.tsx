@@ -92,7 +92,7 @@ export function DocumentsTab({ employeeKey, audience }: { employeeKey: string; a
                 event.target.value = "";
               }}
             />
-            <Button variant="ghost" size="sm" disabled={mutations.add.isLoading} onClick={() => input.current?.click()}>
+            <Button writes variant="ghost" size="sm" disabled={mutations.add.isLoading} onClick={() => input.current?.click()}>
               <Plus className="size-4" aria-hidden /> {mutations.add.isLoading ? t("adding") : t("add")}
             </Button>
           </>
@@ -168,7 +168,7 @@ function DocumentRow({
           <Download className="size-4" aria-hidden />
         </Button>
         {document.canRemove ? (
-          <Button variant="ghost" size="icon" disabled={busy} aria-label={t("remove", { name: document.name })} onClick={onRemove}>
+          <Button writes variant="ghost" size="icon" disabled={busy} aria-label={t("remove", { name: document.name })} onClick={onRemove}>
             <Trash2 className="size-4" aria-hidden />
           </Button>
         ) : null}

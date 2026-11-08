@@ -202,7 +202,8 @@
       "seeing": "ترى Fusion كما يراه {name}",
       "administrators": "المسؤولون",
       "readOnly": "لا يمكن تغيير أي شيء",
-      "back": "العودة إلى الأدوار"
+      "back": "العودة إلى الأدوار",
+      "locked": "أنت ترى Fusion بصفتك {name}، لذا لا يمكن تغيير أي شيء"
     },
     "sso": {
       "continueWith": "المتابعة باستخدام {provider}",

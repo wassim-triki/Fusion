@@ -296,7 +296,7 @@ export function PeopleInScope({
               {t("selected", { selectedCount })}
             </p>
             <div className="flex items-center gap-2">
-              <Button
+              <Button writes
                 variant="outline"
                 size="sm"
                 onClick={() => setBulkOpen(true)}

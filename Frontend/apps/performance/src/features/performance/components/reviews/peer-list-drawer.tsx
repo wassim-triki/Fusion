@@ -155,7 +155,7 @@ export function PeerListDrawer({ reviewId, open, onOpenChange }: { reviewId: str
                               suggestion.praiseExchanged ? t("praise", { praiseExchanged: suggestion.praiseExchanged }) : null].filter(Boolean).join(" · ")}
                           </p>
                         </div>
-                        <Button size="sm" variant="outline" disabled={!swapping && people.length >= 5}
+                        <Button writes size="sm" variant="outline" disabled={!swapping && people.length >= 5}
                           onClick={() => use({ employeeId: suggestion.employeeId, displayName: suggestion.displayName, detail: suggestion.jobTitle })}>
                           <Plus className="size-3.5" aria-hidden />{swapping ? t("useInstead") : t("add")}
                         </Button>

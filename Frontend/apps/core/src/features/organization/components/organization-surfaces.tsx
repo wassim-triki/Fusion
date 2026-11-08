@@ -453,7 +453,7 @@ export function RootEstablishment({
           today={today}
         />
         <FormError error={mutations.createRoot.error} />
-        <Button
+        <Button writes
           type="submit"
           className="w-full"
           disabled={
@@ -671,7 +671,7 @@ export function UnitFormPanel({
           <Button type="button" variant="outline" onClick={onClose}>
             {t("unitForm.cancel")}
           </Button>
-          <Button
+          <Button writes
             form="organization-unit-form"
             type="submit"
             disabled={
@@ -749,7 +749,7 @@ export function CreateTypeDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t("types.cancel")}
           </Button>
-          <Button
+          <Button writes
             form="create-unit-type"
             type="submit"
             disabled={!name.trim() || mutations.createType.isLoading}
@@ -846,7 +846,7 @@ export function ManageTypesPanel({
                     </div>
                     {editing === type.id ? (
                       <>
-                        <Button
+                        <Button writes
                           size="sm"
                           disabled={
                             mutations.renameType.isLoading || !name.trim()
@@ -887,7 +887,7 @@ export function ManageTypesPanel({
                         >
                           {t("types.rename")}
                         </Button>
-                        <Button
+                        <Button writes
                           size="icon-sm"
                           variant="ghost"
                           disabled={mutations.deleteType.isLoading}
@@ -1078,7 +1078,7 @@ export function MoveReviewDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t("move.cancel")}
           </Button>
-          <Button
+          <Button writes
             onClick={() => void submit()}
             disabled={resolving || invalid || mutations.moveUnit.isLoading}
           >
@@ -1191,7 +1191,7 @@ export function InactivateDialog({
             {blocked ? t("inactivate.close") : t("inactivate.cancel")}
           </Button>
           {!blocked ? (
-            <Button
+            <Button writes
               variant="destructive"
               onClick={() => void submit()}
               disabled={!dateModel || mutations.inactivateUnit.isLoading}
@@ -1508,7 +1508,7 @@ export function CorrectionPanel({
           <Button variant="outline" onClick={onClose}>
             {t("correction.cancel")}
           </Button>
-          <Button
+          <Button writes
             form="correct-state"
             type="submit"
             disabled={

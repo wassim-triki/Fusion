@@ -42,7 +42,7 @@ export function PersonSignInLinks({ userId }: { userId: string | null | undefine
               <span className="block truncate type-meta text-muted-foreground">{link.email}</span>
             </span>
             {canRemove ? (
-              <Button size="sm" variant="ghost" disabled={removing === link.id} onClick={() => void remove(link.id)}>
+              <Button writes size="sm" variant="ghost" disabled={removing === link.id} onClick={() => void remove(link.id)}>
                 {t("removeLink")}
               </Button>
             ) : null}

@@ -44,7 +44,7 @@ export function HomeDecision({ item }: { item: WorkListItem }) {
       {error ? <span role="alert" className="max-w-56 truncate type-meta text-destructive" title={error}>{error}</span> : null}
       <Popover open={asking} onOpenChange={setAsking}>
         <PopoverTrigger asChild>
-          <Button type="button" size="icon-sm" variant="ghost" disabled={busy} aria-label={t("decline")} title={t("decline")}
+          <Button writes type="button" size="icon-sm" variant="ghost" disabled={busy} aria-label={t("decline")} title={t("decline")}
             className="text-muted-foreground hover:text-foreground">
             <X className="size-4" />
           </Button>
@@ -53,14 +53,14 @@ export function HomeDecision({ item }: { item: WorkListItem }) {
           <label htmlFor={`why-${item.id}`} className="type-label font-semibold">{t("why")}</label>
           <Textarea id={`why-${item.id}`} autoFocus rows={3} maxLength={500} value={why} onChange={(event) => setWhy(event.target.value)}
             placeholder={t("whyPlaceholder")} className="resize-none" />
-          <Button type="button" variant="destructive" className="justify-self-end" disabled={!why.trim() || busy}
+          <Button writes type="button" variant="destructive" className="justify-self-end" disabled={!why.trim() || busy}
             onClick={() => void send(item.decision!.declinePath, { reason: why.trim() })}>
             {t("decline")}
           </Button>
         </PopoverContent>
       </Popover>
       {/* Approve in the company's color: an outline with a subtle fill. */}
-      <Button type="button" size="sm" variant="outline" disabled={busy}
+      <Button writes type="button" size="sm" variant="outline" disabled={busy}
         className="border-primary-ring bg-primary-tint text-primary-ink hover:bg-primary/20 hover:text-primary-ink dark:border-primary-ring dark:bg-primary-tint dark:hover:bg-primary/20"
         onClick={() => void send(item.decision!.approvePath, {})}>
         <Check className="size-4" />

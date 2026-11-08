@@ -320,7 +320,7 @@ export function ReviewDecision({
         }}
       >
         <DialogTrigger asChild>
-          <Button variant="outline">
+          <Button writes variant="outline">
             <RotateCcw className="size-4" data-icon="inline-start" /> {requests.length > 0 ? returnLabel : t("requestChanges")}
           </Button>
         </DialogTrigger>

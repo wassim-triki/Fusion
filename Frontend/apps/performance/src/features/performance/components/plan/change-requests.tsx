@@ -111,7 +111,7 @@ export function ChangeRequestDraft({ value, onSave, onRemove }: {
   }
 
   return (
-    <Button variant="ghost" size="sm" className="-ms-2" onClick={() => { setText(""); setEditing(true); }}>
+    <Button writes variant="ghost" size="sm" className="-ms-2" onClick={() => { setText(""); setEditing(true); }}>
       <MessageSquare className="size-3.5" data-icon="inline-start" /> {t("requestAChange")}
     </Button>
   );

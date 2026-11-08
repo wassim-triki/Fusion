@@ -33,10 +33,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In progress
 
-- [ ] **B-322** Access and history batch: role grants in a person's Access history, Brand saves in Change history, changes inert while seeing Fusion as someone (user 2026-11-08: "220, 314, 203 batch em together") · Identity, Core HR, Shell, Performance · 2026-11-08
-      Sessions: 1 B-314 + B-203 (built, In review) → 2 B-220. [plan](plans/B-322-access-history-batch.md)
-  - [ ] **B-220** While seeing Fusion as someone, show changes as inert (the drawing's "Propose a change" greyed) instead of letting the server refuse them: today every write is refused server-side (403 "Nothing can be changed while seeing Fusion as someone") and forms show that error · Shell, Core HR, Performance · 2026-10-31
-        Found building B-178. A shared "is viewing" flag from `@repo/auth` (`useViewAs`) that action buttons read.
+None.
 
 ### Rebuild program tracking
 
@@ -57,10 +54,14 @@ None waiting.
 
 ### Other reviews
 
-- [ ] **B-314** Access › History tells role grants: given by whom, held by rule, removed (part of B-322, session 1) · Identity, Core HR · 2026-11-07
-      Look at: `plans/B-322-screens/01-access-history-roles.png` (Aicha's History: "Given the Managers role by Amira Khelifi", "Managers role removed by Amira Khelifi"). Rule grants read "Holds the HR role by rule" / "HR role removed · No longer matches the role's rule"; only changes from 2026-11-08 on are recorded.
-- [ ] **B-203** Brand saves in Change history (part of B-322, session 1) · Identity, Core HR · 2026-10-30
-      Look at: `plans/B-322-screens/02-change-history-brand.png` (Settings › Change history, Brand entry opened: welcome line before → after). Name, colour, default language and logo show the same way.
+- [ ] **B-322** Access and history batch: role grants in a person's Access history, Brand saves in Change history, changes inert while seeing Fusion as someone (user 2026-11-08: "220, 314, 203 batch em together") · Identity, Core HR, Shell, Performance · 2026-11-08
+      Both sessions built. [plan](plans/B-322-access-history-batch.md)
+  - [ ] **B-314** Access › History tells role grants: given by whom, held by rule, removed · Identity, Core HR · 2026-11-07
+        Look at: `plans/B-322-screens/01-access-history-roles.png` (Aicha's History: "Given the Managers role by Amira Khelifi", "Managers role removed by Amira Khelifi"). Rule grants read "Holds the HR role by rule" / "HR role removed · No longer matches the role's rule"; only changes from 2026-11-08 on are recorded.
+  - [ ] **B-203** Brand saves in Change history · Identity, Core HR · 2026-10-30
+        Look at: `plans/B-322-screens/02-change-history-brand.png` (Settings › Change history, Brand entry opened: welcome line before → after). Name, colour, default language and logo show the same way.
+  - [ ] **B-220** While seeing Fusion as someone, changes stay greyed with the reason · Shell, Core HR, Performance · 2026-10-31
+        Look at: `plans/B-322-screens/03-view-as-inert-change.png` (Amira seeing Fusion as Mariam Gharbi on Aicha's page: "Propose a change" greyed, "You're seeing Fusion as Mariam Gharbi, so nothing can be changed" on hover or focus). The same holds for every save, send, approve, add and edit across Core HR, Performance and Home; navigation, filters and reading stay live.
 
 ## Ready
 

@@ -149,7 +149,7 @@ export function OpenRolePanel({
       </div>
       <Footer summary={summary}>
         <Button type="button" variant="ghost" onClick={onClose}>{t("cancel")}</Button>
-        <Button type="button" disabled={!ready} onClick={() => void save()}>
+        <Button writes type="button" disabled={!ready} onClick={() => void save()}>
           {editing ? t("saveEdit") : t("save")}
         </Button>
       </Footer>

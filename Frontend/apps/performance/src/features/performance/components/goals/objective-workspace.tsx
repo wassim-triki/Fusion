@@ -1212,7 +1212,7 @@ function EmptyUnitContext({
           .
         </p>
         {canAuthor ? (
-          <Button
+          <Button writes
             className="mt-5"
             onClick={() => onCreate(directParent.id, unit.orgUnitId)}
           >
@@ -1282,7 +1282,7 @@ function NoPublishedDirection({
                 {t("defineTheStrategicObjectiveThat")}
               </p>
               {canCreateCompany ? (
-                <Button className="mt-6" onClick={onCreateCompany}>
+                <Button writes className="mt-6" onClick={onCreateCompany}>
                   <Plus className="size-4" data-icon="inline-start" /> {t("createCompanyObjective")}
                 </Button>
               ) : canReachSetup ? (

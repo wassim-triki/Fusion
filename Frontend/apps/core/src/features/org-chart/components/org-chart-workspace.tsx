@@ -935,7 +935,7 @@ function PersonPanel({
             </Button>
           ) : null}
           {canAddRole ? (
-            <Button variant="outline" size="sm" onClick={onAddRole}>
+            <Button writes variant="outline" size="sm" onClick={onAddRole}>
               <Briefcase className="size-3.5" /> {t("addRole")}
             </Button>
           ) : null}

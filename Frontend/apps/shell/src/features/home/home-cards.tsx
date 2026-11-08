@@ -119,7 +119,7 @@ export function FirstWeekCard() {
               </p>
             </div>
             {task.canComplete ? (
-              <Button type="button" size="sm" variant={task.doneAt ? "ghost" : "outline"} disabled={busy === task.id} onClick={() => void tick(task)}>
+              <Button writes type="button" size="sm" variant={task.doneAt ? "ghost" : "outline"} disabled={busy === task.id} onClick={() => void tick(task)}>
                 {task.doneAt ? t("undo") : t("markDone")}
               </Button>
             ) : (

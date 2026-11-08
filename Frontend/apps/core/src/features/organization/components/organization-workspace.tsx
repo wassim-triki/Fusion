@@ -272,7 +272,7 @@ function InspectorContent({
                       <Plus className="h-3.5 w-3.5 shrink-0" />
                       {t("actions.addChild")}
                     </Button>
-                    <Button
+                    <Button writes
                       size="sm"
                       variant="outline"
                       className="gap-1 px-2 text-xs"
@@ -1188,7 +1188,7 @@ export default function OrganizationWorkspace({
               >
                 {t("cancelChange.keep")}
               </Button>
-              <Button
+              <Button writes
                 variant="destructive"
                 disabled={!cancelUnit.data || mutations.cancelChange.isLoading}
                 onClick={async () => {

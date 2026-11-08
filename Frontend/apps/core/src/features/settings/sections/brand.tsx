@@ -206,7 +206,7 @@ export function BrandSettings({ section }: { section: FusionSettingsSection }) {
             >
               {t("discard")}
             </Button>
-            <Button
+            <Button writes
               type="button"
               disabled={!staged.dirty || staged.saving || !nameValid}
               onClick={() => void staged.submit()}

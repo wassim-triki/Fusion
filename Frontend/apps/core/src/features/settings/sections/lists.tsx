@@ -139,7 +139,7 @@ function ListBlock({ list, editable }: { list: CompanyListDto; editable: boolean
               className="h-8 border-transparent bg-transparent px-1 shadow-none focus-visible:border-input dark:bg-transparent"
             />
             {label.trim() ? (
-              <Button type="submit" size="sm" disabled={mutations.add.isLoading}>
+              <Button writes type="submit" size="sm" disabled={mutations.add.isLoading}>
                 {t("addAction")}
               </Button>
             ) : null}

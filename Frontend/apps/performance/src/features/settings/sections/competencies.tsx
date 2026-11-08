@@ -139,7 +139,7 @@ function CompetencyEditor({
       <div className="flex items-center gap-2">
         {item ? (
           inUse ? (
-            <Button
+            <Button writes
               variant="outline"
               size="sm"
               disabled={busy || item.state === "Archived"}
@@ -149,7 +149,7 @@ function CompetencyEditor({
               {t("archive")}
             </Button>
           ) : (
-            <Button
+            <Button writes
               variant="ghost"
               size="sm"
               disabled={busy}
@@ -164,7 +164,7 @@ function CompetencyEditor({
         <Button variant="ghost" size="sm" onClick={onClose} disabled={busy}>
           {t("cancel")}
         </Button>
-        <Button size="sm" disabled={busy || !draft.name.trim() || (Boolean(item) && !staged.dirty)} onClick={() => void staged.submit()}>
+        <Button writes size="sm" disabled={busy || !draft.name.trim() || (Boolean(item) && !staged.dirty)} onClick={() => void staged.submit()}>
           {item ? t("save") : t("add")}
         </Button>
       </div>
@@ -231,7 +231,7 @@ export function CompetenciesSettings({ section }: { section: FusionSettingsSecti
       loading={query.isLoading}
       aside={
         editable ? (
-          <Button variant="outline" size="sm" onClick={() => setOpen("new")} disabled={open === "new"}>
+          <Button writes variant="outline" size="sm" onClick={() => setOpen("new")} disabled={open === "new"}>
             <Plus aria-hidden className="size-4" />
             {t("add")}
           </Button>

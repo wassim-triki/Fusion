@@ -131,7 +131,7 @@ function TemplateBlock({ kind, tasks, editable, onChange }: {
             <Input value={title} maxLength={200} onChange={(event) => setTitle(event.target.value)} placeholder={t("addPlaceholder")}
               aria-label={t("add")}
               className="h-8 border-transparent bg-transparent px-1 shadow-none focus-visible:border-input dark:bg-transparent" />
-            {title.trim() ? <Button type="submit" size="sm">{t("addAction")}</Button> : null}
+            {title.trim() ? <Button writes type="submit" size="sm">{t("addAction")}</Button> : null}
           </form>
         ) : null}
       </SettingsRows>

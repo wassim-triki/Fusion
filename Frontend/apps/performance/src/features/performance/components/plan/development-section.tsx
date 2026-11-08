@@ -59,7 +59,7 @@ export function DevelopmentSection({ cycleId, employeeId }: { cycleId: string; e
         action={
           // The empty state carries the first Add itself; with an offer to bring goals over, Add sits here instead.
           plan?.canEdit && plan.room > 0 && (plan.goals.length > 0 || plan.carryOver) ? (
-            <Button size="sm" variant="outline" onClick={() => setComposer({})}>
+            <Button writes size="sm" variant="outline" onClick={() => setComposer({})}>
               <Plus className="size-4" data-icon="inline-start" /> {t("addGoal")}
             </Button>
           ) : null
@@ -80,7 +80,7 @@ export function DevelopmentSection({ cycleId, employeeId }: { cycleId: string; e
               <div className="flex flex-col items-center py-6 text-center">
                 <p className="type-label text-foreground">{t("noDevelopmentGoalsYet")}</p>
                 {plan.canEdit ? (
-                  <Button size="sm" className="mt-4" onClick={() => setComposer({})}>
+                  <Button writes size="sm" className="mt-4" onClick={() => setComposer({})}>
                     <Plus className="size-4" data-icon="inline-start" /> {t("addAGoal")}
                   </Button>
                 ) : null}
@@ -258,7 +258,7 @@ function GoalDrawer({ goal, plan, cycleId, employeeId, onClose, onEdit }: {
             </div>
             {editable ? (
               <div className="flex items-center gap-3 border-t border-border bg-popover px-6 py-4">
-                <Button variant="outline" size="sm" onClick={() => onEdit(goal)} disabled={mutations.update.isLoading}>
+                <Button writes variant="outline" size="sm" onClick={() => onEdit(goal)} disabled={mutations.update.isLoading}>
                   <Pencil className="size-4" data-icon="inline-start" /> {t("edit")}
                 </Button>
                 <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setRemoving(true)}>
@@ -338,7 +338,7 @@ function CarryOverOffer({ plan, cycleId, employeeId }: { plan: DevelopmentPlanDt
         <p className="type-label text-foreground">{t("openGoal", { count })}{count === 1 ? "" : t("s")} {t("from", { fromCycleName: offer.fromCycleName })}</p>
         <p className="truncate type-meta text-muted-foreground">{offer.goals.map((goal) => goal.title).join(", ")}</p>
       </div>
-      <Button
+      <Button writes
         variant="ghost"
         size="sm"
         disabled={mutations.dismiss.isLoading}

@@ -42,14 +42,14 @@ export default function PeoplePage() {
   const actions = (
     <div className="flex items-center gap-2">
       {canInvite ? (
-        <Button variant="outline" onClick={() => setInviting(true)}>
+        <Button writes variant="outline" onClick={() => setInviting(true)}>
           <Mail className="size-4" aria-hidden /> {t("invite")}
         </Button>
       ) : null}
       {canAdd ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button>
+            <Button writes>
               <UserRoundPlus className="size-4" aria-hidden /> {t("add")} <ChevronDown className="size-4" aria-hidden />
             </Button>
           </DropdownMenuTrigger>

@@ -281,7 +281,7 @@ export function PhotoDialog({
             <Button variant="outline" disabled={busy} onClick={() => onOpenChange(false)}>
               {t("cancel")}
             </Button>
-            <Button disabled={!image || busy} onClick={() => void save()}>
+            <Button writes disabled={!image || busy} onClick={() => void save()}>
               {upload.isLoading ? t("saving") : t("save")}
             </Button>
           </div>

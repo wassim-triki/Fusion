@@ -3,6 +3,8 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { Slot } from "radix-ui"
 
 import { cn } from "../../lib/utils"
+import { useWriteLock } from "../../lib/write-lock"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip"
 
 const buttonVariants = cva(
   "group/button inline-flex shrink-0 items-center justify-center rounded-control border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -46,21 +48,58 @@ function Button({
   variant = "default",
   size = "default",
   asChild = false,
+  writes = false,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
+    /** It changes something: while changes are locked (seeing Fusion as someone) it stays, disabled, saying why. */
+    writes?: boolean
   }) {
-  const Comp = asChild ? Slot.Root : "button"
+  const locked = useWriteLock()
+  const lock = writes ? locked : null
+  if (!lock) {
+    const Comp = asChild ? Slot.Root : "button"
+    return (
+      <Comp
+        data-slot="button"
+        data-variant={variant}
+        data-size={size}
+        className={cn(buttonVariants({ variant, size, className }))}
+        {...props}
+      />
+    )
+  }
 
-  return (
-    <Comp
+  // Locked: a plain disabled button; a link it would have been keeps only its content.
+  const { children, onClick: _onClick, ...rest } = props
+  const content = asChild && React.isValidElement<{ children?: React.ReactNode }>(children) ? children.props.children : children
+  const button = (
+    <button
       data-slot="button"
       data-variant={variant}
       data-size={size}
       className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
+      {...rest}
+      type="button"
+      disabled
+    >
+      {content}
+    </button>
+  )
+
+  // A disabled button takes no pointer or focus, so the wrapper carries the reason.
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span tabIndex={0} className="inline-flex cursor-not-allowed rounded-control outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+            {button}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>{lock}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
 

@@ -260,7 +260,7 @@ function GoalsWorkspace() {
         />
       ) : null}
       {listing && overview && canManageCompany ? (
-        <Button
+        <Button writes
           size="sm"
           onClick={() => setCompanyComposer({ mode: "create" })}
         >

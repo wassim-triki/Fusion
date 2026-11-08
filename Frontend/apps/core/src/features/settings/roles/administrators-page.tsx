@@ -175,7 +175,7 @@ function EmptySlot({ second, canManage, onAdd, say }: { second: boolean; canMana
         <p className="type-meta text-muted-foreground">{say("roles.administrators.empty")}</p>
       </div>
       {canManage ? (
-        <Button size="sm" onClick={onAdd}>
+        <Button writes size="sm" onClick={onAdd}>
           {say("roles.administrators.add")}
         </Button>
       ) : null}
@@ -418,7 +418,7 @@ function AddSheet({ open, onOpenChange, onAdded, say }: {
           <div className="flex items-center gap-2.5 border-t border-border px-6 py-4">
             <span className="flex-1 type-meta text-muted-foreground">{say("roles.administrators.recorded")}</span>
             <Button type="button" variant="ghost" onClick={() => close(false)}>{say("roles.cancel")}</Button>
-            <Button type="submit" className={viaProvider ? "hidden" : undefined} disabled={!picked || !password || add.isLoading}>
+            <Button writes type="submit" className={viaProvider ? "hidden" : undefined} disabled={!picked || !password || add.isLoading}>
               {picked
                 ? say("roles.administrators.make", { name: firstName(picked.name) })
                 : say("roles.administrators.makeSomeone")}

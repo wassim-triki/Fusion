@@ -37,7 +37,7 @@ export function HomePraise() {
       size="card"
       id="home-praise"
       title={t("title")}
-      action={<Button asChild variant="ghost" size="sm"><a href={`${PRAISE_TAB}&compose=praise`}>{t("give")}</a></Button>}
+      action={<Button writes asChild variant="ghost" size="sm"><a href={`${PRAISE_TAB}&compose=praise`}>{t("give")}</a></Button>}
     >
       {feed.error ? (
         <PageFailure error={feed.error} size="card" title={t("failed")} onRetry={() => feed.refetch()} />

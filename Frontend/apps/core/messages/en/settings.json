@@ -582,6 +582,24 @@
       "required": "required",
       "on": "on",
       "off": "off"
+    },
+    "brand": {
+      "saved": "Changed the brand",
+      "name": "Company name",
+      "renamed": "Renamed the company to {after}",
+      "color": "Color",
+      "colorSentence": "Changed the brand color",
+      "language": "Default language",
+      "languageSentence": "Set the default language to {after}",
+      "welcomeLine": "Welcome line",
+      "welcomeSentence": "Changed the welcome line",
+      "logo": "Logo",
+      "logoAdded": "Added a logo",
+      "logoReplaced": "Replaced the logo",
+      "logoRemoved": "Removed the logo",
+      "newLogo": "New logo",
+      "noLogo": "No logo",
+      "fusionColor": "Fusion amber"
     }
   },
   "sso": {

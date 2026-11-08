@@ -101,12 +101,14 @@ public static class ServiceCollectionExtensions
         var databaseProvider = configuration["Database:Provider"] ?? "postgres";
         var inMemoryName = configuration["Database:InMemoryName"] ?? "identity_inmemory";
 
-        // 1. Register database
+        // 1. Register database; every save records who gained or lost a role (B-314).
+        services.AddSingleton<Infrastructure.Persistence.Interceptors.AccessGrantAuditInterceptor>();
         if (databaseProvider.Equals("inmemory", StringComparison.OrdinalIgnoreCase))
         {
             services.AddDbContext<AppIdentityDbContext>((sp, options) =>
             {
-                options.UseInMemoryDatabase(inMemoryName);
+                options.UseInMemoryDatabase(inMemoryName)
+                    .AddInterceptors(sp.GetRequiredService<Infrastructure.Persistence.Interceptors.AccessGrantAuditInterceptor>());
             });
         }
         else
@@ -122,7 +124,8 @@ public static class ServiceCollectionExtensions
                 options.UseNpgsql(
                     connectionString,
                     npgsql => npgsql.MigrationsHistoryTable(
-                        "__EFMigrationsHistory", "identity"));
+                        "__EFMigrationsHistory", "identity"))
+                    .AddInterceptors(sp.GetRequiredService<Infrastructure.Persistence.Interceptors.AccessGrantAuditInterceptor>());
             });
         }
 

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using EY.HRPlatform.Identity.Domain.Entities;
 using EY.HRPlatform.Identity.Domain.Enums;
 using EY.HRPlatform.Identity.Features.Branding;
@@ -43,6 +44,7 @@ public class BrandController(AppIdentityDbContext dbContext, IConfiguration conf
         if (tenant is null)
             return NotFound(ApiResponse.Failure("Company not found."));
 
+        var before = BrandRecord.Of(tenant);
         BrandLogo? newLogo = null;
         try
         {
@@ -84,6 +86,16 @@ public class BrandController(AppIdentityDbContext dbContext, IConfiguration conf
         else if (request.Logo == LogoChange.Remove && stored is not null)
         {
             dbContext.TenantLogos.Remove(stored);
+        }
+
+        // Recorded in the same save, so a refused save leaves no line in Change history (B-203).
+        var after = BrandRecord.Of(tenant);
+        if (after != before)
+        {
+            dbContext.AccessAuditEvents.Add(AccessAuditEvent.Create(
+                tenantId, User.GetUserId(), User.GetFullName(), AccessAuditEvent.UnresolvedActor,
+                BrandRecord.Saved, BrandRecord.ResourceType, tenantId.ToString(), "Brand saved",
+                JsonSerializer.Serialize(before, JsonSerializerOptions.Web), JsonSerializer.Serialize(after, JsonSerializerOptions.Web), null));
         }
 
         try
@@ -190,6 +202,16 @@ public class BrandController(AppIdentityDbContext dbContext, IConfiguration conf
         Response.Headers.CacheControl = "public, max-age=31536000, immutable";
         Response.Headers.XContentTypeOptions = "nosniff";
         return File(logo, "image/png");
+    }
+
+    /// <summary>The brand as Change history compares it; the logo by its version, which a new image changes.</summary>
+    private sealed record BrandRecord(string Name, string? Color, string Language, string? WelcomeLine, string? Logo)
+    {
+        public const string Saved = "brand.saved";
+        public const string ResourceType = "Brand";
+
+        public static BrandRecord Of(Tenant tenant)
+            => new(tenant.Name, tenant.BrandColor, BrandAddresses.LanguageOf(tenant), tenant.WelcomeLine, tenant.LogoVersion);
     }
 
     private bool CanManage()

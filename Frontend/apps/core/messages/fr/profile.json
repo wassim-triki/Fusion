@@ -305,7 +305,13 @@
     "linkStopped": "Le lien ne fonctionne plus",
     "accepted": "Invitation acceptée",
     "signedIn": "Connexion",
-    "signedInNote": "Dernière connexion de {name} ; Fusion ne garde que la plus récente"
+    "signedInNote": "Dernière connexion de {name} ; Fusion ne garde que la plus récente",
+    "roleGiven": "Rôle {role} attribué",
+    "roleGivenBy": "Rôle {role} attribué par {name}",
+    "roleByRule": "A le rôle {role} par règle",
+    "roleRemoved": "Rôle {role} retiré",
+    "roleRemovedBy": "Rôle {role} retiré par {name}",
+    "roleRuleEnded": "Ne correspond plus à la règle du rôle"
   },
   "leave": {
     "pill": "Absent",

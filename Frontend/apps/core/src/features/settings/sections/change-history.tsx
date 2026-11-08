@@ -12,6 +12,7 @@ import { useSettingsAudit } from "@/features/settings/api/use-tenant-settings";
 import { AUDIT_SECTION_IDS } from "@/features/settings/core-settings";
 import { sayInEnglish, useSettingsSay, type Say } from "@/features/settings/say";
 import { settingWords } from "@/features/settings/roles/role-words";
+import { LANGUAGES } from "@/features/settings/sections/brand";
 import { PageFailure } from "@repo/auth";
 
 /** The profile fields Employee fields names (`employeeFields.fields.<key>.label`). */
@@ -322,8 +323,54 @@ export function roleChange(
   return null;
 }
 
+/** The brand as Identity records a save (B-203); the logo by its version. */
+interface BrandRecord {
+  name?: string;
+  color?: string | null;
+  language?: string;
+  welcomeLine?: string | null;
+  logo?: string | null;
+}
+
+/** What a Brand save changed, as lines; the logo and colour by what they became, not their raw values. */
+export function brandChange(beforeJson: string | null, afterJson: string | null, say: Say = sayInEnglish): { headline: string; lines: ChangeLine[] } {
+  const said = (key: string, values?: Record<string, string | number>) => say(`changeHistory.brand.${key}`, values);
+  const was = (parse(beforeJson) ?? {}) as BrandRecord;
+  const is = (parse(afterJson) ?? {}) as BrandRecord;
+  const text = (value: string | null | undefined) => value || say("changeHistory.none");
+  const language = (value: string | undefined) => LANGUAGES.find((item) => item.value === value)?.label ?? text(value);
+  const color = (value: string | null | undefined) => value ?? said("fusionColor");
+  const logo = (value: string | null | undefined) => (value ? said("newLogo") : said("noLogo"));
+  const lines: ChangeLine[] = [];
+  if (was.name !== is.name)
+    lines.push({ label: said("name"), before: text(was.name), after: text(is.name), sentence: said("renamed", { after: text(is.name) }) });
+  if ((was.color ?? null) !== (is.color ?? null))
+    lines.push({ label: said("color"), before: color(was.color), after: color(is.color), sentence: said("colorSentence") });
+  if (was.language !== is.language)
+    lines.push({
+      label: said("language"),
+      before: language(was.language),
+      after: language(is.language),
+      sentence: said("languageSentence", { after: language(is.language) }),
+    });
+  if ((was.welcomeLine ?? null) !== (is.welcomeLine ?? null))
+    lines.push({ label: said("welcomeLine"), before: text(was.welcomeLine), after: text(is.welcomeLine), sentence: said("welcomeSentence") });
+  if ((was.logo ?? null) !== (is.logo ?? null))
+    lines.push({
+      label: said("logo"),
+      before: was.logo ? said("logo") : said("noLogo"),
+      after: logo(is.logo),
+      sentence: said(!is.logo ? "logoRemoved" : was.logo ? "logoReplaced" : "logoAdded"),
+    });
+  return { headline: lines.length ? headlineOf(lines, say) : said("saved"), lines };
+}
+
 /** A role change as sentences; Identity's own wording in English, a plain line otherwise, when it can't be read. */
 function fromAccess(entry: AccessAuditEventDto, say: Say, english: boolean): HistoryEntry {
+  if (entry.action === BRAND_SAVED) {
+    const brand = brandChange(entry.beforeJson, entry.afterJson, say);
+    return { id: `access:${entry.id}`, at: new Date(entry.occurredAt), actor: actorOf(entry.actorName), section: "brand", ...brand };
+  }
   const change = roleChange(entry.action, entry.beforeJson, entry.afterJson, say);
   return {
     id: `access:${entry.id}`,
@@ -335,9 +382,17 @@ function fromAccess(entry: AccessAuditEventDto, say: Say, english: boolean): His
   };
 }
 
-/** The access log also records invitations and blocked attempts; Roles shows roles, who holds them and administrators. */
-export function isRoleChange(entry: Pick<AccessAuditEventDto, "action">): boolean {
-  return /^access\.(profile|assignment)\./.test(entry.action) || Object.hasOwn(ADMINISTRATOR_ACTIONS, entry.action);
+/** Identity's record of a Brand save (B-203). */
+const BRAND_SAVED = "brand.saved";
+
+/**
+ * The access log also records invitations and blocked attempts; Change history shows roles, who holds them,
+ * administrators and Brand saves.
+ */
+export function isSettingsChange(entry: Pick<AccessAuditEventDto, "action">): boolean {
+  return (
+    /^access\.(profile|assignment)\./.test(entry.action) || Object.hasOwn(ADMINISTRATOR_ACTIONS, entry.action) || entry.action === BRAND_SAVED
+  );
 }
 
 /** The week's period key; every other period is named by its month. */
@@ -443,7 +498,7 @@ export function ChangeHistorySettings({ section }: { section: FusionSettingsSect
     () =>
       [
         ...(settings.data ?? []).map((entry) => fromSettings(entry, say, english)),
-        ...(access.data ?? []).filter(isRoleChange).map((entry) => fromAccess(entry, say, english)),
+        ...(access.data ?? []).filter(isSettingsChange).map((entry) => fromAccess(entry, say, english)),
       ].sort((a, b) => b.at.getTime() - a.at.getTime()),
     [settings.data, access.data, say, english]
   );

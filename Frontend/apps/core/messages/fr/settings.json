@@ -582,6 +582,24 @@
       "required": "obligatoires",
       "on": "activés",
       "off": "désactivés"
+    },
+    "brand": {
+      "saved": "Image de marque modifiée",
+      "name": "Nom de l’entreprise",
+      "renamed": "Entreprise renommée en {after}",
+      "color": "Couleur",
+      "colorSentence": "Couleur de marque modifiée",
+      "language": "Langue par défaut",
+      "languageSentence": "Langue par défaut : {after}",
+      "welcomeLine": "Phrase d’accueil",
+      "welcomeSentence": "Phrase d’accueil modifiée",
+      "logo": "Logo",
+      "logoAdded": "Logo ajouté",
+      "logoReplaced": "Logo remplacé",
+      "logoRemoved": "Logo retiré",
+      "newLogo": "Nouveau logo",
+      "noLogo": "Aucun logo",
+      "fusionColor": "Ambre Fusion"
     }
   },
   "sso": {

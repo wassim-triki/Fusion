@@ -26,7 +26,7 @@ import { prepareLogo, storedLogoColors } from "../brand/prepare-logo";
 import { useSaveFailure } from "../say";
 import { PageFailure } from "@repo/auth";
 
-const LANGUAGES: { value: CompanyLanguage; label: string }[] = [
+export const LANGUAGES: { value: CompanyLanguage; label: string }[] = [
   { value: "en", label: "English" },
   { value: "fr", label: "Français" },
   { value: "ar", label: "العربية" },

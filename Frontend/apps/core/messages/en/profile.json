@@ -305,7 +305,13 @@
     "linkStopped": "The link stopped working",
     "accepted": "Accepted the invitation",
     "signedIn": "Signed in",
-    "signedInNote": "Last time {name} signed in; Fusion keeps only the latest"
+    "signedInNote": "Last time {name} signed in; Fusion keeps only the latest",
+    "roleGiven": "Given the {role} role",
+    "roleGivenBy": "Given the {role} role by {name}",
+    "roleByRule": "Holds the {role} role by rule",
+    "roleRemoved": "{role} role removed",
+    "roleRemovedBy": "{role} role removed by {name}",
+    "roleRuleEnded": "No longer matches the role's rule"
   },
   "leave": {
     "pill": "On leave",

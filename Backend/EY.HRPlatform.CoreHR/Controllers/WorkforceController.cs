@@ -463,7 +463,7 @@ public class WorkforceController(
             return NotFound(ApiResponse.Failure("Employee was not found or is not visible in the current scope."));
         var events = await workforceAccessClient.GetHistoryAsync(employee.EmployeeId, cancellationToken);
         return Ok(ApiResponse<IReadOnlyList<WorkforceAccountHistoryEventDto>>.Success(events
-            .Select(item => new WorkforceAccountHistoryEventDto(item.Kind, item.OccurredAt, item.ActorName, item.Email, item.ValidUntil))
+            .Select(item => new WorkforceAccountHistoryEventDto(item.Kind, item.OccurredAt, item.ActorName, item.Email, item.ValidUntil, item.RoleName, item.ByRule))
             .ToList()));
     }
 

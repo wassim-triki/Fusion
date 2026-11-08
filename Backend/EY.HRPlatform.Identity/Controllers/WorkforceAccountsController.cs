@@ -1,3 +1,4 @@
+using System.Text.Json;
 using EY.HRPlatform.Identity.Domain.Entities;
 using EY.HRPlatform.Identity.Domain.Enums;
 using EY.HRPlatform.Identity.Features.AccessProfiles;
@@ -8,6 +9,7 @@ using EY.HRPlatform.Identity.Features.WorkforceAccess;
 using EY.HRPlatform.Identity.Features.WorkforceAccounts;
 using EY.HRPlatform.Identity.Infrastructure.Services;
 using EY.HRPlatform.Identity.Infrastructure.Persistence;
+using EY.HRPlatform.Identity.Infrastructure.Persistence.Interceptors;
 using EY.HRPlatform.Identity.Models.Responses;
 using EY.HRPlatform.Identity.Models.WorkforceAccounts;
 using EY.HRPlatform.SharedKernel.Auth;
@@ -459,7 +461,7 @@ public sealed class WorkforceAccountsController(
 
     /// <summary>
     /// The person's account story, newest first (B-231): each invitation (who sent it, delivered or not, sent again,
-    /// withdrawn), its acceptance, and the last sign-in, which is the only one Identity keeps. Read inside the signed
+    /// withdrawn), its acceptance, roles given and removed (B-314), and the last sign-in, which is the only one Identity keeps. Read inside the signed
     /// tenant only, so another company's employee has no story here.
     /// </summary>
     [HttpGet("{employeeId:guid}/history")]
@@ -483,13 +485,23 @@ public sealed class WorkforceAccountsController(
                 && (e.Action == WorkforceAccessAuditActions.InvitationResent || e.Action == WorkforceAccessAuditActions.InvitationWithdrawn))
             .Select(e => new { e.Action, e.ResourceId, e.ActorUserId, e.OccurredAt })
             .ToListAsync(cancellationToken);
-        var lastSignIn = await dbContext.TenantMemberships.IgnoreQueryFilters().AsNoTracking()
+        var account = await dbContext.TenantMemberships.IgnoreQueryFilters().AsNoTracking()
             .Where(membership => membership.TenantId == tenantId && membership.EmployeeId == employeeId)
-            .Select(membership => membership.User!.LastLoginAt)
+            .Select(membership => new { membership.UserId, membership.User!.LastLoginAt })
             .FirstOrDefaultAsync(cancellationToken);
+        var lastSignIn = account?.LastLoginAt;
+        var accountKey = account?.UserId.ToString();
+        var grants = accountKey is null
+            ? []
+            : await dbContext.AccessAuditEvents.IgnoreQueryFilters().AsNoTracking()
+                .Where(e => e.TenantId == tenantId && e.ResourceType == AccessGrantAudit.ResourceType && e.ResourceId == accountKey
+                    && (e.Action == AccessGrantAudit.Given || e.Action == AccessGrantAudit.Removed))
+                .Select(e => new { e.Action, e.ActorUserId, e.OccurredAt, e.AfterJson })
+                .ToListAsync(cancellationToken);
 
         var actorIds = invites.Select(invite => invite.CreatedByUserId)
             .Concat(acts.Where(act => act.ActorUserId.HasValue).Select(act => act.ActorUserId!.Value))
+            .Concat(grants.Where(grant => grant.ActorUserId.HasValue).Select(grant => grant.ActorUserId!.Value))
             .Where(id => id != Guid.Empty).Distinct().ToList();
         var names = await dbContext.Users.IgnoreQueryFilters().AsNoTracking()
             .Where(user => actorIds.Contains(user.Id))
@@ -526,6 +538,13 @@ public sealed class WorkforceAccountsController(
         }
         if (lastSignIn is { } signedIn)
             events.Add(new(WorkforceAccountHistoryKinds.SignedIn, signedIn));
+        foreach (var grant in grants)
+        {
+            var record = grant.AfterJson is null ? null : JsonSerializer.Deserialize<AccessGrantAudit.Record>(grant.AfterJson, JsonSerializerOptions.Web);
+            var byRule = record?.How == AccessGrantAudit.Rule;
+            events.Add(new(grant.Action == AccessGrantAudit.Given ? WorkforceAccountHistoryKinds.RoleGiven : WorkforceAccountHistoryKinds.RoleRemoved,
+                grant.OccurredAt, byRule ? null : NameOf(grant.ActorUserId), RoleName: record?.RoleName, ByRule: byRule));
+        }
 
         // Same-moment steps keep their story order (invited, then delivered, then accepted) when read newest first.
         var ordered = events.Select((item, order) => (item, order))

@@ -5,7 +5,7 @@ import type { WorkforceAccountHistoryEventDto, WorkforceAccountHistoryKind } fro
 import { Button, Skeleton, cn } from "@repo/ds";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { Section } from "@repo/ds/shell";
-import { LogIn, MailCheck, MailX, RotateCcw, Send, UserCheck, UserX, type LucideIcon } from "lucide-react";
+import { LogIn, MailCheck, MailX, RotateCcw, Send, ShieldCheck, ShieldOff, UserCheck, UserX, type LucideIcon } from "lucide-react";
 import { useAccessHistory } from "@/features/workforce-access/api/use-workforce-access";
 
 const ICON: Record<WorkforceAccountHistoryKind, LucideIcon> = {
@@ -16,6 +16,8 @@ const ICON: Record<WorkforceAccountHistoryKind, LucideIcon> = {
   Withdrawn: UserX,
   Accepted: UserCheck,
   SignedIn: LogIn,
+  RoleGiven: ShieldCheck,
+  RoleRemoved: ShieldOff,
 };
 
 const TONE: Partial<Record<WorkforceAccountHistoryKind, "ok" | "bad">> = {
@@ -25,7 +27,7 @@ const TONE: Partial<Record<WorkforceAccountHistoryKind, "ok" | "bad">> = {
   Withdrawn: "bad",
 };
 
-/** Person › Access › History (B-231): the account's story, newest first, from Identity's invitations and sign-in. */
+/** Person › Access › History (B-231): the account's story, newest first, from Identity's invitations, role grants and sign-in. */
 export function AccessHistory({ employeeId, firstName }: { employeeId: string; firstName: string }) {
   const t = useTranslations("profile.accessHistory");
   const history = useAccessHistory(employeeId);
@@ -93,6 +95,7 @@ type Say = ReturnType<typeof useTranslations<"profile.accessHistory">>;
 
 function words(event: WorkforceAccountHistoryEventDto, by: string, firstName: string, t: Say, date: (value: string) => string) {
   const email = event.email ?? "";
+  const role = event.roleName ?? "";
   switch (event.kind) {
     case "Invited":
       return { title: by ? t("invitedBy", { name: by }) : t("invited"), note: null };
@@ -108,5 +111,11 @@ function words(event: WorkforceAccountHistoryEventDto, by: string, firstName: st
       return { title: t("accepted"), note: null };
     case "SignedIn":
       return { title: t("signedIn"), note: t("signedInNote", { name: firstName }) };
+    case "RoleGiven":
+      return { title: event.byRule ? t("roleByRule", { role }) : by ? t("roleGivenBy", { role, name: by }) : t("roleGiven", { role }), note: null };
+    case "RoleRemoved":
+      return event.byRule
+        ? { title: t("roleRemoved", { role }), note: t("roleRuleEnded") }
+        : { title: by ? t("roleRemovedBy", { role, name: by }) : t("roleRemoved", { role }), note: null };
   }
 }

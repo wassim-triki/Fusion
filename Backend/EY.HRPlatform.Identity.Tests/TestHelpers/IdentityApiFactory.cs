@@ -48,10 +48,12 @@ public static class TestDbContextFactory
     /// Creates a DbContext without tenant context (design-time mode, filters disabled).
     /// Useful for seeding test data without tenant filter interference.
     /// </summary>
-    public static AppIdentityDbContext CreateWithoutTenant(string? databaseName = null)
+    public static AppIdentityDbContext CreateWithoutTenant(string? databaseName = null,
+        params Microsoft.EntityFrameworkCore.Diagnostics.IInterceptor[] interceptors)
     {
         var options = new DbContextOptionsBuilder<AppIdentityDbContext>()
             .UseInMemoryDatabase(databaseName ?? Guid.NewGuid().ToString())
+            .AddInterceptors(interceptors)
             .Options;
 
         return new AppIdentityDbContext(options);

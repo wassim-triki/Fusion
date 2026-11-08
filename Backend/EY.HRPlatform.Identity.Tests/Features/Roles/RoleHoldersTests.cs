@@ -6,7 +6,18 @@ using EY.HRPlatform.Identity.Infrastructure.Core;
 using EY.HRPlatform.Identity.Infrastructure.Persistence;
 using EY.HRPlatform.Identity.Tests.TestHelpers;
 using EY.HRPlatform.SharedKernel.Auth;
+using System.Security.Claims;
+using EY.HRPlatform.Identity.Controllers;
+using EY.HRPlatform.Identity.Features.TenantAdministration;
+using EY.HRPlatform.Identity.Features.WorkforceAccounts;
+using EY.HRPlatform.Identity.Infrastructure.Persistence.Interceptors;
+using EY.HRPlatform.Identity.Models.Responses;
+using EY.HRPlatform.Identity.Models.WorkforceAccounts;
+using EY.HRPlatform.SharedKernel.Security;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace EY.HRPlatform.Identity.Tests.Features.Roles;
 
@@ -45,12 +56,50 @@ public sealed class RoleHoldersTests
 
     private sealed record Person(Guid UserId, Guid EmployeeId, Guid MembershipId);
 
+    /// <summary>The request the save runs in; a plain field, so it survives the arrange step's await.</summary>
+    private sealed class Request : IHttpContextAccessor
+    {
+        public HttpContext? HttpContext { get; set; }
+    }
+
+    private sealed class AllowInternal : IInternalServiceRequestAuthorizer
+    {
+        public Task<bool> AuthorizeAsync(HttpRequest request, CancellationToken cancellationToken = default) => Task.FromResult(true);
+    }
+
+    private sealed class NoEmail : IWorkforceInvitationEmailSender
+    {
+        public Task<WorkforceInvitationDeliveryResult> SendInviteAsync(WorkforceInvitationEmailMessage invitation, CancellationToken cancellationToken)
+            => Task.FromResult(WorkforceInvitationDeliveryResult.Sent());
+    }
+
     private sealed class World : IAsyncDisposable
     {
         public required AppIdentityDbContext Db { get; init; }
         public required FakeFacts Facts { get; init; }
         public required Dictionary<string, Person> People { get; init; }
         public required Dictionary<string, Guid> Roles { get; init; }
+        public required Request Http { get; init; }
+
+        /// <summary>Saves from now on are made by this person, signed in.</summary>
+        public void SignIn(string name)
+            => Http.HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, People[name].UserId.ToString())], "Test")),
+            };
+
+        public async Task<List<WorkforceAccountHistoryEventDto>> HistoryAsync(string name, Guid tenantId)
+        {
+            var context = new DefaultHttpContext();
+            context.Request.Headers["X-Tenant-Id"] = tenantId.ToString();
+            var controller = new WorkforceAccountsController(Db, new AccessProfileService(Db, RelationalTestDatabase.CreateUserManager(Db)),
+                new ConfigurationBuilder().Build(), new TenantContinuityCommandExecutor(Db), new AllowInternal(), new NoEmail())
+            {
+                ControllerContext = new ControllerContext { HttpContext = context },
+            };
+            var result = await controller.GetHistory(People[name].EmployeeId, CancellationToken.None);
+            return Assert.IsType<ApiResponse<List<WorkforceAccountHistoryEventDto>>>(Assert.IsType<OkObjectResult>(result.Result).Value).Data!;
+        }
 
         public RoleService Service()
         {
@@ -75,7 +124,8 @@ public sealed class RoleHoldersTests
 
     private static async Task<World> ArrangeAsync()
     {
-        var db = TestDbContextFactory.CreateWithoutTenant(Guid.NewGuid().ToString());
+        var http = new Request();
+        var db = TestDbContextFactory.CreateWithoutTenant(Guid.NewGuid().ToString(), new AccessGrantAuditInterceptor(http));
         db.Tenants.AddRange(Tenant.Create(TenantA, "Carthage"), Tenant.Create(TenantB, "Atlas"));
 
         var people = new Dictionary<string, Person>();
@@ -134,7 +184,7 @@ public sealed class RoleHoldersTests
         ];
         facts.ByTenant[TenantB] = [new(people["outsider"].EmployeeId, [PeopleAndGrowth], null, null, 3)];
 
-        return new World { Db = db, Facts = facts, People = people, Roles = roles };
+        return new World { Db = db, Facts = facts, People = people, Roles = roles, Http = http };
     }
 
     [Fact]
@@ -149,6 +199,47 @@ public sealed class RoleHoldersTests
         Assert.Equal(["nour"], await world.HoldersOfAsync("HR"));
         // An account that isn't a person in the company (an administrator without a record) isn't "everyone".
         Assert.DoesNotContain("admin", await world.HoldersOfAsync("Employees"));
+    }
+
+    [Fact]
+    public async Task Access_history_tells_roles_given_and_removed_by_someone_or_by_rule_inside_its_company()
+    {
+        await using var world = await ArrangeAsync();
+        var service = world.Service();
+        world.SignIn("admin");
+
+        // Nour is in People & Growth: HR comes by rule; then the administrator chooses her for Managers and takes it back.
+        await world.Holders().RecomputeAsync(TenantA, CancellationToken.None);
+        async Task ChooseForManagers(params Guid[] chosen)
+        {
+            var managers = await service.GetRoleAsync(TenantA, world.Roles["Managers"], CancellationToken.None);
+            await service.SaveRoleAsync(TenantA, world.Roles["Managers"], managers.Role.Version, new SaveRoleRequest(
+                "Managers", null, managers.Role.Cells, AccessProfileHolderKinds.Team, [], chosen), CancellationToken.None);
+            world.Db.ChangeTracker.Clear();
+        }
+        await ChooseForManagers(world.People["nour"].UserId);
+        await ChooseForManagers();
+        // She moves to Engineering: the rule lets HR go.
+        world.Facts.ByTenant[TenantA][0] = new(world.People["nour"].EmployeeId, [Engineering, Company], null, Tunis, 0);
+        await world.Holders().RecomputeAsync(TenantA, CancellationToken.None);
+
+        var grants = (await world.HistoryAsync("nour", TenantA))
+            .Where(item => item.Kind is WorkforceAccountHistoryKinds.RoleGiven or WorkforceAccountHistoryKinds.RoleRemoved)
+            .Select(item => (item.Kind, item.RoleName, item.ByRule, item.ActorName))
+            .ToHashSet();
+        Assert.Equal(new HashSet<(string, string?, bool, string?)>
+        {
+            (WorkforceAccountHistoryKinds.RoleGiven, "Employees", true, null),
+            (WorkforceAccountHistoryKinds.RoleGiven, "HR", true, null),
+            (WorkforceAccountHistoryKinds.RoleGiven, "Managers", false, "admin Test"),
+            (WorkforceAccountHistoryKinds.RoleRemoved, "Managers", false, "admin Test"),
+            (WorkforceAccountHistoryKinds.RoleRemoved, "HR", true, null),
+        }, grants);
+
+        // Another company's signed caller hears nothing of it, and the tenant's settings feed isn't flooded with grants.
+        Assert.Empty(await world.HistoryAsync("nour", TenantB));
+        var feed = await new AccessAuditService(world.Db, world.Http).GetRecentAsync(TenantA, 100, CancellationToken.None);
+        Assert.DoesNotContain(feed, item => item.Action.StartsWith("access.grant.", StringComparison.Ordinal));
     }
 
     [Fact]

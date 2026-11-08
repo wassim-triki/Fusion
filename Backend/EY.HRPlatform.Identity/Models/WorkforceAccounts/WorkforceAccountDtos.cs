@@ -90,14 +90,17 @@ public sealed class WorkforceAccountBulkProvisionResultDto
 /// <summary>
 /// One moment in a person's account story (B-231). <paramref name="Kind"/> is one of
 /// <see cref="WorkforceAccountHistoryKinds"/>; <paramref name="ActorName"/> is who did it, when someone did;
-/// <paramref name="Email"/> is where an invitation went; <paramref name="ValidUntil"/> is when a still-open link stops.
+/// <paramref name="Email"/> is where an invitation went; <paramref name="ValidUntil"/> is when a still-open link stops;
+/// <paramref name="RoleName"/> and <paramref name="ByRule"/> tell a role given or removed (B-314), and whether a rule did it.
 /// </summary>
 public sealed record WorkforceAccountHistoryEventDto(
     string Kind,
     DateTime OccurredAt,
     string? ActorName = null,
     string? Email = null,
-    DateTime? ValidUntil = null);
+    DateTime? ValidUntil = null,
+    string? RoleName = null,
+    bool ByRule = false);
 
 public static class WorkforceAccountHistoryKinds
 {
@@ -108,6 +111,8 @@ public static class WorkforceAccountHistoryKinds
     public const string Withdrawn = "Withdrawn";
     public const string Accepted = "Accepted";
     public const string SignedIn = "SignedIn";
+    public const string RoleGiven = "RoleGiven";
+    public const string RoleRemoved = "RoleRemoved";
 }
 
 public sealed class WorkforceAccountSummaryDto

@@ -30,7 +30,7 @@ import { IntlTestProvider } from "@repo/ds/testing";
 import dsFr from "@repo/ds/messages/fr.json";
 import { loadCoreMessages } from "@/i18n/messages";
 import type { Say } from "./say";
-import { describeChange, isRoleChange, periodOf, roleChange } from "./sections/change-history";
+import { brandChange, describeChange, isSettingsChange, periodOf, roleChange } from "./sections/change-history";
 import { invitationsConsequence } from "./sections/sign-in";
 import { CoreSettingsSectionHost } from "./section-host";
 import { EmployeeFieldsSettings } from "./sections/employee-fields";
@@ -159,9 +159,9 @@ describe("Role changes in change history", () => {
       .toBe("Removed Nour Ben Ali as an administrator");
     expect(roleChange("AdministratorAuthoritySelfRemoved", null, null)?.headline).toBe("Changed who administers the company");
     expect(roleChange("FusionSeenAs", null, json({ person: "Mariam Gharbi" }))?.headline).toBe("Saw Fusion as Mariam Gharbi");
-    expect(isRoleChange({ action: "FusionSeenAs" })).toBe(true);
-    expect(isRoleChange({ action: "AdministratorInvitationIssued" })).toBe(false);
-    expect(isRoleChange({ action: "toString" })).toBe(false);
+    expect(isSettingsChange({ action: "FusionSeenAs" })).toBe(true);
+    expect(isSettingsChange({ action: "AdministratorInvitationIssued" })).toBe(false);
+    expect(isSettingsChange({ action: "toString" })).toBe(false);
   });
 
   it("says who gained or lost which role", () => {
@@ -245,6 +245,25 @@ describe("Role changes in change history", () => {
       after: "Voir · tout le monde",
       sentence: "Plans et points d'étape : Voir · tout le monde pour Recruteur",
     });
+  });
+});
+
+describe("Brand saves in change history (B-203)", () => {
+  const brand = (values: Record<string, unknown> = {}) =>
+    json({ name: "Carthage", color: null, language: "en", welcomeLine: null, logo: null, ...values });
+
+  it("lists what the save changed, in the words Brand uses", () => {
+    const change = brandChange(brand(), brand({ name: "Carthage Digital", color: "#0f766e", language: "fr", logo: "v2" }));
+    expect(change.headline).toBe("Renamed the company to Carthage Digital, and 3 more");
+    expect(change.lines.map((line) => [line.label, line.before, line.after])).toEqual([
+      ["Company name", "Carthage", "Carthage Digital"],
+      ["Color", "Fusion amber", "#0f766e"],
+      ["Default language", "English", "Français"],
+      ["Logo", "No logo", "New logo"],
+    ]);
+    expect(brandChange(brand({ logo: "v1" }), brand({ logo: null })).headline).toBe("Removed the logo");
+    expect(isSettingsChange({ action: "brand.saved" })).toBe(true);
+    expect(isSettingsChange({ action: "access.grant.given" })).toBe(false);
   });
 });
 

@@ -31,7 +31,7 @@ public sealed record WorkforceAccessMutationOutcomeResult(
 
 /// <summary>One moment of a person's account story as Identity tells it (B-231).</summary>
 public sealed record WorkforceAccountHistoryEvent(
-    string Kind, DateTime OccurredAt, string? ActorName, string? Email, DateTime? ValidUntil);
+    string Kind, DateTime OccurredAt, string? ActorName, string? Email, DateTime? ValidUntil, string? RoleName = null, bool ByRule = false);
 
 /// <summary>The newest change to the tenant's roles in Identity's access audit (B-107).</summary>
 public sealed record IdentityRoleChange(DateTime OccurredAt, string ActorName);

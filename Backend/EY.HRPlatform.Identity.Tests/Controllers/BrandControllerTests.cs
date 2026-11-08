@@ -187,6 +187,25 @@ public class BrandControllerTests
         Assert.IsType<ConflictObjectResult>(result.Result);
     }
 
+    [Fact]
+    public async Task A_save_is_in_change_history_with_what_it_changed_and_a_refused_one_is_not()
+    {
+        var arranged = await SeedAsync();
+        Assert.IsType<ConflictObjectResult>((await Controller(arranged.Db, arranged.Own, Manage)
+            .Save(Request(name: "Atlas Holding"), CancellationToken.None)).Result);
+        Assert.IsType<OkObjectResult>((await Controller(arranged.Db, arranged.Own, Manage)
+            .Save(Request(name: "Carthage", color: "#0f766e", language: "fr", welcome: "Bienvenue"), CancellationToken.None)).Result);
+
+        await using var read = TestDbContextFactory.CreateWithoutTenant(arranged.Db);
+        var saved = Assert.Single(await read.AccessAuditEvents.AsNoTracking().ToListAsync());
+        Assert.Equal(("brand.saved", arranged.Own), (saved.Action, saved.TenantId));
+        Assert.Contains("\"name\":\"Carthage Digital Group\"", saved.BeforeJson);
+        Assert.Contains("\"name\":\"Carthage\"", saved.AfterJson);
+        Assert.Contains("\"color\":\"#0f766e\"", saved.AfterJson);
+        Assert.Contains("\"language\":\"fr\"", saved.AfterJson);
+        Assert.Contains("\"welcomeLine\":\"Bienvenue\"", saved.AfterJson);
+    }
+
     [Theory]
     [InlineData("C", "#3e63dd", "en", "Name must be 2-100 characters.")]
     [InlineData("Carthage", "blue", "en", "A colour is written as #rrggbb.")]

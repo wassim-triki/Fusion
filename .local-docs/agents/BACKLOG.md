@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-323.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-324.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -34,9 +34,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ## In progress
 
 - [ ] **B-322** Access and history batch: role grants in a person's Access history, Brand saves in Change history, changes inert while seeing Fusion as someone (user 2026-11-08: "220, 314, 203 batch em together") · Identity, Core HR, Shell, Performance · 2026-11-08
-      Sessions: 1 B-314 + B-203 → 2 B-220. [plan](plans/B-322-access-history-batch.md)
-  - [ ] **B-314** Access › History tells role grants too (given by whom, when; removed): removing a grant deletes its row today, so grants need a kept history first; B-231 ships the account story without them · Identity, Core HR · 2026-11-07
-  - [ ] **B-203** Brand changes in Change history: a save in Settings › Brand is stored in Identity and isn't in Core HR's change history yet; fold into the unified audit (see the audit-history-deferred note) · Identity, Core HR · 2026-10-30
+      Sessions: 1 B-314 + B-203 (built, In review) → 2 B-220. [plan](plans/B-322-access-history-batch.md)
   - [ ] **B-220** While seeing Fusion as someone, show changes as inert (the drawing's "Propose a change" greyed) instead of letting the server refuse them: today every write is refused server-side (403 "Nothing can be changed while seeing Fusion as someone") and forms show that error · Shell, Core HR, Performance · 2026-10-31
         Found building B-178. A shared "is viewing" flag from `@repo/auth` (`useViewAs`) that action buttons read.
 
@@ -59,10 +57,14 @@ None waiting.
 
 ### Other reviews
 
-None waiting.
+- [ ] **B-314** Access › History tells role grants: given by whom, held by rule, removed (part of B-322, session 1) · Identity, Core HR · 2026-11-07
+      Look at: `plans/B-322-screens/01-access-history-roles.png` (Aicha's History: "Given the Managers role by Amira Khelifi", "Managers role removed by Amira Khelifi"). Rule grants read "Holds the HR role by rule" / "HR role removed · No longer matches the role's rule"; only changes from 2026-11-08 on are recorded.
+- [ ] **B-203** Brand saves in Change history (part of B-322, session 1) · Identity, Core HR · 2026-10-30
+      Look at: `plans/B-322-screens/02-change-history-brand.png` (Settings › Change history, Brand entry opened: welcome line before → after). Name, colour, default language and logo show the same way.
 
 ## Ready
 
+- [ ] **B-323** Change history: a role save that only changes who is chosen by name reads "Changed the Managers role"; say who was chosen or taken off (the save's record has the holders) · Core HR · 2026-11-08
 - [ ] **B-310** Before hosting: the Gateway and Identity trust a forwarded client address only from loopback, so once the shell, Gateway and Identity run on separate machines each needs its hop's address in `KnownProxies`, and a shell behind a load balancer needs the stamp to take the balancer's address instead of the socket · Shell, Gateway, Identity · 2026-11-07
 
 ### Rebuild slices

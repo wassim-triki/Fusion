@@ -582,6 +582,24 @@
       "required": "إلزامي",
       "on": "مفعّل",
       "off": "متوقف"
+    },
+    "brand": {
+      "saved": "غيّر هوية الشركة",
+      "name": "اسم الشركة",
+      "renamed": "غيّر اسم الشركة إلى {after}",
+      "color": "اللون",
+      "colorSentence": "غيّر لون الهوية",
+      "language": "اللغة الافتراضية",
+      "languageSentence": "جعل اللغة الافتراضية {after}",
+      "welcomeLine": "عبارة الترحيب",
+      "welcomeSentence": "غيّر عبارة الترحيب",
+      "logo": "الشعار",
+      "logoAdded": "أضاف شعارًا",
+      "logoReplaced": "استبدل الشعار",
+      "logoRemoved": "أزال الشعار",
+      "newLogo": "شعار جديد",
+      "noLogo": "بلا شعار",
+      "fusionColor": "عنبر Fusion"
     }
   },
   "sso": {

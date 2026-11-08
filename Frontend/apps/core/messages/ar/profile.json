@@ -305,7 +305,13 @@
     "linkStopped": "توقف الرابط عن العمل",
     "accepted": "قبل الدعوة",
     "signedIn": "سجّل الدخول",
-    "signedInNote": "آخر مرة سجّل فيها {name} الدخول؛ يحتفظ Fusion بالأحدث فقط"
+    "signedInNote": "آخر مرة سجّل فيها {name} الدخول؛ يحتفظ Fusion بالأحدث فقط",
+    "roleGiven": "مُنح دور {role}",
+    "roleGivenBy": "منحه {name} دور {role}",
+    "roleByRule": "يحمل دور {role} بحكم القاعدة",
+    "roleRemoved": "سُحب دور {role}",
+    "roleRemovedBy": "سحب {name} دور {role}",
+    "roleRuleEnded": "لم يعد يطابق قاعدة الدور"
   },
   "leave": {
     "pill": "في إجازة",

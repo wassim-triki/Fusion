@@ -147,7 +147,10 @@ export type WorkforceAccountHistoryKind =
   | "Withdrawn"
   | "Accepted"
   /** The last sign-in; Fusion keeps only the latest. */
-  | "SignedIn";
+  | "SignedIn"
+  /** A role given to the person, by someone or by the role's rule (B-314). */
+  | "RoleGiven"
+  | "RoleRemoved";
 
 /** One moment of the account story, newest first from the server. */
 export interface WorkforceAccountHistoryEventDto {
@@ -159,6 +162,10 @@ export interface WorkforceAccountHistoryEventDto {
   email: string | null;
   /** When a still-open link stops working. */
   validUntil: string | null;
+  /** The role a RoleGiven or RoleRemoved tells. */
+  roleName: string | null;
+  /** The role's rule did it, not a person. */
+  byRule: boolean;
 }
 
 /**

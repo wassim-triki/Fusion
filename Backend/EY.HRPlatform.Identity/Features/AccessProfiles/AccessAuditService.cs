@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using EY.HRPlatform.Identity.Domain.Entities;
 using EY.HRPlatform.Identity.Infrastructure.Persistence;
+using EY.HRPlatform.Identity.Infrastructure.Persistence.Interceptors;
 using EY.HRPlatform.Identity.Models.Responses;
 using EY.HRPlatform.SharedKernel.Auth;
 using Microsoft.EntityFrameworkCore;
@@ -72,7 +73,9 @@ public sealed class AccessAuditService(
         var events = await dbContext.AccessAuditEvents
             .IgnoreQueryFilters()
             .AsNoTracking()
-            .Where(auditEvent => auditEvent.TenantId == tenantId)
+            // A person's role grants are told on their Access › History; a rule recompute would flood this feed.
+            .Where(auditEvent => auditEvent.TenantId == tenantId
+                && auditEvent.Action != AccessGrantAudit.Given && auditEvent.Action != AccessGrantAudit.Removed)
             .OrderByDescending(auditEvent => auditEvent.OccurredAt)
             .Take(pageSize)
             .Select(auditEvent => new

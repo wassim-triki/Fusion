@@ -121,14 +121,17 @@ public sealed record WorkforceAccessCommandResultDto(
 
 /// <summary>
 /// One moment of the person's account story on Person › Access › History (B-231). <c>Kind</c>: Invited, SentAgain,
-/// Delivered, NotDelivered, Withdrawn, Accepted or SignedIn (the last sign-in; only the latest is kept).
+/// Delivered, NotDelivered, Withdrawn, Accepted, SignedIn (the last sign-in; only the latest is kept), RoleGiven or
+/// RoleRemoved (B-314: <c>RoleName</c>, and <c>ByRule</c> when a rule rather than someone did it).
 /// </summary>
 public sealed record WorkforceAccountHistoryEventDto(
     string Kind,
     DateTime OccurredAt,
     string? ActorName,
     string? Email,
-    DateTime? ValidUntil);
+    DateTime? ValidUntil,
+    string? RoleName,
+    bool ByRule);
 
 /// <summary>One reviewed line in a bulk Activation Plan: an Employee reference and the
 /// reviewed Employee/Manager baseline. No forgeable Employee identity fact is carried.</summary>

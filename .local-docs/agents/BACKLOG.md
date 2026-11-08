@@ -18,13 +18,22 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-326.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-327.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
 ## In progress
 
-None.
+- [ ] **B-326** Cleanup batch: the dead code the rebuilds left, the old administrator invitations, one definition per rule (user 2026-11-08: "yup do it") · Identity, Core HR, Shell · 2026-11-08
+      Plan set; one fresh session, closes on evidence. [plan](plans/B-326-cleanup-batch.md)
+  - [ ] **B-324** Dead code the rebuilds left behind: the old administrator paths and the legacy employee writes, one backend session · Identity, Core HR · 2026-11-08
+    - [ ] **B-299** Administrator Suspend/Reactivate and the `TenantAdministrator` invitation purpose are now unreachable from the product: only tests and a database constraint keep them. Remove them, or say what they are for · Identity · 2026-11-06
+    - [ ] **B-300** The backend still says "Tenant Administrator" in role names, mail and audit, while screens say "Administrator" since B-192 · Identity · 2026-11-06
+    - [ ] **B-222** Clean up what the old Administrators workspace left: Core HR's `admins` message namespace, the `/access` route skeletons, suspend/reactivate (still enforced by the two-administrator rule, no screen offers them), and the invite acceptance's Employee/Manager label from `InviteToken.Role` · Core HR, Identity · 2026-10-31
+    - [ ] **B-194** Remove the legacy employee write endpoints (`POST /employees`, `PUT /employees/{id}`, rehire, terminate, change-manager) and their commands: no screen calls them; B-175 had to move them onto job and place ids anyway · Core HR · 2026-10-30
+  - [ ] **B-221** Administrator invitations issued before B-178 can still be accepted, but nothing lists or revokes them now (the customer-side email invitation retired: only people who already sign in can be made administrators). List them on the Administrators page with Revoke, or expire them · Identity, Core HR · 2026-10-31
+  - [ ] **B-311** One definition per rule on each side: find rules written more than once within the backend (across services, controllers, validators) or within the frontend (across apps, components, schemas): password rules first, then address checks, length limits and the like; keep one source per side and have the rest read it. The server and the screen each having it is fine · Identity, Core HR, Performance, Shell · 2026-11-07
+        User 2026-11-08: "rules can exist on both sides; I'm talking about them being redefined again and again inside each side".
 
 ## In review
 
@@ -64,18 +73,11 @@ Security and scale that must hold once Fusion is online; nothing changes in the 
 - [ ] **B-296** Prove a single sign-on domain by DNS before Fusion is hosted: today the first company to pass a test sign-in from a domain proves it, so a company running its own provider could claim another company's unclaimed domain and show its button on that domain's sign-in page · Identity, Core HR · 2026-11-05
       Found in the B-191 security review (accepted rung 2 in the plan, D9). A claim never signs anyone in across companies; the risk is the sign-in page steering another company's people to that provider. Fix: a DNS TXT record per domain, checked before it counts as proved.
 - [ ] **B-310** Before hosting: the Gateway and Identity trust a forwarded client address only from loopback, so once the shell, Gateway and Identity run on separate machines each needs its hop's address in `KnownProxies`, and a shell behind a load balancer needs the stamp to take the balancer's address instead of the socket · Shell, Gateway, Identity · 2026-11-07
-- [ ] **B-221** Administrator invitations issued before B-178 can still be accepted, but nothing lists or revokes them now (the customer-side email invitation retired: only people who already sign in can be made administrators). List them on the Administrators page with Revoke, or expire them · Identity, Core HR · 2026-10-31
 - [ ] **B-255** Scale Reports filter values with viewer-scoped server search when company data grows; report runs currently return the complete allowed value set.
 
 ### Cleanup and tooling
 
-- [ ] **B-324** Dead code the rebuilds left behind: the old administrator paths and the legacy employee writes, one backend session · Identity, Core HR · 2026-11-08
-  - [ ] **B-299** Administrator Suspend/Reactivate and the `TenantAdministrator` invitation purpose are now unreachable from the product: only tests and a database constraint keep them. Remove them, or say what they are for · Identity · 2026-11-06
-  - [ ] **B-300** The backend still says "Tenant Administrator" in role names, mail and audit, while screens say "Administrator" since B-192 · Identity · 2026-11-06
-  - [ ] **B-222** Clean up what the old Administrators workspace left: Core HR's `admins` message namespace, the `/access` route skeletons, suspend/reactivate (still enforced by the two-administrator rule, no screen offers them), and the invite acceptance's Employee/Manager label from `InviteToken.Role` · Core HR, Identity · 2026-10-31
-  - [ ] **B-194** Remove the legacy employee write endpoints (`POST /employees`, `PUT /employees/{id}`, rehire, terminate, change-manager) and their commands: no screen calls them; B-175 had to move them onto job and place ids anyway · Core HR · 2026-10-30
-- [ ] **B-311** One definition per rule on each side: find rules written more than once within the backend (across services, controllers, validators) or within the frontend (across apps, components, schemas): password rules first, then address checks, length limits and the like; keep one source per side and have the rest read it. The server and the screen each having it is fine · Identity, Core HR, Performance, Shell · 2026-11-07
-      User 2026-11-08: "rules can exist on both sides; I'm talking about them being redefined again and again inside each side".
+None.
 
 ### Parked
 

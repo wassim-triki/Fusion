@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-321.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-323.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -33,6 +33,12 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In progress
 
+- [ ] **B-322** Access and history batch: role grants in a person's Access history, Brand saves in Change history, changes inert while seeing Fusion as someone (user 2026-11-08: "220, 314, 203 batch em together") · Identity, Core HR, Shell, Performance · 2026-11-08
+      Sessions: 1 B-314 + B-203 → 2 B-220. [plan](plans/B-322-access-history-batch.md)
+  - [ ] **B-314** Access › History tells role grants too (given by whom, when; removed): removing a grant deletes its row today, so grants need a kept history first; B-231 ships the account story without them · Identity, Core HR · 2026-11-07
+  - [ ] **B-203** Brand changes in Change history: a save in Settings › Brand is stored in Identity and isn't in Core HR's change history yet; fold into the unified audit (see the audit-history-deferred note) · Identity, Core HR · 2026-10-30
+  - [ ] **B-220** While seeing Fusion as someone, show changes as inert (the drawing's "Propose a change" greyed) instead of letting the server refuse them: today every write is refused server-side (403 "Nothing can be changed while seeing Fusion as someone") and forms show that error · Shell, Core HR, Performance · 2026-10-31
+        Found building B-178. A shared "is viewing" flag from `@repo/auth` (`useViewAs`) that action buttons read.
 
 ### Rebuild program tracking
 
@@ -68,7 +74,6 @@ None waiting.
 - [ ] **B-249** The brand studio's Home preview draws the real Home (day one's guide, the company card) instead of its stand-in (from B-188's notes) · Core HR · 2026-11-01
       User 2026-11-08: left out of B-320 for now.
 
-- [ ] **B-314** Access › History tells role grants too (given by whom, when; removed): removing a grant deletes its row today, so grants need a kept history first; B-231 ships the account story without them · Identity, Core HR · 2026-11-07
 - [ ] **B-311** Later check: rules defined once, not redefined. Password rules first, then anything like them (address checks, length limits, …): find each rule's copies across the backend and frontends, keep one source, and make the rest read from it · Identity, Shell, Core HR · 2026-11-07
       User 2026-11-07: park it, check and fix later; main things first. Known copies of the password rules: Identity's `AccountPasswordPolicy` (the source, sent to forms as `passwordRequirements`); its checklist re-coded in the shell's `lib/activation.ts` (`passwordChecks`) and again in `@repo/auth` `password-reset-page.tsx` (`requirementChecks`, B-295), each with its own words; `@repo/ds` `PasswordStrengthField` scores strength on its own assumed minimum of 10.
 
@@ -88,14 +93,11 @@ None waiting.
 - [ ] **B-245** The import groups titles into job families when the files have no family column (D-23 widened the AI to it): suggestions marked with the sparkle, each family changeable on the chart's Jobs view · Core HR · 2026-11-01
 
 
-- [ ] **B-220** While seeing Fusion as someone, show changes as inert (the drawing's "Propose a change" greyed) instead of letting the server refuse them: today every write is refused server-side (403 "Nothing can be changed while seeing Fusion as someone") and forms show that error · Shell, Core HR, Performance · 2026-10-31
-      Found building B-178. A shared "is viewing" flag from `@repo/auth` (`useViewAs`) that action buttons read.
 
 - [ ] **B-221** Administrator invitations issued before B-178 can still be accepted, but nothing lists or revokes them now (the customer-side email invitation retired: only people who already sign in can be made administrators). List them on the Administrators page with Revoke, or expire them · Identity, Core HR · 2026-10-31
 
 - [ ] **B-222** Clean up what the old Administrators workspace left: Core HR's `admins` message namespace, the `/access` route skeletons, suspend/reactivate (still enforced by the two-administrator rule, no screen offers them), and the invite acceptance's Employee/Manager label from `InviteToken.Role` · Core HR, Identity · 2026-10-31
 
-- [ ] **B-203** Brand changes in Change history: a save in Settings › Brand is stored in Identity and isn't in Core HR's change history yet; fold into the unified audit (see the audit-history-deferred note) · Identity, Core HR · 2026-10-30
 
 
 - [ ] **B-202** `fusion-dev` script that adds an EF migration without stopping the running service (build to the artifacts path, then `dotnet ef … --no-build` against it); B-175 had to stop CoreHR for it · Tooling · 2026-10-30

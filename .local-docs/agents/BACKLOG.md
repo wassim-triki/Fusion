@@ -33,8 +33,6 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In progress
 
-- [ ] **B-320** UI and design batch: one tab pattern, Performance lists with titles inside, a fuller sign-in company column, a richer Places table, one word for growth goals (user 2026-11-08: "batch the most from ui and design in 1 batch without losing quality") · Shell, Core HR, Performance, `@repo/ds` · 2026-11-08
-      Sessions: 0 explorer (drawings for every taste piece) → 1 B-198 tabs (✓ 2026-11-08) → 2 B-228 Performance lists (✓ 2026-11-08) → 3 B-210 + B-201 + B-301 (In review). Left out: B-230 (parked), B-250/B-274 sidebar toggle (deferred after rejected attempts). [plan](plans/B-320-ui-design-batch.md)
 
 ### Rebuild program tracking
 
@@ -55,8 +53,7 @@ None waiting.
 
 ### Other reviews
 
-- [ ] **B-210 · B-201 · B-301** (B-320 session 3) Sign-in's company column (B-210), a richer Places table (B-201), one word for growth goals (B-301) · Shell, Core HR, Performance · built 2026-11-08
-      Look at (dark, 1440×900, `plans/B-320-screens/`): 07 Carthage's sign-in, its welcome line (new Settings › Brand › Welcome line, set by `data/set-carthage-welcome-line.cjs`) and the ring shape in its colour; 08 Settings › Places as Amira Khelifi, the administrator: faces, share of the company, teams. B-301 is wording only: Performance's Overview and Team now say "development goals" (en/ar; fr already did). Deviation: the shape is one ring drawing in the company colour, not traced from each logo.
+None waiting.
 
 ## Ready
 

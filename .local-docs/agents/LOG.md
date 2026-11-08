@@ -1,5 +1,6 @@
 # LOG — the one history
 
+- ✓ **B-320** UI and design batch accepted, 2026-11-08 (user: "approved"): with it **B-210** sign-in welcome line and ring shape, **B-201** richer Places table, **B-301** "development goal" (✓). Left out: B-230 (parked), B-250/B-274 sidebar toggle, B-249 brand preview Home.
 - **B-320 session 3: B-210 + B-201 + B-301** built, 2026-11-08, **In review** (screens `plans/B-320-screens/07-sign-in-column.png`, `08-places.png`):
   - **B-210** Identity `Tenant.WelcomeLine` (≤160, trimmed, empty clears; migration `AddBrandWelcomeLine`) saved with the brand, on `PublicBrandDto` and the tenant summary. `SignInFrame` shows it under the name and draws a ring shape in the company colour; Settings › Brand has the field (en/fr/ar) and the sign-in preview shows it.
   - **B-201** CoreHR `PlaceDto.TeamCount` and `Faces` (up to 4 people working there today, photos first). Places table: tinted pin, faces + count, share of the company (bar scaled to the largest place, % of everyone), teams, open roles.

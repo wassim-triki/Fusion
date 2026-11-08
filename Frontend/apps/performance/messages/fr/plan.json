@@ -40,7 +40,6 @@
     "by": "D’ici le {targetDate}",
     "fromLastCycle": "Du cycle précédent",
     "carriedTo": "Reporté sur {carriedToCycleName}",
-    "moreFor": "Plus pour {title}",
     "edit": "Modifier",
     "remove": "Supprimer",
     "removeThisGoal": "Supprimer cet objectif ?",
@@ -48,7 +47,16 @@
     "keepIt": "La garder",
     "removeGoal": "Supprimer l’objectif",
     "couldNotChangeTheGoals": "Impossible de modifier le statut de l’objectif.",
-    "couldNotRemoveTheGoal": "Impossible de supprimer l’objectif."
+    "couldNotRemoveTheGoal": "Impossible de supprimer l’objectif.",
+    "developmentGoal": "Objectif de développement",
+    "status": "Statut",
+    "competency": "Compétence",
+    "aimedFor": "Visé pour",
+    "addedBy": "Ajouté par",
+    "now": "Désormais",
+    "from": "Origine",
+    "actions": "Actions",
+    "noActions": "Aucune action pour l’instant"
   },
   "CarryOverOffer": {
     "openGoal": "{count} objectif ouvert",
@@ -215,34 +223,11 @@
     "actionsFor": "Actions pour {title}",
     "editObjective": "Modifier l’objectif",
     "removeObjective": "Supprimer l’objectif",
-    "view": "Voir {title}",
-    "measurement": "Mesure",
-    "target": "Cible",
-    "milestones": "Jalons",
-    "singlePercentage": "Pourcentage unique",
-    "measure": "Mesure",
-    "duration": "Durée",
     "weight": "Poids",
     "updateProgress": "Mettre à jour l’avancement",
-    "view2": "Lecture",
-    "direction": "orientation"
-  },
-  "MilestoneStrip": {
-    "ofDone": "{done} sur {length} faits",
-    "milestone": "{length} jalon",
-    "milestones": "{length} jalons"
-  },
-  "ExecutionState": {
-    "ofMilestone": "{done} jalon sur {total}",
-    "s": "s",
-    "completed": "terminé(s)",
-    "updated": "mis à jour",
-    "overdue": "· {overdue} en retard",
-    "nextDue": "· prochaine échéance le {nextDue}",
-    "updated2": "Mis à jour {updated}",
-    "milestoneProgress": "Avancement des jalons",
-    "currentProgress": "Avancement actuel",
-    "currentValue": "Valeur actuelle"
+    "direction": "orientation",
+    "progress": "Progression",
+    "updateProgressFor": "Mettre à jour la progression de {title}"
   },
   "PlanProgressCard": {
     "noProgressReportedYet": "Aucun avancement communiqué pour l’instant",

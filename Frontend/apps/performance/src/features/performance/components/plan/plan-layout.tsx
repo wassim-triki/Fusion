@@ -18,7 +18,7 @@ export function PlanDocument({ main, sidebar }: { main: ReactNode; sidebar?: Rea
   );
 }
 
-/** A main-column section: a real section title with a quiet count, an optional summary and action, then its objects. */
+/** A main-column section for the 1:1 record: a section title on the canvas with a quiet count, an optional summary and action, then its objects. */
 export function PlanSection({
   label,
   count,
@@ -48,6 +48,16 @@ export function PlanSection({
       </div>
       {children}
     </section>
+  );
+}
+
+/** A section's title with its quiet count, for the DS `Section` title line. */
+export function SectionTitle({ label, count }: { label: ReactNode; count?: number }) {
+  return (
+    <span className="flex items-baseline gap-2">
+      {label}
+      {count !== undefined ? <span className="type-meta tabular-nums text-muted-foreground">{count}</span> : null}
+    </span>
   );
 }
 

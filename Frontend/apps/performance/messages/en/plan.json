@@ -40,7 +40,6 @@
     "by": "By {targetDate}",
     "fromLastCycle": "From last cycle",
     "carriedTo": "Carried to {carriedToCycleName}",
-    "moreFor": "More for {title}",
     "edit": "Edit",
     "remove": "Remove",
     "removeThisGoal": "Remove this goal?",
@@ -48,7 +47,16 @@
     "keepIt": "Keep it",
     "removeGoal": "Remove goal",
     "couldNotChangeTheGoals": "Could not change the goal's status.",
-    "couldNotRemoveTheGoal": "Could not remove the goal."
+    "couldNotRemoveTheGoal": "Could not remove the goal.",
+    "developmentGoal": "Development goal",
+    "status": "Status",
+    "competency": "Competency",
+    "aimedFor": "Aimed for",
+    "addedBy": "Added by",
+    "now": "Now",
+    "from": "From",
+    "actions": "Actions",
+    "noActions": "No actions yet"
   },
   "CarryOverOffer": {
     "openGoal": "{count} open goal",
@@ -215,34 +223,11 @@
     "actionsFor": "Actions for {title}",
     "editObjective": "Edit objective",
     "removeObjective": "Remove objective",
-    "view": "View {title}",
-    "measurement": "Measurement",
-    "target": "Target",
-    "milestones": "Milestones",
-    "singlePercentage": "Single percentage",
-    "measure": "Measure",
-    "duration": "Duration",
     "weight": "Weight",
     "updateProgress": "Update progress",
-    "view2": "View",
-    "direction": "direction"
-  },
-  "MilestoneStrip": {
-    "ofDone": "{done} of {length} done",
-    "milestone": "{length} milestone",
-    "milestones": "{length} milestones"
-  },
-  "ExecutionState": {
-    "ofMilestone": "{done} of {total} milestone",
-    "s": "s",
-    "completed": "completed",
-    "updated": "updated",
-    "overdue": "· {overdue} overdue",
-    "nextDue": "· next due {nextDue}",
-    "updated2": "Updated {updated}",
-    "milestoneProgress": "Milestone progress",
-    "currentProgress": "Current progress",
-    "currentValue": "Current value"
+    "direction": "direction",
+    "progress": "Progress",
+    "updateProgressFor": "Update progress on {title}"
   },
   "PlanProgressCard": {
     "noProgressReportedYet": "No progress reported yet",

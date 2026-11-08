@@ -10,10 +10,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from "@repo/ds/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@repo/ds/components/ui/sheet";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
-import { AsyncButton, Said } from "@repo/ds/shell";
+import { AsyncButton, Said, StatusBadge } from "@repo/ds/shell";
 import { AvatarStack, PersonInitials, PraiseReactions, ValueChip, usePerformanceWords } from "@repo/performance-ui";
 import { ArrowRight, Check, Eye, Lock, OneOnOnes } from "@/lib/icons";
-import { useDeletePraise, useFeedbackItem, useOneOnOne, useOneOnOneCommands, useOneOnOnes, usePraiseItem } from "../../api/use-conversations";
+import { useDeletePraise, useFeedbackItem, useFeedbackRequest, useOneOnOne, useOneOnOneCommands, useOneOnOnes, usePraiseItem } from "../../api/use-conversations";
 import { formatDay } from "../one-on-ones/one-on-one-lib";
 import { SubjectChip, firstName } from "./conversation-parts";
 import { REACTION_ICONS } from "./reaction-icons";
@@ -163,6 +163,81 @@ function AddToNextOneOnOne({ feedback }: { feedback: FeedbackDto }) {
     >
       <OneOnOnes className="size-4" data-icon="inline-start" /> {t("addToNext11")}
     </AsyncButton>
+  );
+}
+
+/**
+ * One of your requests beside the list (B-228): the question, who was asked and where each stands, then the answers
+ * in their words. Closing the request and the full history stay on its page.
+ */
+export function RequestDrawer({ requestId, onClose }: { requestId: string | null; onClose: () => void }) {
+  const format = useFormat();
+  const t = useTranslations("conversations.RequestDrawer");
+  const item = useFeedbackRequest(requestId);
+  const request = item.data && item.data.id === requestId ? item.data : undefined;
+  const invitees = request?.invitees ?? [];
+  const answers = request?.answers ?? [];
+  const open = request?.state === "Open";
+  return (
+    <DrawerFrame
+      open={Boolean(requestId)}
+      onOpenChange={(next) => { if (!next) onClose(); }}
+      title={
+        request
+          ? open
+            ? t("yourRequestDue", { dueDate: format.date(request.dueDate) })
+            : t("yourRequestClosed")
+          : t("yourRequest")
+      }
+      footer={
+        request ? (
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/feedback/requests/${request.id}`}>{t("openTheRequest")}</Link>
+          </Button>
+        ) : null
+      }
+    >
+      {request ? (
+        <>
+          <p className="type-panel-title text-foreground">{request.question}</p>
+          {request.subject ? <SubjectChip subject={request.subject} link className="mt-3" /> : null}
+          <h3 className="mt-8 type-meta text-muted-foreground">{t("asked")}</h3>
+          <ul className="mt-2">
+            {invitees.map((invitee) => (
+              <li key={invitee.person.id} className="flex items-center gap-3 border-t border-border py-2.5 first:border-t-0">
+                <PersonInitials name={invitee.person.name} size="sm" />
+                <span className="min-w-0 flex-1 truncate type-label text-foreground">{invitee.person.name}</span>
+                <StatusBadge tone={invitee.status === "Answered" ? "success" : invitee.status === "Declined" ? "muted" : "warning"} dot>
+                  {invitee.status === "Answered" ? t("answered") : invitee.status === "Declined" ? t("declined") : t("waiting")}
+                </StatusBadge>
+              </li>
+            ))}
+          </ul>
+          <h3 className="mt-8 type-meta text-muted-foreground">{t("answers", { count: answers.length })}</h3>
+          {answers.length === 0 ? (
+            <p className="mt-2 type-body-secondary text-muted-foreground">{t("noAnswersYet")}</p>
+          ) : (
+            <ul className="mt-3 space-y-3">
+              {answers.map((answer) => (
+                <li key={answer.id} className="rounded-control bg-inlay p-4">
+                  <Said>{answer.message}</Said>
+                  <p className="mt-3 type-meta text-muted-foreground">
+                    {answer.author.name ?? t("aColleague")} · {formatDay(answer.sentAt, format.locale)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      ) : item.error ? (
+        <Unavailable text={t("unavailable")} />
+      ) : (
+        <div aria-label={t("loading")} className="space-y-4">
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      )}
+    </DrawerFrame>
   );
 }
 

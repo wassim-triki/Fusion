@@ -1,5 +1,6 @@
 import type { PersonSummaryCycleDto } from "@repo/api";
 import { cn } from "@repo/ds";
+import { Section } from "@repo/ds/shell";
 import { ObjectiveStatusBadge } from "./objective-status";
 import { percent, weightPercent, type RenderSummaryLink } from "./summary-lib";
 import { useTranslations } from "next-intl";
@@ -13,28 +14,29 @@ export function SummaryObjectives({ cycle, renderLink }: { cycle: PersonSummaryC
   const t = useTranslations("performanceUi.SummaryObjectives");
   const words = usePerformanceWords();
   return (
-    <section aria-labelledby="summary-objectives-heading" className="space-y-3">
-      <div className="flex items-baseline justify-between gap-4">
-        <h2 id="summary-objectives-heading" className="type-section-title text-foreground">
-          {t("objectives")}
-        </h2>
-        {cycle.planHref
+    <Section
+      id="summary-objectives"
+      title={t("objectives")}
+      flush={cycle.isParticipant && cycle.objectives.length > 0}
+      action={
+        cycle.planHref
           ? renderLink({
               href: cycle.planHref,
               className: "type-label text-foreground hover:underline",
               children: words.t("openPlan"),
             })
-          : null}
-      </div>
+          : null
+      }
+    >
       {!cycle.isParticipant ? (
         <p className="type-body-secondary text-muted-foreground">{t("notPartOf", { cycleName: cycle.cycleName })}</p>
       ) : cycle.objectives.length === 0 ? (
         <p className="type-body-secondary text-muted-foreground">{t("noObjectivesSharedYet")}</p>
       ) : (
-        <ul className="divide-y divide-border overflow-hidden rounded-surface bg-card">
+        <ul className="divide-y divide-border">
           {cycle.objectives.map((objective) => {
             const aligned = objective.alignedTo !== null;
-            const row = "group flex items-center gap-4 px-4 py-3.5";
+            const row = "group flex items-center gap-4 px-5 py-3.5";
             const content = (
                     <>
                       <span className="min-w-0 flex-1">
@@ -78,6 +80,6 @@ export function SummaryObjectives({ cycle, renderLink }: { cycle: PersonSummaryC
           })}
         </ul>
       )}
-    </section>
+    </Section>
   );
 }

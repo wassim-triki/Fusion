@@ -141,9 +141,9 @@ export function useFeedbackRequests(enabled = true) {
   return useApiQuery(conversationQueryKeys.feedbackRequests(), (signal) => api.listFeedbackRequests(signal), { enabled });
 }
 
-export function useFeedbackRequest(id: string) {
+export function useFeedbackRequest(id: string | null) {
   const api = useConversationsApi();
-  return useApiQuery(conversationQueryKeys.feedbackRequest(id), (signal) => api.getFeedbackRequest(id, signal));
+  return useApiQuery(conversationQueryKeys.feedbackRequest(id ?? ""), (signal) => api.getFeedbackRequest(id!, signal), { enabled: Boolean(id) });
 }
 
 export function useAskForFeedback() {

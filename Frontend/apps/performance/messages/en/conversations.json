@@ -171,11 +171,6 @@
   "YourRequest": {
     "overdue": "Overdue",
     "due": "Due",
-    "noAnswersYet": "No answers yet",
-    "answered": "Answered",
-    "declined": "Declined",
-    "waiting": "Waiting",
-    "asked": "Asked",
     "ofAnswered": "{answered} of {invited} answered"
   },
   "PraiseTab": {
@@ -269,5 +264,20 @@
   },
   "ObjectiveRequestMarker": {
     "asked": "{value} asked · {formatDate}"
+  },
+  "RequestDrawer": {
+    "yourRequest": "Your request",
+    "yourRequestDue": "Your request · due {dueDate}",
+    "yourRequestClosed": "Your request · closed",
+    "asked": "Asked",
+    "answered": "Answered",
+    "declined": "Declined",
+    "waiting": "Not yet",
+    "answers": "{count, plural, =0 {Answers} other {Answers · #}}",
+    "noAnswersYet": "No answers yet",
+    "aColleague": "A colleague",
+    "openTheRequest": "Open the request",
+    "unavailable": "This request isn't available to you.",
+    "loading": "Loading the request"
   }
 }

@@ -33,7 +33,7 @@ import { CalibratedOutcome } from "./calibrated-outcome";
 import { ReviewDraftBlock } from "./review-draft";
 import { ColleaguePicker } from "../conversations/colleague-picker";
 import { objectiveHref, roundHref, withCycle } from "@/lib/performance-routes";
-import { DueChip, LevelCards, ProgressRing, SectionHeading, SegmentRating, StageTrack, dayLabel, dueIn, type Step } from "./review-parts";
+import { DueChip, LevelCards, ProgressRing, ReviewSection, SegmentRating, StageTrack, dayLabel, dueIn, type Step } from "./review-parts";
 import { useRecentRecord } from "@repo/api/react";
 import { useTranslations } from "next-intl";
 import { useSay } from "@repo/ds/lib/say";
@@ -283,8 +283,7 @@ function SelfAssessmentWriter({ record }: { record: PerformanceReviewDto }) {
       </section>
 
       {objectives.length ? (
-        <section className="mt-10" aria-labelledby="objectives-heading">
-          <SectionHeading id="objectives-heading" title={t("objectives")} count={objectives.length} aside={t("progressAndEvidenceFromYour")} />
+        <ReviewSection id="objectives" className="mt-5" title={t("objectives")} count={objectives.length} aside={t("progressAndEvidenceFromYour")}>
           <div className="space-y-4">
             {objectives.map((item) => (
               <ObjectiveCard key={item.itemId} record={record} item={item}>
@@ -307,14 +306,12 @@ function SelfAssessmentWriter({ record }: { record: PerformanceReviewDto }) {
               </ObjectiveCard>
             ))}
           </div>
-        </section>
+        </ReviewSection>
       ) : null}
 
       {competencies.length ? (
-        <section className="mt-10" aria-labelledby="competencies-heading">
-          <SectionHeading id="competencies-heading" title={t("competencies")}
-            count={rs("of", { done: competencies.filter((c) => draft.items[keyOf(c)]?.selfRating !== null).length, total: competencies.length })} />
-          <ul className="divide-y divide-border rounded-surface bg-card">
+        <ReviewSection id="competencies" className="mt-5" flush title={t("competencies")} count={rs("of", { done: competencies.filter((c) => draft.items[keyOf(c)]?.selfRating !== null).length, total: competencies.length })}>
+          <ul className="divide-y divide-border">
             {competencies.map((item) => (
               <li key={item.itemId} className={cn("grid items-center gap-3 px-5 py-3 md:grid-cols-[14rem_auto_minmax(0,1fr)]", missingItems.includes(keyOf(item)) && "bg-destructive/5")}>
                 <ValueChip value={{ id: item.itemId, name: item.title }} />
@@ -325,13 +322,12 @@ function SelfAssessmentWriter({ record }: { record: PerformanceReviewDto }) {
               </li>
             ))}
           </ul>
-        </section>
+        </ReviewSection>
       ) : null}
 
       {questions.length ? (
-        <section className="mt-10" aria-labelledby="questions-heading">
-          <SectionHeading id="questions-heading" title={t("questions")} count={rs("of", { done: questions.length - unanswered, total: questions.length })} />
-          <ul className="divide-y divide-border rounded-surface bg-card">
+        <ReviewSection id="questions" className="mt-5" flush title={t("questions")} count={rs("of", { done: questions.length - unanswered, total: questions.length })}>
+          <ul className="divide-y divide-border">
             {questions.map((question) => (
               <li key={question.questionId} className="p-5">
                 <label htmlFor={`q-${question.questionId}`} className="type-label text-foreground">{question.text}</label>
@@ -342,18 +338,17 @@ function SelfAssessmentWriter({ record }: { record: PerformanceReviewDto }) {
               </li>
             ))}
           </ul>
-        </section>
+        </ReviewSection>
       ) : null}
 
-      <section className="mt-10" aria-labelledby="overall-heading">
-        <SectionHeading id="overall-heading" title={t("yourOverallView")} />
-        <div className="space-y-3 rounded-surface bg-card p-5">
+      <ReviewSection id="overall" className="mt-5" title={t("yourOverallView")}>
+        <div className="space-y-3">
           <ReviewDraftBlock reviewId={record.id} lens="self" subject={first(record.subjectDisplayName)} value={draft.summary} onInsert={draft.setSummary} />
           <LevelCards label={t("yourOverallRating")} levels={record.ratingScale} value={draft.overall} onChange={draft.setOverall} />
           <Textarea aria-label={t("yourSummary")} className="min-h-24 type-narrative" placeholder={t("sumUpYourYearIn")} maxLength={4000}
             aria-invalid={draft.missing?.summary || undefined} value={draft.summary} onChange={(e) => draft.setSummary(e.target.value)} />
         </div>
-      </section>
+      </ReviewSection>
 
       <div className="sticky bottom-4 mt-10 flex flex-wrap items-center gap-4 rounded-surface bg-popover px-5 py-3.5 shadow-overlay">
         <span className="flex gap-1" aria-hidden>
@@ -424,20 +419,20 @@ function ObjectiveCard({ record, item, children }: { record: PerformanceReviewDt
   const words = useSay("common.words");
   const quote = item.feedback?.[0];
   return (
-    <article className="rounded-surface bg-card p-5">
+    <article data-inlay className="group/inlay rounded-control bg-inlay p-5">
       <div className="flex items-start gap-4">
         <div className="min-w-0 flex-1">
           <Link href={objectiveHref({ cycleId: record.cycleId, objectiveId: item.itemId })} className="type-subsection-title text-foreground hover:underline">{item.title}</Link>
           <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-2 type-meta text-muted-foreground">
             {item.status ? <ObjectiveStatusBadge status={item.status} /> : null}
             {item.measurement ? <span>{measurementSummary(item.measurement, words)}</span> : item.legacyMeasurementSummary ? <span>{item.legacyMeasurementSummary}</span> : null}
-            {item.evidenceSummary.slice(0, 2).map((evidence, i) => <span key={i} className="inline-flex items-center gap-1 rounded-control bg-inlay px-2 py-0.5 text-foreground"><FileText className="size-3.5" aria-hidden />{evidence.label}</span>)}
+            {item.evidenceSummary.slice(0, 2).map((evidence, i) => <span key={i} className="inline-flex items-center gap-1 rounded-control bg-card px-2 py-0.5 text-foreground"><FileText className="size-3.5" aria-hidden />{evidence.label}</span>)}
           </div>
         </div>
         <ProgressRing value={item.progress} tone={item.status === "AtRisk" || item.status === "OffTrack" ? "warning" : "success"} />
       </div>
       {quote ? (
-        <blockquote className="mt-4 flex flex-wrap items-start justify-between gap-3 rounded-control bg-inlay px-4 py-3">
+        <blockquote className="mt-4 flex flex-wrap items-start justify-between gap-3 rounded-control border border-border px-4 py-3">
           <Said className="max-w-[60ch]">{quote.message}</Said>
           <footer className="type-meta text-muted-foreground">{t("feedback", { authorName: first(quote.authorName), dayLabel: dayLabel(quote.sentAt.slice(0, 10), format.locale) })}</footer>
         </blockquote>
@@ -470,9 +465,8 @@ function SubmittedView({ record }: { record: PerformanceReviewDto }) {
         <StageTrack className="mt-6" label={t("yourReviewsStages")} steps={reviewSteps(record, "subject", rs, format.locale).map((s, i) => i === reviewSteps(record, "subject", rs, format.locale).length - 1 ? { ...s, detail: t("youllBeNotified") } : s)} />
       </section>
       {record.selfAssessment ? (
-        <section className="mt-10" aria-labelledby="sent-heading">
-          <SectionHeading id="sent-heading" title={t("whatYouSent")} aside={<span className="inline-flex items-center gap-1"><Lock className="size-3.5" aria-hidden />{t("locked")}</span>} />
-          <ul className="divide-y divide-border rounded-surface bg-card">
+        <ReviewSection id="sent" className="mt-5" flush title={t("whatYouSent")} aside={<span className="inline-flex items-center gap-1"><Lock className="size-3.5" aria-hidden />{t("locked")}</span>}>
+          <ul className="divide-y divide-border">
             {objectives.map((item) => (
               <li key={item.itemId} className="flex items-center gap-4 px-5 py-3.5">
                 <span className="min-w-0 flex-1">
@@ -499,7 +493,7 @@ function SubmittedView({ record }: { record: PerformanceReviewDto }) {
               <Said>{record.selfAssessment.summary}</Said>
             </Disclosure>
           </ul>
-        </section>
+        </ReviewSection>
       ) : null}
     </div>
   );
@@ -564,9 +558,8 @@ function ReleasedView({ record }: { record: PerformanceReviewDto }) {
       </section>
 
       {objectives.length ? (
-        <section className="mt-10" aria-labelledby="r-objectives">
-          <SectionHeading id="r-objectives" title={t("objectives")} />
-          <ul className="divide-y divide-border rounded-surface bg-card">
+        <ReviewSection id="r-objectives" className="mt-5" flush title={t("objectives")}>
+          <ul className="divide-y divide-border">
             {objectives.map((item) => (
               <li key={item.itemId} className="flex items-center gap-4 px-5 py-3.5">
                 <span className="min-w-0 flex-1">
@@ -579,15 +572,14 @@ function ReleasedView({ record }: { record: PerformanceReviewDto }) {
               </li>
             ))}
           </ul>
-        </section>
+        </ReviewSection>
       ) : null}
 
       {competencies.length ? (
-        <section className="mt-10" aria-labelledby="r-competencies">
-          <SectionHeading id="r-competencies" title={t("competencies")} />
+        <ReviewSection id="r-competencies" className="mt-5" title={t("competencies")}>
           <div className="grid gap-3 md:grid-cols-2">
             {competencies.map((item) => (
-              <div key={item.itemId} className="rounded-surface bg-card p-4">
+              <div key={item.itemId} className="rounded-control bg-inlay p-4">
                 <div className="flex items-center justify-between gap-3">
                   <ValueChip value={{ id: item.itemId, name: item.title }} />
                   {item.managerRating ? <span className="type-label tabular-nums text-foreground">{item.managerRating} · {levelLabel(record.ratingScale, item.managerRating)}</span> : null}
@@ -596,18 +588,17 @@ function ReleasedView({ record }: { record: PerformanceReviewDto }) {
               </div>
             ))}
           </div>
-        </section>
+        </ReviewSection>
       ) : null}
 
       {managerAnswers.length ? (
-        <section className="mt-10" aria-labelledby="r-answers">
-          <SectionHeading id="r-answers" title={t("sAnswers", { reviewer })} />
-          <ul className="divide-y divide-border rounded-surface bg-card">
+        <ReviewSection id="r-answers" className="mt-5" flush title={t("sAnswers", { reviewer })}>
+          <ul className="divide-y divide-border">
             {managerAnswers.map((q) => (
               <li key={q.questionId} className="p-5"><p className="type-label text-foreground">{q.text}</p><Said className="mt-1">{q.managerAnswer}</Said></li>
             ))}
           </ul>
-        </section>
+        </ReviewSection>
       ) : null}
 
       <section className="mt-6 rounded-surface bg-card p-5" aria-labelledby="ack-heading">
@@ -697,8 +688,7 @@ function ReviewerView({ record }: { record: PerformanceReviewDto }) {
             <span className="inline-flex items-center gap-1.5"><span className="h-0.5 w-4 rounded-full bg-primary" />{t("yours")}</span>
           </p>
           {objectives.length ? (
-            <section className="mt-6" aria-labelledby="m-objectives">
-              <SectionHeading id="m-objectives" title={t("objectives")} count={record.objectiveRatingsEnabled ? rs("ofRated", { done: objectives.filter((o) => draft.items[keyOf(o)]?.managerRating !== null).length, total: objectives.length }) : objectives.length} />
+            <ReviewSection id="m-objectives" className="mt-5" title={t("objectives")} count={record.objectiveRatingsEnabled ? rs("ofRated", { done: objectives.filter((o) => draft.items[keyOf(o)]?.managerRating !== null).length, total: objectives.length }) : objectives.length}>
               <div className="space-y-4">
                 {objectives.map((item) => (
                   <ObjectiveCard key={item.itemId} record={record} item={item}>
@@ -728,13 +718,12 @@ function ReviewerView({ record }: { record: PerformanceReviewDto }) {
                   </ObjectiveCard>
                 ))}
               </div>
-            </section>
+            </ReviewSection>
           ) : null}
 
           {competencies.length ? (
-            <section className="mt-10" aria-labelledby="m-competencies">
-              <SectionHeading id="m-competencies" title={t("competencies")} count={rs("of", { done: competencies.filter((c) => draft.items[keyOf(c)]?.managerRating !== null).length, total: competencies.length })} />
-              <div className="overflow-x-auto rounded-surface bg-card">
+            <ReviewSection id="m-competencies" className="mt-5" flush title={t("competencies")} count={rs("of", { done: competencies.filter((c) => draft.items[keyOf(c)]?.managerRating !== null).length, total: competencies.length })}>
+              <div className="overflow-x-auto">
                 <table className="w-full min-w-[48rem] text-start">
                   <thead className="bg-inlay"><tr className="type-meta text-muted-foreground">
                     <th scope="col" className="px-5 py-3 font-semibold">{t("competency")}</th>
@@ -758,24 +747,22 @@ function ReviewerView({ record }: { record: PerformanceReviewDto }) {
                   </tbody>
                 </table>
               </div>
-            </section>
+            </ReviewSection>
           ) : null}
 
           <PeerAnswers record={record} />
 
           {personQuestions.length ? (
-            <section className="mt-10" aria-labelledby="m-person-answers">
-              <SectionHeading id="m-person-answers" title={t("sAnswers", { subject })} />
-              <ul className="divide-y divide-border rounded-surface bg-card">
+            <ReviewSection id="m-person-answers" className="mt-5" flush title={t("sAnswers", { subject })}>
+              <ul className="divide-y divide-border">
                 {personQuestions.map((q) => <li key={q.questionId} className="p-5"><p className="type-label text-foreground">{q.text}</p><Said className="mt-1">{q.selfAnswer}</Said></li>)}
               </ul>
-            </section>
+            </ReviewSection>
           ) : null}
 
           {managerQuestions.length ? (
-            <section className="mt-10" aria-labelledby="m-questions">
-              <SectionHeading id="m-questions" title={t("yourAnswers")} />
-              <ul className="divide-y divide-border rounded-surface bg-card">
+            <ReviewSection id="m-questions" className="mt-5" flush title={t("yourAnswers")}>
+              <ul className="divide-y divide-border">
                 {managerQuestions.map((q) => (
                   <li key={q.questionId} className="p-5">
                     <div className="flex items-start justify-between gap-3">
@@ -791,12 +778,11 @@ function ReviewerView({ record }: { record: PerformanceReviewDto }) {
                   </li>
                 ))}
               </ul>
-            </section>
+            </ReviewSection>
           ) : null}
 
-          <section className="mt-10" aria-labelledby="m-overall">
-            <SectionHeading id="m-overall" title={t("overall")} aside={record.selfAssessment?.overallRating ? t("theirView", { subject, level: levelLabel(record.ratingScale, record.selfAssessment.overallRating) ?? "" }) : undefined} />
-            <div className="space-y-3 rounded-surface bg-card p-5">
+          <ReviewSection id="m-overall" className="mt-5" title={t("overall")} aside={record.selfAssessment?.overallRating ? t("theirView", { subject, level: levelLabel(record.ratingScale, record.selfAssessment.overallRating) ?? "" }) : undefined}>
+            <div className="space-y-3">
               {editable ? <ReviewDraftBlock reviewId={record.id} lens="manager" subject={subject} value={draft.summary} onInsert={draft.setSummary} /> : null}
               <LevelCards label={t("yourOverallRating")} levels={record.ratingScale} value={draft.overall} theirs={record.selfAssessment?.overallRating}
                 disabled={!editable} onChange={editable ? draft.setOverall : undefined} />
@@ -805,11 +791,10 @@ function ReviewerView({ record }: { record: PerformanceReviewDto }) {
                   aria-invalid={draft.missing?.summary || undefined} value={draft.summary} onChange={(e) => draft.setSummary(e.target.value)} />
               ) : <Said>{record.managerAssessment?.summary}</Said>}
             </div>
-          </section>
+          </ReviewSection>
 
           {record.potentialEnabled ? (
-            <section className="mt-10" aria-labelledby="m-potential">
-              <SectionHeading id="m-potential" title={t("potential")} aside={<span className="inline-flex items-center gap-1"><Lock className="size-3.5" aria-hidden />{t("neverShownTo", { subject })}</span>} />
+            <ReviewSection id="m-potential" className="mt-5" title={t("potential")} aside={<span className="inline-flex items-center gap-1"><Lock className="size-3.5" aria-hidden />{t("neverShownTo", { subject })}</span>}>
               <OptionCards
                 label={t("potential")}
                 value={draft.potential}
@@ -822,7 +807,7 @@ function ReviewerView({ record }: { record: PerformanceReviewDto }) {
                   description: parts(`potential.${level}`),
                 }))}
               />
-            </section>
+            </ReviewSection>
           ) : null}
         </>
       ) : null}
@@ -841,10 +826,8 @@ function PeerAnswers({ record }: { record: PerformanceReviewDto }) {
   const questions = Array.from(new Set(answered.flatMap((p) => p.answers ?? []).map((a) => a.question)));
   const shown = all ? questions : questions.slice(0, 1);
   return (
-    <section className="mt-10" aria-labelledby="m-peers">
-      <SectionHeading id="m-peers" title={t("fromSPeers", { subjectDisplayName: first(record.subjectDisplayName) })} count={rs("of", { done: answered.length, total: peers.people.length })}
-        aside={<span className="inline-flex items-center gap-1"><Lock className="size-3.5" aria-hidden />{t("youAndHrOnly")}</span>} />
-      <div className="rounded-surface bg-card">
+    <ReviewSection id="m-peers" className="mt-5" flush title={t("fromSPeers", { subjectDisplayName: first(record.subjectDisplayName) })} count={rs("of", { done: answered.length, total: peers.people.length })} aside={<span className="inline-flex items-center gap-1"><Lock className="size-3.5" aria-hidden />{t("youAndHrOnly")}</span>}>
+      <div>
         {answered.length === 0 ? <p className="p-5 type-body-secondary text-muted-foreground">{t("noAnswersYet")}</p> : (
           <div className="divide-y divide-border">
             {shown.map((question) => (
@@ -872,7 +855,7 @@ function PeerAnswers({ record }: { record: PerformanceReviewDto }) {
           </p>
         ))}
       </div>
-    </section>
+    </ReviewSection>
   );
 }
 

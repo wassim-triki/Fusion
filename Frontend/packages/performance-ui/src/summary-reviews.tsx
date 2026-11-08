@@ -1,4 +1,5 @@
 import type { PersonSummaryReviewsDto } from "@repo/api";
+import { Section } from "@repo/ds/shell";
 import type { RenderSummaryLink } from "./summary-lib";
 import { useTranslations } from "next-intl";
 import { usePerformanceWords } from "./use-words";
@@ -32,19 +33,16 @@ export function SummaryReviews({ reviews, renderLink }: { reviews: PersonSummary
   ];
 
   return (
-    <section aria-labelledby="summary-reviews-heading" className="space-y-3">
-      <h2 id="summary-reviews-heading" className="type-section-title text-foreground">
-        {t("reviews")}
-      </h2>
+    <Section id="summary-reviews" title={t("reviews")} flush={rows.length > 0}>
       {rows.length === 0 ? (
         <p className="type-body-secondary text-muted-foreground">{t("noReviewsYet")}</p>
       ) : (
-        <ul className="divide-y divide-border overflow-hidden rounded-surface bg-card">
+        <ul className="divide-y divide-border">
           {rows.map((row) => (
             <li key={row.id}>
               {renderLink({
                 href: row.href,
-                className: "group flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-muted",
+                className: "group flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-muted",
                 children: (
                   <>
                     <span className="min-w-0 flex-1">
@@ -61,6 +59,6 @@ export function SummaryReviews({ reviews, renderLink }: { reviews: PersonSummary
           ))}
         </ul>
       )}
-    </section>
+    </Section>
   );
 }

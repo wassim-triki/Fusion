@@ -1,5 +1,5 @@
 import type { PersonSummaryFeedbackDto, PersonSummaryOneOnOneDto, PersonSummaryPraiseDto, PraiseDto, PraiseReactionKind } from "@repo/api";
-import { StatusBadge } from "@repo/ds/shell";
+import { Section, StatusBadge } from "@repo/ds/shell";
 import { cn } from "@repo/ds";
 import { PraiseList, initials, type PraiseReactionIcons } from "./praise";
 import type { RenderSummaryLink } from "./summary-lib";
@@ -37,17 +37,17 @@ export function SummaryFeedback({ feedback, renderLink }: { feedback: PersonSumm
   const t = useTranslations("performanceUi.SummaryFeedback");
   const words = usePerformanceWords();
   return (
-    <section aria-labelledby="summary-feedback-heading" className="space-y-3">
-      <div className="flex items-baseline justify-between gap-4">
-        <h2 id="summary-feedback-heading" className="type-section-title text-foreground">
-          {t("feedback")} {feedback.total > 0 ? <span className="type-metric text-muted-foreground">{feedback.total}</span> : null}
-        </h2>
-        {feedback.total > 0 ? renderLink({ href: feedback.href, className: linkClass, children: words.t("openFeedback") }) : null}
-      </div>
+    <Section
+      id="summary-feedback"
+      title={t("feedback")}
+      meta={feedback.total > 0 ? feedback.total : undefined}
+      flush={feedback.items.length > 0}
+      action={feedback.total > 0 ? renderLink({ href: feedback.href, className: linkClass, children: words.t("openFeedback") }) : null}
+    >
       {feedback.items.length === 0 ? (
         <p className="type-body-secondary text-muted-foreground">{t("noFeedbackYet")}</p>
       ) : (
-        <ul className="divide-y divide-border rounded-surface bg-card">
+        <ul className="divide-y divide-border">
           {feedback.items.map((item) => (
             <li key={item.id} className="flex items-start gap-3 px-5 py-4">
               <Avatar className="size-8">
@@ -68,7 +68,7 @@ export function SummaryFeedback({ feedback, renderLink }: { feedback: PersonSumm
           ))}
         </ul>
       )}
-    </section>
+    </Section>
   );
 }
 
@@ -85,21 +85,21 @@ export function SummaryPraise({ praise, renderLink, reactionIcons, onReact, onOp
   const t = useTranslations("performanceUi.SummaryPraise");
   const words = usePerformanceWords();
   return (
-    <section aria-labelledby="summary-praise-heading" className="space-y-3">
-      <div className="flex items-baseline justify-between gap-4">
-        <h2 id="summary-praise-heading" className="type-section-title text-foreground">
-          {t("praise")} {praise.total > 0 ? <span className="type-metric text-muted-foreground">{praise.total}</span> : null}
-        </h2>
-        {praise.total > praise.items.length ? renderLink({ href: praise.href, className: linkClass, children: words.t("seeAllPraise") }) : null}
-      </div>
+    <Section
+      id="summary-praise"
+      title={t("praise")}
+      meta={praise.total > 0 ? praise.total : undefined}
+      action={praise.total > praise.items.length ? renderLink({ href: praise.href, className: linkClass, children: words.t("seeAllPraise") }) : null}
+    >
       <PraiseList
+        quote
         items={praise.items}
         reactionIcons={reactionIcons}
         onReact={onReact}
         onOpen={onOpen}
         empty={<p className="type-body-secondary text-muted-foreground">{t("noPraiseYet")}</p>}
       />
-    </section>
+    </Section>
   );
 }
 

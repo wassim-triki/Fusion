@@ -34,8 +34,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ## In progress
 
 - [ ] **B-320** UI and design batch: one tab pattern, Performance lists with titles inside, a fuller sign-in company column, a richer Places table, one word for growth goals (user 2026-11-08: "batch the most from ui and design in 1 batch without losing quality") · Shell, Core HR, Performance, `@repo/ds` · 2026-11-08
-      Sessions: 0 explorer (drawings for every taste piece) → 1 B-198 tabs (✓ 2026-11-08) → 2 B-228 Performance lists → 3 B-210 + B-201 + B-301. Left out: B-230 (parked), B-250/B-274 sidebar toggle (deferred after rejected attempts). [plan](plans/B-320-ui-design-batch.md)
-  - [ ] **B-228** Performance's object lists keep their headings on the canvas (My Plan's sections, the review record's sections, Feedback's request lists, the person summary's Performance parts): each is a list of standalone rich cards, so putting the title inside means the objects become rows or inlays in one frame. Recommendation: rows with the rich detail in the drawer, as Needs you does. Left out of B-225's sweep for that reason · Performance · 2026-10-31
+      Sessions: 0 explorer (drawings for every taste piece) → 1 B-198 tabs (✓ 2026-11-08) → 2 B-228 Performance lists (In review) → 3 B-210 + B-201 + B-301. Left out: B-230 (parked), B-250/B-274 sidebar toggle (deferred after rejected attempts). [plan](plans/B-320-ui-design-batch.md)
   - [ ] **B-210** Sign-in's company column feels empty (logo and name on a wash); give it more, canvas first · Shell · 2026-10-30
         User 2026-10-30 on the Arabic sign-in: "looks clean, still lacking … especially the empty column holding the title of the organization". Revisit later, not urgent (user, same day).
   - [ ] **B-201** Make the Places table richer: it does its job but reads lackluster (user 2026-10-30, not urgent) · Core HR · 2026-10-30
@@ -60,7 +59,8 @@ None waiting.
 
 ### Other reviews
 
-None waiting.
+- [ ] **B-228** Performance lists with their titles inside the frame (part of B-320) · Performance · 2026-10-31, built 2026-11-08
+      Look at (dark, 1440×900, `plans/B-320-screens/`): 02 My Plan, objectives and development goals as rows (Mid-year, Aicha Bouazizi, the employee); 03 a development goal's drawer; 04 Feedback › Requests with a request's drawer (Carthage, Leila Baccouche, the employee); 05 the year-end review, items as boxes inside the frame with rating and comment (Year-end, Aicha); 06 a person's Performance tab, sections with rows inside (Mid-year, Mariam Gharbi, the manager, on Aicha). Clicking an objective row opens the existing objective drawer. A manager's pending request now sits under the objective's title.
 
 ## Ready
 
@@ -69,6 +69,8 @@ None waiting.
 ### Rebuild slices
 
 ### Other work
+
+- [ ] **B-321** The remaining Performance lists with headings on the canvas: the 1:1 record (`PlanSection`: talking points, actions, notes, past meetings) and the Reviews page and round page (`SectionHeading`). Same move as B-228: DS `Section`, rows inside, then delete `PlanSection` and `SectionHeading` · Performance · 2026-11-08
 
 - [ ] **B-249** The brand studio's Home preview draws the real Home (day one's guide, the company card) instead of its stand-in (from B-188's notes) · Core HR · 2026-11-01
       User 2026-11-08: left out of B-320 for now.

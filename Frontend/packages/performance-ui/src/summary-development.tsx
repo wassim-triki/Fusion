@@ -1,5 +1,6 @@
 import type { DevelopmentGoalStatus, PersonSummaryDevelopmentDto } from "@repo/api";
 import { cn } from "@repo/ds";
+import { Section } from "@repo/ds/shell";
 import type { RenderSummaryLink } from "./summary-lib";
 import { useTranslations } from "next-intl";
 import { usePerformanceWords } from "./use-words";
@@ -12,19 +13,19 @@ export function SummaryDevelopment({ development, renderLink }: { development: P
   const t = useTranslations("performanceUi.SummaryDevelopment");
   const words = usePerformanceWords();
   return (
-    <section aria-labelledby="summary-development-heading" className="space-y-3">
-      <div className="flex items-baseline justify-between gap-4">
-        <h2 id="summary-development-heading" className="type-section-title text-foreground">
-          {t("development")}
-        </h2>
-        {renderLink({ href: development.href, className: "type-label text-foreground hover:underline", children: words.t("openDevelopment") })}
-      </div>
+    <Section
+      id="summary-development"
+      title={t("development")}
+      meta={development.goals.length > 0 ? development.goals.length : undefined}
+      flush={development.goals.length > 0}
+      action={renderLink({ href: development.href, className: "type-label text-foreground hover:underline", children: words.t("openDevelopment") })}
+    >
       {development.goals.length === 0 ? (
         <p className="type-body-secondary text-muted-foreground">{t("noDevelopmentGoalsYet")}</p>
       ) : (
-        <ul className="space-y-4 rounded-surface bg-card p-5">
+        <ul className="divide-y divide-border">
           {development.goals.map((goal, index) => (
-            <li key={`${goal.title}-${index}`} className="flex items-start gap-3">
+            <li key={`${goal.title}-${index}`} className="flex items-start gap-3 px-5 py-3.5">
               <GoalMark status={goal.status} />
               <div className="min-w-0">
                 <p className="type-body font-medium text-foreground">{goal.title}</p>
@@ -42,7 +43,7 @@ export function SummaryDevelopment({ development, renderLink }: { development: P
           ))}
         </ul>
       )}
-    </section>
+    </Section>
   );
 }
 

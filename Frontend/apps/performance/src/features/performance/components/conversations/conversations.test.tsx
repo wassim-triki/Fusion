@@ -126,6 +126,33 @@ describe("Feedback workspace", () => {
     expect(screen.getByRole("link", { name: "Praise" }).getAttribute("href")).toBe("/feedback?tab=praise");
     expect(screen.getByRole("link", { name: "Received" }).getAttribute("href")).toBe("/feedback");
   });
+
+  it("opens one of your requests beside the list, with who was asked and the answers", () => {
+    state.params = new URLSearchParams("tab=requests");
+    const mine = {
+      id: "r2", question: "How did the onboarding sessions land?", requester: { id: "me", name: "Rim Mahjoub" }, dueDate: "2026-10-30",
+      state: "Open" as const, overdue: false, answered: 1, declined: 0, invited: 2, myStatus: null, requestedAt: "2026-10-20T08:00:00Z", subject: null,
+      invitees: [{ person: { id: "khaled", name: "Khaled Sassi" }, status: "Answered" as const }, { person: { id: "aicha", name: "Aicha Bouazizi" }, status: "Waiting" as const }],
+      latestAnswer: null,
+    };
+    state.requests = { toAnswer: [], mine: [mine] } as never;
+    state.request = request({
+      id: "r2", question: mine.question, requester: mine.requester, viewerRole: "Requester", mine: null,
+      invitees: [
+        { person: { id: "khaled", name: "Khaled Sassi" }, status: "Answered", respondedAt: "2026-10-22T08:00:00Z", declineReason: null },
+        { person: { id: "aicha", name: "Aicha Bouazizi" }, status: "Waiting", respondedAt: null, declineReason: null },
+      ],
+      answers: [feedback({ id: "a1", author: { id: "khaled", name: "Khaled Sassi" }, message: "They were short and useful." })],
+    });
+    render(<FeedbackWorkspace />);
+    expect(screen.getByRole("heading", { name: "Yours" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /How did the onboarding sessions land/ }));
+    const drawer = screen.getByRole("dialog");
+    expect(within(drawer).getByText("Aicha Bouazizi")).toBeTruthy();
+    expect(within(drawer).getByText("Not yet")).toBeTruthy();
+    expect(within(drawer).getByText("They were short and useful.")).toBeTruthy();
+    expect(within(drawer).getByRole("link", { name: "Open the request" }).getAttribute("href")).toBe("/feedback/requests/r2");
+  });
 });
 
 describe("feedback composer", () => {

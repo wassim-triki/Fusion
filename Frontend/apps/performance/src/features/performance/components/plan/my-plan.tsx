@@ -34,7 +34,7 @@ import {
   AlertDialogTrigger,
 } from "@repo/ds/components/ui/alert-dialog";
 import { Button } from "@repo/ds/components/ui/button";
-import { AsyncButton, PagePermissionNotice } from "@repo/ds/shell";
+import { AsyncButton, PagePermissionNotice, Section } from "@repo/ds/shell";
 import { PlanEmptySkeleton } from "./plan-skeleton";
 import {
   useAlignmentTargets,
@@ -47,7 +47,7 @@ import { useObjectiveRecord } from "../objective-record/use-objective-record";
 import { PlanObjectiveRow } from "./plan-objective-row";
 import { ObjectiveRequestMarker, RequestBand, openRequestsFor } from "../update-requests/update-requests";
 import { useUpdateRequests } from "../../api/use-update-requests";
-import { PlanDocument, PlanSection, PlanWeightStrip } from "./plan-layout";
+import { PlanDocument, PlanWeightStrip, SectionTitle } from "./plan-layout";
 import { PlanRail, activeReturn } from "./plan-rail";
 import { DevelopmentSection } from "./development-section";
 import { OwnerChangeRequest } from "./change-requests";
@@ -240,7 +240,6 @@ export function MyPlan({
               <div id="plan-objectives" className="scroll-mt-6">
                 <ObjectiveLedger
                   plan={plan}
-                  cycle={cycle}
                   targets={targets}
                   requests={requests.data}
                   onAddress={async (requestId, reply) => {
@@ -276,13 +275,12 @@ export function MyPlan({
 }
 
 /**
- * The plan ledger: a section heading (count, weight total, the single add affordance) over the
- * objective cards, which sit on the canvas. The list is not boxed, so it simply ends after the last card. Authoring actions live per-row behind an overflow menu; a submitted or
- * locked plan renders the same rows without them.
+ * The plan ledger: one section whose title line carries the count, the weight total and the single add affordance,
+ * over the objectives as rows; each row opens its record beside the list. Authoring actions live per row behind an
+ * overflow menu; a submitted or locked plan renders the same rows without them.
  */
 function ObjectiveLedger({
   plan,
-  cycle,
   targets,
   requests,
   onAddress,
@@ -291,7 +289,6 @@ function ObjectiveLedger({
   onRemove,
 }: {
   plan: EmployeePlanDto;
-  cycle: CycleSummaryDto;
   targets: AlignmentTargetDto[];
   requests: UpdateRequestDto[] | undefined;
   /** Marks a change request addressed; resolves whether it saved. */
@@ -320,37 +317,32 @@ function ObjectiveLedger({
     objective.isAligned ? scopeByTitle.get(objective.directionPath.at(-1) ?? "") : undefined;
 
   return (
-    <PlanSection
-      label={t("objectives")}
-      count={plan.objectives.length}
-      // Weights are settled at 100% once the plan is locked; the strip only guides drafting.
-      summary={plan.isLocked ? undefined : <PlanWeightStrip segments={plan.objectives.map((o) => ({ weight: o.planWeight ?? 0, aligned: o.isAligned }))} />}
+    <Section
+      id="objectives"
+      title={<SectionTitle label={t("objectives")} count={plan.objectives.length} />}
+      flush={plan.objectives.length > 0}
       action={
-        plan.canAuthor ? (
-          <Button
-            size="sm"
-            onClick={onAdd}
-            className="bg-foreground text-background hover:bg-foreground/90"
-          >
-            <Plus className="size-4" data-icon="inline-start" /> {t("addObjective")}
-          </Button>
-        ) : null
+        <>
+          {/* Weights are settled at 100% once the plan is locked; the strip only guides drafting. */}
+          {plan.isLocked ? null : <PlanWeightStrip segments={plan.objectives.map((o) => ({ weight: o.planWeight ?? 0, aligned: o.isAligned }))} />}
+          {plan.canAuthor ? (
+            <Button size="sm" onClick={onAdd}>
+              <Plus className="size-4" data-icon="inline-start" /> {t("addObjective")}
+            </Button>
+          ) : null}
+        </>
       }
     >
-
       {plan.objectives.length === 0 ? (
-        <div className="rounded-surface border border-dashed border-border px-5 py-10 text-center type-body text-muted-foreground">
-          {t("noObjectivesYetAddThe")}
-        </div>
+        <p className="py-6 text-center type-body text-muted-foreground">{t("noObjectivesYetAddThe")}</p>
       ) : (
-        <div className="space-y-3">
+        <ul className="divide-y divide-border">
           {plan.objectives.map((objective) => (
             // On a locked plan the row grows an execution band (progress ring, latest reported value,
             // Update progress) while the baseline above it stays read-only.
             <PlanObjectiveRow
               key={objective.id}
               objective={objective}
-              cycle={cycle}
               alignmentScope={scopeFor(objective)}
               showProgress={plan.isLocked}
               active={record.isOpen(refFor(objective.id))}
@@ -375,10 +367,9 @@ function ObjectiveLedger({
               })()}
             />
           ))}
-        </div>
+        </ul>
       )}
-
-    </PlanSection>
+    </Section>
   );
 }
 
@@ -464,8 +455,8 @@ function PlanNotStarted({
 }) {
   const t = useTranslations("plan.PlanNotStarted");
   return (
-    <PlanSection label={t("objectives")}>
-      <div className="flex flex-col items-center rounded-surface bg-card px-6 py-12 text-center">
+    <Section id="objectives" title={t("objectives")}>
+      <div className="flex flex-col items-center px-6 pt-4 pb-8 text-center">
         <PlanIllustration />
         <h2 className="mt-6 type-section-title text-foreground">
           {t("createYourPlan", { cycleName })}
@@ -490,7 +481,7 @@ function PlanNotStarted({
           {t("startMyPlan")}
         </Button>
       </div>
-    </PlanSection>
+    </Section>
   );
 }
 

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { RatingScaleLevelDto } from "@repo/api";
+import { Section } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { formatDate } from "@repo/ds/lib/dates";
 import { Check, Clock } from "@/lib/icons";
@@ -153,7 +154,7 @@ export function SegmentRating({
   const parts = useTranslations("reviews.parts");
   return (
     <div role={onChange ? "radiogroup" : "img"} aria-label={onChange ? label : parts("rated", { label, value: levels.find((l) => l.value === value)?.label ?? parts("notRated") })}
-      className="inline-flex items-center gap-0.5 rounded-control bg-inlay p-0.5">
+      className="inline-flex items-center gap-0.5 rounded-control bg-inlay p-0.5 group-data-[inlay]/inlay:bg-card">
       {levels.map((level) => {
         const selected = value === level.value;
         const other = theirs === level.value;
@@ -162,7 +163,7 @@ export function SegmentRating({
         return onChange ? (
           <button key={level.value} type="button" role="radio" aria-checked={selected} aria-label={`${level.value} ${level.label}`}
             disabled={disabled} onClick={() => onChange(level.value)}
-            className={cn(common, !selected && "hover:bg-card hover:text-foreground", "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60")}>
+            className={cn(common, !selected && "hover:bg-card hover:text-foreground group-data-[inlay]/inlay:hover:bg-inlay", "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60")}>
             {level.value}
           </button>
         ) : (
@@ -244,6 +245,31 @@ export function SectionHeading({ title, count, aside, id }: { title: string; cou
       </h2>
       {aside ? <div className="type-meta text-muted-foreground">{aside}</div> : null}
     </div>
+  );
+}
+
+/**
+ * One section of a review record (B-228): the title, its count and a note sit inside the frame; a form's items sit
+ * inside it as inlays, a read list runs edge to edge (`flush`).
+ */
+export function ReviewSection({ id, title, count, aside, flush, className, children }: {
+  id: string; title: string; count?: ReactNode; aside?: ReactNode; flush?: boolean; className?: string; children: ReactNode;
+}) {
+  return (
+    <Section
+      id={id}
+      flush={flush}
+      className={className}
+      title={
+        <span className="flex flex-wrap items-baseline gap-x-1.5">
+          {title}
+          {count !== undefined ? <span className="type-meta tabular-nums text-muted-foreground">{count}</span> : null}
+        </span>
+      }
+      meta={aside}
+    >
+      {children}
+    </Section>
   );
 }
 

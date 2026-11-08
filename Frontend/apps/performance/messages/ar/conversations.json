@@ -171,11 +171,6 @@
   "YourRequest": {
     "overdue": "متأخر",
     "due": "الاستحقاق",
-    "noAnswersYet": "لا ردود بعد",
-    "answered": "تم الرد",
-    "declined": "اعتذر",
-    "waiting": "بانتظار الرد",
-    "asked": "طُلب",
     "ofAnswered": "ردّ {answered} من {invited}"
   },
   "PraiseTab": {
@@ -269,5 +264,20 @@
   },
   "ObjectiveRequestMarker": {
     "asked": "طلب {value} · {formatDate}"
+  },
+  "RequestDrawer": {
+    "yourRequest": "طلبك",
+    "yourRequestDue": "طلبك · الاستحقاق {dueDate}",
+    "yourRequestClosed": "طلبك · مغلق",
+    "asked": "المطلوب منهم",
+    "answered": "تم الرد",
+    "declined": "اعتذر",
+    "waiting": "ليس بعد",
+    "answers": "{count, plural, =0 {الردود} other {الردود · #}}",
+    "noAnswersYet": "لا ردود بعد",
+    "aColleague": "زميل",
+    "openTheRequest": "فتح الطلب",
+    "unavailable": "هذا الطلب غير متاح لك.",
+    "loading": "جارٍ تحميل الطلب"
   }
 }

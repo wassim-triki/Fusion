@@ -40,7 +40,6 @@
     "by": "قبل {targetDate}",
     "fromLastCycle": "من الدورة السابقة",
     "carriedTo": "رُحّل إلى {carriedToCycleName}",
-    "moreFor": "المزيد لـ{title}",
     "edit": "تعديل",
     "remove": "حذف",
     "removeThisGoal": "حذف هذا الهدف؟",
@@ -48,7 +47,16 @@
     "keepIt": "الإبقاء عليه",
     "removeGoal": "حذف الهدف",
     "couldNotChangeTheGoals": "تعذّر تغيير حالة الهدف.",
-    "couldNotRemoveTheGoal": "تعذّر حذف الهدف."
+    "couldNotRemoveTheGoal": "تعذّر حذف الهدف.",
+    "developmentGoal": "هدف تطوير",
+    "status": "الحالة",
+    "competency": "الكفاءة",
+    "aimedFor": "الموعد المستهدف",
+    "addedBy": "أضافه",
+    "now": "الآن",
+    "from": "المصدر",
+    "actions": "الإجراءات",
+    "noActions": "لا إجراءات بعد"
   },
   "CarryOverOffer": {
     "openGoal": "{count} هدف مفتوح",
@@ -215,34 +223,11 @@
     "actionsFor": "إجراءات {title}",
     "editObjective": "تعديل الهدف",
     "removeObjective": "حذف الهدف",
-    "view": "عرض {title}",
-    "measurement": "القياس",
-    "target": "الهدف",
-    "milestones": "المراحل",
-    "singlePercentage": "نسبة واحدة",
-    "measure": "المقياس",
-    "duration": "المدة",
     "weight": "الوزن",
     "updateProgress": "تحديث التقدم",
-    "view2": "عرض",
-    "direction": "التوجه"
-  },
-  "MilestoneStrip": {
-    "ofDone": "{done} من {length} منجزة",
-    "milestone": "{length} مرحلة",
-    "milestones": "{length} مراحل"
-  },
-  "ExecutionState": {
-    "ofMilestone": "{done} من {total} مراحل",
-    "s": "",
-    "completed": "مكتملة",
-    "updated": "محدّثة",
-    "overdue": "· {overdue} متأخرة",
-    "nextDue": "· الاستحقاق التالي {nextDue}",
-    "updated2": "حُدّث {updated}",
-    "milestoneProgress": "تقدم المراحل",
-    "currentProgress": "التقدم الحالي",
-    "currentValue": "القيمة الحالية"
+    "direction": "التوجه",
+    "progress": "التقدم",
+    "updateProgressFor": "تحديث التقدم في {title}"
   },
   "PlanProgressCard": {
     "noProgressReportedYet": "لم يُبلّغ عن أي تقدم بعد",

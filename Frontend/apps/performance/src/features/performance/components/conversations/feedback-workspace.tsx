@@ -10,7 +10,7 @@ import type { FeedbackDto, FeedbackRequestRowDto, FeedbackSummaryDto, FeedbackVi
 import { useReactToPraise } from "@repo/api/query";
 import { Button } from "@repo/ds/components/ui/button";
 import { FilterChips } from "@repo/ds/choice";
-import { LinkTabs, PageContainer, PageHeader, StatusBadge, Said } from "@repo/ds/shell";
+import { LinkTabs, PageContainer, PageHeader, Section, StatusBadge, Said } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { AvatarStack, PersonInitials, PraiseList, VALUE_TONE, ValueChip, useValueTones } from "@repo/performance-ui";
 import { ChevronRight, MessageSquare, Send, Star, Target } from "@/lib/icons";
@@ -31,7 +31,7 @@ import { PlanDocument, SidebarSection } from "../plan/plan-layout";
 import type { PickedColleague } from "./colleague-picker";
 import { FeedbackComposer, PraiseComposer, RequestComposer, type FixedObjective } from "./composers";
 import { ByMonth, DueBlock, SubjectChip, firstName } from "./conversation-parts";
-import { FeedbackDrawer, PraiseDrawer } from "./drawers";
+import { FeedbackDrawer, PraiseDrawer, RequestDrawer } from "./drawers";
 import { REACTION_ICONS } from "./reaction-icons";
 import { useTranslations } from "next-intl";
 import { useFormat } from "@repo/ds/lib/use-format";
@@ -426,6 +426,7 @@ export function FeedbackCard({
 function RequestsTab() {
   const t = useTranslations("conversations.RequestsTab");
   const requests = useFeedbackRequests();
+  const [openId, setOpenId] = useState<string | null>(null);
   if (requests.error) return <ContentUnavailable error={requests.error} onRetry={requests.refetch} />;
   if (!requests.data) return <FeedSkeleton />;
   const waiting = requests.data.toAnswer.filter((r) => r.state === "Open" && r.myStatus === "Waiting");
@@ -437,40 +438,33 @@ function RequestsTab() {
   const lastAnswered = requests.data.toAnswer.find((r) => r.myStatus === "Answered");
 
   return (
-    <div className="max-w-4xl space-y-10">
-      <section aria-labelledby="asked-of-you">
-        <h2 id="asked-of-you" className="mb-4 type-section-title text-foreground">{t("askedOfYou")}</h2>
+    <div className="max-w-4xl space-y-5">
+      <Section id="asked-of-you" title={t("askedOfYou")} meta={waiting.length || undefined} flush={waiting.length > 0}>
         {waiting.length === 0 ? (
           <p className="type-body-secondary text-muted-foreground">
             {t("nothingToAnswer")}{lastAnswered ? " " + t("lastAnsweredFor", { name: lastAnswered.requester.name ?? "" }) : ""}
           </p>
         ) : (
-          <ul className="space-y-3">{waiting.map((row) => <AskedOfYou key={row.id} row={row} />)}</ul>
+          <ul className="divide-y divide-border">{waiting.map((row) => <AskedOfYou key={row.id} row={row} />)}</ul>
         )}
-      </section>
+      </Section>
 
-      <section aria-labelledby="your-requests">
-        <div className="mb-4 flex items-baseline justify-between gap-4">
-          <h2 id="your-requests" className="flex items-baseline gap-2 type-section-title text-foreground">
-            {t("yours")} {mineOpen.length > 0 ? <span className="type-meta tabular-nums text-muted-foreground">{t("open", { length: mineOpen.length })}</span> : null}
-          </h2>
-        </div>
+      <Section id="your-requests" title={t("yours")} meta={mineOpen.length > 0 ? t("open", { length: mineOpen.length }) : undefined} flush={mineOpen.length > 0}>
         {mineOpen.length === 0 ? (
           <p className="type-body-secondary text-muted-foreground">{t("noOpenRequests")}</p>
         ) : (
-          <ul className="divide-y divide-border overflow-hidden rounded-surface bg-card">{mineOpen.map((row) => <YourRequest key={row.id} row={row} />)}</ul>
+          <ul className="divide-y divide-border">
+            {mineOpen.map((row) => <YourRequest key={row.id} row={row} active={openId === row.id} onOpen={() => setOpenId(row.id)} />)}
+          </ul>
         )}
-      </section>
+      </Section>
 
       {closed.length > 0 ? (
-        <section aria-labelledby="closed-requests">
-          <h2 id="closed-requests" className="mb-3 flex items-baseline gap-2 type-subsection-title text-muted-foreground">
-            {t("closed")} <span className="type-meta tabular-nums">{closed.length}</span>
-          </h2>
-          <ul className="space-y-2">
-            {closed.map(({ row, asked }) => (
-              <li key={row.id}>
-                <Link href={`/feedback/requests/${row.id}`} className="group flex items-center gap-3 rounded-control bg-inlay px-4 py-3 hover:bg-inlay/70">
+        <Section id="closed-requests" title={t("closed")} meta={closed.length} flush>
+          <ul className="divide-y divide-border">
+            {closed.map(({ row, asked }) => {
+              const content = (
+                <>
                   <span className="min-w-0 flex-1 truncate type-body text-foreground">
                     {asked ? <span className="text-muted-foreground">{t("asked", { name: firstName(row.requester.name) })} </span> : null}
                     {row.question}
@@ -480,24 +474,41 @@ function RequestsTab() {
                       ? row.myStatus === "Answered" ? t("answered") : row.myStatus === "Declined" ? t("declined") : t("closed")
                       : (row.answered === 1 ? t("answer", { answered: row.answered }) : t("answers", { answered: row.answered }))}
                   </span>
-                  <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground" aria-hidden />
-                </Link>
-              </li>
-            ))}
+                  <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground rtl:-scale-x-100" aria-hidden />
+                </>
+              );
+              const rowClass = cn(LIST_ROW, "flex w-full items-center gap-3 text-start", !asked && openId === row.id && LIST_ROW_ACTIVE);
+              return (
+                <li key={row.id}>
+                  {asked ? (
+                    <Link href={`/feedback/requests/${row.id}`} className={rowClass}>{content}</Link>
+                  ) : (
+                    // eslint-disable-next-line no-restricted-syntax -- the row opens this request in the side panel; pressed marks the one open
+                    <button type="button" aria-pressed={openId === row.id} onClick={() => setOpenId(row.id)} className={rowClass}>{content}</button>
+                  )}
+                </li>
+              );
+            })}
           </ul>
-        </section>
+        </Section>
       ) : null}
+
+      <RequestDrawer requestId={openId} onClose={() => setOpenId(null)} />
     </div>
   );
 }
 
-/** A question asked of you: the clock, who asked, the question in their words, and Answer. */
+/** A list row inside a section: edge to edge, a quiet hover, focus kept inside the frame. */
+const LIST_ROW = "group px-5 py-3.5 transition-colors hover:bg-inlay/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring";
+/** The row whose detail is open beside the list. */
+const LIST_ROW_ACTIVE = "bg-inlay/50 ring-1 ring-inset ring-primary-ring";
+
+/** A question asked of you: who asked and when, the question in their words, the clock, and Answer. */
 function AskedOfYou({ row }: { row: FeedbackRequestRowDto }) {
   const format = useFormat();
   const t = useTranslations("conversations.AskedOfYou");
   return (
-    <li className="flex flex-wrap items-center gap-5 rounded-surface border border-primary-ring bg-card p-5 sm:flex-nowrap">
-      <DueBlock date={row.dueDate} overdue={row.overdue} />
+    <li className="flex flex-wrap items-center gap-x-5 gap-y-3 px-5 py-4 sm:flex-nowrap">
       <div className="min-w-0 flex-1 space-y-2">
         <p className="flex items-center gap-2 type-meta text-muted-foreground">
           <PersonInitials name={row.requester.name} size="xs" />
@@ -506,6 +517,7 @@ function AskedOfYou({ row }: { row: FeedbackRequestRowDto }) {
         <Said>{row.question}</Said>
         {row.subject ? <SubjectChip subject={row.subject} /> : null}
       </div>
+      <DueBlock date={row.dueDate} overdue={row.overdue} />
       <Button asChild>
         <Link href={`/feedback/requests/${row.id}`}>{t("answer")}</Link>
       </Button>
@@ -513,54 +525,35 @@ function AskedOfYou({ row }: { row: FeedbackRequestRowDto }) {
   );
 }
 
-/** One of your open requests: what you asked, who has answered, and the latest answer. */
-function YourRequest({ row }: { row: FeedbackRequestRowDto }) {
+/** One of your open requests as a row: what you asked and by when, who was asked and how many answered. It opens beside the list. */
+function YourRequest({ row, active, onOpen }: { row: FeedbackRequestRowDto; active: boolean; onOpen: () => void }) {
   const format = useFormat();
   const t = useTranslations("conversations.YourRequest");
   const invitees = row.invitees ?? [];
   return (
     <li>
-      <Link href={`/feedback/requests/${row.id}`} className="grid gap-4 px-5 py-4 hover:bg-inlay/40 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:gap-8">
-        <div className="min-w-0 space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            {row.subject ? <SubjectChip subject={row.subject} /> : null}
+      <button
+        type="button"
+        onClick={onOpen}
+        // eslint-disable-next-line no-restricted-syntax -- the row opens this request in the side panel; pressed marks the one open
+        aria-pressed={active}
+        className={cn(LIST_ROW, "grid w-full gap-3 text-start md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:gap-8", active && LIST_ROW_ACTIVE)}
+      >
+        <span className="min-w-0 space-y-1">
+          <span className="block type-label text-foreground">{row.question}</span>
+          <span className="flex flex-wrap items-center gap-2">
             <span className={cn("type-meta tabular-nums", row.overdue ? "text-destructive" : "text-muted-foreground")}>
               {row.overdue ? t("overdue") : t("due")} {format.date(row.dueDate)}
             </span>
-          </div>
-          <p className="type-label text-foreground">{row.question}</p>
-          {row.latestAnswer ? (
-            <p className="truncate type-body-secondary text-muted-foreground">
-              <span className="text-foreground">{firstName(row.latestAnswer.author.name)}:</span> &ldquo;{row.latestAnswer.message}&rdquo;
-            </p>
-          ) : (
-            <p className="type-meta text-muted-foreground">{t("noAnswersYet")}</p>
-          )}
-        </div>
-        <div className="flex flex-col gap-2.5 md:items-end">
-          <ul className="flex gap-3" aria-label={t("asked")}>
-            {invitees.map((invitee) => (
-              <li key={invitee.person.id} className="flex flex-col items-center gap-1" title={`${invitee.person.name}: ${invitee.status.toLowerCase()}`}>
-                <PersonInitials
-                  name={invitee.person.name}
-                  size="sm"
-                  className={cn(
-                    "ring-2 ring-offset-2 ring-offset-card",
-                    invitee.status === "Answered" ? "ring-success" : invitee.status === "Declined" ? "opacity-50 ring-transparent" : "ring-border",
-                  )}
-                />
-                <span className="type-meta text-muted-foreground">{invitee.status === "Answered" ? t("answered") : invitee.status === "Declined" ? t("declined") : t("waiting")}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="flex w-full items-center gap-2.5 md:w-48">
-            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-inlay" aria-hidden>
-              <span className="block h-full rounded-full bg-success" style={{ width: `${row.invited ? (row.answered / row.invited) * 100 : 0}%` }} />
-            </div>
-            <span className="type-meta tabular-nums text-muted-foreground">{t("ofAnswered", { answered: row.answered, invited: row.invited })}</span>
-          </div>
-        </div>
-      </Link>
+            {row.subject ? <SubjectChip subject={row.subject} /> : null}
+          </span>
+        </span>
+        <span className="flex items-center gap-3">
+          {invitees.length > 0 ? <AvatarStack names={invitees.map((i) => i.person.name)} size="sm" max={4} /> : null}
+          <span className="type-meta tabular-nums text-muted-foreground">{t("ofAnswered", { answered: row.answered, invited: row.invited })}</span>
+          <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground rtl:-scale-x-100" aria-hidden />
+        </span>
+      </button>
     </li>
   );
 }

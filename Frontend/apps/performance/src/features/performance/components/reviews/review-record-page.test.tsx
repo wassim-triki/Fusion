@@ -21,6 +21,8 @@ vi.mock("@repo/ds/shell", async () => {
     PagePermissionNotice: ({ title }: { title: string }) => React.createElement("div", null, title),
     PageSkeleton: () => React.createElement("div", null, "Loading"),
     StatusBadge: ({ children }: React.PropsWithChildren) => React.createElement("span", null, children),
+    Section: ({ title, meta, children }: React.PropsWithChildren<{ title?: React.ReactNode; meta?: React.ReactNode }>) =>
+      React.createElement("section", null, React.createElement("h2", null, title), meta, children),
     PageHeader: ({ title, actions }: { title: React.ReactNode; actions?: React.ReactNode }) =>
       React.createElement("header", null, React.createElement("h1", null, title), actions),
   };

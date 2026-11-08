@@ -33,15 +33,14 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In progress
 
-- [ ] **B-320** UI and design batch: one tab pattern, Performance lists with titles inside, a fuller sign-in company column, a richer Places table, the real Home in the brand preview, one word for growth goals (user 2026-11-08: "batch the most from ui and design in 1 batch without losing quality") · Shell, Core HR, Performance, `@repo/ds` · 2026-11-08
-      Sessions: 0 explorer (drawings for every taste piece) → 1 B-198 tabs → 2 B-228 Performance lists → 3 B-210 + B-201 + B-249 + B-301. Left out: B-230 (parked), B-250/B-274 sidebar toggle (deferred after rejected attempts). [plan](plans/B-320-ui-design-batch.md)
+- [ ] **B-320** UI and design batch: one tab pattern, Performance lists with titles inside, a fuller sign-in company column, a richer Places table, one word for growth goals (user 2026-11-08: "batch the most from ui and design in 1 batch without losing quality") · Shell, Core HR, Performance, `@repo/ds` · 2026-11-08
+      Sessions: 0 explorer (drawings for every taste piece) → 1 B-198 tabs → 2 B-228 Performance lists → 3 B-210 + B-201 + B-301. Left out: B-230 (parked), B-250/B-274 sidebar toggle (deferred after rejected attempts). [plan](plans/B-320-ui-design-batch.md)
   - [ ] **B-198** One tab and view-switch pattern across Fusion, matching the target design: every tab strip and view switch today is reused old UI (the Organization lenses are the latest example). Define it once in `@repo/ds` from the accepted grammar (D-01 band tabs, D-17 views), first where a slice draws tabs (B-180's person page or B-183's Organization, whichever comes first), then replace every other use; B-192 checks none is left · All · 2026-10-30
         2026-10-31: defined as `LinkTabs` in `@repo/ds/shell` (active = company color, outline + subtle fill) and used on the person page (B-180); every other tab strip and view switch still to move.
   - [ ] **B-228** Performance's object lists keep their headings on the canvas (My Plan's sections, the review record's sections, Feedback's request lists, the person summary's Performance parts): each is a list of standalone rich cards, so putting the title inside means the objects become rows or inlays in one frame. Recommendation: rows with the rich detail in the drawer, as Needs you does. Left out of B-225's sweep for that reason · Performance · 2026-10-31
   - [ ] **B-210** Sign-in's company column feels empty (logo and name on a wash); give it more, canvas first · Shell · 2026-10-30
         User 2026-10-30 on the Arabic sign-in: "looks clean, still lacking … especially the empty column holding the title of the organization". Revisit later, not urgent (user, same day).
   - [ ] **B-201** Make the Places table richer: it does its job but reads lackluster (user 2026-10-30, not urgent) · Core HR · 2026-10-30
-  - [ ] **B-249** The brand studio's Home preview draws the real Home (day one's guide, the company card) instead of its stand-in (from B-188's notes) · Core HR · 2026-11-01
   - [ ] **B-301** "Growth goal" and "development goal" both appear for the same idea; pick one (left out of B-192's fix list) · Performance · 2026-11-06
 
 ### Rebuild program tracking
@@ -72,6 +71,9 @@ None waiting.
 ### Rebuild slices
 
 ### Other work
+
+- [ ] **B-249** The brand studio's Home preview draws the real Home (day one's guide, the company card) instead of its stand-in (from B-188's notes) · Core HR · 2026-11-01
+      User 2026-11-08: left out of B-320 for now.
 
 - [ ] **B-314** Access › History tells role grants too (given by whom, when; removed): removing a grant deletes its row today, so grants need a kept history first; B-231 ships the account story without them · Identity, Core HR · 2026-11-07
 - [ ] **B-311** Later check: rules defined once, not redefined. Password rules first, then anything like them (address checks, length limits, …): find each rule's copies across the backend and frontends, keep one source, and make the rest read from it · Identity, Shell, Core HR · 2026-11-07

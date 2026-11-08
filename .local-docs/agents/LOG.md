@@ -1,5 +1,8 @@
 # LOG — the one history
 
+- ○ **B-277** closed, 2026-11-08 (user: "handle 277 like you suggest"): the one collision was `plans/B-189-reports.md`, identical to its archived copy; the plans copy deleted.
+- ○ **B-202** dropped, 2026-11-08 (user): the running-service migration recipe stays in the `ef-migration-while-running` memory note.
+- Board, 2026-11-08: **B-311** rewritten (rules defined once within each side, not across sides); **B-194** moved under **B-324**, now the one dead-code session.
 - ✓ **B-325** Polish batch accepted, 2026-11-08 (user: "approved"): with it **B-323** who was chosen for a role in Change history, **B-321** Performance lists inside their frames, **B-250/B-274** the sidebar fold (edge tab, the mark opens it, Ctrl+B) (✓).
 - **B-325 Polish batch** built, 2026-11-08, **In review** (screens `plans/B-325-screens/01–05`):
   - **B-323** Identity `CoreAccessController.Recorded` adds `chosen` (user id + name of each holder chosen by name) to `access.profile.updated`; `change-history.tsx` `chosenLines` says "Gave X the role" / "Took the role from X" (existing words); older records keep "Changed the role".

@@ -69,17 +69,13 @@ Security and scale that must hold once Fusion is online; nothing changes in the 
 
 ### Cleanup and tooling
 
-- [ ] **B-324** Administrators: clear out what the B-178 rebuild left behind · Identity, Core HR · 2026-11-08
+- [ ] **B-324** Dead code the rebuilds left behind: the old administrator paths and the legacy employee writes, one backend session · Identity, Core HR · 2026-11-08
   - [ ] **B-299** Administrator Suspend/Reactivate and the `TenantAdministrator` invitation purpose are now unreachable from the product: only tests and a database constraint keep them. Remove them, or say what they are for · Identity · 2026-11-06
   - [ ] **B-300** The backend still says "Tenant Administrator" in role names, mail and audit, while screens say "Administrator" since B-192 · Identity · 2026-11-06
   - [ ] **B-222** Clean up what the old Administrators workspace left: Core HR's `admins` message namespace, the `/access` route skeletons, suspend/reactivate (still enforced by the two-administrator rule, no screen offers them), and the invite acceptance's Employee/Manager label from `InviteToken.Role` · Core HR, Identity · 2026-10-31
-- [ ] **B-194** Remove the legacy employee write endpoints (`POST /employees`, `PUT /employees/{id}`, rehire, terminate, change-manager) and their commands: no screen calls them; B-175 had to move them onto job and place ids anyway · Core HR · 2026-10-30
-- [ ] **B-311** Later check: rules defined once, not redefined. Password rules first, then anything like them (address checks, length limits, …): find each rule's copies across the backend and frontends, keep one source, and make the rest read from it · Identity, Shell, Core HR · 2026-11-07
-      User 2026-11-07: park it, check and fix later; main things first. Known copies of the password rules: Identity's `AccountPasswordPolicy` (the source, sent to forms as `passwordRequirements`); its checklist re-coded in the shell's `lib/activation.ts` (`passwordChecks`) and again in `@repo/auth` `password-reset-page.tsx` (`requirementChecks`, B-295), each with its own words; `@repo/ds` `PasswordStrengthField` scores strength on its own assumed minimum of 10.
-- [ ] **B-202** `fusion-dev` script that adds an EF migration without stopping the running service (build to the artifacts path, then `dotnet ef … --no-build` against it); B-175 had to stop CoreHR for it · Tooling · 2026-10-30
-      Recipe that worked in the B-287 batch (2026-11-07), to wrap in the script: environment `UseArtifactsOutput=true` and `ArtifactsPath=<temp folder>`, `dotnet restore <project>`, then `dotnet ef migrations add <Name> --project … --startup-project … --output-dir Infrastructure/Persistence/Migrations`.
-- [ ] **B-277** Resolve archive collisions for completed review plans · Tooling · 2026-11-03
-      Stack startup repeatedly reports `archive/plans/B-189-reports.md exists; left B-189-reports.md in plans/`. Compare and preserve both copies’ information before clearing the completed plan from the active folder.
+  - [ ] **B-194** Remove the legacy employee write endpoints (`POST /employees`, `PUT /employees/{id}`, rehire, terminate, change-manager) and their commands: no screen calls them; B-175 had to move them onto job and place ids anyway · Core HR · 2026-10-30
+- [ ] **B-311** One definition per rule on each side: find rules written more than once within the backend (across services, controllers, validators) or within the frontend (across apps, components, schemas): password rules first, then address checks, length limits and the like; keep one source per side and have the rest read it. The server and the screen each having it is fine · Identity, Core HR, Performance, Shell · 2026-11-07
+      User 2026-11-08: "rules can exist on both sides; I'm talking about them being redefined again and again inside each side".
 
 ### Parked
 

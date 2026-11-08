@@ -357,6 +357,17 @@ export const coreImportQueryKeys = {
   session: (id: string) => [...coreImportQueryKeys.all, "session", id] as const,
 };
 
+/** Files one import takes (CoreHR `CompanyImportService.MaxFiles`). */
+export const CORE_IMPORT_MAX_FILES = 12;
+const CORE_IMPORT_MAX_FILE_BYTES = 10 * 1024 * 1024;
+
+/** Files too many or too big to send; any other file goes up and says itself what's wrong with it. */
+export function checkImportFiles(files: readonly File[]): { problem: "size" | "many"; name?: string } | null {
+  if (files.length > CORE_IMPORT_MAX_FILES) return { problem: "many" };
+  const big = files.find((file) => file.size > CORE_IMPORT_MAX_FILE_BYTES);
+  return big ? { problem: "size", name: big.name } : null;
+}
+
 export function createCoreImportApi(client: ApiClient) {
   const ifMatch = (version: number) => ({ headers: { "If-Match": `"${version}"` } });
   const form = (files: File[], companyName?: string) => {

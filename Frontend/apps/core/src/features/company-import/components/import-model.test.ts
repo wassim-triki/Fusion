@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { bringFraction } from "./bring-frame";
-import { checkFiles } from "./import-drop";
+import { checkImportFiles as checkFiles } from "@repo/api";
 
 const file = (name: string, bytes = 10) => new File([new Uint8Array(bytes)], name);
 

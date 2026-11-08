@@ -25,7 +25,8 @@ import { coreImportQueryKeys, type ColumnQuestionDto, type CompanyImportDto, typ
 import { AlertTriangle, ArrowRight, Briefcase, Building2, CheckCircle2, File as FileGlyph, FileX, MapPin, Network, UserRound, X } from "lucide-react";
 import { cn } from "@repo/ds/lib/utils";
 import { useImportChange } from "../api/use-company-import";
-import { checkFiles, DropZone, MAX_FILES } from "./import-drop";
+import { checkImportFiles, CORE_IMPORT_MAX_FILES } from "@repo/api";
+import { DropZone } from "./import-drop";
 import { AiMark, FileIcon, ImportHeader, ShareBar, useFieldLabel } from "./import-parts";
 import { importHref } from "./import-skeleton";
 import { SheetView } from "./sheet-view";
@@ -44,8 +45,8 @@ export function Understood({ data }: { data: CompanyImportDto }) {
 
   const addFiles = (files: File[]) => {
     if (files.length === 0) return;
-    const bad = data.files.length + files.length > MAX_FILES ? { problem: "many" as const, name: "" } : checkFiles(files);
-    setProblem(bad ? tFiles(bad.problem, { name: bad.name ?? "", max: MAX_FILES }) : null);
+    const bad = data.files.length + files.length > CORE_IMPORT_MAX_FILES ? { problem: "many" as const, name: "" } : checkImportFiles(files);
+    setProblem(bad ? tFiles(bad.problem, { name: bad.name ?? "", max: CORE_IMPORT_MAX_FILES }) : null);
     if (!bad) void change.run("files", (api, version) => api.addFiles(data.id, version, files));
   };
   const startOver = async () => {
@@ -79,7 +80,7 @@ export function Understood({ data }: { data: CompanyImportDto }) {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-            {data.files.length < MAX_FILES ? <DropZone slim onFiles={addFiles} disabled={change.pending !== null} /> : null}
+            {data.files.length < CORE_IMPORT_MAX_FILES ? <DropZone slim onFiles={addFiles} disabled={change.pending !== null} /> : null}
             <Button disabled={open > 0} asChild={open === 0}>
               {open === 0 ? <Link href={importHref(data.id, data.again ? "again" : "chart")}>{toNext}</Link> : <span>{toNext}</span>}
             </Button>

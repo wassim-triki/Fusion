@@ -17,7 +17,8 @@ namespace EY.HRPlatform.CoreHR.Controllers;
 [Route("api/corehr/imports")]
 public sealed class CompanyImportController(CompanyImportService imports, ICoreAccessPolicyService access) : ControllerBase
 {
-    private const long UploadLimit = 12L * 11 * 1024 * 1024;
+    // Every file the import takes, each with room over the 10 MB a screen lets through.
+    private const long UploadLimit = CompanyImportService.MaxFiles * 11L * 1024 * 1024;
 
     private bool Allowed => access.CanManageOrganization(User) && access.CanImportEmployees(User);
 

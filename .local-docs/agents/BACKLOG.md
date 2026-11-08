@@ -68,8 +68,7 @@ Security and scale that must hold once Fusion is online; nothing changes in the 
 
 ### Cleanup and tooling
 
-- [ ] **B-327** Rules still written more than once, left from B-311's sweep · Core HR, Shell · 2026-11-08
-      Upload limits are constants per screen (`MAX_BYTES`: company import drop and the Home setup guide 10 MB each, documents 10 MB, photo 5 MB, logo 512 KB) instead of read from what each endpoint accepts; the DS strength meter's advisory `length >= 10` restates the minimum. Also `data/journey-conversations.cjs` calls `POST /people/{key}/change-manager`, which no longer exists (changes go through `/people/{key}/changes/job`).
+None.
 
 ### Parked
 

@@ -7,7 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Alert, AlertDescription, Button } from "@repo/ds";
 import { PageContainer } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
-import { ApiError, coreImportQueryKeys } from "@repo/api";
+import { ApiError, checkImportFiles, CORE_IMPORT_MAX_FILES, coreImportQueryKeys } from "@repo/api";
 import { useTenantSummary } from "@repo/api/query";
 import { canImportCoreEmployees, canManageCoreOrganization, useAuth, PageRefusal } from "@repo/auth";
 import { AlertTriangle, Download, FileSpreadsheet, FileText, Upload } from "lucide-react";
@@ -15,18 +15,6 @@ import { downloadBlob } from "@/lib/download";
 import { useActiveImport, useEarlierImports, useImportApi } from "../api/use-company-import";
 import { EarlierImports } from "./again-step";
 import { FileIcon, ImportHeader } from "./import-parts";
-
-export const MAX_FILES = 12;
-const MAX_BYTES = 10 * 1024 * 1024;
-
-/** Files too many or too big to send; any other file goes up and says itself what's wrong with it. */
-export function checkFiles(files: File[]): { problem: "size" | "many"; name?: string } | null {
-  if (files.length > MAX_FILES) return { problem: "many" };
-  for (const file of files) {
-    if (file.size > MAX_BYTES) return { problem: "size", name: file.name };
-  }
-  return null;
-}
 
 /** Whoever can bring the company in: it makes units and people. */
 export function useCanImport() {
@@ -54,9 +42,9 @@ export default function ImportDrop() {
 
   async function start(files: File[]) {
     if (files.length === 0) return;
-    const bad = checkFiles(files);
+    const bad = checkImportFiles(files);
     if (bad) {
-      setProblem(t(`fileProblem.${bad.problem}`, { name: bad.name ?? "", max: MAX_FILES }));
+      setProblem(t(`fileProblem.${bad.problem}`, { name: bad.name ?? "", max: CORE_IMPORT_MAX_FILES }));
       return;
     }
     setProblem(null);

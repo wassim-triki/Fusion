@@ -114,7 +114,7 @@ const today = () => new Date().toISOString().slice(0, 10);
   const salahSeries = data(startedSalah) ?? (startedSalah.json?.details?.extra?.seriesId
     ? data(await call("GET", `/api/performance/one-on-ones/${startedSalah.json.details.extra.seriesId}`, null, mariam)) : null);
   check("10. Mariam starts 1:1s with Salah", Boolean(salahSeries), `${startedSalah.status}`);
-  const moved = await call("POST", `/api/corehr/employees/people/${salahKey}/change-manager`,
+  const moved = await call("POST", `/api/corehr/employees/people/${salahKey}/changes/job`,
     { effectiveDate: today(), managerEmployeeId: await me("omar.mansour") }, amira);
   check("10. Core HR moves Salah to Omar", moved.status < 300, `${moved.status} ${moved.json?.errors?.[0] ?? ""}`);
   const write = await call("PUT", `/api/performance/one-on-ones/${salahSeries?.id}/cadence`,

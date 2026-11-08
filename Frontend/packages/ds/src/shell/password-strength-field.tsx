@@ -94,7 +94,7 @@ export function PasswordStrengthField({
   const [reveal, setReveal] = useState(false);
 
   // Advisory strength, scored over required rules plus optional complexity.
-  const score = useMemo(() => strengthScore(value), [value]);
+  const score = useMemo(() => strengthScore(value, checks), [value, checks]);
   const meterColor = strengthColor(score, value.length > 0);
 
   return (
@@ -181,17 +181,11 @@ export function PasswordStrengthField({
   );
 }
 
-/** 0–5, counting required rules plus optional complexity (upper, symbol). */
-function strengthScore(password: string): number {
+/** 0–5: the required checks met (up to 3, so the rule stays the caller's) plus optional complexity (upper, symbol). */
+function strengthScore(password: string, checks: PasswordCheck[]): number {
   if (!password) return 0;
-  const signals = [
-    password.length >= 10,
-    /[a-zA-Z]/.test(password),
-    /[0-9]/.test(password),
-    /[A-Z]/.test(password),
-    /[^a-zA-Z0-9]/.test(password),
-  ];
-  return signals.filter(Boolean).length;
+  const required = checks.length > 0 ? checks.filter((check) => check.satisfied).length / checks.length : 0;
+  return Math.round(required * 3) + Number(/[A-Z]/.test(password)) + Number(/[^\p{L}0-9]/u.test(password));
 }
 
 /** Bar colour by score; the meter carries strength on its own, without a label. */

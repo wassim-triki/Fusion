@@ -5,14 +5,11 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Check, ChevronRight, FileSpreadsheet, Upload } from "lucide-react";
-import { formatWorkWeek, ApiError, createCoreImportApi, createPlatformApiClient, coreImportQueryKeys } from "@repo/api";
+import { formatWorkWeek, ApiError, checkImportFiles, CORE_IMPORT_MAX_FILES, createCoreImportApi, createPlatformApiClient, coreImportQueryKeys } from "@repo/api";
 import { useCompanyWorkWeek, useApiQuery, useMyCard, usePhoto, useSetupGuide, useTenantSummary, type SetupGuide, type SetupStepKey } from "@repo/api/query";
 import { canImportCoreEmployees, canManageCoreOrganization, canViewTenantAdministration, useAuth, PageFailure } from "@repo/auth";
 import { Button, PersonAvatar, Skeleton, cn } from "@repo/ds";
 import { ProgressSegments } from "@repo/ds/shell";
-
-const MAX_FILES = 12;
-const MAX_BYTES = 10 * 1024 * 1024;
 
 /** Where each step is done, through the shell. */
 const STEP_HREF: Record<SetupStepKey, string> = {
@@ -145,9 +142,8 @@ function OrganizationStep() {
 
   async function start(files: File[]) {
     if (files.length === 0) return;
-    if (files.length > MAX_FILES) return setProblem(t("tooMany", { max: MAX_FILES }));
-    const big = files.find((file) => file.size > MAX_BYTES);
-    if (big) return setProblem(t("tooBig", { name: big.name }));
+    const bad = checkImportFiles(files);
+    if (bad) return setProblem(bad.problem === "many" ? t("tooMany", { max: CORE_IMPORT_MAX_FILES }) : t("tooBig", { name: bad.name ?? "" }));
     setProblem(null);
     setReading(files.length);
     try {

@@ -5,7 +5,7 @@ import type { AuthUser } from "@repo/auth";
 import { CoreWorkspaceAccessBoundary } from "./core-workspace-access-boundary";
 
 const mocks = vi.hoisted(() => ({
-  pathname: "/core/employees",
+  pathname: "/core/people",
   user: null as AuthUser | null,
   isLoading: false,
 }));
@@ -73,7 +73,7 @@ function grant(permissionKey: string): AuthUser["effectivePermissions"][number] 
 
 describe("CoreWorkspaceAccessBoundary", () => {
   beforeEach(() => {
-    mocks.pathname = "/core/employees";
+    mocks.pathname = "/core/people";
     mocks.user = user();
     mocks.isLoading = false;
   });

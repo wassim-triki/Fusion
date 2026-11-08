@@ -78,8 +78,8 @@ describe("resolveCoreWorkspaceAccessState", () => {
   });
 
   it("preserves nested Core paths and their query", () => {
-    expect(buildCoreCallbackUrl("/employees/person-1", "tab=job")).toBe(
-      "/core/employees/person-1?tab=job"
+    expect(buildCoreCallbackUrl("/people/person-1", "tab=job")).toBe(
+      "/core/people/person-1?tab=job"
     );
   });
 

@@ -16,12 +16,9 @@
     "import": "Import",
     "match": "Correspondance",
     "review": "Vérification",
-    "hire": "Embauche",
-    "add-existing": "Ajout d’un collaborateur existant",
     "change-work": "Changement de poste",
     "change-manager": "Changement de manager",
     "end-employment": "Fin de contrat",
-    "performance": "Performance",
     "activity": "Activité"
   },
   "metadata": {

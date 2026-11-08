@@ -66,8 +66,7 @@ Security and scale that must hold once Fusion is online; nothing changes in the 
 
 ### Cleanup and tooling
 
-- [ ] **B-328** Delete the old-address redirect pages and the links that still use them: Core's `/employees`, `/employees/[id]`, `/employees/import`, `/workforce-access`, `/setup`, `/people/hire`, `/people/add-existing`, `/people/[key]/performance`, `/profile/performance`; the top bar search's Hire still opens `/core/people/hire`; tests and the route skeleton list still name some of them · Core HR, Shell · 2026-11-08
-      Found reviewing the whole app, 2026-11-08. No backward compatibility (AGENTS.md), so the redirects go rather than stay.
+None.
 
 ### Parked
 
@@ -76,9 +75,6 @@ Security and scale that must hold once Fusion is online; nothing changes in the 
 ## Needs discussion
 
 ### Big features
-
-- [ ] **B-329** Time off: leave types, requests and approvals, balances, a team calendar. Today "on leave" is only a status HR sets on a person (B-229). A pillar of BambooHR and HiBob, so the jury will compare · Core HR, Shell · 2026-11-08
-      Found reviewing the whole app, 2026-11-08. Decide whether it's in scope before the product tour (B-090), so the tour walks it. Pay is left out too (the import drops salary columns on purpose); decide it in the same talk.
 
 - [ ] **B-147** Fusion assistant: one AI assistant across the app that answers questions from the tenant's own data (people, org, goals, reviews, conversations) through retrieval over our modules, within what the asker may see; another wow feature for the demo. Decide scope, which modules it reads first, and how it respects permissions (retrieval runs as the asker, never a wider index) · Shell, Core HR, Performance · 2026-10-28
       User 2026-10-31: the change drafter (B-179) could use it too, as a wow factor rather than a need; today it sends the company's whole lists, which fits.
@@ -97,10 +93,6 @@ Security and scale that must hold once Fusion is online; nothing changes in the 
         User: "Record Weekly digest for later".
   - [ ] **B-174** E-signature: HR sends documents to sign; people sign in Fusion; the signed copy and signing record stay on the person (pulled back at checkpoint 2, then parked) · Core HR · 2026-10-30
         User: "e-signature can stay on nice to haves for now recorded". Shape if built: brief §6b (E1), on top of documents on a person.
-
-### Polish
-
-- [ ] **B-330** Two pages show one person's performance: Performance's own person page (opened from Team and from a review record) and the Performance tab of the Core HR person page. Check in the walkthrough whether they should become one · Performance, Core HR · 2026-11-08
 
 ### Before hosting
 

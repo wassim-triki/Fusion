@@ -95,7 +95,7 @@ export function searchPages(user: AuthUser | null, rights: SearchRights): Search
     core && canViewCoreOrganization(user) && { id: "jobs", href: "/core/organization/jobs", icon: "job" },
     core && canViewCoreOrganization(user) && { id: "places", href: "/core/organization/places", icon: "place" },
     core && canViewCoreReports(user) && { id: "reports", href: "/core/reports", icon: "report" },
-    rights.manageEmployees && { id: "hire", href: "/core/people/hire", icon: "hire" },
+    rights.manageEmployees && { id: "hire", href: "/core/people/add", icon: "hire" },
     core && canViewCoreAccessProfiles(user) && { id: "roles", href: "/core/settings/roles", icon: "roles" },
     core && canAccessCoreSettings(user) && { id: "coreSettings", href: "/core/settings", icon: "settings" },
     perf && hasCorePermission(user, "performance.cycle.manage", "Tenant") && { id: "cycle", href: "/performance/cycle", icon: "cycle" },
@@ -268,7 +268,7 @@ export function buildResults(
   if (bare === "feedback" && rights.performance)
     doItems.push({ kind: "thing", key: "do:ask", label: text.action("askFeedback"), sub: text.sub.chooseWho, icon: "feedback", href: "/performance/feedback?compose=ask" });
   if (bare === "hire" && rights.manageEmployees)
-    doItems.push({ kind: "thing", key: "do:hire", label: text.action("hire"), sub: text.page("hire").path, icon: "hire", href: "/core/people/hire" });
+    doItems.push({ kind: "thing", key: "do:hire", label: text.action("hire"), sub: text.page("hire").path, icon: "hire", href: "/core/people/add" });
 
   const peopleItems: SearchItem[] = people.map((person) => ({ kind: "person", key: `person:${person.employeeKey}`, person, href: personHref(person) }));
   const peopleTotal = core?.peopleTotal ?? 0;

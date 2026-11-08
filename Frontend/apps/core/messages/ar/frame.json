@@ -16,12 +16,9 @@
     "import": "الاستيراد",
     "match": "المطابقة",
     "review": "المراجعة",
-    "hire": "توظيف",
-    "add-existing": "إضافة موظف حالي",
     "change-work": "تغيير العمل",
     "change-manager": "تغيير المدير",
     "end-employment": "إنهاء التوظيف",
-    "performance": "الأداء",
     "activity": "النشاط"
   },
   "metadata": {

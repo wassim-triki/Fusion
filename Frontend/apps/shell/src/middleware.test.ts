@@ -12,10 +12,10 @@ function request(path: string, sessionHint = false) {
 
 describe("Shell middleware", () => {
   it("returns an unauthenticated protected route to sign-in with its query", () => {
-    const response = middleware(request("/core/access?tab=pending"));
+    const response = middleware(request("/core/people?view=not-signed-in"));
     const location = new URL(response.headers.get("location")!);
     expect(location.pathname).toBe("/auth/signin");
-    expect(location.searchParams.get("callbackUrl")).toBe("/core/access?tab=pending");
+    expect(location.searchParams.get("callbackUrl")).toBe("/core/people?view=not-signed-in");
   });
 
   it.each([
@@ -39,7 +39,7 @@ describe("Shell middleware", () => {
   });
 
   it("treats the cookie as an admission hint, not a destination decision", () => {
-    expect(middleware(request("/core/access", true)).headers.get("location")).toBeNull();
+    expect(middleware(request("/core/people", true)).headers.get("location")).toBeNull();
   });
 
   it("does not retain the dead force-sign-in convention", () => {

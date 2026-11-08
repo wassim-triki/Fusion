@@ -37,9 +37,9 @@ function user(overrides: Partial<AuthUser> = {}): AuthUser {
 
 describe("sanitizeInternalReturnPath", () => {
   it.each([
-    ["/core/access", "/core/access"],
-    ["/core/employees?tab=active", "/core/employees?tab=active"],
-    ["/setup#section", "/setup#section"],
+    ["/core/settings/roles", "/core/settings/roles"],
+    ["/core/people?view=not-signed-in", "/core/people?view=not-signed-in"],
+    ["/settings#section", "/settings#section"],
     ["/core/search?q=a%2Fb%20c", "/core/search?q=a%2Fb%20c"],
     [`${ORIGIN}/platform/tenants`, "/platform/tenants"],
   ])("accepts trusted internal destination %s", (candidate, expected) => {
@@ -131,10 +131,10 @@ describe("default product destination", () => {
 
   it("lets a safe intended destination override the default", () => {
     expect(resolvePostSignInDestination({
-      intendedDestination: "/core/access",
+      intendedDestination: "/core/settings/roles",
       user: user({ effectivePermissions: [grant("core.employee.view")] }),
       trustedOrigin: ORIGIN,
-    })).toBe("/core/access");
+    })).toBe("/core/settings/roles");
   });
 
   it("lets a safe callback win over the admin landing", () => {

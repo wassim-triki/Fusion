@@ -29,7 +29,7 @@ const access: WorkListItem = {
   module: "core",
   title: "12 people don't have Fusion access yet",
   dueOn: "2026-10-20",
-  href: "/core/workforce-access",
+  href: "/core/people?view=not-signed-in",
 };
 
 describe("WorkList in French", () => {
@@ -58,7 +58,7 @@ describe("WorkList", () => {
     const links = screen.getAllByRole("link");
     expect(links.map((link) => link.getAttribute("href"))).toEqual([
       "/performance/reviews/1",
-      "/core/workforce-access",
+      "/core/people?view=not-signed-in",
       "/performance/cycles/c/objectives/o?mode=record",
     ]);
     expect(within(links[0]!).getByText("2 days left")).toBeInTheDocument();

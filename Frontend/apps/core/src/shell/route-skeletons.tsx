@@ -145,7 +145,7 @@ export function getRoutePageSkeleton(corePath: string): ReactNode {
   if (corePath === "/people") return <EmployeesPageSkeleton />;
   if (corePath.startsWith("/import/")) return <ImportRouteSkeleton />;
   if (corePath === "/import") return <PageSkeleton width="wide" />;
-  if (["/people/add", "/people/hire", "/people/add-existing"].includes(corePath)) return <PersonTaskPageSkeleton />;
+  if (corePath === "/people/add") return <PersonTaskPageSkeleton />;
   if (corePath.startsWith("/people/")) return <EmployeeProfilePageSkeleton />;
   if (corePath === "/profile") return <MyProfilePageSkeleton />;
   if (corePath === "/team" || corePath.startsWith("/team/"))

@@ -39,7 +39,7 @@ function attention(overrides: Partial<FusionAttentionApi> = {}): FusionAttention
   return {
     getWork: vi.fn(async (key) =>
       key === "core"
-        ? [item("c1", "core", "/core/workforce-access")]
+        ? [item("c1", "core", "/core/people?view=not-signed-in")]
         : [item("p1", "performance", "/performance/team"), item("p2", "performance", "/performance/team")],
     ),
     getNotifications: vi.fn(),
@@ -84,7 +84,7 @@ describe("useFusionNavigation", () => {
     const api = attention({
       getWork: vi.fn(async (key) => {
         if (key === "performance") throw new ApiError(503, "Unavailable", ["down"], null);
-        return [item("c1", "core", "/core/workforce-access")];
+        return [item("c1", "core", "/core/people?view=not-signed-in")];
       }),
     });
     const { result } = renderHook(

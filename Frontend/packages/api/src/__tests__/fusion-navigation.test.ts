@@ -72,7 +72,7 @@ describe("counts", () => {
   const items = [
     item("performance", "/performance/team"),
     item("performance", "/performance/team"),
-    item("core", "/core/workforce-access"),
+    item("core", "/core/people?view=not-signed-in"),
     item("performance", null),
   ];
 

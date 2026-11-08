@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** B-327 rules still written more than once, 2026-11-08, closed on evidence.
+**Last finished:** B-328 old-address redirect pages removed, 2026-11-08, closed on evidence.
 
 ## Active work
 

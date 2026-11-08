@@ -16,12 +16,9 @@
     "import": "Import",
     "match": "Match",
     "review": "Review",
-    "hire": "Hire",
-    "add-existing": "Add existing",
     "change-work": "Change work",
     "change-manager": "Change manager",
     "end-employment": "End employment",
-    "performance": "Performance",
     "activity": "Activity"
   },
   "metadata": {

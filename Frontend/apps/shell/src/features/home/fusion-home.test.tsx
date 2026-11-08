@@ -168,7 +168,7 @@ describe("FusionHome", () => {
   it("speaks French around the work, which keeps the server's words", () => {
     mocks.work = {
       modules: [ready[0]!, { key: "performance", label: "Performance", status: "error" }],
-      items: [{ id: "a", module: "core", kind: "access", title: "12 people don't have Fusion access yet", dueOn: "2099-01-02", href: "/core/workforce-access" }],
+      items: [{ id: "a", module: "core", kind: "access", title: "12 people don't have Fusion access yet", dueOn: "2099-01-02", href: "/core/people?view=not-signed-in" }],
     };
     render(<FusionHome />, "fr");
     expect(screen.getByRole("heading", { level: 1 }).textContent).toMatch(/^(Bonjour|Bon après-midi|Bonsoir), Nour$/);

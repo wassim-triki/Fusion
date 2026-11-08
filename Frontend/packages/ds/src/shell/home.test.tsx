@@ -52,7 +52,7 @@ const peerInput: HomeWorkItem = {
   href: "/performance/reviews/peer-requests/5",
   waitingSince: "2026-10-19T09:00:00Z",
 };
-const access: HomeWorkItem = { id: "core:access", module: "core", title: "12 people don't have Fusion access yet", href: "/core/workforce-access" };
+const access: HomeWorkItem = { id: "core:access", module: "core", title: "12 people don't have Fusion access yet", href: "/core/people?view=not-signed-in" };
 const oneOnOne: HomeMoment = {
   id: "performance:one-on-one:m1",
   module: "performance",

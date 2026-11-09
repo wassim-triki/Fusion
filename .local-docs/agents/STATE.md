@@ -8,4 +8,4 @@ None.
 
 ## Next
 
-Not set: take it from the user or the board (B-331's findings).
+B-398 (the Managers role security check and the import's dropped reporting lines), in a fresh session; then B-390, Performance redesigned as a module, opening with its map and scope like B-164.

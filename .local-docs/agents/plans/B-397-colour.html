@@ -1,0 +1,249 @@
+<title>Fusion Colour Study</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Lora:wght@500;600&display=swap">
+<style>
+/* Full-size 1440 frames scaled to the column; three takes per theme on the agreed palette, lightness only. */
+:root {
+  --bg: #0d0d10; --fg: #ececef; --muted: #9d9da6; --line: #2a2a30; --chip: #1c1c21; --accent: #f5c400; --accent-ink: #1b1600; --focus: #7aa7ff;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --bg: #f1f1f3; --fg: #18181b; --muted: #5d5d66; --line: #dcdce1; --chip: #ffffff; --accent: #f2c200; --accent-ink: #1b1600; --focus: #2f6fdb; color-scheme: light; } }
+:root[data-theme="light"] { --bg: #f1f1f3; --fg: #18181b; --muted: #5d5d66; --line: #dcdce1; --chip: #ffffff; --accent: #f2c200; --accent-ink: #1b1600; --focus: #2f6fdb; color-scheme: light; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: "Geist", "Segoe UI", system-ui, sans-serif; font-size: 15px; line-height: 1.5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.bar-in { max-width: 1240px; margin: 0 auto; padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+.bar h1 { font-family: "Lora", Georgia, serif; font-weight: 600; font-size: 19px; margin: 0 8px 0 0; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 2px; gap: 2px; }
+.seg button { border: 0; background: none; padding: 4px 12px; border-radius: 999px; font-size: 13px; cursor: pointer; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--chip); color: var(--fg); font-weight: 600; }
+.grow { flex: 1; }
+.picked { font-size: 13px; color: var(--muted); }
+.picked b { color: var(--fg); }
+.saved { font-size: 12px; color: var(--muted); }
+.copy { border: 0; background: var(--accent); color: var(--accent-ink); border-radius: 12px; padding: 7px 14px; font-weight: 600; cursor: pointer; }
+main { max-width: 1240px; margin: 0 auto; padding-block: 24px 120px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+.take { display: grid; gap: 10px; }
+.take-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.take-head .name { font-weight: 600; font-size: 16px; }
+.pick { border: 1px solid var(--line); background: var(--chip); border-radius: 999px; padding: 5px 14px; font-size: 13px; cursor: pointer; }
+.pick[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.star { color: var(--accent); font-size: 13px; }
+.stage { border-radius: 16px; overflow: hidden; border: 1px solid var(--line); position: relative; }
+.stage.on { box-shadow: 0 0 0 2px var(--accent); border-color: var(--accent); }
+.scale { width: 1440px; transform-origin: 0 0; }
+textarea { width: 100%; min-height: 60px; background: var(--chip); color: var(--fg); border: 1px solid var(--line); border-radius: 12px; padding: 9px 11px; font: inherit; font-size: 14px; resize: vertical; }
+.copybox { display: grid; gap: 8px; }
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 8px 14px; border-radius: 12px; font-size: 13px; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+.toast.on { opacity: 1; }
+
+/* ---- the Fusion frame, 1440 × 900, coloured from --k-* set per take ---- */
+.f { width: 1440px; height: 900px; display: flex; background: var(--k-page); color: var(--k-fg); font-family: "Geist", system-ui, sans-serif; font-size: 14px; line-height: 1.45; overflow: hidden; }
+.f .sb { width: 248px; flex: none; background: var(--k-sb); padding: 18px 14px; display: flex; flex-direction: column; gap: 2px; box-shadow: inset -1px 0 0 var(--k-hl); }
+.f .co { display: flex; align-items: center; gap: 10px; padding: 4px 8px 18px; font-weight: 600; }
+.f .logo { width: 30px; height: 30px; border-radius: 9px; background: var(--k-pr); color: var(--k-pri); display: grid; place-items: center; font-weight: 700; }
+.f .ni { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 12px; color: var(--k-mu); font-size: 13.5px; }
+.f .ni.on { background: var(--k-in); color: var(--k-fg); font-weight: 600; }
+.f .ni.g { color: var(--k-fg); font-weight: 600; margin-top: 10px; }
+.f .ni.s { padding-left: 34px; }
+.f .ic2 { width: 18px; height: 18px; flex: none; }
+.f .ic { width: 16px; height: 16px; border-radius: 5px; border: 1.6px solid currentColor; opacity: 0.8; flex: none; }
+.f .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.f .top { height: 60px; flex: none; display: flex; align-items: center; gap: 14px; padding: 0 28px; }
+.f .search { width: 360px; height: 36px; border-radius: 12px; background: var(--k-in); color: var(--k-mu); display: flex; align-items: center; padding: 0 14px; font-size: 13px; }
+.f .bd { flex: 1; min-height: 0; padding: 4px 28px 28px; display: flex; flex-direction: column; gap: 20px; }
+.f .av { border-radius: 50%; display: inline-grid; place-items: center; color: #fff; font-weight: 600; flex: none; }
+.f .band { background: var(--k-band); border-radius: 28px; padding: 30px 32px 0; display: flex; flex-direction: column; gap: 22px; box-shadow: var(--k-bandb); }
+.f .ser { font-family: "Lora", Georgia, serif; font-weight: 500; letter-spacing: -0.015em; }
+.f .mu { color: var(--k-mu); }
+.f .row { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.f .tabs { display: flex; gap: 28px; font-size: 14px; color: var(--k-mu); }
+.f .tabs span { padding-bottom: 14px; }
+.f .tabs .on { color: var(--k-fg); font-weight: 600; box-shadow: inset 0 -2.5px 0 var(--k-pr); }
+.f .cols { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 28px; min-height: 0; }
+.f .rail { display: flex; flex-direction: column; gap: 18px; padding-top: 4px; font-size: 13.5px; }
+.f .rail .lab { font-size: 12px; color: var(--k-mu); }
+.f .card { background: var(--k-card); border-radius: 22px; padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; box-shadow: var(--k-cardb); }
+.f .ct { font-family: "Lora", Georgia, serif; font-weight: 600; font-size: 17px; }
+.f .inl { background: var(--k-in); border-radius: 14px; padding: 12px 14px; }
+.f .g2 { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 20px; }
+.f .barx { height: 6px; border-radius: 4px; background: var(--k-gh); overflow: hidden; }
+.f .barx i { display: block; height: 100%; border-radius: 4px; background: var(--k-pr); }
+.f .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 3px 10px; border-radius: 999px; background: var(--k-in); white-space: nowrap; }
+.f .chip.ok { background: var(--k-oks); color: var(--k-ok); }
+.f .chip.wa { background: var(--k-was); color: var(--k-wa); }
+.f .btn { display: inline-flex; align-items: center; height: 36px; padding: 0 16px; border-radius: 12px; font-weight: 600; font-size: 13.5px; background: var(--k-card); box-shadow: inset 0 0 0 1px var(--k-hl); }
+.f .btn.pr { background: var(--k-pr); color: var(--k-pri); box-shadow: none; }
+.f table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.f th { text-align: left; font-weight: 500; color: var(--k-mu); font-size: 12.5px; padding: 12px 16px; }
+.f td { padding: 11px 16px; border-top: 1px solid var(--k-hl); white-space: nowrap; }
+.f .stack .av { box-shadow: 0 0 0 2px var(--k-band); margin-left: -8px; }
+.f .stack .av:first-child { margin-left: 0; }
+.f .tl { display: flex; gap: 12px; align-items: flex-start; }
+.f .tl .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--k-pr); margin-top: 5px; flex: none; }
+.f .tl .dot.off { background: var(--k-gh); }
+.f .quote { font-family: "Lora", Georgia, serif; font-size: 15.5px; line-height: 1.55; }
+</style>
+<div class="bar" role="region" aria-label="Controls">
+  <div class="bar-in">
+    <h1>Colour</h1>
+    <span class="seg" role="group" aria-label="Theme"><button type="button" data-th="dark" aria-pressed="true">Dark</button><button type="button" data-th="light" aria-pressed="false">Light</button></span>
+    <span class="seg" role="group" aria-label="Page"><button type="button" data-pg="person" aria-pressed="true">Aicha's page</button><button type="button" data-pg="people" aria-pressed="false">People</button></span>
+    <span class="grow"></span>
+    <span class="picked">Dark: <b id="p-dark"></b></span><span class="picked">Light: <b id="p-light"></b></span>
+    <span class="saved" id="saved" aria-live="polite"></span>
+    <button class="copy" id="copy" type="button">Copy my choices</button>
+  </div>
+</div>
+<main>
+  <div id="takes" style="display:grid;gap:28px"></div>
+  <textarea id="note" aria-label="Your note" placeholder="Your note"></textarea>
+  <div class="copybox" id="copybox" hidden><span style="font-size:13px;color:var(--muted)">Copying was blocked here. Select this text and copy it.</span><textarea id="copytext" readonly aria-label="Your choices as text"></textarea></div>
+</main>
+<div class="toast" id="toast" role="status"></div>
+<script>
+// The agreed palette (zinc neutrals, hue 286, the yellow brand); only lightness moves between takes.
+const o = (l, c = 0.004, h = 286, a) => `oklch(${l} ${c} ${h}${a ? " / " + a : ""})`;
+const TAKES = {
+  dark: [
+    ["a", "As today", { page: 0.141, band: 0.175, card: 0.21, in: 0.235, sb: 0.16 }],
+    ["b", "Charcoal, hero and page one tone", { page: 0.185, band: 0.185, card: 0.225, in: 0.26, sb: 0.17 }],
+    ["c", "Graphite, softer still", { page: 0.215, band: 0.215, card: 0.255, in: 0.29, sb: 0.2 }],
+  ],
+  light: [
+    ["a", "Hero and page one soft tone, cards a step up", { page: 0.975, band: 0.975, card: 0.993, in: 0.958, sb: 0.965 }],
+    ["b", "Hero and page one near-white, white cards lifted", { page: 0.985, band: 0.985, card: 1, in: 0.965, sb: 0.975, lift: true }],
+    ["c", "As today", { page: 0.955, band: 0.977, card: 1, in: 0.967, sb: 0.985 }],
+  ],
+};
+const REC = { dark: "b", light: "a" };
+function vars(theme, t) {
+  const L = theme === "light";
+  const v = {
+    page: o(t.page), band: o(t.band), card: o(t.card, t.card === 1 ? 0 : 0.004), in: o(t.in), sb: o(t.sb),
+    fg: L ? o(0.2, 0.006) : o(0.97, 0.002), mu: L ? o(0.52, 0.014) : o(0.72, 0.012),
+    hl: L ? o(0.91, 0.004) : "oklch(1 0 0 / 0.08)", gh: L ? o(0.2, 0.004, 286, 0.08) : "oklch(1 0 0 / 0.1)",
+    pr: L ? o(0.852, 0.199, 91.9) : o(0.795, 0.184, 86), pri: o(0.28, 0.07, 60),
+    ok: L ? o(0.55, 0.15, 160) : o(0.78, 0.15, 162), oks: L ? o(0.6, 0.15, 160, 0.14) : o(0.78, 0.15, 162, 0.16),
+    wa: L ? o(0.5, 0.12, 70) : o(0.8, 0.17, 86), was: L ? o(0.85, 0.19, 92, 0.3) : o(0.8, 0.18, 86, 0.16),
+    bandb: t.band === t.page ? "none" : "none",
+    cardb: t.lift ? "0 1px 2px oklch(0 0 0 / 0.05), 0 4px 14px oklch(0 0 0 / 0.05)" : "none",
+  };
+  return Object.entries(v).map(([k, x]) => `--k-${k}:${x}`).join(";");
+}
+
+const P = { AB: ["Aicha Bouazizi", 340], MG: ["Mariam Gharbi", 185], AK: ["Amira Khelifi", 255], LB: ["Leila Ben Salah", 140], KM: ["Khaled Mansour", 295], RT: ["Rim Trabelsi", 50], OS: ["Omar Saidi", 220], SJ: ["Sami Jaziri", 20], YB: ["Yasmine Ben Ali", 100] };
+const av = (k, s = 28) => `<span class="av" style="width:${s}px;height:${s}px;font-size:${Math.round(s * 0.36)}px;background:oklch(0.62 0.13 ${P[k][1]})">${k}</span>`;
+const side = on => `<div class="sb"><div class="co"><span class="logo">C</span>Carthage Digital</div>
+  <div class="ni"><svg class="ic2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 11.9896V14.5C3 17.7998 3 19.4497 4.02513 20.4749C5.05025 21.5 6.70017 21.5 10 21.5H14C17.2998 21.5 18.9497 21.5 19.9749 20.4749C21 19.4497 21 17.7998 21 14.5V11.9896C21 10.3083 21 9.46773 20.6441 8.74005C20.2882 8.01237 19.6247 7.49628 18.2976 6.46411L16.2976 4.90855C14.2331 3.30285 13.2009 2.5 12 2.5C10.7991 2.5 9.76689 3.30285 7.70242 4.90855L5.70241 6.46411C4.37533 7.49628 3.71179 8.01237 3.3559 8.74005C3 9.46773 3 10.3083 3 11.9896Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/></svg>Home</div>
+  <div class="ni g"><svg class="ic2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18.4995 20.5C18.2663 17.5685 15.8417 15.2477 12.808 15.0521L11.9995 15C11.7107 15.0076 11.4416 15.0178 11.1877 15.0298C8.18075 15.1723 5.7304 17.5974 5.49951 20.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/><path d="M15.2495 9.25C15.2495 11.0449 13.7944 12.5 11.9995 12.5C10.2046 12.5 8.74952 11.0449 8.74952 9.25C8.74952 7.45507 10.2046 6 11.9995 6C13.7944 6 15.2495 7.45507 15.2495 9.25Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/><path d="M5.50249 8.5C5.17908 7.99485 4.99158 7.39432 4.99158 6.75C4.99158 4.95507 6.44665 3.5 8.24157 3.5C8.68752 3.5 9.1125 3.58982 9.49939 3.75235" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/><path d="M18.4963 8.5C18.8197 7.99485 19.0072 7.39432 19.0072 6.75C19.0072 4.95507 17.5521 3.5 15.7572 3.5C15.3113 3.5 14.8863 3.58982 14.4994 3.75235" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/><path d="M22.0007 17.9996C21.8208 15.7374 19.9995 13.5 17.9995 13" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/><path d="M1.99927 17.9996C2.17923 15.7374 4.00049 13.5 6.00049 13" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/></svg>Core HR</div>
+  ${["People", "Organization", "Reports", "Team"].map(x => `<div class="ni s ${x === on ? "on" : ""}">${x}</div>`).join("")}
+  <div class="ni g"><svg class="ic2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"/><path d="M14 2.20004C13.3538 2.06886 12.6849 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 11.3151 21.9311 10.6462 21.8 10" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"/><path d="M12.0303 11.9625L16.5832 7.4096M19.7404 4.34462L19.1872 2.35748C19.0853 2.03011 18.6914 1.89965 18.4259 2.11662C16.9898 3.29018 15.4254 4.87091 16.703 7.36419C19.2771 8.56455 20.7466 6.94584 21.8733 5.5853C22.0975 5.3146 21.9623 4.90767 21.6247 4.81005L19.7404 4.34462Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/></svg>Performance</div>
+  <div class="ni g"><svg class="ic2" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21.3175 7.14139L20.8239 6.28479C20.4506 5.63696 20.264 5.31305 19.9464 5.18388C19.6288 5.05472 19.2696 5.15664 18.5513 5.36048L17.3311 5.70418C16.8725 5.80994 16.3913 5.74994 15.9726 5.53479L15.6357 5.34042C15.2766 5.11043 15.0004 4.77133 14.8475 4.37274L14.5136 3.37536C14.294 2.71534 14.1842 2.38533 13.9228 2.19657C13.6615 2.00781 13.3143 2.00781 12.6199 2.00781H11.5051C10.8108 2.00781 10.4636 2.00781 10.2022 2.19657C9.94085 2.38533 9.83106 2.71534 9.61149 3.37536L9.27753 4.37274C9.12465 4.77133 8.84845 5.11043 8.48937 5.34042L8.15249 5.53479C7.73374 5.74994 7.25259 5.80994 6.79398 5.70418L5.57375 5.36048C4.85541 5.15664 4.49625 5.05472 4.17867 5.18388C3.86109 5.31305 3.67445 5.63696 3.30115 6.28479L2.80757 7.14139C2.45766 7.74864 2.2827 8.05227 2.31666 8.37549C2.35061 8.69871 2.58483 8.95918 3.05326 9.48012L4.0843 10.6328C4.3363 10.9518 4.51521 11.5078 4.51521 12.0077C4.51521 12.5078 4.33636 13.0636 4.08433 13.3827L3.05326 14.5354C2.58483 15.0564 2.35062 15.3168 2.31666 15.6401C2.2827 15.9633 2.45766 16.2669 2.80757 16.8741L3.30114 17.7307C3.67443 18.3785 3.86109 18.7025 4.17867 18.8316C4.49625 18.9608 4.85542 18.8589 5.57377 18.655L6.79394 18.3113C7.25263 18.2055 7.73387 18.2656 8.15267 18.4808L8.4895 18.6752C8.84851 18.9052 9.12464 19.2442 9.2775 19.6428L9.61149 20.6403C9.83106 21.3003 9.94085 21.6303 10.2022 21.8191C10.4636 22.0078 10.8108 22.0078 11.5051 22.0078H12.6199C13.3143 22.0078 13.6615 22.0078 13.9228 21.8191C14.1842 21.6303 14.294 21.3003 14.5136 20.6403L14.8476 19.6428C15.0004 19.2442 15.2765 18.9052 15.6356 18.6752L15.9724 18.4808C16.3912 18.2656 16.8724 18.2055 17.3311 18.3113L18.5513 18.655C19.2696 18.8589 19.6288 18.9608 19.9464 18.8316C20.264 18.7025 20.4506 18.3785 20.8239 17.7307L21.3175 16.8741C21.6674 16.2669 21.8423 15.9633 21.8084 15.6401C21.7744 15.3168 21.5402 15.0564 21.0718 14.5354L20.0407 13.3827C19.7887 13.0636 19.6098 12.5078 19.6098 12.0077C19.6098 11.5078 19.7888 10.9518 20.0407 10.6328L21.0718 9.48012C21.5402 8.95918 21.7744 8.69871 21.8084 8.37549C21.8423 8.05227 21.6674 7.74864 21.3175 7.14139Z" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"/><path d="M15.5195 12C15.5195 13.933 13.9525 15.5 12.0195 15.5C10.0865 15.5 8.51953 13.933 8.51953 12C8.51953 10.067 10.0865 8.5 12.0195 8.5C13.9525 8.5 15.5195 10.067 15.5195 12Z" stroke="currentColor" stroke-width="1.5"/></svg>Settings</div></div>`;
+const topBar = `<div class="top"><span class="search">Search people, units, objectives</span><span style="flex:1"></span>${av("AK", 32)}</div>`;
+
+function personPage() {
+  return `${side("People")}<div class="main">${topBar}<div class="bd">
+  <div class="band">
+    <div class="row" style="gap:26px">${av("AB", 112)}
+      <div style="display:grid;gap:6px"><span class="ser" style="font-size:36px;line-height:1.1">Aicha Bouazizi</span><span class="mu" style="font-size:15px">QA Automation Engineer, Product</span>
+        <div class="row" style="gap:22px;margin-top:8px;font-size:13.5px"><span class="row" style="gap:8px">${av("MG", 24)}Reports to Mariam Gharbi</span><span class="row stack" style="gap:0">${av("LB", 24)}${av("KM", 24)}${av("RT", 24)}</span><span class="mu">5 on the team</span><span class="mu">2 years, 3 months here</span></div></div>
+      <span style="flex:1"></span><span class="btn">Give praise</span><span class="btn pr">Make a change</span></div>
+    <div class="tabs"><span class="on">Overview</span><span>Job</span><span>Personal</span><span>Performance</span><span>Documents</span><span>Access</span></div>
+  </div>
+  <div class="cols">
+    <div class="rail"><div><div class="lab">Work email</div>aicha.bouazizi@carthage.example</div><div><div class="lab">Phone</div>+216 22 410 553</div><div><div class="lab">Employee number</div>CD-0142</div><div><div class="lab">Place</div>Tunis, Lac 2</div><div><div class="lab">On the chart</div>Product › QA</div></div>
+    <div style="display:grid;gap:20px;align-content:start">
+      <div class="g2">
+        <div class="card"><span class="ct">About</span><span class="quote">"I test the things nobody else wants to, then make them boring. Weekends: Sidi Bou Said and a camera."</span></div>
+        <div class="card"><span class="ct">Performance</span>
+          <div style="display:grid;gap:6px"><div class="row"><span style="flex:1">Cut flaky tests by half</span><span class="chip ok">On track</span></div><div class="barx"><i style="width:62%"></i></div></div>
+          <div style="display:grid;gap:6px"><div class="row"><span style="flex:1">Automate the release check</span><span class="chip wa">At risk</span></div><div class="barx"><i style="width:28%"></i></div></div></div>
+      </div>
+      <div class="card"><span class="ct">Job and history</span>
+        <div class="inl row"><span style="flex:1"><b style="font-weight:600">Moves to Platform</b> <span class="mu">on 1 December, reporting to Omar Saidi</span></span><span class="chip">Coming up</span></div>
+        <div class="tl"><span class="dot"></span><div><b style="font-weight:600">QA Automation Engineer</b><div class="mu">Since March 2025, Product</div></div></div>
+        <div class="tl"><span class="dot off"></span><div><b style="font-weight:600">Joined as QA Engineer</b><div class="mu">August 2024</div></div></div></div>
+    </div>
+  </div></div></div>`;
+}
+function peoplePage() {
+  const rows = [["AB", "QA Automation Engineer", "Product", "Tunis", "MG", ["ok", "Signed in"]], ["MG", "VP Product", "Product", "Tunis", "AK", ["ok", "Signed in"]], ["LB", "Product Designer", "Design", "Sfax", "MG", ["", "Invited"]], ["KM", "Data Analyst", "Data", "Tunis", "OS", ["", "Not invited"]], ["RT", "HR Partner", "People", "Sousse", "AK", ["ok", "Signed in"]], ["OS", "Head of Platform", "Platform", "Tunis", "AK", ["ok", "Signed in"]], ["SJ", "Backend Engineer", "Platform", "Remote", "OS", ["wa", "Starts 12 Jan"]], ["YB", "Support Lead", "Support", "Sfax", "RT", ["", "Invited"]]];
+  return `${side("People")}<div class="main">${topBar}<div class="bd">
+  <div class="row"><span class="ser" style="font-size:30px">People</span><span style="flex:1"></span><span class="btn">Invite people</span><span class="btn pr">Add people</span></div>
+  <div class="row"><span class="search" style="width:320px;background:var(--k-card);box-shadow:inset 0 0 0 1px var(--k-hl)">Search 100 people</span><span class="chip" style="padding:7px 14px">Team</span><span class="chip" style="padding:7px 14px">Place</span><span class="chip" style="padding:7px 14px">Sign-in</span><span style="flex:1"></span><span class="chip" style="padding:7px 14px">Cards</span><span class="chip" style="padding:7px 14px;background:var(--k-card)">Table</span></div>
+  <div class="card" style="padding:6px 6px 10px"><table><thead><tr><th>Name</th><th>Team</th><th>Place</th><th>Manager</th><th>Sign-in</th></tr></thead><tbody>
+  ${rows.map(([k, job, team, place, m, [c, s]]) => `<tr><td><span class="row">${av(k, 32)}<span style="display:grid"><b style="font-weight:600">${P[k][0]}</b><span class="mu" style="font-size:12.5px">${job}</span></span></span></td><td>${team}</td><td>${place}</td><td><span class="row" style="gap:8px">${av(m, 22)}${P[m][0]}</span></td><td><span class="chip ${c}">${s}</span></td></tr>`).join("")}
+  </tbody></table></div></div></div>`;
+}
+
+// ---- state ----
+const KEY = "fusion-b397-colour-v1";
+let ui = { theme: "dark", page: "person" };
+let state = { dark: null, light: null, note: "" };
+let db = null, saveTimer = null, writing = false, dirty = false;
+try { const s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) state = { ...state, ...s }; } catch {}
+const pickOf = th => state[th] || REC[th];
+function persist() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+  const s = document.getElementById("saved");
+  if (!db) { s.textContent = "Saved in this browser"; return; }
+  dirty = true; s.textContent = "Saving…"; clearTimeout(saveTimer); saveTimer = setTimeout(flush, 500);
+}
+async function flush() {
+  if (writing || !dirty) return; writing = true; dirty = false;
+  const s = document.getElementById("saved");
+  try { await db.doc("colour/main").set({ ...state, at: new Date().toISOString() }); s.textContent = dirty ? "Saving…" : "Saved"; } catch { s.textContent = "Not saved"; }
+  writing = false; if (dirty) flush();
+}
+function fit() {
+  for (const st of document.querySelectorAll(".stage")) {
+    const k = st.clientWidth / 1440; const sc = st.querySelector(".scale");
+    sc.style.transform = `scale(${k})`; st.style.height = Math.round(900 * k) + "px";
+  }
+}
+function render() {
+  const th = ui.theme;
+  const html = ui.page === "person" ? personPage() : peoplePage();
+  const box = document.getElementById("takes");
+  box.innerHTML = TAKES[th].map(([id, name, t]) => `<section class="take"><div class="take-head"><span class="name">${name}</span>${REC[th] === id ? `<span class="star">★ my pick</span>` : ""}<span class="grow"></span><button class="pick" type="button" data-id="${id}" aria-pressed="${pickOf(th) === id}">${pickOf(th) === id ? "Chosen" : "Choose"}</button></div><div class="stage ${pickOf(th) === id ? "on" : ""}"><div class="scale"><div class="f" style="${vars(th, t)}">${html}</div></div></div></section>`).join("");
+  for (const b of box.querySelectorAll(".pick")) b.addEventListener("click", () => { state[th] = b.dataset.id === REC[th] ? null : b.dataset.id; persist(); render(); });
+  for (const b of document.querySelectorAll("[data-th]")) b.setAttribute("aria-pressed", String(b.dataset.th === th));
+  for (const b of document.querySelectorAll("[data-pg]")) b.setAttribute("aria-pressed", String(b.dataset.pg === ui.page));
+  const nameOf = t => TAKES[t].find(x => x[0] === pickOf(t))[1];
+  document.getElementById("p-dark").textContent = nameOf("dark");
+  document.getElementById("p-light").textContent = nameOf("light");
+  const note = document.getElementById("note"); if (document.activeElement !== note) note.value = state.note || "";
+  fit();
+}
+for (const b of document.querySelectorAll("[data-th]")) b.addEventListener("click", () => { ui.theme = b.dataset.th; render(); });
+for (const b of document.querySelectorAll("[data-pg]")) b.addEventListener("click", () => { ui.page = b.dataset.pg; render(); });
+document.getElementById("note").addEventListener("input", e => { state.note = e.target.value; persist(); });
+window.addEventListener("resize", fit);
+document.getElementById("copy").addEventListener("click", async () => {
+  const name = t => TAKES[t].find(x => x[0] === pickOf(t))[1];
+  const text = `B-397 colour: my choices\n- Dark: ${name("dark")}${pickOf("dark") === REC.dark ? " (as recommended)" : ""}\n- Light: ${name("light")}${pickOf("light") === REC.light ? " (as recommended)" : ""}${state.note.trim() ? "\nNote: " + state.note.trim() : ""}`;
+  try { await navigator.clipboard.writeText(text); const t = document.getElementById("toast"); t.textContent = "Copied. Paste it in the chat."; t.classList.add("on"); setTimeout(() => t.classList.remove("on"), 1600); }
+  catch { const box = document.getElementById("copybox"), a = document.getElementById("copytext"); a.value = text; box.hidden = false; a.focus(); a.select(); }
+});
+render();
+document.fonts?.ready?.then(fit);
+
+(async () => {
+  try { db = window.claude?.use ? await window.claude.use("db") : null; } catch { db = null; }
+  if (!db) { document.getElementById("saved").textContent = ""; return; }
+  db.doc("colour/main").onSnapshot(snap => {
+    if (!snap.exists || dirty || writing || snap.metadata.hasPendingWrites) return;
+    if (document.activeElement?.tagName === "TEXTAREA") return;
+    const data = JSON.parse(JSON.stringify(snap.data() || {}));
+    state = { dark: data.dark ?? null, light: data.light ?? null, note: data.note || "" };
+    render();
+  }, () => { document.getElementById("saved").textContent = ""; });
+})();
+</script>

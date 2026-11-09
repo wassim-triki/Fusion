@@ -2,7 +2,27 @@
 
 **Status:** page published 2026-11-09: https://claude.ai/artifact/Kq91ddwjiTPb4BrEEVzCLF (`B-397-foundation.html`, answers in db doc `foundation/main`). **Waiting on the user's checkpoint.** Answers become design decisions (IDs after D-31 in `design/decisions.md`), then Performance's scope (B-390) is built on them.
 
-## How the page works
+## Round 1 outcome (user, 2026-11-09)
+
+Answered (db `foundation/main` v123) and "not toooo happy with the choices and artefact in general": thumbnails of today's layouts were too shallow to judge and drawn on layouts being overhauled; obvious picks were asked; some options weren't exclusive; colour drifted from the agreed theme. Lessons in memory `ui-decisions-shown-per-situation`.
+
+**Kept from the answers:**
+- N3 Settings: one page with its own tabs (c).
+- N4 Steps of a flow: full screen (c), tentative; "needs more context".
+- P1 quick look and P3 sectioned tasks: not exclusive; the form follows the case (panel and modal both have a place).
+- E2 empty part of a record: between a prompt for whoever can fill it and a placeholder; to be drawn properly in context.
+- U4 and U6 dropped. U6 becomes: validation prevents an invalid action; no extra explaining.
+- Colour: keep the agreed palette; lift dark mode off near-black; in light mode the hero and the rest shouldn't differ; pure white beside the rest looked odd.
+
+**Settled by the agent, no vote (obvious):** a page loads in its own shape and nothing shows for loads under about a second; a tab or view switch loads only the part that changes; refreshing keeps the content with a thin running line; quick actions apply at once with undo or rollback (U8); long work shows what it's doing with live counts; photos wherever a person appears (U7); a record shows where you are in the top bar; no em dashes, no dot-strung stat lines, plain words (U1 to U3); no explaining sentences (U5).
+
+**Next, as agreed:** a full-size colour study (round 2, below); the remaining visual rules (empty states, panels, navigation, type) are settled inside the first full-size screens of the Performance redesign, not as a separate quiz.
+
+## Round 2: colour study
+
+https://claude.ai/artifact/32F5aE6EBg3yyGpS56bWYj (`B-397-colour.html`, db doc `colour/main`). Aicha's page and People at 1440, three takes per theme, lightness only, on the agreed hue and brand. Dark: as today, charcoal with hero and page one tone (pick), graphite. Light: hero and page one soft tone with cards a step up (pick), one near-white with lifted white cards, as today.
+
+## How the round 1 page worked
 
 29 situations in 8 topics, 2–3 variants each, **drawn** in Fusion's own tokens (`Frontend/packages/ds/src/styles/tokens.css`: oklch steps, Geist and Lora, the yellow brand), with real Carthage people. Labels only. Every drawing follows the choices already made (temperature, surface steps per page type, icon set, serif), so the page redraws as the system the user picks. A Dark/Light switch redraws every specimen in either theme. The user's direction during the build: warm and friendly like BambooHR and Upwork, modern and professional; hence a neutral temperature choice (warm, a hint of the brand) beside today's cool zinc.
 

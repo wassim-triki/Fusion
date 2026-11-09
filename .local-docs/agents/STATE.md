@@ -4,7 +4,7 @@
 
 ## Active work
 
-**Row 1, the Fusion-wide foundation page** (B-397), 2026-11-09, same session at the user's word ("do it here"). **Page published, waiting on the user's checkpoint:** https://claude.ai/artifact/Kq91ddwjiTPb4BrEEVzCLF (`plans/B-397-foundation.html`, db doc `foundation/main`, empty at publish). Inventory, research and next steps: `plans/B-397-foundation.md`. 29 situations, drawn variants, picks preselected; the user's feel during the build: warm and friendly like BambooHR and Upwork.
+**Row 1, the Fusion-wide foundation page** (B-397), 2026-11-09, same session at the user's word ("do it here"). Round 1 (29 situations as thumbnails, https://claude.ai/artifact/Kq91ddwjiTPb4BrEEVzCLF) answered and judged too shallow; its outcome and the rules the agent settles itself are in `plans/B-397-foundation.md`. **Round 2, the full-size colour study, published and waiting on the user:** https://claude.ai/artifact/32F5aE6EBg3yyGpS56bWYj (`plans/B-397-colour.html`, db doc `colour/main`, empty at publish). After it: record colour as a decision (D-32), then Performance's scope (row 3), whose first full-size screens settle the remaining visual rules (empty states, panels, navigation, type) in context. Feel: warm and friendly like BambooHR and Upwork.
 
 ## Next
 

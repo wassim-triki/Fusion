@@ -28,7 +28,8 @@ None.
 
 ## In review
 
-None waiting.
+- [ ] **B-390** Performance scope page: answer it (stage 2's checkpoint) · Performance · 2026-11-10
+      Look at: https://claude.ai/artifact/VMaufYFnS2JUbPbd4xnbxm (picks preselected; change rungs, pull back from Not doing, answer Q1–Q5, Copy my choices or just say done). Reasoning: [brief](plans/B-390-target-brief.md). The item itself stays under Stack 1 in Ready.
 
 ## Ready
 
@@ -37,7 +38,7 @@ None waiting.
 From B-331's walk (2026-11-09; the user's words, step by step, in `design/walkthrough-2026-11-09.md`; the B-numbers on notes trace to them). One item per surface: notes are evidence for rethinking the surface as a whole, not a list of fixes; functions sit apart from visuals. (D) = needs discussion.
 
 - [ ] **B-390** Stack 1 · Performance redesigned as a module, functions and visuals together · Performance · 2026-11-09
-          Map done 2026-11-09 (session 2): [plan](plans/B-390-performance-redesign.md), [map](plans/B-390-map.md). A first scope page (`plans/B-390-scope.html`) was superseded the same day (user: one chapter at a time, each with the full Core HR system; UI choices drawn per situation, not explained): the Fusion-wide foundation (B-397) goes first on its own page, then a researched target brief and a fresh scope page (STATE, rows 1 and 3).
+          Map done 2026-11-09 (session 2): [plan](plans/B-390-performance-redesign.md), [map](plans/B-390-map.md). A first scope page (`plans/B-390-scope.html`) was superseded the same day; the foundation went first (D-32). Stage 2 redone 2026-11-10: [target brief](plans/B-390-target-brief.md) and a fresh scope page (`plans/B-390-scope-2.html`, https://claude.ai/artifact/VMaufYFnS2JUbPbd4xnbxm), waiting on the user's answers (In review).
           First priority after B-398: Core HR could demo tomorrow, Performance couldn't (user). Not from the ground up: what the module does stays; its functions are cleaned up, fixed and completed, its visuals rewritten the way Core HR's were.
           How, the Core HR rebuild's process again (B-164, files in `archive/plans/B-164-*`): a map of what exists (code inventory and a live walk, B-165) → a target brief and scope page with depth ladders per feature, studied against other products (B-163) → a design direction, then explorers checkpoint by checkpoint until every screen has an accepted design, recorded as decisions (B-166; Core HR's are D-01–D-30) → the rebuild in dependency-ordered slices, one session each (B-167). This walk is the live part of the map.
           Its first chapter settles B-397's Fusion-wide decisions (colours, empty states, loading shapes, icons, navigation) so Performance isn't designed on rules that change after.

@@ -1,0 +1,747 @@
+<title>Performance Scope</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* One reading column; a sticky tally carries the state and the copy action; every feature is a row with its ladder. */
+:root {
+  --bg: #f4f4f6; --surface: #ffffff; --inlay: #f0f0f3; --fg: #18181b; --muted: #5d5d66; --line: #e2e2e7;
+  --accent: #f2c200; --accent-ink: #1b1600; --accent-soft: #fff6cc; --accent-text: #8a6d00;
+  --parity: #2f5fb8; --parity-soft: #e6eefc; --improve: #157347; --improve-soft: #e3f4ea; --new: #8a2fa8; --new-soft: #f6e8fb;
+  --changed: #a35f00; --changed-soft: #fdf0dc; --focus: #2f6fdb;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --r-surface: 20px; --r-control: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1c1c20; --surface: #242429; --inlay: #2c2c32; --fg: #ececef; --muted: #a2a2ab; --line: #34343b;
+    --accent: #ffd21f; --accent-ink: #1b1600; --accent-soft: #3a3110; --accent-text: #ffd21f;
+    --parity: #8fb4ff; --parity-soft: #18233a; --improve: #4cc98a; --improve-soft: #16301f; --new: #e59cff; --new-soft: #2e1a35;
+    --changed: #f2b44f; --changed-soft: #35270f; --focus: #7aa7ff;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1c1c20; --surface: #242429; --inlay: #2c2c32; --fg: #ececef; --muted: #a2a2ab; --line: #34343b;
+  --accent: #ffd21f; --accent-ink: #1b1600; --accent-soft: #3a3110; --accent-text: #ffd21f;
+  --parity: #8fb4ff; --parity-soft: #18233a; --improve: #4cc98a; --improve-soft: #16301f; --new: #e59cff; --new-soft: #2e1a35;
+  --changed: #f2b44f; --changed-soft: #35270f; --focus: #7aa7ff;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+main { max-width: 1000px; margin: 0 auto; padding-block: 40px 120px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 52px; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; margin: 0; text-wrap: balance; }
+h1 { font-size: 42px; letter-spacing: -0.01em; }
+h2 { font-size: 26px; }
+h3 { font-size: 18px; }
+p { margin: 0; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-text); font-weight: 600; }
+.muted { color: var(--muted); }
+.lede { font-size: 17px; color: var(--muted); max-width: 640px; }
+header { display: grid; gap: 14px; }
+.road { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.road span { border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: 13px; color: var(--muted); }
+.road .done { color: var(--fg); }
+.road .here { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.tally { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.tally-in { max-width: 1000px; margin: 0 auto; padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.copybox { display: grid; gap: 8px; }
+.copybox textarea { min-height: 180px; font-family: var(--font-mono); font-size: 12px; }
+.stat { font-size: 13px; color: var(--muted); }
+.stat b { color: var(--fg); font-family: var(--font-mono); font-weight: 500; font-variant-numeric: tabular-nums; }
+.spacer { flex: 1; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: var(--r-control); padding: 7px 14px; cursor: pointer; font-weight: 500; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.saved { font-size: 12px; color: var(--muted); min-width: 70px; text-align: right; }
+.banner { background: var(--inlay); border: 1px solid var(--line); border-radius: var(--r-control); padding: 10px 14px; font-size: 13px; color: var(--muted); }
+section { display: grid; gap: 16px; }
+.sub { color: var(--muted); }
+/* jobs */
+.jobs { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.job { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-surface); padding: 14px 16px; display: grid; gap: 4px; align-content: start; }
+.job .n { font-family: var(--font-mono); font-size: 12px; color: var(--accent-text); }
+.job .t { font-weight: 600; }
+.job .today { font-size: 13px; color: var(--muted); }
+.job.weak { border-color: var(--changed); }
+/* heroes */
+.heroes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.hero { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-surface); padding: 20px; display: grid; gap: 12px; align-content: start; }
+.hero .num { font-family: var(--font-mono); font-size: 12px; color: var(--accent-text); }
+.hero dl { margin: 0; display: grid; gap: 8px; }
+.hero dt { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.hero dd { margin: 0; }
+.phases { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 12px; }
+.phases span { padding: 3px 9px; border-radius: 999px; background: var(--inlay); color: var(--muted); }
+.phases span.on { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.phases i { color: var(--muted); font-style: normal; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 12px; border-radius: 999px; padding: 2px 10px; border: 1px solid var(--line); text-decoration: none; white-space: nowrap; }
+.chip.parity { color: var(--parity); background: var(--parity-soft); border-color: transparent; }
+.chip.improvement { color: var(--improve); background: var(--improve-soft); border-color: transparent; }
+.chip.new { color: var(--new); background: var(--new-soft); border-color: transparent; }
+.chip.hero { color: var(--accent-text); background: var(--accent-soft); border-color: transparent; }
+.chip.changed { color: var(--changed); background: var(--changed-soft); border-color: transparent; }
+/* places */
+.places { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.place { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-surface); padding: 14px 16px; display: grid; gap: 4px; align-content: start; }
+.place b { font-family: var(--font-display); font-size: 16px; }
+.place .was { font-size: 13px; color: var(--muted); }
+.settled { display: grid; gap: 6px; padding: 0; margin: 0; list-style: none; }
+.settled li { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-control); padding: 9px 14px; font-size: 14px; display: flex; gap: 10px; }
+.settled li .ref { font-family: var(--font-mono); font-size: 12px; color: var(--muted); margin-left: auto; white-space: nowrap; }
+/* items */
+.area { display: grid; gap: 12px; }
+.area-head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; margin-top: 28px; }
+.area-head h3 { font-size: 21px; }
+.item { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-surface); padding: 18px 20px; display: grid; gap: 12px; scroll-margin-top: 70px; }
+.item.is-changed { border-color: var(--changed); }
+.item-head { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: baseline; }
+.item-head h3 { margin-right: 4px; }
+.id { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); }
+.dots { letter-spacing: 2px; color: var(--fg); }
+.ladder { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.rung { position: relative; text-align: left; border: 1px solid var(--line); background: var(--inlay); border-radius: var(--r-control); padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.rung:disabled { opacity: 0.35; cursor: default; }
+.rung .rn { font-family: var(--font-mono); font-size: 12px; color: var(--muted); padding-right: 16px; }
+.rung .rt { font-size: 13px; line-height: 1.4; flex: 1; }
+.rung .rc { font-size: 12px; color: var(--muted); }
+.rung[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+.rung[aria-pressed="true"] .rn { color: var(--accent-text); font-weight: 600; }
+.rung .star { position: absolute; top: 6px; right: 8px; font-size: 12px; color: var(--accent-text); }
+.note-row { display: grid; gap: 6px; }
+.note-toggle { background: none; border: 0; padding: 0; color: var(--muted); font-size: 13px; cursor: pointer; justify-self: start; text-decoration: underline; text-underline-offset: 3px; }
+textarea { width: 100%; min-height: 64px; resize: vertical; background: var(--inlay); color: var(--fg); border: 1px solid var(--line); border-radius: var(--r-control); padding: 10px 12px; font: inherit; font-size: 14px; }
+/* not doing */
+.out { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px; }
+.out-item { display: flex; gap: 12px; align-items: center; justify-content: space-between; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-control); padding: 10px 14px; }
+.out-item.pulled { border-color: var(--changed); }
+.out-item .why { font-size: 13px; color: var(--muted); }
+.switch { border: 1px solid var(--line); background: var(--inlay); border-radius: 999px; padding: 4px 12px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.switch[aria-pressed="true"] { background: var(--changed-soft); color: var(--changed); border-color: var(--changed); }
+/* questions */
+.q { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-surface); padding: 18px 20px; display: grid; gap: 12px; }
+.q.is-changed { border-color: var(--changed); }
+.opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.opt { position: relative; text-align: left; border: 1px solid var(--line); background: var(--inlay); border-radius: var(--r-control); padding: 10px 12px; cursor: pointer; display: grid; gap: 6px; align-content: start; }
+.opt[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.opt .rec { font-size: 12px; color: var(--accent-text); }
+/* drawn specimens: a module sidebar, a page header */
+.side { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: grid; gap: 2px; font-size: 13px; }
+.side .mod { font-size: 11px; color: var(--muted); padding: 2px 8px 6px; letter-spacing: 0.04em; text-transform: uppercase; }
+.side .nav { padding: 4px 8px; border-radius: 6px; display: flex; justify-content: space-between; }
+.side .nav.on { background: var(--inlay); font-weight: 600; }
+.side .grp { font-size: 11px; color: var(--muted); padding: 8px 8px 2px; }
+.side .nav small { color: var(--muted); font-size: 11px; }
+.head-spec { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 4px; }
+.head-spec .ht { font-family: var(--font-display); font-size: 20px; font-weight: 700; }
+.head-spec .hs { font-size: 12px; color: var(--muted); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.pill { font-size: 11px; padding: 1px 8px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.sources { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.toast { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 8px 14px; border-radius: var(--r-control); font-size: 13px; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+.toast.on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+@media (max-width: 760px) {
+  h1 { font-size: 32px; }
+  .heroes { grid-template-columns: 1fr; }
+  .ladder { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .out-item { flex-direction: column; align-items: flex-start; }
+  .settled li { flex-direction: column; gap: 2px; }
+  .settled li .ref { margin-left: 0; }
+}
+</style>
+<div class="tally" role="region" aria-label="Your choices">
+  <div class="tally-in">
+    <span class="stat">Changed from my picks <b id="t-changed">0</b></span>
+    <span class="stat">Pulled back <b id="t-pulled">0</b></span>
+    <span class="stat">Notes <b id="t-notes">0</b></span>
+    <span class="spacer"></span>
+    <span class="saved" id="saved" aria-live="polite"></span>
+    <button class="btn" id="reset" type="button">Back to my picks</button>
+    <button class="btn primary" id="copy" type="button">Copy my choices</button>
+  </div>
+</div>
+<main>
+  <header>
+    <span class="eyebrow">Fusion · Performance · Scope</span>
+    <h1>What Performance will be</h1>
+    <p class="lede">My picks are preselected. Change a rung, pull something back, answer the five questions, leave notes. What the walk found broken is fixed at every rung above 0.</p>
+    <div class="road" aria-label="Where this sits">
+      <span class="done">1 Map ✓</span><span class="done">Foundation ✓</span><span class="here">2 Scope</span><span>3 Direction and screens</span><span>4 Rebuild</span>
+    </div>
+    <div class="banner" id="banner" hidden></div>
+    <div class="copybox" id="copybox" hidden>
+      <span class="muted">Copying was blocked here. Select this text and copy it.</span>
+      <textarea id="copytext" readonly aria-label="Your choices as text"></textarea>
+    </div>
+  </header>
+
+  <section aria-labelledby="jobs-h">
+    <h2 id="jobs-h">Eight jobs</h2>
+    <p class="sub">Every feature serves one. Outlined: where the walk broke down.</p>
+    <div class="jobs" id="jobs"></div>
+  </section>
+
+  <section aria-labelledby="heroes-h">
+    <h2 id="heroes-h">Four heroes</h2>
+    <p class="sub">Where Fusion goes past Lattice, Culture Amp, HiBob and the rest. Everything else sits clean at what they do.</p>
+    <div class="heroes" id="heroes"></div>
+  </section>
+
+  <section aria-labelledby="places-h">
+    <h2 id="places-h">Where things live</h2>
+    <p class="sub">My proposal; question Q2 below draws it beside the alternatives.</p>
+    <div class="places" id="places"></div>
+    <h3>Settled without asking</h3>
+    <ul class="settled" id="settled"></ul>
+  </section>
+
+  <section aria-labelledby="cat-h">
+    <h2 id="cat-h">Every feature, and how far</h2>
+    <div class="meta"><span>0 not built · 1 works, minimal · 2 what they do · 3 showcase; each rung includes the ones before</span><span>Effort counts from today's code</span><span>★ my pick</span><span>Value: my business case</span><span><span class="chip parity">Parity</span> as they do it</span><span><span class="chip improvement">Improvement</span> better than them</span><span><span class="chip new">New</span> nobody does it</span></div>
+    <div id="areas"></div>
+  </section>
+
+  <section aria-labelledby="out-h">
+    <h2 id="out-h">Not doing</h2>
+    <p class="sub">Pull back anything you want in.</p>
+    <div class="out" id="out"></div>
+  </section>
+
+  <section aria-labelledby="q-h">
+    <h2 id="q-h">Five questions</h2>
+    <div id="questions" style="display:grid;gap:12px"></div>
+  </section>
+
+  <section aria-labelledby="more-h">
+    <h2 id="more-h">Anything missing?</h2>
+    <textarea id="extra" aria-labelledby="more-h" placeholder="A feature, an idea, something you saw elsewhere"></textarea>
+  </section>
+
+  <section aria-labelledby="src-h">
+    <h3 id="src-h">Studied</h3>
+    <div class="sources" id="sources"></div>
+  </section>
+</main>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const JOBS = [
+  ["J1", "Set the direction", "Built; unreachable, typed by hand", true],
+  ["J2", "Agree each person's plan", "Works end to end", false],
+  ["J3", "Keep the work moving", "Works, weighted roll-up included", false],
+  ["J4", "Talk through the year", "Works; 1:1s don't say what to do", true],
+  ["J5", "Review fairly", "Works to release; calibration unexplained", true],
+  ["J6", "Help people grow", "Growth goals inside the plan", false],
+  ["J7", "Run the year", "Setup liked; after launch \"abysmal\"", true],
+  ["J8", "See how it's going", "Overview not trusted", true],
+];
+
+const HEROES = [
+  { id: "H1", title: "The year on one page", phases: true,
+    line: "One Year page for everyone: where the year stands, your next step, your team's, the company's for HR. Replaces Overview and the cycle page.",
+    sees: "Amira Khelifi, the administrator, launches and lands on the year in Planning, 0 of 92 plans in, one next step: set the company's direction.",
+    beyond: "Others show a cycle as an admin progress table and each person's tasks elsewhere. Here the year is one thing everyone shares, moving with what happened.",
+    items: ["Y2", "Y3", "S4"] },
+  { id: "H2", title: "Goals from the company down",
+    line: "One Goals place for every level, the company's direction found from the sidebar, the map as a view, the coach suggesting where each goal fits.",
+    sees: "Weeks after launch, two company objectives carry 40 plans; two are at risk; Aicha Bouazizi's goal found its parent because the coach suggested it.",
+    beyond: "Culture Amp just shipped cascading, weighted goals; Fusion has the roll-up already and makes the map a place people use.",
+    items: ["G1", "G2", "G7"] },
+  { id: "H3", title: "Reviews written from the year",
+    line: "The year's record beside the form, and a draft where every sentence opens its source. Never a rating.",
+    sees: "Mariam Gharbi, the manager, opens Aicha's review: final status of each goal, praise received, a draft whose every sentence cites a 1:1 or an update.",
+    beyond: "Lattice's 2026 drafts show their sources; Fusion cites per sentence and the evidence works without AI.",
+    items: ["V2"] },
+  { id: "H4", title: "Calibration that explains itself",
+    line: "A guided session: who's ready, the spread, the nine-box, flags worth a look, finalize what's ready.",
+    sees: "31 of 92 ready; one manager 0.9 above the average; Amira moves one person with a reason and finalizes the ready ones.",
+    beyond: "Elsewhere calibration is a grid for people-science teams; analytics are still announced, not shipped.",
+    items: ["V4"] },
+];
+
+const PLACES = [
+  ["Year", "Front page, everyone. Setup opens from here.", "Overview + Cycle"],
+  ["Goals", "Company · units · You · Your team, with the map.", "My Plan + Organization direction"],
+  ["1:1s", "The next meeting first.", "1:1s"],
+  ["Feedback", "Feedback and praise.", "Feedback"],
+  ["Reviews", "Yours; rounds and calibration for HR.", "Reviews"],
+  ["Outside Performance", "Team page tab · person page tab · Home · Fusion Settings", "Performance's own person page goes"],
+];
+
+const SETTLED = [
+  ["A manager works on Core HR's Team page, its Performance tab inside the same frame", "D-19"],
+  ["One person page: Core HR's, with a Performance tab", "Core HR principle 1"],
+  ["Every screen in Core HR's language and D-32's colours; layouts redesigned from each surface's job", "D-01–D-32"],
+  ["Cycle setup is polished, not redrawn", "B-389"],
+  ["The walk's broken functions are fixed at every rung above 0", "B-392"],
+];
+
+const AREAS = [
+  { id: "year", title: "Running the year", job: "J7", items: [
+    { id: "Y1", title: "Cycle setup", tag: "parity", biz: 3, pick: 2,
+      what: "Details, who takes part, review, launch.", today: "Liked; the walk's notes open",
+      rungs: [null,
+        ["The walk's notes fixed: headers, Next flicker, Continue by hand, avatars, photos", "S"],
+        ["Plus starter sets on the way; launch lands on the year with its next step", "S"],
+        ["Plus a preview of the year as one person will live it, before launch", "M"]] },
+    { id: "Y2", title: "The Year page", tag: "improvement", hero: "H1", biz: 3, pick: 3,
+      what: "Where anyone sees how the year stands and what to do next.", today: "Overview + cycle page",
+      rungs: ["Keep both pages, restyled",
+        ["Overview your to-dos; cycle page dates, status, Close", "S"],
+        ["One page: timeline and phase, your next step, your team, the company for HR", "M"],
+        ["Plus the year replayed on its timeline, each phase's next step shown ahead", "M"]] },
+    { id: "Y3", title: "Phase from what happened", tag: "improvement", hero: "H1", biz: 3, pick: 3,
+      what: "Planning, Execution, Review, Results out.", today: "Dates only; reads wrong after release",
+      rungs: [null,
+        ["Release closes the round; the phase never goes back", "S"],
+        ["Phase from events and dates together", "M"],
+        ["Plus HR moves the year on deliberately, with a preview; a year demoable in one sitting", "M"]] },
+    { id: "Y4", title: "Reminders and nudges", tag: "parity", biz: 2, pick: 2,
+      what: "Keeping people on time.", today: "Automatic reminders before due dates",
+      rungs: [null,
+        ["As built", "S"],
+        ["Plus HR nudges who's behind from the Year page, previewing who gets what", "S"],
+        ["Plus nudges timed to each person's progress, quiet for those on track", "M"]] },
+    { id: "Y5", title: "Closing the year", tag: "parity", biz: 2, pick: 2,
+      what: "Ending one year, starting the next.", today: "Close works; nothing carries over but growth goals",
+      rungs: [null,
+        ["Close with what's unfinished listed", "S"],
+        ["Plus unfinished goals carried into next year's drafts", "M"],
+        ["Plus next year's setup starts from this one, dates moved on", "S"]] },
+    { id: "Y6", title: "Starter content", tag: "improvement", biz: 2, pick: 2,
+      what: "Values, rating scale, competencies, review questions for a new company.", today: "Empty; praise blocked",
+      rungs: ["Empty; the company fills everything in",
+        ["A praise value optional while none exist", "S"],
+        ["Starter sets offered when Performance starts, then theirs to edit", "S"],
+        ["Plus AI drafts competencies and values from the company's jobs and units", "M"]] },
+    { id: "Y7", title: "Performance settings", tag: "parity", biz: 2, pick: 2,
+      what: "Scale, competencies, questions, defaults, notifications.", today: "Work; pre-Core HR look",
+      rungs: [null,
+        ["As built, inside Fusion Settings", "S"],
+        ["Plus each setting previewed where it lands", "M"],
+        null] },
+  ]},
+  { id: "goals", title: "Direction and goals", job: "J1–J3", items: [
+    { id: "G1", title: "One Goals place", tag: "improvement", hero: "H2", biz: 3, pick: 3,
+      what: "Objectives at every level in one place.", today: "My Plan apart from a hidden Organization direction",
+      rungs: ["Keep them apart",
+        ["Organization direction added to the sidebar", "S"],
+        ["One Goals place: Company, units, You, Your team", "M"],
+        ["Plus the map as a view of every scope, company down to each person", "M"]] },
+    { id: "G2", title: "Company and unit objectives", tag: "parity", hero: "H2", biz: 3, pick: 2,
+      what: "Owners write, publish and follow them.", today: "Built; \"can't save this\"",
+      rungs: [null,
+        ["As built, redrawn", "S"],
+        ["Owner, progress, status and plans supporting each, at a glance", "M"],
+        ["Plus what's at risk under each, opened from it", "S"]] },
+    { id: "G3", title: "Measures", tag: "parity", biz: 2, pick: 2,
+      what: "Percent, baseline to target, milestones.", today: "Asks a Direction the numbers already give",
+      rungs: [null,
+        ["Direction read from baseline and target", "S"],
+        ["Plus the measure read back as a sentence, its bar shown while typing", "S"],
+        null] },
+    { id: "G4", title: "Your plan", tag: "parity", biz: 3, pick: 2,
+      what: "Your goals for the year, weighted, put forward.", today: "Cards just restored",
+      rungs: [null,
+        ["As built, redrawn", "S"],
+        ["The same cards in every state; what's missing shown in place before submit", "M"],
+        ["Plus each goal's line up to the company's", "S"]] },
+    { id: "G5", title: "Plan approval", tag: "parity", biz: 3, pick: 2,
+      what: "Approve, or return with requests on single goals.", today: "Works",
+      rungs: [null,
+        ["As built", "S"],
+        ["Plus approve from Home and the Team page; a resubmitted plan shows what changed", "M"],
+        null] },
+    { id: "G6", title: "Progress and status", tag: "parity", biz: 3, pick: 2,
+      what: "Updates with on track, at risk, off track and evidence.", today: "Works",
+      rungs: [null,
+        ["As built", "S"],
+        ["Updated from the goal in one step; a manager's request opens right there", "S"],
+        ["Plus progress as a line with each update's note", "S"]] },
+    { id: "G7", title: "AI goal coach", tag: "improvement", hero: "H2", biz: 2, pick: 2,
+      what: "Helps write a clear, measurable goal and find its parent.", today: "Works; its form open to change",
+      rungs: ["Remove it",
+        ["A Check button, suggestions in a panel", "S"],
+        ["Quiet suggestions while writing: wording, measure, parent; each applied by you", "M"],
+        ["Plus a first draft of the whole plan from the job, the unit's goals and last year", "M"]] },
+  ]},
+  { id: "during", title: "During the year", job: "J4, J6", items: [
+    { id: "D1", title: "Check-ins", tag: "parity", biz: 2, pick: 1,
+      what: "A light rhythm between plan and review.", today: "Progress whenever people think of it",
+      rungs: ["None",
+        ["A monthly reminder to update your goals", "S"],
+        ["A short check-in every two weeks, read in the 1:1", "M"],
+        ["Plus the manager's team digest: what moved, who's stuck", "M"]] },
+    { id: "D2", title: "1:1s", tag: "improvement", biz: 3, pick: 2,
+      what: "A manager and each report, regularly.", today: "\"I don't know what I'm doing inside\"",
+      rungs: ["Remove 1:1s",
+        ["As built, the next meeting first", "S"],
+        ["The meeting is the page: agenda with each item's source, notes, actions; a starter agenda for the first", "M"],
+        ["Plus a brief before each meeting: what moved since the last", "M"]] },
+    { id: "D3", title: "Feedback", tag: "parity", biz: 2, pick: 2,
+      what: "Give and ask, shared or for the manager only.", today: "Works",
+      rungs: ["Remove it",
+        ["As built, redrawn", "S"],
+        ["From wherever a person appears; requests declined, withdrawn or expired", "S"],
+        ["Plus Fusion suggests whom to ask", "M"]] },
+    { id: "D4", title: "Praise", tag: "parity", biz: 2, pick: 2,
+      what: "Public thanks tagged with a value.", today: "Blocked without values; its icons loved",
+      rungs: ["Remove it",
+        ["As built, with starter values", "S"],
+        ["On Home, the person page and Team, with reactions; the manager told", "S"],
+        ["Plus a company wall: the week's praise, the values most given", "M"]] },
+    { id: "D5", title: "Growth", tag: "parity", biz: 2, pick: 2,
+      what: "Development goals for the year.", today: "1–5 goals inside the plan",
+      rungs: ["Remove it",
+        ["As built, inside the plan", "S"],
+        ["Its own part of the person page, brought into 1:1s and the review", "M"],
+        ["Plus AI drafts growth goals from the review and competencies", "M"]] },
+    { id: "D6", title: "Competencies by job", tag: "improvement", biz: 2, pick: 1,
+      what: "What's expected of each role.", today: "One flat company list",
+      rungs: [null,
+        ["One company list, as built", "S"],
+        ["Expectations per job family and level from Core HR's jobs, used in reviews", "M"],
+        ["Plus a person sees what the next level asks", "M"]] },
+  ]},
+  { id: "reviews", title: "Reviews", job: "J5", items: [
+    { id: "V1", title: "Review rounds", tag: "parity", biz: 3, pick: 2,
+      what: "Launch, follow, release.", today: "Round stays open after release",
+      rungs: [null,
+        ["As built; release closes the round", "S"],
+        ["One flow from the Year page: launch, progress by manager, nudges, calibrate, release", "M"],
+        null] },
+    { id: "V2", title: "Writing a review", tag: "improvement", hero: "H3", biz: 3, pick: 3,
+      what: "Self and manager: goals, competencies, questions, overall, potential.", today: "Works; AI sits in the form like a field",
+      rungs: [null,
+        ["As built, redrawn", "S"],
+        ["The form with the year beside it: goals, evidence, feedback, praise, 1:1 notes", "M"],
+        ["Plus the draft and reflection starter, every sentence citing its source", "M"]] },
+    { id: "V3", title: "Peer input", tag: "parity", biz: 2, pick: 2,
+      what: "Colleagues answer a few questions.", today: "Works",
+      rungs: ["Remove it",
+        ["As built", "S"],
+        ["Answered from Home; read beside the review", "S"],
+        null] },
+    { id: "V4", title: "Calibration", tag: "improvement", hero: "H4", biz: 3, pick: 3,
+      what: "Ratings compared across teams before release.", today: "\"No clue what this is\"; waits on all 92",
+      rungs: ["Remove calibration",
+        ["As built; the page says what it is and what Finalize waits for", "S"],
+        ["A guided session: ready and still writing, spread, adjust with a reason, finalize what's ready", "M"],
+        ["Plus the nine-box and computed flags, drag to adjust", "M"]] },
+    { id: "V5", title: "Results", tag: "parity", biz: 3, pick: 2,
+      what: "The released review: read, acknowledge, PDF, past years.", today: "Works",
+      rungs: [null,
+        ["As built", "S"],
+        ["Read like a document, acknowledged in place; past years on the person page", "S"],
+        ["Plus the person's year on one line, plan to result", "M"]] },
+    { id: "V6", title: "Probation reviews", tag: "new", biz: 2, pick: 0,
+      what: "A short review for each joiner, dated from their Core HR start.", today: "Out since B-068",
+      rungs: ["Not built",
+        null,
+        ["Joiners enrolled from Core HR's start dates, a review with the manager on the date", "M"],
+        null] },
+  ]},
+  { id: "seams", title: "Where Performance meets the rest of Fusion", job: "J8", items: [
+    { id: "S1", title: "The team's Performance", tag: "parity", biz: 3, pick: 2,
+      what: "A manager's view of their people's year.", today: "\"No one reports to you\"; full reload",
+      rungs: [null,
+        ["The wrong message fixed, redrawn", "S"],
+        ["Inside the Team page, no reload: each person's year with the one action due", "M"],
+        ["Plus the team's goals under the manager's", "S"]] },
+    { id: "S2", title: "On the person page", tag: "improvement", biz: 3, pick: 2,
+      what: "A person's plan, progress, feedback, reviews, growth.", today: "Two copies of one summary",
+      rungs: [null,
+        ["One place: Performance's own person page goes", "S"],
+        ["The tab in the person page's grammar: the year at a glance, then each part", "M"],
+        ["Plus every year on one timeline", "M"]] },
+    { id: "S3", title: "On Home", tag: "parity", biz: 3, pick: 2,
+      what: "Needs you and Your year.", today: "Built",
+      rungs: [null,
+        ["As built", "S"],
+        ["Approve, answer and nudge in place from Needs you", "S"],
+        null] },
+    { id: "S4", title: "HR insights", tag: "parity", hero: "H1", biz: 2, pick: 2,
+      what: "Completion, status, ratings by unit and manager.", today: "The cycle page's second tab",
+      rungs: ["Remove it",
+        ["As built, redrawn", "S"],
+        ["On the Year page for HR; each figure opens the people behind it", "S"],
+        ["Plus this year against last", "M"]] },
+    { id: "S5", title: "Notifications", tag: "parity", biz: 2, pick: 2,
+      what: "Bell and email.", today: "One per transition, drafts included",
+      rungs: [null,
+        ["As built", "S"],
+        ["One per moment someone must act, opening where to act", "S"],
+        ["Plus a weekly email digest", "M"]] },
+    { id: "S6", title: "In Reports", tag: "new", biz: 2, pick: 1,
+      what: "Performance answers in Core HR's Reports.", today: "Not there",
+      rungs: ["Not built",
+        ["Results export from the round", "S"],
+        ["Plan status and ratings as report fields, as the viewer may see them", "M"],
+        ["Plus ratings and progress as of any date", "M"]] },
+  ]},
+];
+
+const OUT = [
+  ["N1", "Compensation reviews", "No pay data in Fusion"],
+  ["N2", "Engagement surveys", "A product of its own"],
+  ["N3", "Succession and talent pools", "Needs positions"],
+  ["N4", "Improvement plans (PIPs)", "Sensitive, legal"],
+  ["N5", "Upward feedback", "Anonymity needs care"],
+  ["N6", "Reopening a released review", "History stays fixed"],
+  ["N7", "Calendar sync for 1:1s", "Outside integrations"],
+  ["N8", "Slack and Teams", "Outside integrations"],
+  ["N9", "An AI that joins or records meetings", "Needs the call itself"],
+  ["N10", "Progress read from other tools", "Outside integrations"],
+  ["N11", "Asking about performance in words", "The assistant's job (B-147)"],
+  ["N12", "OKR grading (0.0 to 1.0)", "Progress and status say it"],
+  ["N13", "Editing a plan together, live", "Approval with requests covers it"],
+  ["N14", "Links to Learning's courses", "A colleague's module"],
+];
+
+const SIDE = (title, groups, on) => el("div", { class: "side", "aria-hidden": "true" },
+  el("div", { class: "mod" }, "Performance"),
+  groups.flatMap(([g, navs]) => [g ? el("div", { class: "grp" }, g) : null,
+    ...navs.map(n => { const [t, s] = Array.isArray(n) ? n : [n]; return el("div", { class: "nav" + (t === on ? " on" : "") }, el("span", {}, t), s ? el("small", {}, s) : null); })]));
+
+const HEAD = (title, extra) => el("div", { class: "head-spec", "aria-hidden": "true" },
+  el("div", { class: "ht" }, title),
+  el("div", { class: "hs" }, el("span", { class: "pill" }, "Execution"), el("span", {}, extra)));
+
+const QUESTIONS = [
+  { id: "Q1", text: "May HR finalize the reviews that are in, before the rest?", rec: "a", options: [
+    ["a", "Yes, finalize what's ready"],
+    ["b", "No, everyone waits"],
+    ["c", "HR may take people out of the round"]] },
+  { id: "Q2", text: "Performance's sidebar", rec: "a", options: [
+    ["a", "Five places", () => SIDE("", [["", ["Year", "Goals", "1:1s", "Feedback", "Reviews"]]], "Year")],
+    ["b", "Today's, Direction added", () => SIDE("", [["", ["Overview", "My Plan", "Direction", "1:1s", "Feedback", "Reviews"]], ["Administration", ["Cycle"]]], "Overview")],
+    ["c", "By role", () => SIDE("", [["", [["For you", "plan, 1:1s, review"], ["Your team", "managers"], ["Company", "direction, HR"]]]], "For you")]] },
+  { id: "Q3", text: "Do drafting steps notify the manager?", rec: "a", options: [
+    ["a", "No, only once the plan is put forward"],
+    ["b", "Yes, as today"],
+    ["c", "Once a day, if anything changed"]] },
+  { id: "Q4", text: "What the year is called on screen", rec: "a", options: [
+    ["a", "Its name", () => HEAD("2026", "Plans due 15 March")],
+    ["b", "Cycle", () => HEAD("Cycle 2026", "Plans due 15 March")],
+    ["c", "Review year", () => HEAD("Review year 2026", "Plans due 15 March")]] },
+  { id: "Q5", text: "Which hero shines first?", rec: "H1", options: HEROES.map(h => [h.id, h.title]) },
+];
+
+const SOURCES = [
+  ["Lattice 2026 release", "https://lattice.com/blog/lattice-spring-summer-2026-product-release"],
+  ["Culture Amp Perform 2026 Q3", "https://www.cultureamp.com/blog/whats-new-perform-2026-q3"],
+  ["Leapsome reviews", "https://www.leapsome.com/en/product/performance-reviews"],
+  ["15Five Kona", "https://www.15five.com/products/kona"],
+  ["Betterworks", "https://www.betterworks.com"],
+  ["HiBob performance", "https://www.hibob.com/talent/performance-management/"],
+  ["BambooHR performance", "https://www.bamboohr.com/hr-software/performance-management"],
+  ["Workday calibration", "https://doc.workday.com/admin-guide/en-us/human-capital-management/talent/talent-and-performance-calibration/reviews-with-calibration/jai1395847529607.html"],
+];
+
+// ---- state ----
+const KEY = "fusion-b390-scope2-v1";
+const picks = {}; for (const a of AREAS) for (const i of a.items) picks[i.id] = i.pick;
+const recs = {}; for (const q of QUESTIONS) recs[q.id] = q.rec;
+const blank = () => ({ rungs: {}, notes: {}, pulled: {}, answers: {}, extra: "" });
+let state = blank();
+let db = null;
+try { const saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved) state = { ...blank(), ...saved }; } catch {}
+
+const rungOf = id => (id in state.rungs ? state.rungs[id] : picks[id]);
+const answerOf = id => (id in state.answers ? state.answers[id] : recs[id]);
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v; else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const k of kids.flat()) if (k != null) n.append(k.nodeType ? k : document.createTextNode(k));
+  return n;
+}
+const dots = n => "●".repeat(n) + "○".repeat(3 - n);
+const TAG = { parity: "Parity", improvement: "Improvement", new: "New" };
+const COST = { S: "Small", M: "Medium", L: "Large" };
+const ITEMS = Object.fromEntries(AREAS.flatMap(a => a.items).map(i => [i.id, i]));
+
+let saveTimer = null, writing = false, dirty = false;
+function persist() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+  updateTally();
+  const s = document.getElementById("saved");
+  if (!db) { s.textContent = "Saved in this browser"; return; }
+  dirty = true; s.textContent = "Saving…";
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(flush, 600);
+}
+// One write at a time to the choices document; edits made during a write go out right after it.
+async function flush() {
+  if (writing || !dirty) return;
+  writing = true; dirty = false;
+  const s = document.getElementById("saved");
+  try { await db.doc("scope/main").set({ ...state, at: new Date().toISOString() }); s.textContent = dirty ? "Saving…" : "Saved"; }
+  catch (e) { s.textContent = "Not saved"; if (e && (e.code === "invalid_argument" || e.code === "permission_denied" || e.code === "not_granted")) banner("You can view this page but not change it."); }
+  writing = false;
+  if (dirty) flush();
+}
+function banner(text) { const b = document.getElementById("banner"); b.textContent = text; b.hidden = false; }
+function toast(text) { const t = document.getElementById("toast"); t.textContent = text; t.classList.add("on"); setTimeout(() => t.classList.remove("on"), 1600); }
+
+// ---- render ----
+function noteRow(id, title) {
+  const note = el("div", { class: "note-row" });
+  const area = el("textarea", { id: "note-" + id, "aria-label": `Note on ${title}`, placeholder: "Your note" });
+  area.value = state.notes[id] || "";
+  area.addEventListener("input", () => { if (area.value.trim()) state.notes[id] = area.value; else delete state.notes[id]; persist(); });
+  if (state.notes[id]) note.append(area);
+  else note.append(el("button", { class: "note-toggle", type: "button", onclick: () => { note.replaceChildren(area); area.focus(); } }, "Add a note"));
+  return note;
+}
+function renderStatic() {
+  document.getElementById("jobs").replaceChildren(...JOBS.map(([n, t, today, weak]) =>
+    el("div", { class: "job" + (weak ? " weak" : "") }, el("span", { class: "n" }, n), el("span", { class: "t" }, t), el("span", { class: "today" }, today))));
+  document.getElementById("places").replaceChildren(...PLACES.map(([t, what, was]) =>
+    el("div", { class: "place" }, el("b", {}, t), el("span", {}, what), el("span", { class: "was" }, "Was: " + was))));
+  document.getElementById("settled").replaceChildren(...SETTLED.map(([t, ref]) => el("li", {}, el("span", {}, t), el("span", { class: "ref" }, ref))));
+  document.getElementById("sources").replaceChildren(...SOURCES.map(([t, u]) => el("a", { href: u, target: "_blank", rel: "noopener" }, t)));
+}
+function phaseStrip() {
+  const ph = ["Planning", "Execution", "Review", "Results out", "Closed"];
+  return el("div", { class: "phases", "aria-label": "Phases of the year" },
+    ph.flatMap((p, i) => [i ? el("i", {}, "›") : null, el("span", { class: i === 0 ? "on" : "" }, p)]));
+}
+function renderHeroes() {
+  document.getElementById("heroes").replaceChildren(...HEROES.map(h => el("article", { class: "hero" },
+    el("span", { class: "num" }, h.id), el("h3", {}, h.title), el("p", {}, h.line),
+    h.phases ? phaseStrip() : null,
+    el("dl", {}, el("dt", {}, "What the jury sees"), el("dd", {}, h.sees), el("dt", {}, "Beyond them"), el("dd", {}, h.beyond)),
+    el("div", { class: "chips" }, h.items.map(id => el("a", { class: "chip hero", href: "#" + id }, `${id} ${ITEMS[id].title} · rung ${rungOf(id)}`))))));
+}
+function renderItem(i) {
+  const chosen = rungOf(i.id);
+  const changed = chosen !== i.pick;
+  const ladder = el("div", { class: "ladder", role: "group", "aria-label": `${i.title}: how far` },
+    i.rungs.map((r, n) => {
+      const text = r == null ? "Not offered" : (Array.isArray(r) ? r[0] : r);
+      const short = ["Not built", "Minimal", "Like them", "Showcase"][n];
+      return el("button", { class: "rung", type: "button", disabled: r == null, "aria-pressed": String(chosen === n),
+        onclick: () => { if (n === i.pick) delete state.rungs[i.id]; else state.rungs[i.id] = n; persist(); render(); } },
+        el("span", { class: "rn" }, `${n} ${short}`), el("span", { class: "rt" }, text),
+        Array.isArray(r) ? el("span", { class: "rc" }, COST[r[1]]) : null,
+        n === i.pick ? el("span", { class: "star", "aria-label": "my pick" }, "★") : null);
+    }));
+  return el("article", { class: "item" + (changed ? " is-changed" : ""), id: i.id },
+    el("div", { class: "item-head" },
+      el("span", { class: "id" }, i.id), el("h3", {}, i.title),
+      el("span", { class: "chip " + i.tag }, TAG[i.tag]),
+      i.hero ? el("span", { class: "chip hero" }, HEROES.find(h => h.id === i.hero).title) : null,
+      changed ? el("span", { class: "chip changed" }, `Changed from ${i.pick}`) : null),
+    el("div", { class: "meta" },
+      el("span", { style: "color:var(--fg)" }, i.what),
+      el("span", {}, "Today: " + i.today),
+      el("span", {}, "Value ", el("span", { class: "dots", "aria-label": `${i.biz} of 3` }, dots(i.biz)))),
+    ladder, noteRow(i.id, i.title));
+}
+function renderAreas() {
+  document.getElementById("areas").replaceChildren(...AREAS.map(a => el("div", { class: "area" },
+    el("div", { class: "area-head" }, el("h3", {}, a.title), el("span", { class: "id" }, a.job)),
+    a.items.map(renderItem))));
+}
+function renderOut() {
+  document.getElementById("out").replaceChildren(...OUT.map(([id, title, why]) => {
+    const on = Boolean(state.pulled[id]);
+    return el("div", { class: "out-item" + (on ? " pulled" : "") },
+      el("div", {}, el("div", {}, el("span", { class: "id" }, id + " "), el("b", {}, title)), el("div", { class: "why" }, why)),
+      el("button", { class: "switch", type: "button", "aria-pressed": String(on),
+        onclick: () => { if (on) delete state.pulled[id]; else state.pulled[id] = true; persist(); render(); } }, on ? "Pulled back" : "Pull back"));
+  }));
+}
+function renderQuestions() {
+  document.getElementById("questions").replaceChildren(...QUESTIONS.map(q => {
+    const chosen = answerOf(q.id);
+    const changed = chosen !== q.rec;
+    return el("article", { class: "q" + (changed ? " is-changed" : ""), id: q.id },
+      el("div", { class: "item-head" }, el("span", { class: "id" }, q.id), el("h3", {}, q.text),
+        changed ? el("span", { class: "chip changed" }, "Changed from my pick") : null),
+      el("div", { class: "opts", role: "group", "aria-label": q.text }, q.options.map(([oid, label, draw]) =>
+        el("button", { class: "opt", type: "button", "aria-pressed": String(chosen === oid),
+          onclick: () => { if (oid === q.rec) delete state.answers[q.id]; else state.answers[q.id] = oid; persist(); render(); } },
+          el("span", {}, label), draw ? draw() : null,
+          oid === q.rec ? el("span", { class: "rec" }, "★ my pick") : null))),
+      noteRow(q.id, q.text));
+  }));
+}
+function updateTally() {
+  document.getElementById("t-changed").textContent = Object.keys(state.rungs).length + Object.keys(state.answers).length;
+  document.getElementById("t-pulled").textContent = Object.keys(state.pulled).length;
+  document.getElementById("t-notes").textContent = Object.keys(state.notes).length;
+}
+function render() {
+  const y = window.scrollY;
+  renderHeroes(); renderAreas(); renderOut(); renderQuestions(); updateTally();
+  const extra = document.getElementById("extra"); if (document.activeElement !== extra) extra.value = state.extra || "";
+  window.scrollTo(0, y);
+}
+
+// ---- copy ----
+function summary() {
+  const lines = ["B-390 scope (round 2): my choices", ""];
+  const changed = Object.entries(state.rungs);
+  lines.push(changed.length ? "Changed rungs:" : "Rungs: all as you picked.");
+  for (const [id, n] of changed) lines.push(`- ${id} ${ITEMS[id].title}: ${ITEMS[id].pick} → ${n}`);
+  const pulled = Object.keys(state.pulled);
+  if (pulled.length) { lines.push("", "Pulled back from Not doing:"); for (const id of pulled) lines.push(`- ${id} ${OUT.find(o => o[0] === id)[1]}`); }
+  lines.push("", "Questions:");
+  for (const q of QUESTIONS) { const a = answerOf(q.id); const opt = q.options.find(o => o[0] === a); lines.push(`- ${q.id} ${q.text}: ${opt ? opt[1] : a}${a === q.rec ? " (as recommended)" : " (changed)"}`); }
+  const titles = Object.fromEntries([...QUESTIONS.map(q => [q.id, q.text]), ...Object.values(ITEMS).map(i => [i.id, i.title])]);
+  const notes = Object.entries(state.notes);
+  if (notes.length) { lines.push("", "Notes:"); for (const [id, t] of notes) lines.push(`- ${id} ${titles[id] || ""}: ${t.trim()}`); }
+  if ((state.extra || "").trim()) lines.push("", "Anything missing:", state.extra.trim());
+  return lines.join("\n");
+}
+document.getElementById("copy").addEventListener("click", async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); toast("Copied. Paste it in the chat."); }
+  catch {
+    const box = document.getElementById("copybox"), area = document.getElementById("copytext");
+    area.value = text; box.hidden = false; area.focus(); area.select();
+  }
+});
+let resetArmed = null;
+document.getElementById("reset").addEventListener("click", e => {
+  const b = e.currentTarget;
+  if (!resetArmed) {
+    b.textContent = "Click again to clear";
+    resetArmed = setTimeout(() => { resetArmed = null; b.textContent = "Back to my picks"; }, 3000);
+    return;
+  }
+  clearTimeout(resetArmed); resetArmed = null; b.textContent = "Back to my picks";
+  state = blank(); persist(); render();
+});
+document.getElementById("extra").addEventListener("input", e => { state.extra = e.target.value; persist(); });
+
+renderStatic(); render();
+
+// Published on claude.ai, choices are saved where Claude can read them; opened as a file, they stay in this browser.
+(async () => {
+  try { db = window.claude?.use ? await window.claude.use("db") : null; } catch { db = null; }
+  if (!db) { document.getElementById("saved").textContent = ""; return; }
+  db.doc("scope/main").onSnapshot(snap => {
+    // Local edits not yet saved win over what the store last had.
+    if (!snap.exists || dirty || writing || snap.metadata?.hasPendingWrites) return;
+    if (document.activeElement?.tagName === "TEXTAREA") return;
+    // Snapshots are frozen: copy before keeping them as editable state.
+    const data = JSON.parse(JSON.stringify(snap.data() || {}));
+    state = { ...blank(), rungs: data.rungs || {}, notes: data.notes || {}, pulled: data.pulled || {}, answers: data.answers || {}, extra: data.extra || "" };
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+    render();
+  }, () => { document.getElementById("saved").textContent = ""; });
+})();
+</script>

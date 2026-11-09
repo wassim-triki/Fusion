@@ -1,6 +1,6 @@
 # B-390 — Performance redesigned as a module
 
-**Status:** shaped 2026-11-09. Stage 1 (the [map](B-390-map.md)) and stage 2 (the scope page, `B-390-scope.html`, published as an artifact) done in session 2 after the walkthrough. **Waiting on checkpoint 2:** the user answers the scope page (Fusion-wide decisions first, then rungs, not-doing, questions).
+**Status:** shaped 2026-11-09. Stage 1 (the [map](B-390-map.md)) done. A first scope page (`B-390-scope.html`) was superseded the same day: the user wants one chapter at a time with the full Core HR system behind each, and UI choices drawn per situation rather than explained (memory `ui-decisions-shown-per-situation`). So the Fusion-wide foundation (B-397) goes first on its own page, then stage 2 is redone: a researched target brief (`B-390-target-brief.md`) and a fresh scope page. Order and recipe in STATE.
 
 ## Outcome
 

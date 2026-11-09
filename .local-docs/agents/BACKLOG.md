@@ -18,14 +18,26 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-404.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-405.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
 ## In progress
 
+None.
+
+## In review
+
+None waiting.
+
+## Ready
+
+### After the walkthrough (B-331): three stacks
+
+From B-331's walk (2026-11-09; the user's words, step by step, in `design/walkthrough-2026-11-09.md`; the B-numbers on notes trace to them). One item per surface: notes are evidence for rethinking the surface as a whole, not a list of fixes; functions sit apart from visuals. (D) = needs discussion.
+
 - [ ] **B-390** Stack 1 · Performance redesigned as a module, functions and visuals together · Performance · 2026-11-09
-          Map and scope done 2026-11-09 (session 2): [plan](plans/B-390-performance-redesign.md), [map](plans/B-390-map.md), [scope page](https://claude.ai/artifact/HPYdcFF8oMe1zbCW652sq4) (`plans/B-390-scope.html`, answers in its db doc `scope/main`). **Waiting on the user's checkpoint:** chapter 1 (B-397's decisions), rungs, not doing, five questions.
+          Map done 2026-11-09 (session 2): [plan](plans/B-390-performance-redesign.md), [map](plans/B-390-map.md). A first scope page (`plans/B-390-scope.html`) was superseded the same day (user: one chapter at a time, each with the full Core HR system; UI choices drawn per situation, not explained): the Fusion-wide foundation (B-397) goes first on its own page, then a researched target brief and a fresh scope page (STATE, rows 1 and 3).
           First priority after B-398: Core HR could demo tomorrow, Performance couldn't (user). Not from the ground up: what the module does stays; its functions are cleaned up, fixed and completed, its visuals rewritten the way Core HR's were.
           How, the Core HR rebuild's process again (B-164, files in `archive/plans/B-164-*`): a map of what exists (code inventory and a live walk, B-165) → a target brief and scope page with depth ladders per feature, studied against other products (B-163) → a design direction, then explorers checkpoint by checkpoint until every screen has an accepted design, recorded as decisions (B-166; Core HR's are D-01–D-30) → the rebuild in dependency-ordered slices, one session each (B-167). This walk is the live part of the map.
           Its first chapter settles B-397's Fusion-wide decisions (colours, empty states, loading shapes, icons, navigation) so Performance isn't designed on rules that change after.
@@ -45,18 +57,6 @@ Open work only. Agents keep it current from the conversation; closed items leave
           Notes, Review: after confirming the exclusions the admin still clicks Continue by hand to reach Review; Review recaps the setup and offers Launch.
           Notes, after launch: it lands on the cycle page (`/performance/cycle`), "abysmal"; what the page should be is open; not discussed now (B-390).
           Notes: after launch nothing says what to do next; the administrator couldn't find where to set the company's direction (organization objectives) and typed `/performance/goals` by hand.
-
-
-## In review
-
-None waiting.
-
-## Ready
-
-### After the walkthrough (B-331): three stacks
-
-From B-331's walk (2026-11-09; the user's words, step by step, in `design/walkthrough-2026-11-09.md`; the B-numbers on notes trace to them). One item per surface: notes are evidence for rethinking the surface as a whole, not a list of fixes; functions sit apart from visuals. (D) = needs discussion.
-
 - [ ] **B-396** Stack 2 · Core HR after the walk · Core HR · 2026-11-09
           Functions apart from visuals (user, 2026-11-09). The surfaces follow B-397's foundation once it's decided in B-390's first chapter.
   - **Functions**
@@ -126,7 +126,7 @@ From B-331's walk (2026-11-09; the user's words, step by step, in `design/walkth
           Notes: hovering over the Growth chart moves the whole page's date, which surprised the user ("is this intended?"); scrubbing should be deliberate (drag, or a clear preview that snaps back).
           Notes: the page looks fine overall; the next 30 days runs a little empty with dead space on the right; the bottom cards (Records to complete, Open roles) are scattered with bad empty states: the same cards, empty space and empty states problem again (B-376).
 - [ ] **B-397** Stack 3 · Fusion-wide · Shell, `@repo/ds`, all our apps · 2026-11-09
-          Decisions and rules are settled as B-390's first chapter (the scope page's chapter 1: F1 to F8 and rules U1 to U8); applying them to Core HR comes with B-396; Home after Performance, since it surfaces what matters from both.
+          Decisions and rules are settled first, on their own page, per situation (STATE row 1, `plans/B-397-foundation.*`); applying them to Core HR comes with B-396; Home after Performance, since it surfaces what matters from both.
   - **Foundation**
     - [ ] **B-370** Surface colours in both themes, product-wide: light mode first, then dark · `@repo/ds`, all our apps · 2026-11-09
           Notes: light mode is all over the place; the page background is too grey (a dark white); the person page hero's light background would suit the app's body, with slightly different tones for sections. On the import's done page the main section's tone is right and the sections below lift lighter in dark mode (the opposite in light). Unify across the apps, then do the same for dark.
@@ -189,7 +189,7 @@ Security and scale that must hold once Fusion is online; nothing changes in the 
 
 ### Cleanup and tooling
 
-None.
+- [ ] **B-404** The memory index (`memory/MEMORY.md`) is ~21 KB, near its 24 KB read limit: compact it under ~17 KB (one short line per entry, merge or drop stale ones) · tooling · 2026-11-09
 
 ### Parked
 

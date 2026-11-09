@@ -135,6 +135,7 @@
 - [Artifact db snapshots are frozen](artifact-db-snapshots-frozen.md) — clone `snap.data()` before using it as page state, or clicks silently do nothing.
 - [Scope with depth ladders](scope-with-depth-ladders.md) — big reworks: derive intent yourself, open long list, a 0–3 depth ladder per feature the user picks; no closed research spec.
 - [UI decisions: shown, per situation](ui-decisions-shown-per-situation.md) — draw the variants, labels only; split each topic by situation, no universal rule; one chapter per session with the full Core HR system.
+- [Redesigns: bold, not tweaks](redesigns-bold-not-tweaks.md) — a redesign changes structure from the surface's job; restyled card columns read as tweaking (B-397 colour note).
 - [Brain dumps are examples](brain-dumps-are-examples.md) — named features/exclusions are signals, not rules; contextual questions draw out their thinking; keep process to yourself.
 - [Board categories](board-essentials-definition.md) — Ready/Needs discussion grouped: Big features · Polish · Before hosting · Cleanup and tooling · Parked.
 - [Graduation demo and report](graduation-demo-and-report.md) — jury audience, but build a real self-explanatory HRIS, no demo-story dumbing; time never constrains scope; report studies existing solutions → mark parity / improvement / new.

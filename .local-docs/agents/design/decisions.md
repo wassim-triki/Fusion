@@ -74,3 +74,13 @@ Drawn on the same link as 3b (version 3, `archive/plans/B-164-explorer-3c.html`,
 | D-31 | **Team page tabs (D-27):** Performance = My Team moved in unchanged (D-19); Org chart = the people org chart as built (D-17), opened on the manager's team. Only Overview is drawn ([reference](https://claude.ai/artifact/4oFvisS72S2FMX6oYYtanp), `plans/B-185-team-reference.html`). | ✓ User 2026-11-01: "sounds nice to me" |
 
 **Answers given in chat (2026-10-30):** Home stays the viewer's day by design (the user chose that type for Home at 3a); the company's numbers are Core HR's front page and Reports. One import is one entry, not one blind mechanism: files are recognised by what they hold, reviewed together because managers and units reference each other, on the import platform the workforce import is already being moved onto; Organization and People keep their own Import buttons into the same flow. Every screen is built against real data with loading, error and empty states (AGENTS.md › Engineering).
+
+## Foundation (B-397, 2026-11-09)
+
+From the full-size colour study ([artifact](https://claude.ai/artifact/32F5aE6EBg3yyGpS56bWYj), `plans/B-397-colour.html`, db doc `colour/main` v45). Round 1's outcome and the rules settled without a vote are in `plans/B-397-foundation.md`.
+
+| ID | Decision | Verdict |
+| --- | --- | --- |
+| D-32 | **Surface colours.** The agreed palette stays (zinc neutrals, the yellow brand); only lightness changes. Dark: graphite, off near-black, the hero and the page one tone (page oklch 0.215, cards 0.255, inlays 0.29, sidebar 0.2). Light: the hero and the page one soft tone (0.975), cards a step up (0.993), inlays 0.958, sidebar 0.965; no stark pure white beside the rest. | ✓ User picked dark C; light "better as A, B", A taken. |
+
+**The user's note with it (2026-11-09), for every redesign:** "I don't understand why you keep separating the right column cards from the rest of the page … you're taking the already established thing and just tweaking it, there's no bold design decision whatsoever" (the person page). Redesigns make bold layout decisions from the surface's job; they don't restyle the established card-column layout.

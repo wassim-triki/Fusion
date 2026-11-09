@@ -44,12 +44,7 @@ describe("DevelopmentSection", () => {
     render(<DevelopmentSection cycleId="c" employeeId="nour" />);
     expect(screen.getByText("Lead a design review")).toBeTruthy();
     expect(screen.getByText("Collaboration")).toBeTruthy();
-    // The row opens the goal beside the list, with its actions and the edits.
-    expect(screen.queryByText("Pick a service")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: /Lead a design review/ }));
     expect(screen.getByText("Pick a service")).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Edit/ })).toBeTruthy();
-    fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" });
     fireEvent.click(screen.getByRole("button", { name: /Add goal/ }));
     fireEvent.change(screen.getByLabelText("Goal"), { target: { value: "Present at the forum" } });
     await act(async () => {
@@ -64,11 +59,8 @@ describe("DevelopmentSection", () => {
     state.query.data = plan({ canEdit: false });
     render(<DevelopmentSection cycleId="c" employeeId="nour" />);
     expect(screen.queryByRole("button", { name: /Add goal/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /More for/ })).toBeNull();
     expect(screen.getByText("In progress")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: /Lead a design review/ }));
-    expect(screen.getByText("Pick a service")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: /Edit/ })).toBeNull();
-    expect(screen.queryByRole("radio")).toBeNull();
   });
 
   it("says when there are no goals, offering the first only to editors", () => {
@@ -107,8 +99,7 @@ describe("DevelopmentSection", () => {
     state.query.data = plan({ goals: [goal({ carriedToCycleName: "FY2028" })] });
     render(<DevelopmentSection cycleId="c" employeeId="nour" />);
     expect(screen.getByText("Carried to FY2028")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: /Lead a design review/ }));
-    expect(screen.queryByRole("button", { name: /Edit/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /More for/ })).toBeNull();
   });
 
   it("reports a conflict so the shared recovery reloads the goals", async () => {

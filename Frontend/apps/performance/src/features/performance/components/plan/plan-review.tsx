@@ -28,14 +28,14 @@ import {
   DialogTrigger,
 } from "@repo/ds/components/ui/dialog";
 import { Textarea } from "@repo/ds/components/ui/textarea";
-import { AsyncButton, PagePermissionNotice, Section, StatusBadge } from "@repo/ds/shell";
+import { AsyncButton, PagePermissionNotice, StatusBadge } from "@repo/ds/shell";
 import {
   useAlignmentTargets,
   usePlanDetail,
   usePlanReviewMutations,
 } from "../../api/use-performance";
 import { useObjectiveRecord } from "../objective-record/use-objective-record";
-import { PlanDocument, PlanWeightStrip, SectionTitle } from "./plan-layout";
+import { PlanDocument, PlanSection, PlanWeightStrip } from "./plan-layout";
 import { PlanObjectiveRow } from "./plan-objective-row";
 import { RequestUpdateAction } from "../update-requests/update-requests";
 import { PlanRail, latestReturn } from "./plan-rail";
@@ -95,7 +95,7 @@ export function PlanReview({ cycle, planId }: { cycle: CycleSummaryDto; planId: 
       <PlanDocument
         main={
           <>
-            <ObjectiveLedgerReadOnly plan={plan} targets={targets} cycleId={cycle.id} drafts={drafts} />
+            <ObjectiveLedgerReadOnly plan={plan} targets={targets} cycleId={cycle.id} cycle={cycle} drafts={drafts} />
             <div className="mt-10">
               <DevelopmentSection cycleId={cycle.id} employeeId={plan.employee.id} />
             </div>
@@ -198,11 +198,13 @@ function ObjectiveLedgerReadOnly({
   plan,
   targets,
   cycleId,
+  cycle,
   drafts,
 }: {
   plan: EmployeePlanDto;
   targets: AlignmentTargetDto[];
   cycleId: string;
+  cycle: CycleSummaryDto;
   drafts: ReturnType<typeof useChangeRequestDrafts>;
 }) {
   const t = useTranslations("plan.ObjectiveLedgerReadOnly");
@@ -229,20 +231,20 @@ function ObjectiveLedgerReadOnly({
     objective.isAligned ? scopeByTitle.get(objective.directionPath.at(-1) ?? "") : undefined;
 
   return (
-    <Section
-      id="objectives"
-      title={<SectionTitle label={t("objectives")} count={plan.objectives.length} />}
-      flush
+    <PlanSection
+      label={t("objectives")}
+      count={plan.objectives.length}
       // Weights are settled at 100% once the plan is locked; the strip only guides drafting.
-      action={plan.isLocked ? undefined : <PlanWeightStrip segments={plan.objectives.map((o) => ({ weight: o.planWeight ?? 0, aligned: o.isAligned }))} />}
+      summary={plan.isLocked ? undefined : <PlanWeightStrip segments={plan.objectives.map((o) => ({ weight: o.planWeight ?? 0, aligned: o.isAligned }))} />}
     >
-      <ul className="divide-y divide-border">
+      <div className="space-y-3">
         {plan.objectives.map((objective) => (
           // On an approved plan the row grows its execution band (current value + progress) — read-only,
           // with no Update progress: recording is the owner's, gated away here.
           <PlanObjectiveRow
             key={objective.id}
             objective={objective}
+            cycle={cycle}
             alignmentScope={scopeFor(objective)}
             showProgress={plan.isLocked}
             active={record.isOpen(refFor(objective.id))}
@@ -272,8 +274,9 @@ function ObjectiveLedgerReadOnly({
             }
           />
         ))}
-      </ul>
-    </Section>
+      </div>
+
+    </PlanSection>
   );
 }
 

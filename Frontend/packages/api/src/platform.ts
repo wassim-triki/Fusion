@@ -326,6 +326,18 @@ async function requestSessionRefresh(baseUrl: string): Promise<string | null> {
     return null;
   }
 
+  // A refresh token works once. When another tab or client already traded it, the session it got is in storage:
+  // use that instead of reading the refusal as a sign-out (B-399).
+  const refusedFor = (sent: string): string | null => {
+    const latest = loadBrowserAuth();
+    if (latest?.refreshToken && latest.refreshToken !== sent) {
+      return latest.accessToken;
+    }
+    markSessionExpired();
+    clearBrowserAuth();
+    return null;
+  };
+
   const normalizedBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
   const response = await fetch(`${normalizedBase}/identity/auth/refresh`, {
     method: "POST",
@@ -344,9 +356,7 @@ async function requestSessionRefresh(baseUrl: string): Promise<string | null> {
       response.status === 401 ||
       response.status === 403
     ) {
-      markSessionExpired();
-      clearBrowserAuth();
-      return null;
+      return refusedFor(stored.refreshToken);
     }
 
     return stored.accessToken;
@@ -360,13 +370,25 @@ async function requestSessionRefresh(baseUrl: string): Promise<string | null> {
   }
 
   if (!payload.isSuccess || !payload.data) {
-    markSessionExpired();
-    clearBrowserAuth();
-    return null;
+    return refusedFor(stored.refreshToken);
   }
 
   persistBrowserAuth(payload.data);
   return payload.data.accessToken;
+}
+
+/**
+ * One refresh at a time for this page. Every request that finds its token expired or turned away (a role change
+ * bumps the access revision, B-213) waits on the same refresh rather than spending the one-time refresh token again.
+ */
+function refreshBrowserSession(baseUrl: string): Promise<string | null> {
+  if (!refreshPromise) {
+    refreshPromise = requestSessionRefresh(baseUrl).finally(() => {
+      refreshPromise = null;
+    });
+  }
+
+  return refreshPromise;
 }
 
 async function getBrowserAccessToken(baseUrl: string): Promise<string | null> {
@@ -379,13 +401,7 @@ async function getBrowserAccessToken(baseUrl: string): Promise<string | null> {
     return stored.accessToken;
   }
 
-  if (!refreshPromise) {
-    refreshPromise = requestSessionRefresh(baseUrl).finally(() => {
-      refreshPromise = null;
-    });
-  }
-
-  return refreshPromise;
+  return refreshBrowserSession(baseUrl);
 }
 
 export interface PlatformApiClientConfig {
@@ -494,7 +510,7 @@ export function createPlatformApiClient(
         return handleAuthError(error);
       }
 
-      const refreshedToken = await requestSessionRefresh(baseUrl);
+      const refreshedToken = await refreshBrowserSession(baseUrl);
       if (!refreshedToken) {
         return handleAuthError(error);
       }

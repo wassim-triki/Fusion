@@ -414,7 +414,8 @@
       "parent": "Under",
       "jobLevel": "Level",
       "jobFamily": "Family",
-      "startDate": "Start date"
+      "startDate": "Start date",
+      "employeeNumber": "Employee number"
     },
     "none": "None",
     "keep": "Keep them as they are",

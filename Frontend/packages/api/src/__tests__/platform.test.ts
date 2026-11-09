@@ -281,6 +281,63 @@ describe("createPlatformApiClient", () => {
       moduleEntitlements: ["CoreHR"],
     });
   });
+
+  it("turned away together after a role change, requests share one refresh and stay signed in", async () => {
+    vi.stubGlobal("window", { dispatchEvent: vi.fn() });
+    vi.stubGlobal("document", { cookie: "" });
+    const storage: Record<string, string> = {
+      ey_hr_auth: JSON.stringify({
+        accessToken: "old-revision",
+        refreshToken: "refresh-token-1",
+        accessTokenExpiration: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+        user: { userId: "user-1", email: "jane@example.com", fullName: "Jane Doe", roles: [] },
+      }),
+    };
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => storage[key] ?? null,
+      setItem: (key: string, value: string) => {
+        storage[key] = value;
+      },
+      removeItem: (key: string) => {
+        delete storage[key];
+      },
+    });
+    const json = (body: unknown, status = 200) =>
+      new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+    fetchSpy.mockImplementation(async (url: unknown, init?: RequestInit) => {
+      if (String(url).endsWith("/identity/auth/refresh")) {
+        // A refresh token works once: a second refresh with it is refused.
+        return JSON.parse(String(init?.body)).refreshToken === "refresh-token-1" && !storage.spent
+          ? ((storage.spent = "1"),
+            json({
+              data: {
+                userId: "user-1",
+                email: "jane@example.com",
+                fullName: "Jane Doe",
+                roles: [],
+                accessToken: "new-revision",
+                refreshToken: "refresh-token-2",
+                accessTokenExpiration: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+              },
+              errors: [],
+              isSuccess: true,
+            }))
+          : json({ data: null, errors: ["Invalid or expired refresh token."], isSuccess: false }, 401);
+      }
+      const auth = (init?.headers as Record<string, string>)["Authorization"];
+      return auth === "Bearer new-revision"
+        ? json({ data: { ok: true }, errors: [], isSuccess: true })
+        : json({ data: null, errors: ["Unauthorized"], isSuccess: false }, 401);
+    });
+
+    const api = createPlatformApiClient();
+    await Promise.all([api.get("/one"), api.get("/two"), api.get("/three")]);
+
+    const refreshes = fetchSpy.mock.calls.filter(([url]) => String(url).endsWith("/identity/auth/refresh"));
+    expect(refreshes).toHaveLength(1);
+    expect(JSON.parse(storage.ey_hr_auth!).refreshToken).toBe("refresh-token-2");
+    expect(storage.ey_hr_session_expired).toBeUndefined();
+  });
 });
 
 // ── SSR safety ───────────────────────────────────────────────────────

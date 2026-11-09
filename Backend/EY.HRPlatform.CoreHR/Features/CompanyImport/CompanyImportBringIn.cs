@@ -36,7 +36,8 @@ public sealed record CompanyImportPlan(
     IReadOnlyList<ProposedEnd> Ends,
     Dictionary<string, Guid> Existing,
     CompanyImportResult Result,
-    CompanyImportCountsDto Counts);
+    CompanyImportCountsDto Counts,
+    Guid? FirstPerson = null);
 
 /// <summary>What's written so far. Saved with each batch, in that batch's transaction, so a batch is in once or not at all.</summary>
 public sealed class CompanyImportRun
@@ -118,16 +119,6 @@ public sealed class CompanyImportBringIn(
         if (!proposal.CanBringIn || !ImportFingerprint.Matches(proposal.Fingerprint, session.RequestedFingerprint))
             throw new CompanyImportChangedException();
         var actor = session.BringInByDisplayName ?? session.StartedByDisplayName;
-        // Correct inside batch zero, atomically with its frozen plan, before any dependent line can be written.
-        // A resumed run skips this batch; a failed batch rolls both the correction and plan back.
-        foreach (var person in proposal.People.Where(person => person.ExistingId != null
-                     && person.Changes?.Any(change => change.Field == CompanyImportFields.StartDate) == true))
-        {
-            var corrected = await mutation.ImportFirstPersonStartAsync(person.ExistingId!.Value, Utc(person.StartDate), session.Id, actor, cancellationToken);
-            if (corrected.IsFailure) throw new CompanyImportChangedException();
-            snapshot = snapshot with { People = snapshot.People.Select(held => held.Id == person.ExistingId
-                ? held with { AssignedFrom = person.StartDate, EmployedFrom = person.StartDate } : held).ToList() };
-        }
         // A root made on day one (the administrator's own record) opens when the company's history starts.
         if (snapshot.RootUnitId is { } rootId && await organization.OpenRootFromInCurrentTransactionAsync(proposal.UnitsFrom, cancellationToken))
             snapshot = snapshot with { Units = snapshot.Units.Select(unit => unit.Id == rootId ? unit with { ActiveFrom = proposal.UnitsFrom } : unit).ToList() };
@@ -141,7 +132,28 @@ public sealed class CompanyImportBringIn(
         run.Places = places.ToDictionary(item => item.Key, item => item.Value.Id);
         await db.SaveChangesAsync(cancellationToken);
 
-        var plan = Plan(proposal, snapshot, run, places.Values.Count(place => place.New), session, actor,
+        // The first person's day-one record is corrected to what the files say, inside batch zero and atomically with
+        // its frozen plan, before any line to or from her is written. A resumed run skips this batch; a failed batch
+        // rolls both the correction and the plan back.
+        Guid? firstPerson = null;
+        if (proposal.People.FirstOrDefault(person => person.ExistingId is { } id
+                && snapshot.People.Any(held => held.Id == id && held.UntouchedFirstPerson)) is { } first)
+        {
+            var had = snapshot.People.First(held => held.Id == first.ExistingId);
+            var earlier = first.Changes?.Any(change => change.Field == CompanyImportFields.StartDate) == true ? first.StartDate : (DateOnly?)null;
+            var corrected = await mutation.ImportFirstPersonAsync(first.ExistingId!.Value,
+                new FirstPersonImport(earlier is { } start ? Utc(start) : null, first.Number ?? had.Number!, run.Units[first.UnitKey], run.Jobs[first.JobKey],
+                    first.PlaceKey is null ? null : run.Places[first.PlaceKey]),
+                session.Id, actor, cancellationToken);
+            if (corrected.IsFailure) throw new CompanyImportChangedException();
+            await db.SaveChangesAsync(cancellationToken);
+            firstPerson = first.ExistingId;
+            if (earlier is { } from)
+                snapshot = snapshot with { People = snapshot.People.Select(held => held.Id == first.ExistingId
+                    ? held with { AssignedFrom = from, EmployedFrom = from } : held).ToList() };
+        }
+
+        var plan = Plan(proposal, snapshot, run, firstPerson, places.Values.Count(place => place.New), session, actor,
             await allocator.AllocateManyAsync(proposal.People.Count(person => person.IsNew && person.Number is null),
                 proposal.People.Where(person => person.Number is not null).Select(person => person.Number!).ToHashSet(StringComparer.Ordinal), cancellationToken));
         run.UnitChangesDone = plan.UnitChanges.Count == 0;
@@ -151,7 +163,7 @@ public sealed class CompanyImportBringIn(
     }
 
     private static CompanyImportPlan Plan(
-        CompanyImportProposal proposal, CompanyImportSnapshot snapshot, CompanyImportRun run, int newPlaces, CompanyImportSession session,
+        CompanyImportProposal proposal, CompanyImportSnapshot snapshot, CompanyImportRun run, Guid? firstPerson, int newPlaces, CompanyImportSession session,
         string actor, IReadOnlyList<string> numbers)
     {
         var held = snapshot.People.ToDictionary(person => person.Id);
@@ -169,6 +181,8 @@ public sealed class CompanyImportBringIn(
             {
                 var had = held[id];
                 if (had.AssignedFrom is { } from) assignedOn[person.Key] = from;
+                // Corrected in place in batch zero: her record holds what the files say from her start.
+                if (id == firstPerson) continue;
                 if (person.Changes?.Any(change => change.Field is CompanyImportFields.JobTitle or CompanyImportFields.Unit or CompanyImportFields.Place) != true) continue;
                 // A change is dated from the day the person chose, never on or before what it replaces.
                 on = Later(proposal.ApplyFrom, had.AssignedFrom?.AddDays(1));
@@ -193,7 +207,9 @@ public sealed class CompanyImportBringIn(
             if (person.ExistingId is { } id)
             {
                 if (person.Changes?.Any(change => change.Field == CompanyImportFields.Manager) != true) continue;
-                on = Later(Later(proposal.ApplyFrom, held[id].ManagerFrom?.AddDays(1)), assignedOn.GetValueOrDefault(person.Key));
+                // The first person's line is part of her corrected record, from her start; anyone else's is a change.
+                on = id == firstPerson ? assignedOn[person.Key]
+                    : Later(Later(proposal.ApplyFrom, held[id].ManagerFrom?.AddDays(1)), assignedOn.GetValueOrDefault(person.Key));
             }
             else
             {
@@ -225,7 +241,7 @@ public sealed class CompanyImportBringIn(
         var counts = new CompanyImportCountsDto(people.Count, proposal.Units.Count, proposal.NewUnits, proposal.Jobs.Count, proposal.Places.Count, lines.Count,
             proposal.NewPeople, proposal.ChangedPeople, proposal.Ends.Count);
         var existing = proposal.People.Where(person => person.ExistingId is not null).ToDictionary(person => person.Key, person => person.ExistingId!.Value, StringComparer.Ordinal);
-        return new CompanyImportPlan(people, lines, unitChanges, proposal.Ends, existing, result, counts);
+        return new CompanyImportPlan(people, lines, unitChanges, proposal.Ends, existing, result, counts, firstPerson);
     }
 
     // ---------- unit changes: the organization's own dated changes, each checked before it's made ----------
@@ -340,7 +356,8 @@ public sealed class CompanyImportBringIn(
             decisions = session.Decisions,
             units = run.Units,
             employees = run.Employees,
-            changed = plan.People.Where(person => person.ExistingId is not null).Select(person => person.ExistingId),
+            changed = plan.People.Where(person => person.ExistingId is not null).Select(person => person.ExistingId)
+                .Concat(plan.FirstPerson is { } first ? [first] : []),
             ended = plan.Ends.Select(end => end.EmployeeId),
         };
         session.CompleteBringIn(CompanyImportJson.Write(plan.Result), CompanyImportJson.Write(provenance));

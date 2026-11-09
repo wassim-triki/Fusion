@@ -141,12 +141,14 @@
     "toSubmit": "{value} للإرسال",
     "managerReviews": "تقييمات المديرين",
     "facilitators": "الميسّرون",
-    "openTheSession": "فتح الجلسة"
+    "openTheSession": "فتح الجلسة",
+    "you": "أنت"
   },
   "FacilitatorDialog": {
     "facilitators": "الميسّرون",
     "cancel": "إلغاء",
-    "saveFacilitators": "حفظ الميسّرين"
+    "saveFacilitators": "حفظ الميسّرين",
+    "you": "أنت"
   },
   "FinalizeDialog": {
     "finalizeCalibration": "اعتماد المعايرة",

@@ -41,6 +41,9 @@ public sealed record ChangeWorkAssignmentInput(
     string? SourceReference = null,
     Guid? ImportBatchId = null);
 
+/// <summary>What the import's files say about the activation-created person; <c>Start</c> only when it's earlier and chosen.</summary>
+public sealed record FirstPersonImport(DateTime? Start, string Number, Guid OrgUnitId, Guid JobId, Guid? PlaceId);
+
 /// <summary>Inputs to correct the active primary <see cref="WorkAssignment"/> in place.</summary>
 public sealed record CorrectWorkAssignmentInput(
     Guid OrgUnitId,
@@ -100,9 +103,12 @@ public sealed record EndEmploymentPreview(
 /// </summary>
 public interface IWorkforceMutationService
 {
-    /// <summary>Extends the activation-created person's original tenure and assignment together, while still untouched.</summary>
-    Task<Result<Employment>> ImportFirstPersonStartAsync(
-        Guid employeeId, DateTime effectiveFrom, Guid importBatchId, string? actor, CancellationToken cancellationToken);
+    /// <summary>
+    /// Corrects the activation-created person's record from the import while it's still untouched: the file's
+    /// number, job, unit and place on her original assignment, and an earlier start on her tenure and assignment.
+    /// </summary>
+    Task<Result<Employment>> ImportFirstPersonAsync(
+        Guid employeeId, FirstPersonImport input, Guid importBatchId, string? actor, CancellationToken cancellationToken);
 
     /// <summary>Updates Core-owned identity/profile fields; audited as <c>EmployeeProfileUpdated</c>.</summary>
     Task<Result<Employee>> UpdateEmployeeProfileAsync(
@@ -182,8 +188,8 @@ public sealed class WorkforceMutationService(
         workEmailOccupancyService ?? new WorkEmailOccupancyService(dbContext, tenantContext);
     private readonly CatalogReferences _catalog = new(dbContext, tenantContext);
 
-    public async Task<Result<Employment>> ImportFirstPersonStartAsync(
-        Guid employeeId, DateTime effectiveFrom, Guid importBatchId, string? actor, CancellationToken cancellationToken)
+    public async Task<Result<Employment>> ImportFirstPersonAsync(
+        Guid employeeId, FirstPersonImport input, Guid importBatchId, string? actor, CancellationToken cancellationToken)
     {
         // The caller owns the import plan transaction. Lock the actual rows before re-reading provenance/history;
         // concurrent profile, employment and assignment edits must finish first or follow this transaction.
@@ -198,23 +204,49 @@ public sealed class WorkforceMutationService(
         }
         if (!(await FirstPersonHistory.UntouchedAsync(dbContext, cancellationToken)).Contains(employeeId))
             return Result.Failure<Employment>(Error.Conflict("FirstPerson.Changed", "This person's record has changed since activation. Review the import again."));
+        var employee = await dbContext.Employees.SingleAsync(row => row.Id == employeeId, cancellationToken);
         var employment = await dbContext.Employments.SingleAsync(row => row.EmployeeId == employeeId, cancellationToken);
         var work = await dbContext.WorkAssignments.SingleAsync(row => row.EmployeeId == employeeId, cancellationToken);
-        var from = NormalizeDate(effectiveFrom);
+        DateTime? from = input.Start is { } start ? NormalizeDate(start) : null;
         if (from >= employment.EffectiveFrom)
             return Result.Failure<Employment>(Error.Validation("FirstPerson.StartNotEarlier", "The file's start must be earlier than the existing start."));
         // Like canonical import establishment, historical work requires a valid current organization target.
-        var unit = await FindOrgUnitAsync(work.OrgUnitId, cancellationToken);
+        var unit = await FindOrgUnitAsync(input.OrgUnitId, cancellationToken);
         if (unit is null || !await IsOrgUnitActiveOnAsync(unit.Id, DateOnly.FromDateTime(DateTime.UtcNow), unit.IsActive, cancellationToken))
             return Result.Failure<Employment>(Error.Validation("WorkAssignment.OrgUnitInactive", "Cannot assign an inactive organization unit."));
-        var previous = employment.EffectiveFrom;
-        employment.ExtendStart(from);
-        work.ExtendStart(from);
+        var job = await _catalog.JobAsync(input.JobId, work.JobId, cancellationToken);
+        if (job.IsFailure) return Result.Failure<Employment>(job.Error);
+        var place = await _catalog.PlaceAsync(input.PlaceId, work.PlaceId, cancellationToken);
+        if (place.IsFailure) return Result.Failure<Employment>(place.Error);
+        var number = input.Number.Trim();
+        if (!string.Equals(number, employee.EmployeeNumber, StringComparison.OrdinalIgnoreCase)
+            && await dbContext.Employees.AnyAsync(row => row.Id != employeeId && row.EmployeeNumber == number, cancellationToken))
+            return Result.Failure<Employment>(Error.Conflict("Employee.NumberTaken", "Another person already has this employee number."));
+
         var sourceRef = $"CompanyImport:{importBatchId}";
-        StageAudit("Employment", employment.Id, WorkforceAuditAction.ImportCorrectionPublished, WorkforceSourceType.Import,
-            actor, from, sourceRef, importBatchId, $"Activation start corrected from {previous:yyyy-MM-dd} to {from:yyyy-MM-dd}.");
-        StageAudit("WorkAssignment", work.Id, WorkforceAuditAction.ImportCorrectionPublished, WorkforceSourceType.Import,
-            actor, from, sourceRef, importBatchId, "Original primary assignment extended with the activation start correction.");
+        // What day one recorded was a placeholder for what the files say: corrected, not a change from a later date.
+        if (!string.Equals(number, employee.EmployeeNumber, StringComparison.Ordinal))
+        {
+            var previousNumber = employee.EmployeeNumber;
+            employee.UpdateEmployeeNumber(number);
+            StageAudit("Employee", employee.Id, WorkforceAuditAction.ImportCorrectionPublished, WorkforceSourceType.Import,
+                actor, null, sourceRef, importBatchId, $"Activation number corrected from {previousNumber} to {employee.EmployeeNumber}.");
+        }
+        var workChanged = work.OrgUnitId != unit.Id || work.JobId != job.Value.Id || work.PlaceId != place.Value?.Id;
+        if (workChanged) work.UpdateDetails(unit.Id, job.Value, place.Value);
+        if (from is { } earlier)
+        {
+            var previous = employment.EffectiveFrom;
+            employment.ExtendStart(earlier);
+            work.ExtendStart(earlier);
+            StageAudit("Employment", employment.Id, WorkforceAuditAction.ImportCorrectionPublished, WorkforceSourceType.Import,
+                actor, earlier, sourceRef, importBatchId, $"Activation start corrected from {previous:yyyy-MM-dd} to {earlier:yyyy-MM-dd}.");
+        }
+        if (workChanged || from is not null)
+            StageAudit("WorkAssignment", work.Id, WorkforceAuditAction.ImportCorrectionPublished, WorkforceSourceType.Import,
+                actor, from, sourceRef, importBatchId, workChanged
+                    ? "Original primary assignment corrected from the import's files."
+                    : "Original primary assignment extended with the activation start correction.");
         return Result.Success(employment);
     }
 

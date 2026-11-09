@@ -624,6 +624,9 @@ public static class CompanyImportDerivation
                 if (had.UntouchedFirstPerson && person.StartDate < had.EmployedFrom)
                     changes.Add(new ProposedChange(F.StartDate, had.EmployedFrom?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                         person.StartDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)));
+                // Day one gave the first person a generated number; the file's is hers (anyone else keeps theirs).
+                if (had.UntouchedFirstPerson && person.Number is { } number && !string.Equals(number, had.Number, StringComparison.OrdinalIgnoreCase))
+                    changes.Add(new ProposedChange(F.EmployeeNumber, had.Number, number));
                 var job = jobs.First(item => item.Key == person.JobKey);
                 if (job.ExistingId is null || job.ExistingId != had.JobId)
                     changes.Add(new ProposedChange(F.JobTitle, had.JobId is { } jobId && jobById.TryGetValue(jobId, out var held) ? held.Name : null, job.Title));

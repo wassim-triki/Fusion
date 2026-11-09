@@ -120,7 +120,8 @@ public sealed partial class FirstPersonTests
                 await using var transaction = await db.Database.BeginTransactionAsync();
                 var context = TestTenantContext.WithTenant(other);
                 var result = await new WorkforceMutationService(db, context, new WorkforceCanonicalResolver(db))
-                    .ImportFirstPersonStartAsync(employeeId, new DateTime(2020, 1, 2), read.Id, "Other tenant", default);
+                    .ImportFirstPersonAsync(employeeId, new FirstPersonImport(new DateTime(2020, 1, 2), "CDG-002", Guid.NewGuid(), Guid.NewGuid(), null),
+                        read.Id, "Other tenant", default);
                 Assert.True(result.IsFailure);
                 Assert.Equal("FirstPerson.Changed", result.Error.Code);
             }
@@ -172,6 +173,44 @@ public sealed partial class FirstPersonTests
                 Assert.Equal(tenure.EffectiveFrom, work.EffectiveFrom);
                 Assert.Equal(work.EffectiveFrom, (await db.ManagerRelationships.SingleAsync()).EffectiveFrom);
                 Assert.Empty(await db.WorkforceAuditEntries.Where(entry => entry.Action == WorkforceAuditAction.ImportCorrectionPublished).ToListAsync());
+            }
+        });
+    }
+
+    [RelationalDatabaseFact]
+    public async Task The_files_number_job_and_unit_correct_her_day_one_record_and_lines_to_her_start_with_it()
+    {
+        await WithDatabaseAsync(async (cs, tenant, _) =>
+        {
+            await using (var db = Db(cs, tenant)) await CreateFirst(db, tenant);
+            const string csv = "Employee ID,Name,Email,Title,Department,Manager,Start date\n"
+                + "CDG-002,Amira Khelifi,amira@first.test,Chief People Officer,People,,2020-01-02\n"
+                + "CDG-005,Mariam Gharbi,mariam@first.test,Engineering Manager,People,CDG-002,2021-02-03\n";
+            CompanyImportDto read;
+            await using (var db = Db(cs, tenant))
+            {
+                var id = await Imports(db, tenant).StartAsync([new(new MemoryStream(Encoding.UTF8.GetBytes(csv)), "people.csv", "text/csv")],
+                    "First Co", Importer, default);
+                await Imports(db, tenant).TakeLeansAsync(id, (await Imports(db, tenant).GetAsync(id, null, default)).Version, default);
+                read = await Imports(db, tenant).GetAsync(id, null, default);
+                Assert.Contains(Assert.Single(read.Again!.Changed).Changes, change => change.Field == "employeeNumber" && change.To == "CDG-002");
+                await Imports(db, tenant).BringInAsync(read.Id, read.Version, read.Fingerprint, Importer, default);
+            }
+            await using (var db = Db(cs, tenant)) await BringIn(db, tenant).ExecuteAsync(read.Id, default);
+            await using (var db = Db(cs, tenant))
+            {
+                var first = await db.Employees.SingleAsync(row => row.Email == "amira@first.test");
+                Assert.Equal("CDG-002", first.EmployeeNumber);
+                // One assignment, corrected in place from her day-one start: no change dated after the import.
+                var work = await db.WorkAssignments.SingleAsync(row => row.EmployeeId == first.Id);
+                Assert.Equal(DateTime.UtcNow.Date, work.EffectiveFrom.Date);
+                Assert.Equal("Chief People Officer", work.JobTitle);
+                Assert.Equal("People", (await db.OrgUnits.SingleAsync(unit => unit.Id == work.OrgUnitId)).Name);
+                var mariam = await db.Employees.SingleAsync(row => row.Email == "mariam@first.test");
+                var line = await db.ManagerRelationships.SingleAsync(row => row.SubjectEmployeeId == mariam.Id);
+                Assert.Equal(first.Id, line.ManagerEmployeeId);
+                Assert.Equal(work.Id, line.ManagerWorkAssignmentId);
+                Assert.Equal(work.EffectiveFrom, line.EffectiveFrom);
             }
         });
     }

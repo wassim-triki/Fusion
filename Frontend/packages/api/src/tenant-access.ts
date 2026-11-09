@@ -60,8 +60,8 @@ export interface TenantAdministratorDto {
 
 export type AdministratorOrigin = "activation" | "invitation" | "recovery" | "administrator";
 
-/** A company keeps at least this many administrators once it has them; the server refuses going below. */
-export const MINIMUM_ADMINISTRATORS = 2;
+/** How many administrators a company is advised to have; a recommendation, the server refuses only going below one. */
+export const RECOMMENDED_ADMINISTRATORS = 2;
 
 /** One grant or removal of administrator authority, newest first; every one is kept. */
 export interface AdministratorHistoryItemDto {

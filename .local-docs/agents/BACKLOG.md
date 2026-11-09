@@ -32,14 +32,10 @@ None waiting.
 
 ## Ready
 
-### After the walkthrough (B-331): first, then three stacks
+### After the walkthrough (B-331): three stacks
 
-From B-331's walk (2026-11-09; the user's words, step by step, in `plans/B-331-walkthrough.md`; the B-numbers on notes trace to them). One item per surface: notes are evidence for rethinking the surface as a whole, not a list of fixes; functions sit apart from visuals. (D) = needs discussion.
+From B-331's walk (2026-11-09; the user's words, step by step, in `design/walkthrough-2026-11-09.md`; the B-numbers on notes trace to them). One item per surface: notes are evidence for rethinking the surface as a whole, not a list of fixes; functions sit apart from visuals. (D) = needs discussion.
 
-- [ ] **B-398** First, before the stacks: security and data integrity · Identity, Core HR · 2026-11-09
-          One short session ahead of Performance (agreed 2026-11-09).
-          - To check (security): the seeded Managers role reads Personal "change · everyone" (the data, 2026-11-09), which would let any manager change anyone's personal details; confirm what it grants and fix the default if so. Seen live: Mariam, a manager, can edit Aicha's About.
-  - [ ] **B-391** Bug, import (data): the first person matched by email keeps her day-one number (Amira stays EMP-00000001, not the file's CDG-002), and every reporting line in the file that names CDG-002 is dropped: Amira has no manager (the file says Sami) and her six reports (Mariam Gharbi, Omar Mansour, Mouna Kooli, Houssem Dhaouadi, Rania Sahli, Elyes Jaziri) have none. The import's review didn't flag it. Surfaced as 8 "needs attention" in Performance's Population (those 7 plus Sami, the CEO, rightly without a manager). Fix the import to resolve file references to the matched person; prove it with the walkthrough files · Core HR · 2026-11-09
 - [ ] **B-390** Stack 1 · Performance redesigned as a module, functions and visuals together · Performance · 2026-11-09
           First priority after B-398: Core HR could demo tomorrow, Performance couldn't (user). Not from the ground up: what the module does stays; its functions are cleaned up, fixed and completed, its visuals rewritten the way Core HR's were.
           How, the Core HR rebuild's process again (B-164, files in `archive/plans/B-164-*`): a map of what exists (code inventory and a live walk, B-165) → a target brief and scope page with depth ladders per feature, studied against other products (B-163) → a design direction, then explorers checkpoint by checkpoint until every screen has an accepted design, recorded as decisions (B-166; Core HR's are D-01–D-30) → the rebuild in dependency-ordered slices, one session each (B-167). This walk is the live part of the map.
@@ -71,8 +67,6 @@ From B-331's walk (2026-11-09; the user's words, step by step, in `plans/B-331-w
           - Notes, performance (must): the Replay slider takes ~10 s per move, it has to follow the hand in real time as agreed; panning and drag and drop sometimes lag or act oddly.
           - Reports: The date range selector is broken: changing From disables or clears the chosen To, the two ends must be independent.
           - People: Sorting doesn't work on every column, Sign-in included, so invited people can't be brought together.
-          - Rule to change (user decided, 2026-11-09: "I should be able to run the company from 1 administrator"): a company starts with one administrator but, once it has two, can't go back to one ("A company keeps at least two administrators. Add another first."; `UsableTenantAdministrator.Minimum = 2` in Identity, `MINIMUM_ADMINISTRATORS` in Core HR). Make the floor one; a second stays a recommendation, not a block.
-          - Bug: Amira giving herself HR signed her out (the role change made her own session stale): it went through "You've been signed out" with some back-and-forth, then a fresh sign-in; a change to your own roles should refresh your session in place. The signed-out page itself looks nice; the "you were given HR" email arrived.
     - [ ] **B-245** The import groups titles into job families when the files have no family column (D-23 widened the AI to it): suggestions marked with the sparkle, each family changeable on the chart's Jobs view · Core HR · 2026-11-01
   - **Surfaces to rethink**
     - [ ] **B-352** The import (What Fusion understood, then Review, `/core/import/{id}`): functionally right, but reads as AI-made, unclear about what to do, not the friendly BambooHR-like direction; redesign both pages, canvas first (accepted in B-186 from a drawing, now rejected on taste) · Core HR · 2026-11-09
@@ -148,9 +142,6 @@ From B-331's walk (2026-11-09; the user's words, step by step, in `plans/B-331-w
     - [ ] **B-393** (D) One icon set: the user loves the Hugeicons glyphs Performance uses (praise reactions: clapping, party, lightbulb, heart); Core HR, the shell and `@repo/ds` still use Lucide. Consider moving everything to Hugeicons through the same adapters · all our apps, `@repo/ds` · 2026-11-09
     - [ ] **B-338** (D) Top bar: the user's avatar with a menu (contents to agree), checking how the bar's items sit in all its states · Shell · 2026-11-09
           Today sign-out lives in the user's menu at the bottom of the sidebar, which the user doesn't call bad; the top bar avatar is an addition, so decide how the two menus relate.
-  - **Functions**
-    - [ ] **B-400** One person, one account: the administrator's account and her worker record are the same person, and that link holds everywhere. Seen: the import kept her day-one record apart from her file row (B-391); the facilitator picker offers the signed-in administrator as if someone else; photos and roles attach to one side but not the other. If an account exists only for setup that's fine, but once she's a worker the two are one · Identity, Core HR, Performance · 2026-11-09
-    - [ ] **B-401** After accepting an invitation, everyone lands on Home. After accepting, Mariam, a manager, lands on her Core HR profile instead of Fusion's Home with its manager card (B-248): `core/src/app/invite/accept/invite-acceptance-routing.ts` still picks a Core HR page by permission (and points at a stale `/settings?tab=access-permissions`); everyone should land on Home. · Shell, Core HR · 2026-11-09
   - **Shell surfaces**
     - [ ] **B-333** The invitation page (`/activate-invitation`): rethink the page as a whole · Shell · 2026-11-09
           Notes: the "Do you work here?" choice wants to be simpler, friendlier, more compact (B-333); answering yes adds the job title field and the left column jumps with it, the columns must be independent (B-334); the left column's logo and name block is weak, its background empty and boring (a photo or a better pattern), the plain "Fusion" mark (B-335, see B-332); black fields on black, fills changing inconsistently, the page taller than the screen (B-336). The employee's variant (Mariam's) fits the screen without scrolling: keep every variant within it.

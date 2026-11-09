@@ -141,12 +141,14 @@
     "toSubmit": "{value} à soumettre",
     "managerReviews": "Évaluations des managers",
     "facilitators": "Animateurs",
-    "openTheSession": "Ouvrir la session"
+    "openTheSession": "Ouvrir la session",
+    "you": "vous"
   },
   "FacilitatorDialog": {
     "facilitators": "Animateurs",
     "cancel": "Annuler",
-    "saveFacilitators": "Enregistrer les animateurs"
+    "saveFacilitators": "Enregistrer les animateurs",
+    "you": "vous"
   },
   "FinalizeDialog": {
     "finalizeCalibration": "Finaliser le calibrage",

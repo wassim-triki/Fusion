@@ -47,7 +47,7 @@ public sealed class TenantContinuityTests : IAsyncLifetime
     }
 
     [SkippableFact]
-    public async Task Removing_one_of_two_administrators_is_refused()
+    public async Task Removing_one_of_two_administrators_leaves_one_who_cannot_step_down()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
         var world = await ArrangeAsync(administrators: 2);
@@ -58,11 +58,11 @@ public sealed class TenantContinuityTests : IAsyncLifetime
         var steppedDown = await Lifecycle(world.Db).RevokeAuthorityAsync(
             new AdministratorCommand(world.TenantId, world.FirstMembershipId, world.FirstAccountId));
 
-        // A company keeps at least two administrators once it has two (D-25).
-        Assert.Equal(ContinuityFailure.TooFewAdministrators, removed.Failure);
+        // One administrator can run a company; a second is a recommendation (user, 2026-11-09). None is refused.
+        Assert.True(removed.Succeeded);
         Assert.Equal(ContinuityFailure.TooFewAdministrators, steppedDown.Failure);
         world.Db.ChangeTracker.Clear();
-        Assert.Equal(2, await UsableTenantAdministrator.CountAsync(world.Db, world.TenantId));
+        Assert.Equal(1, await UsableTenantAdministrator.CountAsync(world.Db, world.TenantId));
     }
 
     [SkippableFact]
@@ -122,13 +122,13 @@ public sealed class TenantContinuityTests : IAsyncLifetime
     public async Task Two_concurrent_removals_cannot_both_commit()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var world = await ArrangeAsync(administrators: 3);
+        var world = await ArrangeAsync(administrators: 2);
 
         var second = _databases.Connect(world.Db);
 
-        // Each command reads three usable administrators and removes a different
+        // Each command reads two usable administrators and removes a different
         // one. Their rows are disjoint, so row versioning cannot see the conflict;
-        // only the per-tenant serialization can keep the company at two.
+        // only the per-tenant serialization can keep the company at one.
         var outcomes = await Task.WhenAll(
             ObserveAsync(() => Lifecycle(world.Db).RevokeAuthorityAsync(
                 new AdministratorCommand(world.TenantId, world.FirstMembershipId, world.FirstAccountId))),
@@ -147,7 +147,7 @@ public sealed class TenantContinuityTests : IAsyncLifetime
         Assert.Equal(ContinuityFailure.TooFewAdministrators, loser.Failure);
 
         world.Db.ChangeTracker.Clear();
-        Assert.Equal(2, await UsableTenantAdministrator.CountAsync(world.Db, world.TenantId));
+        Assert.Equal(1, await UsableTenantAdministrator.CountAsync(world.Db, world.TenantId));
     }
 
     // ── Lifecycle ────────────────────────────────────────
@@ -202,7 +202,7 @@ public sealed class TenantContinuityTests : IAsyncLifetime
     public async Task Gaining_or_losing_tenant_administration_mails_the_person_only_when_it_changed()
     {
         Skip.IfNot(Available, "No PostgreSQL connection configured.");
-        var world = await ArrangeAsync(administrators: 3);
+        var world = await ArrangeAsync(administrators: 2);
         var membershipId = world.SecondMembershipId!.Value;
         var mail = new CapturingRoleMail();
         var lifecycle = new TenantAdministratorLifecycleService(world.Db, new TenantContinuityCommandExecutor(world.Db), mail);
@@ -221,7 +221,7 @@ public sealed class TenantContinuityTests : IAsyncLifetime
         // Refused (the last administrator): nothing committed, nothing mailed.
         await lifecycle.RevokeAuthorityAsync(new AdministratorCommand(world.TenantId, membershipId, world.FirstAccountId));
         mail.Changes.Clear();
-        // Two left: removing either would leave one.
+        // One left: removing her would leave none.
         var refused = await lifecycle.RevokeAuthorityAsync(new AdministratorCommand(world.TenantId, world.FirstMembershipId, world.FirstAccountId));
         Assert.Equal(ContinuityFailure.TooFewAdministrators, refused.Failure);
         Assert.Empty(mail.Changes);
@@ -437,9 +437,9 @@ public sealed class TenantContinuityTests : IAsyncLifetime
         Assert.Equal(nameof(ContinuityState.Healthy), summary.Continuity);
         Assert.Equal(2, summary.UsableAdministrators);
 
-        // At two, neither can go, and the page says so before anyone tries.
+        // At two, either can go: only the last one is held back.
         var administrators = await new TenantAccessProjection(world.Db).GetAdministratorsAsync(world.TenantId);
-        Assert.All(administrators, item => Assert.Equal(TenantAccessProjection.FinalAdministratorReason, item.BlockedReason));
+        Assert.All(administrators, item => Assert.Null(item.BlockedReason));
     }
 
     [SkippableFact]

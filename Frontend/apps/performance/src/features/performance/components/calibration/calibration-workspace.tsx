@@ -33,6 +33,7 @@ import { FinalizeDialog } from "./finalize-dialog";
 import { NineBoxView, type NineBoxMove } from "./nine-box";
 import { useRecentRecord } from "@repo/api/react";
 import { useTranslations } from "next-intl";
+import { useAuth } from "@repo/auth";
 import { PageRefusal } from "@repo/auth";
 
 export function CalibrationWorkspacePage({ roundId }: { roundId: string }) {
@@ -183,6 +184,7 @@ function Finalized({ roundId, top }: { roundId: string; top: number }) {
 /** Board 01: before the session exists, what is in, who is late, and who facilitates. */
 function OpenSession({ roundId, cycleId, mutations }: { roundId: string; cycleId: string | null; mutations: Mutations }) {
   const t = useTranslations("calibration.OpenSession");
+  const me = useAuth().user?.userId;
   const round = useReviewRound(roundId);
   const candidates = useFacilitatorCandidates(roundId);
   const [chosen, setChosen] = useState<Set<string> | null>(null);
@@ -242,6 +244,7 @@ function OpenSession({ roundId, cycleId, mutations }: { roundId: string; cycleId
                       })} />
                     <PersonInitials name={candidate.displayName} size="sm" />
                     {candidate.displayName}
+                    {candidate.userId === me ? <span className="text-muted-foreground">· {t("you")}</span> : null}
                   </label>
                 </li>
               ))}
@@ -262,6 +265,7 @@ function FacilitatorDialog({ session, roundId, mutations, onClose }: {
   session: CalibrationSessionDto; roundId: string; mutations: Mutations; onClose: () => void;
 }) {
   const t = useTranslations("calibration.FacilitatorDialog");
+  const me = useAuth().user?.userId;
   const candidates = useFacilitatorCandidates(roundId);
   const [chosen, setChosen] = useState(() => new Set(session.facilitators.map((item) => item.userId)));
   const toggle = (userId: string) => setChosen((current) => {
@@ -282,6 +286,7 @@ function FacilitatorDialog({ session, roundId, mutations, onClose }: {
                   <label className="flex min-h-11 cursor-pointer items-center gap-3 py-2 type-body text-foreground">
                     <input type="checkbox" className="size-4 accent-primary" checked={chosen.has(candidate.userId)} onChange={() => toggle(candidate.userId)} />
                     {candidate.displayName}
+                    {candidate.userId === me ? <span className="text-muted-foreground">· {t("you")}</span> : null}
                   </label>
                 </li>
               ))}

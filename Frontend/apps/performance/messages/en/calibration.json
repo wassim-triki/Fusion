@@ -141,12 +141,14 @@
     "toSubmit": "{value} to submit",
     "managerReviews": "Manager reviews",
     "facilitators": "Facilitators",
-    "openTheSession": "Open the session"
+    "openTheSession": "Open the session",
+    "you": "you"
   },
   "FacilitatorDialog": {
     "facilitators": "Facilitators",
     "cancel": "Cancel",
-    "saveFacilitators": "Save facilitators"
+    "saveFacilitators": "Save facilitators",
+    "you": "you"
   },
   "FinalizeDialog": {
     "finalizeCalibration": "Finalize calibration",

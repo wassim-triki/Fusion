@@ -9,7 +9,7 @@ import {
   createCorePeopleApi,
   createPlatformApiClient,
   corePeopleQueryKeys,
-  MINIMUM_ADMINISTRATORS,
+  RECOMMENDED_ADMINISTRATORS,
   type AdministratorCandidateDto,
   type AdministratorHistoryItemDto,
   type FusionSettingsSection,
@@ -76,13 +76,13 @@ function useDay() {
 // ── Who ──
 
 function Progress({ count, say }: { count: number; say: Say }) {
-  const short = count < MINIMUM_ADMINISTRATORS;
-  const segments = Math.max(count, MINIMUM_ADMINISTRATORS);
+  const short = count < RECOMMENDED_ADMINISTRATORS;
+  const segments = Math.max(count, RECOMMENDED_ADMINISTRATORS);
   return (
     <span className="flex items-center gap-3">
       <span className={cn("type-meta", short ? "text-warning" : "text-muted-foreground")}>
         {short
-          ? say("roles.administrators.progressShort", { count, minimum: MINIMUM_ADMINISTRATORS })
+          ? say("roles.administrators.progressShort", { count, recommended: RECOMMENDED_ADMINISTRATORS })
           : say("roles.administrators.progress", { count })}
       </span>
       <span aria-hidden className="inline-flex gap-1">
@@ -153,7 +153,7 @@ function Slot({
               {isMe ? say("roles.administrators.stepDown") : say("roles.administrators.remove")}
             </DropdownMenuItem>
             {administrator.blockedReason ? (
-              <p className="px-2 pt-1 pb-1.5 type-meta text-muted-foreground">{say("roles.administrators.keepTwo")}</p>
+              <p className="px-2 pt-1 pb-1.5 type-meta text-muted-foreground">{say("roles.administrators.keepOne")}</p>
             ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -528,8 +528,8 @@ export function AdministratorsPage({ section }: { section: FusionSettingsSection
                   say={say}
                 />
               ))}
-              {canManage || list.length < MINIMUM_ADMINISTRATORS ? (
-                <EmptySlot second={list.length < MINIMUM_ADMINISTRATORS} canManage={canManage} onAdd={() => setAdding(true)} say={say} />
+              {canManage || list.length < RECOMMENDED_ADMINISTRATORS ? (
+                <EmptySlot second={list.length < RECOMMENDED_ADMINISTRATORS} canManage={canManage} onAdd={() => setAdding(true)} say={say} />
               ) : null}
             </ul>
           ) : (
@@ -593,7 +593,7 @@ export function AdministratorsPage({ section }: { section: FusionSettingsSection
               {remove.error ? (
                 <p role="alert" className="type-meta text-destructive">
                   {problemTypeOf(remove.error) === "too-few-administrators"
-                    ? say("roles.administrators.keepTwo")
+                    ? say("roles.administrators.keepOne")
                     : say("roles.administrators.notRemoved")}
                 </p>
               ) : null}

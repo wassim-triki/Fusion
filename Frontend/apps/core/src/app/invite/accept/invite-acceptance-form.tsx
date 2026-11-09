@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { ApiError, type AccountPasswordRequirementsDto, type SsoProviderKey, type SsoRefusalDto } from "@repo/api";
 import {
@@ -41,7 +40,6 @@ import {
   useAcceptInvite,
   type AcceptInvitePayload,
 } from "./use-invite";
-import { resolveInviteAcceptanceDestination } from "./invite-acceptance-routing";
 
 type InviteT = ReturnType<typeof useTranslations<"invite">>;
 
@@ -223,7 +221,6 @@ function AcceptanceForm({
 }) {
   const t = useTranslations("invite");
   const english = useLocale() === "en";
-  const router = useRouter();
   const accept = useAcceptInvite();
 
   // Only workforce invitations open here. The recipient's name is owned by their
@@ -332,14 +329,9 @@ function AcceptanceForm({
         user,
       } satisfies StoredAuth);
 
-      // Let the shared auth provider consume its same-tab storage event before
-      // resolving a protected route, so the first authenticated render does not
-      // race the session that was just issued.
+      // Everyone starts at Fusion's Home, whatever they hold (B-401). It's the shell's page, so a full load.
       setProgress("opening");
-      await new Promise<void>((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
-      );
-      router.replace(resolveInviteAcceptanceDestination(user));
+      window.location.replace("/");
     } catch (err) {
       setProgress("idle");
       setServerErrors(submitErrorMessages(err, step, t, english));

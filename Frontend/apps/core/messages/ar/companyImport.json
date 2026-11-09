@@ -414,7 +414,8 @@
       "parent": "تحت",
       "jobLevel": "المستوى",
       "jobFamily": "العائلة",
-      "startDate": "تاريخ البدء"
+      "startDate": "تاريخ البدء",
+      "employeeNumber": "الرقم الوظيفي"
     },
     "none": "لا أحد",
     "keep": "إبقاؤه كما هو",

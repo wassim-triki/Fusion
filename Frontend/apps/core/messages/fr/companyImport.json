@@ -414,7 +414,8 @@
       "parent": "Rattachée à",
       "jobLevel": "Niveau",
       "jobFamily": "Famille",
-      "startDate": "Date de début"
+      "startDate": "Date de début",
+      "employeeNumber": "Matricule"
     },
     "none": "Aucun",
     "keep": "Le garder tel quel",

@@ -154,7 +154,7 @@ public sealed class TenantAccessProjection(AppIdentityDbContext dbContext) : ITe
     /// authority removed. Shown before interaction rather than after a refusal.
     /// </summary>
     public const string FinalAdministratorReason =
-        "A company keeps at least two administrators. Add another before removing or suspending one.";
+        "A company needs at least one administrator. Add another before removing or suspending this one.";
 
     public async Task<TenantAccessSummary> GetSummaryAsync(
         Guid tenantId, CancellationToken cancellationToken = default)

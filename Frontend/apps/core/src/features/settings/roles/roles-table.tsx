@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Building2, ChartNoAxesColumn, Lock, Plus, Users } from "lucide-react";
-import { MINIMUM_ADMINISTRATORS, type FusionSettingsSection, type RoleAreaDto, type RoleCellDto, type RoleSummaryDto } from "@repo/api";
+import { RECOMMENDED_ADMINISTRATORS, type FusionSettingsSection, type RoleAreaDto, type RoleCellDto, type RoleSummaryDto } from "@repo/api";
 import {
   Button,
   cn,
@@ -64,7 +64,7 @@ function Cell({ cell, say }: { cell: RoleCellDto; say: Say }) {
 }
 
 function Faces({ role, say }: { role: RoleSummaryDto; say: Say }) {
-  const short = role.isAdministrators && role.holderCount < MINIMUM_ADMINISTRATORS;
+  const short = role.isAdministrators && role.holderCount < RECOMMENDED_ADMINISTRATORS;
   return (
     <span className="flex items-center gap-2">
       {role.faces.length ? (
@@ -76,7 +76,7 @@ function Faces({ role, say }: { role: RoleSummaryDto; say: Say }) {
       ) : null}
       <span className={cn("type-meta tabular-nums", short ? "text-warning" : "text-muted-foreground")}>
         {short
-          ? say("roles.administrators.progressShort", { count: role.holderCount, minimum: MINIMUM_ADMINISTRATORS })
+          ? say("roles.administrators.progressShort", { count: role.holderCount, recommended: RECOMMENDED_ADMINISTRATORS })
           : role.holderCount}
       </span>
     </span>

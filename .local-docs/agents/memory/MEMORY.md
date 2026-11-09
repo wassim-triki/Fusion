@@ -141,3 +141,5 @@
 
 ## Working notes (tracked since B-159, 2026-10-29)
 - `.local-docs/agents/` (AGENTS.md, STATE, BACKLOG, LOG, plans, data/, git-conventions, this memory/) is tracked in the public repo; `archive/`, screen images, `data/*.local.json` and `.work/` stay local. The Claude memory folder is a junction to `memory/` here. No passwords in any of it: `FUSION_LOCAL_PASSWORD` (accounts) and `FUSION_PG_PASSWORD` (Postgres) are Windows user variables. Older notes are zipped in `archive/old-notes-2026-10.zip`; paths to `.local-docs/specs|core|screenshots` in older memories are gone.
+- [Walkthrough: one step at a time](walkthrough-one-step-at-a-time.md) — roadmap stays mine; one step per message, stable numbering, thorough where it matters.
+- [Brain dumps are surface overhauls](brain-dumps-are-surface-overhauls.md) — screen complaints = rethink that surface; one board item per surface, remarks as evidence.

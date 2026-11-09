@@ -1,5 +1,6 @@
 ---
 name: fusion-dev
+model: sonnet
 description: Run, stop, restart and check the local Fusion stack; run backend tests with the right environment; query local databases read-only; call Fusion APIs through the shell. Use when running, testing or debugging Fusion locally.
 ---
 

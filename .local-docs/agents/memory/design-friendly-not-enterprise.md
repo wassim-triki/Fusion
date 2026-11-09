@@ -5,7 +5,7 @@ metadata:
   type: feedback
 ---
 
-User, 2026-10-30, before the B-166 screens explorer: BambooHR "looked friendly and looked simple to use"; "We don't want to be a newspaper, a 1,000-year-old enterprise HRIS looking UI"; wants "something friendly, like something moving, something self-explanatory, all while respecting the very simple rules we have about the themes". Everything designed "from like a month and before" (before October 2026) was "ugly and messy and vibe coded".
+User, 2026-10-30, before the B-166 screens explorer: BambooHR "looked friendly and looked simple to use"; "We don't want to be a newspaper, a 1,000-year-old enterprise HRIS looking UI"; wants "something friendly, like something moving, something self-explanatory, all while respecting the very simple rules we have about the themes". Everything designed "from like a month and before" (before October 2026) was "ugly and messy and vibe coded". Again on 2026-11-09 (B-397 foundation): "that bamboo HR Upwork type UI … that warm and friendly type is what we're looking for", modern and professional.
 
 **Why:** they don't want tokens and time spent generating in the wrong direction and then correcting it; the first generation should already look right.
 

@@ -126,7 +126,7 @@ From B-331's walk (2026-11-09; the user's words, step by step, in `design/walkth
           Notes: hovering over the Growth chart moves the whole page's date, which surprised the user ("is this intended?"); scrubbing should be deliberate (drag, or a clear preview that snaps back).
           Notes: the page looks fine overall; the next 30 days runs a little empty with dead space on the right; the bottom cards (Records to complete, Open roles) are scattered with bad empty states: the same cards, empty space and empty states problem again (B-376).
 - [ ] **B-397** Stack 3 · Fusion-wide · Shell, `@repo/ds`, all our apps · 2026-11-09
-          Decisions and rules are settled first, on their own page, per situation (STATE row 1, `plans/B-397-foundation.*`); applying them to Core HR comes with B-396; Home after Performance, since it surfaces what matters from both.
+          Decisions and rules are settled first, on their own page, per situation: [page](https://claude.ai/artifact/Kq91ddwjiTPb4BrEEVzCLF), [plan](plans/B-397-foundation.md), waiting on the user; applying them to Core HR comes with B-396; Home after Performance, since it surfaces what matters from both.
   - **Foundation**
     - [ ] **B-370** Surface colours in both themes, product-wide: light mode first, then dark · `@repo/ds`, all our apps · 2026-11-09
           Notes: light mode is all over the place; the page background is too grey (a dark white); the person page hero's light background would suit the app's body, with slightly different tones for sections. On the import's done page the main section's tone is right and the sections below lift lighter in dark mode (the opposite in light). Unify across the apps, then do the same for dark.

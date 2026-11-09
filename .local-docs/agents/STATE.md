@@ -4,7 +4,7 @@
 
 ## Active work
 
-None.
+**Row 1, the Fusion-wide foundation page** (B-397), 2026-11-09, same session at the user's word ("do it here"). **Page published, waiting on the user's checkpoint:** https://claude.ai/artifact/Kq91ddwjiTPb4BrEEVzCLF (`plans/B-397-foundation.html`, db doc `foundation/main`, empty at publish). Inventory, research and next steps: `plans/B-397-foundation.md`. 29 situations, drawn variants, picks preselected; the user's feel during the build: warm and friendly like BambooHR and Upwork.
 
 ## Next
 
@@ -14,7 +14,7 @@ Session queue: a fresh session takes the first open row, sets it as Active work 
 
 | # | Session | Board items | Effort | Notes |
 |---|---|---|---|---|
-| 1 | Fusion-wide foundation, decided per situation | B-397's foundation and decisions: B-370 colours, B-376 empty states, B-379 loading shapes, B-393 icons, B-381 navigation, B-338 your menu, B-373 detail panels, type (B-377's serif titles), with B-347, B-382, B-394 as rules | high | No code. Recipe below. Stops at the user's checkpoint. |
+| 1 | Fusion-wide foundation, decided per situation (page published, waiting on the user) | B-397's foundation and decisions: B-370 colours, B-376 empty states, B-379 loading shapes, B-393 icons, B-381 navigation, B-338 your menu, B-373 detail panels, type (B-377's serif titles), with B-347, B-382, B-394 as rules | high | No code. Recipe below. Stops at the user's checkpoint. |
 | 2 | Core HR functions | the rest of B-399: root rename, a promotion to a missing job (say why, offer to add the job), a change effective today, leave on a chosen date in the chart, Reports' date range, People sorting and the Manager cell, Replay speed | medium | Can run while the user answers row 1. Replay speed may need its own session if profiling shows it's large; split then, not before. |
 | 3 | Performance target brief and scope | B-390 | high | After row 1's checkpoint. Map exists (`plans/B-390-map.md`). Redo stage 2 the Core HR way: a researched target brief (`plans/B-390-target-brief.md`: Lattice, Culture Amp, Leapsome, 15Five, Betterworks, HiBob, BambooHR, Workday; personas; IA from first principles; a wide long list beyond what exists, each feature parity / improvement / new) like `archive/plans/B-164-target-brief.md`, then a fresh scope page from it (ladders, heroes, not doing, questions), drawn where a choice is visual, labels not paragraphs. The first page's chapter 2 is a draft to mine, not a base. |
 | 4+ | Performance design, then its slices | B-390 | high for the direction and explorers | After row 3's checkpoint: design direction on Core HR's language and row 1's decisions, explorers per checkpoint, decisions (IDs after D-31 in `design/decisions.md`), then slices sized to fill a session each. |
@@ -31,5 +31,5 @@ Session queue: a fresh session takes the first open row, sets it as Active work 
    - Details: quick look, edit, create, confirm (panel, page, modal, inline) per situation.
    - Type: page titles, record names, section titles, labels.
 2. **Research per situation**, lightly and with real sources: how BambooHR, HiBob, Personio, Lattice, Linear, Notion, Stripe handle that same situation. Record it in `plans/B-397-foundation.md` with the inventory.
-3. **The page** (`plans/B-397-foundation.html`, artifact with `db`, the B-164 scope page's save and copy mechanics): per situation a name, one line of where it occurs (real examples), and 2–3 variants **drawn** in Fusion's real look (tokens from `Frontend/packages/ds/src/styles/tokens.css`, Figtree, Lora for the serif, real Carthage content and the walk's real cases), dark and light where colour matters; my pick preselected; a note box. No paragraphs. Rules (B-347 no em dashes and no dot-strung stat lines, B-382 photos, B-394 optimistic updates, disabled buttons say why on the page) as a short list kept unless objected.
+3. **The page** (`plans/B-397-foundation.html`, artifact with `db`, the B-164 scope page's save and copy mechanics): per situation a name, one line of where it occurs (real examples), and 2–3 variants **drawn** in Fusion's real look (tokens from `Frontend/packages/ds/src/styles/tokens.css`, Geist, Lora for the serif, real Carthage content and the walk's real cases), dark and light where colour matters; my pick preselected; a note box. No paragraphs. Rules (B-347 no em dashes and no dot-strung stat lines, B-382 photos, B-394 optimistic updates, disabled buttons say why on the page) as a short list kept unless objected.
 4. Stop at the checkpoint; record the answers as decisions (IDs after D-31 in `design/decisions.md`) in the session that reads them.

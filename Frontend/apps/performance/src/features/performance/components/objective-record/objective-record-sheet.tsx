@@ -40,7 +40,7 @@ export type RecordSheetState =
  * The record's shell and nothing more: a right-hand sheet with a header, the body the model resolves,
  * and an action area. It knows no section's logic — `renderSection` draws each section, `header` and
  * `actions` are supplied — so the same record composes identically wherever it is opened, and sections
- * stay reusable on their own. `task` replaces header-and-body while a task mode (recording progress) runs.
+ * stay reusable on their own.
  */
 export function ObjectiveRecordSheet({
   open,
@@ -49,16 +49,14 @@ export function ObjectiveRecordSheet({
   header,
   renderSection,
   actions,
-  task,
   presentation = "sheet",
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   state: RecordSheetState;
   header: (record: ObjectiveRecord) => ReactNode;
-  renderSection: (id: RecordSectionId, record: ObjectiveRecord, options: { paired: boolean }) => ReactNode;
+  renderSection: (id: RecordSectionId, record: ObjectiveRecord) => ReactNode;
   actions: (record: ObjectiveRecord) => ReactNode;
-  task?: ReactNode;
   presentation?: "sheet" | "page";
 }) {
   const t = useTranslations("objective.ObjectiveRecordSheet");
@@ -71,7 +69,7 @@ export function ObjectiveRecordSheet({
     const back = record ? recordBack(record, user?.employeeId ?? null, backWords) : null;
     // Document + sidebar: what happens to the objective reads down the main column; what defines it (measure,
     // window, weight) and what you can do sit beside it.
-    const main = record ? resolveSections(record).flatMap((row) => (typeof row === "string" ? [row] : [...row])).filter((id) => id !== "facts") : [];
+    const main = record ? resolveSections(record).flatMap((row) => (typeof row === "string" ? [row] : [...row])) : [];
     return (
       <PageContainer width="wide">
         <article className={cn("space-y-6", accent.className)} style={accent.style}>
@@ -84,15 +82,14 @@ export function ObjectiveRecordSheet({
           {record ? (
             <>
               <header className="border-b border-border pb-6">{header(record)}</header>
-              {task ?? (
+              {(
                 <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
                   <div className="min-w-0 space-y-8">
                     {main.map((id) => (
-                      <div key={id}>{renderSection(id, record, { paired: false })}</div>
+                      <div key={id}>{renderSection(id, record)}</div>
                     ))}
                   </div>
                   <aside className="min-w-0 space-y-6 lg:sticky lg:top-6">
-                    {renderSection("facts", record, { paired: false })}
                     {actions(record)}
                   </aside>
                 </div>
@@ -128,17 +125,17 @@ export function ObjectiveRecordSheet({
           <>
             <div className="border-b border-border p-5 pe-12">{header(state.record)}</div>
             <SheetDescription className="sr-only">{t("objectiveRecordFor", { title: state.record.title })}</SheetDescription>
-            {task ?? (
+            {(
               <>
                 <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
                   {resolveSections(state.record).map((row) =>
                     typeof row === "string" ? (
-                      <div key={row}>{renderSection(row, state.record, { paired: false })}</div>
+                      <div key={row}>{renderSection(row, state.record)}</div>
                     ) : (
                       <div key={row.join("+")} className="grid grid-cols-2 gap-4">
                         {row.map((id) => (
                           <div key={id} className="flex">
-                            <div className="w-full [&>section]:h-full">{renderSection(id, state.record, { paired: true })}</div>
+                            <div className="w-full [&>section]:h-full">{renderSection(id, state.record)}</div>
                           </div>
                         ))}
                       </div>

@@ -34,13 +34,6 @@
     "addToDirection": "Ajouter à l’orientation",
     "couldNotSaveTheObjective": "Impossible d’enregistrer l’objectif."
   },
-  "RecordProgressMode": {
-    "backToObjectiveDetails": "Retour aux détails de l’objectif",
-    "recordProgress": "Enregistrer l’avancement",
-    "loadingProgress": "Chargement de l’avancement",
-    "progressUnavailable": "L’avancement ne s’est pas chargé",
-    "cancel": "Annuler"
-  },
   "ObjectiveRecordSheet": {
     "loadingObjective": "Chargement de l’objectif",
     "thisObjectiveIsntAvailableTo": "Cet objectif ne vous est pas accessible",
@@ -70,17 +63,6 @@
     "publishedCompany": "Publié comme orientation de l’entreprise.",
     "publishedOrg": "Publié comme orientation organisationnelle."
   },
-  "AlignedChildrenSection": {
-    "unassigned": "Non affecté",
-    "planObjectives": "Objectifs du plan",
-    "alignedObjectives": "Objectifs alignés · {value}"
-  },
-  "AlignmentSection": {
-    "viewOnMap": "Voir sur la carte",
-    "alignment": "Alignement",
-    "archived": "· Archivé",
-    "supports": "Soutient"
-  },
   "ContributionSection": {
     "baselineLocked": "Base verrouillée",
     "contributionBaseline": "Base de contribution",
@@ -107,32 +89,6 @@
     "feedback": "Feedback · {length}",
     "feedback2": "Feedback"
   },
-  "MeasureFacts": {
-    "contributingObjectives": "Objectifs contributeurs",
-    "measuredBy": "Mesuré par",
-    "target": "Cible",
-    "measure": "Mesure"
-  },
-  "MeasurementSection": {
-    "measurement": "Mesure"
-  },
-  "ObjectiveFactsSection": {
-    "runs": "Période",
-    "ofThePlan": "{planWeight} % du plan",
-    "weight": "Poids",
-    "aboutThisObjective": "À propos de cet objectif"
-  },
-  "ProgressSection": {
-    "ofMilestoneCompletedOfTotal": "{length} sur {length} jalon terminé · {derived} % du poids total",
-    "ofMilestonesCompletedOfTotal": "{length} sur {length} jalons terminés · {derived} % du poids total",
-    "ofContributingWeightReported": "{coverage} % du poids contributeur communiqué",
-    "noProgressReportedYet": "Aucun avancement communiqué pour l’instant",
-    "currentProgress": "Avancement actuel",
-    "recordProgress": "Enregistrer l’avancement",
-    "noUpdatesRecordedYet": "Aucune mise à jour enregistrée pour l’instant",
-    "progressHistory": "Historique de l’avancement",
-    "updated": "Mis à jour le {formatDate}"
-  },
   "StatusSection": {
     "theReviewer": "l’évaluateur",
     "reported": "Communiqué",
@@ -141,10 +97,6 @@
     "acknowledge": "Prendre en compte",
     "howItsGoing": "Comment ça avance",
     "couldNotAcknowledgeTheStatus": "Impossible de prendre en compte le statut."
-  },
-  "ObjectiveSummary": {
-    "accountable": "Responsable ·",
-    "unassigned": "Non affecté"
   },
   "model": {
     "kind": {
@@ -178,5 +130,50 @@
     "theirPlan": "Plan de {name}",
     "their": "Son",
     "direction": "Orientation de l’organisation"
+  },
+  "GoalPanel": {
+    "thisGoal": "Cet objectif",
+    "supportsNothingAbove": "Ne soutient rien au-dessus",
+    "companyGoal": "Objectif de l’entreprise",
+    "unitGoal": "Objectif d’unité",
+    "ofThePlan": "{weight} % du plan",
+    "status": {
+      "OnTrack": "En bonne voie",
+      "AtRisk": "À risque",
+      "OffTrack": "Hors trajectoire"
+    },
+    "theGoalsYear": "L’année de l’objectif",
+    "ofMilestones": "{count, plural, one {sur # jalon} other {sur # jalons}}",
+    "now": "aujourd’hui",
+    "done": "accompli",
+    "aimingFor": "objectif {target} d’ici le {day}",
+    "shouldBe": "devrait être à {value} aujourd’hui",
+    "updateProgress": "Mettre à jour",
+    "updates": "Mises à jour",
+    "onceApproved": "Une fois le plan approuvé",
+    "noUpdatesYet": "Pas encore de mise à jour",
+    "correction": "Correction",
+    "unitsCarryingIt": "Unités qui le portent",
+    "peoplesGoalsSupportIt": "{count, plural, one {l’objectif de # personne le soutient} other {les objectifs de # personnes le soutiennent}}",
+    "olderUpdates": "Mises à jour plus anciennes",
+    "couldntOpenEvidence": "La pièce jointe n’a pas pu être ouverte."
+  },
+  "ProgressDialog": {
+    "saved": "Progression enregistrée",
+    "undo": "Annuler",
+    "undone": "Mise à jour annulée",
+    "couldntUndo": "La mise à jour n’a pas pu être annulée.",
+    "couldntSave": "La progression n’a pas pu être enregistrée.",
+    "milestones": "Jalons",
+    "due": "pour le {day}",
+    "whereItIsNow": "Valeur actuelle ({unit})",
+    "percentDone": "Pourcentage accompli",
+    "shouldBeByNow": "devrait être à {value} aujourd’hui",
+    "howItsGoing": "Où en est-il",
+    "fromThePace": "Déduit d’où il devrait être aujourd’hui",
+    "whatHappened": "Ce qui s’est passé (facultatif)",
+    "whatsInTheWay": "Ce qui bloque",
+    "cancel": "Annuler",
+    "save": "Enregistrer"
   }
 }

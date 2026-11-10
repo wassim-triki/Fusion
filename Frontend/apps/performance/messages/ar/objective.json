@@ -34,13 +34,6 @@
     "addToDirection": "إضافة إلى التوجه",
     "couldNotSaveTheObjective": "تعذّر حفظ الهدف."
   },
-  "RecordProgressMode": {
-    "backToObjectiveDetails": "العودة إلى تفاصيل الهدف",
-    "recordProgress": "تسجيل التقدم",
-    "loadingProgress": "جارٍ تحميل التقدم",
-    "progressUnavailable": "لم يتم تحميل التقدم",
-    "cancel": "إلغاء"
-  },
   "ObjectiveRecordSheet": {
     "loadingObjective": "جارٍ تحميل الهدف",
     "thisObjectiveIsntAvailableTo": "هذا الهدف غير متاح لك",
@@ -70,17 +63,6 @@
     "publishedCompany": "نُشر كتوجه للشركة.",
     "publishedOrg": "نُشر كتوجه تنظيمي."
   },
-  "AlignedChildrenSection": {
-    "unassigned": "غير مسند",
-    "planObjectives": "أهداف الخطة",
-    "alignedObjectives": "الأهداف المرتبطة · {value}"
-  },
-  "AlignmentSection": {
-    "viewOnMap": "عرض على الخريطة",
-    "alignment": "الارتباط",
-    "archived": "· مؤرشف",
-    "supports": "يدعم"
-  },
   "ContributionSection": {
     "baselineLocked": "الأساس مقفل",
     "contributionBaseline": "أساس المساهمة",
@@ -107,32 +89,6 @@
     "feedback": "الملاحظات · {length}",
     "feedback2": "الملاحظات"
   },
-  "MeasureFacts": {
-    "contributingObjectives": "الأهداف المساهمة",
-    "measuredBy": "يُقاس بـ",
-    "target": "الهدف",
-    "measure": "المقياس"
-  },
-  "MeasurementSection": {
-    "measurement": "القياس"
-  },
-  "ObjectiveFactsSection": {
-    "runs": "المدة",
-    "ofThePlan": "{planWeight}% من الخطة",
-    "weight": "الوزن",
-    "aboutThisObjective": "حول هذا الهدف"
-  },
-  "ProgressSection": {
-    "ofMilestoneCompletedOfTotal": "اكتملت {length} من {length} مرحلة · {derived}% من الوزن الإجمالي",
-    "ofMilestonesCompletedOfTotal": "اكتملت {length} من {length} مراحل · {derived}% من الوزن الإجمالي",
-    "ofContributingWeightReported": "أُبلغ عن {coverage}% من الوزن المساهم",
-    "noProgressReportedYet": "لم يُبلّغ عن أي تقدم بعد",
-    "currentProgress": "التقدم الحالي",
-    "recordProgress": "تسجيل التقدم",
-    "noUpdatesRecordedYet": "لم تُسجّل أي تحديثات بعد",
-    "progressHistory": "سجل التقدم",
-    "updated": "حُدّث {formatDate}"
-  },
   "StatusSection": {
     "theReviewer": "المراجع",
     "reported": "أُبلغ",
@@ -141,10 +97,6 @@
     "acknowledge": "اطّلاع",
     "howItsGoing": "كيف تسير الأمور",
     "couldNotAcknowledgeTheStatus": "تعذّر الاطلاع على الحالة."
-  },
-  "ObjectiveSummary": {
-    "accountable": "المسؤول ·",
-    "unassigned": "غير مسند"
   },
   "model": {
     "kind": {
@@ -178,5 +130,50 @@
     "theirPlan": "خطة {name}",
     "their": "خطتهم",
     "direction": "توجه المؤسسة"
+  },
+  "GoalPanel": {
+    "thisGoal": "هذا الهدف",
+    "supportsNothingAbove": "لا يدعم أي هدف أعلى",
+    "companyGoal": "هدف الشركة",
+    "unitGoal": "هدف الوحدة",
+    "ofThePlan": "{weight}% من الخطة",
+    "status": {
+      "OnTrack": "على المسار",
+      "AtRisk": "في خطر",
+      "OffTrack": "خارج المسار"
+    },
+    "theGoalsYear": "سنة الهدف",
+    "ofMilestones": "{count, plural, one {من مرحلة واحدة} two {من مرحلتين} few {من # مراحل} many {من # مرحلة} other {من # مرحلة}}",
+    "now": "الآن",
+    "done": "منجز",
+    "aimingFor": "الهدف {target} بحلول {day}",
+    "shouldBe": "يُفترض أن يكون {value} الآن",
+    "updateProgress": "تحديث التقدم",
+    "updates": "التحديثات",
+    "onceApproved": "بعد اعتماد الخطة",
+    "noUpdatesYet": "لا تحديثات بعد",
+    "correction": "تصحيح",
+    "unitsCarryingIt": "الوحدات التي تحمله",
+    "peoplesGoalsSupportIt": "{count, plural, one {هدف شخص واحد يدعمه} two {أهداف شخصين تدعمه} few {أهداف # أشخاص تدعمه} many {أهداف # شخصًا تدعمه} other {أهداف # شخص تدعمه}}",
+    "olderUpdates": "تحديثات أقدم",
+    "couldntOpenEvidence": "تعذّر فتح المرفق."
+  },
+  "ProgressDialog": {
+    "saved": "تم حفظ التقدم",
+    "undo": "تراجع",
+    "undone": "تم التراجع عن التحديث",
+    "couldntUndo": "تعذّر التراجع عن التحديث.",
+    "couldntSave": "تعذّر حفظ التقدم.",
+    "milestones": "المراحل",
+    "due": "موعدها {day}",
+    "whereItIsNow": "القيمة الحالية ({unit})",
+    "percentDone": "نسبة الإنجاز",
+    "shouldBeByNow": "يُفترض أن يكون {value} الآن",
+    "howItsGoing": "كيف يسير",
+    "fromThePace": "مقروء من حيث يُفترض أن يكون الآن",
+    "whatHappened": "ما الذي حدث (اختياري)",
+    "whatsInTheWay": "ما الذي يعيقه",
+    "cancel": "إلغاء",
+    "save": "حفظ"
   }
 }

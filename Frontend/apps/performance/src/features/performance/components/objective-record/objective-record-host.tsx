@@ -12,15 +12,12 @@ import type { ObjectiveRef } from "./objective-ref";
 import { toObjectiveRecord, type ObjectiveRecord, type RecordSectionId } from "./objective-record-model";
 import { ObjectiveRecordSheet, type RecordSheetState } from "./objective-record-sheet";
 import { RecordActions } from "./record-actions";
-import { RecordProgressMode } from "./modes/record-progress";
-import { AlignedChildrenSection } from "./sections/aligned-children-section";
-import { AlignmentSection } from "./sections/alignment-section";
+import { GoalHead, GoalHero, GoalStory, GoalUnits } from "./goal-panel";
+import { ProgressDialog } from "./progress-dialog";
 import { ContributionSection } from "./sections/contribution-section";
 import { DescriptionSection } from "./sections/description-section";
 import { FeedbackSection } from "./sections/feedback-section";
-import { ObjectiveFactsSection } from "./sections/measurement-section";
-import { ProgressSection } from "./sections/progress-section";
-import { ObjectiveSummary } from "./sections/summary-section";
+import { StatusSection } from "./sections/status-section";
 import { useObjectiveRecord } from "./use-objective-record";
 import { RecordRequestBand, RequestUpdateAction } from "../update-requests/update-requests";
 import { useSay } from "@repo/ds/lib/say";
@@ -66,7 +63,11 @@ export function ObjectiveRecordHost({ reference, presentation = "sheet" }: { ref
   // Organization direction is a workspace for the current Cycle; a record from another Cycle reads in place.
   const canOpenDirection =
     (context.data?.capabilities.canViewOrgDirection ?? false) && shownRef?.cycleId === current.data?.cycle.id;
-  const recording = mode === "record" && record?.can.updateProgress;
+  // Updating progress is a small dialog over the panel (D-63); an address asking to record opens it too.
+  const [updating, setUpdating] = useState(false);
+  const canUpdate = Boolean(record?.can.updateProgress && record.isExecuting);
+  const dialogOpen = canUpdate && (updating || mode === "record");
+  const update = canUpdate ? () => setUpdating(true) : undefined;
 
   return (
     <>
@@ -79,16 +80,12 @@ export function ObjectiveRecordHost({ reference, presentation = "sheet" }: { ref
         state={state}
         header={(r) => (
           <>
-            <ObjectiveSummary record={r} titleAs={presentation === "sheet" ? SheetTitle : "h1"} />
+            <GoalHead record={r} titleAs={presentation === "sheet" ? SheetTitle : "h1"} onOpen={(ref) => open(ref, { replace: presentation === "sheet" })} />
             {r.kind === "plan" && r.source.plan && r.isExecuting ? (
               r.can.updateProgress ? (
-                // In record mode the band sits above the recorder instead.
-                recording ? null : (
-                  <div className="mt-4">
-                    <RecordRequestBand cycleId={r.ref.cycleId} planId={r.source.plan.planId} objectiveId={r.ref.objectiveId}
-                      onRecord={() => open(r.ref, { mode: "record" })} />
-                  </div>
-                )
+                <div className="mt-4">
+                  <RecordRequestBand cycleId={r.ref.cycleId} planId={r.source.plan.planId} objectiveId={r.ref.objectiveId} onRecord={update} />
+                </div>
               ) : r.source.plan.canRequestUpdate ? (
                 <div className="mt-4">
                   <RequestUpdateAction cycleId={r.ref.cycleId} planId={r.source.plan.planId}
@@ -98,15 +95,7 @@ export function ObjectiveRecordHost({ reference, presentation = "sheet" }: { ref
             ) : null}
           </>
         )}
-        renderSection={(id, r, options) =>
-          renderSection(
-            id,
-            r,
-            options,
-            (ref) => open(ref, { replace: presentation === "sheet" }),
-            () => open(r.ref, { mode: "record" })
-          )
-        }
+        renderSection={(id, r) => renderSection(id, r, (ref) => open(ref, { replace: presentation === "sheet" }), update)}
         actions={(r) => (
           <RecordActions
             record={r}
@@ -116,8 +105,17 @@ export function ObjectiveRecordHost({ reference, presentation = "sheet" }: { ref
             presentation={presentation}
           />
         )}
-        task={recording && record ? <RecordProgressMode record={record} onDone={() => open(record.ref)} /> : undefined}
       />
+      {record && canUpdate ? (
+        <ProgressDialog
+          record={record}
+          open={dialogOpen}
+          onOpenChange={(next) => {
+            setUpdating(next);
+            if (!next && mode === "record") open(record.ref, { replace: true });
+          }}
+        />
+      ) : null}
 
       {editing && cycle.data ? (
         editing.kind === "company" ? (
@@ -142,21 +140,20 @@ export function ObjectiveRecordHost({ reference, presentation = "sheet" }: { ref
 function renderSection(
   id: RecordSectionId,
   record: ObjectiveRecord,
-  options: { paired: boolean },
   open: (ref: ObjectiveRef) => void,
-  startRecording: () => void
+  update: (() => void) | undefined
 ) {
   switch (id) {
+    case "hero":
+      return <GoalHero record={record} onUpdate={update} />;
+    case "status":
+      return <StatusSection record={record} />;
+    case "story":
+      return <GoalStory record={record} />;
+    case "units":
+      return <GoalUnits record={record} onOpen={open} />;
     case "description":
       return <DescriptionSection record={record} />;
-    case "alignment":
-      return <AlignmentSection record={record} onOpen={open} />;
-    case "facts":
-      return <ObjectiveFactsSection record={record} />;
-    case "progress":
-      return <ProgressSection record={record} onRecord={record.can.updateProgress ? startRecording : undefined} />;
-    case "aligned-children":
-      return <AlignedChildrenSection record={record} onOpen={open} />;
     case "contribution":
       return <ContributionSection record={record} />;
     case "feedback":

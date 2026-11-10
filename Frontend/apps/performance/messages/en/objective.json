@@ -34,13 +34,6 @@
     "addToDirection": "Add to direction",
     "couldNotSaveTheObjective": "Could not save the objective."
   },
-  "RecordProgressMode": {
-    "backToObjectiveDetails": "Back to objective details",
-    "recordProgress": "Record progress",
-    "loadingProgress": "Loading progress",
-    "progressUnavailable": "Progress didn't load",
-    "cancel": "Cancel"
-  },
   "ObjectiveRecordSheet": {
     "loadingObjective": "Loading objective",
     "thisObjectiveIsntAvailableTo": "This objective isn't available to you",
@@ -70,17 +63,6 @@
     "publishedCompany": "Published as company direction.",
     "publishedOrg": "Published as organizational direction."
   },
-  "AlignedChildrenSection": {
-    "unassigned": "Unassigned",
-    "planObjectives": "Plan objectives",
-    "alignedObjectives": "Aligned objectives · {value}"
-  },
-  "AlignmentSection": {
-    "viewOnMap": "View on map",
-    "alignment": "Alignment",
-    "archived": "· Archived",
-    "supports": "Supports"
-  },
   "ContributionSection": {
     "baselineLocked": "Baseline locked",
     "contributionBaseline": "Contribution baseline",
@@ -107,32 +89,6 @@
     "feedback": "Feedback · {length}",
     "feedback2": "Feedback"
   },
-  "MeasureFacts": {
-    "contributingObjectives": "Contributing objectives",
-    "measuredBy": "Measured by",
-    "target": "Target",
-    "measure": "Measure"
-  },
-  "MeasurementSection": {
-    "measurement": "Measurement"
-  },
-  "ObjectiveFactsSection": {
-    "runs": "Runs",
-    "ofThePlan": "{planWeight}% of the plan",
-    "weight": "Weight",
-    "aboutThisObjective": "About this objective"
-  },
-  "ProgressSection": {
-    "ofMilestoneCompletedOfTotal": "{length} of {length} milestone completed · {derived}% of total weight",
-    "ofMilestonesCompletedOfTotal": "{length} of {length} milestones completed · {derived}% of total weight",
-    "ofContributingWeightReported": "{coverage}% of contributing weight reported",
-    "noProgressReportedYet": "No progress reported yet",
-    "currentProgress": "Current progress",
-    "recordProgress": "Record progress",
-    "noUpdatesRecordedYet": "No updates recorded yet",
-    "progressHistory": "Progress history",
-    "updated": "Updated {formatDate}"
-  },
   "StatusSection": {
     "theReviewer": "the reviewer",
     "reported": "Reported",
@@ -141,10 +97,6 @@
     "acknowledge": "Acknowledge",
     "howItsGoing": "How it's going",
     "couldNotAcknowledgeTheStatus": "Could not acknowledge the status."
-  },
-  "ObjectiveSummary": {
-    "accountable": "Accountable ·",
-    "unassigned": "Unassigned"
   },
   "model": {
     "kind": {
@@ -178,5 +130,50 @@
     "theirPlan": "{name}’s plan",
     "their": "Their",
     "direction": "Organization direction"
+  },
+  "GoalPanel": {
+    "thisGoal": "This goal",
+    "supportsNothingAbove": "Supports nothing above it",
+    "companyGoal": "Company goal",
+    "unitGoal": "Unit goal",
+    "ofThePlan": "{weight}% of the plan",
+    "status": {
+      "OnTrack": "On track",
+      "AtRisk": "At risk",
+      "OffTrack": "Off track"
+    },
+    "theGoalsYear": "The goal's year",
+    "ofMilestones": "{count, plural, one {of # milestone} other {of # milestones}}",
+    "now": "now",
+    "done": "done",
+    "aimingFor": "aiming for {target} by {day}",
+    "shouldBe": "should be {value} by now",
+    "updateProgress": "Update progress",
+    "updates": "Updates",
+    "onceApproved": "Once the plan is approved",
+    "noUpdatesYet": "No updates yet",
+    "correction": "Correction",
+    "unitsCarryingIt": "Units carrying it",
+    "peoplesGoalsSupportIt": "{count, plural, one {# person's goal supports it} other {# people's goals support it}}",
+    "olderUpdates": "Older updates",
+    "couldntOpenEvidence": "The attachment couldn't be opened."
+  },
+  "ProgressDialog": {
+    "saved": "Progress saved",
+    "undo": "Undo",
+    "undone": "Update undone",
+    "couldntUndo": "The update couldn't be undone.",
+    "couldntSave": "The progress couldn't be saved.",
+    "milestones": "Milestones",
+    "due": "due {day}",
+    "whereItIsNow": "Where it is now ({unit})",
+    "percentDone": "Percent done",
+    "shouldBeByNow": "should be {value} by now",
+    "howItsGoing": "How it's going",
+    "fromThePace": "Read from where it should be by now",
+    "whatHappened": "What happened (optional)",
+    "whatsInTheWay": "What's in the way",
+    "cancel": "Cancel",
+    "save": "Save"
   }
 }

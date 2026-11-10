@@ -132,11 +132,11 @@ export function directionScopeLabel(node: Pick<GoalNodeDto, "ownershipScope" | "
 }
 
 export type RecordSectionId =
+  | "hero"
+  | "status"
+  | "story"
+  | "units"
   | "description"
-  | "alignment"
-  | "facts"
-  | "progress"
-  | "aligned-children"
   | "contribution"
   | "feedback";
 
@@ -144,17 +144,17 @@ export type RecordSectionId =
 export type RecordSectionRow = RecordSectionId | readonly [RecordSectionId, RecordSectionId];
 
 /**
- * Which sections this record shows, in reading order. A section appears only when it has something true
- * to say: no empty description block, no progress before execution begins, no contribution on a directly
- * measured objective. The record's shell renders exactly this list and holds no section logic itself.
+ * Which sections this record shows, in reading order (D-83): the goal's year against its pace, the owner's state for the
+ * reviewer to acknowledge, then its story of updates (a person's goal) or the units carrying it (direction), its words, how it's
+ * calculated, and feedback about it. A section appears only when it has something true to say.
  */
 export function resolveSections(record: ObjectiveRecord): RecordSectionRow[] {
-  const rows: RecordSectionRow[] = [];
+  const rows: RecordSectionRow[] = ["hero"];
+  // The owner's state already reads in the head and the story; the reviewer acknowledges a risky one here.
+  if (record.source.status && record.source.canAcknowledgeStatus) rows.push("status");
+  if (record.kind === "plan") rows.push("story");
+  else if (record.children.length > 0) rows.push("units");
   if (record.description) rows.push("description");
-  if (record.parent) rows.push("alignment");
-  rows.push("facts");
-  if (record.isExecuting) rows.push("progress");
-  if (record.kind !== "plan" && (record.children.length > 0 || record.source.alignedPlanObjectives.length > 0)) rows.push("aligned-children");
   if (record.progressSource === "Calculated") rows.push("contribution");
   // Feedback about the objective (D-13): there's always an action for a person, the owner's or anyone else's.
   if (record.source.canGiveFeedback || record.source.canAskForFeedback) rows.push("feedback");

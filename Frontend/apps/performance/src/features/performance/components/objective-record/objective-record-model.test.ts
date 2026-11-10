@@ -107,41 +107,25 @@ describe("toObjectiveRecord", () => {
 });
 
 describe("resolveSections", () => {
-  it("shows only what has something true to say", () => {
-    expect(resolveSections(toObjectiveRecord(detail({ parent: null }, { state: "Draft", parentObjectiveId: null })))).toEqual([
-      "facts",
-    ]);
+  it("opens on the goal's year, and a draft has nothing more to say", () => {
+    expect(resolveSections(toObjectiveRecord(detail({ parent: null }, { state: "Draft", parentObjectiveId: null })))).toEqual(["hero"]);
   });
 
-  it("composes a published, calculated direction objective in reading order", () => {
+  it("composes a published, calculated direction goal with the units carrying it", () => {
     const record = toObjectiveRecord(
       detail({ description: "Why it matters", children: [node({ id: "child-1" })] }, { progressSource: "Calculated" })
     );
-    expect(resolveSections(record)).toEqual([
-      "description",
-      "alignment",
-      "facts",
-      "progress",
-      "aligned-children",
-      "contribution",
-    ]);
+    expect(resolveSections(record)).toEqual(["hero", "units", "description", "contribution"]);
   });
 
-  it("includes the aligned plan objective group in a direction record", () => {
-    const record = toObjectiveRecord(detail({
-      alignedPlanObjectives: [{ objectiveId: "plan-objective-1", title: "Run two workshops", ownerName: "Sami", planState: "Approved", progress: 62 }],
-    }));
-    expect(resolveSections(record)).toContain("aligned-children");
-  });
-
-  it("holds progress until the plan is approved", () => {
+  it("tells a person's goal through its story of updates", () => {
     const record = toObjectiveRecord(
       detail(
         { plan: { planId: "plan-1", planState: "Submitted", planWeight: 40, owner: { id: "p-2", name: "Sami" }, canRequestUpdate: false } },
         { ownershipScope: "Employee" }
       )
     );
-    expect(resolveSections(record)).toEqual(["alignment", "facts"]);
+    expect(resolveSections(record)).toEqual(["hero", "story"]);
   });
 });
 

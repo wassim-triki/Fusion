@@ -36,7 +36,7 @@ import { planHref as canonicalPlanHref, peerListHref, reviewHref, withCycle } fr
 import { useDownloadReviewPdf } from "../../api/use-review-work";
 import { RequestUpdateDialog } from "../update-requests/update-requests";
 import { latestRosterActivity } from "./roster-activity";
-import { ago, day } from "../overview/overview-model";
+import { ago, day } from "../year/year-words";
 import { useTranslations } from "next-intl";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { useSay } from "@repo/ds/lib/say";
@@ -327,7 +327,7 @@ function PlanProgressCell({ member }: { member: TeamRosterMemberDto }) {
 }
 
 function LastUpdateCell({ member }: { member: TeamRosterMemberDto }) {
-  const model = useSay("overview.model");
+  const model = useSay("year.words");
   const execution = member.facts?.execution;
   if (!execution?.lastUpdateAt) return <DataTableCellEmpty />;
   return (

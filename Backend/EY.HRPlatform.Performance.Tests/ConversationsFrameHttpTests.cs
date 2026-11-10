@@ -151,10 +151,7 @@ public sealed class ConversationsFrameHttpTests
         Assert.Equal("1:1 with Karim Haddad", Assert.Single(await WorkAsync(w, w.Nour),
             i => i.GetProperty("kind").GetString() == "one-on-one-meeting").GetProperty("title").GetString());
 
-        // Overview keeps it as the next meeting; the home's upcoming moments don't, since it's owed work now.
-        var overview = await DataAsync(await w.As(w.Nour).GetAsync("/api/performance/overview"));
-        var conversations = Assert.Single(overview.GetProperty("rows").EnumerateArray(), r => r.GetProperty("kind").GetString() == "conversations");
-        Assert.Equal(seriesId, Assert.Single(conversations.GetProperty("meetings").EnumerateArray()).GetProperty("seriesId").GetGuid());
+        // The home's upcoming moments drop it, since it's owed work now.
         var upcoming = await DataAsync(await w.As(w.Nour).GetAsync("/api/performance/upcoming?days=14"));
         Assert.DoesNotContain(upcoming.EnumerateArray(), m => m.GetProperty("kind").GetString() == "one-on-one");
 

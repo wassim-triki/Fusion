@@ -371,27 +371,3 @@ export function SetupShellSkeleton({ step, label }: { step: SetupStep; label?: s
   );
 }
 
-/** The established /cycle surface: heading, milestone rail, population block (Cycle context is in the top bar). */
-export function CycleSurfaceSkeleton() {
-  const t = useTranslations("cycleSetup.CycleSurfaceSkeleton");
-  return (
-    <PageContainer>
-      <div aria-busy aria-label={t("loadingCycle")} className="space-y-8">
-        <div className="space-y-2">
-          <Skeleton className="h-7 w-32" />
-          <Skeleton className="h-4 w-96 max-w-full" />
-        </div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="space-y-2">
-              <Skeleton className="h-1.5 w-full rounded-full" />
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-3 w-16" />
-            </div>
-          ))}
-        </div>
-        <Skeleton className="h-48 w-full rounded-surface" />
-      </div>
-    </PageContainer>
-  );
-}

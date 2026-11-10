@@ -1270,7 +1270,7 @@ function NoPublishedDirection({
                 </Button>
               ) : canReachSetup ? (
                 <Button variant="outline" className="mt-6" asChild>
-                  <Link href="/cycle">{t("goToCycleSetup")}</Link>
+                  <Link href="/cycle/setup">{t("goToCycleSetup")}</Link>
                 </Button>
               ) : null}
             </div>

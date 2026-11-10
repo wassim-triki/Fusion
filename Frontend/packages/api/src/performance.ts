@@ -1,4 +1,3 @@
-import type { FusionWorkStep } from "./fusion-attention";
 import type { FeedbackDto, OneOnOneCadence, PraiseDto } from "./performance-conversations";
 import type {
   PerformanceReviewRecordFields,
@@ -165,6 +164,14 @@ export interface CycleDetailDto {
 /** The year's step, read from what happened and the dates together; it only ever moves forward (D-34). */
 export type CyclePhase = "Planning" | "Execution" | "Review" | "ResultsOut";
 
+/** Objectives by the status their owners last set (D-05); never inferred. */
+export interface StatusMixDto {
+  onTrack: number;
+  atRisk: number;
+  offTrack: number;
+  noStatus: number;
+}
+
 // ── The year (B-405 slice 2) ──────────────────────────────────────────────────────────
 
 export type YearStepState = "Done" | "Current" | "Ahead";
@@ -184,27 +191,38 @@ export interface YearPersonDto {
   since: string | null;
 }
 
-export interface YearStandingCountDto {
+/** The people of one standing inside a step: the count, and faces (all, or the first few for a company). */
+export interface YearGroupDto {
   standing: YearStanding;
   count: number;
+  people: YearPersonDto[];
 }
 
-/** One step of the year on its dates (estimated until it happens), with who is in it at the viewer's reach. */
+/** One step of the year on its dates (estimated until it happens), with who is in it at the viewer's reach, by standing. */
 export interface YearStepDto {
   phase: CyclePhase;
   start: string;
   end: string;
   estimated: boolean;
   state: YearStepState;
-  /** Everyone in the step within the viewer's scope; `people` is capped for a company. */
+  /** Everyone in the step within the viewer's scope. */
   count: number;
-  people: YearPersonDto[];
-  standings: YearStandingCountDto[];
+  groups: YearGroupDto[];
+}
+
+/** The viewer's own place in the year, with the manager who holds it when it waits on them. */
+export interface YearMeDto {
+  employeeId: string;
+  step: CyclePhase;
+  standing: YearStanding;
+  since: string | null;
+  managerEmployeeId: string | null;
+  managerName: string | null;
 }
 
 export type YearMoveKind = "closePlanning" | "launchRound" | "release";
 
-/** What moving the year on would do, for whom (D-58): the dry run and the move share this shape. */
+/** What moving the year on would do, for whom (D-58): the year's own dry run, shown in place before the move. */
 export interface YearMoveDto {
   from: CyclePhase;
   to: CyclePhase;
@@ -232,6 +250,7 @@ export interface YearDto {
   total: number;
   steps: YearStepDto[];
   nextMove: YearMoveDto | null;
+  me: YearMeDto | null;
   version: number;
 }
 
@@ -280,293 +299,14 @@ export interface WorkspaceCapabilitiesDto {
 
 /** Which primary destinations the workspace offers in the selected Cycle. */
 export interface WorkspaceDestinationsDto {
-  overview: boolean;
   myPlan: boolean;
   team: boolean;
   reviews: boolean;
-  cycleAdmin: boolean;
   settings: boolean;
   /** A current manager or direct reports in Core HR, or any series. Not cycle-bound. */
   oneOnOnes: boolean;
   /** Everyone with Performance access. Not cycle-bound. */
   feedback: boolean;
-}
-
-// ── Overview (performance-overview): the year, then rows in a fixed order ──
-
-export type YearPhaseState = "Done" | "Current" | "Upcoming";
-
-/** One phase sized by its dates; `estimated` when no review round dates it yet. */
-export interface YearPhaseDto {
-  name: "Planning" | "Execution" | "Review";
-  start: string;
-  end: string;
-  state: YearPhaseState;
-  estimated: boolean;
-}
-
-export type YearDateKind = "plans-due" | "self-due" | "peers-due" | "reviews-due" | "managers-due" | "cycle-end" | "cycle-start";
-
-/** A date that concerns the viewer; `count` is how many it covers when it covers several (reviews due, late). */
-export interface YearDateDto {
-  kind: YearDateKind;
-  date: string;
-  count?: number | null;
-}
-
-/** The selected Cycle's year. Days left count to `next`; a closed cycle has no today marker. */
-export interface OverviewYearDto {
-  state: CycleLifecycleState;
-  start: string;
-  end: string;
-  today: string;
-  phases: YearPhaseDto[];
-  currentPhase: "Planning" | "Execution" | "Review" | "Draft" | null;
-  dates: YearDateDto[];
-  next: YearDateDto | null;
-  daysLeft: number | null;
-  closedAt: string | null;
-}
-
-/** A person shown as a chip; `state` is a key the client words. */
-export interface OverviewChipDto {
-  employeeId: string;
-  name: string;
-  state: string;
-  since: string | null;
-  needsYou: boolean;
-  href: string | null;
-}
-
-/** Objectives by the status their owners last set (D-05); never inferred. */
-export interface StatusMixDto {
-  onTrack: number;
-  atRisk: number;
-  offTrack: number;
-  noStatus: number;
-}
-
-export interface PlanStatesDto {
-  approved: number;
-  submitted: number;
-  drafting: number;
-  notStarted: number;
-}
-
-export interface UnitShareDto {
-  unitId: string | null;
-  name: string;
-  count: number;
-  total: number;
-  missing: number;
-}
-
-export interface LateManagerDto {
-  employeeId: string;
-  name: string;
-  unitName: string | null;
-  late: number;
-  submitted: number;
-  total: number;
-}
-
-export interface FlaggedObjectiveDto {
-  objectiveId: string;
-  employeeId: string;
-  personName: string;
-  title: string;
-  status: ObjectiveStatus;
-  reason: string | null;
-  since: string | null;
-  progress: number;
-  href: string;
-}
-
-export interface OwnResultDto {
-  level: number;
-  label: string;
-  releasedAt: string;
-  acknowledgedAt: string | null;
-}
-
-export interface PeerAskDto {
-  requestId: string;
-  subjectName: string;
-  questions: number;
-  dueDate: string | null;
-  href: string;
-}
-
-export interface DevelopmentGoalFactDto {
-  id: string;
-  title: string;
-  status: DevelopmentGoalStatus;
-  targetDate: string | null;
-}
-
-export interface NextMeetingDto {
-  seriesId: string;
-  with: string;
-  at: string;
-  agenda: number;
-  openActions: number;
-  href: string;
-}
-
-/** What a first cycle would start from (administrators, board 16); workforce facts are empty when Core HR was down. */
-export interface NoCycleReadinessDto {
-  workforceAvailable: boolean;
-  people: number;
-  withManager: number;
-  withoutManager: string[];
-  units: number;
-  ratingLevels: number;
-  competencies: number;
-}
-
-export interface OwedConversationDto {
-  kind: "feedback-request" | "overdue-action";
-  title: string;
-  context: string | null;
-  due: string | null;
-  count: number;
-  href: string;
-}
-
-/** The rows of one Overview projection, discriminated by `kind`. Facts only — never averages. */
-export type OverviewRowDto =
-  | { kind: "nextCycle"; cycleId: string | null; name: string | null; plannedStart: string | null; setup: CycleDetailDto | null }
-  | {
-      kind: "cycle";
-      cycleId: string;
-      cycleName: string;
-      state: CycleLifecycleState;
-      participants: number;
-      approvedPlans: number;
-      setup: CycleDetailDto | null;
-      planning: { plans: PlanStatesDto; furthestBehind: UnitShareDto[] } | null;
-      execution: {
-        approvedPlans: number;
-        updatedIn30Days: number;
-        objectives: number;
-        status: StatusMixDto;
-        neverApproved: number;
-        furthestBehind: UnitShareDto[];
-      } | null;
-      review: {
-        roundId: string;
-        roundName: string;
-        subjects: number;
-        selfSubmitted: number;
-        selfTotal: number;
-        selfDue: string | null;
-        managerSubmitted: number;
-        managerTotal: number;
-        managerLate: number;
-        managerDue: string | null;
-        calibrationEnabled: boolean;
-        calibrationState: "Open" | "Finalized" | null;
-        calibrationDiscussed: number;
-        calibrationSubjects: number;
-        readyToFinalize: number;
-        lateManagers: LateManagerDto[];
-        otherLateManagers: number;
-        otherLate: number;
-      } | null;
-      closed: { released: number; acknowledged: number; calibrationChanged: number; openGrowthGoals: number; releasedAt: string | null } | null;
-    }
-  | {
-      kind: "team";
-      people: number;
-      objectives: number;
-      plans: PlanStatesDto;
-      awaitingDecision: number;
-      firstAwaitingName: string | null;
-      firstAwaitingHref: string | null;
-      chips: OverviewChipDto[];
-      flagged: FlaggedObjectiveDto[];
-      flaggedTotal: number;
-      approvedPlans: number;
-      updatedIn30Days: number;
-      withoutRecentUpdate: string[];
-      withoutRecentUpdateTotal: number;
-      openRequests: number;
-      cycleEnd: string;
-      results: { released: number; acknowledged: number; notAcknowledged: string[]; calibrationChanged: number; withOpenGrowthGoals: number } | null;
-    }
-  | {
-      kind: "reviewsYouWrite";
-      roundId: string;
-      roundName: string;
-      dueDate: string | null;
-      total: number;
-      ready: number;
-      submitted: number;
-      peerListsToApprove: number;
-      peerListsDue: string | null;
-      firstReadyName: string | null;
-      firstReadyHref: string | null;
-      chips: OverviewChipDto[];
-      inCalibration: boolean;
-    }
-  | {
-      kind: "ownReview";
-      reviewId: string;
-      roundName: string;
-      state: PerformanceReviewState;
-      reviewerName: string;
-      dueDate: string | null;
-      steps: FusionWorkStep[] | null;
-      peersAnswered: number;
-      peersAsked: number;
-      draftSavedAt: string | null;
-      selfSubmittedAt: string | null;
-      result: OwnResultDto | null;
-      href: string;
-    }
-  | { kind: "inputOwed"; requests: PeerAskDto[] }
-  | {
-      kind: "ownPlan";
-      standing: RosterPlanStatus;
-      objectives: number;
-      alignedObjectives: number;
-      weightTotal: number;
-      minObjectives: number | null;
-      maxObjectives: number | null;
-      reviewerName: string | null;
-      submittedAt: string | null;
-      returnFeedback: string | null;
-      returnedBy: string | null;
-      planningDeadline: string;
-      planningOpen: boolean;
-      /** Present only once the plan is Approved: before that no progress figure exists. */
-      progress: number | null;
-      status: StatusMixDto | null;
-      lastUpdateAt: string | null;
-      staleObjectives: number;
-      stalestDays: number | null;
-      openRequests: number;
-      firstRequestBy: string | null;
-      firstRequestObjective: string | null;
-      firstRequestHref: string | null;
-      href: string;
-    }
-  | { kind: "development"; total: number; open: number; goals: DevelopmentGoalFactDto[]; href: string }
-  | { kind: "conversations"; meetings: NextMeetingDto[]; owed: OwedConversationDto | null }
-  | { kind: "direction"; count: number; objectives: GoalNodeDto[]; final: boolean }
-  | { kind: "notParticipant"; cycleName: string; joined: string | null; populationSetAt: string | null }
-  | { kind: "noCycle"; canCreate: boolean; readiness: NoCycleReadinessDto | null };
-
-export type OverviewRowKind = OverviewRowDto["kind"];
-export type OverviewRow<K extends OverviewRowKind> = Extract<OverviewRowDto, { kind: K }>;
-
-/** Overview as one server projection for the selected Cycle. */
-export interface OverviewDto {
-  cycle: CycleSummaryDto | null;
-  phase: CyclePhase | null;
-  year: OverviewYearDto | null;
-  rows: OverviewRowDto[];
-  destinations: WorkspaceDestinationsDto;
 }
 
 /** The selected Cycle, the Cycles the caller may switch to, and the workspace composition for them. */
@@ -2328,8 +2068,6 @@ export const performancePaths = {
   archiveCompetency: (id: string) => `/performance/settings/competencies/${id}/archive`,
   createCycle: () => "/performance/cycles",
   cycle: (id: string) => `/performance/cycles/${id}`,
-  overview: (cycleId?: string | null) =>
-    cycleId ? `/performance/overview?cycleId=${encodeURIComponent(cycleId)}` : "/performance/overview",
   context: (cycleId?: string | null) =>
     cycleId ? `/performance/context?cycleId=${encodeURIComponent(cycleId)}` : "/performance/context",
   activate: (id: string) => `/performance/cycles/${id}/activate`,
@@ -2442,13 +2180,11 @@ export const performanceQueryKeys = {
   competencies: () => [...performanceQueryKeys.all(), "competencies"] as const,
   cycle: (id: string) => [...performanceQueryKeys.all(), "cycle", id] as const,
   cycleClosure: (id: string) => [...performanceQueryKeys.all(), "cycle-closure", id] as const,
-  year: (id: string) => [...performanceQueryKeys.all(), "year", id] as const,
-  yearMove: (id: string) => [...performanceQueryKeys.all(), "year-move", id] as const,
+  /** Every year read and preview: what anything that moves someone through the year invalidates. */
+  years: () => [...performanceQueryKeys.all(), "year"] as const,
+  year: (id: string) => [...performanceQueryKeys.years(), id] as const,
   workspaceContext: (cycleId?: string | null) =>
     [...performanceQueryKeys.all(), "workspace-context", cycleId ?? "current"] as const,
-  overviews: () => [...performanceQueryKeys.all(), "overview"] as const,
-  overview: (cycleId?: string | null) =>
-    [...performanceQueryKeys.overviews(), cycleId ?? "current"] as const,
   strategy: (cycleId: string) =>
     [...performanceQueryKeys.all(), "strategy", cycleId] as const,
   population: (cycleId: string) =>
@@ -2536,8 +2272,6 @@ export function createPerformanceApi(client: ApiClient) {
     /** The detail of one authorized Cycle. */
     getCycle: (id: string, signal?: AbortSignal) =>
       client.get<CycleDetailDto>(performancePaths.cycle(id), { signal }),
-    getOverview: (cycleId?: string | null, signal?: AbortSignal) =>
-      client.get<OverviewDto>(performancePaths.overview(cycleId), { signal }),
     getWorkspaceContext: (cycleId?: string | null, signal?: AbortSignal) =>
       client.get<WorkspaceContextDto>(performancePaths.context(cycleId), { signal }),
     getReviewRounds: (cycleId: string, signal?: AbortSignal) =>
@@ -2612,10 +2346,11 @@ export function createPerformanceApi(client: ApiClient) {
       client.post<CycleDetailDto>(performancePaths.activate(id), { expectedVersion }),
     cycleClosure: (id: string) => client.get<CycleClosureDto>(performancePaths.closure(id)),
     year: (id: string, signal?: AbortSignal) => client.get<YearDto>(performancePaths.year(id), { signal }),
-    previewYearMove: (id: string, signal?: AbortSignal) => client.get<YearDto>(performancePaths.yearMove(id), { signal }),
     moveYearOn: (id: string, expectedVersion: number, to: CyclePhase) =>
       client.post<YearDto>(performancePaths.yearMove(id), { expectedVersion, to }),
-    nudge: (id: string, employeeIds: string[]) => client.post<NudgeResultDto>(performancePaths.nudges(id), { employeeIds }),
+    /** Nudges named people, or everyone at the caller's reach in these standings. */
+    nudge: (id: string, who: { employeeIds?: string[]; standings?: YearStanding[] }) =>
+      client.post<NudgeResultDto>(performancePaths.nudges(id), { employeeIds: who.employeeIds ?? [], standings: who.standings ?? [] }),
     closeCycle: (id: string, request: CloseCycleRequest, expectedVersion: number) =>
       client.post<CycleDetailDto>(performancePaths.close(id), { ...request, expectedVersion }),
     deleteDraftCycle: (id: string, expectedVersion: number) =>

@@ -1,0 +1,133 @@
+{
+  "words": {
+    "today": "today",
+    "yesterday": "yesterday",
+    "daysAgo": "{count, plural, one {# day ago} other {# days ago}}"
+  },
+  "phase": {
+    "Planning": "Planning",
+    "Execution": "Execution",
+    "Review": "Review",
+    "ResultsOut": "Results out"
+  },
+  "YearTimeline": {
+    "label": "The year's steps",
+    "today": "Today {day}"
+  },
+  "YearPage": {
+    "loading": "Loading the year",
+    "noYear": "No year yet",
+    "noYearYet": "Your company hasn't started its performance year yet.",
+    "setUpTheYear": "Set up the year",
+    "beingSetUp": "{name} is being set up",
+    "continueSetup": "Continue setup",
+    "dates": "{start} to {end}",
+    "move": {
+      "closePlanning": "Move to Execution",
+      "launchRound": "Start the review round",
+      "release": "Release results"
+    }
+  },
+  "NextStep": {
+    "yourNextStep": "Your next step",
+    "nothingForYou": "Nothing for you now",
+    "open": "Open",
+    "dueOn": "Due {day}",
+    "since": "Since {day}",
+    "plansDue": "Plans are due {day}, {days, plural, =0 {today} one {in # day} other {in # days}}",
+    "reviewsOpen": "Reviews open {day}",
+    "resultsFrom": "Results from {day}",
+    "yearEnds": "{name} ends {day}",
+    "plansNotForward": "{count, plural, one {# person hasn't} other {# people haven't}} put a plan forward",
+    "plansWithManagers": "{count, plural, one {# plan is} other {# plans are}} waiting on their managers",
+    "notUpdated": "{count, plural, one {# person hasn't} other {# people haven't}} updated a goal in 30 days",
+    "reviewsWithManagers": "{count, plural, one {# review is} other {# reviews are}} waiting on their managers",
+    "selfReviewsLeft": "{count, plural, one {# person hasn't} other {# people haven't}} written their self-review",
+    "setUpNextYear": "Set up the next year",
+    "endsByItself": "{name} ends by itself {day}",
+    "nudgeThem": "Nudge them",
+    "nudgeTheManagers": "Nudge the managers",
+    "nudgeName": "Nudge {name}",
+    "nudgeFailed": "The nudge couldn't be sent.",
+    "nudgedToast": "{count, plural, =0 {Nobody needed a nudge} one {Nudged # person} other {Nudged # people}}",
+    "nudgedPeople": "{count, plural, =0 {Nobody needed a nudge} one {Nudged # person {day}} other {Nudged # people {day}}}",
+    "nudgedOne": "Nudged {name}",
+    "waitingOn": "Waiting on {name}",
+    "planWith": "Your plan is with {name}",
+    "reviewWith": "{name} is writing your review"
+  },
+  "MovePreview": {
+    "preview": "Preview",
+    "cancel": "Cancel",
+    "couldntMove": "The year couldn't move on.",
+    "insteadOf": "Today instead of {day}",
+    "title": {
+      "closePlanning": "Move to Execution today",
+      "launchRound": "Start the review round today",
+      "release": "Release results today"
+    },
+    "go": {
+      "closePlanning": "Move to Execution",
+      "launchRound": "Start the round",
+      "release": "{count, plural, one {Release # result} other {Release # results}}"
+    },
+    "moved": {
+      "closePlanning": "The year moved to Execution.",
+      "launchRound": "The review round started.",
+      "release": "Results released."
+    },
+    "blocker": {
+      "yearNotStarted": "The year hasn't started yet.",
+      "noDraftRound": "Draft the review round first; starting it moves the year to Review.",
+      "nothingReady": "No review is ready to release yet."
+    },
+    "draftTheRound": "Draft the round",
+    "everyone": "Everyone",
+    "approvedPlans": "Approved plans",
+    "stillWriting": "Still writing or with a manager",
+    "everyoneInTheRound": "Everyone in the round",
+    "managers": "Managers",
+    "ready": "Ready",
+    "stillBeingWritten": "Still being written",
+    "rows": {
+      "updatesOpen": "Progress updates open on approved goals",
+      "locked": "Locked; changes go through the manager",
+      "keepGoing": "Keep going; nothing they wrote is lost",
+      "selfReviewOpens": "Their self-review opens",
+      "reviewsOpen": "Reviews to write open as self-reviews come in",
+      "releasedNow": "Released now",
+      "releasedWhenDone": "Released when done"
+    },
+    "oneNotificationEach": "One notification each, opening where to act"
+  },
+  "PhaseSteps": {
+    "yourTeam": "Your team",
+    "people": "{count, plural, one {# person} other {# people}}",
+    "putForward": "{count} of {total} put forward",
+    "reviewedOf": "{count} of {total} reviewed",
+    "released": "Released {day}",
+    "title": {
+      "Planning": "Plans",
+      "Execution": "Goal updates",
+      "Review": "Year-end review",
+      "ResultsOut": "Results"
+    },
+    "notStarted": "Not started",
+    "writing": "Writing",
+    "withYou": "With you",
+    "withTheirManager": "With their manager",
+    "approved": "Approved",
+    "stillPlanning": "Still planning",
+    "updated": "Updated in the last 30 days",
+    "quiet": "Not updated in 30 days",
+    "notInRound": "Not in this round",
+    "selfReview": "Writing their self-review",
+    "yoursToWrite": "Yours to write",
+    "reviewed": "Reviewed",
+    "stillBeingWritten": "Still being written",
+    "notReadYet": "Not read yet",
+    "acknowledged": "Acknowledged",
+    "closedWithoutResult": "Closed without a result",
+    "andMore": "and {count} more"
+  }
+}

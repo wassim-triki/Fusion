@@ -158,6 +158,9 @@ public sealed record CycleDetailDto(
     public CyclePhase? Phase { get; init; }
 }
 
+/// <summary>Counts of objectives by the status their owners last set (D-05); never inferred.</summary>
+public sealed record StatusMixDto(int OnTrack, int AtRisk, int OffTrack, int NoStatus);
+
 // ── The year (B-405 slice 2, D-34, D-55, D-58) ──────────────────────────────────────────────────
 
 /// <summary>Where a step sits against today.</summary>
@@ -166,14 +169,18 @@ public enum YearStepState { Done = 0, Current = 1, Ahead = 2 }
 /// <summary>A person in a step of the year: their standing in it and since when.</summary>
 public sealed record YearPersonDto(Guid EmployeeId, string Name, string? UnitName, string Standing, DateTime? Since);
 
-public sealed record YearStandingCountDto(string Standing, int Count);
+/// <summary>The people of one standing inside a step: the count, and faces (all of them, or the first few for a company).</summary>
+public sealed record YearGroupDto(string Standing, int Count, IReadOnlyList<YearPersonDto> People);
 
 /// <summary>
-/// One step of the year with its dates (estimated until it happens), who is in it within the viewer's scope
-/// (<see cref="Count"/> is the whole scope; <see cref="People"/> is capped for a company) and the standings inside it.
+/// One step of the year with its dates (estimated until it happens) and who is in it within the viewer's scope, by
+/// standing (D-55). <see cref="Count"/> is everyone in the step.
 /// </summary>
 public sealed record YearStepDto(CyclePhase Phase, DateOnly Start, DateOnly End, bool Estimated, YearStepState State,
-    int Count, IReadOnlyList<YearPersonDto> People, IReadOnlyList<YearStandingCountDto> Standings);
+    int Count, IReadOnlyList<YearGroupDto> Groups);
+
+/// <summary>The viewer's own place in the year, with the manager who holds it when it waits on them (D-49).</summary>
+public sealed record YearMeDto(Guid EmployeeId, CyclePhase Step, string Standing, DateTime? Since, Guid? ManagerEmployeeId, string? ManagerName);
 
 /// <summary>
 /// What moving the year on would do: the step it goes to, how (closePlanning, launchRound or release), whether it can
@@ -185,11 +192,12 @@ public sealed record YearMoveDto(CyclePhase From, CyclePhase To, string Kind, bo
 /// <summary>The year as one object: its phase, its steps with the people in each, and HR's next move.</summary>
 public sealed record YearDto(Guid CycleId, string Name, DateOnly StartDate, DateOnly EndDate, DateOnly Today,
     CycleLifecycleState State, CyclePhase? Phase, DateOnly? PlanningClosedOn, string Scope, int Total,
-    IReadOnlyList<YearStepDto> Steps, YearMoveDto? NextMove, uint Version);
+    IReadOnlyList<YearStepDto> Steps, YearMoveDto? NextMove, YearMeDto? Me, uint Version);
 
 public sealed record MoveYearOnRequest([property: System.Text.Json.Serialization.JsonRequired] uint ExpectedVersion, CyclePhase To);
 
-public sealed record NudgeRequest(IReadOnlyList<Guid> EmployeeIds);
+/// <summary>Who to nudge: named people, or everyone at the caller's reach in these standings (a company is more than its faces).</summary>
+public sealed record NudgeRequest(IReadOnlyList<Guid>? EmployeeIds, IReadOnlyList<string>? Standings);
 
 /// <summary>Who was nudged and who was skipped (nothing to nudge them about, or out of the caller's reach).</summary>
 public sealed record NudgeResultDto(int Nudged, IReadOnlyList<Guid> Skipped);
@@ -1132,11 +1140,9 @@ public sealed record WorkspaceCapabilitiesDto(
 
 /// <summary>Which primary destinations the workspace offers the caller in the selected Cycle.</summary>
 public sealed record WorkspaceDestinationsDto(
-    bool Overview,
     bool MyPlan,
     bool Team,
     bool Reviews,
-    bool CycleAdmin,
     bool Settings)
 {
     /// <summary>1:1s: a current Core HR manager or direct reports, or any series. Not cycle-bound.</summary>

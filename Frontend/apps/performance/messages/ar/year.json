@@ -1,0 +1,133 @@
+{
+  "words": {
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "daysAgo": "{count, plural, one {منذ يوم} two {منذ يومين} few {منذ # أيام} many {منذ # يومًا} other {منذ # يوم}}"
+  },
+  "phase": {
+    "Planning": "التخطيط",
+    "Execution": "التنفيذ",
+    "Review": "التقييم",
+    "ResultsOut": "صدور النتائج"
+  },
+  "YearTimeline": {
+    "label": "مراحل السنة",
+    "today": "اليوم {day}"
+  },
+  "YearPage": {
+    "loading": "جارٍ تحميل السنة",
+    "noYear": "لا توجد سنة بعد",
+    "noYearYet": "لم تبدأ شركتك سنة الأداء بعد.",
+    "setUpTheYear": "إعداد السنة",
+    "beingSetUp": "{name} قيد الإعداد",
+    "continueSetup": "متابعة الإعداد",
+    "dates": "من {start} إلى {end}",
+    "move": {
+      "closePlanning": "الانتقال إلى التنفيذ",
+      "launchRound": "بدء جولة التقييم",
+      "release": "إصدار النتائج"
+    }
+  },
+  "NextStep": {
+    "yourNextStep": "خطوتك التالية",
+    "nothingForYou": "لا شيء مطلوب منك الآن",
+    "open": "فتح",
+    "dueOn": "الموعد {day}",
+    "since": "منذ {day}",
+    "plansDue": "موعد الخطط {day}، {days, plural, =0 {اليوم} one {بعد يوم} two {بعد يومين} few {بعد # أيام} many {بعد # يومًا} other {بعد # يوم}}",
+    "reviewsOpen": "تبدأ التقييمات {day}",
+    "resultsFrom": "النتائج من {day}",
+    "yearEnds": "تنتهي {name} في {day}",
+    "plansNotForward": "{count, plural, one {شخص واحد لم يقدّم خطته} two {شخصان لم يقدّما خطتيهما} few {# أشخاص لم يقدّموا خططهم} many {# شخصًا لم يقدّموا خططهم} other {# شخص لم يقدّموا خططهم}}",
+    "plansWithManagers": "{count, plural, one {خطة واحدة تنتظر المدير} two {خطتان تنتظران المديرين} few {# خطط تنتظر المديرين} many {# خطة تنتظر المديرين} other {# خطة تنتظر المديرين}}",
+    "notUpdated": "{count, plural, one {شخص واحد لم يحدّث أي هدف منذ 30 يومًا} two {شخصان لم يحدّثا أي هدف منذ 30 يومًا} few {# أشخاص لم يحدّثوا أي هدف منذ 30 يومًا} many {# شخصًا لم يحدّثوا أي هدف منذ 30 يومًا} other {# شخص لم يحدّثوا أي هدف منذ 30 يومًا}}",
+    "reviewsWithManagers": "{count, plural, one {تقييم واحد ينتظر المدير} two {تقييمان ينتظران المديرين} few {# تقييمات تنتظر المديرين} many {# تقييمًا ينتظر المديرين} other {# تقييم ينتظر المديرين}}",
+    "selfReviewsLeft": "{count, plural, one {شخص واحد لم يكتب تقييمه الذاتي} two {شخصان لم يكتبا تقييمهما الذاتي} few {# أشخاص لم يكتبوا تقييمهم الذاتي} many {# شخصًا لم يكتبوا تقييمهم الذاتي} other {# شخص لم يكتبوا تقييمهم الذاتي}}",
+    "setUpNextYear": "إعداد السنة التالية",
+    "endsByItself": "تنتهي {name} تلقائيًا في {day}",
+    "nudgeThem": "تذكيرهم",
+    "nudgeTheManagers": "تذكير المديرين",
+    "nudgeName": "تذكير {name}",
+    "nudgeFailed": "تعذّر إرسال التذكير.",
+    "nudgedToast": "{count, plural, =0 {لا أحد يحتاج إلى تذكير} one {تم تذكير شخص واحد} two {تم تذكير شخصين} few {تم تذكير # أشخاص} many {تم تذكير # شخصًا} other {تم تذكير # شخص}}",
+    "nudgedPeople": "{count, plural, =0 {لا أحد يحتاج إلى تذكير} one {تم تذكير شخص واحد في {day}} two {تم تذكير شخصين في {day}} few {تم تذكير # أشخاص في {day}} many {تم تذكير # شخصًا في {day}} other {تم تذكير # شخص في {day}}}",
+    "nudgedOne": "تم تذكير {name}",
+    "waitingOn": "بانتظار {name}",
+    "planWith": "خطتك لدى {name}",
+    "reviewWith": "{name} يكتب تقييمك"
+  },
+  "MovePreview": {
+    "preview": "معاينة",
+    "cancel": "إلغاء",
+    "couldntMove": "تعذّر نقل السنة إلى خطوتها التالية.",
+    "insteadOf": "اليوم بدلًا من {day}",
+    "title": {
+      "closePlanning": "الانتقال إلى التنفيذ اليوم",
+      "launchRound": "بدء جولة التقييم اليوم",
+      "release": "إصدار النتائج اليوم"
+    },
+    "go": {
+      "closePlanning": "الانتقال إلى التنفيذ",
+      "launchRound": "بدء الجولة",
+      "release": "{count, plural, one {إصدار نتيجة واحدة} two {إصدار نتيجتين} few {إصدار # نتائج} many {إصدار # نتيجة} other {إصدار # نتيجة}}"
+    },
+    "moved": {
+      "closePlanning": "انتقلت السنة إلى التنفيذ.",
+      "launchRound": "بدأت جولة التقييم.",
+      "release": "صدرت النتائج."
+    },
+    "blocker": {
+      "yearNotStarted": "لم تبدأ السنة بعد.",
+      "noDraftRound": "أعدّ جولة التقييم أولًا؛ بدؤها ينقل السنة إلى التقييم.",
+      "nothingReady": "لا يوجد تقييم جاهز للإصدار بعد."
+    },
+    "draftTheRound": "إعداد الجولة",
+    "everyone": "الجميع",
+    "approvedPlans": "الخطط المعتمدة",
+    "stillWriting": "ما زالوا يكتبون أو لدى المدير",
+    "everyoneInTheRound": "كل من في الجولة",
+    "managers": "المديرون",
+    "ready": "جاهزة",
+    "stillBeingWritten": "ما زالت قيد الكتابة",
+    "rows": {
+      "updatesOpen": "تُفتح تحديثات التقدم على الأهداف المعتمدة",
+      "locked": "مقفلة؛ تمر التغييرات عبر المدير",
+      "keepGoing": "يواصلون؛ لا يضيع شيء مما كتبوه",
+      "selfReviewOpens": "يُفتح تقييمهم الذاتي",
+      "reviewsOpen": "تُفتح التقييمات المطلوبة مع وصول التقييمات الذاتية",
+      "releasedNow": "تصدر الآن",
+      "releasedWhenDone": "تصدر عند اكتمالها"
+    },
+    "oneNotificationEach": "إشعار واحد لكل شخص، يفتح حيث يجب التصرف"
+  },
+  "PhaseSteps": {
+    "yourTeam": "فريقك",
+    "people": "{count, plural, one {شخص واحد} two {شخصان} few {# أشخاص} many {# شخصًا} other {# شخص}}",
+    "putForward": "{count} من {total} قدّموا خططهم",
+    "reviewedOf": "{count} من {total} تم تقييمهم",
+    "released": "صدرت في {day}",
+    "title": {
+      "Planning": "الخطط",
+      "Execution": "تحديثات الأهداف",
+      "Review": "تقييم نهاية السنة",
+      "ResultsOut": "النتائج"
+    },
+    "notStarted": "لم يبدأ",
+    "writing": "قيد الكتابة",
+    "withYou": "لديك",
+    "withTheirManager": "لدى مديرهم",
+    "approved": "معتمدة",
+    "stillPlanning": "ما زالوا يخططون",
+    "updated": "حُدّثت خلال آخر 30 يومًا",
+    "quiet": "لم تُحدَّث منذ 30 يومًا",
+    "notInRound": "خارج هذه الجولة",
+    "selfReview": "يكتبون تقييمهم الذاتي",
+    "yoursToWrite": "عليك كتابتها",
+    "reviewed": "تم تقييمهم",
+    "stillBeingWritten": "ما زالت قيد الكتابة",
+    "notReadYet": "لم تُقرأ بعد",
+    "acknowledged": "تم تأكيدها",
+    "closedWithoutResult": "أُغلقت دون نتيجة",
+    "andMore": "و{count} آخرون"
+  }
+}

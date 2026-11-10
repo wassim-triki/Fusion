@@ -69,7 +69,7 @@
         "objective": "Objective",
         "oneOnOne": "1:1s",
         "reviewRound": "Review round",
-        "cycle": "Performance cycle",
+        "cycle": "Performance year",
         "report": "Saved report",
         "chooseWho": "Choose who"
       },
@@ -187,9 +187,9 @@
           "keywords": "team plans approve"
         },
         "cycle": {
-          "label": "Cycle",
-          "path": "Performance › Cycle",
-          "keywords": "cycle phases deadline"
+          "label": "Year",
+          "path": "Performance › Year",
+          "keywords": "year cycle phases deadline move on nudge"
         },
         "settings": {
           "label": "Settings",
@@ -318,6 +318,7 @@
     },
     "nav": {
       "overview": "Overview",
+      "year": "Year",
       "myProfile": "My profile",
       "myTeam": "My team",
       "people": "People",
@@ -327,8 +328,7 @@
       "myPlan": "My plan",
       "oneOnOnes": "1:1s",
       "feedback": "Feedback",
-      "reviews": "Reviews",
-      "cycle": "Cycle"
+      "reviews": "Reviews"
     },
     "menu": {
       "open": "Your menu",

@@ -97,11 +97,9 @@ public sealed class GetWorkspaceContextHandler(PerformanceDbContext db, Performa
             AiAssistance: await PerformanceAiAccess.IsAvailableAsync(db, ai, cancellationToken));
 
         var destinations = new WorkspaceDestinationsDto(
-            Overview: true,
             MyPlan: participates,
             Team: reviewer,
             Reviews: hasReviews,
-            CycleAdmin: grants.Administers,
             Settings: grants.ViewsSettings)
         {
             OneOnOnes = await HasOneOnOnesAsync(employeeId, cancellationToken),

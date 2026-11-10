@@ -88,7 +88,7 @@ export function ReviewLaunchStep({ detail }: { detail: CycleDetailDto }) {
         detail={detail}
         onActivate={async () => {
           await activate.mutateAsync(detail.cycle.version);
-          router.push("/cycle");
+          router.push("/");
         }}
       />
       <SetupStepFooter backHref={setupStepHref("population", detail.cycle.id)} />

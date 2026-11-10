@@ -93,7 +93,6 @@ public sealed class SettingsSectionsHttpTests
 
         var viewerDestinations = (await ContextAsync(viewer)).GetProperty("destinations");
         Assert.True(viewerDestinations.GetProperty("settings").GetBoolean());
-        Assert.False(viewerDestinations.GetProperty("cycleAdmin").GetBoolean());
         Assert.True((await ContextAsync(cycleAdmin)).GetProperty("destinations").GetProperty("settings").GetBoolean());
     }
 

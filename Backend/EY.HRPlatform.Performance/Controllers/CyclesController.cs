@@ -89,15 +89,8 @@ public sealed class CyclesController(IMediator mediator, IPerformanceAccessPolic
         return MapResult(await mediator.Send(new GetYearQuery(cycleId, VisibilityActor()), cancellationToken));
     }
 
-    /// <summary>The dry run of moving the year on (D-58): what changes, for whom. Nothing is written.</summary>
-    [HttpGet("{cycleId:guid}/move-on")]
-    public async Task<ActionResult<ApiResponse<YearDto>>> PreviewMoveOn(Guid cycleId, CancellationToken cancellationToken)
-    {
-        if (!policy.CanAdministerCycles(User)) return CapabilityForbidden();
-        return MapResult(await mediator.Send(new PreviewYearMoveQuery(cycleId, VisibilityActor()), cancellationToken));
-    }
 
-    /// <summary>Moves the year on to the previewed step.</summary>
+    /// <summary>Moves the year on to the step the year's next move previews (D-58); the preview itself is the year's <c>nextMove</c>.</summary>
     [HttpPost("{cycleId:guid}/move-on")]
     public async Task<ActionResult<ApiResponse<YearDto>>> MoveOn(Guid cycleId, [FromBody] MoveYearOnRequest request, CancellationToken cancellationToken)
     {
@@ -110,7 +103,7 @@ public sealed class CyclesController(IMediator mediator, IPerformanceAccessPolic
     public async Task<ActionResult<ApiResponse<NudgeResultDto>>> Nudge(Guid cycleId, [FromBody] NudgeRequest request, CancellationToken cancellationToken)
     {
         if (!policy.CanEnterPerformance(User)) return CapabilityForbidden();
-        return MapResult(await mediator.Send(new NudgeCommand(cycleId, request.EmployeeIds ?? [], VisibilityActor()), cancellationToken));
+        return MapResult(await mediator.Send(new NudgeCommand(cycleId, request.EmployeeIds ?? [], request.Standings ?? [], VisibilityActor()), cancellationToken));
     }
 
     [HttpDelete("{cycleId:guid}")]

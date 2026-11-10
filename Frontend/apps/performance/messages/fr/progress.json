@@ -44,11 +44,6 @@
     "outsideTheObjectivesDates": "En dehors des dates de l’objectif",
     "noDueDate": "Pas d’échéance"
   },
-  "MilestoneRail": {
-    "cycleMilestones": "Jalons du cycle",
-    "ofReached": "{reached} sur {length} atteints",
-    "next": "· suivant :"
-  },
   "EvidenceUploader": {
     "removeEvidence": "Retirer la pièce justificative",
     "uploading": "Envoi",

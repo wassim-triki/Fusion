@@ -17,7 +17,7 @@ public sealed class AnalyticsGuardTests
     [Fact]
     public void No_Performance_projection_exposes_an_averaged_figure()
     {
-        var offenders = typeof(EY.HRPlatform.Performance.Models.OverviewDto).Assembly.GetTypes()
+        var offenders = typeof(EY.HRPlatform.Performance.Models.YearDto).Assembly.GetTypes()
             .Where(type => type.Name.EndsWith("Dto", StringComparison.Ordinal) && !CalibrationInsights.Contains(type.Name))
             .SelectMany(type => type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(property => AverageLike.IsMatch(property.Name))

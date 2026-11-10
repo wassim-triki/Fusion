@@ -68,6 +68,7 @@ export interface ModulePages {
 
 type NavLabel =
   | "overview"
+  | "year"
   | "myProfile"
   | "myTeam"
   | "people"
@@ -77,8 +78,7 @@ type NavLabel =
   | "myPlan"
   | "oneOnOnes"
   | "feedback"
-  | "reviews"
-  | "cycle";
+  | "reviews";
 
 /** Core HR's pages, in the order the drawing lists them, each shown only to who may open it. */
 export function useCorePages(): ModulePages {
@@ -114,7 +114,6 @@ const DESTINATION_OF: Record<string, keyof WorkspaceDestinationsDto> = {
   "/one-on-ones": "oneOnOnes",
   "/feedback": "feedback",
   "/reviews": "reviews",
-  "/cycle": "cycleAdmin",
 };
 
 /**
@@ -135,12 +134,11 @@ export function usePerformancePages(cycleId: string | null = null): ModulePages 
   return useMemo(() => {
     const CYCLE_FREE = new Set(["/one-on-ones", "/feedback"]);
     const all: [NavLabel, string, ShellNavItem["icon"]][] = [
-      ["overview", "/", LayoutDashboard],
+      ["year", "/", CalendarRange],
       ["myPlan", "/plan", UserRoundCheck],
       ["oneOnOnes", "/one-on-ones", OneOnOnes],
       ["feedback", "/feedback", FeedbackIcon],
       ["reviews", "/reviews", FileCheck2],
-      ["cycle", "/cycle", CalendarRange],
     ];
     const items = all
       .filter(([, href]) => {

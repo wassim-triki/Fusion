@@ -52,6 +52,7 @@ Commands (stack up, Performance in Development):
 - `node .local-docs/agents/data/demo-preset.mjs tidy`: archives every retired or failed preset tenant still in the platform list.
 - `node .local-docs/agents/data/demo-preset.mjs reset <preset>`: builds a new one, then retires the previous one. If the new build fails, the previous one stays as it was.
 - `node .local-docs/agents/data/journey-demo-preset.cjs <preset>`: read-only checks that the preset reached its state, plus the demo clock's refusals.
+- `node .local-docs/agents/data/screens-b405-year.cjs [domain]`: B-405 slice 3, the Year page as Amira, Mariam and Aicha on the `planning` preset, dark 1440×900 through the shell (changes no data).
 - `node .local-docs/agents/data/screens-demo-presets.cjs [preset ...]`: the slice 4 and 6 boards only presets reach, dark 1440×900 through the shell (changes no data).
 
 Timing through the gateway: `fresh` under a minute, `planning` about 3 minutes, the others 4–6. Builds run detached-safe: one dropped call or gateway blip is retried; a build that dies leaves a "· build <n>" tenant that the next build of that preset retires; never run two builds of the same preset at once.

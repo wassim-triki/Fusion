@@ -106,7 +106,7 @@ export function useReviewRoundFinalization(roundId: string, cycleId: string) {
       { queryKey: performanceQueryKeys.reviewWork(cycleId) },
       { queryKey: performanceQueryKeys.reviewHistory("all") },
       { queryKey: performanceQueryKeys.reviewRounds(cycleId) },
-      { queryKey: performanceQueryKeys.overview(cycleId) },
+      { queryKey: performanceQueryKeys.year(cycleId) },
     ] }
   );
 }

@@ -48,14 +48,13 @@ describe("Core HR's pages", () => {
 
 describe("Performance's pages", () => {
   it("follows the server's destinations and carries the year being looked at, except into 1:1s and Feedback", () => {
-    state.destinations = { myPlan: true, oneOnOnes: true, feedback: true, reviews: false, cycleAdmin: true, settings: true };
+    state.destinations = { myPlan: true, oneOnOnes: true, feedback: true, reviews: false, settings: true };
     const pages = renderHook(() => usePerformancePages("fy27")).result.current;
     expect(pages.items.map((item) => [item.href, item.navigateHref])).toEqual([
       ["/", "/?cycle=fy27"],
       ["/plan", "/plan?cycle=fy27"],
       ["/one-on-ones", undefined],
       ["/feedback", undefined],
-      ["/cycle", "/cycle?cycle=fy27"],
     ]);
     expect(pages.settings).toBe(true);
     expect(pages.pending).toBe(false);

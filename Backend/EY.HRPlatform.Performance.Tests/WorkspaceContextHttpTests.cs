@@ -78,10 +78,8 @@ public sealed class WorkspaceContextHttpTests
         var context = await ContextAsync(f, f.Nour, Employee);
 
         Assert.Equal("FY2027", context.GetProperty("selected").GetProperty("name").GetString());
-        Assert.True(Dest(context, "overview"));
         Assert.True(Dest(context, "myPlan"));
         Assert.False(Dest(context, "team"));
-        Assert.False(Dest(context, "cycleAdmin"));
         Assert.False(context.GetProperty("capabilities").GetProperty("canViewOrgDirection").GetBoolean());
         Assert.False(context.GetProperty("capabilities").GetProperty("canChooseOrganizationScope").GetBoolean());
         // Active plus the Closed cycle she took part in; never Drafts or unrelated history.
@@ -120,7 +118,6 @@ public sealed class WorkspaceContextHttpTests
         await using var _ = f.Factory;
         var context = await ContextAsync(f, null, Admin);
 
-        Assert.True(Dest(context, "cycleAdmin"));
         Assert.True(Dest(context, "settings"));
         Assert.True(context.GetProperty("capabilities").GetProperty("canChooseOrganizationScope").GetBoolean());
         Assert.False(Dest(context, "myPlan"));
@@ -141,7 +138,6 @@ public sealed class WorkspaceContextHttpTests
         var capabilities = calibrationOnly.GetProperty("capabilities");
         Assert.True(capabilities.GetProperty("canCalibrate").GetBoolean());
         Assert.False(capabilities.GetProperty("administers").GetBoolean());
-        Assert.False(Dest(calibrationOnly, "cycleAdmin"));
     }
 
     [Fact]
@@ -166,7 +162,6 @@ public sealed class WorkspaceContextHttpTests
         var context = await ContextAsync(f, f.Lina, [.. Manager, .. Admin]);
 
         Assert.True(Dest(context, "team"));
-        Assert.True(Dest(context, "cycleAdmin"));
     }
 
     [Fact]

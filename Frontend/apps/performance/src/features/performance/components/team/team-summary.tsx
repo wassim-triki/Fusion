@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import type { StatusMixDto, TeamResultsDto, YourPeoplePageDto } from "@repo/api";
 import { Lock } from "@repo/ds/icons";
 import { cn } from "@repo/ds/lib/utils";
-import { day } from "../overview/overview-model";
+import { day } from "../year/year-words";
 import { useTranslations } from "next-intl";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { useSay } from "@repo/ds/lib/say";

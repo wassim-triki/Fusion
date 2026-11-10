@@ -20,14 +20,12 @@ namespace EY.HRPlatform.Performance.Features.Cycles;
 /// <summary>The year for one viewer: administrators see the company, a manager their people, anyone else themselves.</summary>
 public sealed record GetYearQuery(Guid CycleId, CycleVisibilityActor Actor) : IQuery<Result<YearDto>>;
 
-/// <summary>The dry run (D-58): what moving the year on would do, for whom. Administrators only.</summary>
-public sealed record PreviewYearMoveQuery(Guid CycleId, CycleVisibilityActor Actor) : IQuery<Result<YearDto>>;
-
 /// <summary>Moves the year on to <see cref="To"/> as previewed. Administrators only.</summary>
 public sealed record MoveYearOnCommand(Guid CycleId, CyclePhase To, uint ExpectedVersion, CycleVisibilityActor Actor) : ICommand<Result<YearDto>>;
 
 /// <summary>Nudges people toward their next step in the year (D-49): administrators anyone, a manager their own people.</summary>
-public sealed record NudgeCommand(Guid CycleId, IReadOnlyList<Guid> EmployeeIds, CycleVisibilityActor Actor) : ICommand<Result<NudgeResultDto>>;
+public sealed record NudgeCommand(Guid CycleId, IReadOnlyList<Guid> EmployeeIds, IReadOnlyList<string> Standings, CycleVisibilityActor Actor)
+    : ICommand<Result<NudgeResultDto>>;
 
 /// <summary>Where each person stands in the year, read from their plan, updates and review.</summary>
 public static class YearStandings
@@ -149,7 +147,7 @@ public static class YearComposer
 
         var (scope, people) = actor.IsAdministrator ? (ScopeCompany, everyone)
             : everyone.Any(p => p.ManagerEmployeeId == actor.EmployeeId)
-                ? (ScopeTeam, everyone.Where(p => p.ManagerEmployeeId == actor.EmployeeId || p.EmployeeId == actor.EmployeeId).ToList())
+                ? (ScopeTeam, everyone.Where(p => p.ManagerEmployeeId == actor.EmployeeId).ToList())
                 : (ScopeYou, everyone.Where(p => p.EmployeeId == actor.EmployeeId).ToList());
 
         var rounds = await db.ReviewRounds.AsNoTracking().Where(r => r.CycleId == cycle.Id && r.LaunchedAt != null)
@@ -161,8 +159,10 @@ public static class YearComposer
             firstRelease is null ? null : DateOnly.FromDateTime(firstRelease.Value), people, scope == ScopeCompany);
 
         var move = actor.IsAdministrator && phase is not null ? await NextMoveAsync(db, cycle, phase.Value, today, everyone, token) : null;
+        var me = everyone.FirstOrDefault(p => p.EmployeeId == actor.EmployeeId) is { } self
+            ? new YearMeDto(self.EmployeeId, self.Step, self.Standing, self.Since, self.ManagerEmployeeId, self.ManagerName) : null;
         return new YearDto(cycle.Id, cycle.Name, cycle.StartDate, cycle.EndDate, today, cycle.State, phase, cycle.PlanningClosedOn,
-            scope, people.Count, steps, move, cycle.Version);
+            scope, people.Count, steps, move, me, cycle.Version);
     }
 
     /// <summary>
@@ -186,12 +186,13 @@ public static class YearComposer
         return spans.Select(s =>
         {
             var inStep = people.Where(p => p.Step == s.Phase).ToList();
-            var faces = capFaces ? inStep.Take(YearStandings.CompanyFaces) : inStep;
-            var standings = inStep.GroupBy(p => p.Standing).Select(g => new YearStandingCountDto(g.Key, g.Count())).ToList();
+            var groups = inStep.GroupBy(p => p.Standing)
+                .Select(g => new YearGroupDto(g.Key, g.Count(),
+                    (capFaces ? g.Take(YearStandings.CompanyFaces) : g).Select(YearStandings.ToDto).ToList()))
+                .ToList();
             var state = phase is null ? (cycle.IsClosed ? YearStepState.Done : YearStepState.Ahead)
                 : s.Phase < phase ? YearStepState.Done : s.Phase == phase ? YearStepState.Current : YearStepState.Ahead;
-            return new YearStepDto(s.Phase, s.Start, s.End < s.Start ? s.Start : s.End, s.Estimated, state, inStep.Count,
-                faces.Select(YearStandings.ToDto).ToList(), standings);
+            return new YearStepDto(s.Phase, s.Start, s.End < s.Start ? s.Start : s.End, s.Estimated, state, inStep.Count, groups);
         }).ToList();
     }
 
@@ -248,18 +249,6 @@ public sealed class GetYearHandler(PerformanceDbContext db) : IQueryHandler<GetY
         var cycle = await CyclePolicy.Visible(db.Cycles.AsNoTracking(), db.Participants.AsNoTracking(), db.PerformanceReviews.AsNoTracking(), request.Actor)
             .FirstOrDefaultAsync(c => c.Id == request.CycleId, token);
         if (cycle is null) return Result.Failure<YearDto>(PerformanceErrors.NotFound("Cycle", request.CycleId));
-        return await YearComposer.ComposeAsync(db, cycle, request.Actor, token);
-    }
-}
-
-public sealed class PreviewYearMoveHandler(PerformanceDbContext db) : IQueryHandler<PreviewYearMoveQuery, Result<YearDto>>
-{
-    public async Task<Result<YearDto>> Handle(PreviewYearMoveQuery request, CancellationToken token)
-    {
-        var cycle = await db.Cycles.AsNoTracking().FirstOrDefaultAsync(c => c.Id == request.CycleId, token);
-        if (cycle is null) return Result.Failure<YearDto>(PerformanceErrors.NotFound("Cycle", request.CycleId));
-        if (!cycle.IsActive)
-            return Result.Failure<YearDto>(PerformanceErrors.InvalidState(PerformanceErrors.Codes.CycleNotActive, "Only an Active year moves on."));
         return await YearComposer.ComposeAsync(db, cycle, request.Actor, token);
     }
 }
@@ -337,13 +326,14 @@ public sealed class NudgeHandler(PerformanceDbContext db, IPerformanceAudit audi
         var cycle = await CyclePolicy.Visible(db.Cycles.AsNoTracking(), db.Participants.AsNoTracking(), db.PerformanceReviews.AsNoTracking(), command.Actor)
             .FirstOrDefaultAsync(c => c.Id == command.CycleId, token);
         if (cycle is null) return Result.Failure<NudgeResultDto>(PerformanceErrors.NotFound("Cycle", command.CycleId));
-        if (command.EmployeeIds is not { Count: > 0 and <= 200 })
-            return Result.Failure<NudgeResultDto>(PerformanceErrors.Validation(PerformanceErrors.Codes.CycleInvalid, "Choose up to 200 people to nudge."));
+        if (command.EmployeeIds.Count > 200 || command.EmployeeIds.Count == 0 && command.Standings.Count == 0)
+            return Result.Failure<NudgeResultDto>(PerformanceErrors.Validation(PerformanceErrors.Codes.CycleInvalid, "Choose up to 200 people, or the standings, to nudge."));
 
         var everyone = await YearStandings.LoadAsync(db, cycle.Id, PerformanceClock.UtcNow, token);
-        var reach = everyone.Where(p => command.Actor.IsAdministrator || p.ManagerEmployeeId == command.Actor.EmployeeId)
-            .ToDictionary(p => p.EmployeeId);
         var me = command.Actor.EmployeeId;
+        // Administrators reach anyone in the year, a manager their own people, and anyone their own step (D-49: "Nudge Mariam").
+        var reach = everyone.Where(p => command.Actor.IsAdministrator || p.ManagerEmployeeId == me || (me != Guid.Empty && p.EmployeeId == me))
+            .ToDictionary(p => p.EmployeeId);
         var actorName = everyone.FirstOrDefault(p => p.EmployeeId == me)?.Name
             ?? everyone.FirstOrDefault(p => p.ManagerEmployeeId == me)?.ManagerName
             ?? "HR";
@@ -351,9 +341,12 @@ public sealed class NudgeHandler(PerformanceDbContext db, IPerformanceAudit audi
         var nudged = 0;
         var skipped = new List<Guid>();
         var nudgeId = Guid.NewGuid();
-        foreach (var employeeId in command.EmployeeIds.Distinct())
+        var chosen = command.EmployeeIds
+            .Concat(reach.Values.Where(p => command.Standings.Contains(p.Standing) && p.EmployeeId != me).Select(p => p.EmployeeId))
+            .Distinct();
+        foreach (var employeeId in chosen)
         {
-            if (employeeId == me || !reach.TryGetValue(employeeId, out var person) || Target(cycle.Id, person) is not { } target
+            if (!reach.TryGetValue(employeeId, out var person) || Target(cycle.Id, person) is not { } target
                 || target.Recipient == me)
             {
                 skipped.Add(employeeId);

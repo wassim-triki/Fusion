@@ -35,10 +35,10 @@ public sealed class UpdateRequestHttpTests
         Assert.Equal("Open", created.GetProperty("state").GetString());
         Assert.Equal(HttpStatusCode.Forbidden, (await nourClient.PostAsJsonAsync(requests, new { objectiveId })).StatusCode);
 
-        var overview = await Data(await nourClient.GetAsync($"/api/performance/overview?cycleId={cycleId}"));
-        var plan = overview.GetProperty("rows").EnumerateArray().Single(row => row.GetProperty("kind").GetString() == "ownPlan");
-        Assert.Equal(1, plan.GetProperty("openRequests").GetInt32());
-        Assert.Equal($"/performance/cycles/{cycleId}/objectives/{objectiveId}?mode=record", plan.GetProperty("firstRequestHref").GetString());
+        // Nour's next step is the request, opening the goal's record.
+        var work = await Data(await nourClient.GetAsync("/api/performance/work"));
+        var asked = work.EnumerateArray().Single(item => item.GetProperty("kind").GetString() == "update-request");
+        Assert.Equal($"/performance/cycles/{cycleId}/objectives/{objectiveId}?mode=record", asked.GetProperty("href").GetString());
 
         var progress = await Data(await nourClient.GetAsync($"/api/performance/cycles/{cycleId}/objectives/{objectiveId}/progress"));
         var recorded = await nourClient.PostAsJsonAsync($"/api/performance/cycles/{cycleId}/objectives/{objectiveId}/progress", new
@@ -51,9 +51,8 @@ public sealed class UpdateRequestHttpTests
         var roster = await Data(await linaClient.GetAsync($"/api/performance/cycles/{cycleId}/team/people?filter=All&page=1&pageSize=25"));
         var row = roster.GetProperty("items").EnumerateArray().Single();
         Assert.Equal("Satisfied", row.GetProperty("updateRequest").GetProperty("state").GetString());
-        var nourAfter = await Data(await nourClient.GetAsync($"/api/performance/overview?cycleId={cycleId}"));
-        var planAfter = nourAfter.GetProperty("rows").EnumerateArray().Single(row => row.GetProperty("kind").GetString() == "ownPlan");
-        Assert.Equal(0, planAfter.GetProperty("openRequests").GetInt32());
+        var workAfter = await Data(await nourClient.GetAsync("/api/performance/work"));
+        Assert.DoesNotContain(workAfter.EnumerateArray(), item => item.GetProperty("kind").GetString() == "update-request");
     }
 
     [Fact]

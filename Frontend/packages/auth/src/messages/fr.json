@@ -69,7 +69,7 @@
         "objective": "Objectif",
         "oneOnOne": "1:1",
         "reviewRound": "Campagne d’évaluation",
-        "cycle": "Cycle de performance",
+        "cycle": "Année de performance",
         "report": "Rapport enregistré",
         "chooseWho": "Choisir qui"
       },
@@ -187,9 +187,9 @@
           "keywords": "équipe plans valider"
         },
         "cycle": {
-          "label": "Cycle",
-          "path": "Performance › Cycle",
-          "keywords": "cycle phases échéance"
+          "label": "Année",
+          "path": "Performance › Année",
+          "keywords": "année cycle phases échéance relance"
         },
         "settings": {
           "label": "Paramètres",
@@ -318,6 +318,7 @@
     },
     "nav": {
       "overview": "Vue d’ensemble",
+      "year": "Année",
       "myProfile": "Mon profil",
       "myTeam": "Mon équipe",
       "people": "Collaborateurs",
@@ -327,8 +328,7 @@
       "myPlan": "Mon plan",
       "oneOnOnes": "Entretiens individuels",
       "feedback": "Feedback",
-      "reviews": "Évaluations",
-      "cycle": "Cycle"
+      "reviews": "Évaluations"
     },
     "menu": {
       "open": "Votre menu",

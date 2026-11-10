@@ -41,7 +41,7 @@ function currentStep(pathname: string): SetupStep {
 /**
  * The dedicated cycle-setup shell — one guided journey with its own header, stepper, and (on the
  * opening step) hero. It owns orientation while the Cycle is being created, so it does not stack
- * the operational CycleContextBar / MilestoneRail. Setup is Draft-only: an established Cycle is
+ * the operational CycleContextBar. Setup is Draft-only: an established Cycle is
  * sent to its durable /cycle surface.
  */
 export default function CycleSetupLayout({ children }: { children: ReactNode }) {
@@ -56,7 +56,7 @@ export default function CycleSetupLayout({ children }: { children: ReactNode }) 
   const establishedCycle = cycle ? cycle.state !== "Draft" : false;
 
   useEffect(() => {
-    if (establishedCycle) router.replace("/cycle");
+    if (establishedCycle) router.replace("/");
   }, [establishedCycle, router]);
 
   const fallbackExit = useCallback(() => router.push("/"), [router]);

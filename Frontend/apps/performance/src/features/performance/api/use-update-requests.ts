@@ -19,7 +19,7 @@ export function useUpdateRequestMutations(cycleId: string, planId: string) {
   const invalidateQueries = [
     { queryKey: performanceQueryKeys.updateRequests(cycleId, planId) },
     { queryKey: performanceQueryKeys.yourPeople(cycleId) },
-    { queryKey: performanceQueryKeys.overviews() },
+    { queryKey: performanceQueryKeys.years() },
   ];
   const request = useApiMutation(
     (input: { objectiveId: string | null; note: string | null }) => performance.requestUpdate(cycleId, planId, input),

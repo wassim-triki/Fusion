@@ -2,8 +2,8 @@
 
 import { createContext, createElement, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { performanceQueryKeys } from "@repo/api";
-import { useApiQuery } from "@repo/api/query";
+import { fusionAttentionQueryKeys, performanceQueryKeys, type CyclePhase, type YearStanding } from "@repo/api";
+import { useApiMutation, useApiQuery, type ApiMutationInvalidation } from "@repo/api/query";
 import { useApis } from "./use-performance";
 
 const RECORD_CYCLE = /\/cycles\/([^/]+)\//;
@@ -41,15 +41,33 @@ export function useSelectedCycleId(): string | null {
   return recordCycleId ?? (fromRecord ? decodeURIComponent(fromRecord) : params.get("cycle"));
 }
 
-/** Overview for the selected Cycle: one server projection of the sections that apply to the caller. */
-export function useOverview(enabled = true) {
+/** The year for the viewer (D-34, D-55): its phase, its steps with the people in each, HR's next move, the viewer's own place. */
+export function useYear(cycleId: string | null) {
   const { performance } = useApis();
-  const cycleId = useSelectedCycleId();
   return useApiQuery(
-    performanceQueryKeys.overview(cycleId),
-    (signal) => performance.getOverview(cycleId, signal),
-    { enabled }
+    performanceQueryKeys.year(cycleId ?? ""),
+    (signal) => performance.year(cycleId as string, signal),
+    { enabled: Boolean(cycleId) }
   );
+}
+
+/** What changes when the year moves on (D-58), and the nudges sent from the Year page (D-49). */
+export function useYearCommands(cycleId: string | null) {
+  const { performance } = useApis();
+  // Moving the year on changes every page's phase, so everything of Performance refreshes, and Home's work with it.
+  const invalidateQueries: ApiMutationInvalidation[] = [
+    { queryKey: performanceQueryKeys.all() },
+    { queryKey: fusionAttentionQueryKeys.all() },
+  ];
+  const move = useApiMutation(
+    ({ expectedVersion, to }: { expectedVersion: number; to: CyclePhase }) => performance.moveYearOn(cycleId as string, expectedVersion, to),
+    { invalidateQueries }
+  );
+  const nudge = useApiMutation(
+    (who: { employeeIds?: string[]; standings?: YearStanding[] }) => performance.nudge(cycleId as string, who),
+    { invalidateQueries: [{ queryKey: fusionAttentionQueryKeys.all() }] }
+  );
+  return { move, nudge };
 }
 
 /** The server-composed workspace for the selected Cycle: switchable Cycles, capabilities, destinations. */

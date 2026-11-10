@@ -30,7 +30,7 @@ import { useApiMutation, useApiQuery, useApiQueryClient, type UseApiMutationOpti
 import { recoverPerformanceFailure } from "./performance-failure";
 import { useSelectedCycleId, useWorkspaceContext } from "./use-workspace";
 import type { InsightsPeopleQuery, YourPeopleQuery } from "@repo/api";
-import type { CloseCycleRequest, CycleDetailDto } from "@repo/api";
+import type { CycleDetailDto } from "@repo/api";
 
 type RequestDraft<T> = Omit<T, "expectedVersion">;
 
@@ -360,7 +360,7 @@ export function usePlanReviewMutations(cycleId: string, planId: string) {
   const invalidate = [
     { queryKey: performanceQueryKeys.planDetail(cycleId, planId) },
     { queryKey: performanceQueryKeys.yourPeople(cycleId) },
-    { queryKey: performanceQueryKeys.overviews() },
+    { queryKey: performanceQueryKeys.years() },
     { queryKey: performanceQueryKeys.cycle(cycleId) },
   ];
   const approve = usePerformanceMutation((expectedVersion: number) => performance.approvePlan(cycleId, planId, expectedVersion), { invalidateQueries: invalidate });
@@ -399,7 +399,7 @@ export function useProgressMutations(cycleId: string, objectiveId: string) {
     { queryKey: [...performanceQueryKeys.all(), "goal", cycleId] },
     // Progress can satisfy an open update request on the objective or its plan.
     { queryKey: [...performanceQueryKeys.all(), "update-requests", cycleId] },
-    { queryKey: performanceQueryKeys.overviews() },
+    { queryKey: performanceQueryKeys.years() },
     // Status shows on the plan record and the person summary.
     { queryKey: [...performanceQueryKeys.all(), "plan", cycleId] },
     { queryKey: [...performanceQueryKeys.all(), "person-summary"] },
@@ -577,29 +577,11 @@ export function useActivateCycle(cycleId: string) {
   });
 }
 
-/** What closing the Cycle would involve — administration only. */
-export function useCycleClosure(cycleId: string | null, enabled = true) {
-  const { performance } = useApis();
-  return useApiQuery(
-    performanceQueryKeys.cycleClosure(cycleId ?? "none"),
-    () => performance.cycleClosure(cycleId as string),
-    { enabled: Boolean(cycleId) && enabled }
-  );
-}
-
 const cycleLifecycleInvalidations = (cycleId: string) => [
   { queryKey: [...performanceQueryKeys.all(), "workspace-context"] },
   { queryKey: performanceQueryKeys.cycle(cycleId) },
   { queryKey: performanceQueryKeys.cycleClosure(cycleId) },
 ];
-
-export function useCloseCycle(cycleId: string) {
-  const { performance } = useApis();
-  return usePerformanceMutation((args: { request: CloseCycleRequest; expectedVersion: number }) => performance.closeCycle(cycleId, args.request, args.expectedVersion), {
-    // Closing changes what every surface can do, so refresh the whole module.
-    invalidateQueries: [{ queryKey: performanceQueryKeys.all() }],
-  });
-}
 
 export function useDeleteDraftCycle(cycleId: string) {
   const { performance } = useApis();

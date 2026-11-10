@@ -406,9 +406,6 @@
   "SetupShellSkeleton": {
     "loadingCycleSetup": "Chargement de la préparation du cycle"
   },
-  "CycleSurfaceSkeleton": {
-    "loadingCycle": "Chargement du cycle"
-  },
   "SetupStepFooter": {
     "back": "Retour",
     "cancel": "Annuler"

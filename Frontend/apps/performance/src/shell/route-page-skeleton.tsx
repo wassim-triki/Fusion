@@ -10,7 +10,6 @@ import {
 } from "@/features/performance/components/one-on-ones/one-on-one-skeletons";
 import { PlanPageSkeleton } from "@/features/performance/components/plan/plan-skeleton";
 import {
-  CycleSurfaceSkeleton,
   SetupShellSkeleton,
 } from "@/features/performance/components/cycle-setup/setup-skeletons";
 import {
@@ -33,7 +32,6 @@ export function PerformanceRouteSkeleton({ label }: { label?: string }) {
   else if (path === "/feedback") skeleton = <FeedbackPageSkeleton />;
   else if (/^\/cycles\/[^/]+\/plans\//.test(path))
     skeleton = <PlanPageSkeleton />;
-  else if (path === "/cycle") skeleton = <CycleSurfaceSkeleton />;
   else if (path === "/cycle/setup" || path.startsWith("/cycle/setup/")) {
     const step = path.endsWith("/population")
       ? "population"

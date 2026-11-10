@@ -63,11 +63,11 @@ public sealed class YearTests
         Assert.Equal([CyclePhase.Planning, CyclePhase.Execution, CyclePhase.Review, CyclePhase.ResultsOut], year.Steps.Select(s => s.Phase));
         Assert.Equal([YearStepState.Current, YearStepState.Ahead, YearStepState.Ahead, YearStepState.Ahead], year.Steps.Select(s => s.State));
         var planning = year.Steps[0];
-        Assert.Equal(["Nour", "Sami"], planning.People.Select(p => p.Name));
-        Assert.Equal(YearStandings.NotStarted, planning.People.Single(p => p.Name == "Nour").Standing);
-        Assert.Equal(YearStandings.Submitted, planning.People.Single(p => p.Name == "Sami").Standing);
-        Assert.Equal(["Yasmine"], year.Steps[1].People.Select(p => p.Name));
-        Assert.Equal(YearStandings.Quiet, year.Steps[1].People[0].Standing);
+        Assert.Equal(["Nour", "Sami"], Names(planning));
+        Assert.Equal(YearStandings.NotStarted, Standing(planning, "Nour"));
+        Assert.Equal(YearStandings.Submitted, Standing(planning, "Sami"));
+        Assert.Equal(["Yasmine"], Names(year.Steps[1]));
+        Assert.Equal(YearStandings.Quiet, Standing(year.Steps[1], "Yasmine"));
         Assert.True(year.Steps[1].Estimated);
         Assert.Equal(cycle(w).PlanningDeadline.AddDays(1), year.Steps[1].Start);
 
@@ -82,13 +82,17 @@ public sealed class YearTests
         // A manager sees their own people by name; an employee sees only themselves; neither sees a move.
         var lina = (await new GetYearHandler(db).Handle(new(w.Cycle.Id, new CycleVisibilityActor(w.Lina, false, null)), default)).Value;
         Assert.Equal(YearComposer.ScopeTeam, lina.Scope);
-        Assert.Equal(["Nour", "Sami"], lina.Steps[0].People.Select(p => p.Name));
-        Assert.Empty(lina.Steps[1].People);
+        Assert.Equal(["Nour", "Sami"], Names(lina.Steps[0]));
+        Assert.Empty(Names(lina.Steps[1]));
+        Assert.Null(lina.Me);
         Assert.Null(lina.NextMove);
         var nour = (await new GetYearHandler(db).Handle(new(w.Cycle.Id, new CycleVisibilityActor(w.Nour, false, null)), default)).Value;
         Assert.Equal(YearComposer.ScopeYou, nour.Scope);
         Assert.Equal(1, nour.Total);
-        Assert.Equal(["Nour"], nour.Steps[0].People.Select(p => p.Name));
+        Assert.Equal(["Nour"], Names(nour.Steps[0]));
+        var sami = (await new GetYearHandler(db).Handle(new(w.Cycle.Id, new CycleVisibilityActor(w.Sami, false, null)), default)).Value;
+        Assert.Equal((w.Sami, CyclePhase.Planning, YearStandings.Submitted, w.Lina, "Lina"),
+            (sami.Me!.EmployeeId, sami.Me.Step, sami.Me.Standing, sami.Me.ManagerEmployeeId, sami.Me.ManagerName));
 
         static PerformanceCycle cycle(World w) => w.Cycle;
     }
@@ -132,7 +136,7 @@ public sealed class YearTests
         var handler = new NudgeHandler(db, new TestPerformanceAudit(db), new PerformanceNotifications(db));
 
         // Lina manages Nour (not started: Nour is told) and Sami (submitted: the plan waits on Lina herself, so nobody else is told).
-        var byLina = await handler.Handle(new(w.Cycle.Id, [w.Nour, w.Sami, w.Yasmine, w.Lina], new CycleVisibilityActor(w.Lina, false, null)), default);
+        var byLina = await handler.Handle(new(w.Cycle.Id, [w.Nour, w.Sami, w.Yasmine, w.Lina], [], new CycleVisibilityActor(w.Lina, false, null)), default);
         Assert.True(byLina.IsSuccess);
         Assert.Equal(1, byLina.Value.Nudged);
         Assert.Equal(new HashSet<Guid> { w.Sami, w.Yasmine, w.Lina }, byLina.Value.Skipped.ToHashSet());
@@ -142,12 +146,32 @@ public sealed class YearTests
         Assert.Equal("Lina", toNour.ActorName);
 
         // HR reaches everyone: Sami's submitted plan nudges Lina, Yasmine's quiet goals nudge Yasmine.
-        var byHr = await handler.Handle(new(w.Cycle.Id, [w.Sami, w.Yasmine], new CycleVisibilityActor(Guid.NewGuid(), true, "Tenant")), default);
+        var byHr = await handler.Handle(new(w.Cycle.Id, [w.Sami, w.Yasmine], [], new CycleVisibilityActor(Guid.NewGuid(), true, "Tenant")), default);
         Assert.Equal(2, byHr.Value.Nudged);
         Assert.Equal("YearNudge.approve", (await db.Notifications.SingleAsync(n => n.RecipientEmployeeId == w.Lina)).TitleKey);
         Assert.Equal("YearNudge.progress", (await db.Notifications.SingleAsync(n => n.RecipientEmployeeId == w.Yasmine)).TitleKey);
         Assert.Equal(3, await db.AuditEntries.CountAsync(e => e.Action == PerformanceAuditActions.YearNudged));
+
+        // Anyone may nudge whoever holds their own step (D-49): Sami's plan waits on Lina; Nour's own plan is Nour's to write.
+        var bySami = await handler.Handle(new(w.Cycle.Id, [w.Sami], [], new CycleVisibilityActor(w.Sami, false, null)), default);
+        Assert.Equal(1, bySami.Value.Nudged);
+        Assert.Equal(2, await db.Notifications.CountAsync(n => n.RecipientEmployeeId == w.Lina));
+        var byNour = await handler.Handle(new(w.Cycle.Id, [w.Nour, w.Yasmine], [], new CycleVisibilityActor(w.Nour, false, null)), default);
+        Assert.Equal(0, byNour.Value.Nudged);
+        Assert.Equal(new HashSet<Guid> { w.Nour, w.Yasmine }, byNour.Value.Skipped.ToHashSet());
+
+        // By standing, a nudge reaches everyone in it at the caller's reach, not only the faces on screen.
+        var notStarted = await handler.Handle(new(w.Cycle.Id, [], [YearStandings.NotStarted, YearStandings.Quiet], new CycleVisibilityActor(w.Lina, false, null)), default);
+        Assert.Equal(1, notStarted.Value.Nudged);
+        Assert.Equal(2, await db.Notifications.CountAsync(n => n.RecipientEmployeeId == w.Nour));
+        Assert.Equal(1, await db.Notifications.CountAsync(n => n.RecipientEmployeeId == w.Yasmine));
+        var empty = await handler.Handle(new(w.Cycle.Id, [], [], new CycleVisibilityActor(w.Lina, false, null)), default);
+        Assert.True(empty.IsFailure);
     }
+
+    private static string[] Names(YearStepDto step) => step.Groups.SelectMany(g => g.People).Select(p => p.Name).OrderBy(n => n).ToArray();
+
+    private static string Standing(YearStepDto step, string name) => step.Groups.Single(g => g.People.Any(p => p.Name == name)).Standing;
 
     private sealed class NoSender : ISender
     {

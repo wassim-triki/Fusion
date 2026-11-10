@@ -44,11 +44,6 @@
     "outsideTheObjectivesDates": "Outside the objective's dates",
     "noDueDate": "No due date"
   },
-  "MilestoneRail": {
-    "cycleMilestones": "Cycle milestones",
-    "ofReached": "{reached} of {length} reached",
-    "next": "· next:"
-  },
   "EvidenceUploader": {
     "removeEvidence": "Remove evidence",
     "uploading": "Uploading",

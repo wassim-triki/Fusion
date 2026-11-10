@@ -7,15 +7,15 @@ import cycleSetup from "../../messages/en/cycleSetup.json";
 import goals from "../../messages/en/goals.json";
 import objective from "../../messages/en/objective.json";
 import oneOnOnes from "../../messages/en/oneOnOnes.json";
-import overview from "../../messages/en/overview.json";
 import plan from "../../messages/en/plan.json";
 import progress from "../../messages/en/progress.json";
 import reviews from "../../messages/en/reviews.json";
 import settings from "../../messages/en/settings.json";
 import team from "../../messages/en/team.json";
+import year from "../../messages/en/year.json";
 
 /** Performance's own catalogue in English, one file per namespace (`messages/<locale>/<namespace>.json`). */
-export const englishMessages = { calibration, coach, common, conversations, cycle, cycleSetup, goals, objective, oneOnOnes, overview, plan, progress, reviews, settings, team };
+export const englishMessages = { calibration, coach, common, conversations, cycle, cycleSetup, goals, objective, oneOnOnes, plan, progress, reviews, settings, team, year };
 
 export type PerformanceMessages = typeof englishMessages;
 

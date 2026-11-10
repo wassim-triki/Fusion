@@ -25,6 +25,7 @@ import {
   ArrowRight02Icon,
   ArrowTurnBackwardIcon,
   ArrowTurnForwardIcon,
+  FastForwardIcon,
   ArrowUp01Icon,
   ArrowUp02Icon,
   ArrowUpRight01Icon,
@@ -210,7 +211,7 @@ export type Icon = ForwardRefExoticComponent<IconProps & RefAttributes<SVGSVGEle
 const STROKE = 1.75;
 
 /** Icons that point along the line, mirrored right to left by the tokens' `data-rtl-flip` rule. */
-const DIRECTIONAL = new Set(["ChevronRight", "ChevronLeft", "ArrowRight", "ArrowLeft", "Undo2"]);
+const DIRECTIONAL = new Set(["ChevronRight", "ChevronLeft", "ArrowRight", "ArrowLeft", "Undo2", "FastForward"]);
 
 function icon(svg: IconSvgElement, name: string): Icon {
   const flip = DIRECTIONAL.has(name) ? { "data-rtl-flip": "" } : {};
@@ -301,6 +302,8 @@ export const Eye = icon(ViewIcon, "Eye");
 export const EyeOff = icon(ViewOffSlashIcon, "EyeOff");
 export const RotateCcw = icon(ArrowTurnBackwardIcon, "RotateCcw");
 export const RotateCw = icon(ArrowTurnForwardIcon, "RotateCw");
+/** Moving something on ahead of its date: the year to its next step. */
+export const FastForward = icon(FastForwardIcon, "FastForward");
 export const Undo2 = icon(Undo02Icon, "Undo2");
 export const RefreshCw = icon(RefreshIcon, "RefreshCw");
 export const Save = icon(FloppyDiskIcon, "Save");

@@ -406,9 +406,6 @@
   "SetupShellSkeleton": {
     "loadingCycleSetup": "Loading Cycle setup"
   },
-  "CycleSurfaceSkeleton": {
-    "loadingCycle": "Loading Cycle"
-  },
   "SetupStepFooter": {
     "back": "Back",
     "cancel": "Cancel"

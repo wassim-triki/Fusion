@@ -24,20 +24,18 @@ public sealed class YearHttpTests
         var linaYear = await lina.GetFromJsonAsync<JsonElement>($"/api/performance/cycles/{cycleId}/year");
         Assert.Equal("Team", linaYear.GetProperty("data").GetProperty("scope").GetString());
         Assert.Equal(JsonValueKind.Null, linaYear.GetProperty("data").GetProperty("nextMove").ValueKind);
-        Assert.Equal(HttpStatusCode.Forbidden, (await lina.GetAsync($"/api/performance/cycles/{cycleId}/move-on")).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await lina.PostAsJsonAsync($"/api/performance/cycles/{cycleId}/move-on",
             new { expectedVersion = w.Cycle.Version, to = "Execution" })).StatusCode);
 
         using var outsider = factory.CreateAuthenticatedClient(tenantId: Guid.NewGuid(), employeeId: Guid.NewGuid(), permissions: Admin);
         Assert.Equal(HttpStatusCode.NotFound, (await outsider.GetAsync($"/api/performance/cycles/{cycleId}/year")).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await outsider.GetAsync($"/api/performance/cycles/{cycleId}/move-on")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await outsider.PostAsJsonAsync($"/api/performance/cycles/{cycleId}/move-on",
             new { expectedVersion = w.Cycle.Version, to = "Execution" })).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await outsider.PostAsJsonAsync($"/api/performance/cycles/{cycleId}/nudges",
             new { employeeIds = new[] { w.Nour } })).StatusCode);
 
         using var admin = factory.CreateAuthenticatedClient(employeeId: Guid.NewGuid(), permissions: Admin);
-        var preview = await admin.GetFromJsonAsync<JsonElement>($"/api/performance/cycles/{cycleId}/move-on");
+        var preview = await admin.GetFromJsonAsync<JsonElement>($"/api/performance/cycles/{cycleId}/year");
         var move = preview.GetProperty("data").GetProperty("nextMove");
         Assert.Equal("closePlanning", move.GetProperty("kind").GetString());
         Assert.Equal(2, move.GetProperty("affected").GetInt32());

@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** B-405 slice 2, the year's domain (B-390 row 2): one phase rule that never goes backwards, HR moving the year on from a dry run, the year's steps with who is in each, nudges, rounds closing themselves; closed ○ 2026-11-10. Evidence: `test-backend.ps1 Performance` 772 passed, 1 failed (a test still pressing the deleted manual close; fixed, its class 7 passed), 2 skipped; `@repo/api` and `performance` type-check; round-and-peers 7 passed.
+**Last finished:** B-405 slice 3, the Year page (B-390 row 3), In review 2026-11-10: the year for the administrator, a manager and an employee, the next step under today, the steps with people, first use as outlines, the year moved on in place, nudges; Overview and `/cycle` deleted. No screens yet (stack start stopped for low memory); `screens-b405-year.cjs` takes them.
 
 ## Active work
 
@@ -14,4 +14,4 @@ Session queue: a fresh session takes the first open row, sets it as Active work 
 
 | # | Session | Board items | Effort | Notes |
 |---|---|---|---|---|
-| 3+ | Performance's slices 3–13 | B-405–B-411, B-392, B-389, B-418 (edges) | per slice | One row of `plans/B-390-slices.md` per session, in its order; Insights is slice 13. Slice 1 (the frame, B-422) and slice 2 (the year's domain: `GET cycles/{id}/year`, `GET|POST cycles/{id}/move-on`, `POST cycles/{id}/nudges`, `CyclePhase.ResultsOut`) built 2026-11-10; slice 3 draws the Year page on slice 2's contract (`YearDto` in `@repo/api`). Port the explorers' drawings literally (memory `port-accepted-drawings-closely`); every slice holds D-95 (no brown in light mode, sections' edges lined up). |
+| 4+ | Performance's slices 4–13 | B-405–B-411, B-392, B-389, B-418 (edges) | per slice | One row of `plans/B-390-slices.md` per session, in its order; Insights is slice 13. Slice 1 (the frame, B-422) and slice 2 (the year's domain: `GET cycles/{id}/year`, `GET|POST cycles/{id}/move-on`, `POST cycles/{id}/nudges`, `CyclePhase.ResultsOut`) built 2026-11-10; slice 3 (the Year page at `/`, `components/year/`) built 2026-11-10, In review. Next: slice 4, Goals' domain. Port the explorers' drawings literally (memory `port-accepted-drawings-closely`); every slice holds D-95 (no brown in light mode, sections' edges lined up). |

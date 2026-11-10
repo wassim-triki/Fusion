@@ -406,9 +406,6 @@
   "SetupShellSkeleton": {
     "loadingCycleSetup": "جارٍ تحميل إعداد الدورة"
   },
-  "CycleSurfaceSkeleton": {
-    "loadingCycle": "جارٍ تحميل الدورة"
-  },
   "SetupStepFooter": {
     "back": "رجوع",
     "cancel": "إلغاء"

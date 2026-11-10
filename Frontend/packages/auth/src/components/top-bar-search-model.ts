@@ -98,7 +98,7 @@ export function searchPages(user: AuthUser | null, rights: SearchRights): Search
     rights.manageEmployees && { id: "hire", href: "/core/people/add", icon: "hire" },
     core && canViewCoreAccessProfiles(user) && { id: "roles", href: "/core/settings/roles", icon: "roles" },
     core && canAccessCoreSettings(user) && { id: "coreSettings", href: "/core/settings", icon: "settings" },
-    perf && hasCorePermission(user, "performance.cycle.manage", "Tenant") && { id: "cycle", href: "/performance/cycle", icon: "cycle" },
+    perf && hasCorePermission(user, "performance.cycle.manage", "Tenant") && { id: "cycle", href: "/performance", icon: "cycle" },
     { id: "settings", href: "/settings", icon: "settings" },
   ];
   return pages.filter((page): page is SearchPage => Boolean(page));
@@ -296,7 +296,7 @@ export function buildResults(
       kind: "thing", key: `round:${r.id}`, label: r.name, sub: text.sub.reviewRound, icon: "review",
       href: r.administers ? `/performance/reviews/rounds/${r.id}` : "/performance/reviews",
     })),
-    ...performance.cycles.map((c): SearchItem => ({ kind: "thing", key: `cycle:${c.id}`, label: c.name, sub: text.sub.cycle, icon: "cycle", href: "/performance/cycle" })),
+    ...performance.cycles.map((c): SearchItem => ({ kind: "thing", key: `cycle:${c.id}`, label: c.name, sub: text.sub.cycle, icon: "cycle", href: `/performance?cycle=${encodeURIComponent(c.id)}` })),
   ] : [];
   const reportItems: SearchItem[] = (core?.reports ?? []).map((r) => ({
     kind: "thing", key: `report:${r.id}`, label: r.name, sub: text.sub.report, icon: "report", href: `/core/reports/${r.id}`,

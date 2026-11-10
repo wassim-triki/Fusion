@@ -1,0 +1,133 @@
+{
+  "words": {
+    "today": "aujourd’hui",
+    "yesterday": "hier",
+    "daysAgo": "{count, plural, one {il y a # jour} other {il y a # jours}}"
+  },
+  "phase": {
+    "Planning": "Planification",
+    "Execution": "Exécution",
+    "Review": "Évaluation",
+    "ResultsOut": "Résultats publiés"
+  },
+  "YearTimeline": {
+    "label": "Les étapes de l’année",
+    "today": "Aujourd’hui {day}"
+  },
+  "YearPage": {
+    "loading": "Chargement de l’année",
+    "noYear": "Pas encore d’année",
+    "noYearYet": "Votre entreprise n’a pas encore commencé son année de performance.",
+    "setUpTheYear": "Préparer l’année",
+    "beingSetUp": "{name} est en préparation",
+    "continueSetup": "Continuer la préparation",
+    "dates": "Du {start} au {end}",
+    "move": {
+      "closePlanning": "Passer à l’exécution",
+      "launchRound": "Lancer la campagne d’évaluation",
+      "release": "Publier les résultats"
+    }
+  },
+  "NextStep": {
+    "yourNextStep": "Votre prochaine étape",
+    "nothingForYou": "Rien pour vous pour l’instant",
+    "open": "Ouvrir",
+    "dueOn": "Pour le {day}",
+    "since": "Depuis le {day}",
+    "plansDue": "Plans attendus le {day}, {days, plural, =0 {aujourd’hui} one {dans # jour} other {dans # jours}}",
+    "reviewsOpen": "Évaluations à partir du {day}",
+    "resultsFrom": "Résultats à partir du {day}",
+    "yearEnds": "{name} se termine le {day}",
+    "plansNotForward": "{count, plural, one {# personne n’a pas soumis de plan} other {# personnes n’ont pas soumis de plan}}",
+    "plansWithManagers": "{count, plural, one {# plan attend son manager} other {# plans attendent leur manager}}",
+    "notUpdated": "{count, plural, one {# personne n’a mis à jour aucun objectif depuis 30 jours} other {# personnes n’ont mis à jour aucun objectif depuis 30 jours}}",
+    "reviewsWithManagers": "{count, plural, one {# évaluation attend son manager} other {# évaluations attendent leur manager}}",
+    "selfReviewsLeft": "{count, plural, one {# personne n’a pas rédigé son auto-évaluation} other {# personnes n’ont pas rédigé leur auto-évaluation}}",
+    "setUpNextYear": "Préparer l’année suivante",
+    "endsByItself": "{name} se termine d’elle-même le {day}",
+    "nudgeThem": "Les relancer",
+    "nudgeTheManagers": "Relancer les managers",
+    "nudgeName": "Relancer {name}",
+    "nudgeFailed": "La relance n’a pas pu être envoyée.",
+    "nudgedToast": "{count, plural, =0 {Personne n’avait besoin d’une relance} one {# personne relancée} other {# personnes relancées}}",
+    "nudgedPeople": "{count, plural, =0 {Personne n’avait besoin d’une relance} one {# personne relancée le {day}} other {# personnes relancées le {day}}}",
+    "nudgedOne": "{name} a été relancé·e",
+    "waitingOn": "En attente de {name}",
+    "planWith": "Votre plan est chez {name}",
+    "reviewWith": "{name} rédige votre évaluation"
+  },
+  "MovePreview": {
+    "preview": "Aperçu",
+    "cancel": "Annuler",
+    "couldntMove": "L’année n’a pas pu passer à l’étape suivante.",
+    "insteadOf": "Aujourd’hui au lieu du {day}",
+    "title": {
+      "closePlanning": "Passer à l’exécution aujourd’hui",
+      "launchRound": "Lancer la campagne d’évaluation aujourd’hui",
+      "release": "Publier les résultats aujourd’hui"
+    },
+    "go": {
+      "closePlanning": "Passer à l’exécution",
+      "launchRound": "Lancer la campagne",
+      "release": "{count, plural, one {Publier # résultat} other {Publier # résultats}}"
+    },
+    "moved": {
+      "closePlanning": "L’année est passée à l’exécution.",
+      "launchRound": "La campagne d’évaluation a commencé.",
+      "release": "Résultats publiés."
+    },
+    "blocker": {
+      "yearNotStarted": "L’année n’a pas encore commencé.",
+      "noDraftRound": "Préparez d’abord la campagne d’évaluation ; la lancer fait passer l’année à l’évaluation.",
+      "nothingReady": "Aucune évaluation n’est encore prête à publier."
+    },
+    "draftTheRound": "Préparer la campagne",
+    "everyone": "Tout le monde",
+    "approvedPlans": "Plans approuvés",
+    "stillWriting": "En rédaction ou chez un manager",
+    "everyoneInTheRound": "Toute la campagne",
+    "managers": "Managers",
+    "ready": "Prêtes",
+    "stillBeingWritten": "Encore en rédaction",
+    "rows": {
+      "updatesOpen": "Les mises à jour s’ouvrent sur les objectifs approuvés",
+      "locked": "Verrouillés ; les changements passent par le manager",
+      "keepGoing": "Ils continuent ; rien de ce qu’ils ont écrit n’est perdu",
+      "selfReviewOpens": "Leur auto-évaluation s’ouvre",
+      "reviewsOpen": "Les évaluations à rédiger s’ouvrent au fil des auto-évaluations",
+      "releasedNow": "Publiées maintenant",
+      "releasedWhenDone": "Publiées une fois terminées"
+    },
+    "oneNotificationEach": "Une notification par personne, qui ouvre là où agir"
+  },
+  "PhaseSteps": {
+    "yourTeam": "Votre équipe",
+    "people": "{count, plural, one {# personne} other {# personnes}}",
+    "putForward": "{count} sur {total} soumis",
+    "reviewedOf": "{count} sur {total} évalués",
+    "released": "Publiés le {day}",
+    "title": {
+      "Planning": "Plans",
+      "Execution": "Mises à jour des objectifs",
+      "Review": "Évaluation de fin d’année",
+      "ResultsOut": "Résultats"
+    },
+    "notStarted": "Pas commencé",
+    "writing": "En rédaction",
+    "withYou": "Chez vous",
+    "withTheirManager": "Chez leur manager",
+    "approved": "Approuvés",
+    "stillPlanning": "Encore en planification",
+    "updated": "Mis à jour ces 30 derniers jours",
+    "quiet": "Sans mise à jour depuis 30 jours",
+    "notInRound": "Hors de cette campagne",
+    "selfReview": "Rédigent leur auto-évaluation",
+    "yoursToWrite": "À rédiger par vous",
+    "reviewed": "Évalués",
+    "stillBeingWritten": "Encore en rédaction",
+    "notReadYet": "Pas encore lus",
+    "acknowledged": "Confirmés",
+    "closedWithoutResult": "Clôturés sans résultat",
+    "andMore": "et {count} de plus"
+  }
+}

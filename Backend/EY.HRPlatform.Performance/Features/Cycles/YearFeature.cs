@@ -366,10 +366,10 @@ public sealed class NudgeHandler(PerformanceDbContext db, IPerformanceAudit audi
     private static NudgeTarget? Target(Guid cycleId, YearStandings.Person person) => person.Standing switch
     {
         YearStandings.NotStarted or YearStandings.Drafting or YearStandings.Returned
-            => new(person.EmployeeId, "plan", $"/performance/plan?cycle={cycleId}"),
+            => new(person.EmployeeId, "plan", $"/performance/goals?cycle={cycleId}"),
         YearStandings.Submitted when person.ManagerEmployeeId is Guid manager
             => new(manager, "approve", PerformanceNotificationTemplates.TeamPath),
-        YearStandings.Quiet => new(person.EmployeeId, "progress", $"/performance/plan?cycle={cycleId}"),
+        YearStandings.Quiet => new(person.EmployeeId, "progress", $"/performance/goals?cycle={cycleId}"),
         YearStandings.SelfReview => new(person.EmployeeId, "selfReview", PerformanceNotificationTemplates.ReviewPath(person.ReviewId!.Value)),
         YearStandings.WithManager when person.ManagerEmployeeId is Guid manager
             => new(manager, "review", PerformanceNotificationTemplates.ReviewPath(person.ReviewId!.Value)),

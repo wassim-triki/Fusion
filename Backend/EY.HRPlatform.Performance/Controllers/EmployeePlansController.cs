@@ -143,6 +143,28 @@ public sealed class EmployeePlansController(IMediator mediator, IPerformanceAcce
         return MapResult(await mediator.Send(new ApprovePlanCommand(cycleId, planId, Actor, version.ExpectedVersion), cancellationToken));
     }
 
+    // Home's Needs you answers in place and sends no version: the plan's current one is used, and a plan that
+    // isn't waiting for this reviewer is refused by the same handlers as above.
+    [HttpPost("plans/{planId:guid}/decision/approve")]
+    public async Task<ActionResult<ApiResponse<EmployeePlanDto>>> ApproveInPlace(Guid cycleId, Guid planId, CancellationToken cancellationToken)
+    {
+        if (!policy.CanReviewDirectReports(User)) return CapabilityForbidden();
+        var plan = await mediator.Send(new GetPlanForReviewQuery(cycleId, planId, Actor), cancellationToken);
+        if (!plan.IsSuccess) return MapResult(plan);
+        return MapResult(await mediator.Send(new ApprovePlanCommand(cycleId, planId, Actor, plan.Value.Version), cancellationToken));
+    }
+
+    [HttpPost("plans/{planId:guid}/decision/return")]
+    public async Task<ActionResult<ApiResponse<EmployeePlanDto>>> ReturnInPlace(
+        Guid cycleId, Guid planId, [FromBody] PlanDecisionReasonRequest request, CancellationToken cancellationToken)
+    {
+        if (!policy.CanReviewDirectReports(User)) return CapabilityForbidden();
+        var plan = await mediator.Send(new GetPlanForReviewQuery(cycleId, planId, Actor), cancellationToken);
+        if (!plan.IsSuccess) return MapResult(plan);
+        return MapResult(await mediator.Send(
+            new ReturnPlanCommand(cycleId, planId, new ReturnPlanRequest(request.Reason) { ExpectedVersion = plan.Value.Version }, Actor), cancellationToken));
+    }
+
     [HttpPost("plans/{planId:guid}/exceptional-approve")]
     public async Task<ActionResult<ApiResponse<EmployeePlanDto>>> ExceptionalApprove(
         Guid cycleId, Guid planId, [FromBody] ExceptionalApprovePlanRequest request, CancellationToken cancellationToken)

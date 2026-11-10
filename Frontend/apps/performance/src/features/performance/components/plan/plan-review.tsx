@@ -41,6 +41,7 @@ import { RequestUpdateAction } from "../update-requests/update-requests";
 import { PlanRail, latestReturn } from "./plan-rail";
 import { DevelopmentSection } from "./development-section";
 import { ChangeRequestDraft, ChangeRequestOutcome, useChangeRequestDrafts, useLeaveGuard } from "./change-requests";
+import { PlanChanges } from "./plan-changes";
 import { PlanSurfaceSkeleton } from "./plan-skeleton";
 import { initials } from "./plan-lib";
 import { useTranslations } from "next-intl";
@@ -95,6 +96,7 @@ export function PlanReview({ cycle, planId }: { cycle: CycleSummaryDto; planId: 
       <PlanDocument
         main={
           <>
+            {plan.changesSinceReturn ? <div className="mb-8"><PlanChanges plan={plan} /></div> : null}
             <ObjectiveLedgerReadOnly plan={plan} targets={targets} cycleId={cycle.id} cycle={cycle} drafts={drafts} />
             <div className="mt-10">
               <DevelopmentSection cycleId={cycle.id} employeeId={plan.employee.id} />

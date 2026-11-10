@@ -1290,6 +1290,10 @@ export interface AlignmentMapNodeDto {
   progress: number;
   /** Company and unit nodes only. */
   personal: PersonalAlignmentDto | null;
+  /** The measure in words. */
+  measure: string | null;
+  /** The unit a unit goal belongs to. */
+  orgUnitId: string | null;
 }
 
 export interface AlignmentMapDto {

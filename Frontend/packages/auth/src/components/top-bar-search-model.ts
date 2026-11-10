@@ -84,7 +84,7 @@ export function searchPages(user: AuthUser | null, rights: SearchRights): Search
     core && { id: "people", href: "/core/people", icon: "people" },
     rights.orgChart && { id: "orgChart", href: "/core/organization?view=people", icon: "chart" },
     core && canAccessOwnCoreProfile(user) && { id: "profile", href: "/core/profile", icon: "user" },
-    perf && { id: "plan", href: "/performance/plan", icon: "goal" },
+    perf && { id: "plan", href: "/performance/goals", icon: "goal" },
     perf && { id: "oneOnOnes", href: "/performance/one-on-ones", icon: "oneOnOne" },
     perf && { id: "feedback", href: "/performance/feedback", icon: "praise" },
     perf && { id: "reviews", href: "/performance/reviews", icon: "review" },

@@ -2,28 +2,6 @@
   "MapSkeleton": {
     "loadingTheAlignmentMap": "Loading the alignment map"
   },
-  "GoalsPage": {
-    "loadingGoals": "Loading objectives"
-  },
-  "GoalsWorkspace": {
-    "loadingPerformance": "Loading Performance",
-    "loadingCycle": "Loading Cycle",
-    "noCycleYet": "No Cycle yet",
-    "organizationDirectionOpensOnceA": "Organization direction opens once a Performance Cycle exists.",
-    "draftObjectiveRemoved": "Draft objective removed.",
-    "publishedAsCompanyDirection": "Published as company direction.",
-    "map": "Map",
-    "mapView": "Map view",
-    "list": "List",
-    "listView": "List view",
-    "organizationDirectionView": "Organization direction view",
-    "createCompanyObjective": "Create company objective",
-    "organizationDirection": "Organization direction",
-    "overview": "Year",
-    "noPublishedDirectionForThis": "No published direction for this cycle",
-    "openTheList": "Open the list",
-    "loadingGoals": "Loading objectives"
-  },
   "DirectionNode": {
     "personal": "{total} personal",
     "hideThem": "{counts}. Hide them",
@@ -267,5 +245,78 @@
     "noStatus": "{count} not reported",
     "personal": "{count, plural, one {# personal objective} other {# personal objectives}}",
     "personalWithParts": "{count, plural, one {# personal objective} other {# personal objectives}}: {parts}"
+  },
+  "Place": {
+    "loading": "Loading goals",
+    "loadingTheMap": "Loading the map",
+    "noYearYet": "No year is running yet",
+    "goals": "Goals",
+    "you": "You",
+    "company": "Company",
+    "view": "View",
+    "goalsView": "Goals",
+    "map": "Map",
+    "addACompanyGoal": "Add a company goal",
+    "addAUnitGoal": "Add a unit goal"
+  },
+  "You": {
+    "sentTo": "Sent to {name}",
+    "sent": "Sent",
+    "couldNotSend": "Your plan couldn't be sent.",
+    "couldNotSave": "That couldn't be saved.",
+    "updateProgress": "Update progress",
+    "sendTo": "Send to {name}",
+    "send": "Send",
+    "goalAdded": "Goal added",
+    "addAGoal": "Add a goal",
+    "asked": "{name} asked, {day}",
+    "yourReviewer": "Your reviewer",
+    "ofYourPlan": "{title}, {weight}% of your plan",
+    "weightDone": "{weight}%, {progress}% done",
+    "ofYourPlanDone": "of your plan done",
+    "ofTheYearGone": "{share}% of the year gone",
+    "approvedBy": "Approved by {name}, {day}",
+    "approvedOn": "Approved {day}",
+    "yourPlan": "Your {year} plan",
+    "planningEnds": "Planning ends {day}",
+    "withSince": "With {name} since {day}",
+    "with": "With {name}",
+    "weightsSharedEvenly": "Weights shared evenly, always 100",
+    "sharedEvenly": "Shared evenly",
+    "today": "Today",
+    "milestonesDone": "{done} of {count} done",
+    "valueOn": "{value}, {day}",
+    "noUpdateYet": "No update yet",
+    "askedOn": "Asked {day}",
+    "status": {
+      "OnTrack": "On track",
+      "AtRisk": "At risk",
+      "OffTrack": "Off track"
+    }
+  },
+  "Company": {
+    "noUpdateYet": "No update yet",
+    "you": "You",
+    "yourUnit": "your unit",
+    "hide": "Hide",
+    "fromYourTeam": "{count, plural, one {# goal from your team} other {# goals from your team}}",
+    "peoplesGoals": "{count, plural, one {# person's goal} other {# people's goals}}",
+    "noCompanyGoals": "No company goals yet",
+    "ownerCompany": "{name}, company",
+    "company": "Company",
+    "addAUnitGoal": "Add a unit goal",
+    "fewer": "Fewer",
+    "under": "{units, plural, =0 {No unit goals} one {# unit goal} other {# unit goals}}, {people, plural, =0 {no people's goals} one {# person's goal} other {# people's goals}}",
+    "noUnitGoalsYet": "No unit goals under it yet",
+    "drafts": "Not published yet",
+    "notPublished": "Draft",
+    "noUnitGoals": "No goals for this unit yet",
+    "noOnesGoalsYet": "Nobody's goals support it yet",
+    "status": {
+      "OnTrack": "On track",
+      "AtRisk": "At risk",
+      "OffTrack": "Off track"
+    },
+    "straightUnder": "{count, plural, one {# goal straight under it} other {# goals straight under it}}"
   }
 }

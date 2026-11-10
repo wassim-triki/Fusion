@@ -389,5 +389,14 @@
       "over": "Le poids du plan dépasse de {over} %"
     }
   },
-  "leaveGuard": "Quitter sans envoyer vos demandes de modification ?"
+  "leaveGuard": "Quitter sans envoyer vos demandes de modification ?",
+  "PlanChanges": {
+    "title": "Modifié depuis votre demande",
+    "putForwardAgain": "Soumis de nouveau le {day}",
+    "youAsked": "Vous avez demandé, {day}",
+    "nothingChanged": "Aucun objectif ajouté, retiré ou modifié",
+    "added": "Nouveau",
+    "removed": "Retiré",
+    "none": "aucun"
+  }
 }

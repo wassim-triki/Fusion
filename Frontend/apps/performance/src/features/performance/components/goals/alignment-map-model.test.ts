@@ -17,6 +17,7 @@ function node(id: string, kind: AlignmentMapNodeDto["kind"], parentId: string | 
     id, kind, parentId, title: `Objective ${id}`, orgUnitName: kind === "OrgUnit" ? `Unit ${id}` : null,
     ownerName: null, isOwn: false, status: null, statusSince: null, hasProgress: false, progress: 0,
     personal: kind === "Personal" ? null : { total: 0, onTrack: 0, atRisk: 0, offTrack: 0, noStatus: 0, readable: 0 },
+    measure: null, orgUnitId: null,
     ...extra,
   };
 }

@@ -15,7 +15,7 @@ import { Button, Skeleton } from "@repo/ds";
 import { Section } from "@repo/ds/shell";
 import { formatPercent } from "@repo/ds/lib/numbers";
 
-const PLAN = "/performance/plan";
+const PLAN = "/performance/goals";
 
 
 /** The viewer's own Performance summary (D-32): the same read Performance's person page uses. */

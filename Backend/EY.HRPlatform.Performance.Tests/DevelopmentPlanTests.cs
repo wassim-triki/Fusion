@@ -145,7 +145,7 @@ public sealed class DevelopmentPlanTests
         Ok(await AddAsync(w, As(w.Lina), Goal("Present at the forum", version: plan.Version)));
         var told = await Run(w, db => db.Notifications.AsNoTracking().Where(n => n.Kind == PerformanceNotificationKind.DevelopmentGoalAdded).ToListAsync());
         Assert.Contains(told, n => n.RecipientEmployeeId == w.Lina && n.EnglishTitle() == "Nour Trabelsi added a development goal");
-        Assert.Contains(told, n => n.RecipientEmployeeId == w.Nour && n.Href.StartsWith("/performance/plan?cycle=", StringComparison.Ordinal));
+        Assert.Contains(told, n => n.RecipientEmployeeId == w.Nour && n.Href.StartsWith("/performance/goals?cycle=", StringComparison.Ordinal));
         Assert.Equal(2, told.Count);
     }
 

@@ -81,7 +81,7 @@ export function RecordActions({
         ) : null}
         {showDirectionLink ? (
           <Button variant="ghost" size="sm" asChild>
-            <Link href={`/goals?focus=${record.ref.objectiveId}`}>
+            <Link href={`/goals?view=map&focus=${record.ref.objectiveId}`}>
               <GitBranch className="size-3.5" data-icon="inline-start" /> {t("openInOrganizationDirection")}
             </Link>
           </Button>

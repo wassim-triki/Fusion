@@ -143,7 +143,7 @@ export function TeamDirection({
   const data = workspace.data;
   const openCreate = (alignment: ComposerAlignmentContext) =>
     setComposer({ mode: "create", alignment, orgUnitId: data.orgUnitId });
-  const goalsHref = selectedParentId ? `/goals?focus=${selectedParentId}` : "/goals";
+  const goalsHref = selectedParentId ? `/goals?view=map&focus=${selectedParentId}` : "/goals?tab=company";
 
   return (
     <>

@@ -1,6 +1,7 @@
 using EY.HRPlatform.Performance.Domain.Calibration;
 using EY.HRPlatform.Performance.Domain.Common;
 using EY.HRPlatform.Performance.Domain.Cycles;
+using EY.HRPlatform.Performance.Domain.Objectives;
 using EY.HRPlatform.Performance.Domain.Plans;
 using EY.HRPlatform.Performance.Domain.Progress;
 using EY.HRPlatform.Performance.Domain.Reviews;
@@ -69,7 +70,7 @@ public sealed class GetWorkItemsHandler(PerformanceDbContext db)
     {
         ["plan-write"] = "Continue your plan",
         ["plan-revise"] = "Revise your plan",
-        ["plan-decision"] = "Review plan",
+        ["plan-decision"] = "Read it",
         ["objective-status"] = "Review status",
         ["update-request"] = "Record progress",
         ["feedback-request"] = "Answer",
@@ -91,7 +92,7 @@ public sealed class GetWorkItemsHandler(PerformanceDbContext db)
     /// <summary>The sidebar destination each item is counted under: the workspace where that kind of work lives.</summary>
     internal static class Sections
     {
-        public const string Plan = "/performance/plan";
+        public const string Plan = "/performance/goals";
         public const string Team = "/performance/team";
         public const string Reviews = "/performance/reviews";
         public const string Feedback = "/performance/feedback";
@@ -118,7 +119,7 @@ public sealed class GetWorkItemsHandler(PerformanceDbContext db)
                 : open == 1 ? "1 change to address"
                 : open > 1 ? $"{open} changes to address"
                 : "Your reviewer asked for changes",
-            cycle.PlanningDeadline, "/performance/plan", Section: Sections.Plan,
+            cycle.PlanningDeadline, "/performance/goals", Section: Sections.Plan,
             Steps: WorkSteps.Plan(returned, open, reviewer)));
     }
 
@@ -128,12 +129,22 @@ public sealed class GetWorkItemsHandler(PerformanceDbContext db)
         var plans = await db.EmployeePlans.AsNoTracking()
             .Where(p => p.CycleId == cycle.Id && p.ResponsibleManagerId == employeeId && p.State == PlanLifecycleState.Submitted)
             .OrderBy(p => p.SubmittedAt)
-            .Select(p => new { p.Id, p.EmployeeDisplayName, p.SubmittedAt })
+            .Select(p => new
+            {
+                p.Id, p.EmployeeDisplayName, p.SubmittedAt,
+                Goals = db.Objectives.Count(o => o.EmployeePlanId == p.Id && o.State != ObjectiveLifecycleState.Archived),
+                Returned = p.Decisions.Any(d => d.Kind == PlanDecisionKind.Returned),
+            })
             .ToListAsync(token);
+        // Answered in place on Home (D-66): approve, or ask for a change with a note; what changed since a return reads on the plan.
         items.AddRange(plans.Select(p => new FusionWorkItemDto(Id("plan-decision", p.Id), Module, "plan-decision",
-            $"Review {p.EmployeeDisplayName}'s plan", "Waiting for your decision", null,
+            $"{p.EmployeeDisplayName}'s plan",
+            (p.Returned ? "Changed as you asked, put forward again" : "Put forward") + (p.Goals == 1 ? ", 1 goal" : $", {p.Goals} goals"),
+            null,
             PerformanceNotificationTemplates.PlanPath(cycle.Id, p.Id), new FusionWorkSubjectDto(p.EmployeeDisplayName), Sections.Team,
-            WaitingSince: p.SubmittedAt)));
+            WaitingSince: p.SubmittedAt,
+            Decision: new FusionWorkDecisionDto(
+                $"/cycles/{cycle.Id}/plans/{p.Id}/decision/approve", $"/cycles/{cycle.Id}/plans/{p.Id}/decision/return", "Ask for a change"))));
     }
 
     /// <summary>

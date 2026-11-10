@@ -53,6 +53,7 @@ Commands (stack up, Performance in Development):
 - `node .local-docs/agents/data/demo-preset.mjs reset <preset>`: builds a new one, then retires the previous one. If the new build fails, the previous one stays as it was.
 - `node .local-docs/agents/data/journey-demo-preset.cjs <preset>`: read-only checks that the preset reached its state, plus the demo clock's refusals.
 - `node .local-docs/agents/data/screens-b406-goal-panel.cjs`: B-406 slice 5 part 1, the goal panel (mid-year, just written, a company goal) and the progress dialog on the `midyear` and `planning` presets, dark 1440×900 through the shell (opens the dialog, never saves).
+- `node .local-docs/agents/data/screens-b406-goals-pages.cjs`: B-406 slice 5 part 2, Goals (You mid-year and while planning, a manager's unit tab and Company) on the `midyear` and `planning` presets, dark 1440×900 through the shell
 - `node .local-docs/agents/data/screens-b405-year.cjs [domain]`: B-405 slice 3, the Year page as Amira, Mariam and Aicha on the `planning` preset, dark 1440×900 through the shell (changes no data).
 - `node .local-docs/agents/data/screens-demo-presets.cjs [preset ...]`: the slice 4 and 6 boards only presets reach, dark 1440×900 through the shell (changes no data).
 

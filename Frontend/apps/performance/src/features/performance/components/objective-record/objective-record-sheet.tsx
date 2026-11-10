@@ -165,11 +165,11 @@ function recordBack(record: ObjectiveRecord, viewerEmployeeId: string | null, sa
   if (record.kind === "plan" && plan) {
     const own = viewerEmployeeId !== null && plan.owner.id === viewerEmployeeId;
     return {
-      href: own ? withCycle("/plan", record.ref.cycleId) : planHref({ cycleId: record.ref.cycleId, planId: plan.planId }),
+      href: own ? withCycle("/goals?tab=you", record.ref.cycleId) : planHref({ cycleId: record.ref.cycleId, planId: plan.planId }),
       label: own ? say("myPlan") : say("theirPlan", { name: plan.owner.name ?? say("their") }),
     };
   }
-  return { href: withCycle("/goals", record.ref.cycleId), label: say("direction") };
+  return { href: withCycle("/goals?tab=company", record.ref.cycleId), label: say("direction") };
 }
 
 function RecordLoading() {

@@ -2,28 +2,6 @@
   "MapSkeleton": {
     "loadingTheAlignmentMap": "Chargement de la carte d’alignement"
   },
-  "GoalsPage": {
-    "loadingGoals": "Chargement des objectifs"
-  },
-  "GoalsWorkspace": {
-    "loadingPerformance": "Chargement de Performance",
-    "loadingCycle": "Chargement du cycle",
-    "noCycleYet": "Pas encore de cycle",
-    "organizationDirectionOpensOnceA": "L’orientation de l’organisation s’ouvre dès qu’un cycle de performance existe.",
-    "draftObjectiveRemoved": "Objectif en brouillon supprimé.",
-    "publishedAsCompanyDirection": "Publié comme orientation de l’entreprise.",
-    "map": "Carte",
-    "mapView": "Vue carte",
-    "list": "Liste",
-    "listView": "Vue liste",
-    "organizationDirectionView": "Vue de l’orientation de l’organisation",
-    "createCompanyObjective": "Créer un objectif d’entreprise",
-    "organizationDirection": "Orientation de l’organisation",
-    "overview": "Année",
-    "noPublishedDirectionForThis": "Aucune orientation publiée pour ce cycle",
-    "openTheList": "Ouvrir la liste",
-    "loadingGoals": "Chargement des objectifs"
-  },
   "DirectionNode": {
     "personal": "{total} personnels",
     "hideThem": "{counts}. Les masquer",
@@ -267,5 +245,78 @@
     "noStatus": "{count} non communiqués",
     "personal": "{count, plural, one {# objectif personnel} other {# objectifs personnels}}",
     "personalWithParts": "{count, plural, one {# objectif personnel} other {# objectifs personnels}} : {parts}"
+  },
+  "Place": {
+    "loading": "Chargement des objectifs",
+    "loadingTheMap": "Chargement de la carte",
+    "noYearYet": "Aucune année n'est encore en cours",
+    "goals": "Objectifs",
+    "you": "Vous",
+    "company": "Entreprise",
+    "view": "Vue",
+    "goalsView": "Objectifs",
+    "map": "Carte",
+    "addACompanyGoal": "Ajouter un objectif d'entreprise",
+    "addAUnitGoal": "Ajouter un objectif d'unité"
+  },
+  "You": {
+    "sentTo": "Envoyé à {name}",
+    "sent": "Envoyé",
+    "couldNotSend": "Votre plan n'a pas pu être envoyé.",
+    "couldNotSave": "Cela n'a pas pu être enregistré.",
+    "updateProgress": "Mettre à jour l'avancement",
+    "sendTo": "Envoyer à {name}",
+    "send": "Envoyer",
+    "goalAdded": "Objectif ajouté",
+    "addAGoal": "Ajouter un objectif",
+    "asked": "{name} a demandé, {day}",
+    "yourReviewer": "Votre évaluateur",
+    "ofYourPlan": "{title}, {weight} % de votre plan",
+    "weightDone": "{weight} %, {progress} % fait",
+    "ofYourPlanDone": "de votre plan réalisé",
+    "ofTheYearGone": "{share} % de l'année écoulée",
+    "approvedBy": "Approuvé par {name}, {day}",
+    "approvedOn": "Approuvé le {day}",
+    "yourPlan": "Votre plan {year}",
+    "planningEnds": "La planification se termine le {day}",
+    "withSince": "Chez {name} depuis le {day}",
+    "with": "Chez {name}",
+    "weightsSharedEvenly": "Poids répartis également, toujours 100",
+    "sharedEvenly": "Réparti également",
+    "today": "Aujourd'hui",
+    "milestonesDone": "{done} sur {count} faits",
+    "valueOn": "{value}, {day}",
+    "noUpdateYet": "Pas encore de mise à jour",
+    "askedOn": "Demandé le {day}",
+    "status": {
+      "OnTrack": "En bonne voie",
+      "AtRisk": "À risque",
+      "OffTrack": "Hors trajectoire"
+    }
+  },
+  "Company": {
+    "noUpdateYet": "Pas encore de mise à jour",
+    "you": "Vous",
+    "yourUnit": "votre unité",
+    "hide": "Masquer",
+    "fromYourTeam": "{count, plural, one {# objectif de votre équipe} other {# objectifs de votre équipe}}",
+    "peoplesGoals": "{count, plural, one {# objectif individuel} other {# objectifs individuels}}",
+    "noCompanyGoals": "Pas encore d'objectifs d'entreprise",
+    "ownerCompany": "{name}, entreprise",
+    "company": "Entreprise",
+    "addAUnitGoal": "Ajouter un objectif d'unité",
+    "fewer": "Moins",
+    "under": "{units, plural, =0 {Aucun objectif d'unité} one {# objectif d'unité} other {# objectifs d'unité}}, {people, plural, =0 {aucun objectif individuel} one {# objectif individuel} other {# objectifs individuels}}",
+    "noUnitGoalsYet": "Pas encore d'objectifs d'unité",
+    "drafts": "Pas encore publiés",
+    "notPublished": "Brouillon",
+    "noUnitGoals": "Pas encore d'objectifs pour cette unité",
+    "noOnesGoalsYet": "Aucun objectif individuel ne le soutient encore",
+    "status": {
+      "OnTrack": "En bonne voie",
+      "AtRisk": "À risque",
+      "OffTrack": "Hors trajectoire"
+    },
+    "straightUnder": "{count, plural, one {# objectif directement dessous} other {# objectifs directement dessous}}"
   }
 }

@@ -85,8 +85,8 @@ public sealed class WorkItemsHttpTests
         Assert.Equal("Write your plan", item.GetProperty("title").GetString());
         Assert.Equal("performance", item.GetProperty("module").GetString());
         Assert.Equal(world.Cycle.PlanningDeadline.ToString("yyyy-MM-dd"), item.GetProperty("dueOn").GetString());
-        Assert.Equal("/performance/plan", item.GetProperty("href").GetString());
-        Assert.Equal("/performance/plan", item.GetProperty("section").GetString());
+        Assert.Equal("/performance/goals", item.GetProperty("href").GetString());
+        Assert.Equal("/performance/goals", item.GetProperty("section").GetString());
         Assert.StartsWith("performance:plan-write:", item.GetProperty("id").GetString());
         Assert.Equal(JsonValueKind.Null, item.GetProperty("waitingSince").ValueKind);
     }
@@ -100,7 +100,7 @@ public sealed class WorkItemsHttpTests
         var item = Assert.Single(await WorkAsync(world.Factory.CreateAuthenticatedClient(employeeId: world.Sami, permissions: Employee)));
         Assert.Equal("plan-revise", Kind(item));
         Assert.Equal("Revise your plan", item.GetProperty("title").GetString());
-        Assert.Equal("/performance/plan", item.GetProperty("section").GetString());
+        Assert.Equal("/performance/goals", item.GetProperty("section").GetString());
     }
 
     [Fact]
@@ -110,13 +110,47 @@ public sealed class WorkItemsHttpTests
         await using var _ = world.Factory;
         var lina = world.Factory.CreateAuthenticatedClient(employeeId: world.Lina, permissions: Manager);
         var decision = Assert.Single(await WorkAsync(lina), item => Kind(item) == "plan-decision");
-        Assert.Equal("Review Sami's plan", decision.GetProperty("title").GetString());
+        Assert.Equal("Sami's plan", decision.GetProperty("title").GetString());
+        Assert.Equal("Put forward, 0 goals", decision.GetProperty("context").GetString());
         Assert.Equal("Sami", decision.GetProperty("subject").GetProperty("displayName").GetString());
         Assert.Equal($"/performance/cycles/{world.Cycle.Id}/plans/{world.SamiPlan.Id}", decision.GetProperty("href").GetString());
         Assert.Equal("/performance/team", decision.GetProperty("section").GetString());
         AssertWaitingSince(world.SamiPlan.SubmittedAt!.Value, decision);
 
         await DecideAsync(world, plan => plan.Approve(world.Lina));
+        Assert.DoesNotContain(await WorkAsync(lina), item => Kind(item) == "plan-decision");
+    }
+
+    [Fact]
+    public async Task A_plan_is_answered_in_place_by_its_reviewer_only()
+    {
+        var world = await PlanningAsync();
+        await using var _ = world.Factory;
+        var lina = world.Factory.CreateAuthenticatedClient(employeeId: world.Lina, permissions: Manager);
+        var decision = Assert.Single(await WorkAsync(lina), item => Kind(item) == "plan-decision").GetProperty("decision");
+        var approve = "/api/performance" + decision.GetProperty("approvePath").GetString();
+        var change = "/api/performance" + decision.GetProperty("declinePath").GetString();
+        Assert.Equal("Ask for a change", decision.GetProperty("declineLabel").GetString());
+
+        // Another manager, the plan's owner and another company's manager are all refused; the plan still waits.
+        var other = world.Factory.CreateAuthenticatedClient(employeeId: Guid.NewGuid(), permissions: Manager);
+        Assert.False((await other.PostAsync(approve, null)).IsSuccessStatusCode);
+        var sami = world.Factory.CreateAuthenticatedClient(employeeId: world.Sami, permissions: Employee);
+        Assert.False((await sami.PostAsync(approve, null)).IsSuccessStatusCode);
+        var elsewhere = world.Factory.CreateAuthenticatedClient(tenantId: Guid.NewGuid(), employeeId: world.Lina, permissions: Manager);
+        Assert.False((await elsewhere.PostAsync(approve, null)).IsSuccessStatusCode);
+        Assert.False((await elsewhere.PostAsJsonAsync(change, new { reason = "No" })).IsSuccessStatusCode);
+        Assert.Contains(await WorkAsync(lina), item => Kind(item) == "plan-decision");
+
+        // Asking for a change sends the plan back with the note; put forward again, it reads as changed and is approved in place.
+        var returned = await lina.PostAsJsonAsync(change, new { reason = "Add a measure" });
+        Assert.True(returned.IsSuccessStatusCode, await returned.Content.ReadAsStringAsync());
+        Assert.DoesNotContain(await WorkAsync(lina), item => Kind(item) == "plan-decision");
+        await DecideAsync(world, plan => plan.Submit(world.Sami, Ready));
+        var again = Assert.Single(await WorkAsync(lina), item => Kind(item) == "plan-decision");
+        Assert.StartsWith("Changed as you asked", again.GetProperty("context").GetString());
+        var approved = await lina.PostAsync(approve, null);
+        Assert.True(approved.IsSuccessStatusCode, await approved.Content.ReadAsStringAsync());
         Assert.DoesNotContain(await WorkAsync(lina), item => Kind(item) == "plan-decision");
     }
 
@@ -143,7 +177,7 @@ public sealed class WorkItemsHttpTests
         Assert.Equal("update-request", Kind(item));
         Assert.Equal("Update progress on Ship the playbook", item.GetProperty("title").GetString());
         Assert.Equal($"/performance/cycles/{world.Cycle.Id}/objectives/{objectiveId}?mode=record", item.GetProperty("href").GetString());
-        Assert.Equal("/performance/plan", item.GetProperty("section").GetString());
+        Assert.Equal("/performance/goals", item.GetProperty("section").GetString());
         AssertWaitingSince(requestedAt, item);
     }
 

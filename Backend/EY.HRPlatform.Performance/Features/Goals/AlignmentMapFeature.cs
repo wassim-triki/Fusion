@@ -92,7 +92,9 @@ public sealed class GetAlignmentMapHandler(PerformanceDbContext db, ICoreWorkfor
                     Count(ObjectiveStatus.AtRisk),
                     Count(ObjectiveStatus.OffTrack),
                     Count(null),
-                    Math.Min(total, readableByParent.GetValueOrDefault(objective.Id)))));
+                    Math.Min(total, readableByParent.GetValueOrDefault(objective.Id))),
+                PerformanceMappers.MeasurementSummary(objective),
+                objective.OrgUnitId));
         }
 
         foreach (var objective in personal.OrderByDescending(o => IsOwn(o, request.Actor)).ThenBy(o => o.Title))
@@ -110,7 +112,8 @@ public sealed class GetAlignmentMapHandler(PerformanceDbContext db, ICoreWorkfor
                 objective.StatusSince,
                 reported.HasProgress,
                 reported.Progress,
-                null));
+                null,
+                PerformanceMappers.MeasurementSummary(objective)));
         }
 
         return Result.Success(new AlignmentMapDto(cycle.Id, nodes));

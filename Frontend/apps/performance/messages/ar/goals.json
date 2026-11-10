@@ -2,28 +2,6 @@
   "MapSkeleton": {
     "loadingTheAlignmentMap": "جارٍ تحميل خريطة الارتباط"
   },
-  "GoalsPage": {
-    "loadingGoals": "جارٍ تحميل الأهداف"
-  },
-  "GoalsWorkspace": {
-    "loadingPerformance": "جارٍ تحميل الأداء",
-    "loadingCycle": "جارٍ تحميل الدورة",
-    "noCycleYet": "لا دورة بعد",
-    "organizationDirectionOpensOnceA": "يُفتح توجه المؤسسة عند وجود دورة أداء.",
-    "draftObjectiveRemoved": "حُذف الهدف المسودة.",
-    "publishedAsCompanyDirection": "نُشر كتوجه للشركة.",
-    "map": "الخريطة",
-    "mapView": "عرض الخريطة",
-    "list": "القائمة",
-    "listView": "عرض القائمة",
-    "organizationDirectionView": "عرض توجه المؤسسة",
-    "createCompanyObjective": "إنشاء هدف للشركة",
-    "organizationDirection": "توجه المؤسسة",
-    "overview": "السنة",
-    "noPublishedDirectionForThis": "لا توجه منشور لهذه الدورة",
-    "openTheList": "فتح القائمة",
-    "loadingGoals": "جارٍ تحميل الأهداف"
-  },
   "DirectionNode": {
     "personal": "{total} شخصية",
     "hideThem": "{counts}. إخفاؤها",
@@ -267,5 +245,78 @@
     "noStatus": "{count} بلا تحديث",
     "personal": "{count, plural, one {هدف شخصي واحد} two {هدفان شخصيان} other {# أهداف شخصية}}",
     "personalWithParts": "{count, plural, one {هدف شخصي واحد} two {هدفان شخصيان} other {# أهداف شخصية}}: {parts}"
+  },
+  "Place": {
+    "loading": "جارٍ تحميل الأهداف",
+    "loadingTheMap": "جارٍ تحميل الخريطة",
+    "noYearYet": "لا توجد سنة جارية بعد",
+    "goals": "الأهداف",
+    "you": "أنت",
+    "company": "الشركة",
+    "view": "العرض",
+    "goalsView": "الأهداف",
+    "map": "الخريطة",
+    "addACompanyGoal": "إضافة هدف للشركة",
+    "addAUnitGoal": "إضافة هدف للوحدة"
+  },
+  "You": {
+    "sentTo": "أُرسلت إلى {name}",
+    "sent": "أُرسلت",
+    "couldNotSend": "تعذّر إرسال خطتك.",
+    "couldNotSave": "تعذّر حفظ ذلك.",
+    "updateProgress": "تحديث التقدم",
+    "sendTo": "إرسال إلى {name}",
+    "send": "إرسال",
+    "goalAdded": "أُضيف الهدف",
+    "addAGoal": "إضافة هدف",
+    "asked": "طلب {name}، {day}",
+    "yourReviewer": "مراجعك",
+    "ofYourPlan": "{title}، {weight}% من خطتك",
+    "weightDone": "{weight}%، أُنجز {progress}%",
+    "ofYourPlanDone": "من خطتك أُنجز",
+    "ofTheYearGone": "مضى {share}% من السنة",
+    "approvedBy": "وافق عليها {name}، {day}",
+    "approvedOn": "تمت الموافقة {day}",
+    "yourPlan": "خطتك لـ {year}",
+    "planningEnds": "ينتهي التخطيط {day}",
+    "withSince": "لدى {name} منذ {day}",
+    "with": "لدى {name}",
+    "weightsSharedEvenly": "الأوزان موزعة بالتساوي، دائمًا 100",
+    "sharedEvenly": "موزع بالتساوي",
+    "today": "اليوم",
+    "milestonesDone": "أُنجز {done} من {count}",
+    "valueOn": "{value}، {day}",
+    "noUpdateYet": "لا تحديث بعد",
+    "askedOn": "طُلب {day}",
+    "status": {
+      "OnTrack": "على المسار",
+      "AtRisk": "في خطر",
+      "OffTrack": "خارج المسار"
+    }
+  },
+  "Company": {
+    "noUpdateYet": "لا تحديث بعد",
+    "you": "أنت",
+    "yourUnit": "وحدتك",
+    "hide": "إخفاء",
+    "fromYourTeam": "{count, plural, one {هدف واحد من فريقك} two {هدفان من فريقك} few {# أهداف من فريقك} other {# هدفًا من فريقك}}",
+    "peoplesGoals": "{count, plural, one {هدف فردي واحد} two {هدفان فرديان} few {# أهداف فردية} other {# هدفًا فرديًا}}",
+    "noCompanyGoals": "لا أهداف للشركة بعد",
+    "ownerCompany": "{name}، الشركة",
+    "company": "الشركة",
+    "addAUnitGoal": "إضافة هدف للوحدة",
+    "fewer": "أقل",
+    "under": "{units, plural, =0 {لا أهداف للوحدات} one {هدف وحدة واحد} two {هدفا وحدتين} few {# أهداف وحدات} other {# هدف وحدة}}، {people, plural, =0 {لا أهداف فردية} one {هدف فردي واحد} two {هدفان فرديان} few {# أهداف فردية} other {# هدفًا فرديًا}}",
+    "noUnitGoalsYet": "لا أهداف وحدات تحته بعد",
+    "drafts": "لم تُنشر بعد",
+    "notPublished": "مسودة",
+    "noUnitGoals": "لا أهداف لهذه الوحدة بعد",
+    "noOnesGoalsYet": "لا أهداف فردية تدعمه بعد",
+    "status": {
+      "OnTrack": "على المسار",
+      "AtRisk": "في خطر",
+      "OffTrack": "خارج المسار"
+    },
+    "straightUnder": "{count, plural, one {هدف واحد تحته مباشرة} two {هدفان تحته مباشرة} few {# أهداف تحته مباشرة} other {# هدفًا تحته مباشرة}}"
   }
 }

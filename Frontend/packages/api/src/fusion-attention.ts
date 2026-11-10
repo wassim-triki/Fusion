@@ -38,6 +38,8 @@ export interface FusionWorkItem {
 export interface FusionWorkDecision {
   approvePath: string;
   declinePath: string;
+  /** What the no is called when it isn't a decline ("Ask for a change"). */
+  declineLabel?: string | null;
 }
 
 export interface FusionWorkStep {

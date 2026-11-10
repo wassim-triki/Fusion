@@ -41,9 +41,10 @@ public sealed record FusionWorkItemDto(
 
 /// <summary>
 /// A yes or no the home can give in place (B-179): paths below the module's gateway prefix for approving and declining;
-/// declining sends <c>{ "reason": "…" }</c>, which is required.
+/// declining sends <c>{ "reason": "…" }</c>, which is required. <paramref name="DeclineLabel"/> names the no when it isn't a
+/// decline ("Ask for a change").
 /// </summary>
-public sealed record FusionWorkDecisionDto(string ApprovePath, string DeclinePath);
+public sealed record FusionWorkDecisionDto(string ApprovePath, string DeclinePath, string? DeclineLabel = null);
 
 /// <summary>
 /// Something dated that isn't work (a 1:1, a deadline, a cycle's end), served at `GET /api/{module}/upcoming`.

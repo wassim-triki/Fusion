@@ -389,5 +389,14 @@
       "over": "Plan weight is over by {over}%"
     }
   },
-  "leaveGuard": "Leave without sending your change requests?"
+  "leaveGuard": "Leave without sending your change requests?",
+  "PlanChanges": {
+    "title": "Changed since you asked",
+    "putForwardAgain": "Put forward again {day}",
+    "youAsked": "You asked, {day}",
+    "nothingChanged": "No goal was added, removed or changed",
+    "added": "New",
+    "removed": "Removed",
+    "none": "none"
+  }
 }

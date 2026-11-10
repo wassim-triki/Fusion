@@ -92,7 +92,7 @@ public sealed class GetUpcomingHandler(PerformanceDbContext db)
                 && await db.Participants.AsNoTracking().AnyAsync(p => p.CycleId == cycle.Id && p.EmployeeId == actor.EmployeeId, token);
             if (participates && InRange(cycle.PlanningDeadline, today, horizon))
                 items.Add(new(Id("plans-due", cycle.Id), Module, "plans-due", "Plans due", $"{cycle.Name} planning closes",
-                    cycle.PlanningDeadline, null, "/performance/plan", ["plan-write", "plan-revise"]));
+                    cycle.PlanningDeadline, null, "/performance/goals", ["plan-write", "plan-revise"]));
             if ((participates || actor.Administers) && InRange(cycle.EndDate, today, horizon))
             {
                 var context = participates

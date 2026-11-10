@@ -22,6 +22,7 @@ export function HomeDecision({ item }: { item: WorkListItem }) {
   const [why, setWhy] = useState("");
   const [error, setError] = useState<string | null>(null);
   if (!item.decision) return null;
+  const no = item.decision.declineLabel ?? t("decline");
   const base = getFusionAttentionModule(item.module as FusionAttentionModuleKey).apiBase;
 
   // Done means the row leaves Needs you; a refusal (someone answered first, the person changed) shows beside it.
@@ -44,7 +45,7 @@ export function HomeDecision({ item }: { item: WorkListItem }) {
       {error ? <span role="alert" className="max-w-56 truncate type-meta text-destructive" title={error}>{error}</span> : null}
       <Popover open={asking} onOpenChange={setAsking}>
         <PopoverTrigger asChild>
-          <Button writes type="button" size="icon-sm" variant="ghost" disabled={busy} aria-label={t("decline")} title={t("decline")}
+          <Button writes type="button" size="icon-sm" variant="ghost" disabled={busy} aria-label={no} title={no}
             className="text-muted-foreground hover:text-foreground">
             <X className="size-4" />
           </Button>
@@ -53,9 +54,9 @@ export function HomeDecision({ item }: { item: WorkListItem }) {
           <label htmlFor={`why-${item.id}`} className="type-label font-semibold">{t("why")}</label>
           <Textarea id={`why-${item.id}`} autoFocus rows={3} maxLength={500} value={why} onChange={(event) => setWhy(event.target.value)}
             placeholder={t("whyPlaceholder")} className="resize-none" />
-          <Button writes type="button" variant="destructive" className="justify-self-end" disabled={!why.trim() || busy}
+          <Button writes type="button" variant={item.decision.declineLabel ? "default" : "destructive"} className="justify-self-end" disabled={!why.trim() || busy}
             onClick={() => void send(item.decision!.declinePath, { reason: why.trim() })}>
-            {t("decline")}
+            {no}
           </Button>
         </PopoverContent>
       </Popover>

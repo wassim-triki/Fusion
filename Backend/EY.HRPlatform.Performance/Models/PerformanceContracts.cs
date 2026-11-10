@@ -450,7 +450,9 @@ public sealed record AlignmentMapNodeDto(
     DateTime? StatusSince,
     bool HasProgress,
     decimal Progress,
-    PersonalAlignmentDto? Personal);
+    PersonalAlignmentDto? Personal,
+    string? Measure = null,
+    Guid? OrgUnitId = null);
 
 /// <summary>The cycle's published direction as a tree, shaped for the alignment map (D-06, S-15).</summary>
 public sealed record AlignmentMapDto(Guid CycleId, IReadOnlyList<AlignmentMapNodeDto> Nodes);
@@ -1032,6 +1034,9 @@ public sealed record ReturnPlanRequest(string? Feedback, IReadOnlyList<ChangeReq
     [System.Text.Json.Serialization.JsonRequired]
     public uint ExpectedVersion { get; init; }
 }
+
+/// <summary>What Home sends when a reviewer asks for a change in place: the note that goes back with the plan.</summary>
+public sealed record PlanDecisionReasonRequest(string? Reason);
 
 public sealed record ExceptionalApprovePlanRequest(string Reason)
 {

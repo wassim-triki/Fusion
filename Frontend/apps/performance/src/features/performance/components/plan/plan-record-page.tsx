@@ -5,14 +5,15 @@ import { useCycle, usePlanDetail } from "../../api/use-performance";
 import { useWorkspaceContext } from "../../api/use-workspace";
 import { performanceFailure } from "../../api/performance-failure";
 import { ContentUnavailable } from "../content-unavailable";
-import { MyPlanWorkspace } from "./my-plan-workspace";
 import { PlanReview } from "./plan-review";
 import { PlanPageSkeleton } from "./plan-skeleton";
 import { useRecentRecord } from "@repo/api/react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 /**
- * One plan, addressed by its own Cycle. The owner sees their plan workspace for that Cycle; the
+ * One plan, addressed by its own Cycle. The owner is sent to Goals, You; the
  * responsible reviewer and administrators see the same plan presented for a decision. What each may do
  * comes from the server's capabilities on the plan, never from this page.
  */
@@ -45,13 +46,20 @@ export function PlanRecordPage({ cycleId, planId }: { cycleId: string; planId: s
   if (cycle.error) return <ContentUnavailable error={cycle.error} onRetry={cycle.refetch} />;
   if (!cycle.data) return <PlanPageSkeleton />;
 
-  if (plan.data?.isOwner) {
-    return <MyPlanWorkspace cycle={cycle.data.cycle} />;
-  }
+  // Your own plan lives in Goals, You.
+  if (plan.data?.isOwner) return <ToGoals cycleId={cycleId} />;
 
   return (
     <PageContainer width="wide">
       <PlanReview cycle={cycle.data.cycle} planId={planId} />
     </PageContainer>
   );
+}
+
+function ToGoals({ cycleId }: { cycleId: string }) {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace(`/goals?tab=you&cycle=${encodeURIComponent(cycleId)}`);
+  }, [router, cycleId]);
+  return <PlanPageSkeleton />;
 }

@@ -171,7 +171,7 @@ describe("FusionHome", () => {
     mocks.work = {
       modules: ready,
       items: [
-        { id: "b", module: "performance", kind: "update-request", title: "Update progress on Ship the playbook", href: "/performance/plan" },
+        { id: "b", module: "performance", kind: "update-request", title: "Update progress on Ship the playbook", href: "/performance/goals" },
         { id: "a", module: "performance", kind: "self-assessment", title: "Complete your self-assessment", dueOn: "2099-01-02", href: "/performance/reviews/1",
           actionLabel: "Write your self-assessment" },
       ],
@@ -183,7 +183,7 @@ describe("FusionHome", () => {
     const needs = screen.getByRole("region", { name: "Needs you" });
     expect(needs.textContent).toContain("2");
     const links = Array.from(needs.querySelectorAll("a")).map((link) => link.getAttribute("href"));
-    expect(links).toEqual(["/performance/reviews/1", "/performance/plan"]);
+    expect(links).toEqual(["/performance/reviews/1", "/performance/goals"]);
     expect(screen.getByRole("link", { name: /Complete your self-assessment.*Write your self-assessment/ })).toBeTruthy();
     expect(mocks.requested).toEqual(["core", "performance"]);
   });
@@ -224,7 +224,7 @@ describe("FusionHome", () => {
         { id: "late", module: "performance", kind: "manager-assessment", title: "Assess Omar", dueOn: day(-1), href: "/performance/reviews/3" },
       ],
     };
-    mocks.upcoming.items = [{ id: "plans", module: "performance", kind: "plans-due", title: "Plans due", date: day(10), href: "/performance/plan" }];
+    mocks.upcoming.items = [{ id: "plans", module: "performance", kind: "plans-due", title: "Plans due", date: day(10), href: "/performance/goals" }];
     render(<FusionHome />);
     const needs = Array.from(screen.getByRole("region", { name: "Needs you" }).querySelectorAll("a")).map((a) => a.textContent ?? "");
     expect(needs[0]).toContain("Assess Omar");
@@ -279,7 +279,7 @@ describe("FusionHome", () => {
       employeeId: "e", displayName: "Nour Ben Ali", jobTitle: null, orgUnitName: null, stableEmployeeKey: null, relation: "Self",
       currentCycle: {
         cycleId: "c", cycleName: "FY2027 Cycle", cycleState: "Active", phase: "Planning", isParticipant: true, planId: "p",
-        planStatus: "Draft", overallProgress: null, planHref: "/performance/plan",
+        planStatus: "Draft", overallProgress: null, planHref: "/performance/goals",
         objectives: [
           { objectiveId: "o1", number: 1, title: "A", alignedTo: null, weight: 40, progress: null, href: "#", status: null },
           { objectiveId: "o2", number: 2, title: "B", alignedTo: null, weight: 30, progress: null, href: "#", status: null },
@@ -291,7 +291,7 @@ describe("FusionHome", () => {
     render(<FusionHome />);
     expect(await screen.findByText("Your plan is a draft")).toBeTruthy();
     expect(screen.getByText(/2 objectives · weights at 70% · Mariam Gharbi approves it/)).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Continue your plan" }).getAttribute("href")).toBe("/performance/plan");
+    expect(screen.getByRole("link", { name: "Continue your plan" }).getAttribute("href")).toBe("/performance/goals");
   });
 
   it("shows a year with no plan yet as the cycle, who approves, and the way to write it", async () => {
@@ -307,7 +307,7 @@ describe("FusionHome", () => {
     expect(await screen.findByText("No plan yet")).toBeTruthy();
     expect(screen.getByText("FY2027 Cycle · Review")).toBeTruthy();
     expect(screen.getByText("Sami Ben Youssef approves it")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Write your plan" }).getAttribute("href")).toBe("/performance/plan");
+    expect(screen.getByRole("link", { name: "Write your plan" }).getAttribute("href")).toBe("/performance/goals");
   });
 
   it("shows an approved year as the plan's figure, its bar and its objectives' status", async () => {
@@ -315,7 +315,7 @@ describe("FusionHome", () => {
     mocks.summary = {
       employeeId: "e", displayName: "Nour Ben Ali", jobTitle: null, orgUnitName: null, stableEmployeeKey: null, relation: "Self",
       currentCycle: { cycleId: "c", cycleName: "FY2027 Cycle", cycleState: "Active", phase: "Execution", isParticipant: true,
-        planId: "p", planStatus: "Approved", overallProgress: 39, planHref: "/performance/plan",
+        planId: "p", planStatus: "Approved", overallProgress: 39, planHref: "/performance/goals",
         objectives: [
           { objectiveId: "o1", number: 1, title: "A", alignedTo: null, weight: 50, progress: 40, href: "#", status: "OnTrack" },
           { objectiveId: "o2", number: 2, title: "B", alignedTo: null, weight: 50, progress: 38, href: "#", status: "AtRisk" },
@@ -346,7 +346,7 @@ describe("FusionHome", () => {
   it("keeps Performance's work when Core HR fails, and says so in one line", () => {
     mocks.work = {
       modules: [{ key: "core", label: "Core HR", status: "error" }, ready[1]!],
-      items: [{ id: "a", module: "performance", kind: "plan-write", title: "Write your plan", dueOn: "2099-01-02", href: "/performance/plan" }],
+      items: [{ id: "a", module: "performance", kind: "plan-write", title: "Write your plan", dueOn: "2099-01-02", href: "/performance/goals" }],
     };
     render(<FusionHome />);
     expect(screen.getByRole("link", { name: /Write your plan/ })).toBeTruthy();
@@ -385,7 +385,7 @@ describe("FusionHome", () => {
   });
 
   it("keeps the work when praise fails, with one quiet line", () => {
-    mocks.work = { modules: ready, items: [{ id: "a", module: "performance", kind: "plan-write", title: "Write your plan", dueOn: "2099-01-02", href: "/performance/plan" }] };
+    mocks.work = { modules: ready, items: [{ id: "a", module: "performance", kind: "plan-write", title: "Write your plan", dueOn: "2099-01-02", href: "/performance/goals" }] };
     mocks.praise = { data: undefined, error: new Error("down") };
     render(<FusionHome />);
     expect(screen.getByRole("link", { name: /Write your plan/ })).toBeTruthy();

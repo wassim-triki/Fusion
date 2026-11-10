@@ -52,7 +52,7 @@ describe("Performance's pages", () => {
     const pages = renderHook(() => usePerformancePages("fy27")).result.current;
     expect(pages.items.map((item) => [item.href, item.navigateHref])).toEqual([
       ["/", "/?cycle=fy27"],
-      ["/plan", "/plan?cycle=fy27"],
+      ["/goals", "/goals?cycle=fy27"],
       ["/one-on-ones", undefined],
       ["/feedback", undefined],
     ]);
@@ -66,6 +66,6 @@ describe("Performance's pages", () => {
     state.enterable = [];
     const outside = renderHook(() => usePerformancePages()).result.current;
     expect(outside.pending).toBe(false);
-    expect(hrefs(outside.items)).toEqual(["/"]);
+    expect(hrefs(outside.items)).toEqual(["/", "/goals"]);
   });
 });

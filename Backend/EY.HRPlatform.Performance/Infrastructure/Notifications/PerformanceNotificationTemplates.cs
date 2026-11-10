@@ -63,7 +63,7 @@ public static class PerformanceNotificationTemplates
         => Message($"YearNudge.{stepKey}", "YearNudge.context", actorName, path, ("actor", actorName));
 
     public static string DevelopmentPath(Guid cycleId, Guid? planId, Guid employeeId, bool forOwner)
-        => forOwner ? $"/performance/plan?cycle={cycleId}#development"
+        => forOwner ? $"/performance/goals?cycle={cycleId}#development"
             : planId is Guid id ? $"{PlanPath(cycleId, id)}#development" : $"/performance/people/{employeeId}";
 
     public static PerformanceNotificationMessage ForReview(PerformanceReview review, PerformanceNotificationKind kind, string roundName)

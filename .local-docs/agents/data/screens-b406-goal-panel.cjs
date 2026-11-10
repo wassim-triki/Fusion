@@ -86,7 +86,7 @@ async function myFirstGoal(session, cycleId) {
   const goal = await myFirstGoal(aicha, midCycle);
   {
     const { context, page } = await browse(browser, aicha);
-    await openPanel(page, `/plan?cycle=${midCycle}`, midCycle, goal.id, goal.title);
+    await openPanel(page, `/goals?tab=you&cycle=${midCycle}`, midCycle, goal.id, goal.title);
     await page.screenshot({ path: path.join(OUT, "panel-midyear.png") });
     console.log("ok panel-midyear.png");
     const update = page.getByRole("dialog").getByRole("button", { name: "Update progress" }).first();
@@ -104,7 +104,7 @@ async function myFirstGoal(session, cycleId) {
     const company = (goals.json?.data?.nodes ?? []).find((n) => n.ownershipScope === "Company" && n.childCount > 0)
       ?? (goals.json?.data?.nodes ?? []).find((n) => n.ownershipScope === "Company");
     const { context, page } = await browse(browser, amira);
-    await openPanel(page, `/goals?cycle=${midCycle}`, midCycle, company.id, company.title);
+    await openPanel(page, `/goals?tab=company&cycle=${midCycle}`, midCycle, company.id, company.title);
     await page.screenshot({ path: path.join(OUT, "panel-company.png") });
     console.log("ok panel-company.png");
     await context.close();
@@ -115,7 +115,7 @@ async function myFirstGoal(session, cycleId) {
     const cycle = plan.cycles.current.id;
     const draft = await myFirstGoal(aichaPlanning, cycle);
     const { context, page } = await browse(browser, aichaPlanning);
-    await openPanel(page, `/plan?cycle=${cycle}`, cycle, draft.id, draft.title);
+    await openPanel(page, `/goals?tab=you&cycle=${cycle}`, cycle, draft.id, draft.title);
     await page.screenshot({ path: path.join(OUT, "panel-just-written.png") });
     console.log("ok panel-just-written.png");
     await context.close();

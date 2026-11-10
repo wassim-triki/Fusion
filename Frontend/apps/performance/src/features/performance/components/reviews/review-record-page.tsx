@@ -625,7 +625,7 @@ function ReleasedView({ record }: { record: PerformanceReviewDto }) {
           </>
         ) : null}
       </section>
-      <Link href={withCycle("/plan#development", record.cycleId)} className="mt-3 flex items-center gap-3 rounded-surface bg-card px-5 py-4 hover:bg-inlay/60">
+      <Link href={`${withCycle("/goals?tab=you", record.cycleId)}#development`} className="mt-3 flex items-center gap-3 rounded-surface bg-card px-5 py-4 hover:bg-inlay/60">
         <span className="flex size-9 items-center justify-center rounded-control bg-primary-tint text-primary"><Target className="size-4" aria-hidden /></span>
         <span className="flex-1">
           <span className="block type-label text-foreground">{t("planYourDevelopment")}</span>

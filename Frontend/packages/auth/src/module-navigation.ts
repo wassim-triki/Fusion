@@ -15,7 +15,7 @@ import {
   OneOnOnes,
   Stamp,
   User,
-  UserRoundCheck,
+  Target,
   Users,
 } from "@repo/ds/icons";
 import type { ShellNavItem } from "@repo/ds/shell";
@@ -75,7 +75,7 @@ type NavLabel =
   | "organization"
   | "changes"
   | "reports"
-  | "myPlan"
+  | "goals"
   | "oneOnOnes"
   | "feedback"
   | "reviews";
@@ -110,7 +110,6 @@ export function useCorePages(): ModulePages {
 
 /** Which Performance pages the caller has, from the server's workspace context (navigation, never access). */
 const DESTINATION_OF: Record<string, keyof WorkspaceDestinationsDto> = {
-  "/plan": "myPlan",
   "/one-on-ones": "oneOnOnes",
   "/feedback": "feedback",
   "/reviews": "reviews",
@@ -135,7 +134,7 @@ export function usePerformancePages(cycleId: string | null = null): ModulePages 
     const CYCLE_FREE = new Set(["/one-on-ones", "/feedback"]);
     const all: [NavLabel, string, ShellNavItem["icon"]][] = [
       ["year", "/", CalendarRange],
-      ["myPlan", "/plan", UserRoundCheck],
+      ["goals", "/goals", Target],
       ["oneOnOnes", "/one-on-ones", OneOnOnes],
       ["feedback", "/feedback", FeedbackIcon],
       ["reviews", "/reviews", FileCheck2],

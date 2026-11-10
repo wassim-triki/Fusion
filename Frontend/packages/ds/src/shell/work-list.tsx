@@ -20,7 +20,7 @@ export interface WorkListItem {
   /** What the item's button does; "Open" when the module doesn't say. */
   actionLabel?: string | null;
   /** A yes or no the person gives in place (an approval); rendered by `renderDecision`. */
-  decision?: { approvePath: string; declinePath: string } | null;
+  decision?: { approvePath: string; declinePath: string; declineLabel?: string | null } | null;
 }
 
 export interface WorkListModule {

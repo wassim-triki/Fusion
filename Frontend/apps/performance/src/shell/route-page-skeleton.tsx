@@ -27,7 +27,6 @@ export function PerformanceRouteSkeleton({ label }: { label?: string }) {
   let skeleton;
   if (path === "/one-on-ones") skeleton = <OneOnOnesSkeleton />;
   else if (path.startsWith("/one-on-ones/")) skeleton = <SeriesSkeleton />;
-  else if (path === "/plan") skeleton = <PlanPageSkeleton empty />;
   else if (path === "/team") skeleton = <TeamWorkspaceSkeleton />;
   else if (path === "/feedback") skeleton = <FeedbackPageSkeleton />;
   else if (/^\/cycles\/[^/]+\/plans\//.test(path))

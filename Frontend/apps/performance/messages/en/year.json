@@ -129,5 +129,20 @@
     "acknowledged": "Acknowledged",
     "closedWithoutResult": "Closed without a result",
     "andMore": "and {count} more"
+  },
+  "YearYou": {
+    "yourGoals": "Your goals",
+    "done": "{progress}% done",
+    "weights": "Weights",
+    "noGoalsYet": "No goals yet",
+    "lately": "Lately",
+    "under": "under {goal}",
+    "updated": "Updated {day}",
+    "noUpdateYet": "No update yet",
+    "status": {
+      "OnTrack": "On track",
+      "AtRisk": "At risk",
+      "OffTrack": "Off track"
+    }
   }
 }

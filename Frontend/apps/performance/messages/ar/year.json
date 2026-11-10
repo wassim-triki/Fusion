@@ -129,5 +129,20 @@
     "acknowledged": "تم تأكيدها",
     "closedWithoutResult": "أُغلقت دون نتيجة",
     "andMore": "و{count} آخرون"
+  },
+  "YearYou": {
+    "yourGoals": "أهدافك",
+    "done": "أُنجز {progress}%",
+    "weights": "الأوزان",
+    "noGoalsYet": "لا أهداف بعد",
+    "lately": "مؤخرًا",
+    "under": "ضمن {goal}",
+    "updated": "حُدّث في {day}",
+    "noUpdateYet": "لا تحديث بعد",
+    "status": {
+      "OnTrack": "على المسار",
+      "AtRisk": "في خطر",
+      "OffTrack": "خارج المسار"
+    }
   }
 }

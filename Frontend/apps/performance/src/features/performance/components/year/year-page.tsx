@@ -17,6 +17,7 @@ import { useWorkspaceContext, useYear, useYearCommands } from "../../api/use-wor
 import { ContentUnavailable } from "../content-unavailable";
 import { movedSteps, YearTimeline, yearPosition } from "./year-timeline";
 import { appHref, day, dayMonth, daysBetween, firstName } from "./year-words";
+import { YearYou } from "./year-you";
 
 const PERFORMANCE: ["performance"] = ["performance"];
 
@@ -96,6 +97,7 @@ function TheYear({ year, refetch }: { year: YearDto; refetch: () => Promise<unkn
           <NextStep year={year} caretAt={caretAt} />
         )}
         {year.scope !== "You" && current ? <PhaseSteps year={year} phase={current} /> : null}
+        {year.scope === "You" && current && year.me ? <YearYou cycleId={year.cycleId} phase={current} employeeId={year.me.employeeId} /> : null}
       </div>
     </PageContainer>
   );

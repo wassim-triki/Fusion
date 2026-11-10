@@ -11,10 +11,16 @@ const m = vi.hoisted(() => ({
   nudge: vi.fn(),
   move: vi.fn(),
   refetch: vi.fn(),
+  plan: null as unknown,
+  praise: [] as unknown[],
 }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("../content-unavailable", () => ({ ContentUnavailable: () => <div>Unavailable</div> }));
-vi.mock("@repo/api/query", () => ({ useFusionWork: () => ({ items: m.work }) }));
+vi.mock("@repo/api/query", () => ({ useFusionWork: () => ({ items: m.work }), useCompanyValues: () => ({ data: [] }) }));
+vi.mock("../../api/use-performance", () => ({
+  useMyPlan: () => ({ isLoading: false, data: { participatesInCycle: true, hasPlan: true, preview: null, plan: m.plan } }),
+}));
+vi.mock("../../api/use-conversations", () => ({ usePraisePage: () => ({ data: { items: m.praise, next: null } }) }));
 vi.mock("../../api/use-workspace", () => ({
   useWorkspaceContext: () => ({
     data: { selected: { id: "fy27", name: "FY2027", state: "Active" }, capabilities: { administers: m.administers } },
@@ -108,8 +114,21 @@ describe("The Year page", () => {
       scope: "You", total: 1, nextMove: null, planning: [group("submitted", ["Aicha Bouazizi"])],
       me: { employeeId: "aicha", step: "Planning", standing: "submitted", since: "2026-05-05", managerEmployeeId: "mariam", managerName: "Mariam Gharbi" },
     });
+    m.plan = { state: "Submitted", planProgress: 0, objectives: [
+      { id: "g1", title: "Automate the regression suite", measurementSummary: "From 20% to 85% of the suite automated", directionPath: ["Build a resilient cloud platform", "Cut production incidents by 40%"],
+        planWeight: 34, derivedProgress: 0, status: null, lastProgressAt: null },
+    ] };
+    m.praise = [{ id: "p1", author: { id: "salah", name: "Salah Ben Hassine" }, recipients: [{ id: "aicha", name: "Aicha Bouazizi" }],
+      value: { id: "v1", name: "Ownership" }, message: "The incident drill was the best we have run.", givenAt: "2026-10-05T10:00:00Z", reactions: [], canDelete: false }];
     render(<YearPage />);
     expect(screen.getByText("Waiting on Mariam")).toBeTruthy();
+    // Her half under the next step: her goals, weighted while planning, with their line up; then the latest praise.
+    expect(screen.getByText("Your goals")).toBeTruthy();
+    expect(screen.getByText("Automate the regression suite")).toBeTruthy();
+    expect(screen.getByText("34%")).toBeTruthy();
+    expect(screen.getByText("Cut production incidents by 40%")).toBeTruthy();
+    expect(screen.getByText("Lately")).toBeTruthy();
+    expect(screen.getByText(/The incident drill was the best we have run/)).toBeTruthy();
     expect(screen.getByText("Your plan is with Mariam")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Nudge Mariam" }));
     await waitFor(() => expect(m.nudge).toHaveBeenCalledWith({ employeeIds: ["aicha"] }));

@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** B-405 slice 3, the Year page (B-390 row 3), In review 2026-11-10: the year for the administrator, a manager and an employee, the next step under today, the steps with people, first use as outlines, the year moved on in place, nudges; Overview and `/cycle` deleted. No screens yet (stack start stopped for low memory); `screens-b405-year.cjs` takes them.
+**Last finished:** B-405 slice 3, the Year page with the employee's half (her goals and the latest praise under the next step), In review 2026-11-10; screens on the [screens page](https://claude.ai/artifact/BY7faok5JPSVTHHTisqYjb).
 
 ## Active work
 

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * B-412 (checkpoint 3a) reference screens: the surfaces plans/B-390-design-direction.md §4 names as references,
- * live through the shell (dark, 1440x900, viewport shots) into .local-docs/agents/plans/B-390-screens/reference/.
+ * live through the shell (dark, 1440x900, viewport shots) into .local-docs/agents/plans/B-412-screens/reference/.
+ * Checkpoint 3b adds the objective drawer as built (details and record modes), which the user liked.
  * Carthage · Mid-year for most; Carthage · Next cycle for cycle setup. Changes no data.
  * Usage: node .local-docs/agents/data/screens-b412-reference.cjs   (B412_FORCE=1 retakes existing shots)
  */
@@ -12,7 +13,7 @@ const helper = require("../../../.agents/skills/fusion-dev/scripts/api.cjs");
 
 const BASE = "http://localhost:3000";
 const PASSWORD = process.env.FUSION_LOCAL_PASSWORD;
-const OUT = path.join(__dirname, "..", "plans", "B-390-screens", "reference");
+const OUT = path.join(__dirname, "..", "plans", "B-412-screens", "reference");
 const MID = "midyear-5.example.test";
 const NEXT = "nextcycle-2.example.test";
 fs.mkdirSync(OUT, { recursive: true });
@@ -86,6 +87,12 @@ async function as(browser, email, run) {
     });
     await as(browser, `aicha.bouazizi@${MID}`, async (page) => {
       await visit(page, "home-aicha", "/", 3000);
+      const openGoal = async (p) => { await p.getByText("Automate the regression suite").first().click(); };
+      await visit(page, "objective-drawer", "/performance/plan", 3000, openGoal);
+      await visit(page, "objective-drawer-record", "/performance/plan", 3000, async (p) => {
+        await openGoal(p); await p.waitForTimeout(2500);
+        await p.getByRole("dialog").getByRole("button", { name: /update progress|record progress/i }).first().click();
+      });
     });
     await as(browser, `amira.khelifi@${NEXT}`, async (page) => {
       await visit(page, "cycle-setup", "/performance/cycle/setup", 3000);

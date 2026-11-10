@@ -47,6 +47,8 @@ Core HR's list holds (`design/direction.md` §3, `DESIGN.md` §9). Specific to w
 | Cycle setup (`/performance/cycle/setup/*`) | Liked; keep its steps, date range and recap; polish per B-389. |
 | Praise reactions (Feedback) | The glyphs the user loves (B-393). |
 
+**The objective drawer** (details and update modes, `ObjectiveRecordSheet`; captured as `plans/B-412-screens/reference/objective-drawer*.png`) is a reference after all: the user liked most of it (3a round 2). Its grammar carries into 3b: the accent tile, the line upward as a card, properties as label and value rows, progress as one big figure with a bar, the update as the panel's own mode with a rail from baseline to target.
+
 **Don't use as design reference:** every other Performance surface as built (Overview, the cycle page, Organization direction, My Plan's layout, the reviewer plan page, the 1:1 page, Reviews, calibration, Performance's person page). They are evidence of content and behaviour only. The October Performance references in `design/direction.md` §4 (My Plan, 1:1s, the alignment map) are superseded by the walk's verdicts; the map's interaction (expand, progress on nodes) may be reused, not its page.
 
 **Outside** (structures, from the brief §3): Lattice's reviews with sources beside them; 15Five's manager help on the page where they act; Culture Amp's cascading goals with roll-up; HiBob's calibration worksheet; BambooHR for the friendliness bar and its few concepts.
@@ -72,7 +74,7 @@ Each settled rule becomes a decision (D-43 onwards) and a line in `DESIGN.md`.
 
 **Materials:** tokens from `Frontend/packages/ds/src/styles/tokens.css` with D-32's lightness; Geist and Lora from Google Fonts; Hugeicons as inline SVG; the DS's real shapes (DataTable bands, choice controls, the person band, the Team band). **Real data:** Carthage presets (`data/README.md`: `fresh`, `planning`, `midyear` and the later ones) read through the API; real names with roles (Amira Khelifi, the administrator; Mariam Gharbi, a manager; Aicha Bouazizi, an employee on Mariam's team); demo companies have photos (D-05). Dark first at 1440×900, a theme switch on the page. Labels only, no paragraphs; variants only where the choice is taste, combinations offered where options aren't exclusive (`ui-decisions-shown-per-situation`). Each screen asks the D-40 question: what does this person do that Fusion could have done?
 
-**Checkpoints**, one session each (3a published 2026-11-10: [explorer](https://claude.ai/artifact/U5iCrbjucCuc8ZB6H81qhM), `B-412-style-frame.html`, db doc `frame/main`):
+**Checkpoints**, one session each (3a published 2026-11-10: [explorer](https://claude.ai/artifact/U5iCrbjucCuc8ZB6H81qhM), `B-412-style-frame.html`, db docs `frame/main` and `frame/round2`, recorded as D-43–D-60; 3b published 2026-11-10: [explorer](https://claude.ai/artifact/4nFFGFPJeoYnAF3nPzH3kd), `B-412-goals-conversations.html`, db doc `goals/main`):
 
 | # | Screens | Interactive | Settles |
 | --- | --- | --- | --- |

@@ -1,0 +1,951 @@
+<title>Goals and conversations</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Explorer chrome: a quiet bar of choices around full-size 1440x900 Fusion frames drawn in D-32's tokens. */
+:root {
+  --bg: oklch(0.975 0.004 286); --fg: oklch(0.2 0.006 286); --muted: oklch(0.52 0.014 286); --line: oklch(0.91 0.004 286);
+  --chip: oklch(0.993 0.004 286); --accent: oklch(0.852 0.199 91.9); --accent-ink: oklch(0.28 0.07 60); --focus: oklch(0.55 0.13 264);
+  --sans: "Geist", "Segoe UI", system-ui, sans-serif; --serif: "Lora", Georgia, serif; --mono: "Geist Mono", ui-monospace, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: oklch(0.185 0.004 286); --fg: oklch(0.97 0.002 286); --muted: oklch(0.72 0.012 286); --line: oklch(1 0 0 / 0.1);
+  --chip: oklch(0.235 0.004 286); --accent: oklch(0.795 0.184 86); --accent-ink: oklch(0.28 0.07 60); --focus: oklch(0.75 0.12 264); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: oklch(0.185 0.004 286); --fg: oklch(0.97 0.002 286); --muted: oklch(0.72 0.012 286); --line: oklch(1 0 0 / 0.1);
+  --chip: oklch(0.235 0.004 286); --accent: oklch(0.795 0.184 86); --accent-ink: oklch(0.28 0.07 60); --focus: oklch(0.75 0.12 264); color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 14px; line-height: 1.45; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+button { font: inherit; color: inherit; }
+.xbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line); }
+.bar-in, main { max-width: 1480px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.bar-in { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding-block: 10px; }
+.name { font-family: var(--serif); font-size: 19px; font-weight: 500; white-space: nowrap; }
+.grow { flex: 1; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 999px; padding: 2px; gap: 2px; }
+.seg button { border: 0; background: none; padding: 5px 13px; border-radius: 999px; font-size: 13px; cursor: pointer; color: var(--muted); white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: var(--chip); color: var(--fg); font-weight: 600; box-shadow: 0 0 0 1px var(--line); }
+.saved { font-size: 12px; color: var(--muted); min-width: 60px; }
+.copy { border: 0; background: var(--accent); color: var(--accent-ink); border-radius: 12px; padding: 7px 14px; font-weight: 600; cursor: pointer; }
+main { padding-block: 18px 60px; display: grid; gap: 16px; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.ctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ctl > span { font-size: 12px; color: var(--muted); }
+.stage { border-radius: 18px; overflow: hidden; box-shadow: 0 0 0 1px var(--line); background: var(--chip); }
+.scaler { transform-origin: 0 0; width: 1440px; height: 900px; }
+.qs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 12px; }
+.q { border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; display: grid; gap: 9px; align-content: start; }
+.q-h { display: flex; gap: 8px; align-items: baseline; justify-content: space-between; }
+.q-t { font-weight: 600; }
+.q-show { border: 0; background: none; color: var(--muted); font-size: 12px; text-decoration: underline; cursor: pointer; padding: 0; white-space: nowrap; }
+.opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.pick { border: 1px solid var(--line); background: var(--chip); border-radius: 999px; padding: 5px 12px; font-size: 13px; cursor: pointer; text-align: left; }
+.pick[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.pick .star { opacity: 0.75; margin-left: 4px; font-size: 11px; }
+.feel { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.feel b { font-family: var(--serif); font-weight: 500; font-size: 17px; }
+textarea.note { width: 100%; min-height: 64px; background: var(--chip); color: var(--fg); border: 1px solid var(--line); border-radius: 12px; padding: 9px 11px; font: inherit; resize: vertical; }
+.banner { border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; font-size: 13px; }
+.copybox { display: grid; gap: 6px; }
+.copybox textarea { width: 100%; min-height: 140px; background: var(--chip); color: var(--fg); border: 1px solid var(--line); border-radius: 12px; padding: 9px; font: 12px/1.5 var(--mono); }
+
+/* ================= The Fusion frame, D-32 ================= */
+.fx {
+  --page: oklch(0.215 0.004 286); --card: oklch(0.255 0.004 286); --inlay: oklch(0.29 0.004 286); --sb: oklch(0.2 0.004 286); --pop: oklch(0.3 0.005 286);
+  --f: oklch(0.97 0.002 286); --mu: oklch(0.72 0.012 286); --hl: oklch(1 0 0 / 0.08); --gh: oklch(1 0 0 / 0.1);
+  --pr: oklch(0.795 0.184 86); --pri: oklch(0.28 0.07 60); --pr-text: oklch(0.83 0.16 88);
+  --ok: oklch(0.78 0.15 162); --oks: oklch(0.78 0.15 162 / 0.16); --wa: oklch(0.82 0.16 86); --was: oklch(0.8 0.18 86 / 0.16);
+  --no: oklch(0.704 0.191 22.2); --nos: oklch(0.704 0.191 22.2 / 0.16); --ai: oklch(0.78 0.11 300);
+  --i1: oklch(0.76 0.12 255); --i2: oklch(0.78 0.1 185); --i3: oklch(0.8 0.15 140); --i4: oklch(0.75 0.14 295); --i5: oklch(0.76 0.15 340); --i6: oklch(0.78 0.13 60);
+  --scrim: oklch(0.1 0 0 / 0.5); --shadow: 0 14px 40px -18px oklch(0 0 0 / 0.7);
+  --r-surface: 20px; --r-inset: 14px; --r-control: 12px;
+  width: 1440px; height: 900px; display: flex; position: relative; overflow: hidden;
+  background: var(--page); color: var(--f); font-family: var(--sans); font-size: 14px; line-height: 1.45; color-scheme: dark;
+}
+.fx[data-t="light"] {
+  --page: oklch(0.975 0.004 286); --card: oklch(0.993 0.003 286); --inlay: oklch(0.958 0.004 286); --sb: oklch(0.965 0.004 286); --pop: oklch(0.995 0.002 286);
+  --f: oklch(0.2 0.006 286); --mu: oklch(0.52 0.014 286); --hl: oklch(0.91 0.004 286); --gh: oklch(0.2 0.004 286 / 0.08);
+  --pr: oklch(0.852 0.199 91.9); --pri: oklch(0.28 0.07 60); --pr-text: oklch(0.55 0.13 70);
+  --ok: oklch(0.55 0.15 160); --oks: oklch(0.6 0.15 160 / 0.14); --wa: oklch(0.55 0.13 70); --was: oklch(0.85 0.19 92 / 0.3);
+  --no: oklch(0.577 0.245 27.3); --nos: oklch(0.577 0.245 27.3 / 0.12); --ai: oklch(0.5 0.16 300);
+  --i1: oklch(0.52 0.15 255); --i2: oklch(0.52 0.1 185); --i3: oklch(0.53 0.14 140); --i4: oklch(0.52 0.17 295); --i5: oklch(0.55 0.18 340); --i6: oklch(0.58 0.15 50);
+  --scrim: oklch(0.2 0 0 / 0.25); --shadow: 0 14px 40px -18px oklch(0 0 0 / 0.25); color-scheme: light;
+}
+@supports (corner-shape: squircle) { .fx { --r-surface: 36px; --r-inset: 22px; --r-control: 22px; } .fx .sq { corner-shape: squircle; } }
+.fx svg.ic { width: var(--s, 18px); height: var(--s, 18px); flex: none; }
+.fx .sb { width: 248px; flex: none; background: var(--sb); padding: 16px 12px 12px; display: flex; flex-direction: column; gap: 1px; box-shadow: inset -1px 0 0 var(--hl); }
+.fx .co { display: flex; align-items: center; gap: 10px; padding: 2px 6px 14px; }
+.fx .logo { width: 34px; height: 34px; border-radius: 10px; background: var(--pr); color: var(--pri); display: grid; place-items: center; font-weight: 700; }
+.fx .co b { display: block; font-size: 14px; } .fx .co small { color: var(--mu); font-size: 12px; }
+.fx .ni { display: flex; align-items: center; gap: 11px; padding: 7px 10px; border-radius: var(--r-control); color: var(--mu); font-size: 14px; cursor: default; }
+.fx .ni.on { background: var(--inlay); color: var(--f); font-weight: 600; }
+.fx .ni .ct { margin-left: auto; font-size: 11.5px; background: var(--inlay); color: var(--f); padding: 0 7px; border-radius: 99px; font-weight: 600; }
+.fx .ni.on .ct { background: var(--card); }
+.fx .grp { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mu); padding: 14px 10px 5px; display: flex; align-items: center; gap: 8px; }
+.fx .grp.fold { text-transform: none; letter-spacing: 0; font-size: 14px; color: var(--mu); padding: 7px 10px; }
+.fx .grp.fold.open { color: var(--f); font-weight: 600; }
+.fx .switch { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--r-control); background: var(--card); box-shadow: inset 0 0 0 1px var(--hl); margin: 8px 0 6px; font-weight: 600; }
+.fx .switch .mk { width: 28px; height: 28px; border-radius: 8px; background: var(--was); color: var(--pr-text); display: grid; place-items: center; }
+.fx .me { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 10px 8px 2px; border-top: 1px solid var(--hl); }
+.fx .me small { display: block; color: var(--mu); font-size: 12px; }
+.fx .main { flex: 1; min-width: 0; display: flex; flex-direction: column; position: relative; }
+.fx .top { height: 56px; flex: none; display: flex; align-items: center; gap: 16px; padding: 0 22px 0 28px; }
+.fx .crumb { display: flex; align-items: center; gap: 8px; color: var(--mu); font-size: 14px; }
+.fx .crumb b { color: var(--f); font-weight: 500; }
+.fx .crumb .ic { --s: 14px; }
+.fx .search { margin-left: auto; width: 300px; height: 36px; border-radius: var(--r-control); background: var(--card); box-shadow: inset 0 0 0 1px var(--hl); color: var(--mu); display: flex; align-items: center; gap: 9px; padding: 0 12px; font-size: 13px; }
+.fx .search kbd { margin-left: auto; font: 11px var(--mono); background: var(--inlay); padding: 1px 6px; border-radius: 6px; }
+.fx .tb { color: var(--mu); display: grid; place-items: center; width: 34px; height: 34px; }
+.fx .scroll { flex: 1; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; }
+.fx .pg { padding: 6px 36px 48px; display: grid; gap: 22px; max-width: 1120px; }
+
+/* type roles */
+.fx .t-page { font-family: var(--serif); font-weight: 500; font-size: 32px; line-height: 1.15; letter-spacing: -0.01em; }
+.fx .t-sec { font-weight: 600; font-size: 17px; }
+.fx[data-serif="a"] .t-sec { font-family: var(--serif); font-weight: 500; font-size: 20px; }
+.fx .t-words { font-weight: 600; }
+.fx[data-serif="a"] .t-words, .fx[data-serif="b"] .t-words { font-family: var(--serif); font-weight: 500; }
+.fx .t-quote { font-size: 14.5px; }
+.fx[data-serif="a"] .t-quote, .fx[data-serif="b"] .t-quote { font-family: var(--serif); font-size: 15.5px; line-height: 1.5; }
+.fx .mu { color: var(--mu); } .fx .sm { font-size: 12.5px; } .fx .num { font-variant-numeric: tabular-nums; }
+
+/* shapes */
+.fx .card { background: var(--card); border-radius: var(--r-surface); padding: 22px 24px; display: grid; gap: 14px; }
+.fx .inl { background: var(--inlay); border-radius: var(--r-inset); padding: 12px 14px; }
+.fx .row { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.fx .col { display: grid; gap: 4px; min-width: 0; }
+.fx .btn { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 15px; border-radius: var(--r-control); font-weight: 600; font-size: 13.5px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hl); border: 0; cursor: pointer; white-space: nowrap; }
+.fx .btn.p { background: var(--pr); color: var(--pri); box-shadow: none; }
+.fx .btn.g { background: none; box-shadow: none; color: var(--mu); padding: 0 8px; }
+.fx .btn.sm { height: 30px; padding: 0 11px; font-size: 13px; }
+.fx .btn .ic { --s: 16px; }
+.fx .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 2px 10px; border-radius: 999px; background: var(--inlay); white-space: nowrap; font-weight: 500; }
+.fx .chip.ok { background: var(--oks); color: var(--ok); } .fx .chip.wa { background: var(--was); color: var(--wa); } .fx .chip.no { background: var(--nos); color: var(--no); }
+.fx .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+.fx .av { --s: 32px; width: var(--s); height: var(--s); border-radius: 50%; flex: none; display: grid; place-items: center; font-size: calc(var(--s) * 0.36); font-weight: 600; color: var(--h); background: color-mix(in oklab, var(--h) 16%, var(--card)); box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--h) 70%, transparent); }
+.fx .faces { display: flex; } .fx .faces .av { box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--h) 70%, transparent), 0 0 0 2px var(--card); margin-left: -6px; } .fx .faces .av:first-child { margin-left: 0; }
+.fx .bar { height: 8px; border-radius: 99px; background: var(--inlay); overflow: hidden; display: flex; }
+.fx input { background: var(--inlay); color: var(--f); border: 0; border-radius: 10px; padding: 7px 10px; font: 13.5px var(--sans); }
+.fx input:focus { outline: 2px solid var(--pr); outline-offset: 1px; }
+.fx .bar i { display: block; height: 100%; transition: width 0.6s cubic-bezier(.2,.7,.2,1); }
+.fx .link { color: var(--pr-text); font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+.fx .click { cursor: pointer; }
+.fx .click:hover { background: color-mix(in oklab, var(--f) 4%, transparent); }
+.fx .rise { animation: rise 0.45s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .fx .rise { animation: none; } .fx .bar i, .fx .tl-today { transition: none !important; } }
+
+/* computed marks (taste: how Fusion's work is marked) */
+.fx .mk-ai { display: inline-flex; align-items: center; gap: 4px; color: var(--ai); font-size: 12px; font-weight: 500; }
+.fx .mk-ai .ic { --s: 14px; }
+.fx .mk-fu { display: inline-flex; align-items: center; gap: 4px; color: var(--mu); font-size: 12px; }
+.fx .mk-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ai); display: inline-block; }
+
+/* timeline */
+.fx .tl { position: relative; padding-top: 4px; }
+.fx .tl-phases { position: relative; height: 26px; }
+.fx .tl-ph { position: absolute; top: 0; font-size: 13px; color: var(--mu); white-space: nowrap; }
+.fx .tl-ph.on { color: var(--f); font-weight: 600; }
+.fx .tl-ph.end { transform: translateX(-100%); }
+.fx .tl-track { position: relative; height: 12px; display: flex; gap: 3px; }
+.fx .tl-seg { height: 100%; border-radius: 99px; background: var(--inlay); position: relative; overflow: hidden; }
+.fx .tl-seg i { position: absolute; inset: 0 auto 0 0; background: color-mix(in oklab, var(--pr) 45%, var(--inlay)); transition: width 0.8s cubic-bezier(.2,.7,.2,1); }
+.fx .tl-seg.on i { background: var(--pr); }
+.fx .tl-ms { position: absolute; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: var(--card); box-shadow: 0 0 0 1.5px var(--mu); }
+.fx .tl-today { position: absolute; top: 24px; height: 24px; width: 0; transition: left 0.9s cubic-bezier(.2,.7,.2,1); }
+.fx .tl-today::before { content: ""; position: absolute; inset: 0 auto 0 -1px; width: 2px; background: var(--f); border-radius: 2px; }
+.fx .tl-today span { position: absolute; top: 30px; left: 0; transform: translateX(var(--tx, -50%)); font-size: 12px; font-weight: 600; background: var(--f); color: var(--page); padding: 2px 9px; border-radius: 99px; white-space: nowrap; }
+.fx .tl-months { position: relative; height: 16px; margin-top: 40px; }
+.fx .tl-months span { position: absolute; font-size: 11.5px; color: var(--mu); transform: translateX(-50%); }
+.fx .tl-next { position: absolute; right: 0; top: 0; }
+.fx .tl.thin { padding: 0; }
+.fx .tl.thin .tl-track { height: 6px; }
+
+/* next step */
+.fx .next { position: relative; background: var(--card); border-radius: var(--r-surface); padding: 24px 26px; display: grid; gap: 16px; }
+.fx .next .caret { position: absolute; top: -9px; width: 18px; height: 18px; background: var(--card); transform: translateX(-50%) rotate(45deg); border-radius: 4px; transition: left 0.9s cubic-bezier(.2,.7,.2,1); }
+.fx .next-h { display: flex; gap: 18px; align-items: flex-start; justify-content: space-between; }
+.fx .next-t { font-size: 24px; font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; }
+.fx .eyebrow { font-size: 12.5px; color: var(--mu); display: flex; align-items: center; gap: 8px; }
+.fx .due { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--mu); }
+.fx .due .ic { --s: 15px; }
+
+/* lists */
+.fx .goal { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 6px 22px; align-items: center; padding: 14px 16px; border-radius: var(--r-inset); }
+.fx .goal + .goal { box-shadow: 0 -1px 0 var(--hl); border-radius: 0; }
+.fx .goal .gt { font-size: 15.5px; }
+.fx .line-up { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12.5px; color: var(--mu); }
+.fx .line-up .ic { --s: 14px; }
+.fx .line-up b { color: var(--f); font-weight: 500; }
+.fx .people { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+.fx .pc { background: var(--inlay); border-radius: var(--r-inset); padding: 14px 12px; display: grid; justify-items: center; gap: 6px; text-align: center; }
+.fx .pc .nm { font-weight: 600; font-size: 13.5px; line-height: 1.25; }
+.fx .div-row { display: grid; grid-template-columns: 170px minmax(0, 1fr) 70px; gap: 14px; align-items: center; padding: 7px 0; }
+.fx .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--mu); }
+.fx .legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* sheet over the page */
+.fx .scrim { position: absolute; inset: 0; background: var(--scrim); z-index: 4; animation: fade 0.2s both; }
+@keyframes fade { from { opacity: 0; } }
+.fx .sheet { position: absolute; top: 10px; right: 10px; bottom: 10px; width: 580px; z-index: 5; background: var(--pop); border-radius: var(--r-surface); box-shadow: var(--shadow), inset 0 0 0 1px var(--hl); display: flex; flex-direction: column; animation: slide 0.32s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes slide { from { transform: translateX(40px); opacity: 0; } }
+.fx .sheet-h { display: flex; align-items: center; gap: 12px; padding: 18px 20px 6px 26px; }
+.fx .sheet-b { flex: 1; overflow: auto; padding: 8px 26px 26px; display: grid; gap: 18px; align-content: start; }
+.fx .sheet-f { display: flex; gap: 10px; justify-content: flex-end; padding: 14px 20px; box-shadow: 0 -1px 0 var(--hl); }
+.fx .x { width: 34px; height: 34px; border-radius: 10px; border: 0; background: none; color: var(--mu); display: grid; place-items: center; cursor: pointer; margin-left: auto; }
+.fx .toast { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--f); color: var(--page); padding: 9px 10px 9px 16px; border-radius: 14px; display: flex; gap: 14px; align-items: center; font-weight: 500; z-index: 9; animation: rise 0.3s both; }
+.fx .toast button { border: 0; background: none; color: inherit; font-weight: 700; cursor: pointer; padding: 2px 6px; }
+
+/* goals page */
+.fx .tabs { display: flex; gap: 4px; }
+.fx .tab { padding: 7px 14px; border-radius: 99px; color: var(--mu); font-weight: 500; }
+.fx .tab.on { color: var(--pr-text); box-shadow: inset 0 0 0 1.5px var(--pr); font-weight: 600; }
+.fx .cg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.fx .cgo { background: var(--card); border-radius: var(--r-inset); padding: 14px 16px; display: grid; gap: 8px; align-content: start; transition: box-shadow 0.4s; }
+.fx .cgo.lit { box-shadow: inset 0 0 0 1.5px var(--pr); }
+.fx .unit-g { background: var(--inlay); border-radius: 12px; padding: 9px 11px; display: grid; gap: 2px; }
+.fx .pgoal { background: var(--card); border-radius: var(--r-surface); padding: 20px 22px; display: grid; gap: 10px; }
+.fx .pgoal-h { display: flex; align-items: flex-start; gap: 16px; }
+.fx .wt { margin-left: auto; display: grid; justify-items: end; gap: 2px; }
+.fx .wt button { border: 0; background: var(--inlay); color: var(--f); font: 600 15px var(--sans); padding: 4px 10px; border-radius: 10px; cursor: pointer; font-variant-numeric: tabular-nums; }
+.fx .wt input { width: 64px; background: var(--inlay); color: var(--f); border: 0; box-shadow: inset 0 0 0 1.5px var(--pr); font: 600 15px var(--sans); padding: 4px 8px; border-radius: 10px; text-align: right; }
+.fx .sugg { display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 12px; border-radius: 12px; background: color-mix(in oklab, var(--ai) 9%, var(--card)); font-size: 13px; }
+.fx .sugg b { font-weight: 600; }
+.fx .add { border-radius: var(--r-surface); padding: 16px 22px; box-shadow: inset 0 0 0 1.5px var(--hl); color: var(--mu); display: flex; align-items: center; gap: 10px; }
+
+/* review page */
+.fx .rv { display: grid; grid-template-columns: minmax(0, 1fr) 450px; flex: 1; min-height: 0; }
+.fx .rv-form { overflow: auto; padding: 4px 32px 60px 36px; display: grid; gap: 20px; align-content: start; }
+.fx .rv-year { overflow: auto; background: var(--sb); padding: 18px 22px 40px; display: grid; gap: 12px; align-content: start; box-shadow: inset 1px 0 0 var(--hl); }
+.fx .rv-head { display: flex; align-items: center; gap: 16px; padding: 4px 32px 18px 36px; }
+.fx .scale5 { display: flex; gap: 6px; flex-wrap: wrap; }
+.fx .scale5 button { border: 0; background: var(--inlay); color: var(--f); border-radius: 99px; padding: 6px 12px; font: 500 13px var(--sans); cursor: pointer; position: relative; }
+.fx .scale5 button[aria-pressed="true"] { background: var(--pr); color: var(--pri); font-weight: 600; }
+.fx .scale5 button .self { position: absolute; top: -7px; right: -4px; width: 16px; height: 16px; --s: 16px; }
+.fx .draft { background: var(--inlay); border-radius: var(--r-inset); padding: 14px 16px; display: grid; gap: 8px; }
+.fx .sent { cursor: pointer; border-radius: 6px; transition: background 0.2s; }
+.fx .sent:hover, .fx .sent.on { background: color-mix(in oklab, var(--pr) 18%, transparent); }
+.fx .cite { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 3px; border-radius: 6px; background: var(--card); color: var(--mu); font: 600 11px var(--sans); vertical-align: 2px; }
+.fx .ev { background: var(--card); border-radius: var(--r-inset); padding: 12px 14px; display: grid; gap: 6px; transition: box-shadow 0.3s, background 0.3s; }
+.fx .ev.lit { box-shadow: inset 0 0 0 1.5px var(--pr); background: color-mix(in oklab, var(--pr) 8%, var(--card)); }
+.fx .ev-k { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--mu); }
+.fx .ev-k .ic { --s: 15px; }
+.fx .react { display: flex; gap: 4px; }
+.fx .react span { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 99px; background: var(--inlay); font-size: 12px; color: var(--mu); }
+.fx .react .ic { --s: 15px; }
+.fx .grade { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.fx .ghost { background: repeating-linear-gradient(135deg, var(--inlay) 0 8px, color-mix(in oklab, var(--inlay) 60%, var(--card)) 8px 16px); }
+.fx .gtxt { color: transparent; background: var(--inlay); border-radius: 6px; }
+
+/* round 2: state without badges (D-52) */
+.fx .stw { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.fx .stw .ic { --s: 15px; }
+.fx .stw.ok { color: var(--ok); } .fx .stw.wa { color: var(--wa); } .fx .stw.no { color: var(--no); } .fx .stw.mu { color: var(--mu); font-weight: 500; }
+/* a grade's measure, behind an icon (D-51) */
+.fx .tip { position: relative; display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 8px; color: var(--mu); cursor: help; outline: none; }
+.fx .tip:hover, .fx .tip:focus-visible { background: var(--inlay); color: var(--f); }
+.fx .tip:hover::after, .fx .tip:focus-visible::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); right: -6px; background: var(--f); color: var(--page); font: 500 12.5px var(--sans); padding: 5px 10px; border-radius: 9px; white-space: nowrap; z-index: 6; }
+/* the phase as people moving through its steps */
+.fx .flow { display: grid; grid-auto-columns: minmax(0, 1fr); grid-auto-flow: column; }
+.fx .fl { display: grid; gap: 12px; align-content: start; padding: 2px 18px 4px; position: relative; }
+.fx .fl:first-child { padding-left: 0; } .fx .fl:last-child { padding-right: 0; }
+.fx .fl + .fl { box-shadow: -1px 0 0 var(--hl); }
+.fx .fl + .fl::before { content: ""; position: absolute; left: -5px; top: 14px; width: 8px; height: 8px; border-top: 1.5px solid var(--mu); border-right: 1.5px solid var(--mu); transform: rotate(45deg); background: var(--card); opacity: 0.8; }
+.fx .fl-h { display: grid; gap: 2px; }
+.fx .fl-n { font-size: 13px; color: var(--mu); }
+.fx .fl-c { font-size: 30px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; line-height: 1.1; }
+.fx .fl.here .fl-n { color: var(--pr-text); font-weight: 600; }
+.fx .fl.here .fl-c { color: var(--pr-text); }
+.fx .fl-share { height: 4px; border-radius: 99px; background: var(--inlay); overflow: hidden; }
+.fx .fl-share i { display: block; height: 100%; border-radius: 99px; transition: width 0.6s cubic-bezier(.2,.7,.2,1); }
+.fx .cluster { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.fx .av.gh { background: none; box-shadow: none; border: 1.5px dashed color-mix(in oklab, var(--mu) 55%, transparent); color: transparent; }
+.fx .fl.fl-gh .fl-c, .fx .fl.fl-gh .fl-n { color: color-mix(in oklab, var(--mu) 70%, transparent); }
+.fx .faded { opacity: 0.42; filter: saturate(0.4); pointer-events: none; }
+.fx .prow { display: flex; align-items: center; gap: 10px; padding: 7px 8px; margin: 0 -8px; border-radius: 12px; }
+.fx .prow .col { gap: 0; }
+.fx .prow b { font-weight: 600; font-size: 13.5px; }
+.fx .more { font-size: 12.5px; color: var(--mu); }
+/* ghost of what fills in */
+.fx .gh-goal { border-radius: var(--r-surface); padding: 20px 22px; display: grid; gap: 10px; box-shadow: inset 0 0 0 1.5px var(--hl); }
+.fx .gh-line { height: 12px; border-radius: 99px; background: var(--inlay); }
+.fx .gh-card { border-radius: var(--r-inset); padding: 14px 16px; display: grid; gap: 10px; box-shadow: inset 0 0 0 1.5px var(--hl); }
+/* moving the year on, previewed in place */
+.fx .pv { position: relative; background: var(--card); border-radius: var(--r-surface); padding: 24px 26px; display: grid; gap: 16px; box-shadow: inset 0 0 0 1.5px var(--pr); }
+.fx .pv-row { display: grid; grid-template-columns: 230px 64px minmax(0, 1fr); gap: 16px; align-items: center; padding: 10px 0; }
+.fx .pv-row + .pv-row { box-shadow: 0 -1px 0 var(--hl); }
+.fx .carry { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 28px; }
+.fx .tl-after { position: absolute; right: 0; top: 0; font-size: 11.5px; color: var(--mu); transform: translateY(-1px); }
+.fx .rv-wait { display: flex; gap: 10px; padding: 0 32px 16px 36px; flex-wrap: wrap; }
+.fx .rv-wait .inl { display: flex; align-items: center; gap: 12px; padding: 10px 12px 10px 14px; }
+.fx .filt-0 { opacity: 0.45; }
+.fx .fold-h { cursor: pointer; }
+
+/* ================= 3b: goals and conversations ================= */
+.fx .stw { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.fx .stw.ok { color: var(--ok); } .fx .stw.wa { color: var(--wa); } .fx .stw.no { color: var(--no); } .fx .stw.mu { color: var(--mu); font-weight: 500; }
+.fx .tip { position: relative; display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 8px; color: var(--mu); cursor: help; }
+.fx .tip:hover::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); right: -6px; background: var(--f); color: var(--page); font: 500 12.5px var(--sans); padding: 5px 10px; border-radius: 9px; white-space: nowrap; z-index: 6; }
+.fx .fold-h { cursor: pointer; }
+/* the goal's accent tile (from the objective drawer) */
+.fx .tile { width: 40px; height: 40px; border-radius: 12px; flex: none; display: grid; place-items: center; color: var(--pr-text); background: color-mix(in oklab, var(--pr) 14%, var(--card)); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--pr) 28%, transparent); }
+.fx .tile.sm { width: 30px; height: 30px; border-radius: 9px; } .fx .tile.sm .ic { --s: 16px; }
+.fx .tile.blue { color: var(--i1); background: color-mix(in oklab, var(--i1) 12%, var(--card)); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--i1) 26%, transparent); }
+.fx .tile.gh { background: none; color: var(--mu); box-shadow: inset 0 0 0 1.5px var(--hl); }
+/* the goal panel and page share their parts */
+.fx .gp-h { display: flex; gap: 14px; align-items: flex-start; }
+.fx .gp-t { font-family: var(--serif); font-weight: 500; font-size: 22px; line-height: 1.25; }
+.fx .gp-sec { display: grid; gap: 10px; }
+.fx .gp-k { font-size: 12.5px; color: var(--mu); display: flex; align-items: center; gap: 8px; }
+.fx .gp-k .link { margin-left: auto; font-size: 12.5px; }
+.fx .props { display: grid; }
+.fx .prop { display: flex; align-items: baseline; gap: 16px; padding: 9px 0; }
+.fx .prop + .prop { box-shadow: 0 -1px 0 var(--hl); }
+.fx .prop > span:first-child { color: var(--mu); font-size: 13px; }
+.fx .prop > b { margin-left: auto; font-weight: 600; text-align: right; }
+.fx .up-card { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--r-inset); background: var(--inlay); }
+.fx .big { font-size: 30px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.fx .hist { display: grid; }
+.fx .hi { display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 12px; padding-bottom: 14px; position: relative; }
+.fx .hi::before { content: ""; position: absolute; left: 6px; top: 14px; bottom: -2px; width: 1.5px; background: var(--hl); }
+.fx .hi:last-child::before { display: none; }
+.fx .hi i { width: 10px; height: 10px; border-radius: 50%; margin: 5px 0 0 2px; background: var(--mu); }
+.fx .delta { font-size: 12px; font-weight: 600; color: var(--ok); }
+.fx .delta.dn { color: var(--no); }
+.fx .panel { position: absolute; top: 10px; right: 10px; bottom: 10px; width: 560px; z-index: 5; background: var(--pop); border-radius: var(--r-surface); box-shadow: var(--shadow), inset 0 0 0 1px var(--hl); display: flex; flex-direction: column; animation: slide 0.32s cubic-bezier(.2,.7,.2,1) both; }
+.fx .panel-h { padding: 22px 22px 16px 24px; box-shadow: 0 1px 0 var(--hl); }
+.fx .panel-b { flex: 1; overflow: auto; padding: 18px 24px 26px; display: grid; gap: 22px; align-content: start; }
+.fx .panel-f { display: flex; gap: 10px; padding: 14px 20px; box-shadow: 0 -1px 0 var(--hl); align-items: center; }
+.fx .dlg { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 560px; max-height: 820px; z-index: 5; background: var(--pop); border-radius: var(--r-surface); box-shadow: var(--shadow), inset 0 0 0 1px var(--hl); display: flex; flex-direction: column; animation: pop 0.25s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes pop { from { opacity: 0; transform: translate(-50%, -48%) scale(0.98); } }
+/* the update */
+.fx .num-in { display: flex; align-items: center; gap: 10px; }
+.fx .num-in input { width: 110px; font: 600 30px var(--sans); padding: 2px 10px; letter-spacing: -0.02em; }
+.fx .step { width: 36px; height: 36px; border-radius: 11px; border: 0; background: var(--card); box-shadow: inset 0 0 0 1px var(--hl); color: var(--f); cursor: pointer; font: 600 18px var(--sans); }
+.fx .rail { position: relative; height: 10px; border-radius: 99px; background: var(--card); margin: 34px 0 6px; }
+.fx .rail > i { position: absolute; inset: 0 auto 0 0; border-radius: 99px; transition: width 0.4s cubic-bezier(.2,.7,.2,1), background 0.3s; }
+.fx .rail .exp { position: absolute; top: -6px; bottom: -6px; width: 2px; background: var(--mu); border-radius: 2px; opacity: 0.7; }
+.fx .rail .exp span { position: absolute; bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%); font-size: 11.5px; color: var(--mu); white-space: nowrap; }
+.fx .rail .knob { position: absolute; top: 50%; transform: translate(-50%, -50%); padding: 2px 9px; border-radius: 99px; background: var(--pop); box-shadow: 0 0 0 2px var(--pr); font: 600 12px var(--sans); white-space: nowrap; transition: left 0.4s cubic-bezier(.2,.7,.2,1); }
+.fx .choices { display: flex; gap: 8px; }
+.fx .choices button { flex: 1; border: 0; background: var(--card); box-shadow: inset 0 0 0 1px var(--hl); border-radius: var(--r-control); padding: 12px 14px; font: 600 14px var(--sans); color: var(--mu); cursor: pointer; text-align: left; }
+.fx .choices button[aria-pressed="true"].ok { color: var(--ok); box-shadow: inset 0 0 0 1.5px var(--ok); background: var(--oks); }
+.fx .choices button[aria-pressed="true"].wa { color: var(--wa); box-shadow: inset 0 0 0 1.5px var(--wa); background: var(--was); }
+.fx .choices button[aria-pressed="true"].no { color: var(--no); box-shadow: inset 0 0 0 1.5px var(--no); background: var(--nos); }
+.fx textarea.in { width: 100%; min-height: 74px; background: var(--card); color: var(--f); border: 0; box-shadow: inset 0 0 0 1px var(--hl); border-radius: var(--r-inset); padding: 11px 13px; font: 15px/1.5 var(--serif); resize: vertical; }
+.fx textarea.in:focus { outline: 2px solid var(--pr); outline-offset: 1px; }
+.fx .ms { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--r-inset); background: var(--card); cursor: pointer; }
+.fx .ms + .ms { margin-top: 6px; }
+.fx .box { width: 20px; height: 20px; border-radius: 7px; box-shadow: inset 0 0 0 1.5px var(--mu); display: grid; place-items: center; flex: none; color: var(--pri); }
+.fx .box.on { background: var(--ok); box-shadow: none; }
+.fx .box .ic { --s: 14px; }
+/* company goals */
+.fx .cgl { background: var(--card); border-radius: var(--r-surface); padding: 22px 24px; display: grid; gap: 16px; }
+.fx .cgl-h { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 22px; align-items: center; }
+.fx .ug { display: grid; grid-template-columns: 34px minmax(0, 1fr) 200px; gap: 14px; align-items: center; padding: 11px 12px; border-radius: var(--r-inset); }
+.fx .ug + .ug { box-shadow: 0 -1px 0 var(--hl); border-radius: 0; }
+.fx .ug.mine { background: color-mix(in oklab, var(--pr) 7%, transparent); border-radius: var(--r-inset); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--pr) 30%, transparent); }
+.fx .ug.gh { color: var(--mu); }
+.fx .kids { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding: 4px 0 6px 48px; }
+.fx .kid { background: var(--inlay); border-radius: 12px; padding: 10px 12px; display: grid; gap: 6px; }
+/* the map */
+.fx .tree { display: grid; gap: 0; justify-items: center; }
+.fx .tr-row { display: flex; gap: 14px; justify-content: center; position: relative; padding-top: 26px; }
+.fx .tr-row::before { content: ""; position: absolute; top: 0; left: 50%; height: 13px; width: 1.5px; background: var(--mu); opacity: 0.5; }
+.fx .tr-row.first { padding-top: 0; } .fx .tr-row.first::before { display: none; }
+.fx .tr-row > .node::before { content: ""; position: absolute; top: -13px; left: 50%; height: 13px; width: 1.5px; background: var(--mu); opacity: 0.5; }
+.fx .tr-row.first > .node::before { display: none; }
+.fx .tr-row:not(.first)::after { content: ""; position: absolute; top: 13px; left: var(--hw); right: var(--hw); height: 1.5px; background: var(--mu); opacity: 0.5; }
+.fx .node { position: relative; width: 236px; background: var(--inlay); border-radius: var(--r-inset); padding: 12px 14px; display: grid; gap: 7px; cursor: pointer; transition: box-shadow 0.3s; }
+.fx .node.on { box-shadow: inset 0 0 0 1.5px var(--pr); }
+.fx .node.mine { box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--pr) 45%, transparent); }
+.fx .node.gh { background: none; box-shadow: inset 0 0 0 1.5px var(--hl); cursor: default; }
+.fx .node .bar { height: 6px; }
+/* Home, Needs you */
+.fx .ny { background: var(--card); border-radius: var(--r-surface); overflow: hidden; }
+.fx .ny-i { display: flex; align-items: center; gap: 14px; padding: 16px 22px; }
+.fx .ny-i + .ny-i, .fx .ny-x + .ny-i { box-shadow: 0 -1px 0 var(--hl); }
+.fx .ny-x { padding: 4px 22px 22px 72px; display: grid; gap: 14px; animation: rise 0.35s both; }
+.fx .diff-new { color: var(--ok); font-size: 12.5px; font-weight: 600; }
+.fx .was { text-decoration: line-through; color: var(--mu); }
+/* the 1:1 */
+.fx .oo { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 22px; align-items: start; }
+.fx .ag { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 13px 14px; border-radius: var(--r-inset); cursor: pointer; }
+.fx .ag + .ag { box-shadow: 0 -1px 0 var(--hl); border-radius: 0; }
+.fx .ag.open { background: var(--inlay); border-radius: var(--r-inset); box-shadow: none; cursor: default; }
+.fx .ag .src { font-size: 12.5px; color: var(--mu); display: flex; align-items: center; gap: 6px; }
+.fx .num-in input::-webkit-inner-spin-button, .fx .num-in input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.fx .num-in input { -moz-appearance: textfield; appearance: textfield; }
+.fx .ag-ic { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: var(--inlay); color: var(--mu); }
+.fx .ag.open .ag-ic { background: var(--card); }
+.fx .ag-ic .ic { --s: 16px; }
+.fx .rail-r { display: grid; gap: 12px; }
+.fx .act { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 0; }
+.fx .act + .act { box-shadow: 0 -1px 0 var(--hl); }
+/* feedback */
+.fx .fb { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 22px; align-items: start; }
+.fx .wall { columns: 2; column-gap: 12px; }
+.fx .pr { break-inside: avoid; background: var(--card); border-radius: var(--r-surface); padding: 18px 20px; display: grid; gap: 10px; margin-bottom: 12px; }
+.fx .pr.gh { background: none; box-shadow: inset 0 0 0 1.5px var(--hl); }
+.fx .react button { border: 0; display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 99px; background: var(--inlay); font: 12px var(--sans); color: var(--mu); cursor: pointer; }
+.fx .react button.on { color: var(--pr-text); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--pr) 50%, transparent); }
+.fx .react .ic { --s: 15px; }
+.fx .who-pick { display: flex; gap: 6px; flex-wrap: wrap; }
+.fx .who-pick button { border: 0; background: var(--inlay); color: var(--f); border-radius: 99px; padding: 3px 12px 3px 3px; display: inline-flex; align-items: center; gap: 7px; font: 500 13px var(--sans); cursor: pointer; }
+.fx .who-pick button[aria-pressed="true"] { box-shadow: inset 0 0 0 1.5px var(--pr); }
+.fx .vals { display: flex; gap: 6px; flex-wrap: wrap; }
+.fx .vals button { border: 0; background: var(--inlay); color: var(--mu); border-radius: 99px; padding: 6px 13px; font: 500 13px var(--sans); cursor: pointer; }
+.fx .vals button[aria-pressed="true"] { background: var(--pr); color: var(--pri); font-weight: 600; }
+.fx .vbar { display: grid; grid-template-columns: minmax(0, 1fr) 30px; gap: 4px 10px; align-items: center; }
+.fx .vbar .bar { grid-column: 1 / -1; height: 6px; }
+</style>
+
+<div class="xbar"><div class="bar-in">
+  <span class="name">Goals and conversations</span>
+  <div class="seg" id="screens" role="group" aria-label="Screen"></div>
+  <span class="grow"></span>
+  <div class="seg" id="theme" role="group" aria-label="Theme"></div>
+  <span class="saved" id="saved" aria-live="polite"></span>
+  <button class="copy" id="copy" type="button">Copy my answers</button>
+</div></div>
+<main>
+  <div class="banner" id="banner" hidden></div>
+  <div class="feel"><b>Are goals and conversations right?</b><div class="opts" id="feel"></div></div>
+  <div class="controls" id="controls"></div>
+  <div class="stage" id="stage"><div class="scaler" id="scaler"><div class="fx" id="fx"></div></div></div>
+  <div class="qs" id="qs"></div>
+  <textarea class="note" id="note" aria-label="Your note" placeholder="Your note"></textarea>
+  <div class="copybox" id="copybox" hidden><textarea id="copytext" readonly aria-label="Your answers as text"></textarea></div>
+</main>
+
+<script>
+const ICONS = {"home":"<path d=\"M3 11.9896V14.5C3 17.7998 3 19.4497 4.02513 20.4749C5.05025 21.5 6.70017 21.5 10 21.5H14C17.2998 21.5 18.9497 21.5 19.9749 20.4749C21 19.4497 21 17.7998 21 14.5V11.9896C21 10.3083 21 9.46773 20.6441 8.74005C20.2882 8.01237 19.6247 7.49628 18.2976 6.46411L16.2976 4.90855C14.2331 3.30285 13.2009 2.5 12 2.5C10.7991 2.5 9.76689 3.30285 7.70242 4.90855L5.70241 6.46411C4.37533 7.49628 3.71179 8.01237 3.3559 8.74005C3 9.46773 3 10.3083 3 11.9896Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","year":"<path d=\"M16 2V6M8 2V6\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M13 4H11C7.22876 4 5.34315 4 4.17157 5.17157C3 6.34315 3 8.22876 3 12V14C3 17.7712 3 19.6569 4.17157 20.8284C5.34315 22 7.22876 22 11 22H13C16.7712 22 18.6569 22 19.8284 20.8284C21 19.6569 21 17.7712 21 14V12C21 8.22876 21 6.34315 19.8284 5.17157C18.6569 4 16.7712 4 13 4Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M3 10H21\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M12.1258 14H12.0008M12.1258 18H12.0008M7.625 14H7.5M7.625 18H7.5M16.625 14H16.5M12.2508 14C12.2508 14.1381 12.1389 14.25 12.0008 14.25C11.8628 14.25 11.7508 14.1381 11.7508 14C11.7508 13.8619 11.8628 13.75 12.0008 13.75C12.1389 13.75 12.2508 13.8619 12.2508 14ZM12.2508 18C12.2508 18.1381 12.1389 18.25 12.0008 18.25C11.8628 18.25 11.7508 18.1381 11.7508 18C11.7508 17.8619 11.8628 17.75 12.0008 17.75C12.1389 17.75 12.2508 17.8619 12.2508 18ZM7.75 14C7.75 14.1381 7.63807 14.25 7.5 14.25C7.36193 14.25 7.25 14.1381 7.25 14C7.25 13.8619 7.36193 13.75 7.5 13.75C7.63807 13.75 7.75 13.8619 7.75 14ZM7.75 18C7.75 18.1381 7.63807 18.25 7.5 18.25C7.36193 18.25 7.25 18.1381 7.25 18C7.25 17.8619 7.36193 17.75 7.5 17.75C7.63807 17.75 7.75 17.8619 7.75 18ZM16.75 14C16.75 14.1381 16.6381 14.25 16.5 14.25C16.3619 14.25 16.25 14.1381 16.25 14C16.25 13.8619 16.3619 13.75 16.5 13.75C16.6381 13.75 16.75 13.8619 16.75 14Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","goals":"<path d=\"M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/><path d=\"M14 2.20004C13.3538 2.06886 12.6849 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 11.3151 21.9311 10.6462 21.8 10\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/><path d=\"M12.0303 11.9625L16.5832 7.4096M19.7404 4.34462L19.1872 2.35748C19.0853 2.03011 18.6914 1.89965 18.4259 2.11662C16.9898 3.29018 15.4254 4.87091 16.703 7.36419C19.2771 8.56455 20.7466 6.94584 21.8733 5.5853C22.0975 5.3146 21.9623 4.90767 21.6247 4.81005L19.7404 4.34462Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","oneone":"<path d=\"M20 9C19.2048 5.01455 15.5128 2 11.0793 2C6.06549 2 2 5.85521 2 10.61C2 12.8946 2.93819 14.9704 4.46855 16.5108C4.80549 16.85 5.03045 17.3134 4.93966 17.7903C4.78982 18.5701 4.45026 19.2975 3.95305 19.9037C5.26123 20.1449 6.62147 19.9277 7.78801 19.3127C8.20039 19.0954 8.40657 18.9867 8.55207 18.9646C8.65392 18.9492 8.78659 18.9636 9 19.0002\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M11 16.2617C11 19.1674 13.4628 21.5234 16.5 21.5234C16.8571 21.5238 17.2132 21.4908 17.564 21.425C17.8165 21.3775 17.9428 21.3538 18.0309 21.3673C18.119 21.3807 18.244 21.4472 18.4938 21.58C19.2004 21.9558 20.0244 22.0885 20.8169 21.9411C20.5157 21.5707 20.31 21.1262 20.2192 20.6496C20.1642 20.3582 20.3005 20.075 20.5046 19.8677C21.4317 18.9263 22 17.6578 22 16.2617C22 13.356 19.5372 11 16.5 11C13.4628 11 11 13.356 11 16.2617Z\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","feedback":"<path d=\"M7.5 12H13.5M7.5 8H10.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M8.5 20C9.55038 20.8697 10.8145 21.4238 12.2635 21.5188C13.4052 21.5937 14.5971 21.5936 15.7365 21.5188C16.1288 21.4931 16.5565 21.4007 16.9248 21.251C17.3345 21.0845 17.5395 21.0012 17.6437 21.0138C17.7478 21.0264 17.8989 21.1364 18.2011 21.3563C18.7339 21.744 19.4051 22.0225 20.4005 21.9986C20.9038 21.9865 21.1555 21.9804 21.2681 21.7909C21.3808 21.6013 21.2405 21.3389 20.9598 20.8141C20.5706 20.0862 20.324 19.2529 20.6977 18.5852C21.3413 17.6315 21.8879 16.5021 21.9678 15.2823C22.0107 14.6269 22.0107 13.9481 21.9678 13.2927C21.9146 12.4799 21.7173 11.7073 21.4012 11\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M12.345 17.4868C15.9006 17.2526 18.7328 14.4069 18.9658 10.8344C19.0114 10.1353 19.0114 9.41131 18.9658 8.71219C18.7328 5.13969 15.9006 2.29401 12.345 2.05985C11.132 1.97997 9.86553 1.98013 8.65499 2.05985C5.09943 2.29401 2.26725 5.13969 2.0342 8.71219C1.9886 9.41131 1.9886 10.1353 2.0342 10.8344C2.11908 12.1356 2.69992 13.3403 3.38372 14.3576C3.78076 15.0697 3.51873 15.9586 3.10518 16.735C2.807 17.2948 2.65791 17.5747 2.77762 17.7769C2.89732 17.9791 3.16472 17.9856 3.69951 17.9985C4.75712 18.024 5.47028 17.7269 6.03638 17.3134C6.35744 17.0788 6.51798 16.9615 6.62862 16.9481C6.73926 16.9346 6.957 17.0234 7.39241 17.2011C7.78374 17.3608 8.23812 17.4593 8.65499 17.4868C9.86553 17.5665 11.132 17.5666 12.345 17.4868Z\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","reviews":"<path d=\"M13.7276 3.44418L15.4874 6.99288C15.7274 7.48687 16.3673 7.9607 16.9073 8.05143L20.0969 8.58575C22.1367 8.92853 22.6167 10.4206 21.1468 11.8925L18.6671 14.3927C18.2471 14.8161 18.0172 15.6327 18.1471 16.2175L18.8571 19.3125C19.417 21.7623 18.1271 22.71 15.9774 21.4296L12.9877 19.6452C12.4478 19.3226 11.5579 19.3226 11.0079 19.6452L8.01827 21.4296C5.8785 22.71 4.57865 21.7522 5.13859 19.3125L5.84851 16.2175C5.97849 15.6327 5.74852 14.8161 5.32856 14.3927L2.84884 11.8925C1.389 10.4206 1.85895 8.92853 3.89872 8.58575L7.08837 8.05143C7.61831 7.9607 8.25824 7.48687 8.49821 6.99288L10.258 3.44418C11.2179 1.51861 12.7777 1.51861 13.7276 3.44418Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","search":"<path d=\"M17 17L21 21\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19C15.4183 19 19 15.4183 19 11Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","bell":"<path d=\"M20 18.5011L18.349 7.93407C17.8603 4.80601 15.166 2.5 12 2.5C8.83398 2.5 6.13971 4.80601 5.65098 7.93407L4 18.5011\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M20 18.5C20 16.8431 16.4183 15.5 12 15.5C7.58172 15.5 4 16.8431 4 18.5C4 20.1569 7.58172 21.5 12 21.5C16.4183 21.5 20 20.1569 20 18.5Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M13 18.5H11\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","sparkle":"<path d=\"M15 2L15.5387 4.39157C15.9957 6.42015 17.5798 8.00431 19.6084 8.46127L22 9L19.6084 9.53873C17.5798 9.99569 15.9957 11.5798 15.5387 13.6084L15 16L14.4613 13.6084C14.0043 11.5798 12.4202 9.99569 10.3916 9.53873L8 9L10.3916 8.46127C12.4201 8.00431 14.0043 6.42015 14.4613 4.39158L15 2Z\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M7 12L7.38481 13.7083C7.71121 15.1572 8.84275 16.2888 10.2917 16.6152L12 17L10.2917 17.3848C8.84275 17.7112 7.71121 18.8427 7.38481 20.2917L7 22L6.61519 20.2917C6.28879 18.8427 5.15725 17.7112 3.70827 17.3848L2 17L3.70827 16.6152C5.15725 16.2888 6.28879 15.1573 6.61519 13.7083L7 12Z\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","arrowR":"<path d=\"M9.00005 6C9.00005 6 15 10.4189 15 12C15 13.5812 9 18 9 18\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","arrowUp":"<path d=\"M17.9998 15C17.9998 15 13.5809 9.00001 11.9998 9C10.4187 8.99999 5.99985 15 5.99985 15\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","check":"<path d=\"M5 14L8.5 17.5L19 6.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","clock":"<circle cx=\"12\" cy=\"12\" r=\"10\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M12 8V12L14 14\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","team":"<path d=\"M18.4995 20.5C18.2663 17.5685 15.8417 15.2477 12.808 15.0521L11.9995 15C11.7107 15.0076 11.4416 15.0178 11.1877 15.0298C8.18075 15.1723 5.7304 17.5974 5.49951 20.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M15.2495 9.25C15.2495 11.0449 13.7944 12.5 11.9995 12.5C10.2046 12.5 8.74952 11.0449 8.74952 9.25C8.74952 7.45507 10.2046 6 11.9995 6C13.7944 6 15.2495 7.45507 15.2495 9.25Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M5.50249 8.5C5.17908 7.99485 4.99158 7.39432 4.99158 6.75C4.99158 4.95507 6.44665 3.5 8.24157 3.5C8.68752 3.5 9.1125 3.58982 9.49939 3.75235\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M18.4963 8.5C18.8197 7.99485 19.0072 7.39432 19.0072 6.75C19.0072 4.95507 17.5521 3.5 15.7572 3.5C15.3113 3.5 14.8863 3.58982 14.4994 3.75235\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M22.0007 17.9996C21.8208 15.7374 19.9995 13.5 17.9995 13\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M1.99927 17.9996C2.17923 15.7374 4.00049 13.5 6.00049 13\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","settings":"<path d=\"M15.5 12C15.5 13.933 13.933 15.5 12 15.5C10.067 15.5 8.5 13.933 8.5 12C8.5 10.067 10.067 8.5 12 8.5C13.933 8.5 15.5 10.067 15.5 12Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M21.011 14.0965C21.5329 13.9558 21.7939 13.8854 21.8969 13.7508C22 13.6163 22 13.3998 22 12.9669V11.0332C22 10.6003 22 10.3838 21.8969 10.2493C21.7938 10.1147 21.5329 10.0443 21.011 9.90358C19.0606 9.37759 17.8399 7.33851 18.3433 5.40087C18.4817 4.86799 18.5509 4.60156 18.4848 4.44529C18.4187 4.28902 18.2291 4.18134 17.8497 3.96596L16.125 2.98673C15.7528 2.77539 15.5667 2.66972 15.3997 2.69222C15.2326 2.71472 15.0442 2.90273 14.6672 3.27873C13.208 4.73448 10.7936 4.73442 9.33434 3.27864C8.95743 2.90263 8.76898 2.71463 8.60193 2.69212C8.43489 2.66962 8.24877 2.77529 7.87653 2.98663L6.15184 3.96587C5.77253 4.18123 5.58287 4.28891 5.51678 4.44515C5.45068 4.6014 5.51987 4.86787 5.65825 5.4008C6.16137 7.3385 4.93972 9.37763 2.98902 9.9036C2.46712 10.0443 2.20617 10.1147 2.10308 10.2492C2 10.3838 2 10.6003 2 11.0332V12.9669C2 13.3998 2 13.6163 2.10308 13.7508C2.20615 13.8854 2.46711 13.9558 2.98902 14.0965C4.9394 14.6225 6.16008 16.6616 5.65672 18.5992C5.51829 19.1321 5.44907 19.3985 5.51516 19.5548C5.58126 19.7111 5.77092 19.8188 6.15025 20.0341L7.87495 21.0134C8.24721 21.2247 8.43334 21.3304 8.6004 21.3079C8.76746 21.2854 8.95588 21.0973 9.33271 20.7213C10.7927 19.2644 13.2088 19.2643 14.6689 20.7212C15.0457 21.0973 15.2341 21.2853 15.4012 21.3078C15.5682 21.3303 15.7544 21.2246 16.1266 21.0133L17.8513 20.034C18.2307 19.8187 18.4204 19.711 18.4864 19.5547C18.5525 19.3984 18.4833 19.132 18.3448 18.5991C17.8412 16.6616 19.0609 14.6226 21.011 14.0965Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/>","clap":"<path d=\"M19.3961 10.8669C19.8629 10.417 20.6197 10.417 21.0865 10.8669C21.5532 11.3168 21.5532 12.0463 21.0865 12.4961L19.9595 13.5823M19.3961 10.8669L20.523 9.78079C20.9898 9.33089 20.9898 8.60146 20.523 8.15157C20.0562 7.70167 19.2994 7.70167 18.8326 8.15157L17.9876 8.96629M19.3961 10.8669L16.2971 13.8538M17.9876 8.96629C18.454 8.51637 18.4539 7.7872 17.9872 7.33742C17.5204 6.88753 16.7636 6.88753 16.2969 7.33742L11.5289 11.9327L11.5318 10.17C11.533 9.39664 10.8365 8.79601 10.0389 8.88262C9.42857 8.9489 8.94078 9.40462 8.85299 9.99057L8.29037 14.4426C8.18273 15.2944 7.62953 16.2341 7 16.8408M17.9876 8.96629L15.1703 11.6817M12.3528 22L13.009 21.3676C13.3086 21.0788 13.7156 20.9198 14.1384 20.8929C14.6272 20.8617 15.2733 20.7893 15.6643 20.621C16.3383 20.331 16.9506 19.7408 18.1752 18.5605L21.6499 15.2115C22.1167 14.7616 22.1167 14.0322 21.6499 13.5823C21.1831 13.1324 20.4263 13.1324 19.9595 13.5823M17.424 16.0261L19.9595 13.5823\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M13.4843 4.09738C13.9717 3.61746 13.9716 2.83968 13.4839 2.35992C12.996 1.88003 12.2051 1.88003 11.7172 2.35992L6.73328 7.26465L6.73711 5.38136C6.73842 4.55642 6.0105 3.91575 5.17686 4.00813C4.53899 4.07882 4.02919 4.56493 3.93744 5.18994L3.34861 9.94193C3.23611 10.8505 2.65795 11.8528 2 12.5M13.4843 4.09738L14.3675 3.22834C14.8553 2.74845 15.6463 2.74845 16.1341 3.22834C16.3781 3.46832 16.5 3.78285 16.5 4.09738M13.4843 4.09738L11 6.54112\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","party":"<path d=\"M5.65784 11.0022L4.18747 14.3105C2.3324 18.4844 1.40486 20.5713 2.41719 21.5837C3.42951 22.596 5.51646 21.6685 9.69037 19.8134L12.9987 18.343C15.5161 17.2242 16.7748 16.6647 16.9751 15.586C17.1754 14.5073 16.2014 13.5333 14.2535 11.5854L12.4155 9.7474C10.4675 7.79944 9.49353 6.82546 8.41482 7.02575C7.33611 7.22604 6.77669 8.48475 5.65784 11.0022Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M6.50085 10.5L13.5009 17.5M4.50085 15.5L8.50085 19.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M16.0009 8L19.0009 5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M21.8759 6H21.7509M22.0009 6C22.0009 6.13807 21.8889 6.25 21.7509 6.25C21.6128 6.25 21.5009 6.13807 21.5009 6C21.5009 5.86193 21.6128 5.75 21.7509 5.75C21.8889 5.75 22.0009 5.86193 22.0009 6Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M20.8759 13.25H20.7509M21.0009 13.25C21.0009 13.3881 20.8889 13.5 20.7509 13.5C20.6128 13.5 20.5009 13.3881 20.5009 13.25C20.5009 13.1119 20.6128 13 20.7509 13C20.8889 13 21.0009 13.1119 21.0009 13.25Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M18.1259 2.25H18.0009M18.2509 2.25C18.2509 2.38807 18.1389 2.5 18.0009 2.5C17.8628 2.5 17.7509 2.38807 17.7509 2.25C17.7509 2.11193 17.8628 2 18.0009 2C18.1389 2 18.2509 2.11193 18.2509 2.25Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M11.1259 3.25H11.0009M11.2509 3.25C11.2509 3.38807 11.1389 3.5 11.0009 3.5C10.8628 3.5 10.7509 3.38807 10.7509 3.25C10.7509 3.11193 10.8628 3 11.0009 3C11.1389 3 11.2509 3.11193 11.2509 3.25Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M14.1981 2C14.5972 2.66667 14.9165 4.4 13.0009 6\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M22.0009 9.80274C21.3342 9.40365 19.6009 9.08438 18.0009 11\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","bulb":"<path d=\"M8 16.4998C6.7725 15.4011 6 13.7768 6 11.9998C6 8.68605 8.68629 5.99976 12 5.99976C15.3137 5.99976 18 8.68605 18 11.9998C18 13.7768 17.2275 15.4011 16 16.4998\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/><path d=\"M12 11.9998V16.4998\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M9.5 18.9998H14.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M10.5 21.4998H13.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M3.5 11.9998H2.5M5.98438 5.97632L5.23438 5.23022M18.0195 5.97632L18.7695 5.23022M21.5 11.9998H20.5M12 2.49976V3.49976\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","heart":"<path d=\"M10.4107 19.9677C7.58942 17.858 2 13.0348 2 8.69444C2 5.82563 4.10526 3.5 7 3.5C8.5 3.5 10 4 12 6C14 4 15.5 3.5 17 3.5C19.8947 3.5 22 5.82563 22 8.69444C22 13.0348 16.4106 17.858 13.5893 19.9677C12.6399 20.6776 11.3601 20.6776 10.4107 19.9677Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","corner":"<path d=\"M9 5L9 12C9 15.7712 9 17.6569 10.1716 18.8284C11.3431 20 13.2288 20 17 20L20 20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M4 8.99996C4 8.99996 7.68244 4.00001 9.00004 4C10.3176 3.99999 14 9 14 9\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","flag":"<path d=\"M4 7L4 21\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M11.7576 3.90865C8.45236 2.22497 5.85125 3.21144 4.55426 4.2192C4.32048 4.40085 4.20358 4.49167 4.10179 4.69967C4 4.90767 4 5.10138 4 5.4888V14.7319C4.9697 13.6342 7.87879 11.9328 11.7576 13.9086C15.224 15.6744 18.1741 14.9424 19.5697 14.1795C19.7633 14.0737 19.8601 14.0207 19.9301 13.9028C20 13.7849 20 13.6569 20 13.4009V5.87389C20 5.04538 20 4.63113 19.8027 4.48106C19.6053 4.33099 19.1436 4.459 18.2202 4.71504C16.64 5.15319 14.3423 5.22532 11.7576 3.90865Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","alert":"<path d=\"M13.9248 21H10.0752C5.44476 21 3.12955 21 2.27636 19.4939C1.42317 17.9879 2.60736 15.9914 4.97574 11.9985L6.90057 8.75333C9.17559 4.91778 10.3131 3 12 3C13.6869 3 14.8244 4.91777 17.0994 8.75332L19.0243 11.9985C21.3926 15.9914 22.5768 17.9879 21.7236 19.4939C20.8704 21 18.5552 21 13.9248 21Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M12 9V13\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M12.125 16.75H12M12.25 16.75C12.25 16.8881 12.1381 17 12 17C11.8619 17 11.75 16.8881 11.75 16.75C11.75 16.6119 11.8619 16.5 12 16.5C12.1381 16.5 12.25 16.6119 12.25 16.75Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","people":"<path d=\"M16 21C15.7668 18.0685 13.3422 15.7477 10.3085 15.5521L9.49999 15.5C9.21121 15.5076 8.94209 15.5178 8.68816 15.5298C5.68124 15.6723 3.23089 18.0974 3 21\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M12.75 9.75C12.75 11.5449 11.2949 13 9.5 13C7.70508 13 6.25 11.5449 6.25 9.75C6.25 7.95507 7.70508 6.5 9.5 6.5C11.2949 6.5 12.75 7.95507 12.75 9.75Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M21 17.501C20.7709 14.6314 18.4541 12.2748 15.5 11.9961\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M15.9877 9C16.8965 8.42434 17.5001 7.40788 17.5001 6.25C17.5001 4.45507 16.0496 3 14.2602 3C13.3811 3 12.5838 3.35121 12.0001 3.92139\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","org":"<path d=\"M12 8V12M12 12H9C7.11438 12 6.17157 12 5.58579 12.5858C5 13.1716 5 14.1144 5 16M12 12H15C16.8856 12 17.8284 12 18.4142 12.5858C19 13.1716 19 14.1144 19 16\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M2 19C2 17.5858 2 16.8787 2.43934 16.4393C2.87868 16 3.58579 16 5 16C6.41421 16 7.12132 16 7.56066 16.4393C8 16.8787 8 17.5858 8 19C8 20.4142 8 21.1213 7.56066 21.5607C7.12132 22 6.41421 22 5 22C3.58579 22 2.87868 22 2.43934 21.5607C2 21.1213 2 20.4142 2 19Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M16 19C16 17.5858 16 16.8787 16.4393 16.4393C16.8787 16 17.5858 16 19 16C20.4142 16 21.1213 16 21.5607 16.4393C22 16.8787 22 17.5858 22 19C22 20.4142 22 21.1213 21.5607 21.5607C21.1213 22 20.4142 22 19 22C17.5858 22 16.8787 22 16.4393 21.5607C16 21.1213 16 20.4142 16 19Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M10.2857 2H13.7143C15.7888 2 16 3.10993 16 5C16 6.89007 15.7888 8 13.7143 8H10.2857C8.2112 8 8 6.89007 8 5C8 3.10993 8.2112 2 10.2857 2Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/>","chart":"<path d=\"M8 9V17\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M13 5V17\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M18 13V17\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M3 3V13C3 16.7712 3 18.6569 4.17157 19.8284C5.34315 21 7.22876 21 11 21H21\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","moon":"<path d=\"M21.5 14.0784C20.3003 14.7189 18.9301 15.0821 17.4751 15.0821C12.7491 15.0821 8.91792 11.2509 8.91792 6.52485C8.91792 5.06986 9.28105 3.69968 9.92163 2.5C5.66765 3.49698 2.5 7.31513 2.5 11.8731C2.5 17.1899 6.8101 21.5 12.1269 21.5C16.6849 21.5 20.503 18.3324 21.5 14.0784Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","sun":"<path d=\"M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M12 2V3.5M12 20.5V22M19.0708 19.0713L18.0101 18.0106M5.98926 5.98926L4.9286 4.9286M22 12H20.5M3.5 12H2M19.0713 4.92871L18.0106 5.98937M5.98975 18.0107L4.92909 19.0714\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/>","close":"<path d=\"M18 6L6.00081 17.9992M17.9992 18L6 6.00085\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","edit":"<path d=\"M14.0737 3.88545C14.8189 3.07808 15.1915 2.6744 15.5874 2.43893C16.5427 1.87076 17.7191 1.85309 18.6904 2.39232C19.0929 2.6158 19.4769 3.00812 20.245 3.79276C21.0131 4.5774 21.3972 4.96972 21.6159 5.38093C22.1438 6.37312 22.1265 7.57479 21.5703 8.5507C21.3398 8.95516 20.9446 9.33578 20.1543 10.097L10.7506 19.1543C9.25288 20.5969 8.504 21.3182 7.56806 21.6837C6.63212 22.0493 5.6032 22.0224 3.54536 21.9686L3.26538 21.9613C2.63891 21.9449 2.32567 21.9367 2.14359 21.73C1.9615 21.5234 1.98636 21.2043 2.03608 20.5662L2.06308 20.2197C2.20301 18.4235 2.27297 17.5255 2.62371 16.7182C2.97444 15.9109 3.57944 15.2555 4.78943 13.9445L14.0737 3.88545Z\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M13 4L20 11\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M14 22L22 22\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","send":"<path d=\"M21.0477 3.05293C18.8697 0.707363 2.48648 6.4532 2.50001 8.551C2.51535 10.9299 8.89809 11.6617 10.6672 12.1581C11.7311 12.4565 12.016 12.7625 12.2613 13.8781C13.3723 18.9305 13.9301 21.4435 15.2014 21.4996C17.2278 21.5892 23.1733 5.342 21.0477 3.05293Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M11.4999 12.5L14.9999 9\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","fast":"<path d=\"M2 5.94145C5.5 9.37313 10.5755 7.90241 11.7324 5.94145C11.9026 5.65301 12 5.31814 12 4.96096C12 3.87795 11.1046 3 10 3C8.89543 3 8 3.87795 8 4.96096\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/><path d=\"M17 8.92814C17 7.31097 18.1193 6 19.5 6C20.8807 6 22 7.31097 22 8.92814C22 9.6452 21.7799 10.3021 21.4146 10.8111C19.3463 14.1915 9.2764 12.9164 4 11.8563\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/><path d=\"M13.0854 19.8873C13.2913 20.5356 13.8469 21 14.5 21C15.3284 21 16 20.2528 16 19.331C16 19.0176 15.9224 18.7244 15.7873 18.4738C14.4999 15.9925 7.99996 14.3239 2 18.7746\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/><path d=\"M19 15.5H21\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","core":"<path d=\"M18.4984 19.1511C17.3377 17.4018 15.2947 16.2009 12.9313 16.0569L11.9984 16C11.6652 16.0083 11.3547 16.0194 11.0617 16.0325C8.71722 16.1376 6.66598 17.3796 5.5 19.1511\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M14.9961 10C14.9961 11.6569 13.6529 13 11.9961 13C10.3392 13 8.99609 11.6569 8.99609 10C8.99609 8.34315 10.3392 7 11.9961 7C13.6529 7 14.9961 8.34315 14.9961 10Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","changes":"<path d=\"M16.9767 19.5C19.4017 17.8876 21 15.1305 21 12C21 7.02944 16.9706 3 12 3C11.3126 3 10.6432 3.07706 10 3.22302M16.9767 19.5V16M16.9767 19.5H20.5M7 4.51555C4.58803 6.13007 3 8.87958 3 12C3 16.9706 7.02944 21 12 21C12.6874 21 13.3568 20.9229 14 20.777M7 4.51555V8M7 4.51555H3.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","dots":"<path d=\"M6.00449 12.5V12M18.0045 12.5V12M12.0045 12.5V12M7.00449 12.5C7.00449 11.9477 6.55677 11.5 6.00449 11.5C5.4522 11.5 5.00449 11.9477 5.00449 12.5C5.00449 13.0523 5.4522 13.5 6.00449 13.5C6.55677 13.5 7.00449 13.0523 7.00449 12.5ZM19.0045 12.5C19.0045 11.9477 18.5568 11.5 18.0045 11.5C17.4522 11.5 17.0045 11.9477 17.0045 12.5C17.0045 13.0523 17.4522 13.5 18.0045 13.5C18.5568 13.5 19.0045 13.0523 19.0045 12.5ZM13.0045 12.5C13.0045 11.9477 12.5568 11.5 12.0045 11.5C11.4522 11.5 11.0045 11.9477 11.0045 12.5C11.0045 13.0523 11.4522 13.5 12.0045 13.5C12.5568 13.5 13.0045 13.0523 13.0045 12.5Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","plus":"<path d=\"M12.001 5.00003V19.002\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M19.002 12.002L4.99998 12.002\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","hour":"<path d=\"M4 3H20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M5.5 3V5.03039C5.5 6.27227 6.07682 7.4437 7.06116 8.20089L12 12L16.9388 8.20089C17.9232 7.44371 18.5 6.27227 18.5 5.03039V3\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M5.5 21V18.9696C5.5 17.7277 6.07682 16.5563 7.06116 15.7991L12 12L16.9388 15.7991C17.9232 16.5563 18.5 17.7277 18.5 18.9696V21\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M4 21H20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","calCheck":"<path d=\"M16 2V6M8 2V6\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M3 10H21\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M21 14V12C21 8.22876 21 6.34315 19.8284 5.17157C18.6569 4 16.7712 4 13 4H11C7.22876 4 5.34315 4 4.17157 5.17157C3 6.34315 3 8.22876 3 12V14C3 17.7712 3 19.6569 4.17157 20.8284C5.34315 22 7.22876 22 11 22H12\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M15 20.3333C15 20.3333 15.875 20.3333 16.75 22C16.75 22 19.5294 17.8333 22 17\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","link":"<path d=\"M9.14339 10.691L9.35031 10.4841C11.329 8.50532 14.5372 8.50532 16.5159 10.4841C18.4947 12.4628 18.4947 15.671 16.5159 17.6497L13.6497 20.5159C11.671 22.4947 8.46279 22.4947 6.48405 20.5159C4.50532 18.5372 4.50532 15.329 6.48405 13.3503L6.9484 12.886\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/><path d=\"M17.0516 11.114L17.5159 10.6497C19.4947 8.67095 19.4947 5.46279 17.5159 3.48405C15.5372 1.50532 12.329 1.50532 10.3503 3.48405L7.48405 6.35031C5.50532 8.32904 5.50532 11.5372 7.48405 13.5159C9.46279 15.4947 12.671 15.4947 14.6497 13.5159L14.8566 13.309\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/>","chev":"<path d=\"M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>","quote":"<path d=\"M10 8C10 9.88562 10 10.8284 9.41421 11.4142C8.82843 12 7.88562 12 6 12C4.11438 12 3.17157 12 2.58579 11.4142C2 10.8284 2 9.88562 2 8C2 6.11438 2 5.17157 2.58579 4.58579C3.17157 4 4.11438 4 6 4C7.88562 4 8.82843 4 9.41421 4.58579C10 5.17157 10 6.11438 10 8Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M10 7L10 11.4821C10 15.4547 7.48429 18.8237 4 20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/><path d=\"M22 8C22 9.88562 22 10.8284 21.4142 11.4142C20.8284 12 19.8856 12 18 12C16.1144 12 15.1716 12 14.5858 11.4142C14 10.8284 14 9.88562 14 8C14 6.11438 14 5.17157 14.5858 4.58579C15.1716 4 16.1144 4 18 4C19.8856 4 20.8284 4 21.4142 4.58579C22 5.17157 22 6.11438 22 8Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M22 7L22 11.4821C22 15.4547 19.4843 18.8237 16 20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"/>","file":"<path d=\"M8 17H16\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M8 13H12\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/><path d=\"M13 2.5V3C13 5.82843 13 7.24264 13.8787 8.12132C14.7574 9 16.1716 9 19 9H19.5M20 10.6569V14C20 17.7712 20 19.6569 18.8284 20.8284C17.6569 22 15.7712 22 12 22C8.22876 22 6.34315 22 5.17157 20.8284C4 19.6569 4 17.7712 4 14V9.45584C4 6.21082 4 4.58831 4.88607 3.48933C5.06508 3.26731 5.26731 3.06508 5.48933 2.88607C6.58831 2 8.21082 2 11.4558 2C12.1614 2 12.5141 2 12.8372 2.11401C12.9044 2.13772 12.9702 2.165 13.0345 2.19575C13.3436 2.34355 13.593 2.593 14.0919 3.09188L18.8284 7.82843C19.4065 8.40649 19.6955 8.69552 19.8478 9.06306C20 9.4306 20 9.83935 20 10.6569Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"/>"};
+const ic = (n, s) => `<svg class="ic" viewBox="0 0 24 24" fill="none" aria-hidden="true"${s ? ` style="--s:${s}px"` : ""}>${ICONS[n] || ""}</svg>`;
+const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+// ---------- dates ----------
+const D = (s) => new Date(s + "T12:00:00Z");
+const fmt = (s, o) => D(s).toLocaleDateString("en-GB", { timeZone: "UTC", ...o });
+const day = (s) => fmt(s, { weekday: "short", day: "numeric", month: "short" });
+const dm = (s) => fmt(s, { day: "numeric", month: "short" });
+const days = (a, b) => Math.round((D(b) - D(a)) / 864e5);
+
+// ---------- Carthage, real people (midyear and yearend presets) ----------
+const P = {
+  amira: ["Amira Khelifi", "Chief Technology Officer", 1], mariam: ["Mariam Gharbi", "VP, Product", 4], aicha: ["Aicha Bouazizi", "QA Automation Engineer", 2],
+  fares: ["Fares Lachheb", "Product Manager", 1], sofiene: ["Sofiene Jebali", "Project Manager", 4], meriem: ["Meriem Hamrouni", "Software Engineer", 5],
+  salah: ["Salah Ben Hassine", "Security Analyst", 2], tarek: ["Tarek Ayari", "UX Design Manager", 1], omar: ["Omar Mansour", "VP, Engineering", 6],
+  khaled: ["Khaled Sassi", "Senior Software Engineer", 3], leila: ["Leila Baccouche", "Project Manager", 5], rim: ["Rim Mahjoub", "Data Engineer", 3],
+  mehdi: ["Mehdi Kacem", "VP, People and Growth", 3], ines: ["Ines Chaabane", "VP, Consulting", 3], chaima: ["Chaima Zribi", "Technology Consultant", 5],
+  mouna: ["Mouna Kooli", "Recruitment Partner", 6], elyes: ["Elyes Jaziri", "Finance Analyst", 2], rania: ["Rania Sahli", "Product Analyst", 4],
+};
+const nm = (k) => P[k][0], first = (k) => P[k][0].split(" ")[0];
+const ini = (k) => P[k][0].split(" ").filter((w) => w[0] === w[0].toUpperCase()).map((w) => w[0]).slice(0, 2).join("");
+const av = (k, s = 32) => `<span class="av" style="--s:${s}px;--h:var(--i${P[k][2]})" title="${esc(nm(k))}">${ini(k)}</span>`;
+const faces = (ks, s = 26) => `<span class="faces">${ks.map((k) => av(k, s)).join("")}</span>`;
+const TEAM = ["aicha", "fares", "sofiene", "meriem", "salah", "tarek"];
+
+// ---------- the year: FY2027, 25 Apr 2026 to 24 Apr 2027 ----------
+const Y = { name: "FY2027", start: "2026-04-25", end: "2027-04-24" };
+const PHASES = [
+  { n: "Planning", s: "2026-04-25", e: "2026-05-25" },
+  { n: "Execution", s: "2026-05-25", e: "2027-03-01" },
+  { n: "Review", s: "2027-03-01", e: "2027-04-09" },
+  { n: "Results out", s: "2027-04-09", e: "2027-04-24" },
+];
+const MILESTONES = ["2026-05-25", "2027-03-01", "2027-03-15", "2027-03-29", "2027-04-09"];
+const MOMENTS = [
+  { id: "launched", phase: 0, today: "2026-04-25", label: "Just launched" },
+  { id: "planning", phase: 0, today: "2026-05-07", label: "Planning" },
+  { id: "execution", phase: 1, today: "2026-11-10", label: "Execution" },
+  { id: "review", phase: 2, today: "2027-03-24", label: "Review" },
+  { id: "results", phase: 3, today: "2027-04-14", label: "Results out" },
+];
+const span = days(Y.start, Y.end);
+const pos = (d) => Math.max(0, Math.min(1, days(Y.start, d) / span));
+
+// ---------- goals (Aicha's real plan; the unit and company goals they support) ----------
+const CO = [
+  { id: "c1", t: "Build a resilient, secure cloud platform", m: "From 0% to 99% of services meeting their resilience bar", al: 50, units: 16, prog: 46 },
+  { id: "c2", t: "Grow sustainable Tunisian digital capabilities", m: "From 0% to 85% of people on a growth path", al: 46, units: 14, prog: 52 },
+  { id: "c3", t: "Improve customer delivery predictability", m: "From 0% to 90% of releases on the agreed date", al: 35, units: 12, prog: 39 },
+];
+const UNIT = { t: "Cut production incidents by 40%", u: "Engineering A Core", who: "mariam", m: "From 25 to 15 incidents a quarter", now: "21 now" };
+const AG = [
+  { id: "g1", t: "Automate the regression suite", m: "From 20% to 85% of the regression suite automated", up: ["unit", "c1"], prog: 34, now: "42.1% automated", st: "wa", last: "2026-10-10", fin: { pct: 71, g: 0.71, words: "66% automated of 85%" } },
+  { id: "g2", t: "Build role-relevant technical capability", m: "Plan agreed, First release, Handover", up: [], sugg: "c2", prog: 30, now: "1 of 3 milestones", st: "ok", last: "2026-07-12", fin: { pct: 100, g: 1.0, words: "3 of 3 milestones done" } },
+  { id: "g3", t: "Make estimates clients can rely on", m: "Updated by hand, 0% to 100%", up: [], suggM: "From 60% to 85% of estimates within 10% of actual", prog: 48, now: "48%", st: "ok", last: "2026-10-10", fin: { pct: 100, g: 1.0, words: "100% by Aicha's update" } },
+];
+const ST = { ok: "On track", wa: "At risk", no: "Off track" };
+
+// ---------- answers (saved) ----------
+// Settled in 3a (D-43 to D-60); fixed here, not asked again.
+const SETTLED = { yl: "a", nav: "c", serif: "a", e7: "a", mark: "a", status: "a" };
+const Q = {
+  feel: { t: "Are goals and conversations right?", o: [["yes", "Yes"], ["close", "Close, see my note"], ["no", "No"]], rec: null },
+  o_new: { t: "A goal just written opens as", o: [["a", "A panel over the page"], ["b", "Its own page"]], rec: "a", show: { screen: "goal", gs: "new" } },
+  o_mid: { t: "A goal in the middle of the year opens as", o: [["a", "A panel over the page"], ["b", "Its own page"]], rec: "a", show: { screen: "goal", gs: "mid" } },
+  o_co: { t: "A company goal opens as", o: [["b", "Its own page"], ["a", "A panel over the page"]], rec: "b", show: { screen: "goal", gs: "co" } },
+  cview: { t: "Goals, Company opens on", o: [["a", "The goals, their units under each"], ["b", "The map"]], rec: "a", show: { screen: "goals" } },
+  upd: { t: "Updating progress", o: [["a", "Inside the goal's panel"], ["b", "A small dialog over the page"]], rec: "a", show: { screen: "update" } },
+  talk: { t: "What was talked about in a 1:1", o: [["a", "Notes mark it; the rest carries over"], ["b", "Ticked one by one"]], rec: "a", show: { screen: "oneone", os: "today" } },
+};
+const SCREEN_QS = { goals: ["cview", "o_co"], goal: ["o_new", "o_mid", "o_co"], update: ["upd"], approve: [], oneone: ["talk"], feedback: [] };
+const KEY = "b412-3b";
+const blank = () => ({ answers: Object.fromEntries(Object.entries(Q).filter(([, q]) => q.rec).map(([k, q]) => [k, q.rec])), note: "" });
+let state = blank();
+try { const s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s && s.answers) state = { ...blank(), ...s, answers: { ...blank().answers, ...s.answers } }; } catch {}
+const A = (k) => SETTLED[k] ?? state.answers[k];
+
+// ---------- view state (not saved) ----------
+const fresh = () => ({
+  gs: "mid", us: "num", as: "changed", os: "today", fs: "week",
+  open: null, expandC: "c1", expandU: "u1", measured: false, linkedG3: false, dis: {},
+  val: 46, how: null, howSet: false, note: "", ms: { m1: true, m2: false, m3: false }, saved: false, recording: false,
+  approved: {}, asking: null, toast: null, agOpen: "a1", ticked: {}, notes: {}, sent: [], to: "leila", value: "One team", words: "", reacts: {},
+});
+const ui = { screen: "goals", theme: "dark", folded: {}, toast: null, ...fresh() };
+let db = null;
+
+// ---------- marks and state words (D-50, D-54) ----------
+function mark(kind, words) {
+  if (kind === "ai") return `<span class="mk-ai">${ic("sparkle")}${words}</span>`;
+  return `<span class="mk-fu">${words}</span>`;
+}
+const STW = { ok: "On track", wa: "At risk", no: "Off track" };
+const stat = (k, words) => `<span class="stw ${k}">${words ?? STW[k]}</span>`;
+const tone = (p) => (p < 40 ? "wa" : "ok");
+const barH = (p, k, h = 8) => `<div class="bar" style="height:${h}px"><i style="width:${p}%;background:var(--${k})"></i></div>`;
+const progCol = (p, k) => `<div class="col" style="gap:7px"><div class="row" style="justify-content:space-between">${stat(k)}<span class="num sm">${p}%</span></div>${barH(p, k)}</div>`;
+
+// ---------- frame chrome ----------
+const CORE = [["home", "Overview"], ["core", "My profile"], ["team", "My team"], ["people", "People"], ["org", "Organization"], ["changes", "Changes and approvals"], ["chart", "Reports"]];
+const PERF = [["year", "Year"], ["goals", "Goals"], ["oneone", "1:1s"], ["feedback", "Feedback"], ["reviews", "Reviews"]];
+function coreFor(v) { return CORE.filter(([, l]) => (l !== "My team" || v !== "aicha") && (l !== "Reports" || v === "amira")); }
+function sidebar(v, here) {
+  const item = ([i, l], on, ct) => `<div class="ni ${on ? "on" : ""}">${ic(i)}<span>${l}</span>${ct ? `<span class="ct">${ct}</span>` : ""}</div>`;
+  const perf = PERF.map((x) => item(x, x[1] === here, x[1] === "1:1s" && v !== "amira" ? 1 : 0)).join("");
+  const group = (key, icon, label, items) => {
+    const open = !ui.folded[key];
+    return `<div class="grp fold fold-h ${open ? "open" : ""}" data-act="fold" data-k="${key}" role="button" aria-expanded="${open}">${ic(icon)}<span>${label}</span><span style="margin-left:auto;display:grid${open ? "" : ";transform:rotate(-90deg)"}">${ic("chev", 15)}</span></div>`
+      + (open ? `<div style="padding-left:12px;display:grid;gap:1px">${items}</div>` : "");
+  };
+  const body = item(["home", "Home"], here === "Home", 3) + group("core", "core", "Core HR", coreFor(v).map((x) => item(x)).join(""))
+    + group("perf", "chart", "Performance", perf) + (v === "amira" ? `<div style="height:6px"></div>` + item(["settings", "Settings"]) : "");
+  return `<aside class="sb"><div class="co"><span class="logo">C</span><div><b>Carthage Digital</b><small>Fusion</small></div></div>${body}
+    <div class="me">${av(v, 34)}<div><b style="font-size:13.5px">${nm(v)}</b><small>${P[v][1]}</small></div></div></aside>`;
+}
+function topbar(crumbs) {
+  return `<div class="top"><div class="crumb">${crumbs.map((c, i) => (i === crumbs.length - 1 ? `<b>${c}</b>` : `<span>${c}</span>${ic("arrowR")}`)).join("")}</div>
+    <div class="search">${ic("search", 16)}Search people, goals, anything<kbd>Ctrl K</kbd></div>
+    <span class="tb">${ic("bell")}</span><span class="tb">${ic(ui.theme === "dark" ? "moon" : "sun")}</span></div>`;
+}
+function thinYear(today, due) {
+  const segs = PHASES.map((p) => { const w = days(p.s, p.e) / span * 100; const f = today >= p.e ? 100 : today <= p.s ? 0 : days(p.s, today) / days(p.s, p.e) * 100; return `<div class="tl-seg ${today >= p.s && today < p.e ? "on" : ""}" style="width:calc(${w}% - 2px)"><i style="width:${f}%"></i></div>`; }).join("");
+  const ph = PHASES.find((p) => today >= p.s && today < p.e)?.n;
+  return `<div class="row" style="gap:14px"><span class="sm"><b>${Y.name}</b> ${ph}</span><div style="flex:1"><div class="tl thin"><div class="tl-track">${segs}</div></div></div>${due ? `<span class="due">${ic("clock")}${due}</span>` : ""}</div>`;
+}
+
+// ---------- company and unit goals (Carthage, mid-year) ----------
+const UG = {
+  c1: [{ id: "u1", u: "Engineering A Core", who: "mariam", t: "Cut production incidents by 40%", m: "From 25 to 15 incidents a quarter", p: 40, n: 6, mine: true },
+    { id: "u2", u: "Platform", who: "omar", t: "Move every service to the new cluster", m: "From 0 to 20 services", p: 60, n: 9 },
+    { id: "u3", u: "Consulting Delivery", who: "ines", t: "Run a resilience review with every client", m: "From 0 to 12 clients", p: 33, n: 7 }],
+  c2: [{ id: "u4", u: "People & Growth", who: "mehdi", t: "Put every person on a growth path", m: "From 40% to 85% of people", p: 58, n: 5 },
+    { id: "u5", u: "Consulting", who: "ines", t: "Certify 30 consultants on cloud", m: "From 4 to 30 certified", p: 45, n: 8 }],
+  c3: [{ id: "u6", u: "Delivery", who: "chaima", t: "Ship releases on the agreed date", m: "From 61% to 90% of releases", p: 39, n: 10 },
+    { id: "u7", u: "Finance & Operations", who: null, t: null }],
+};
+const KIDS = [["aicha", "Automate the regression suite", 34, "wa"], ["meriem", "Ship the payments API v2", 55, "ok"], ["salah", "Close critical findings within 14 days", 70, "ok"], ["fares", "Launch the self-service portal", 22, "no"]];
+
+function companyList() {
+  return CO.map((c) => {
+    const units = UG[c.id];
+    const open = ui.expandC === c.id;
+    return `<section class="cgl"><div class="cgl-h"><div class="row click" data-act="open" data-g="${c.id}" style="align-items:flex-start;gap:14px;padding:4px;margin:-4px;border-radius:12px"><span class="tile">${ic("goals")}</span><div class="col" style="gap:4px"><span class="gp-t" style="font-size:20px">${c.t}</span><span class="sm mu">${c.m}</span><span class="sm mu row" style="gap:6px">${av("amira", 20)}Amira Khelifi, company</span></div></div>${progCol(c.prog, tone(c.prog))}</div>
+      <div class="col" style="gap:0">${(open ? units : units.slice(0, 0)).map((g) => unitRow(g)).join("")}
+      <button class="btn g sm" data-act="expandC" data-c="${c.id}" style="justify-self:start;padding:0 2px">${open ? "Fewer" : `${units.filter((u) => u.t).length} unit goals${units.some((u) => !u.t) ? ", 1 unit without one" : ""}, ${c.al} people's goals`}</button></div></section>`;
+  }).join("");
+}
+function unitRow(g) {
+  if (!g.t) return `<div class="ug gh"><span class="tile sm gh">${ic("org")}</span><div class="col"><b style="color:var(--f);font-weight:500">${g.u}</b><span class="sm">No goal for this yet</span></div><span></span></div>`;
+  const k = tone(g.p), open = ui.expandU === g.id;
+  return `<div class="ug click ${g.mine ? "mine" : ""}" data-act="open" data-g="${g.id}">${av(g.who, 32)}<div class="col"><span class="t-words" style="font-size:15px">${g.t}</span><span class="sm mu">${g.u}, ${nm(g.who)}${g.mine ? ", your unit" : ""}</span></div>${progCol(g.p, k)}</div>
+    ${g.mine ? `<div class="row" style="padding:2px 0 4px 60px"><button class="btn g sm" data-act="expandU" data-u="${g.id}" style="padding:0 2px">${open ? "Hide your team's goals" : `${g.n} goals from your team`}</button></div>${open ? `<div class="kids">${KIDS.map(([k2, t, p, s]) => `<div class="kid click" data-act="toast" data-msg="Opens ${first(k2)}'s goal">${`<span class="row sm" style="gap:6px">${av(k2, 20)}${first(k2)}</span>`}<span class="t-words" style="font-size:13.5px;line-height:1.3">${t}</span><div class="row" style="justify-content:space-between">${stat(s)}<span class="num sm">${p}%</span></div></div>`).join("")}</div>` : ""}` : ""}`;
+}
+function companyMap() {
+  const c = CO.find((x) => x.id === ui.expandC) || CO[0];
+  const node = (o) => `<div class="node ${o.cls || ""}" ${o.act || ""}>${o.top}<span class="t-words" style="font-size:${o.fs || 14}px;line-height:1.3">${o.t}</span>${o.p != null ? `<div class="row" style="justify-content:space-between">${stat(tone(o.p))}<span class="num sm">${o.p}%</span></div>${barH(o.p, tone(o.p), 6)}` : ""}</div>`;
+  const row1 = CO.map((x) => node({ cls: x.id === c.id ? "on" : "", act: `data-act="expandC" data-c="${x.id}" data-keep="1"`, top: `<span class="row sm mu" style="gap:6px">${av("amira", 18)}Company</span>`, t: x.t, p: x.prog, fs: 15 })).join("");
+  const units = UG[c.id];
+  const row2 = units.map((g) => (g.t ? node({ cls: (ui.expandU === g.id ? "on " : "") + (g.mine ? "mine" : ""), act: `data-act="expandU" data-u="${g.id}" data-keep="1"`, top: `<span class="row sm mu" style="gap:6px">${av(g.who, 18)}${g.u}</span>`, t: g.t, p: g.p })
+    : `<div class="node gh"><span class="row sm mu" style="gap:6px">${ic("org", 15)}${g.u}</span><span class="sm mu">No goal for this yet</span></div>`)).join("");
+  const showKids = units.some((g) => g.id === ui.expandU && g.mine);
+  const row3 = showKids ? KIDS.map(([k, t, p, s]) => `<div class="node" style="width:200px" data-act="toast" data-msg="Opens ${first(k)}'s goal"><span class="row sm" style="gap:6px">${av(k, 20)}${first(k)}</span><span class="t-words" style="font-size:13px;line-height:1.3">${t}</span><div class="row" style="justify-content:space-between">${stat(s)}<span class="num sm">${p}%</span></div></div>`).join("") : "";
+  return `<section class="card" style="padding:26px 20px"><div class="tree"><div class="tr-row first">${row1}</div><div class="tr-row rise" style="--hw:118px">${row2}</div>${row3 ? `<div class="tr-row rise" style="--hw:100px">${row3}</div>` : ""}</div></section>`;
+}
+function goalsPage() {
+  const band = `<div class="row" style="align-items:flex-end;padding-top:8px"><div class="col" style="gap:10px"><h1 class="t-page" style="margin:0">Goals</h1>
+    <div class="tabs"><span class="tab">You</span><span class="tab">Your team</span><span class="tab">Engineering A Core</span><span class="tab on">Company</span></div></div>
+    <div class="seg" style="margin-left:auto;border-color:var(--hl)">${[["a", "Goals"], ["b", "Map"]].map(([k, l]) => `<button type="button" aria-pressed="${A("cview") === k}" data-act="view" data-v="${k}" style="color:${A("cview") === k ? "var(--f)" : "var(--mu)"};${A("cview") === k ? "background:var(--card)" : ""}">${l}</button>`).join("")}</div></div>`;
+  return `<div class="scroll"><div class="pg" style="gap:18px">${band}${thinYear("2026-11-10", "131 of 297 goals support one")}${A("cview") === "b" ? companyMap() : companyList()}</div></div>`;
+}
+
+// ---------- a goal: one set of parts, in a panel or on its own page (D-53) ----------
+const HIST = [["2026-10-10", "42.1% automated", 34, 6, "The flaky UI tests block two suites; the vendor fix lands in November.", "wa"], ["2026-09-08", "38% automated", 28, 5, "", "ok"], ["2026-08-10", "31% automated", 17, 9, "", "ok"], ["2026-04-25", "20% automated", 0, null, "Carried from FY2026", null]];
+function goalParts(kind) {
+  if (kind === "co") {
+    const c = CO[0], units = UG.c1;
+    return {
+      head: `<div class="gp-h"><span class="tile">${ic("goals", 20)}</span><div class="col" style="gap:6px"><span class="gp-t">${c.t}</span><div class="row sm" style="gap:10px">${stat("ok")}<span class="mu">Company goal, ${nm("amira")}</span></div></div></div>`,
+      body: [
+        `<div class="gp-sec"><div class="gp-k">Progress<span class="mk-fu" style="margin-left:auto">Rolled up by weight from 50 goals</span></div><div class="row" style="align-items:baseline;gap:12px"><span class="big">46%</span><span class="mu">${c.m}</span></div>${barH(46, "ok", 10)}</div>`,
+        `<div class="gp-sec"><div class="gp-k">Units working on it<span class="sm mu" style="margin-left:auto">16 of 18 units</span></div><div class="col" style="gap:0">${units.map((g) => unitRow({ ...g, mine: false })).join("")}<div class="ug gh"><span class="tile sm gh">${ic("org")}</span><div class="col"><b style="color:var(--f);font-weight:500">Finance & Operations, Product Analytics</b><span class="sm">No goal supporting this yet</span></div><button class="btn sm" style="justify-self:end" data-act="toast" data-msg="Mehdi Kacem and Elyes Jaziri get one reminder">Nudge</button></div></div></div>`,
+        `<div class="gp-sec"><div class="gp-k">People's goals under it</div><div class="row">${faces(["aicha", "meriem", "salah", "fares", "khaled", "rim", "leila"], 30)}<span class="mu">41 people, 50 goals</span><span class="link sm" style="margin-left:auto" data-act="toast" data-msg="Opens the map around this goal">View on the map</span></div></div>`,
+        `<div class="gp-sec"><div class="gp-k">From Amira</div><div class="row" style="align-items:flex-start">${av("amira", 30)}<div class="col"><span class="t-quote">“Platform moves are ahead; client reviews are the slow part. Ines and Omar are pairing on the next six.”</span><span class="sm mu">${dm("2026-10-01")}</span></div></div></div>`,
+      ],
+      props: [["Runs", "25 Apr 2026 to 24 Apr 2027"], ["Weight", "Equal with the other two"]],
+      foot: `<button class="btn" data-act="toast" data-msg="Amira can write a note to everyone under it">Write a note</button>`,
+    };
+  }
+  if (kind === "new") {
+    const measure = ui.measured ? "From 60% to 85% of estimates within 10% of actual" : "Updated by hand, from 0% to 100%";
+    const sugg = !ui.measured && !ui.dis.m ? `<div class="sugg">${mark("ai", "")}<span>Measure it: <b>From 60% to 85% of estimates within 10% of actual</b></span><button class="btn sm" style="margin-left:auto" data-act="measure">Use</button><button class="x" style="margin:0;width:28px;height:28px" data-act="dismiss" data-k="m" aria-label="Dismiss">${ic("close", 15)}</button></div>` : "";
+    const up = ui.linkedG3 ? `<div class="up-card rise"><span class="tile sm">${ic("goals")}</span><div class="col"><span class="t-words" style="font-size:14.5px">${CO[2].t}</span><span class="sm mu">Company</span></div></div>`
+      : `<div class="row" style="gap:10px;color:var(--mu)"><span class="tile sm gh">${ic("corner")}</span><span>Supports nothing yet</span></div>${ui.dis.l ? "" : `<div class="sugg">${mark("ai", "")}<span>Supports <b>${CO[2].t}</b></span><button class="btn sm" style="margin-left:auto" data-act="linkG3">Link</button><button class="x" style="margin:0;width:28px;height:28px" data-act="dismiss" data-k="l" aria-label="Dismiss">${ic("close", 15)}</button></div>`}`;
+    return {
+      head: `<div class="gp-h"><span class="tile blue">${ic("goals", 20)}</span><div class="col" style="gap:6px"><span class="gp-t">Make estimates clients can rely on</span><div class="row sm" style="gap:10px"><span class="stw mu">In your draft plan</span><span class="mu">Aicha Bouazizi</span></div></div></div>`,
+      body: [
+        `<div class="gp-sec"><div class="gp-k">Measured</div><span class="${ui.measured ? "rise" : ""}" style="font-size:15px">${measure}</span>${sugg}</div>`,
+        `<div class="gp-sec"><div class="gp-k">Supports</div>${up}</div>`,
+        `<div class="gp-sec"><div class="gp-k">Progress</div><div class="row" style="gap:14px"><div style="flex:1"><div class="bar ghost" style="height:10px"></div></div><span class="sm mu">From ${dm("2026-05-25")}</span></div></div>`,
+      ],
+      props: [["Runs", "25 Apr 2026 to 24 Apr 2027"], ["Weight", `33% of the plan <span class="mk-fu" style="font-weight:400">shared evenly</span>`]],
+      foot: `<button class="btn" data-act="toast" data-msg="Edits the goal in place">Edit</button><button class="btn g" data-act="toast" data-msg="Removed from your draft, with undo">Remove</button>`,
+    };
+  }
+  // mid-year: Aicha's regression suite
+  const saved = ui.saved;
+  const hist = (saved ? [["2026-11-10", `${ui.val}% automated`, Math.round((ui.val - 20) / 65 * 100), Math.round((ui.val - 20) / 65 * 100) - 34, ui.note, ui.how || "wa"]] : []).concat(HIST);
+  const cur = saved ? ui.val : 42.1, pct = Math.round((cur - 20) / 65 * 100), k = saved ? (ui.how || "wa") : "wa";
+  return {
+    head: `<div class="gp-h"><span class="tile">${ic("goals", 20)}</span><div class="col" style="gap:6px"><span class="gp-t">Automate the regression suite</span><div class="row sm" style="gap:10px">${stat(k)}<span class="mu">Aicha Bouazizi</span></div></div></div>`,
+    body: [
+      `<div class="gp-sec"><div class="gp-k">Supports<span class="link" data-act="toast" data-msg="Opens the map around this goal">${ic("org", 14)}View on the map</span></div><div class="up-card">${av("mariam", 30)}<div class="col"><span class="t-words" style="font-size:14.5px">${UNIT.t}</span><span class="sm mu">${UNIT.u}, Mariam Gharbi</span></div></div><div class="row sm mu" style="padding-left:16px;gap:8px">${ic("corner", 14)}<span>${CO[0].t}</span></div></div>`,
+      `<div class="gp-sec"><div class="gp-k">Progress<button class="btn sm p" style="margin-left:auto" data-act="record">Update progress</button></div><div class="row" style="align-items:baseline;gap:12px"><span class="big" style="color:var(--${k})">${cur}%</span><span class="mu">automated, aiming for 85%</span><span class="sm mu" style="margin-left:auto">${pct}% of the way, updated ${dm(saved ? "2026-11-10" : "2026-10-10")}</span></div>${barH(pct, k, 10)}</div>`,
+      `<div class="gp-sec"><div class="gp-k">Updates</div><div class="hist">${hist.map(([d, v, p, dl, n, s]) => `<div class="hi ${saved && d === "2026-11-10" ? "rise" : ""}"><i style="background:var(--${s || "mu"})"></i><div class="col" style="gap:3px"><div class="row" style="gap:10px"><b>${v}</b>${dl != null ? `<span class="delta ${dl < 0 ? "dn" : ""}">${dl < 0 ? "" : "+"}${dl}</span>` : ""}${s ? stat(s) : ""}<span class="sm mu" style="margin-left:auto">${dm(d)}</span></div>${n ? `<span class="t-quote mu" style="font-size:14.5px">“${n}”</span>` : ""}</div></div>`).join("")}</div></div>`,
+    ],
+    props: [["Measured", "From 20% to 85% of the suite automated"], ["Runs", "25 Apr 2026 to 24 Apr 2027"], ["Weight", "40% of the plan"]],
+    foot: "",
+  };
+}
+const propsHtml = (props) => `<div class="props">${props.map(([k, v]) => `<div class="prop"><span>${k}</span><b>${v}</b></div>`).join("")}</div>`;
+function goalAs(kind, asPage) {
+  const g = goalParts(kind);
+  if (asPage) {
+    return `<div class="scroll"><div class="pg" style="max-width:1060px;gap:24px"><div style="padding-top:8px">${g.head.replace('class="gp-t"', 'class="gp-t" style="font-size:30px"')}</div>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:32px;align-items:start"><div class="col" style="gap:20px">${g.body.map((b) => `<section class="card">${b}</section>`).join("")}</div>
+      <aside class="col" style="gap:14px;position:sticky;top:0">${propsHtml(g.props)}<div class="row">${g.foot}</div></aside></div></div></div>`;
+  }
+  return `<div class="scrim" data-act="close"></div><div class="panel" role="dialog" aria-label="Goal"><div class="panel-h" style="position:relative">${g.head}<button class="x" style="position:absolute;top:14px;right:14px" data-act="close" aria-label="Close">${ic("close")}</button></div>
+    <div class="panel-b">${g.body[0]}${propsHtml(g.props)}${g.body.slice(1).join("")}</div>${g.foot ? `<div class="panel-f">${g.foot}</div>` : ""}</div>`;
+}
+function goalOwnerPage(kind) {
+  // what sits under a panel: Goals, You (Aicha) or Goals, Company (Amira)
+  if (kind === "co") return goalsPage();
+  const W = kind === "new" ? { g1: 34, g2: 33, g3: 33 } : { g1: 40, g2: 25, g3: 35 };
+  return `<div class="scroll"><div class="pg" style="gap:18px"><div class="row" style="align-items:flex-end;padding-top:8px"><div class="col" style="gap:10px"><h1 class="t-page" style="margin:0">Goals</h1><div class="tabs"><span class="tab on">You</span><span class="tab">${UNIT.u}</span><span class="tab">Company</span></div></div></div>
+    ${thinYear(kind === "new" ? "2026-05-04" : "2026-11-10", kind === "new" ? `Plans due ${day("2026-05-25")}` : "")}
+    <div class="col" style="gap:10px">${AG.map((g) => `<div class="pgoal click" data-act="open" data-g="${g.id === "g3" ? "new" : g.id === "g1" ? "mid" : "x"}"><div class="pgoal-h"><div class="col" style="gap:6px"><span class="t-words" style="font-size:19px">${g.t}</span><span class="mu">${g.m}</span></div><div class="wt"><span class="num" style="font-weight:600">${W[g.id]}%</span></div></div>${kind === "mid" ? `<div class="row" style="gap:14px">${stat(g.st)}<div style="flex:1">${barH(g.prog, g.st)}</div><span class="num sm">${g.prog}%</span></div>` : ""}</div>`).join("")}</div></div></div>`;
+}
+
+// ---------- updating progress ----------
+function updateBody() {
+  if (ui.us === "ms") {
+    const MS = [["m1", "Plan agreed", "Done 9 Jul"], ["m2", "First release", "Due 22 Oct, 19 days late"], ["m3", "Handover", "Due 19 Feb"]];
+    const done = Object.values(ui.ms).filter(Boolean).length;
+    return `<div class="row inl" style="padding:10px 14px">${av("mariam", 26)}<span>Mariam asked for an update</span><span class="sm mu" style="margin-left:auto">${dm("2026-10-18")}</span></div>
+      <div class="gp-sec"><div class="gp-k">Milestones</div><div>${MS.map(([id, t, d]) => `<div class="ms" data-act="ms" data-m="${id}"><span class="box ${ui.ms[id] ? "on" : ""}">${ui.ms[id] ? ic("check") : ""}</span><span class="t-words" style="font-size:15px">${t}</span><span class="sm ${id === "m2" && !ui.ms.m2 ? "" : "mu"}" style="margin-left:auto;${id === "m2" && !ui.ms.m2 ? "color:var(--no)" : ""}">${ui.ms[id] && id !== "m1" ? "Done today" : d}</span></div>`).join("")}</div>
+      <div class="row" style="align-items:baseline;gap:10px"><span class="big">${done} of 3</span><span class="mu">milestones, ${Math.round(done / 3 * 100)}% of the way</span></div></div>
+      ${howHtml(done >= 2 ? "ok" : "wa")}`;
+  }
+  const v = +ui.val || 0, pct = Math.max(0, Math.min(100, Math.round((v - 20) / 65 * 100)));
+  const expected = 55; // where the line from 20% to 85% sits on 10 Nov
+  const pace = v >= expected ? "ok" : v >= 40 ? "wa" : "no";
+  return `<div class="gp-sec"><div class="gp-k">Now</div><div class="num-in"><button class="step" data-act="step" data-d="-1" aria-label="Less">−</button><input id="val" type="number" step="0.1" value="${v}" aria-label="Automated, %"><span class="mu" style="font-size:16px">% automated</span><button class="step" data-act="step" data-d="1" aria-label="More">+</button><span class="sm mu" style="margin-left:auto">Last ${dm("2026-10-10")}: 42.1%</span></div>
+      <div class="rail"><i style="width:${pct}%;background:var(--${pace})"></i><span class="exp" style="left:${(expected - 20) / 65 * 100}%"><span>Where it should be now</span></span><span class="knob" style="left:${Math.max(4, Math.min(96, pct))}%">${pct}%</span></div>
+      <div class="row sm"><span class="mu">From 20%</span><span class="mu" style="margin-left:auto">To 85%</span></div></div>
+    ${howHtml(pace)}`;
+}
+function howHtml(pace) {
+  const k = ui.howSet ? ui.how : pace;
+  ui.how = k;
+  return `<div class="gp-sec"><div class="gp-k">How it's going${ui.howSet ? "" : `<span class="mk-fu" style="margin-left:auto">From the pace</span>`}</div><div class="choices">${["ok", "wa", "no"].map((s) => `<button type="button" class="${s}" aria-pressed="${k === s}" data-act="how" data-s="${s}">${STW[s]}</button>`).join("")}</div></div>
+    <div class="gp-sec"><div class="gp-k">${k === "ok" ? "A note" : "What's in the way"}</div><textarea class="in" id="upnote" placeholder="${k === "ok" ? "Optional" : "Mariam reads this"}">${esc(ui.note)}</textarea><div class="row"><button class="btn sm">${ic("file", 15)}Attach a file</button><button class="btn sm">${ic("link", 15)}Add a link</button></div></div>`;
+}
+function updateAs(asDialog) {
+  const title = ui.us === "ms" ? "Build role-relevant technical capability" : "Automate the regression suite";
+  const head = `<div class="gp-h"><span class="tile ${ui.us === "ms" ? "blue" : ""}">${ic("goals", 20)}</span><div class="col" style="gap:4px"><span class="sm mu">Update progress</span><span class="gp-t" style="font-size:20px">${title}</span></div></div>`;
+  const foot = `<div class="panel-f"><button class="btn" data-act="close">Cancel</button><button class="btn p" style="margin-left:auto" data-act="save">Save update</button></div>`;
+  if (asDialog) return `<div class="scrim" data-act="close"></div><div class="dlg" role="dialog" aria-label="Update progress"><div class="panel-h" style="position:relative">${head}<button class="x" style="position:absolute;top:14px;right:14px" data-act="close" aria-label="Close">${ic("close")}</button></div><div class="panel-b">${updateBody()}</div>${foot}</div>`;
+  return `<div class="scrim" data-act="close"></div><div class="panel" role="dialog" aria-label="Update progress"><div class="panel-h" style="position:relative"><button class="btn g sm" data-act="back" style="padding:0;margin-bottom:12px">${ic("arrowR", 15).replace('class="ic"', 'class="ic" style="transform:rotate(180deg)"')}The goal</button>${head}</div><div class="panel-b">${updateBody()}</div>${foot}</div>`;
+}
+
+// ---------- approving a plan from Home ----------
+function approvePage() {
+  const changed = ui.as === "changed";
+  const goals = [
+    { t: "Automate the regression suite", m: "From 20% to 85% of the regression suite automated", w: changed ? [40, 34] : [null, 34], up: UNIT.t },
+    { t: "Build role-relevant technical capability", m: "Plan agreed, First release, Handover", w: changed ? [30, 33] : [null, 33], up: null },
+    { t: "Make estimates clients can rely on", m: "From 60% to 85% of estimates within 10% of actual", w: [null, 33], up: CO[2].t, isNew: changed },
+  ];
+  const a = ui.approved.aicha;
+  const aichaX = a ? "" : `<div class="ny-x">${changed ? `<div class="row inl" style="padding:10px 14px;align-items:flex-start">${av("mariam", 24)}<div class="col"><span class="sm mu">You asked, ${dm("2026-05-03")}</span><span class="t-quote">“Add a goal for client estimates; the last two quotes slipped.”</span></div></div>` : ""}
+      <div class="col" style="gap:0">${goals.map((g, i) => `<div class="row" style="padding:10px 0;${i ? "box-shadow:0 -1px 0 var(--hl)" : ""};align-items:flex-start"><div class="col" style="gap:3px"><span class="row" style="gap:10px"><span class="t-words" style="font-size:15.5px">${g.t}</span>${g.isNew ? `<span class="diff-new">New</span>` : ""}</span><span class="sm mu">${g.m}</span>${g.up ? `<span class="line-up">${ic("corner")}<b>${g.up}</b></span>` : ""}</div><span class="num" style="margin-left:auto;font-weight:600;white-space:nowrap">${g.w[0] != null ? `<span class="was">${g.w[0]}%</span> ` : ""}${g.w[1]}%</span></div>`).join("")}</div>
+      ${ui.asking === "aicha" ? `<div class="col" style="gap:8px"><textarea class="in" placeholder="What should change?"></textarea><div class="row"><button class="btn" data-act="cancelAsk">Cancel</button><button class="btn p" data-act="toast" data-msg="Sent back to Aicha with your note">Send back</button></div></div>`
+        : `<div class="row"><button class="btn p" data-act="approve" data-p="aicha">Approve</button><button class="btn" data-act="ask" data-p="aicha">Ask for a change</button><span class="mk-fu" style="margin-left:auto">Weights shared evenly by Fusion</span></div>`}</div>`;
+  const rows = [
+    !a && `<div class="ny-i">${av("aicha", 40)}<div class="col"><b>Aicha Bouazizi's plan</b><span class="sm mu">${changed ? `Changed as you asked, put forward again ${dm("2026-05-05")}` : `Put forward ${dm("2026-05-05")}`}</span></div><span class="sm mu" style="margin-left:auto">Plans due ${dm("2026-05-25")}</span></div>${aichaX}`,
+    !ui.approved.sofiene && `<div class="ny-i">${av("sofiene", 40)}<div class="col"><b>Sofiene Jebali's plan</b><span class="sm mu">Put forward ${dm("2026-05-06")}, 3 goals</span></div><div class="row" style="margin-left:auto"><button class="btn" data-act="toast" data-msg="Opens Sofiene's plan here">Read it</button><button class="btn p" data-act="approve" data-p="sofiene">Approve</button></div></div>`,
+    `<div class="ny-i">${av("tarek", 40)}<div class="col"><b>Tarek Ayari asked for time off</b><span class="sm mu">12 to 16 May, 5 days</span></div><div class="row" style="margin-left:auto"><button class="btn" data-act="toast" data-msg="Opens the request">Read it</button><button class="btn p" data-act="toast" data-msg="Approved, Tarek told">Approve</button></div></div>`,
+  ].filter(Boolean).join("");
+  const n = 1 + (a ? 0 : 1) + (ui.approved.sofiene ? 0 : 1);
+  return `<div class="scroll"><div class="pg" style="max-width:940px;gap:20px"><div class="col" style="padding-top:8px;gap:4px"><h1 class="t-page" style="margin:0">Good morning, Mariam</h1><span class="mu">${day("2026-05-07")}</span></div>
+    <section class="col" style="gap:10px"><div class="row"><h2 class="t-sec" style="margin:0">Needs you</h2><span class="mu num" style="margin-left:auto">${n}</span></div><div class="ny">${rows}</div></section>
+    <section class="card"><div class="row"><h2 class="t-sec" style="margin:0">Your team's plans</h2><span class="mu" style="margin-left:auto">${a ? 5 : 4} of 6 approved</span></div><div class="row" style="gap:18px">${TEAM.map((k) => `<div class="row" style="gap:8px">${av(k, 28)}<span class="sm">${first(k)}</span></div>`).join("")}</div></section></div></div>`;
+}
+
+// ---------- a 1:1: the meeting is the page ----------
+const AGENDA = [
+  { id: "a1", ic: "alert", t: `<span class="t-words">Automate the regression suite</span> is at risk`, src: "Goal, 42.1% of 85%, updated 10 Oct", by: null },
+  { id: "a2", ic: "check", t: "Share the revised estimate with the client", src: `Action from ${dm("2026-10-08")}, Aicha, 9 days late`, by: null },
+  { id: "a3", ic: "send", t: `Your update request on <span class="t-words">Build role-relevant technical capability</span>`, src: `You asked ${dm("2026-10-18")}`, by: "mariam" },
+  { id: "a4", ic: "plus", t: "Training budget for the AWS certification", src: "Aicha added it", by: "aicha" },
+  { id: "a5", ic: "clap", t: "Salah's praise for the incident drill", src: `Praise, ${dm("2026-10-05")}, worth a word`, by: null },
+];
+const STARTER = [
+  { id: "s1", ic: "oneone", t: "How the first weeks are going", src: "Starter" },
+  { id: "s2", ic: "goals", t: "A plan for the rest of the year", src: "Starter, due 30 Nov" },
+  { id: "s3", ic: "feedback", t: "How Meriem likes to get feedback", src: "Starter" },
+  { id: "s4", ic: "people", t: "Who to meet in the first month", src: "Starter" },
+];
+function oneonePage() {
+  const first1 = ui.os === "first", who = first1 ? "meriem" : "aicha", F = first(who);
+  const items = first1 ? STARTER : AGENDA;
+  const tick = A("talk") === "b";
+  const agenda = items.map((it) => {
+    const open = ui.agOpen === it.id, noted = (ui.notes[it.id] || "").trim();
+    const right = tick ? `<span class="box ${ui.ticked[it.id] ? "on" : ""}" data-act="tick" data-a="${it.id}" role="checkbox" aria-checked="${!!ui.ticked[it.id]}">${ui.ticked[it.id] ? ic("check") : ""}</span>`
+      : noted ? `<span class="mk-fu">Noted</span>` : "";
+    return `<div class="ag ${open ? "open" : ""}" data-act="ag" data-a="${it.id}"><span class="ag-ic">${ic(it.ic)}</span><div class="col" style="gap:3px"><span style="font-size:14.5px">${it.t}</span><span class="src">${it.by ? `${av(it.by, 16)} ` : ""}${it.src}</span>
+      ${open ? `<textarea class="in" data-n="${it.id}" placeholder="Notes, both of you see these" style="margin-top:8px;min-height:64px;background:var(--card)">${esc(ui.notes[it.id] || "")}</textarea><div class="row" style="margin-top:6px"><button class="btn sm" data-act="toast" data-msg="Action added for ${F}">${ic("plus", 15)}Action for ${F}</button><button class="btn sm g" data-act="toast" data-msg="Action added for you">Action for you</button></div>` : ""}</div>${right}</div>`;
+  }).join("");
+  const head = `<div class="row" style="align-items:flex-end;padding-top:8px;gap:16px"><span class="faces">${av("mariam", 52)}${av(who, 52)}</span><div class="col" style="gap:4px"><h1 class="t-page" style="margin:0">1:1 with ${F}</h1><span class="mu">${first1 ? `${day("2026-11-09")}, 10:00 to 10:30, your first` : `Today, ${day("2026-11-10")}, 11:00 to 11:30, every two weeks`}</span></div>
+    <div class="col" style="margin-left:auto;justify-items:end;gap:6px"><span class="mk-fu">${ic("calCheck", 14)}In both calendars</span><span class="link sm" data-act="toast" data-msg="Moves it; both calendars update">Move it</span></div></div>`;
+  const railFull = `<section class="card" style="gap:12px"><h2 class="t-sec" style="margin:0">${F}'s goals</h2>${AG.map((g) => `<div class="col" style="gap:6px"><span class="t-words" style="font-size:14px">${g.t}</span><div class="row" style="gap:10px">${stat(g.st)}<div style="flex:1">${barH(g.prog, g.st, 6)}</div><span class="num sm">${g.prog}%</span></div></div>`).join("")}</section>
+    <section class="card" style="gap:10px"><h2 class="t-sec" style="margin:0">Actions</h2><div>${[["aicha", "Share the revised estimate with the client", "9 days late", "no"], ["mariam", "Ask Omar about the vendor fix", "Done 20 Oct", "ok"]].map(([k, t, d, s]) => `<div class="act">${av(k, 24)}<span>${t}</span>${stat(s, d)}</div>`).join("")}</div></section>
+    <section class="card" style="gap:10px"><h2 class="t-sec" style="margin:0">Lately</h2><div class="row" style="align-items:flex-start">${av("salah", 28)}<div class="col"><span class="sm mu">Salah praised ${F}, ${dm("2026-10-05")}</span><span class="t-quote" style="font-size:14.5px">“The incident drill was the best we have run.”</span></div></div></section>`;
+  const railEmpty = `<section class="card" style="gap:10px"><h2 class="t-sec" style="margin:0">${F}'s goals</h2><span class="sm mu">No plan yet, due ${dm("2026-11-30")}</span></section>
+    <section class="card" style="gap:10px"><h2 class="t-sec" style="margin:0">Actions</h2><span class="sm mu">None yet</span></section>
+    <section class="card" style="gap:10px"><h2 class="t-sec" style="margin:0">About ${F}</h2><div class="props">${[["Joined", "2 Nov 2026"], ["Job", "Software Engineer"], ["Unit", "Engineering A Core"]].map(([k, v]) => `<div class="prop"><span>${k}</span><b>${v}</b></div>`).join("")}</div></section>`;
+  return `<div class="scroll"><div class="pg" style="max-width:1120px;gap:20px">${head}<div class="oo"><div class="col" style="gap:18px">
+    <section class="card" style="gap:6px"><div class="row" style="margin-bottom:6px"><h2 class="t-sec" style="margin:0">Agenda</h2>${first1 ? `<span style="margin-left:auto">${mark("fusion", "A starter agenda for a first 1:1")}</span>` : `<span class="sm mu" style="margin-left:auto">${mark("fusion", "From goals, actions and requests")}</span>`}</div>${agenda}
+      <div class="row" style="padding:10px 14px;color:var(--mu)">${ic("plus", 16)}<span>Add to the agenda</span>${tick || first1 ? "" : `<span style="margin-left:auto">${mark("fusion", "What isn't noted carries to 24 Nov")}</span>`}</div></section>
+    <section class="card"><div class="row"><h2 class="t-sec" style="margin:0">Only you see this</h2></div><textarea class="in" placeholder="Private notes" style="min-height:70px"></textarea></section></div>
+    <aside class="rail-r">${first1 ? railEmpty : railFull}</aside></div></div></div>`;
+}
+
+// ---------- Feedback, with the praise wall ----------
+const VALUES = ["Own the outcome", "Clients first", "Learn out loud", "One team"];
+const WALL = [
+  { id: "w1", from: "salah", to: ["aicha", "leila"], v: "One team", q: "The incident drill was the best we have run. Clear roles, and every follow-up has an owner.", d: "2026-11-09", r: { clap: 4, party: 2, heart: 3 } },
+  { id: "w2", from: "omar", to: ["rim"], v: "Own the outcome", q: "Moved the nightly jobs without a single missed report. Quietly brilliant.", d: "2026-11-09", r: { clap: 6, bulb: 1 } },
+  { id: "w3", from: "ines", to: ["chaima"], v: "Clients first", q: "Turned an angry steering committee into a renewal. The client asked for you by name.", d: "2026-11-08", r: { party: 5, heart: 2 } },
+  { id: "w4", from: "mariam", to: ["meriem"], v: "Learn out loud", q: "Your write-up on the latency fix taught the whole team something.", d: "2026-11-06", r: { bulb: 3 } },
+  { id: "w5", from: "khaled", to: ["fares"], v: "One team", q: "Covered my release while I was out and left notes I could actually follow.", d: "2026-11-05", r: { clap: 2, heart: 1 } },
+];
+function feedbackPage() {
+  const empty = ui.fs === "new";
+  const cards = empty ? [] : ui.sent.concat(WALL);
+  const card = (w) => `<div class="pr ${w.mine ? "rise" : ""}"><div class="row" style="gap:10px">${av(w.from, 30)}<span class="sm"><b>${first(w.from)}</b> <span class="mu">to</span> <b>${w.to.map(first).join(" and ")}</b></span><span class="sm mu" style="margin-left:auto">${w.mine ? "Just now" : dm(w.d)}</span></div>
+    <span class="t-quote">“${esc(w.q)}”</span><div class="row"><span class="sm" style="color:var(--pr-text);font-weight:600">${w.v}</span><span class="react" style="margin-left:auto">${["clap", "party", "bulb", "heart"].map((r) => { const n = (w.r[r] || 0) + (ui.reacts[w.id + r] ? 1 : 0); return n || ui.reacts[w.id + r] !== undefined ? `<button class="${ui.reacts[w.id + r] ? "on" : ""}" data-act="react" data-w="${w.id}" data-r="${r}">${ic(r)}${n || ""}</button>` : ""; }).join("") || `<button data-act="react" data-w="${w.id}" data-r="clap">${ic("clap")}</button>`}</span></div></div>`;
+  const ghost = [0, 1, 2, 3].map((i) => `<div class="pr gh"><div class="row" style="gap:10px"><span class="av gh" style="--s:30px"></span><span class="gh-line" style="width:${[40, 52, 34, 46][i]}%;height:10px"></span></div><span class="gh-line" style="width:92%;height:10px"></span><span class="gh-line" style="width:${[60, 74, 48, 66][i]}%;height:10px"></span></div>`).join("");
+  const people = ["leila", "salah", "khaled", "rim", "mariam", "fares"];
+  const composer = `<section class="card"><div class="row"><h2 class="t-sec" style="margin:0">Praise someone</h2>${empty ? `<span style="margin-left:auto">${mark("fusion", "Starter values, yours to change in Settings")}</span>` : ""}</div>
+    <div class="who-pick">${people.map((k) => `<button type="button" aria-pressed="${ui.to === k}" data-act="to" data-k="${k}">${av(k, 26)}${first(k)}</button>`).join("")}<button type="button" style="padding:3px 12px;color:var(--mu)">${ic("search", 15)}Anyone</button></div>
+    <div class="vals">${VALUES.map((v) => `<button type="button" aria-pressed="${ui.value === v}" data-act="value" data-v="${v}">${v}</button>`).join("")}</div>
+    <textarea class="in" id="words" placeholder="What did ${first(ui.to)} do?">${esc(ui.words)}</textarea>
+    <div class="row"><span class="sm mu">${first(ui.to)}'s manager hears about it too</span><button class="btn p" style="margin-left:auto" data-act="praise">Send praise</button></div></section>`;
+  const counts = VALUES.map((v) => [v, empty ? 0 : cards.filter((w) => w.v === v).length * 3 + ({ "One team": 5, "Own the outcome": 3, "Clients first": 2, "Learn out loud": 1 })[v]]);
+  const max = Math.max(1, ...counts.map(([, n]) => n));
+  const side = `<section class="card" style="gap:12px"><div class="row"><h2 class="t-sec" style="margin:0">Values this month</h2></div>${counts.map(([v, n]) => `<div class="vbar"><span class="sm">${v}</span><span class="num sm mu" style="text-align:right">${empty ? "" : n}</span><div class="bar ${empty ? "ghost" : ""}"><i style="width:${n / max * 100}%;background:var(--pr)"></i></div></div>`).join("")}</section>
+    <section class="card" style="gap:10px"><div class="row"><h2 class="t-sec" style="margin:0">Asked of you</h2></div>${empty ? `<span class="sm mu">Nothing asked of you</span>` : `<div class="row" style="align-items:flex-start">${av("leila", 30)}<div class="col" style="gap:6px"><span><b>Leila Baccouche</b> asked for your feedback</span><span class="t-quote" style="font-size:14.5px">“On the release runbook: what would you cut?”</span><div class="row"><button class="btn sm p" data-act="toast" data-msg="Opens the answer here">Answer</button><span class="sm mu">Asked ${dm("2026-11-06")}</span></div></div></div>`}</section>`;
+  return `<div class="scroll"><div class="pg" style="max-width:1120px;gap:18px"><div class="row" style="align-items:flex-end;padding-top:8px"><div class="col" style="gap:10px"><h1 class="t-page" style="margin:0">Feedback</h1><div class="tabs"><span class="tab on">Praise</span><span class="tab">Asked of you${empty ? "" : " 1"}</span><span class="tab">Yours</span></div></div></div>
+    <div class="fb"><div class="col" style="gap:16px">${composer}<div class="row"><h2 class="t-sec" style="margin:0">This week at Carthage</h2>${empty ? `<span class="sm mu" style="margin-left:auto">No praise yet</span>` : `<span class="sm mu" style="margin-left:auto">${cards.length} this week</span>`}</div><div class="wall">${empty && !ui.sent.length ? ghost : cards.map(card).join("")}</div></div><aside class="col" style="gap:14px">${side}</aside></div></div></div>`;
+}
+
+// ---------- render ----------
+const SCREENS = [["goals", "Goals, Company"], ["goal", "A goal, opened"], ["update", "Updating progress"], ["approve", "Approving a plan"], ["oneone", "A 1:1"], ["feedback", "Feedback and praise"]];
+function renderFrame() {
+  const fx = document.getElementById("fx");
+  fx.dataset.t = ui.theme; fx.dataset.serif = "a";
+  let v = "aicha", here = "Goals", crumbs = ["Performance", "Goals"], main = "", over = "";
+  const S = ui.screen;
+  if (S === "goals") {
+    v = "mariam"; crumbs = ["Performance", "Goals", "Company"];
+    const kind = ui.open === "c1" || ui.open === "c2" || ui.open === "c3" ? "co" : ui.open ? "unit" : null;
+    if (kind === "co" && A("o_co") === "b") { crumbs = ["Performance", "Goals", "Company", CO.find((c) => c.id === ui.open).t]; main = goalAs("co", true); }
+    else { main = goalsPage(); if (kind === "co") over = goalAs("co", false); }
+  } else if (S === "goal") {
+    const kind = ui.gs, k = { new: "o_new", mid: "o_mid", co: "o_co" }[kind];
+    v = kind === "co" ? "amira" : "aicha";
+    const t = kind === "co" ? CO[0].t : kind === "new" ? "Make estimates clients can rely on" : "Automate the regression suite";
+    if (A(k) === "b") { crumbs = kind === "co" ? ["Performance", "Goals", "Company", t] : ["Performance", "Goals", "You", t]; main = goalAs(kind, true); }
+    else { crumbs = kind === "co" ? ["Performance", "Goals", "Company"] : ["Performance", "Goals", "You"]; main = goalOwnerPage(kind); over = ui.open === "closed" ? "" : goalAs(kind, false); }
+  } else if (S === "update") {
+    crumbs = ["Performance", "Goals", "You"]; main = goalOwnerPage("mid");
+    if (ui.open !== "closed") over = ui.recording || A("upd") === "b" ? updateAs(A("upd") === "b") : goalAs("mid", false);
+  } else if (S === "approve") { v = "mariam"; here = "Home"; crumbs = ["Home"]; main = approvePage(); }
+  else if (S === "oneone") { v = "mariam"; here = "1:1s"; crumbs = ["Performance", "1:1s", ui.os === "first" ? "Meriem Hamrouni" : "Aicha Bouazizi"]; main = oneonePage(); }
+  else { v = "aicha"; here = "Feedback"; crumbs = ["Performance", "Feedback"]; main = feedbackPage(); }
+  fx.innerHTML = sidebar(v, here) + `<div class="main">${topbar(crumbs)}${main}${over}${ui.toast ? `<div class="toast" role="status"><span>${esc(ui.toast.msg)}</span>${ui.toast.undo ? `<button data-act="undo">Undo</button>` : ""}</div>` : ""}</div>`;
+}
+function pill(id, label, on, attrs = "") { return `<button type="button" aria-pressed="${on}" ${attrs}>${label}</button>`; }
+const CTRL = {
+  goals: () => `<div class="ctl"><span>Mariam Gharbi, manager, ${day("2026-11-10")}</span></div>`,
+  goal: () => `<div class="ctl"><span>State</span><div class="seg">${[["new", `Just written (Aicha, ${dm("2026-05-04")})`], ["mid", `Mid-year (Aicha, ${dm("2026-11-10")})`], ["co", "A company goal (Amira)"]].map(([k, l]) => pill(k, l, ui.gs === k, `data-gs="${k}"`)).join("")}</div></div>`,
+  update: () => `<div class="ctl"><span>Aicha Bouazizi, ${day("2026-11-10")}</span><div class="seg">${[["num", "A number"], ["ms", "Milestones, Mariam asked"]].map(([k, l]) => pill(k, l, ui.us === k, `data-us="${k}"`)).join("")}</div></div>`,
+  approve: () => `<div class="ctl"><span>Mariam Gharbi, Home, ${day("2026-05-07")}</span><div class="seg">${[["first", "Put forward the first time"], ["changed", "Sent back and changed"]].map(([k, l]) => pill(k, l, ui.as === k, `data-as="${k}"`)).join("")}</div></div>`,
+  oneone: () => `<div class="ctl"><span>Mariam Gharbi, manager</span><div class="seg">${[["today", "With Aicha, today"], ["first", "A first 1:1, Meriem"]].map(([k, l]) => pill(k, l, ui.os === k, `data-os="${k}"`)).join("")}</div></div>`,
+  feedback: () => `<div class="ctl"><span>Aicha Bouazizi, ${day("2026-11-10")}</span><div class="seg">${[["week", "This week"], ["new", "A new company"]].map(([k, l]) => pill(k, l, ui.fs === k, `data-fs="${k}"`)).join("")}</div></div>`,
+};
+function renderChrome() {
+  document.getElementById("screens").innerHTML = SCREENS.map(([k, l]) => pill(k, l, ui.screen === k, `data-screen="${k}"`)).join("");
+  document.getElementById("theme").innerHTML = [["dark", "Dark"], ["light", "Light"]].map(([k, l]) => pill(k, l, ui.theme === k, `data-theme-set="${k}"`)).join("");
+  document.getElementById("feel").innerHTML = Q.feel.o.map(([k, l]) => `<button type="button" class="pick" aria-pressed="${state.answers.feel === k}" data-q="feel" data-o="${k}">${l}</button>`).join("");
+  document.getElementById("controls").innerHTML = CTRL[ui.screen]() + `<button class="q-show" data-act-chrome="reset">Start over</button>`;
+  document.getElementById("qs").innerHTML = SCREEN_QS[ui.screen].map((k) => {
+    const q = Q[k];
+    return `<div class="q"><div class="q-h"><span class="q-t">${q.t}</span>${q.show ? `<button class="q-show" data-show="${k}">Show</button>` : ""}</div>
+      <div class="opts">${q.o.map(([o, l]) => `<button type="button" class="pick" aria-pressed="${A(k) === o}" data-q="${k}" data-o="${o}">${l}${q.rec === o ? `<span class="star">★</span>` : ""}</button>`).join("")}</div></div>`;
+  }).join("") || `<div class="q"><span class="mu" style="font-size:13px">Nothing to pick here; a note if anything's off.</span></div>`;
+  const note = document.getElementById("note"); if (document.activeElement !== note) note.value = state.note || "";
+}
+function render() { renderChrome(); renderFrame(); fit(); }
+function fit() {
+  const stage = document.getElementById("stage"), sc = document.getElementById("scaler");
+  const s = Math.min(1, stage.clientWidth / 1440);
+  sc.style.transform = `scale(${s})`; stage.style.height = 900 * s + "px";
+}
+addEventListener("resize", fit);
+let toastT = null;
+function toast(msg, undo) { ui.toast = { msg, undo }; clearTimeout(toastT); toastT = setTimeout(() => { ui.toast = null; renderFrame(); }, undo ? 5000 : 2400); }
+
+// ---------- frame interactions ----------
+const fxEl = document.getElementById("fx");
+fxEl.addEventListener("click", (e) => {
+  const t = e.target.closest("[data-act]"); if (!t) return;
+  const a = t.dataset.act;
+  if (a === "fold") ui.folded[t.dataset.k] = !ui.folded[t.dataset.k];
+  else if (a === "toast") toast(t.dataset.msg);
+  else if (a === "open") {
+    const g = t.dataset.g;
+    if (g.startsWith("u")) return toast("Opens the unit goal the way a company goal opens");
+    if (ui.screen === "goal" || ui.screen === "update") { if (g === "x") return toast("Opens the goal"); if (ui.screen === "goal") ui.gs = g; ui.open = null; ui.recording = false; return render(); }
+    ui.open = g;
+  }
+  else if (a === "close") { ui.open = "closed"; ui.recording = false; if (ui.screen === "goals") ui.open = null; }
+  else if (a === "expandC") { ui.expandC = t.dataset.keep ? t.dataset.c : ui.expandC === t.dataset.c ? null : t.dataset.c; }
+  else if (a === "expandU") ui.expandU = t.dataset.keep ? t.dataset.u : ui.expandU === t.dataset.u ? null : t.dataset.u;
+  else if (a === "view") { state.answers.cview = t.dataset.v; persist(); return render(); }
+  else if (a === "measure") ui.measured = true;
+  else if (a === "linkG3") ui.linkedG3 = true;
+  else if (a === "dismiss") ui.dis[t.dataset.k] = true;
+  else if (a === "record") { ui.recording = true; if (ui.screen !== "update") { ui.screen = "update"; ui.open = null; return render(); } }
+  else if (a === "back") ui.recording = false;
+  else if (a === "step") { ui.val = Math.round(((+ui.val || 0) + +t.dataset.d) * 10) / 10; }
+  else if (a === "how") { ui.how = t.dataset.s; ui.howSet = true; }
+  else if (a === "ms") ui.ms[t.dataset.m] = !ui.ms[t.dataset.m];
+  else if (a === "save") { ui.saved = ui.us === "num"; ui.recording = false; ui.open = A("upd") === "b" ? "closed" : null; toast("Update saved; Mariam sees it", true); ui.undo = "saved"; }
+  else if (a === "approve") { ui.approved[t.dataset.p] = true; ui.asking = null; toast(`Approved ${first(t.dataset.p)}'s plan`, true); ui.undo = "ap:" + t.dataset.p; }
+  else if (a === "ask") ui.asking = t.dataset.p;
+  else if (a === "cancelAsk") ui.asking = null;
+  else if (a === "undo") { if (ui.undo?.startsWith("ap:")) ui.approved[ui.undo.slice(3)] = false; else if (ui.undo === "praise") ui.sent.shift(); else if (ui.undo) ui[ui.undo] = false; ui.toast = null; ui.undo = null; }
+  else if (a === "ag") { if (e.target.closest("textarea, button")) return; ui.agOpen = ui.agOpen === t.dataset.a ? null : t.dataset.a; }
+  else if (a === "tick") { e.stopPropagation(); ui.ticked[t.dataset.a] = !ui.ticked[t.dataset.a]; }
+  else if (a === "to") ui.to = t.dataset.k;
+  else if (a === "value") ui.value = t.dataset.v;
+  else if (a === "react") { const k = t.dataset.w + t.dataset.r; ui.reacts[k] = !ui.reacts[k]; }
+  else if (a === "praise") {
+    const words = (document.getElementById("words")?.value || "").trim();
+    if (!words) { document.getElementById("words")?.focus(); return; }
+    ui.sent.unshift({ id: "s" + Date.now(), mine: true, from: "aicha", to: [ui.to], v: ui.value, q: words, d: "2026-11-10", r: {} });
+    ui.words = ""; toast(`Praise sent to ${first(ui.to)}`, true); ui.undo = "praise";
+  }
+  renderFrame();
+});
+fxEl.addEventListener("input", (e) => {
+  if (e.target.id === "val") { ui.val = e.target.value; const pos = e.target.selectionStart; renderFrame(); const i = document.getElementById("val"); if (i) { i.focus(); try { i.setSelectionRange(pos, pos); } catch {} } }
+  else if (e.target.id === "upnote") ui.note = e.target.value;
+  else if (e.target.id === "words") ui.words = e.target.value;
+  else if (e.target.dataset.n) ui.notes[e.target.dataset.n] = e.target.value;
+});
+fxEl.addEventListener("focusout", (e) => { if (e.target.dataset?.n) renderFrame(); });
+fxEl.addEventListener("keydown", (e) => { if (e.key === "Escape" && (ui.open || ui.recording)) { ui.open = ui.screen === "goals" ? null : "closed"; ui.recording = false; renderFrame(); } });
+
+// ---------- chrome interactions ----------
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b || b.closest("#fx")) return;
+  const reset = () => Object.assign(ui, fresh());
+  if (b.dataset.screen) { const keep = { gs: ui.gs }; reset(); Object.assign(ui, keep); ui.screen = b.dataset.screen; ui.recording = ui.screen === "update"; return render(); }
+  if (b.dataset.themeSet) { ui.theme = b.dataset.themeSet; try { localStorage.setItem(KEY + "-t", ui.theme); } catch {} return render(); }
+  for (const k of ["gs", "us", "as", "os", "fs"]) if (b.dataset[k]) { ui[k] = b.dataset[k]; ui.open = null; ui.recording = k === "us"; ui.agOpen = k === "os" ? (b.dataset[k] === "first" ? "s1" : "a1") : ui.agOpen; return render(); }
+  if (b.dataset.show) { reset(); Object.assign(ui, Q[b.dataset.show].show); ui.recording = ui.screen === "update"; return render(); }
+  if (b.dataset.actChrome === "reset") { const s = ui.screen, keep = { gs: ui.gs, us: ui.us, as: ui.as, os: ui.os, fs: ui.fs }; reset(); Object.assign(ui, keep, { screen: s, recording: s === "update" }); return render(); }
+  if (b.dataset.q) { state.answers[b.dataset.q] = b.dataset.o; persist(); ui.open = ui.screen === "goals" ? ui.open : null; return render(); }
+});
+document.getElementById("note").addEventListener("input", (e) => { state.note = e.target.value; persist(); });
+document.getElementById("copy").addEventListener("click", async () => {
+  const lines = ["Performance, goals and conversations (B-412, 3b)"].concat(Object.entries(Q).map(([k, q]) => `${q.t}: ${(q.o.find(([o]) => o === state.answers[k]) || [, "not answered"])[1]}${q.rec && q.rec !== state.answers[k] ? " (changed from my pick)" : ""}`));
+  if (state.note) lines.push("Note: " + state.note);
+  const text = lines.join("\n");
+  try { await navigator.clipboard.writeText(text); document.getElementById("saved").textContent = "Copied"; }
+  catch { const box = document.getElementById("copybox"); box.hidden = false; const ta = document.getElementById("copytext"); ta.value = text; ta.select(); }
+});
+
+// ---------- saving: the artifact's store when published, this browser otherwise ----------
+let saveTimer = null, writing = false, dirty = false;
+function persist() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+  const s = document.getElementById("saved");
+  if (!db) { s.textContent = "Saved in this browser"; return; }
+  dirty = true; s.textContent = "Saving…"; clearTimeout(saveTimer); saveTimer = setTimeout(flush, 600);
+}
+async function flush() {
+  if (writing || !dirty) return;
+  writing = true; dirty = false; const s = document.getElementById("saved");
+  try { await db.doc("goals/main").set({ answers: { ...state.answers }, note: state.note || "", at: new Date().toISOString() }); s.textContent = dirty ? "Saving…" : "Saved"; }
+  catch (err) { s.textContent = "Not saved"; if (err && ["permission_denied", "not_granted", "invalid_argument"].includes(err.code)) { const bn = document.getElementById("banner"); bn.textContent = "You can view this page but not change it."; bn.hidden = false; } }
+  writing = false; if (dirty) flush();
+}
+
+try { const t = localStorage.getItem(KEY + "-t"); if (t === "light" || t === "dark") ui.theme = t; } catch {}
+render();
+(async () => {
+  try { db = window.claude?.use ? await window.claude.use("db") : null; } catch { db = null; }
+  if (!db) return;
+  db.doc("goals/main").onSnapshot((snap) => {
+    if (!snap.exists || dirty || writing || snap.metadata?.hasPendingWrites) return;
+    if (document.activeElement?.id === "note") return;
+    const data = JSON.parse(JSON.stringify(snap.data() || {})); // snapshots are frozen
+    state = { ...blank(), answers: { ...blank().answers, ...(data.answers || {}) }, note: data.note || "" };
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+    render();
+  }, () => {});
+})();
+</script>

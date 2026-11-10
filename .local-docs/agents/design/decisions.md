@@ -118,3 +118,21 @@ From the style frame ([artifact](https://claude.ai/artifact/U5iCrbjucCuc8ZB6H81q
 | D-50 | **How Fusion's work is marked:** the sparkle for AI only (drafts, coach suggestions); everything else Fusion filled in says so in a few quiet words ("Shared evenly", "From the measure"). | ✓ as picked (a) |
 | D-51 | **A goal's grade:** the number alone ("0.71"), with a small measure icon beside it whose tooltip carries the measure's words ("66% automated of 85%"). | User: "keep the measurement words, but not visible by default" (changes the pick b) |
 | D-52 | **No generic badges:** state is carried by where a thing sits (a step of the phase, a group), a bar's colour, or a word in its state colour; pills are kept for things that are pills (filters, a chosen value), never sprinkled on rows as status. Drawn across the Year page, Goals and the review in round 2. | User: "too much use of generic bad badges" |
+
+### Round 2 (db `frame/round2` v52, 2026-11-10)
+
+The user left "Is the Year page right now?" unanswered and raised no objection to its redraw.
+
+| ID | Decision | Verdict |
+| --- | --- | --- |
+| D-53 | **Opening a goal, reopened:** whether a goal opens as its own page or as a panel over where you were depends on what it holds in each state (a fresh goal with one measure and no updates may not deserve a page; one with milestones, updates and a line upward may). Drawn per state in 3b and decided there. Reopens D-46. | User: "actually depends on what that would look like in different states … if it's worthy of a whole page or not" |
+| D-54 | **State in words:** a state is the word alone in its state colour ("At risk" in amber); no glyph beside it unless the icon set is clean and high quality (settled with icons, I1, in 3d). Refines D-52. | User picked (a): "unless you can actually use good clean and high quality iconing for the status, no thanks" |
+| D-55 | **The Year page's second half:** the phase's steps with the people in each (HR: faces and counts across the company; a manager: their people by name), the step the viewer acts on lit, a thin share bar under each count. Replaces rows of badges and per-unit bars. | Drawn in round 2, no objection |
+| D-56 | **First use of the year:** everyone sits in the first step with their faces and the real count; the later steps are empty outlines of where people will go. D-48's drawing. | User picked (a) |
+| D-57 | **The end of the year:** a year ends by itself on its end date; nobody presses Close. HR's next step at Results out is setting up the next year; unfinished goals go into their owners' next-year drafts, each owner keeping or dropping theirs. | User picked (a): "whatever is least friction and annoying, for demoability" |
+| D-58 | **Moving the year on:** previewed in place on the Year page (the timeline redraws with the new dates; who it changes for, with faces, and what changes), then confirmed; no side panel. | Agent, after round 1's "the results drawer … is dogshit"; no objection in round 2 |
+| D-59 | **An empty plan:** goals carried from last year are already in it; AI starters (from the person's job, their team's goals, their 1:1s) sit under it to add one by one; company goals not yet set show as outlines with who is setting them and since when. | User picked (a) |
+| D-60 | **A review with a thin year:** what's still missing (the self-review, peers who haven't answered) sits on top with a nudge each; the draft is written from whatever exists; an answer with nothing to draw from stays empty and drafts once the self-review is in; empty kinds of evidence are dimmed, not hidden. | Drawn in round 2, no objection |
+
+**Reference for 3b (user, round 2 note):** "in our original performance design, I quite liked the UI we had for the objective drawer stuff, most of it at least". The objective drawer as built (details and record modes, `ObjectiveDetailDrawer`) is a reference for 3b's goal and progress-update screens, an exception to the direction's "don't use as design reference" list. Captured live as `plans/B-390-screens/reference/objective-drawer*.png`. The user also judged the round-1 goal page (opened from "Update the goal") as the update screen: "it sucks if you did".
+

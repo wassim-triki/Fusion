@@ -117,7 +117,7 @@ Rule: **sans for the system, serif for the human,** visible but scarce. If unsur
 - **One canonical record per object,** addressed by its owning context (e.g. `{cycleId, objectiveId}`), never by "current cycle". Reading a record is not entering the workspace that manages it.
 - Performance's shape: Year · Goals · 1:1s · Feedback · Reviews (D-33); its settings live in Fusion Settings. 1:1s and Feedback belong to people, not years.
 - **Modules in one sidebar** (D-45): each module is a group that folds, open by default; Home and Settings sit outside the groups. No module switcher.
-- **A record opened from a page** is its own page with a breadcrumb back (Performance › Year › the goal), not a panel over the page (D-46).
+- **A record opened from a page:** its own page with a breadcrumb back (Performance › Year › the goal), or a panel over the page, chosen by what the record holds in that state (D-46, reopened by D-53; settled per record in Performance's explorers).
 
 **Responsive:** preserve the primary task and critical actions; reflow before shrinking text; collapse secondary controls; tables scroll inside their frame, never the page; no essential info behind unexplained icons.
 
@@ -209,7 +209,7 @@ Selection is an amber tint everywhere. A real one-off toggle (a chart node, a si
 **States** (every async or stateful view): loading, empty, no results, success, warning, error, partial failure, disabled, permission denied.
 - **Loading:** the least disruptive form. Local progress for actions, stable skeletons (`PageLoading`, `PageListSkeleton`) for data, a full-page spinner as a last resort. The app frame always renders; loading happens only in the content area. Long work shows real activity, never fake progress or a static "Processing…".
 - **Empty:** a precise state, one short line if needed, one relevant action. No product explanations, oversized illustrations or motivational filler.
-- **First use** (D-48): a page before anything exists shows a ghost of what fills in, in its real shape and with what's already true, never a blank page or a sentence about it.
+- **First use** (D-48, D-56): a page before anything exists shows a ghost of what fills in, in its real shape and with what's already true (everyone in the first step, the later steps as empty outlines), never a blank page or a sentence about it.
 - **Waiting on someone** (D-49): who it's with, since when, and a nudge.
 - **Fusion's work, marked** (D-50): the sparkle for AI only; anything else Fusion filled in says so in a few quiet words ("Shared evenly", "From the measure"). A goal's grade shows as the number with a measure icon whose tooltip gives the measure's words (D-51).
 - **Failure:** one family, `PageState`: plain words, no status codes, one small drawing with one movement, a next step, the frame kept around it. Only failure pages get a drawing; ordinary empty states don't.
@@ -220,7 +220,7 @@ Selection is an amber tint everywhere. A real one-off toggle (a chart node, a si
 
 **Overlays by task depth.** Dialog: confirmation, short focused tasks, compact edits. Drawer: contextual inspection or light editing without losing the list. Dedicated page: deep workflows, complex editing, multi-section tasks. Don't force complex forms into dialogs.
 
-**Status.** Consistent across modules. No generic badges (D-52): state is carried by where a thing sits (a step, a group), a bar's colour, or a word in its state colour; pills are for things that are pills (filters, a chosen value), never sprinkled on rows as status. Routine success is transient, not a permanent badge. Important state never hides in muted metadata.
+**Status.** Consistent across modules. No generic badges (D-52): state is carried by where a thing sits (a step, a group), a bar's colour, or the word alone in its state colour, no glyph beside it unless the icon set is truly good (D-54); pills are for things that are pills (filters, a chosen value), never sprinkled on rows as status. Routine success is transient, not a permanent badge. Important state never hides in muted metadata.
 
 **Visuals over labels.** Prefer a shape, mark, diagram, chip or state that registers instantly over text that must be read: a timeline over a date range, a filled segment over "2 of 3". The visual must encode meaning; a glyph beside every label is decoration.
 

@@ -56,11 +56,11 @@ Tokens: `tokens.css` (`--background`, `--section`, `--card`, `--inlay`, `--popov
 ## 3. Typography
 
 Families load centrally from `@repo/ds` (self-hosted, no CDN, no module font imports):
-- **Geist**, the system voice: navigation, controls, labels, tables, operational text, section titles, metrics, data.
-- **Lora**, the human voice: page titles, rare display moments, and people-authored prose being read (reflections, feedback, review commentary).
+- **Geist**, the system voice: navigation, controls, labels, tables, operational text, metrics, numbers, dates, fields being edited.
+- **Lora**, the human voice: page titles, section titles, rare display moments, and words people wrote for others to read (goal titles, praise, feedback, review answers) (D-47).
 - **Geist Mono**, the identifier voice: codes, IDs, audit values, technical strings only.
 
-Rule: **sans for the system, serif for the human,** visible but scarce. If unsure, use Geist. What a person wrote for others to read (a bio, praise, feedback, a note, a comment, an answer) always shows through `Said` (`@repo/ds/shell`): Lora, in quotes that follow the language, wherever it appears, cards included (user, 2026-10-31). Names, titles and values people typed into fields (a job title, an objective's title) are data, not words said, and stay Geist; so do fields being edited.
+Rule: **sans for the system, serif for the human,** visible but scarce. If unsure, use Geist. What a person wrote for others to read (a bio, praise, feedback, a note, a comment, an answer) always shows through `Said` (`@repo/ds/shell`): Lora, in quotes that follow the language, wherever it appears, cards included (user, 2026-10-31). A goal's title is words a person wrote and reads in Lora (D-47); names and values typed into fields (a job title, a code) are data and stay Geist, and so does any field being edited.
 
 **Use semantic roles only** (utilities in `tokens.css`; metrics are owned there):
 
@@ -68,7 +68,7 @@ Rule: **sans for the system, serif for the human,** visible but scarce. If unsur
 |---|---|
 | `type-display` (Lora) | a rare arrival or milestone moment |
 | `type-page-title` (Lora) | the single `h1` of a page or workspace |
-| `type-section-title` | a major task section |
+| `type-section-title` (Lora, D-47) | a major task section |
 | `type-subsection-title` | a subdivision inside a section |
 | `type-panel-title` | card, panel, dialog, drawer, inspector titles |
 | `type-body` / `type-body-secondary` | operational copy / lower-priority copy (hierarchy by color, not smaller size) |
@@ -115,7 +115,9 @@ Rule: **sans for the system, serif for the human,** visible but scarce. If unsur
 **Navigation represents jobs, not entities.** Feature ≠ page, entity ≠ nav item, permission ≠ persona. A sidebar item must be a distinct, recurring job people would name ("I need to go to X"); entities, scopes and states live inside an existing job. Sparse navigation is not a defect; never add entries to fill a sidebar. Users must always see the current module, location and selected item, and a way back; active state is unmistakable; breadcrumbs only when hierarchy is meaningful; tabs switch sibling views only; no hover-only critical navigation.
 - **Overview** answers only: what state is this in, what needs me, where do I go next. Every section ends in a workspace or record; no roster tables, full trees, forms or dashboards. Sections compose from capabilities and state, never a persona switch.
 - **One canonical record per object,** addressed by its owning context (e.g. `{cycleId, objectiveId}`), never by "current cycle". Reading a record is not entering the workspace that manages it.
-- Performance's shape: Overview · My Plan · Team Performance · 1:1s · Feedback · Reviews, with Administration (Cycle, Settings) apart. 1:1s and Feedback belong to people, not cycles: they don't follow the cycle switcher.
+- Performance's shape: Year · Goals · 1:1s · Feedback · Reviews (D-33); its settings live in Fusion Settings. 1:1s and Feedback belong to people, not years.
+- **Modules in one sidebar** (D-45): each module is a group that folds, open by default; Home and Settings sit outside the groups. No module switcher.
+- **A record opened from a page** is its own page with a breadcrumb back (Performance › Year › the goal), not a panel over the page (D-46).
 
 **Responsive:** preserve the primary task and critical actions; reflow before shrinking text; collapse secondary controls; tables scroll inside their frame, never the page; no essential info behind unexplained icons.
 
@@ -207,6 +209,9 @@ Selection is an amber tint everywhere. A real one-off toggle (a chart node, a si
 **States** (every async or stateful view): loading, empty, no results, success, warning, error, partial failure, disabled, permission denied.
 - **Loading:** the least disruptive form. Local progress for actions, stable skeletons (`PageLoading`, `PageListSkeleton`) for data, a full-page spinner as a last resort. The app frame always renders; loading happens only in the content area. Long work shows real activity, never fake progress or a static "Processing…".
 - **Empty:** a precise state, one short line if needed, one relevant action. No product explanations, oversized illustrations or motivational filler.
+- **First use** (D-48): a page before anything exists shows a ghost of what fills in, in its real shape and with what's already true, never a blank page or a sentence about it.
+- **Waiting on someone** (D-49): who it's with, since when, and a nudge.
+- **Fusion's work, marked** (D-50): the sparkle for AI only; anything else Fusion filled in says so in a few quiet words ("Shared evenly", "From the measure"). A goal's grade shows as the number with a measure icon whose tooltip gives the measure's words (D-51).
 - **Failure:** one family, `PageState`: plain words, no status codes, one small drawing with one movement, a next step, the frame kept around it. Only failure pages get a drawing; ordinary empty states don't.
 - **Error:** what happened, what it affects, what to do. No vague "Something went wrong" when the cause is known.
 - **Success:** lightweight confirmation; never a dialog for routine actions.
@@ -215,7 +220,7 @@ Selection is an amber tint everywhere. A real one-off toggle (a chart node, a si
 
 **Overlays by task depth.** Dialog: confirmation, short focused tasks, compact edits. Drawer: contextual inspection or light editing without losing the list. Dedicated page: deep workflows, complex editing, multi-section tasks. Don't force complex forms into dialogs.
 
-**Status.** Consistent across modules. Badges for compact lifecycle, approval or risk states only, never ordinary text. A pill is one treatment, not the default: status can also be weight, an icon, a leading dot or a row treatment. Routine success is transient, not a permanent badge. Important state never hides in muted metadata.
+**Status.** Consistent across modules. No generic badges (D-52): state is carried by where a thing sits (a step, a group), a bar's colour, or a word in its state colour; pills are for things that are pills (filters, a chosen value), never sprinkled on rows as status. Routine success is transient, not a permanent badge. Important state never hides in muted metadata.
 
 **Visuals over labels.** Prefer a shape, mark, diagram, chip or state that registers instantly over text that must be read: a timeline over a date range, a filled segment over "2 of 3". The visual must encode meaning; a glyph beside every label is decoration.
 

@@ -241,6 +241,50 @@ textarea.note { width: 100%; min-height: 64px; background: var(--chip); color: v
 .fx .grade { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
 .fx .ghost { background: repeating-linear-gradient(135deg, var(--inlay) 0 8px, color-mix(in oklab, var(--inlay) 60%, var(--card)) 8px 16px); }
 .fx .gtxt { color: transparent; background: var(--inlay); border-radius: 6px; }
+
+/* round 2: state without badges (D-52) */
+.fx .stw { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.fx .stw .ic { --s: 15px; }
+.fx .stw.ok { color: var(--ok); } .fx .stw.wa { color: var(--wa); } .fx .stw.no { color: var(--no); } .fx .stw.mu { color: var(--mu); font-weight: 500; }
+/* a grade's measure, behind an icon (D-51) */
+.fx .tip { position: relative; display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 8px; color: var(--mu); cursor: help; outline: none; }
+.fx .tip:hover, .fx .tip:focus-visible { background: var(--inlay); color: var(--f); }
+.fx .tip:hover::after, .fx .tip:focus-visible::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); right: -6px; background: var(--f); color: var(--page); font: 500 12.5px var(--sans); padding: 5px 10px; border-radius: 9px; white-space: nowrap; z-index: 6; }
+/* the phase as people moving through its steps */
+.fx .flow { display: grid; grid-auto-columns: minmax(0, 1fr); grid-auto-flow: column; }
+.fx .fl { display: grid; gap: 12px; align-content: start; padding: 2px 18px 4px; position: relative; }
+.fx .fl:first-child { padding-left: 0; } .fx .fl:last-child { padding-right: 0; }
+.fx .fl + .fl { box-shadow: -1px 0 0 var(--hl); }
+.fx .fl + .fl::before { content: ""; position: absolute; left: -5px; top: 14px; width: 8px; height: 8px; border-top: 1.5px solid var(--mu); border-right: 1.5px solid var(--mu); transform: rotate(45deg); background: var(--card); opacity: 0.8; }
+.fx .fl-h { display: grid; gap: 2px; }
+.fx .fl-n { font-size: 13px; color: var(--mu); }
+.fx .fl-c { font-size: 30px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; line-height: 1.1; }
+.fx .fl.here .fl-n { color: var(--pr-text); font-weight: 600; }
+.fx .fl.here .fl-c { color: var(--pr-text); }
+.fx .fl-share { height: 4px; border-radius: 99px; background: var(--inlay); overflow: hidden; }
+.fx .fl-share i { display: block; height: 100%; border-radius: 99px; transition: width 0.6s cubic-bezier(.2,.7,.2,1); }
+.fx .cluster { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.fx .av.gh { background: none; box-shadow: none; border: 1.5px dashed color-mix(in oklab, var(--mu) 55%, transparent); color: transparent; }
+.fx .fl.fl-gh .fl-c, .fx .fl.fl-gh .fl-n { color: color-mix(in oklab, var(--mu) 70%, transparent); }
+.fx .faded { opacity: 0.42; filter: saturate(0.4); pointer-events: none; }
+.fx .prow { display: flex; align-items: center; gap: 10px; padding: 7px 8px; margin: 0 -8px; border-radius: 12px; }
+.fx .prow .col { gap: 0; }
+.fx .prow b { font-weight: 600; font-size: 13.5px; }
+.fx .more { font-size: 12.5px; color: var(--mu); }
+/* ghost of what fills in */
+.fx .gh-goal { border-radius: var(--r-surface); padding: 20px 22px; display: grid; gap: 10px; box-shadow: inset 0 0 0 1.5px var(--hl); }
+.fx .gh-line { height: 12px; border-radius: 99px; background: var(--inlay); }
+.fx .gh-card { border-radius: var(--r-inset); padding: 14px 16px; display: grid; gap: 10px; box-shadow: inset 0 0 0 1.5px var(--hl); }
+/* moving the year on, previewed in place */
+.fx .pv { position: relative; background: var(--card); border-radius: var(--r-surface); padding: 24px 26px; display: grid; gap: 16px; box-shadow: inset 0 0 0 1.5px var(--pr); }
+.fx .pv-row { display: grid; grid-template-columns: 230px 64px minmax(0, 1fr); gap: 16px; align-items: center; padding: 10px 0; }
+.fx .pv-row + .pv-row { box-shadow: 0 -1px 0 var(--hl); }
+.fx .carry { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 28px; }
+.fx .tl-after { position: absolute; right: 0; top: 0; font-size: 11.5px; color: var(--mu); transform: translateY(-1px); }
+.fx .rv-wait { display: flex; gap: 10px; padding: 0 32px 16px 36px; flex-wrap: wrap; }
+.fx .rv-wait .inl { display: flex; align-items: center; gap: 12px; padding: 10px 12px 10px 14px; }
+.fx .filt-0 { opacity: 0.45; }
+.fx .fold-h { cursor: pointer; }
 </style>
 
 <div class="xbar"><div class="bar-in">
@@ -253,7 +297,7 @@ textarea.note { width: 100%; min-height: 64px; background: var(--chip); color: v
 </div></div>
 <main>
   <div class="banner" id="banner" hidden></div>
-  <div class="feel"><b>Is this the feel?</b><div class="opts" id="feel"></div></div>
+  <div class="feel"><b>Is the Year page right now?</b><div class="opts" id="feel"></div></div>
   <div class="controls" id="controls"></div>
   <div class="stage" id="stage"><div class="scaler" id="scaler"><div class="fx" id="fx"></div></div></div>
   <div class="qs" id="qs"></div>
@@ -322,27 +366,27 @@ const AG = [
 const ST = { ok: "On track", wa: "At risk", no: "Off track" };
 
 // ---------- answers (saved) ----------
+// Round 1 (db frame/main v123) is settled as D-43 to D-52; these are fixed now, not asked again.
+const SETTLED = { yl: "a", nav: "c", rec: "b", serif: "a", e7: "a", mark: "a" };
+ICONS.measure = '<rect x="2.5" y="7.5" width="19" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 7.5V10.5M10 7.5V12M13.5 7.5V10.5M17 7.5V12" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"/>';
 const Q = {
-  feel: { t: "Is this the feel?", o: [["yes", "Yes"], ["close", "Close, see my note"], ["no", "No"]], rec: null },
-  yl: { t: "The Year page", o: [["a", "Timeline on top, the next step under today"], ["b", "Next step first, the timeline as its band"]], rec: "a" },
-  nav: { t: "Moving between modules", o: [["a", "One sidebar, every module open"], ["b", "Module switcher, as today"], ["c", "One sidebar, modules fold"]], rec: "a" },
-  rec: { t: "Opening a goal from the Year", o: [["a", "Panel over the Year"], ["b", "Own page, breadcrumb"], ["c", "Own page, back link"]], rec: "a" },
-  serif: { t: "Where the serif goes", o: [["a", "Titles, section titles, people's words"], ["b", "Titles and people's words"], ["c", "Titles only"]], rec: "a" },
-  e1: { t: "First use: Amira after launch", o: [["a", "The page with real zeros"], ["b", "A ghost of what fills in"], ["c", "Only the timeline and the next step"]], rec: "a", show: { screen: "year", viewer: "amira", moment: "launched" } },
-  e7: { t: "Waiting on someone: Aicha's plan with Mariam", o: [["a", "Who, since when, a nudge"], ["b", "Nothing for you now, what's next"]], rec: "a", show: { screen: "year", viewer: "aicha", moment: "planning" } },
-  mark: { t: "How Fusion's work is marked", o: [["a", "Sparkle for AI, words for the rest"], ["b", "One quiet mark for all of it"], ["c", "Sparkle for all of it"]], rec: "a" },
-  grade: { t: "A goal's grade", o: [["a", "0.71"], ["b", "0.71 with the measure's words"]], rec: "b" },
+  feel: { t: "Is the Year page right now?", o: [["yes", "Yes"], ["close", "Close, see my note"], ["no", "No"]], rec: null },
+  status: { t: "State without badges", o: [["b", "A glyph and the word, in its colour"], ["a", "The word alone, in its colour"]], rec: "b" },
+  e1: { t: "First use: Amira after launch", o: [["a", "Everyone in the first step, the rest ghosted"], ["b", "The page as it looks mid-phase, faded"]], rec: "a", show: { screen: "year", viewer: "amira", moment: "launched" } },
+  close: { t: "The end of the year", o: [["a", "Ends by itself on its date; setting up FY2028 leads"], ["b", "HR closes it, previewed in place"]], rec: "a", show: { screen: "year", viewer: "amira", moment: "results" } },
+  start: { t: "An empty plan starts with", o: [["a", "Carried goals, starters to add"], ["b", "A drafted plan to keep or change"]], rec: "a", show: { screen: "goals", gstate: "empty" } },
 };
-const SCREEN_QS = { year: ["yl", "nav", "rec", "serif", "e1", "e7"], goals: ["mark", "serif", "nav"], review: ["grade", "mark", "serif"] };
-const KEY = "b412-frame";
+const SCREEN_QS = { year: ["e1", "close", "status"], goals: ["start", "status"], review: ["status"] };
+const KEY = "b412-frame-r2";
 const blank = () => ({ answers: Object.fromEntries(Object.entries(Q).filter(([, q]) => q.rec).map(([k, q]) => [k, q.rec])), note: "" });
 let state = blank();
 try { const s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s && s.answers) state = { ...blank(), ...s, answers: { ...blank().answers, ...s.answers } }; } catch {}
-const A = (k) => state.answers[k];
+const A = (k) => SETTLED[k] ?? state.answers[k];
 
 // ---------- view state (not saved) ----------
 const ui = {
-  screen: "year", viewer: "amira", moment: "launched", theme: "dark",
+  screen: "year", viewer: "amira", moment: "launched", theme: "dark", gstate: "writing", rstate: "aicha",
+  folded: {}, preview: false, added: {}, kept: {}, removed: {},
   sheet: null, goal: null, toast: null, approved: false, nudged: false, reminded: false,
   weights: { g1: null, g2: null, g3: null }, editW: null, linked: {}, measured: false, forward: false,
   grades: {}, editG: null, overall: null, cite: null, filter: "all",
@@ -365,18 +409,15 @@ function sidebar(v, here) {
   const n = A("nav");
   const item = ([i, l], on, ct) => `<div class="ni ${on ? "on" : ""}">${ic(i)}<span>${l}</span>${ct ? `<span class="ct">${ct}</span>` : ""}</div>`;
   const perf = PERF.map((x) => item(x, x[1] === here, x[1] === "1:1s" && v !== "amira" ? 1 : 0)).join("");
-  let body = "";
-  if (n === "b") {
-    body = item(["home", "Home"], false, 3) + `<div class="switch"><span class="mk">${ic("chart", 16)}</span>Performance<span style="margin-left:auto;color:var(--mu)">${ic("chev", 16)}</span></div>` + perf
-      + (v === "amira" ? `<div class="grp">Administration</div>` + item(["settings", "Settings"]) : "");
-  } else if (n === "a") {
-    body = item(["home", "Home"], false, 3) + `<div class="grp">Core HR</div>` + coreFor(v).map((x) => item(x)).join("")
-      + `<div class="grp">Performance</div>` + perf + (v === "amira" ? `<div style="height:8px"></div>` + item(["settings", "Settings"]) : "");
-  } else {
-    body = item(["home", "Home"], false, 3) + `<div class="grp fold">${ic("core")}<span>Core HR</span><span style="margin-left:auto">${ic("arrowR", 15)}</span></div>`
-      + `<div class="grp fold open">${ic("chart")}<span>Performance</span><span style="margin-left:auto">${ic("chev", 15)}</span></div>`
-      + `<div style="padding-left:12px;display:grid;gap:1px">${perf}</div>` + (v === "amira" ? item(["settings", "Settings"]) : "");
-  }
+  // D-45: one sidebar, each module a group that folds, open by default
+  const group = (key, icon, label, items) => {
+    const open = !ui.folded[key];
+    return `<div class="grp fold fold-h ${open ? "open" : ""}" data-act="fold" data-k="${key}" role="button" aria-expanded="${open}">${ic(icon)}<span>${label}</span><span style="margin-left:auto;display:grid${open ? "" : ";transform:rotate(-90deg)"}">${ic("chev", 15)}</span></div>`
+      + (open ? `<div style="padding-left:12px;display:grid;gap:1px">${items}</div>` : "");
+  };
+  void n;
+  const body = item(["home", "Home"], false, 3) + group("core", "core", "Core HR", coreFor(v).map((x) => item(x)).join(""))
+    + group("perf", "chart", "Performance", perf) + (v === "amira" ? `<div style="height:6px"></div>` + item(["settings", "Settings"]) : "");
   return `<aside class="sb"><div class="co"><span class="logo">C</span><div><b>Carthage Digital</b><small>Fusion</small></div></div>${body}
     <div class="me">${av(v, 34)}<div><b style="font-size:13.5px">${nm(v)}</b><small>${P[v][1]}</small></div></div></aside>`;
 }
@@ -387,16 +428,18 @@ function topbar(crumbs) {
 }
 
 // ---------- the timeline ----------
-function timeline(today, thin) {
-  const ph = MOMENTS.find((m) => m.today === today)?.phase ?? PHASES.findIndex((p) => today >= p.s && today < p.e);
-  const segs = PHASES.map((p, i) => {
+function timeline(today, thin, phases = PHASES, after = "") {
+  const PHASES_ = phases;
+  const ph = phases === PHASES ? (MOMENTS.find((m) => m.today === today)?.phase ?? PHASES.findIndex((p) => today >= p.s && today < p.e)) : phases.findIndex((p) => today >= p.s && today < p.e);
+  const segs = PHASES_.map((p, i) => {
     const w = days(p.s, p.e) / span * 100;
     const fill = today >= p.e ? 100 : today <= p.s ? 0 : days(p.s, today) / days(p.s, p.e) * 100;
     return `<div class="tl-seg ${i === ph ? "on" : ""}" style="width:calc(${w}% - 2px)"><i style="width:${fill}%"></i></div>`;
   }).join("");
   if (thin) return `<div class="tl thin"><div class="tl-track">${segs}</div></div>`;
-  const labels = PHASES.map((p, i) => {
-    const end = i === PHASES.length - 1;
+  const labels = PHASES_.map((p, i) => {
+    const end = i === PHASES_.length - 1;
+    if (!end && i !== ph && pos(PHASES_[i + 1].s) - pos(p.s) < 0.07) return "";
     return `<span class="tl-ph ${i === ph ? "on" : ""} ${end ? "end" : ""}" style="left:${end ? 100 : pos(p.s) * 100}%">${p.n}</span>`;
   }).join("");
   const months = [];
@@ -404,10 +447,37 @@ function timeline(today, thin) {
   return `<div class="tl" id="tl"><div class="tl-phases">${labels}</div>
     <div class="tl-track">${segs}${MILESTONES.map((d) => `<span class="tl-ms" style="left:${pos(d) * 100}%" title="${dm(d)}"></span>`).join("")}</div>
     <div class="tl-today" style="left:${pos(today) * 100}%;--tx:${pos(today) < 0.05 ? "-14px" : pos(today) > 0.95 ? "calc(-100% + 14px)" : "-50%"}"><span>Today ${dm(today)}</span></div>
-    <div class="tl-months">${months.join("")}</div></div>`;
+    <div class="tl-months">${months.join("")}</div>${after}</div>`;
+}
+
+// ---------- state without badges (D-52) ----------
+const STW = { ok: ["check", "On track"], wa: ["alert", "At risk"], no: ["flag", "Off track"] };
+const stat = (k, words) => `<span class="stw ${k}">${A("status") === "b" && STW[k] ? ic(STW[k][0]) : ""}${words ?? STW[k][1]}</span>`;
+const sec = (title, right, inner, attrs = "") => `<section class="card" ${attrs}><div class="row"><h2 class="t-sec" style="margin:0">${title}</h2>${right ? `<span class="mu" style="margin-left:auto">${right}</span>` : ""}</div>${inner}</section>`;
+const gtxt = (s) => `<span class="gtxt">${s}</span>`;
+
+// ---------- the phase as people moving through its steps ----------
+// step: { n, c, tone, here, ghost, gn, faces, more, people: [[key, note]], none }
+function flow(steps, total) {
+  const tone = { ok: "var(--ok)", pr: "var(--pr)", wa: "var(--wa)", no: "var(--no)", mu: "color-mix(in oklab, var(--mu) 55%, transparent)" };
+  return `<div class="flow">${steps.map((s) => {
+    let body = "";
+    if (s.ghost) body = `<div class="cluster">${Array.from({ length: s.gn ?? 6 }, () => `<span class="av gh" style="--s:30px"></span>`).join("")}</div>`;
+    else if (s.people) body = s.people.length ? `<div class="col" style="gap:0">${s.people.map(([k, note]) => `<div class="prow click" data-act="toast" data-msg="Opens ${first(k)}'s year on the Team page (drawn in 3d)">${av(k, 34)}<div class="col"><b>${nm(k)}</b>${note ? `<span class="sm t-words" style="font-size:13px">${note}</span>` : `<span class="sm mu">${P[k][1]}</span>`}</div></div>`).join("")}</div>` : "";
+    else if (s.faces) body = s.faces.length ? `<div class="cluster">${s.faces.map((k) => av(k, 30)).join("")}</div>${s.more ? `<span class="more link" data-act="toast" data-msg="Opens the people behind it (drawn in 3d)">and ${s.more} more</span>` : ""}` : "";
+    const head = STW[s.tone] && s.stateHead ? stat(s.tone, s.n) : `<span class="fl-n">${s.n}</span>`;
+    const share = s.ghost || !total ? 0 : s.c / total * 100;
+    return `<div class="fl ${s.here ? "here" : ""} ${s.ghost ? "fl-gh" : ""}"><div class="fl-h">${head}<span class="fl-c">${s.cg ? gtxt(s.cg) : s.c}</span></div>
+      <div class="fl-share"><i style="width:${share}%;background:${tone[s.tone || "mu"]}"></i></div>${body}</div>`;
+  }).join("")}</div>`;
 }
 
 // ---------- the Year page ----------
+const CARRY = [["aicha", "Automate the regression suite", "66% of 85%"], ["fares", "Launch the self-service portal", "2 of 4 milestones"], ["sofiene", "Deliver the billing migration on time", "70%"], ["rim", "Move nightly jobs to the new data platform", "11 of 18 jobs"]];
+const carryList = () => `<div class="col" style="gap:8px"><div class="row"><span class="sm mu">Unfinished goals, into their owners' FY2028 drafts</span><span class="sm" style="margin-left:auto">${mark("fusion", "Each owner keeps or drops theirs")}</span></div>
+  <div class="carry">${CARRY.map(([k, t, w]) => `<div class="prow click" data-act="toast" data-msg="Opens the goal">${av(k, 30)}<div class="col"><span class="t-words" style="font-size:14.5px">${t}</span><span class="sm mu">${first(k)}, ${w}</span></div></div>`).join("")}</div>
+  <span class="more link" data-act="toast" data-msg="Opens all 41 (drawn in 3c)">and 37 more goals</span></div>`;
+
 function nextStep(v, m) {
   const M = m.id;
   const ret = (o) => ({ title: "", due: "", body: "", act: "", ...o });
@@ -418,184 +488,200 @@ function nextStep(v, m) {
     if (M === "planning") return ui.nudged
       ? ret({ eye: "Your next step", title: "Nothing for you now", due: `Plans are due ${day("2026-05-25")}`, body: `<span class="mu">Nudged 36 people ${dm(m.today)}</span>` })
       : ret({ eye: "Your next step", title: "36 people haven't put a plan forward", due: `Plans are due ${day("2026-05-25")}, in ${days(m.today, "2026-05-25")} days`,
-        act: `<button class="btn p" data-act="nudge">Nudge them</button>`, body: `<div class="row">${faces(["mehdi", "chaima", "rim", "khaled", "leila", "elyes", "rania"], 30)}<span class="mu">and 29 more</span></div>` });
+        act: `<button class="btn p" data-act="nudge">Nudge them</button>` });
     if (M === "execution") return ui.reminded
       ? ret({ eye: "Your next step", title: "Nothing for you now", due: `Reviews open ${day("2027-03-01")}`, body: `<span class="mu">Reminder sent to 99 people ${dm(m.today)}</span>` })
       : ret({ eye: "Your next step", title: "Nobody has updated a goal in 30 days", due: `Last update ${day("2026-10-10")}`,
-        act: `<button class="btn p" data-act="remind">Send the monthly reminder</button>`, body: `<div class="row">${faces(["aicha", "fares", "omar", "rim", "ines", "khaled"], 30)}<span class="mu">99 people, 297 goals</span></div>` });
-    if (M === "review") return ret({ eye: "Your next step", title: "Manager reviews: 41 of 99 in", due: `Due ${day("2027-03-29")}`,
-      act: `<button class="btn p" data-act="toast" data-msg="Nudged 3 managers">Nudge 3 managers behind</button>`,
-      body: `<div class="row">${faces(["mariam", "chaima", "ines"], 30)}<span class="mu">Mariam Gharbi, Chaima Zribi, Ines Chaabane</span></div>` });
-    return ret({ eye: "Your next step", title: `Close ${Y.name}`, due: `The year ends ${day(Y.end)}`,
-      act: `<button class="btn p" data-act="move">Close the year</button>`,
-      body: `<div class="row" style="gap:28px"><div class="col"><span class="grade">71 of 99</span><span class="sm mu">read their results</span></div><div class="col"><span class="grade">41</span><span class="sm mu">unfinished goals go to FY2028 drafts</span></div></div>` });
+        act: `<button class="btn p" data-act="remind">Send the monthly reminder</button>` });
+    if (M === "review") return ret({ eye: "Your next step", title: "3 managers are behind on reviews", due: `Due ${day("2027-03-29")}`,
+      act: `<button class="btn p" data-act="toast" data-msg="Nudged 3 managers">Nudge them</button>`,
+      body: `<div class="row" style="gap:28px">${[["mariam", 1, 6], ["chaima", 5, 10], ["ines", 12, 24]].map(([k, d, t]) => `<div class="row" style="gap:10px">${av(k, 34)}<div class="col"><b style="font-size:13.5px">${nm(k)}</b><span class="sm mu num">${d} of ${t} written</span></div></div>`).join("")}</div>` });
+    if (A("close") === "b") return ret({ eye: "Your next step", title: `Close ${Y.name}`, due: `The year ends ${day(Y.end)}`,
+      act: `<button class="btn p" data-act="move">Close ${Y.name}</button>`, body: carryList() });
+    return ret({ eye: "Your next step", title: "Set up FY2028", due: `${Y.name} ends by itself ${day(Y.end)}`,
+      act: `<button class="btn p" data-act="toast" data-msg="Opens setup with FY2027's steps a year on (drawn in 3c)">Set up FY2028</button>`, body: carryList() });
   }
   if (v === "aicha") {
     if (M === "launched") return ret({ eye: "Your next step", title: "Write your plan", due: `Put it forward by ${day("2026-05-25")}`,
-      act: `<button class="btn p" data-act="screen" data-to="goals">Start your plan</button>`,
-      body: `<div class="row inl" style="padding:10px 14px">${av("amira", 26)}<span>Company goals on their way from <b>Amira Khelifi</b></span></div>` });
-    if (M === "planning") return A("e7") === "a"
-      ? ret({ eye: "Waiting on Mariam", title: "Your plan is with Mariam", due: `Put forward ${day("2026-05-05")}`,
-        act: `<button class="btn" data-act="screen" data-to="goals">Read your plan</button><button class="btn" data-act="toast" data-msg="Mariam gets one reminder">Nudge Mariam</button>`,
-        body: `<div class="row">${av("mariam", 40)}<div class="col"><b>Mariam Gharbi</b><span class="sm mu">VP, Product</span></div></div>` })
-      : ret({ eye: "Your next step", title: "Nothing for you now", due: `Execution starts ${day("2026-05-25")}`,
-        body: `<span class="mu">Plan put forward to Mariam Gharbi ${dm("2026-05-05")}</span>` });
+      act: `<button class="btn p" data-act="screen" data-to="goals" data-gstate="empty">Start your plan</button>`,
+      body: `<div class="row inl" style="padding:10px 14px">${av("amira", 26)}<span>Company goals on their way from <b>Amira Khelifi</b></span><span class="sm mu" style="margin-left:auto">Since ${dm("2026-04-25")}</span></div>` });
+    if (M === "planning") return ret({ eye: "Waiting on Mariam", title: "Your plan is with Mariam", due: `Put forward ${day("2026-05-05")}`,
+      act: `<button class="btn" data-act="toast" data-msg="Mariam gets one reminder">Nudge Mariam</button>`,
+      body: `<div class="row">${av("mariam", 40)}<div class="col"><b>Mariam Gharbi</b><span class="sm mu">VP, Product, since ${dm("2026-05-05")}</span></div></div>` });
     if (M === "execution") return ret({ eye: "Your next step", title: "Mariam asked for an update", due: `Asked ${day("2026-10-18")}`,
       act: `<button class="btn p" data-act="goal" data-goal="g2">Update the goal</button>`,
-      body: `<div class="row inl click" data-act="goal" data-goal="g2" style="padding:12px 14px">${av("mariam", 30)}${ic("goals")}<span class="t-words" style="font-size:15px">Build role-relevant technical capability</span><span class="sm mu" style="margin-left:auto">1 of 3 milestones</span></div>` });
-    if (M === "review") return A("e7") === "a"
-      ? ret({ eye: "Waiting on Mariam", title: "Your self-review is in", due: `Results from ${day("2027-04-09")}`,
-        body: `<div class="row">${av("mariam", 40)}<div class="col"><b>Mariam Gharbi</b><span class="sm mu">Writing your review, due ${day("2027-03-29")}</span></div></div>` })
-      : ret({ eye: "Your next step", title: "Nothing for you now", due: `Results from ${day("2027-04-09")}`, body: `<span class="mu">Self-review sent ${dm("2027-03-12")}</span>` });
+      body: `<div class="row inl click" data-act="goal" data-goal="g2" style="padding:12px 14px">${av("mariam", 30)}<span class="t-words" style="font-size:15px">Build role-relevant technical capability</span><span class="sm mu" style="margin-left:auto">1 of 3 milestones</span></div>` });
+    if (M === "review") return ret({ eye: "Waiting on Mariam", title: "Your self-review is in", due: `Results from ${day("2027-04-09")}`,
+      body: `<div class="row">${av("mariam", 40)}<div class="col"><b>Mariam Gharbi</b><span class="sm mu">Writing your review, due ${day("2027-03-29")}</span></div></div>` });
     return ret({ eye: "Your next step", title: "Your review is ready", due: `Released ${day("2027-04-09")}`,
       act: `<button class="btn p" data-act="toast" data-msg="Opens Aicha's results (drawn in 3c)">Read it</button>`,
       body: `<div class="row">${av("mariam", 40)}<div class="col"><b>Mariam Gharbi</b><span class="sm mu">Year-end review</span></div></div>` });
   }
   // mariam
   if (M === "launched") return ret({ eye: "Your next step", title: "Write your plan", due: `Put it forward by ${day("2026-05-25")}`,
-    act: `<button class="btn p" data-act="toast" data-msg="Opens Goals, You">Start your plan</button>`,
-    body: `<div class="row">${faces(TEAM, 30)}<span class="mu">Your team writes theirs too</span></div>` });
+    act: `<button class="btn p" data-act="toast" data-msg="Opens Goals, You">Start your plan</button>` });
   if (M === "planning") return ui.approved
     ? ret({ eye: "Your next step", title: "Nothing for you now", due: `Plans are due ${day("2026-05-25")}`, body: `<div class="row">${av("sofiene", 30)}<span class="mu">Sofiene Jebali is still writing</span></div>` })
     : ret({ eye: "Your next step", title: "Approve Aicha's plan", due: `Put forward ${day("2026-05-05")}`,
       act: `<button class="btn p" data-act="approve">Approve</button><button class="btn" data-act="toast" data-msg="Opens the plan with a request box">Ask for a change</button>`,
-      body: `<div class="col">${av("aicha", 40)}${AG.map((g) => `<div class="row" style="padding:6px 0"><span class="t-words" style="font-size:15px">${g.t}</span><span class="num mu" style="margin-left:auto">${g.id === "g1" ? 34 : 33}%</span></div>`).join("")}</div>` });
+      body: `<div class="col">${AG.map((g) => `<div class="row" style="padding:6px 0">${ic("goals", 17)}<span class="t-words" style="font-size:15px">${g.t}</span><span class="sm mu" style="margin-left:14px">${g.m}</span><span class="num mu" style="margin-left:auto">${g.id === "g1" ? 34 : 33}%</span></div>`).join("")}</div>` });
   if (M === "execution") return ret({ eye: "Your next step", title: "1:1 with Aicha today", due: `${day(m.today)}, 11:00`,
     act: `<button class="btn p" data-act="toast" data-msg="Opens the 1:1 (drawn in 3b)">Open the 1:1</button>`,
     body: `<div class="col" style="gap:8px">
-      <div class="row inl" style="padding:10px 14px">${ic("alert")}<span><span class="t-words">Automate the regression suite</span> is at risk</span><span class="sm mu" style="margin-left:auto">Goal</span></div>
+      <div class="row inl" style="padding:10px 14px">${stat("wa", "")}<span class="t-words">Automate the regression suite</span><span class="sm mu" style="margin-left:auto">42.1% automated, aiming for 85%</span></div>
       <div class="row inl" style="padding:10px 14px">${ic("check")}<span>Share the revised estimate with the client</span><span class="sm mu" style="margin-left:auto">Open action from ${dm("2026-10-08")}</span></div>
       <div class="row inl" style="padding:10px 14px">${ic("send")}<span>Your update request on <span class="t-words">Build role-relevant technical capability</span></span><span class="sm mu" style="margin-left:auto">Asked ${dm("2026-10-18")}</span></div></div>` });
   if (M === "review") return ret({ eye: "Your next step", title: "Write Aicha's review", due: `Due ${day("2027-03-29")}`,
-    act: `<button class="btn p" data-act="screen" data-to="review">Write the review</button>`,
-    body: `<div class="row" style="gap:26px">${av("aicha", 40)}<div class="col"><span class="sm mu">Self-review</span><b>In ${dm("2027-03-12")}</b></div><div class="col"><span class="sm mu">Peers</span><div class="row" style="gap:8px">${faces(["khaled", "leila", "rim"], 24)}<b>3 of 3</b></div></div><div class="col"><span class="sm mu">Draft</span>${mark("ai", "Ready from her year")}</div></div>` });
-  return ret({ eye: "Your next step", title: "Nothing for you now", due: `FY2028 planning from ${day("2027-04-26")}`,
-    body: `<div class="row">${faces(["aicha", "meriem", "salah", "tarek"], 30)}<span class="mu">4 of 6 have read their results</span></div>` });
+    act: `<button class="btn p" data-act="screen" data-to="review" data-rstate="aicha">Write the review</button>`,
+    body: `<div class="row" style="gap:26px">${av("aicha", 40)}<div class="col"><span class="sm mu">Self-review</span><b>In ${dm("2027-03-12")}</b></div><div class="col"><span class="sm mu">Peers</span><div class="row" style="gap:8px">${faces(["khaled", "leila", "rim"], 24)}<b>3 of 3</b></div></div><div class="col"><span class="sm mu">Draft</span>${mark("ai", "Ready from Aicha's year")}</div></div>` });
+  return ret({ eye: "Your next step", title: "Nothing for you now", due: `FY2028 planning from ${day("2027-04-26")}` });
 }
 
 function goalRow(g, m, withGrade) {
-  const prog = m.id === "review" || m.id === "results" ? g.fin.pct : g.prog;
-  const st = m.id === "review" || m.id === "results" ? (g.fin.pct < 100 ? "wa" : "ok") : g.st;
+  const late = m.id === "review" || m.id === "results";
+  const prog = late ? g.fin.pct : g.prog;
+  const st = late ? (g.fin.pct < 100 ? "wa" : "ok") : g.st;
   const up = g.up.length ? `<div class="line-up">${ic("corner")}<b>${g.up[0] === "unit" ? UNIT.t : CO.find((c) => c.id === g.up[0]).t}</b>${g.up[0] === "unit" ? `<span>${ic("arrowR")}</span><span>${CO[0].t}</span>` : ""}</div>` : "";
-  const right = m.id === "planning" ? `<span class="num mu" style="justify-self:end">${g.id === "g1" ? 34 : 33}%</span>` : withGrade ? `<div class="row" style="justify-content:flex-end">${gradeText(g)}</div>`
-    : `<div class="col"><div class="row" style="justify-content:space-between"><span class="chip ${st}">${ST[st]}</span><span class="num sm">${prog}%</span></div><div class="bar"><i style="width:${prog}%;background:var(--${st})"></i></div></div>`;
-  return `<div class="goal click" data-act="goal" data-goal="${g.id}"><div class="col"><span class="t-words gt">${g.t}</span><span class="sm mu">${g.m}</span>${up}</div>${right}</div>`;
+  const right = m.id === "planning" ? `<span class="num" style="justify-self:end;font-weight:600">${g.id === "g1" ? 34 : 33}%</span>` : withGrade ? `<div class="row" style="justify-content:flex-end;gap:6px">${gradeText(g)}</div>`
+    : `<div class="col" style="gap:7px"><div class="row" style="justify-content:space-between">${late ? stat(st, g.fin.pct < 100 ? "Not reached" : "Done") : stat(st)}<span class="num sm">${prog}%</span></div><div class="bar"><i style="width:${prog}%;background:var(--${st})"></i></div></div>`;
+  return `<div class="goal click" data-act="goal" data-goal="${g.id}"><div class="col"><span class="t-words gt">${g.t}</span><span class="sm mu">${late ? g.fin.words : g.m}</span>${up}</div>${right}</div>`;
 }
+// D-51: the number, with the measure's words behind an icon
 function gradeText(g) {
   const v = ui.grades[g.id]?.v ?? g.fin.g;
-  return `<span class="grade">${v.toFixed(2)}</span>${A("grade") === "b" ? `<span class="sm mu">${g.fin.words}</span>` : ""}`;
+  return `<span class="grade">${v.toFixed(2)}</span><span class="tip" tabindex="0" role="img" aria-label="${esc(g.fin.words)}" data-tip="${esc(g.fin.words)}">${ic("measure", 16)}</span>`;
+}
+
+// who sits where, per step of the phase (Carthage, 99 people)
+const HR_FLOW = {
+  planning: [{ n: "Not started", c: 14, faces: ["elyes", "rania", "mouna"], more: 11 }, { n: "Writing", c: 22, faces: ["mehdi", "chaima", "rim", "khaled", "leila", "sofiene"], more: 16, tone: "pr" },
+    { n: "With their manager", c: 21, faces: ["aicha", "ines", "omar"], more: 18, tone: "pr" }, { n: "Approved", c: 42, faces: ["fares", "meriem", "salah", "tarek", "amira", "mariam"], more: 36, tone: "ok" }],
+  execution: [{ n: "Updated this month", c: 0, faces: [], tone: "ok" }, { n: "Last month", c: 61, faces: ["aicha", "fares", "omar", "rim", "ines", "khaled"], more: 55, tone: "pr" },
+    { n: "Earlier", c: 31, faces: ["sofiene", "leila", "chaima", "elyes"], more: 27, tone: "wa" }, { n: "Never", c: 7, faces: ["rania", "mouna"], more: 5 }],
+  review: [{ n: "Writing their self-review", c: 12, faces: ["meriem", "rania", "elyes"], more: 9 }, { n: "With their manager", c: 46, faces: ["aicha", "fares", "sofiene", "khaled", "leila"], more: 41, tone: "pr" },
+    { n: "Reviewed", c: 38, faces: ["salah", "tarek", "omar", "ines", "mehdi"], more: 33, tone: "ok" }, { n: "Flagged for a look", c: 3, faces: ["rim", "chaima", "mouna"], tone: "wa", stateHead: true, here: true }],
+  results: [{ n: "Still being written", c: 4, faces: ["mouna"], more: 3 }, { n: "Not read yet", c: 24, faces: ["fares", "sofiene", "elyes"], more: 21, tone: "pr" },
+    { n: "Read", c: 11, faces: ["rania", "rim"], more: 9, tone: "ok" }, { n: "Acknowledged", c: 60, faces: ["aicha", "meriem", "salah", "tarek", "omar", "ines"], more: 54, tone: "ok" }],
+};
+const TEAM_FLOW = {
+  planning: () => [{ n: "Not started", c: 0, people: [] }, { n: "Writing", c: 1, people: [["sofiene"]], tone: "pr" },
+    { n: "With you", c: ui.approved ? 0 : 1, people: ui.approved ? [] : [["aicha"]], tone: "pr", here: !ui.approved }, { n: "Approved", c: ui.approved ? 5 : 4, people: (ui.approved ? ["aicha"] : []).concat(["fares", "meriem", "salah", "tarek"]).map((k) => [k]), tone: "ok" }],
+  execution: () => [{ n: "On track", c: 2, people: [["salah"], ["tarek"]], tone: "ok", stateHead: true }, { n: "At risk", c: 2, people: [["aicha", "Automate the regression suite"], ["meriem", "Ship the payments API v2"]], tone: "wa", stateHead: true },
+    { n: "Off track", c: 2, people: [["fares", "Launch the self-service portal, and 2 more"], ["sofiene", "Deliver the billing migration on time"]], tone: "no", stateHead: true }],
+  review: () => [{ n: "Writing their self-review", c: 1, people: [["meriem"]] }, { n: "Yours to write", c: 3, people: [["aicha"], ["fares"], ["sofiene"]], tone: "pr", here: true }, { n: "Reviewed", c: 2, people: [["salah"], ["tarek"]], tone: "ok" }],
+  results: () => [{ n: "Not read yet", c: 2, people: [["fares"], ["sofiene"]], tone: "pr" }, { n: "Read", c: 4, people: [["aicha"], ["meriem"], ["salah"], ["tarek"]], tone: "ok" }],
+};
+const FLOW_TITLE = { launched: "Plans", planning: "Plans", execution: "Goal updates", review: "Year-end review", results: "Results" };
+// D-48: before anything exists, the page's real shape with what's already true
+function firstUse(v) {
+  const team = v === "mariam";
+  if (A("e1") === "b") {
+    const steps = HR_FLOW.planning.map((s, i) => ({ n: s.n === "With their manager" && team ? "With you" : s.n, c: 0, cg: "00", ghost: true, gn: team ? [0, 1, 1, 4][i] || 1 : [3, 6, 5, 8][i] }));
+    return sec(team ? "Your team" : "Plans", gtxt("00 of 00 put forward"), flow(steps, 0), `style="opacity:.55"`);
+  }
+  const steps = team
+    ? [{ n: "Not started", c: 6, people: TEAM.map((k) => [k]) }, { n: "Writing", c: 0, ghost: true, gn: 2 }, { n: "With you", c: 0, ghost: true, gn: 2 }, { n: "Approved", c: 0, ghost: true, gn: 4 }]
+    : [{ n: "Not started", c: 99, faces: ["amira", "mariam", "omar", "ines", "mehdi", "aicha", "fares", "khaled", "rim", "leila", "chaima", "salah"], more: 87 }, { n: "Writing", c: 0, ghost: true, gn: 7 }, { n: "With their manager", c: 0, ghost: true, gn: 6 }, { n: "Approved", c: 0, ghost: true, gn: 9 }];
+  return sec(team ? "Your team" : "Plans", team ? "6 people" : "0 of 99 put forward", flow(steps, team ? 6 : 99));
 }
 
 function yearSecond(v, m) {
   const M = m.id;
   if (v === "amira") {
-    if (M === "launched" && A("e1") === "c") return "";
-    const ghost = M === "launched" && A("e1") === "b";
-    const DIV = [["Consulting", 22, 15, 9], ["Engineering", 24, 18, 12], ["Product", 23, 11, 8], ["Delivery", 10, 6, 4], ["People & Growth", 10, 8, 6], ["Finance & Operations", 10, 5, 3]];
-    if (M === "launched" || M === "planning") {
-      const z = M === "launched";
-      return `<section class="card"><div class="row"><h2 class="t-sec" style="margin:0">Plans</h2><span class="mu num" style="margin-left:auto">${z ? 0 : 63} of 99 in</span></div>
-        <div class="legend"><span><i class="dot" style="background:var(--ok)"></i>Approved</span><span><i class="dot" style="background:var(--pr)"></i>With their manager</span><span><i class="dot" style="background:var(--inlay);box-shadow:inset 0 0 0 1px var(--mu)"></i>Writing or not started</span></div>
-        <div>${DIV.map(([n, t, inn, ap]) => `<div class="div-row click" data-act="toast" data-msg="Opens the people behind it (drawn in 3d)"><span>${n}</span><div class="bar ${ghost ? "ghost" : ""}" style="height:10px">${z ? "" : `<i style="width:${ap / t * 100}%;background:var(--ok)"></i><i style="width:${(inn - ap) / t * 100}%;background:var(--pr)"></i>`}</div><span class="num mu" style="text-align:right">${ghost ? `<span class="gtxt">00 of 00</span>` : `${z ? 0 : inn} of ${t}`}</span></div>`).join("")}</div></section>`;
-    }
-    if (M === "execution") return `<section class="card"><div class="row"><h2 class="t-sec" style="margin:0">Company goals</h2><span class="mu" style="margin-left:auto">131 of 297 goals support one</span></div>
-      ${CO.map((c) => `<div class="goal click" data-act="toast" data-msg="Opens the goal on the company map (drawn in 3b)"><div class="col"><span class="t-words gt">${c.t}</span><span class="sm mu">${c.al} goals in ${c.units} of 18 units</span></div><div class="col"><div class="row" style="justify-content:space-between"><span class="chip ${c.prog < 42 ? "wa" : "ok"}">${c.prog < 42 ? "At risk" : "On track"}</span><span class="num sm">${c.prog}%</span></div><div class="bar"><i style="width:${c.prog}%;background:var(--${c.prog < 42 ? "wa" : "ok"})"></i></div></div></div>`).join("")}</section>
-      <section class="card"><div class="row"><h2 class="t-sec" style="margin:0">Everyone's goals</h2><span class="mu num" style="margin-left:auto">297</span></div>
-      <div class="bar" style="height:12px"><i style="width:${204 / 297 * 100}%;background:var(--ok)"></i><i style="width:${53 / 297 * 100}%;background:var(--wa)"></i><i style="width:${30 / 297 * 100}%;background:var(--no)"></i></div>
-      <div class="legend"><span class="click" data-act="toast" data-msg="Opens the people behind it (drawn in 3d)"><i class="dot" style="background:var(--ok)"></i>204 on track</span><span class="click" data-act="toast" data-msg="Opens the people behind it (drawn in 3d)"><i class="dot" style="background:var(--wa)"></i>53 at risk</span><span class="click" data-act="toast" data-msg="Opens the people behind it (drawn in 3d)"><i class="dot" style="background:var(--no)"></i>30 off track</span><span class="click" data-act="toast" data-msg="Opens the people behind it (drawn in 3d)"><i class="dot" style="background:var(--inlay);box-shadow:inset 0 0 0 1px var(--mu)"></i>10 without a status</span></div></section>`;
-    if (M === "review") {
-      const BM = [["amira", 6, 6, 0], ["omar", 9, 12, 2], ["ines", 12, 24, 0], ["mehdi", 8, 15, 1], ["chaima", 5, 10, 0], ["mariam", 1, 6, 0]];
-      return `<section class="card"><div class="row"><h2 class="t-sec" style="margin:0">Manager reviews</h2><span class="mu" style="margin-left:auto">3 flagged so far</span></div>
-        <div>${BM.map(([k, d, t, f]) => `<div class="div-row click" data-act="toast" data-msg="Opens this manager's reviews (drawn in 3c)" style="grid-template-columns:230px minmax(0,1fr) 130px"><span class="row" style="gap:10px">${av(k, 26)}${nm(k)}</span><div class="bar" style="height:10px"><i style="width:${d / t * 100}%;background:var(--ok)"></i></div><span class="row num mu" style="justify-content:flex-end;gap:8px">${f ? `<span class="chip wa">${f} flagged</span>` : ""}${d} of ${t}</span></div>`).join("")}</div>
-        <span class="sm mu">and 8 more managers</span></section>`;
-    }
-    return `<section class="card"><div class="row"><h2 class="t-sec" style="margin:0">Results</h2><span class="mu" style="margin-left:auto">Released ${dm("2027-04-09")}</span></div>
-      <div class="bar" style="height:12px"><i style="width:${71 / 99 * 100}%;background:var(--ok)"></i></div><div class="legend"><span><i class="dot" style="background:var(--ok)"></i>71 read and acknowledged</span><span><i class="dot" style="background:var(--inlay);box-shadow:inset 0 0 0 1px var(--mu)"></i>28 not yet</span></div></section>`;
+    if (M === "launched") return firstUse("amira");
+    const total = 99, steps = HR_FLOW[M];
+    const right = { planning: "63 of 99 put forward", execution: "297 goals, 99 people", review: "41 of 99 reviewed", results: `Released ${dm("2027-04-09")}` }[M];
+    const company = M === "execution" ? sec("Company goals", "131 of 297 goals support one", CO.map((c) => {
+      const s = c.prog < 42 ? "wa" : "ok";
+      return `<div class="goal click" data-act="toast" data-msg="Opens the goal on the company map (drawn in 3b)"><div class="col"><span class="t-words gt">${c.t}</span><span class="sm mu">${c.al} goals in ${c.units} of 18 units</span></div><div class="col" style="gap:7px"><div class="row" style="justify-content:space-between">${stat(s)}<span class="num sm">${c.prog}%</span></div><div class="bar"><i style="width:${c.prog}%;background:var(--${s})"></i></div></div></div>`;
+    }).join("")) : "";
+    return company + sec(FLOW_TITLE[M], right, flow(steps, total));
   }
   if (v === "aicha") {
-    if (M === "launched") return "";
+    if (M === "launched") {
+      const g = AG[0];
+      return sec("Your plan", "", `<div class="col" style="gap:10px">
+        <div class="pgoal" style="background:var(--inlay)"><div class="pgoal-h"><div class="col" style="gap:6px"><span class="t-words" style="font-size:18px">${g.t}</span><span class="mu">From 20% to 85% of the regression suite automated</span></div><div class="wt"><span class="num" style="font-weight:600;font-size:15px">100%</span>${mark("fusion", "Carried from FY2026")}</div></div></div>
+        ${[0, 1].map(() => `<div class="gh-goal"><div class="row"><div class="gh-line" style="width:38%;height:14px"></div><div class="gh-line" style="width:48px;margin-left:auto"></div></div><div class="gh-line" style="width:62%;height:9px"></div></div>`).join("")}</div>`);
+    }
     const grade = M === "results";
-    const praise = `<section class="card"><h2 class="t-sec" style="margin:0">Lately</h2>
-      <div class="row" style="align-items:flex-start">${av("salah", 36)}<div class="col" style="gap:8px"><span class="sm mu"><b style="color:var(--f)">Salah Ben Hassine</b> praised you and Leila Baccouche, ${dm("2026-10-05")}</span>
+    const praise = sec("Lately", "", `<div class="row" style="align-items:flex-start">${av("salah", 36)}<div class="col" style="gap:8px"><span class="sm mu"><b style="color:var(--f)">Salah Ben Hassine</b> praised you and Leila Baccouche, ${dm("2026-10-05")}</span>
       <span class="t-quote">“The incident drill was the best we have run. Clear roles, and every follow-up has an owner.”</span>
-      <div class="row"><span class="chip">Data-Informed Decision Making</span><span class="react"><span>${ic("clap")}4</span><span>${ic("party")}2</span><span>${ic("bulb")}1</span><span>${ic("heart")}3</span></span></div></div></div></section>`;
-    return `<section class="card"><div class="row"><h2 class="t-sec" style="margin:0">Your goals</h2>${grade ? `<span class="mu" style="margin-left:auto">0.88 for the year</span>` : `<span class="mu num" style="margin-left:auto">${M === "planning" ? "Put forward" : M === "review" ? "88% done" : "38% done"}</span>`}</div>
-      <div>${AG.map((g) => goalRow(g, m, grade)).join("")}</div></section>${M === "execution" ? praise : ""}`;
+      <div class="row"><span class="sm mu">${ic("heart", 14)} Data-Informed Decision Making</span><span class="react" style="margin-left:auto"><span>${ic("clap")}4</span><span>${ic("party")}2</span><span>${ic("bulb")}1</span><span>${ic("heart")}3</span></span></div></div></div>`);
+    const right = grade ? `<span class="grade" style="font-size:17px;color:var(--f)">0.88</span> for the year` : M === "planning" ? "Weights" : M === "review" ? "88% done" : "38% done";
+    return sec("Your goals", right, `<div>${AG.map((g) => goalRow(g, m, grade)).join("")}</div>`) + (M === "execution" ? praise : "");
   }
-  // mariam: the team as people
-  const S = {
-    launched: () => ["Not started", ""], planning: (k) => ({ aicha: [ui.approved ? "Approved" : "Put forward", ui.approved ? "ok" : "wa"], sofiene: ["Writing", ""] }[k] || ["Approved", "ok"]),
-    execution: (k) => ({ aicha: ["1 goal at risk", "wa"], fares: ["3 goals off track", "no"], sofiene: ["1 goal off track", "no"], meriem: ["1 goal at risk", "wa"] }[k] || ["On track", "ok"]),
-    review: (k) => ({ aicha: ["Self-review in", "wa"], fares: ["Self-review in", "wa"], meriem: ["Writing self-review", ""], salah: ["Reviewed", "ok"], tarek: ["Reviewed", "ok"], sofiene: ["Self-review in", "wa"] }[k]),
-    results: (k) => ({ fares: ["Not read yet", ""], sofiene: ["Not read yet", ""] }[k] || ["Read", "ok"]),
-  };
-  return `<section class="card"><div class="row"><h2 class="t-sec" style="margin:0">Your team</h2><span class="mu" style="margin-left:auto">6 people</span></div>
-    <div class="people">${TEAM.map((k) => { const [t, c] = S[M](k); return `<div class="pc click" data-act="toast" data-msg="Opens the Team page, Performance tab (drawn in 3d)">${av(k, 44)}<span class="nm">${nm(k)}</span><span class="sm mu">${P[k][1]}</span><span class="chip ${c}">${t}</span></div>`; }).join("")}</div></section>`;
+  // mariam: her team, placed on the phase's steps
+  if (M === "launched") return firstUse("mariam");
+  return sec("Your team", "6 people", flow(TEAM_FLOW[M](), 6));
+}
+
+// ---------- moving the year on (HR), previewed in place ----------
+const MOVES = [
+  { t: "Move to Execution", sub: `Today instead of ${day("2026-05-25")}`, go: "Move to Execution", to: "execution",
+    rows: [["Everyone", 99, "Progress updates open on approved goals", ["aicha", "omar", "ines"]], ["Approved plans", 42, "Locked; changes go through the manager", ["fares", "meriem", "salah"]], ["Still writing or with a manager", 57, "Keep going; nothing they wrote is lost", ["mehdi", "chaima", "rim"]]] },
+  { t: "Start the review round", sub: `Today instead of ${day("2027-03-01")}`, go: "Start the round", to: "review",
+    rows: [["Everyone", 99, `Self-review due ${day("2027-03-15")}`, ["aicha", "rim", "khaled"]], ["Peers", 297, "Three each, picked from who they worked with", ["leila", "fares", "rania"]], ["Managers", 14, `Reviews due ${day("2027-03-29")}, drafted from each person's year`, ["mariam", "omar", "ines"]], ["Goals", 297, "Graded from their measures", []]] },
+  { t: "Release results", sub: `Today instead of ${day("2027-04-09")}`, go: "Release 95 results", to: "results",
+    rows: [["Ready", 92, "Released now", ["salah", "tarek", "omar"]], ["Flagged and kept", 3, "Released with their reason", ["rim", "chaima", "mouna"]], ["Still being written", 4, "Released when done", ["mouna"]]] },
+  { t: `Close ${Y.name}`, sub: `Today instead of ${day(Y.end)}`, go: `Close ${Y.name}`, to: null,
+    rows: [["Unfinished goals", 41, "Into their owners' FY2028 drafts", ["aicha", "fares", "sofiene"]], ["Growth goals", 12, "Carry over as they are", ["rim", "leila"]], ["Not read yet", 24, "Results stay on their page to read", ["fares", "sofiene", "elyes"]]] },
+];
+const movedPhases = (k, today) => PHASES.map((p, i) => (i === k ? { ...p, e: today } : i === k + 1 ? { ...p, s: today } : p));
+function movePreview(m) {
+  const mv = MOVES[m.phase];
+  return `<div class="pv rise" id="next"><span class="caret" style="left:clamp(34px, ${pos(m.today) * 100}%, calc(100% - 34px));box-shadow:-1.5px -1.5px 0 0 var(--pr)"></span>
+    <div class="next-h"><div class="col" style="gap:8px"><span class="eyebrow">Preview</span><span class="next-t">${mv.t} today</span><span class="due">${ic("clock")}${mv.sub}</span></div>
+    <div class="row" style="flex:none"><button class="btn" data-act="cancelMove">Cancel</button><button class="btn p" data-act="moveGo">${mv.go}</button></div></div>
+    <div>${mv.rows.map(([w, n, t, f]) => `<div class="pv-row"><b>${w}</b><span class="grade num" style="font-size:20px">${n}</span><div class="row">${f.length ? faces(f, 30) : ""}<span>${t}</span></div></div>`).join("")}</div>
+    <div class="row sm mu">${ic("bell", 15)}One notification each, opening where to act</div></div>`;
 }
 
 function yearPage() {
   const v = ui.viewer, m = MOMENTS.find((x) => x.id === ui.moment);
   const ns = nextStep(v, m);
-  const canMove = v === "amira" && m.phase < 3;
+  const canMove = v === "amira" && m.phase < 3 && !ui.preview;
   const moveLbl = ["Move to Execution", "Start the review round", "Release results"][m.phase];
   const head = `<div class="row" style="align-items:flex-end;padding-top:8px"><div class="col"><h1 class="t-page" style="margin:0">${Y.name}</h1><span class="mu">${fmt(Y.start, { day: "numeric", month: "long", year: "numeric" })} to ${fmt(Y.end, { day: "numeric", month: "long", year: "numeric" })}</span></div>
-    ${canMove ? `<button class="btn" style="margin-left:auto" data-act="move">${moveLbl}</button>` : ""}</div>`;
-  const step = `<div class="next rise" id="next">${A("yl") === "a" ? `<span class="caret" style="left:clamp(34px, ${pos(m.today) * 100}%, calc(100% - 34px))"></span>` : ""}
+    ${canMove ? `<button class="btn" style="margin-left:auto" data-act="move">${ic("fast", 16)}${moveLbl}</button>` : ""}</div>`;
+  const step = ui.preview ? movePreview(m) : `<div class="next rise" id="next"><span class="caret" style="left:clamp(34px, ${pos(m.today) * 100}%, calc(100% - 34px))"></span>
     <div class="next-h"><div class="col" style="gap:8px"><span class="eyebrow">${ns.eye}</span><span class="next-t">${ns.title}</span><span class="due">${ic("clock")}${ns.due}</span></div>
-    <div class="row" style="flex:none">${ns.act}</div></div>${ns.body}${A("yl") === "b" ? `<div style="padding-top:6px">${timeline(m.today)}</div>` : ""}</div>`;
-  const body = A("yl") === "a" ? head + `<div style="margin-top:-8px">${timeline(m.today)}</div>` + step : head + step;
-  return `<div class="scroll"><div class="pg">${body}${yearSecond(v, m)}</div></div>`;
+    <div class="row" style="flex:none">${ns.act}</div></div>${ns.body}</div>`;
+  const tl = ui.preview ? timeline(m.today, false, movedPhases(m.phase, m.today)) : timeline(m.today);
+  return `<div class="scroll"><div class="pg">${head}<div style="margin-top:-8px">${tl}</div>${step}${yearSecond(v, m)}</div></div>`;
 }
 
-// ---------- a goal, opened (record) ----------
+// ---------- a goal, opened: its own page with a breadcrumb (D-46) ----------
 function goalBody(id, owner) {
   const g0 = AG.find((x) => x.id === id), late = ui.screen === "year" && (ui.moment === "review" || ui.moment === "results");
   const g = late ? { ...g0, now: g0.fin.words, prog: g0.fin.pct, st: g0.fin.pct < 100 ? "wa" : "ok" } : g0;
   const g2 = id === "g2";
-  const updates = g2 ? [["2026-07-12", "Plan agreed", "Milestone done"]] : [["2026-10-10", g.now, id === "g1" ? "The flaky UI tests block two suites" : ""], ["2026-09-08", id === "g1" ? "38% automated" : "40%", ""], ["2026-08-10", id === "g1" ? "31% automated" : "30%", ""]];
-  return `<div class="row">${av(owner, 30)}<span class="mu">${nm(owner)}</span><span class="chip ${g.st}" style="margin-left:auto">${ST[g.st]}</span></div>
-    <h2 class="t-words" style="margin:0;font-size:26px;line-height:1.2">${g.t}</h2>
+  const updates = g2 ? [["2026-07-12", "Plan agreed", "Milestone done"]] : [["2026-10-10", g0.now, id === "g1" ? "The flaky UI tests block two suites" : ""], ["2026-09-08", id === "g1" ? "38% automated" : "40%", ""], ["2026-08-10", id === "g1" ? "31% automated" : "30%", ""]];
+  return `<div class="row">${av(owner, 30)}<span class="mu">${nm(owner)}</span><span style="margin-left:auto">${late ? stat(g.st, g.prog < 100 ? "Not reached" : "Done") : stat(g.st)}</span></div>
+    <h2 class="t-words" style="margin:0;font-size:28px;line-height:1.2">${g.t}</h2>
     <div class="col" style="gap:10px"><div class="row" style="align-items:baseline"><span class="grade">${g.now}</span><span class="mu">${g.m}</span></div><div class="bar" style="height:10px"><i style="width:${g.prog}%;background:var(--${g.st})"></i></div></div>
     ${g.up.length ? `<div class="inl col" style="gap:6px"><span class="sm mu">Supports</span><div class="row">${ic("corner")}<span class="t-words">${UNIT.t}</span><span class="sm mu" style="margin-left:auto">${UNIT.u}</span></div><div class="row" style="padding-left:26px">${ic("corner")}<span class="t-words">${CO[0].t}</span><span class="sm mu" style="margin-left:auto">Company</span></div></div>` : ""}
-    ${g2 ? `<div class="col" style="gap:6px">${[["Plan agreed", "2026-07-09", true], ["First release", "2026-10-22", false], ["Handover", "2027-02-19", false]].map(([t, d, done]) => `<div class="row inl" style="padding:10px 14px"><span class="chip ${done ? "ok" : ""}">${done ? ic("check", 14) : ""}${done ? "Done" : "Due " + dm(d)}</span><span>${t}</span><span class="sm mu" style="margin-left:auto">${done ? dm(d) : "30%"}</span></div>`).join("")}</div>
+    ${g2 ? `<div class="col" style="gap:0">${[["Plan agreed", "2026-07-09", true], ["First release", "2026-10-22", false], ["Handover", "2027-02-19", false]].map(([t, d, done], i) => `<div class="row" style="padding:11px 2px;${i ? "box-shadow:0 -1px 0 var(--hl)" : ""}">${done ? `<span class="stw ok">${ic("check")}</span>` : `<span class="stw mu">${ic("clock")}</span>`}<span class="t-words">${t}</span><span class="sm mu" style="margin-left:auto">${done ? "Done " + dm(d) : "Due " + dm(d)}</span></div>`).join("")}</div>
       <div class="row inl" style="padding:10px 14px">${av("mariam", 26)}<span>Mariam asked for an update</span><span class="sm mu" style="margin-left:auto">${dm("2026-10-18")}</span></div>` : ""}
     <div class="col" style="gap:8px"><span class="t-sec">Updates</span>${updates.map(([d, v, n]) => `<div class="row" style="align-items:flex-start"><span class="sm mu num" style="width:56px">${dm(d)}</span><div class="col"><b>${v}</b>${n ? `<span class="t-quote mu">“${n}”</span>` : ""}</div></div>`).join("")}</div>`;
 }
-function goalOpen() {
-  const id = ui.goal, g = AG.find((x) => x.id === id), owner = "aicha";
-  const r = A("rec");
-  if (r === "a") return `<div class="scrim" data-act="close"></div><div class="sheet" role="dialog" aria-label="${esc(g.t)}"><div class="sheet-h"><span class="eyebrow">${ic("goals", 16)}Goal</span><button class="x" data-act="close" aria-label="Close">${ic("close")}</button></div>
-    <div class="sheet-b">${goalBody(id, owner)}</div><div class="sheet-f"><button class="btn" data-act="close">Close</button><button class="btn p" data-act="toast" data-msg="Opens the update (drawn in 3b)">Update progress</button></div></div>`;
-  return null;
-}
 function goalPage() {
-  const g = AG.find((x) => x.id === ui.goal);
-  const back = A("rec") === "c" ? `<button class="btn g" data-act="close" style="justify-self:start;padding:0">${ic("arrowR", 16).replace('class="ic"', 'class="ic" style="transform:rotate(180deg)"')}${Y.name}</button>` : "";
-  return `<div class="scroll"><div class="pg" style="max-width:820px">${back}${goalBody(ui.goal, "aicha")}<div class="row"><button class="btn p" data-act="toast" data-msg="Opens the update (drawn in 3b)">Update progress</button></div></div></div>`;
-}
-
-// ---------- moving the year on (HR), with its preview ----------
-const MOVES = [
-  { t: "Move FY2027 to Execution", sub: `Today instead of ${day("2026-05-25")}`, rows: [["Everyone", 99, "Progress updates open on approved goals"], ["Approved plans", 52, "Locked; changes go through the manager"], ["Writing or put forward", 47, "Keep going; nothing they wrote is lost"], ["Managers with plans waiting", 6, "Approve from Home as before"]], go: "Move to Execution", to: "execution" },
-  { t: "Start the review round", sub: "Year-end review", rows: [["Everyone", 99, `Self-review due ${day("2027-03-15")}`], ["Peers asked", 297, "Three for each person, picked from who they worked with"], ["Managers", 14, `Reviews due ${day("2027-03-29")}, drafted from each person's year`], ["Goals", 297, "Graded from their measures"]], go: "Start the round", to: "review" },
-  { t: "Release results", sub: "Year-end review", rows: [["Ready", 92, "Released now"], ["Flagged and kept", 3, "Released with their reason"], ["Still being written", 4, "Released when done"], ["Everyone released", 95, "Read and acknowledge from Home"]], go: "Release 95 results", to: "results" },
-  { t: `Close ${Y.name}`, sub: `Then start FY2028`, rows: [["Unfinished goals", 41, "Go into FY2028 drafts"], ["Growth goals", 12, "Carry over as they are"], ["Results", 99, "Stay on each person's page"]], go: "Close the year", to: null },
-];
-function moveSheet() {
-  const m = MOMENTS.find((x) => x.id === ui.moment), mv = MOVES[m.phase];
-  return `<div class="scrim" data-act="close"></div><div class="sheet" role="dialog" aria-label="${esc(mv.t)}"><div class="sheet-h"><span class="eyebrow">${ic("fast", 16)}${Y.name}</span><button class="x" data-act="close" aria-label="Close">${ic("close")}</button></div>
-    <div class="sheet-b"><div class="col"><h2 class="t-page" style="margin:0;font-size:26px">${mv.t}</h2><span class="mu">${mv.sub}</span></div>
-    ${timeline(m.today, true)}
-    <div class="col" style="gap:8px">${mv.rows.map(([w, n, t]) => `<div class="row inl" style="padding:12px 14px;align-items:flex-start"><span class="grade" style="font-size:18px;width:46px">${n}</span><div class="col"><b>${w}</b><span class="mu">${t}</span></div></div>`).join("")}</div>
-    <div class="row inl" style="padding:12px 14px">${ic("bell")}<span>One notification each, opening where to act</span></div></div>
-    <div class="sheet-f"><button class="btn" data-act="close">Cancel</button><button class="btn p" data-act="moveGo">${mv.go}</button></div></div>`;
+  return `<div class="scroll"><div class="pg" style="max-width:820px">${goalBody(ui.goal, "aicha")}<div class="row"><button class="btn p" data-act="toast" data-msg="Opens the update (drawn in 3b)">Update progress</button></div></div></div>`;
 }
 
 // ---------- Goals › You (Aicha writes her plan) ----------
+// The goals in Aicha's plan right now: launch day starts from what carried over (and starters, or a drafted plan)
+const STARTERS = { g2: "From your job and your team's goals", g3: "From your 1:1s with Mariam" };
+function planGoals() {
+  if (ui.gstate !== "empty") return AG;
+  if (A("start") === "b") return AG.filter((g) => !ui.removed[g.id]);
+  return AG.filter((g) => g.id === "g1" || ui.added[g.id]);
+}
 function weightsNow() {
-  const set = Object.entries(ui.weights).filter(([, v]) => v != null);
+  const list = planGoals();
+  const set = list.filter((g) => ui.weights[g.id] != null).map((g) => [g.id, ui.weights[g.id]]);
   const fixed = set.reduce((a, [, v]) => a + v, 0);
-  const free = AG.filter((g) => ui.weights[g.id] == null);
+  const free = list.filter((g) => ui.weights[g.id] == null);
   const left = Math.max(0, 100 - fixed), base = free.length ? Math.floor(left / free.length) : 0;
   const out = {}; let rem = left - base * free.length;
   free.forEach((g) => { out[g.id] = base + (rem-- > 0 ? 1 : 0); });
@@ -603,79 +689,114 @@ function weightsNow() {
   return out;
 }
 function goalsPage() {
-  const W = weightsNow();
-  const linkedCount = (cid) => AG.filter((g) => (g.up[0] === "unit" && cid === "c1") || ui.linked[g.id] === cid).length;
-  const company = `<div class="cg">${CO.map((c) => `<div class="cgo ${ui.lit === c.id ? "lit" : ""}" id="co-${c.id}"><span class="sm mu row" style="gap:6px">${av("amira", 20)}Company</span><span class="t-words" style="font-size:15px">${c.t}</span><span class="sm mu">${c.m}</span>
-    ${c.id === "c1" ? `<div class="unit-g"><span class="sm mu row" style="gap:6px">${av("mariam", 18)}${UNIT.u}</span><span class="t-words" style="font-size:13.5px">${UNIT.t}</span></div>` : ""}
-    <span class="sm ${linkedCount(c.id) ? "" : "mu"}">${linkedCount(c.id) ? `${linkedCount(c.id)} of your goals` : "None of your goals yet"}</span></div>`).join("")}</div>`;
-  const goals = AG.map((g) => {
+  const empty = ui.gstate === "empty", list = planGoals(), W = weightsNow();
+  const linkedCount = (cid) => list.filter((g) => (g.up[0] === "unit" && cid === "c1") || ui.linked[g.id] === cid).length;
+  const company = empty
+    ? `<div class="col" style="gap:10px"><div class="row"><span class="t-sec">The company's goals</span><span class="row sm" style="margin-left:auto;gap:8px">${av("amira", 24)}<span><b>Amira Khelifi</b> is setting them</span><span class="mu">since ${dm("2026-04-25")}</span></span></div>
+      <div class="cg">${[56, 72, 48].map((w) => `<div class="gh-card"><span class="row" style="gap:6px"><span class="av gh" style="--s:20px"></span><span class="gh-line" style="width:60px;height:8px"></span></span><div class="gh-line" style="width:${w}%;height:13px"></div><div class="gh-line" style="width:82%;height:8px"></div></div>`).join("")}</div></div>`
+    : `<div class="col" style="gap:10px"><span class="t-sec">The company's goals</span><div class="cg">${CO.map((c) => `<div class="cgo ${ui.lit === c.id ? "lit" : ""}" id="co-${c.id}"><span class="sm mu row" style="gap:6px">${av("amira", 20)}Company</span><span class="t-words" style="font-size:15px">${c.t}</span><span class="sm mu">${c.m}</span>
+      ${c.id === "c1" ? `<div class="unit-g"><span class="sm mu row" style="gap:6px">${av("mariam", 18)}${UNIT.u}</span><span class="t-words" style="font-size:13.5px">${UNIT.t}</span></div>` : ""}
+      <span class="sm ${linkedCount(c.id) ? "" : "mu"}">${linkedCount(c.id) ? `${linkedCount(c.id)} of your goals` : "None of your goals yet"}</span></div>`).join("")}</div></div>`;
+  const goals = list.map((g) => {
     const wSet = ui.weights[g.id] != null;
     const wCtl = ui.editW === g.id ? `<input id="w-${g.id}" type="number" min="0" max="100" value="${W[g.id]}" aria-label="Weight">` : `<button data-act="editW" data-goal="${g.id}" ${ui.forward ? "disabled" : ""}>${W[g.id]}%</button>`;
-    const linked = g.up.length || ui.linked[g.id];
-    const line = g.up.length ? `<div class="line-up">${ic("corner")}<b>${UNIT.t}</b><span>${ic("arrowR")}</span><span>${CO[0].t}</span></div>`
+    const line = empty ? "" : g.up.length ? `<div class="line-up">${ic("corner")}<b>${UNIT.t}</b><span>${ic("arrowR")}</span><span>${CO[0].t}</span></div>`
       : ui.linked[g.id] ? `<div class="line-up rise">${ic("corner")}<b>${CO.find((c) => c.id === ui.linked[g.id]).t}</b></div>` : "";
-    const sugg = !ui.forward && g.sugg && !ui.linked[g.id] && !ui["dis" + g.id] ? `<div class="sugg">${mark("ai", "")}<span>Supports <b>${CO.find((c) => c.id === g.sugg).t}</b></span><button class="btn sm" style="margin-left:auto" data-act="link" data-goal="${g.id}">Link</button><button class="x" style="margin:0;width:28px;height:28px" data-act="dismiss" data-goal="${g.id}" aria-label="Dismiss">${ic("close", 15)}</button></div>`
+    const drafted = empty && A("start") === "b" && g.id !== "g1" && !ui.kept[g.id] && !ui.forward;
+    const origin = empty && g.id === "g1" ? mark("fusion", "Carried from FY2026, at 20%") : drafted ? mark("ai", `Drafted ${STARTERS[g.id].toLowerCase()}`) : "";
+    const sugg = empty ? "" : !ui.forward && g.sugg && !ui.linked[g.id] && !ui["dis" + g.id] ? `<div class="sugg">${mark("ai", "")}<span>Supports <b>${CO.find((c) => c.id === g.sugg).t}</b></span><button class="btn sm" style="margin-left:auto" data-act="link" data-goal="${g.id}">Link</button><button class="x" style="margin:0;width:28px;height:28px" data-act="dismiss" data-goal="${g.id}" aria-label="Dismiss">${ic("close", 15)}</button></div>`
       : !ui.forward && g.suggM && !ui.measured && !ui["dis" + g.id] ? `<div class="sugg">${mark("ai", "")}<span>Measure it: <b>${g.suggM}</b></span><button class="btn sm" style="margin-left:auto" data-act="measure">Use</button><button class="x" style="margin:0;width:28px;height:28px" data-act="dismiss" data-goal="${g.id}" aria-label="Dismiss">${ic("close", 15)}</button></div>` : "";
+    const keep = drafted ? `<div class="row"><button class="btn sm" data-act="keepG" data-goal="${g.id}">${ic("check", 15)}Keep</button><button class="btn sm g" data-act="removeG" data-goal="${g.id}">Remove</button></div>` : "";
     const measure = g.id === "g3" && ui.measured ? `<span class="mu rise">${g.suggM}</span>` : `<span class="mu">${g.m}</span>`;
-    return `<div class="pgoal"><div class="pgoal-h"><div class="col" style="gap:6px"><span class="t-words" style="font-size:19px">${g.t}</span>${measure}${line}</div>
-      <div class="wt">${wCtl}${wSet ? `<span class="sm mu">Set by you</span>` : mark("fusion", "Shared evenly")}</div></div>${sugg}</div>`;
+    return `<div class="pgoal ${drafted ? "" : ""}" style="${drafted ? "box-shadow:inset 0 0 0 1.5px color-mix(in oklab, var(--ai) 45%, transparent)" : ""}"><div class="pgoal-h"><div class="col" style="gap:6px"><span class="t-words" style="font-size:19px">${g.t}</span>${measure}${line}${origin ? `<span>${origin}</span>` : ""}</div>
+      <div class="wt">${wCtl}${wSet ? `<span class="sm mu">Set by you</span>` : mark("fusion", list.length > 1 ? "Shared evenly" : "The whole plan")}</div></div>${sugg}${keep}</div>`;
   }).join("");
+  const starters = empty && A("start") === "a" && !ui.forward ? AG.filter((g) => g.id !== "g1" && !ui.added[g.id]) : [];
+  const startersHtml = starters.length ? `<div class="col" style="gap:8px"><div class="row" style="gap:8px">${mark("ai", "Starters")}</div>
+    ${starters.map((g) => `<div class="sugg" style="padding:12px 12px 12px 16px"><div class="col" style="gap:2px"><span class="t-words" style="font-size:15px">${g.t}</span><span class="sm mu">${g.m}</span></div><span class="sm mu" style="margin-left:auto;text-align:right">${STARTERS[g.id]}</span><button class="btn sm" data-act="addG" data-goal="${g.id}">${ic("plus", 15)}Add</button></div>`).join("")}</div>` : "";
+  const status = ui.forward
+    ? `<div class="row" style="gap:12px">${av("mariam", 34)}<div class="col" style="gap:0"><b>With Mariam</b><span class="sm mu">Since ${dm(empty ? "2026-04-25" : "2026-05-04")}</span></div><button class="btn sm" data-act="toast" data-msg="Mariam gets one reminder">Nudge</button></div>`
+    : `<button class="btn p" data-act="forward">${av("mariam", 22)}Put forward to Mariam</button>`;
   const band = `<div class="row" style="align-items:flex-end;padding-top:8px"><div class="col" style="gap:10px"><h1 class="t-page" style="margin:0">Goals</h1>
-      <div class="tabs"><span class="tab on">You</span><span class="tab">${"Consulting A Core"}</span><span class="tab">Company</span><span class="tab">${ic("org", 16)}</span></div></div>
-    <div class="row" style="margin-left:auto">${ui.forward ? `<span class="chip wa">With Mariam since ${dm("2026-05-04")}</span>` : `<span class="chip">Draft</span><button class="btn p" data-act="forward">${av("mariam", 22)}Put forward to Mariam</button>`}</div></div>`;
-  return `<div class="scroll"><div class="pg" style="gap:18px">${band}<div class="row" style="gap:14px"><span class="sm"><b>${Y.name}</b> Planning</span><div style="flex:1">${timeline("2026-05-04", true)}</div><span class="due">${ic("clock")}Plans due ${day("2026-05-25")}</span></div>
-    <div class="col" style="gap:10px"><span class="t-sec">The company's goals</span>${company}</div>
-    <div class="col" style="gap:10px"><div class="row"><span class="t-sec">Your plan</span><span class="mu num" style="margin-left:auto">Weights ${Object.values(W).reduce((a, b) => a + b, 0)}%</span></div>${goals}
-    ${ui.forward ? "" : `<div class="add">${ic("plus")}Add a goal</div>`}</div></div></div>`;
+      <div class="tabs"><span class="tab on">You</span><span class="tab">${UNIT.u}</span><span class="tab">Company</span><span class="tab">${ic("org", 16)}</span></div></div>
+    <div class="row" style="margin-left:auto">${status}</div></div>`;
+  const today = empty ? "2026-04-25" : "2026-05-04";
+  return `<div class="scroll"><div class="pg" style="gap:18px">${band}<div class="row" style="gap:14px"><span class="sm"><b>${Y.name}</b> Planning</span><div style="flex:1">${timeline(today, true)}</div><span class="due">${ic("clock")}Plans due ${day("2026-05-25")}</span></div>
+    ${company}
+    <div class="col" style="gap:10px"><div class="row"><span class="t-sec">Your plan</span><span class="mu num" style="margin-left:auto">${list.length === 1 ? "1 goal" : `${list.length} goals, ${Object.values(W).reduce((a, b) => a + b, 0)}%`}</span></div>${goals}
+    ${startersHtml}${ui.forward ? "" : `<div class="add">${ic("plus")}Add a goal</div>`}</div></div></div>`;
 }
 
-// ---------- Writing a review (Mariam on Aicha's) ----------
+// ---------- Writing a review (Mariam on Aicha's, or on Meriem's thinner year) ----------
 const EV = [
   { id: "e-g1", k: "goals", ic: "goals", h: `Goal, final update ${dm("2027-03-10")}`, b: `<span class="t-words">Automate the regression suite</span><span class="mu">66% automated, aiming for 85%</span>` },
   { id: "e-g23", k: "goals", ic: "goals", h: "Goals done in full", b: `<span class="t-words">Build role-relevant technical capability</span><span class="t-words">Make estimates clients can rely on</span>` },
   { id: "e-salah", k: "praise", ic: "clap", h: `Praise from Salah Ben Hassine, ${dm("2026-10-05")}`, b: `<span class="t-quote">“The incident drill was the best we have run. Clear roles, and every follow-up has an owner.”</span>` },
   { id: "e-amira", k: "feedback", ic: "feedback", h: `Feedback from Amira Khelifi, ${dm("2026-05-14")}`, b: `<span class="t-quote">“Your incident write-up was clear and blameless. The on-call team now uses it as the template.”</span>` },
-  { id: "e-peers", k: "peers", ic: "people", h: "Peers, 3 of 3 answered", b: `<div class="row" style="align-items:flex-start">${av("leila", 24)}<span class="t-quote">“Calm in release week. People go to her when the build is red.”</span></div><div class="row" style="align-items:flex-start">${av("rim", 24)}<span class="t-quote">“Turns vague bug reports into tests that fail for the right reason.”</span></div>` },
+  { id: "e-peers", k: "peers", ic: "people", h: "Peers, 3 of 3 answered", b: `<div class="row" style="align-items:flex-start">${av("leila", 24)}<span class="t-quote">“Calm in release week. People go to Aicha when the build is red.”</span></div><div class="row" style="align-items:flex-start">${av("rim", 24)}<span class="t-quote">“Turns vague bug reports into tests that fail for the right reason.”</span></div>` },
   { id: "e-khaled", k: "peers", ic: "people", h: "Khaled Sassi, peer", b: `<span class="t-quote">“Share plans earlier; we found out about the vendor delay from the release notes.”</span>` },
   { id: "e-11", k: "oneone", ic: "oneone", h: `1:1, ${dm("2026-10-08")}`, b: `<span>Action: Share the revised estimate with the client</span><span class="sm" style="color:var(--wa)">Done ${dm("2026-10-27")}, two weeks late</span>` },
   { id: "e-mariam", k: "praise", ic: "heart", h: `Your praise, ${dm("2026-07-16")}`, b: `<span class="t-quote">“Thank you for running the onboarding sessions. New joiners shipped in their first week.”</span>` },
   { id: "e-fares", k: "praise", ic: "party", h: `Praise from Fares Lachheb, ${dm("2026-08-12")}`, b: `<span class="t-quote">“Kept two client releases on track while covering regression for another team.”</span>` },
 ];
-const DRAFT = {
-  keep: [["She ran the best incident drill the team has had, with clear roles and an owner for every follow-up.", "e-salah"], ["Her incident write-up became the on-call team's template.", "e-amira"], ["Peers rely on her calm in release week and on tests that fail for the right reason.", "e-peers"], ["She ran the onboarding sessions that had new joiners shipping in their first week.", "e-mariam"]],
-  grow: [["The regression suite reached 66% automated against 85%.", "e-g1"], ["Share plans earlier: a peer learned of a vendor delay from the release notes.", "e-khaled"], ["The revised client estimate went out two weeks after we agreed it.", "e-11"]],
+const MG = [
+  { id: "m1", t: "Ship the payments API v2", m: "Design signed off, Beta with two clients, General release", up: [], fin: { pct: 67, g: 0.67, words: "2 of 3 milestones done" } },
+  { id: "m2", t: "Cut checkout's p95 latency", m: "From 900 ms to 400 ms", up: [], fin: { pct: 76, g: 0.76, words: "520 ms now, from 900 ms to 400 ms" } },
+];
+const MEV = [
+  { id: "e-m1", k: "goals", ic: "goals", h: `Goal, final update ${dm("2027-03-02")}`, b: `<span class="t-words">Ship the payments API v2</span><span class="mu">Beta live with two clients; general release in May</span>` },
+  { id: "e-m2", k: "goals", ic: "goals", h: `Goal, final update ${dm("2027-03-08")}`, b: `<span class="t-words">Cut checkout's p95 latency</span><span class="mu">520 ms, from 900 ms</span>` },
+  { id: "e-mk", k: "peers", ic: "people", h: "Khaled Sassi, peer", b: `<span class="t-quote">“Catches the edge cases in API reviews before QA does.”</span>` },
+];
+const RV = {
+  aicha: { k: "aicha", sub: "QA Automation Engineer, Engineering A Core", since: "25 Apr 2026 to today", goals: AG, w: { g1: 40, g2: 25, g3: 35 }, ev: EV, last: "Last year: Strong", self: [4, 4, 3, 4, 3], overallSelf: 3,
+    draft: { keep: [["Ran the best incident drill the team has had, with clear roles and an owner for every follow-up.", "e-salah"], ["Wrote the incident write-up that became the on-call team's template.", "e-amira"], ["Peers rely on that calm in release week and on tests that fail for the right reason.", "e-peers"], ["Ran the onboarding sessions that had new joiners shipping in their first week.", "e-mariam"]],
+      grow: [["The regression suite reached 66% automated against 85%.", "e-g1"], ["Share plans earlier: a peer learned of a vendor delay from the release notes.", "e-khaled"], ["The revised client estimate went out two weeks after we agreed it.", "e-11"]] } },
+  meriem: { k: "meriem", sub: "Software Engineer, Engineering A Core", since: `Joined ${dm("2026-11-02")} 2026`, goals: MG, w: { m1: 50, m2: 50 }, ev: MEV, last: "First review", self: [], overallSelf: null,
+    draft: { keep: [["Took checkout's p95 latency from 900 ms to 520 ms.", "e-m2"], ["Got the payments API to beta with two clients.", "e-m1"], ["Catches edge cases in API reviews before QA does, a peer says.", "e-mk"]], grow: [] },
+    wait: [["meriem", "Self-review", `Writing it, due ${dm("2027-03-15")}`, "Nudge"], [["leila", "rim"], "Peers, 1 of 3", "Leila Baccouche and Rim Mahjoub", "Nudge them"]] },
 };
-const COMP = [["Data-Informed Decision Making", "Chooses meaningful measures; explains trade-offs", 4], ["Inclusive Collaboration", "Shares context openly; invites different perspectives", 4], ["Secure Engineering", "Applies secure-by-design practices; raises risks early", 3], ["Customer Partnership", "Listens for underlying needs; closes feedback loops", 4], ["Systems Thinking", "Identifies dependencies; balances near and long term", 3]];
+const COMP = [["Data-Informed Decision Making", "Chooses meaningful measures; explains trade-offs"], ["Inclusive Collaboration", "Shares context openly; invites different perspectives"], ["Secure Engineering", "Applies secure-by-design practices; raises risks early"], ["Customer Partnership", "Listens for underlying needs; closes feedback loops"], ["Systems Thinking", "Identifies dependencies; balances near and long term"]];
 const SCALE = ["Needs improvement", "Developing", "Effective", "Strong", "Exceptional"];
 function reviewPage() {
-  const n = (id) => EV.findIndex((e) => e.id === id) + 1;
-  const draft = (key, q) => `<div class="col" style="gap:8px"><div class="row"><span class="t-words" style="font-size:16px">${q}</span><span style="margin-left:auto">${mark("ai", "Drafted from her year")}</span></div>
-    <div class="draft t-quote">${DRAFT[key].map(([s, c]) => { const i = s.lastIndexOf(" "); return `<span class="sent ${ui.cite === c ? "on" : ""}" data-act="cite" data-ev="${c}">${s.slice(0, i + 1)}<span style="white-space:nowrap">${s.slice(i + 1)}<span class="cite">${n(c)}</span></span></span>`; }).join(" ")}</div></div>`;
-  const plan = AG.reduce((a, g) => a + (ui.grades[g.id]?.v ?? g.fin.g) * ({ g1: 40, g2: 25, g3: 35 })[g.id] / 100, 0);
-  const goals = AG.map((g) => {
+  const R = RV[ui.rstate], F = first(R.k);
+  const n = (id) => R.ev.findIndex((e) => e.id === id) + 1;
+  const draft = (key, q) => {
+    const ss = R.draft[key];
+    const body = ss.length ? `<div class="draft t-quote">${ss.map(([s, c]) => { const i = s.lastIndexOf(" "); return `<span class="sent ${ui.cite === c ? "on" : ""}" data-act="cite" data-ev="${c}">${s.slice(0, i + 1)}<span style="white-space:nowrap">${s.slice(i + 1)}<span class="cite">${n(c)}</span></span></span>`; }).join(" ")}</div>`
+      : `<textarea class="draft t-quote" aria-label="${esc(q)}" placeholder="Your words" style="min-height:84px;border:0;resize:vertical;color:var(--f);width:100%;font-family:var(--serif)"></textarea>`;
+    return `<div class="col" style="gap:8px"><div class="row"><span class="t-words" style="font-size:16px">${q}</span><span style="margin-left:auto">${mark("ai", ss.length ? `Drafted from ${F}'s year` : `Drafts when ${F}'s self-review is in`)}</span></div>${body}</div>`;
+  };
+  const plan = R.goals.reduce((a, g) => a + (ui.grades[g.id]?.v ?? g.fin.g) * R.w[g.id] / 100, 0);
+  const goals = R.goals.map((g) => {
     const ed = ui.editG === g.id, ch = ui.grades[g.id];
     return `<div class="goal" style="grid-template-columns:minmax(0,1fr) auto"><div class="col"><span class="t-words gt">${g.t}</span><span class="sm mu">${g.m}</span>
       ${ed ? `<div class="row" style="margin-top:6px"><input id="g-val" type="number" step="0.05" min="0" max="1" value="${(ch?.v ?? g.fin.g).toFixed(2)}" aria-label="Grade" style="width:80px" class="inl"><input id="g-why" placeholder="Reason" aria-label="Reason" class="inl" style="flex:1"><button class="btn sm p" data-act="saveG" data-goal="${g.id}">Change</button></div>` : ""}
       ${ch && !ed ? `<span class="sm" style="color:var(--pr-text)">Changed by you: ${esc(ch.why)}</span>` : ""}</div>
-      <div class="col" style="justify-items:end;gap:2px"><div class="row" style="gap:8px;align-items:baseline">${gradeText(g)}</div><div class="row" style="gap:10px">${ch ? "" : mark("fusion", "From the measure")}${ed ? "" : `<span class="link sm" data-act="editG" data-goal="${g.id}">Change</span>`}</div></div></div>`;
+      <div class="col" style="justify-items:end;gap:2px"><div class="row" style="gap:4px;align-items:center">${gradeText(g)}</div><div class="row" style="gap:10px">${ch ? "" : mark("fusion", "From the measure")}${ed ? "" : `<span class="link sm" data-act="editG" data-goal="${g.id}">Change</span>`}</div></div></div>`;
   }).join("");
   const filters = [["all", "All"], ["goals", "Goals"], ["praise", "Praise"], ["feedback", "Feedback"], ["peers", "Peers"], ["oneone", "1:1s"]];
-  return `<div class="rv-head">${av("aicha", 52)}<div class="col"><span class="t-page" style="font-size:26px">Aicha Bouazizi</span><span class="mu">QA Automation Engineer, Consulting A Core</span></div>
+  const count = (k) => (k === "all" ? R.ev.length : R.ev.filter((e) => e.k === k).length);
+  const wait = R.wait ? `<div class="rv-wait">${R.wait.map(([who, h, t, act]) => `<div class="inl">${Array.isArray(who) ? faces(who, 30) : av(who, 30)}<div class="col" style="gap:0"><b style="font-size:13.5px">${h}</b><span class="sm mu">${t}</span></div><button class="btn sm" data-act="toast" data-msg="${act === "Nudge" ? `${F} gets one reminder` : "Leila and Rim get one reminder"}">${act}</button></div>`).join("")}</div>` : "";
+  const pending = ui.rstate === "meriem" && (ui.filter === "all" || ui.filter === "peers") ? ["leila", "rim"].map((k) => `<div class="ev" style="background:none;box-shadow:inset 0 0 0 1.5px var(--hl)"><div class="ev-k">${ic("people")}${nm(k)}, peer</div><span class="sm mu">Not answered yet</span></div>`).join("") : "";
+  const none = ui.rstate === "meriem" && ui.filter === "all" ? `<span class="sm mu" style="padding:4px 2px">No praise, feedback or 1:1 notes yet</span>` : "";
+  return `<div class="rv-head">${av(R.k, 52)}<div class="col"><span class="t-page" style="font-size:26px">${nm(R.k)}</span><span class="mu">${R.sub}</span></div>
       <div class="col" style="margin-left:auto;width:300px;gap:6px"><div class="row sm"><b>Year-end review</b><span class="mu" style="margin-left:auto">Due ${day("2027-03-29")}</span></div>${timeline("2027-03-24", true)}</div>
-      <button class="btn p" data-act="submit">Submit review</button></div>
+      <button class="btn p" data-act="submit">Submit review</button></div>${wait}
     <div class="rv"><div class="rv-form">
-      <section class="card"><div class="row"><h2 class="t-sec" style="margin:0">Goals</h2><span class="mu" style="margin-left:auto"><span class="grade" style="font-size:17px">${plan.toFixed(2)}</span> for the year</span></div><div>${goals}</div></section>
-      <section class="card">${draft("keep", "What should she keep doing?")}${draft("grow", "Where would you like to see her grow?")}</section>
-      <section class="card"><h2 class="t-sec" style="margin:0">How she worked</h2>
-        ${COMP.map(([t, b, self], i) => `<div class="col" style="gap:8px;${i ? "padding-top:12px;box-shadow:0 -1px 0 var(--hl)" : ""}"><div class="row"><b>${t}</b><span class="sm mu" style="margin-left:auto">${b}</span></div>
-        <div class="scale5" role="group" aria-label="${esc(t)}">${SCALE.map((s, j) => `<button type="button" aria-pressed="${ui["c" + i] === j}" data-act="comp" data-i="${i}" data-j="${j}">${s}${self === j + 1 ? `<span class="self" title="Aicha's own rating">${av("aicha", 16)}</span>` : ""}</button>`).join("")}</div></div>`).join("")}</section>
-      <section class="card" id="overall"><div class="row"><h2 class="t-sec" style="margin:0">Overall</h2><span class="sm mu" style="margin-left:auto">Last year: Strong</span></div>
-        <div class="scale5">${SCALE.map((s, j) => `<button type="button" aria-pressed="${ui.overall === j}" data-act="overall" data-j="${j}">${s}${j === 3 ? `<span class="self" title="Aicha's own rating">${av("aicha", 16)}</span>` : ""}</button>`).join("")}</div>
+      <section class="card"><div class="row"><h2 class="t-sec" style="margin:0">Goals</h2><span class="mu" style="margin-left:auto"><span class="grade" style="font-size:17px;color:var(--f)">${plan.toFixed(2)}</span> for the year</span></div><div>${goals}</div></section>
+      <section class="card">${draft("keep", `What should ${F} keep doing?`)}${draft("grow", `Where would you like ${F} to grow?`)}</section>
+      <section class="card"><h2 class="t-sec" style="margin:0">How ${F} worked</h2>
+        ${COMP.map(([t, b], i) => `<div class="col" style="gap:8px;${i ? "padding-top:12px;box-shadow:0 -1px 0 var(--hl)" : ""}"><div class="row"><b>${t}</b><span class="sm mu" style="margin-left:auto">${b}</span></div>
+        <div class="scale5" role="group" aria-label="${esc(t)}">${SCALE.map((s, j) => `<button type="button" aria-pressed="${ui["c" + i] === j}" data-act="comp" data-i="${i}" data-j="${j}">${s}${R.self[i] === j + 1 ? `<span class="self" title="${F}'s own rating">${av(R.k, 16)}</span>` : ""}</button>`).join("")}</div></div>`).join("")}</section>
+      <section class="card" id="overall"><div class="row"><h2 class="t-sec" style="margin:0">Overall</h2><span class="sm mu" style="margin-left:auto">${R.last}</span></div>
+        <div class="scale5">${SCALE.map((s, j) => `<button type="button" aria-pressed="${ui.overall === j}" data-act="overall" data-j="${j}">${s}${R.overallSelf === j ? `<span class="self" title="${F}'s own rating">${av(R.k, 16)}</span>` : ""}</button>`).join("")}</div>
         ${ui.needRating ? `<span class="sm" style="color:var(--no)">Pick an overall rating</span>` : ""}</section>
     </div>
-    <aside class="rv-year" id="rvyear"><div class="row"><span class="t-sec">Aicha's year</span><span class="sm mu" style="margin-left:auto">25 Apr 2026 to today</span></div>
-      <div class="row" style="flex-wrap:wrap;gap:6px">${filters.map(([k, l]) => `<button class="btn sm ${ui.filter === k ? "" : "g"}" data-act="filter" data-k="${k}">${l}</button>`).join("")}</div>
-      ${EV.filter((e) => ui.filter === "all" || e.k === ui.filter).map((e) => `<div class="ev ${ui.cite === e.id ? "lit" : ""}" id="${e.id}"><div class="ev-k">${ic(e.ic)}<span class="cite" style="margin:0">${n(e.id)}</span>${e.h}</div>${e.b}</div>`).join("")}
+    <aside class="rv-year" id="rvyear"><div class="row"><span class="t-sec">${F}'s year</span><span class="sm mu" style="margin-left:auto">${R.since}</span></div>
+      <div class="row" style="flex-wrap:wrap;gap:6px">${filters.map(([k, l]) => `<button class="btn sm ${ui.filter === k ? "" : "g"} ${count(k) ? "" : "filt-0"}" data-act="filter" data-k="${k}">${l}<span class="num" style="opacity:.6">${count(k)}</span></button>`).join("")}</div>
+      ${R.ev.filter((e) => ui.filter === "all" || e.k === ui.filter).map((e) => `<div class="ev ${ui.cite === e.id ? "lit" : ""}" id="${e.id}"><div class="ev-k">${ic(e.ic)}<span class="cite" style="margin:0">${n(e.id)}</span>${e.h}</div>${e.b}</div>`).join("")}
+      ${pending}${R.ev.some((e) => ui.filter === "all" || e.k === ui.filter) || pending ? "" : `<span class="sm mu" style="padding:4px 2px">Nothing yet</span>`}${none}
     </aside></div>`;
 }
 
@@ -686,13 +807,10 @@ function renderFrame() {
   const v = ui.screen === "year" ? ui.viewer : ui.screen === "goals" ? "aicha" : "mariam";
   let main = "", over = "";
   if (ui.screen === "year") {
-    const pageGoal = ui.goal && A("rec") !== "a";
     const g = ui.goal && AG.find((x) => x.id === ui.goal);
-    main = topbar(pageGoal ? (A("rec") === "b" ? ["Performance", "Year", g.t] : [g.t]) : ["Performance", "Year"]) + (pageGoal ? goalPage() : yearPage());
-    if (ui.goal && A("rec") === "a") over = goalOpen();
-    if (ui.sheet === "move") over = moveSheet();
+    main = topbar(g ? ["Performance", "Year", g.t] : ["Performance", "Year"]) + (g ? goalPage() : yearPage());
   } else if (ui.screen === "goals") main = topbar(["Performance", "Goals"]) + goalsPage();
-  else main = topbar(["Performance", "Reviews", "Aicha Bouazizi"]) + reviewPage();
+  else main = topbar(["Performance", "Reviews", nm(ui.rstate)]) + reviewPage();
   const here = ui.screen === "year" ? "Year" : ui.screen === "goals" ? "Goals" : "Reviews";
   fx.innerHTML = sidebar(v, here) + `<div class="main">${main}${over || ""}${ui.toast ? `<div class="toast" role="status"><span>${esc(ui.toast.msg)}</span>${ui.toast.undo ? `<button data-act="undo">Undo</button>` : ""}</div>` : ""}</div>`;
   if (ui.editW) { const i = document.getElementById("w-" + ui.editW); i?.focus(); i?.select(); }
@@ -706,7 +824,11 @@ function renderChrome() {
   if (ui.screen === "year") {
     c.innerHTML = `<div class="ctl"><span>Viewer</span><div class="seg">${["amira", "mariam", "aicha"].map((k) => pill(k, `${nm(k)}, ${{ amira: "HR", mariam: "manager", aicha: "employee" }[k]}`, ui.viewer === k, `data-viewer="${k}"`)).join("")}</div></div>
       <div class="ctl"><span>Moment</span><div class="seg">${MOMENTS.map((m) => pill(m.id, m.label, ui.moment === m.id, `data-moment="${m.id}"`)).join("")}</div></div>`;
-  } else c.innerHTML = `<div class="ctl"><span>${ui.screen === "goals" ? `Aicha Bouazizi, employee, writing her plan, ${day("2026-05-04")}` : `Mariam Gharbi, manager, ${day("2027-03-24")}`}</span><button class="q-show" data-act-chrome="reset">Start over</button></div>`;
+  } else if (ui.screen === "goals") {
+    c.innerHTML = `<div class="ctl"><span>Aicha Bouazizi, employee</span><div class="seg">${[["empty", `Launch day, ${dm("2026-04-25")}`], ["writing", `Writing, ${dm("2026-05-04")}`]].map(([k, l]) => pill(k, l, ui.gstate === k, `data-gstate="${k}"`)).join("")}</div></div><button class="q-show" data-act-chrome="reset">Start over</button>`;
+  } else {
+    c.innerHTML = `<div class="ctl"><span>Mariam Gharbi, manager, ${day("2027-03-24")}, writing</span><div class="seg">${[["aicha", "Aicha's review, a full year"], ["meriem", "Meriem's, a thin year"]].map(([k, l]) => pill(k, l, ui.rstate === k, `data-rstate="${k}"`)).join("")}</div></div><button class="q-show" data-act-chrome="reset">Start over</button>`;
+  }
   document.getElementById("qs").innerHTML = SCREEN_QS[ui.screen].map((k) => {
     const q = Q[k];
     return `<div class="q"><div class="q-h"><span class="q-t">${q.t}</span>${q.show ? `<button class="q-show" data-show="${k}">Show</button>` : ""}</div>
@@ -729,13 +851,18 @@ function toast(msg, undo) { ui.toast = { msg, undo }; clearTimeout(toastT); toas
 document.getElementById("fx").addEventListener("click", (e) => {
   const t = e.target.closest("[data-act]"); if (!t) return;
   const a = t.dataset.act, g = t.dataset.goal;
-  if (a === "goal") { ui.goal = g; ui.sheet = null; }
-  else if (a === "close") { ui.goal = null; ui.sheet = null; }
+  if (a === "goal") { ui.goal = g; ui.preview = false; }
+  else if (a === "close") { ui.goal = null; ui.preview = false; }
+  else if (a === "fold") ui.folded[t.dataset.k] = !ui.folded[t.dataset.k];
   else if (a === "toast") toast(t.dataset.msg);
-  else if (a === "screen") { ui.screen = t.dataset.to; ui.goal = null; return render(); }
-  else if (a === "move") ui.sheet = "move";
+  else if (a === "screen") { ui.screen = t.dataset.to; if (t.dataset.gstate) ui.gstate = t.dataset.gstate; if (t.dataset.rstate) ui.rstate = t.dataset.rstate; ui.goal = null; ui.preview = false; return render(); }
+  else if (a === "move") ui.preview = true;
+  else if (a === "cancelMove") ui.preview = false;
+  else if (a === "addG") { ui.added[g] = true; ui.weights = { g1: null, g2: null, g3: null }; }
+  else if (a === "keepG") ui.kept[g] = true;
+  else if (a === "removeG") { ui.removed[g] = true; ui.weights = { g1: null, g2: null, g3: null }; toast("Removed from your plan", true); ui.undo = "removed:" + g; }
   else if (a === "moveGo") {
-    const m = MOMENTS.find((x) => x.id === ui.moment), to = MOVES[m.phase].to; ui.sheet = null;
+    const m = MOMENTS.find((x) => x.id === ui.moment), to = MOVES[m.phase].to; ui.preview = false;
     if (!to) { toast(`${Y.name} closed. FY2028 setup opens next (drawn in 3d)`); renderFrame(); return; }
     const before = pos(m.today); ui.moment = to; renderChrome();
     renderFrame();
@@ -747,7 +874,7 @@ document.getElementById("fx").addEventListener("click", (e) => {
   else if (a === "nudge") { ui.nudged = true; toast("Nudged 36 people", true); ui.undo = "nudged"; }
   else if (a === "remind") { ui.reminded = true; toast("Reminder sent to 99 people", true); ui.undo = "reminded"; }
   else if (a === "approve") { ui.approved = true; toast("Approved Aicha's plan", true); ui.undo = "approved"; }
-  else if (a === "undo") { if (ui.undo) ui[ui.undo] = false; if (ui.undo === "forward") ui.forward = false; ui.toast = null; ui.undo = null; }
+  else if (a === "undo") { if (ui.undo?.startsWith("removed:")) { ui.removed[ui.undo.slice(8)] = false; ui.undo = null; } if (ui.undo) ui[ui.undo] = false; if (ui.undo === "forward") ui.forward = false; ui.toast = null; ui.undo = null; }
   else if (a === "editW") { ui.editW = g; }
   else if (a === "link") { ui.linked[g] = AG.find((x) => x.id === g).sugg; ui.lit = ui.linked[g]; setTimeout(() => { ui.lit = null; renderFrame(); }, 1400); }
   else if (a === "measure") ui.measured = true;
@@ -770,32 +897,35 @@ document.getElementById("fx").addEventListener("click", (e) => {
 document.getElementById("fx").addEventListener("change", (e) => {
   if (e.target.id?.startsWith("w-")) { setWeight(e.target.id.slice(2), e.target.value); renderFrame(); }
 });
-document.getElementById("fx").addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id?.startsWith("w-")) e.target.blur(); if (e.key === "Escape" && (ui.goal || ui.sheet)) { ui.goal = null; ui.sheet = null; renderFrame(); } });
+document.getElementById("fx").addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id?.startsWith("w-")) e.target.blur(); if (e.key === "Escape" && (ui.goal || ui.preview)) { ui.goal = null; ui.preview = false; renderFrame(); } });
 document.getElementById("fx").addEventListener("focusout", (e) => { if (e.target.id?.startsWith("w-") && ui.editW) { setWeight(e.target.id.slice(2), e.target.value); renderFrame(); } });
 
 // A set weight takes its share; the goals nobody set share the rest evenly, so the plan always totals 100.
 function setWeight(g, raw) {
   ui.editW = null;
-  const others = AG.filter((x) => x.id !== g && ui.weights[x.id] != null);
-  if (others.length === AG.length - 1) ui.weights[others[0].id] = null;
-  const fixed = AG.filter((x) => x.id !== g && ui.weights[x.id] != null).reduce((a, x) => a + ui.weights[x.id], 0);
+  const list = planGoals();
+  const others = list.filter((x) => x.id !== g && ui.weights[x.id] != null);
+  if (others.length === list.length - 1 && others.length) ui.weights[others[0].id] = null;
+  const fixed = list.filter((x) => x.id !== g && ui.weights[x.id] != null).reduce((a, x) => a + ui.weights[x.id], 0);
   ui.weights[g] = Math.max(0, Math.min(100 - fixed, Math.round(+raw || 0)));
 }
 
 // ---------- chrome interactions ----------
 document.addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b || b.closest("#fx")) return;
-  if (b.dataset.screen) { ui.screen = b.dataset.screen; ui.goal = null; ui.sheet = null; return render(); }
+  if (b.dataset.screen) { ui.screen = b.dataset.screen; ui.goal = null; ui.preview = false; return render(); }
+  if (b.dataset.gstate) { ui.gstate = b.dataset.gstate; ui.forward = false; ui.editW = null; ui.weights = { g1: null, g2: null, g3: null }; return render(); }
+  if (b.dataset.rstate) { Object.assign(ui, { rstate: b.dataset.rstate, grades: {}, editG: null, overall: null, cite: null, filter: "all", needRating: false }); for (let i = 0; i < 5; i++) ui["c" + i] = null; return render(); }
   if (b.dataset.themeSet) { ui.theme = b.dataset.themeSet; try { localStorage.setItem(KEY + "-t", ui.theme); } catch {} return render(); }
-  if (b.dataset.viewer) { ui.viewer = b.dataset.viewer; ui.goal = null; ui.sheet = null; return render(); }
-  if (b.dataset.moment) { ui.moment = b.dataset.moment; ui.goal = null; ui.sheet = null; return render(); }
-  if (b.dataset.show) { Object.assign(ui, Q[b.dataset.show].show, { goal: null, sheet: null }); return render(); }
-  if (b.dataset.actChrome === "reset") { Object.assign(ui, { weights: { g1: null, g2: null, g3: null }, linked: {}, measured: false, forward: false, disg2: false, disg3: false, grades: {}, editG: null, overall: null, cite: null, filter: "all", needRating: false }); for (let i = 0; i < 5; i++) ui["c" + i] = null; return render(); }
+  if (b.dataset.viewer) { ui.viewer = b.dataset.viewer; ui.goal = null; ui.preview = false; return render(); }
+  if (b.dataset.moment) { ui.moment = b.dataset.moment; ui.goal = null; ui.preview = false; return render(); }
+  if (b.dataset.show) { Object.assign(ui, Q[b.dataset.show].show, { goal: null, preview: false }); return render(); }
+  if (b.dataset.actChrome === "reset") { Object.assign(ui, { weights: { g1: null, g2: null, g3: null }, added: {}, kept: {}, removed: {}, linked: {}, measured: false, forward: false, disg2: false, disg3: false, grades: {}, editG: null, overall: null, cite: null, filter: "all", needRating: false }); for (let i = 0; i < 5; i++) ui["c" + i] = null; return render(); }
   if (b.dataset.q) { state.answers[b.dataset.q] = b.dataset.o; persist(); return render(); }
 });
 document.getElementById("note").addEventListener("input", (e) => { state.note = e.target.value; persist(); });
 document.getElementById("copy").addEventListener("click", async () => {
-  const lines = ["Performance style frame (B-412, 3a)"].concat(Object.entries(Q).map(([k, q]) => `${q.t}: ${(q.o.find(([o]) => o === A(k)) || [, "not answered"])[1]}${q.rec && q.rec !== A(k) ? " (changed from my pick)" : ""}`));
+  const lines = ["Performance style frame (B-412, 3a round 2)"].concat(Object.entries(Q).map(([k, q]) => `${q.t}: ${(q.o.find(([o]) => o === A(k)) || [, "not answered"])[1]}${q.rec && q.rec !== A(k) ? " (changed from my pick)" : ""}`));
   if (state.note) lines.push("Note: " + state.note);
   const text = lines.join("\n");
   try { await navigator.clipboard.writeText(text); document.getElementById("saved").textContent = "Copied"; }
@@ -813,7 +943,7 @@ function persist() {
 async function flush() {
   if (writing || !dirty) return;
   writing = true; dirty = false; const s = document.getElementById("saved");
-  try { await db.doc("frame/main").set({ answers: { ...state.answers }, note: state.note || "", at: new Date().toISOString() }); s.textContent = dirty ? "Saving…" : "Saved"; }
+  try { await db.doc("frame/round2").set({ answers: { ...state.answers }, note: state.note || "", at: new Date().toISOString() }); s.textContent = dirty ? "Saving…" : "Saved"; }
   catch (err) { s.textContent = "Not saved"; if (err && ["permission_denied", "not_granted", "invalid_argument"].includes(err.code)) { const bn = document.getElementById("banner"); bn.textContent = "You can view this page but not change it."; bn.hidden = false; } }
   writing = false; if (dirty) flush();
 }
@@ -823,7 +953,7 @@ render();
 (async () => {
   try { db = window.claude?.use ? await window.claude.use("db") : null; } catch { db = null; }
   if (!db) return;
-  db.doc("frame/main").onSnapshot((snap) => {
+  db.doc("frame/round2").onSnapshot((snap) => {
     if (!snap.exists || dirty || writing || snap.metadata?.hasPendingWrites) return;
     if (document.activeElement?.id === "note") return;
     const data = JSON.parse(JSON.stringify(snap.data() || {})); // snapshots are frozen

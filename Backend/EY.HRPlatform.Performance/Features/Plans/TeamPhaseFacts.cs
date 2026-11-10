@@ -37,11 +37,18 @@ public static class TeamPhaseFacts
         [Closed] = ["notAcknowledged", "acknowledged", "noResult"],
     };
 
-    public static string PhaseOf(PerformanceCycle cycle, ReviewRound? activeRound, DateOnly today)
-        => cycle.State == CycleLifecycleState.Closed ? Closed
-            : activeRound is not null ? Review
-            : today <= cycle.PlanningDeadline ? Planning
-            : Execution;
+    /// <summary>
+    /// The team page's section for the year's phase (<see cref="YearPhase"/>): Results out, a Closed year and a
+    /// Review with no round still running show the results facts.
+    /// </summary>
+    public static string PhaseOf(CyclePhase? phase, ReviewRound? activeRound)
+        => phase switch
+        {
+            CyclePhase.Planning => Planning,
+            CyclePhase.Execution => Execution,
+            CyclePhase.Review when activeRound is not null => Review,
+            _ => Closed,
+        };
 
     public sealed record Composed(IReadOnlyList<TeamRosterMemberDto> Members, TeamPhaseSummaryDto Summary);
 

@@ -38,7 +38,7 @@ vi.mock("../../api/use-reviews", () => ({
   useEligibleReviewers: () => ({ data: [], isLoading: false }),
   useReviewRoundMutations: () => ({
     update: { mutateAsync: m.update }, updatePopulation: { mutateAsync: vi.fn() },
-    launch: { mutateAsync: m.launch, isLoading: false }, close: { mutateAsync: vi.fn(), isLoading: false },
+    launch: { mutateAsync: m.launch, isLoading: false },
   }),
   useReviewRoundFinalization: () => ({ mutateAsync: vi.fn(), isLoading: false }),
 }));

@@ -94,11 +94,7 @@ export function useReviewRoundMutations(cycleId: string, roundId?: string) {
     (expectedVersion: number) => performance.launchReviewRound(roundId as string, expectedVersion),
     { invalidateQueries: invalidations }
   );
-  const close = useApiMutation(
-    (expectedVersion: number) => performance.closeReviewRound(roundId as string, expectedVersion),
-    { invalidateQueries: invalidations }
-  );
-  return { create, update, updatePopulation, launch, close };
+  return { create, update, updatePopulation, launch };
 }
 
 export function useReviewRoundFinalization(roundId: string, cycleId: string) {

@@ -15,6 +15,8 @@ public enum PerformanceNotificationKind
     PraiseReceived, PraiseForReport,
     PeersNominated, PeerListApproved, PeerInputRequested, PeerDeclined, ReviewDueDateMoved, ReviewReminder, ReviewAcknowledged,
     CalibrationFinalized,
+    /// <summary>Someone nudged the person toward their next step in the year (D-49).</summary>
+    YearNudge,
 }
 
 /// <summary>
@@ -100,7 +102,7 @@ public sealed class PerformanceOutboxMessage : PerformanceChildEntity
             || !payload.Path.StartsWith("/performance/", StringComparison.Ordinal))
             throw new ArgumentException("Notification tenant, recipient, resource, transition and path are required.");
         if (kind is not (PerformanceNotificationKind.ObjectiveAtRisk or PerformanceNotificationKind.UpdateRequestAnswered
-            or PerformanceNotificationKind.DevelopmentGoalAdded))
+            or PerformanceNotificationKind.DevelopmentGoalAdded or PerformanceNotificationKind.YearNudge))
             throw new ArgumentException("Choose a path notification kind.", nameof(kind));
         return new PerformanceOutboxMessage
         {

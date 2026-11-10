@@ -59,7 +59,8 @@
     "phase": {
       "Planning": "التخطيط",
       "Execution": "التنفيذ",
-      "Review": "التقييم"
+      "Review": "التقييم",
+      "ResultsOut": "النتائج صدرت"
     }
   },
   "PersonPage": {

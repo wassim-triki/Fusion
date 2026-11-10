@@ -101,7 +101,7 @@ public sealed class GetWorkItemsHandler(PerformanceDbContext db)
     /// <summary>A participant in planning whose plan isn't submitted, or came back returned.</summary>
     private async Task PlanningAsync(PerformanceCycle cycle, Guid employeeId, DateOnly today, List<FusionWorkItemDto> items, CancellationToken token)
     {
-        if (CycleDetailComposer.PhaseOf(cycle, today) != CyclePhase.Planning) return;
+        if (await YearPhases.ComputeAsync(db, cycle, token) != CyclePhase.Planning) return;
         var participant = await db.Participants.AsNoTracking()
             .FirstOrDefaultAsync(p => p.CycleId == cycle.Id && p.EmployeeId == employeeId, token);
         if (participant is null) return;

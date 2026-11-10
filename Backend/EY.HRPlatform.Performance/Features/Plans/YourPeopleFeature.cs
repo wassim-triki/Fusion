@@ -170,7 +170,7 @@ public sealed class GetYourPeopleHandler(PerformanceDbContext db, ICoreWorkforce
         // Recorded responsibility only, and never the caller themselves, even when someone else reviews them.
         var loaded = (await YourPeople.LoadMembersAsync(Db, Workforce, cycle, request.Actor, cancellationToken, activeRound?.Id))
             .Where(m => m.EmployeeId != me).ToList();
-        var phase = TeamPhaseFacts.PhaseOf(cycle, activeRound, PerformanceClock.Today);
+        var phase = TeamPhaseFacts.PhaseOf(await Cycles.YearPhases.ComputeAsync(Db, cycle, cancellationToken), activeRound);
         var composed = await TeamPhaseFacts.ComposeAsync(Db, cycle, me, phase, activeRound, loaded, cancellationToken);
         var members = composed.Members;
         var groups = TeamPhaseFacts.Groups[phase];

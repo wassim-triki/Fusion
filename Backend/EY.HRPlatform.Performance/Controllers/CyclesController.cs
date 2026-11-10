@@ -81,6 +81,38 @@ public sealed class CyclesController(IMediator mediator, IPerformanceAccessPolic
         return MapResult(await mediator.Send(new CloseCycleCommand(cycleId, request), cancellationToken));
     }
 
+    /// <summary>The year as one object (D-34, D-55): its phase, its steps with the people in each at the viewer's reach, HR's next move.</summary>
+    [HttpGet("{cycleId:guid}/year")]
+    public async Task<ActionResult<ApiResponse<YearDto>>> Year(Guid cycleId, CancellationToken cancellationToken)
+    {
+        if (!policy.CanEnterPerformance(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new GetYearQuery(cycleId, VisibilityActor()), cancellationToken));
+    }
+
+    /// <summary>The dry run of moving the year on (D-58): what changes, for whom. Nothing is written.</summary>
+    [HttpGet("{cycleId:guid}/move-on")]
+    public async Task<ActionResult<ApiResponse<YearDto>>> PreviewMoveOn(Guid cycleId, CancellationToken cancellationToken)
+    {
+        if (!policy.CanAdministerCycles(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new PreviewYearMoveQuery(cycleId, VisibilityActor()), cancellationToken));
+    }
+
+    /// <summary>Moves the year on to the previewed step.</summary>
+    [HttpPost("{cycleId:guid}/move-on")]
+    public async Task<ActionResult<ApiResponse<YearDto>>> MoveOn(Guid cycleId, [FromBody] MoveYearOnRequest request, CancellationToken cancellationToken)
+    {
+        if (!policy.CanAdministerCycles(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new MoveYearOnCommand(cycleId, request.To, request.ExpectedVersion, VisibilityActor()), cancellationToken));
+    }
+
+    /// <summary>Nudges people toward their next step in the year: administrators anyone in it, a manager their own people.</summary>
+    [HttpPost("{cycleId:guid}/nudges")]
+    public async Task<ActionResult<ApiResponse<NudgeResultDto>>> Nudge(Guid cycleId, [FromBody] NudgeRequest request, CancellationToken cancellationToken)
+    {
+        if (!policy.CanEnterPerformance(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new NudgeCommand(cycleId, request.EmployeeIds ?? [], VisibilityActor()), cancellationToken));
+    }
+
     [HttpDelete("{cycleId:guid}")]
     public async Task<ActionResult<ApiResponse<bool>>> Delete(Guid cycleId, [FromBody] ExpectedVersionRequest version, CancellationToken cancellationToken)
     {

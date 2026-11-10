@@ -14,7 +14,7 @@ import { cn } from "@repo/ds/lib/utils";
 import { AvatarStack, PersonInitials } from "@repo/performance-ui";
 import { Bell, CalendarDays, Check, FileText, Send } from "@repo/ds/icons";
 import { RecordCycleScope, useWorkspaceContext } from "../../api/use-workspace";
-import { useReviewRound, useReviewRoundFinalization, useReviewRoundMutations } from "../../api/use-reviews";
+import { useReviewRound, useReviewRoundFinalization } from "../../api/use-reviews";
 import { useScheduleCommands } from "../../api/use-review-work";
 import { useApis } from "../../api/use-performance";
 import { ContentUnavailable } from "../content-unavailable";
@@ -86,30 +86,18 @@ function describe(round: ReviewRoundDto, say: Say, format: Format): string {
 function RunningActions({ round, canCalibrate }: { round: ReviewRoundDto; canCalibrate: boolean }) {
   const t = useTranslations("reviews.RunningActions");
   const finalize = useReviewRoundFinalization(round.id, round.cycleId);
-  const { close } = useReviewRoundMutations(round.cycleId, round.id);
   const ready = round.progress?.readyToFinalize ?? 0;
-  const manager = round.progress?.stages.find((s) => s.stage === "ManagerAssessment");
-  const resolved = round.progress ? round.progress.finalized + round.progress.closed : 0;
-  const total = (manager?.total ?? 0) + (round.progress?.closed ?? 0);
   return (
     <div className="flex flex-wrap items-center gap-2">
       <MoveDueDates round={round} />
       {round.calibrationEnabled && canCalibrate ? (
         <Button variant="outline" asChild><Link href={withCycle(calibrationHref(round.id), round.cycleId)}>{t("calibration")}</Link></Button>
       ) : null}
-      {total > 0 && resolved === total ? (
-        <AsyncButton pending={close.isLoading} onClick={() => void close.mutateAsync(round.version)
-          .then(() => toast.success(t("roundClosed")))
-          .catch((error) => reportPerformanceFailure(error, t("theRoundCouldntClose")))}>
-          {t("closeRound")}
-        </AsyncButton>
-      ) : (
-        <AsyncButton pending={finalize.isLoading} disabled={ready === 0} onClick={() => void finalize.mutateAsync(round.version)
-          .then((result) => toast.success((result.finalized.length === 1 ? t("reviewReleased", { length: result.finalized.length }) : t("reviewsReleased", { length: result.finalized.length }))))
-          .catch((error) => reportPerformanceFailure(error, t("readyReviewsCouldntBeReleased")))}>
-          <Send className="size-4" aria-hidden />{ready ? t("finalizeAndRelease", { ready }) : t("finalizeAndRelease2")}
-        </AsyncButton>
-      )}
+      <AsyncButton pending={finalize.isLoading} disabled={ready === 0} onClick={() => void finalize.mutateAsync(round.version)
+        .then((result) => toast.success((result.finalized.length === 1 ? t("reviewReleased", { length: result.finalized.length }) : t("reviewsReleased", { length: result.finalized.length }))))
+        .catch((error) => reportPerformanceFailure(error, t("readyReviewsCouldntBeReleased")))}>
+        <Send className="size-4" aria-hidden />{ready ? t("finalizeAndRelease", { ready }) : t("finalizeAndRelease2")}
+      </AsyncButton>
     </div>
   );
 }

@@ -23,12 +23,13 @@ public enum OperationalMilestone
 }
 
 /// <summary>
-/// Where an Active Cycle is operationally. Derived from the planning deadline (and, once review
-/// rounds exist, an Active round) — never stored and never a lifecycle state.
+/// The year's step, read by <see cref="YearPhase"/> from what happened and the dates together
+/// (D-34). It only ever moves forward; never stored and never a lifecycle state.
 /// </summary>
 public enum CyclePhase
 {
     Planning = 0,
     Execution = 1,
     Review = 2,
+    ResultsOut = 3,
 }

@@ -59,7 +59,8 @@
     "phase": {
       "Planning": "Planification",
       "Execution": "Exécution",
-      "Review": "Vérification"
+      "Review": "Vérification",
+      "ResultsOut": "Résultats publiés"
     }
   },
   "PersonPage": {

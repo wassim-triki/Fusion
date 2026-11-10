@@ -93,12 +93,6 @@ public sealed class ReviewRoundsController(IMediator mediator, IPerformanceAcces
         return MapResult(await mediator.Send(new FinalizeReviewRoundCommand(roundId, request.ExpectedVersion, request.ReviewIds, User.GetEmployeeId() ?? Guid.Empty), cancellationToken));
     }
 
-    [HttpPost("review-rounds/{roundId:guid}/close")]
-    public async Task<ActionResult<ApiResponse<ReviewRoundFinalizationDto>>> Close(Guid roundId, [FromBody] ExpectedVersionRequest request, CancellationToken cancellationToken)
-    {
-        if (!policy.CanAdministerCycles(User)) return CapabilityForbidden();
-        return MapResult(await mediator.Send(new CloseReviewRoundCommand(roundId, request.ExpectedVersion), cancellationToken));
-    }
 
     [HttpGet("reviews/work")]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<ReviewWorkItemDto>>>> Work(Guid cycleId, CancellationToken cancellationToken)

@@ -157,8 +157,7 @@ public sealed class DemoClockHttpTests
         var mariamsReview = await world.ReviewOfAsync(roundId, world.Mariam);
         await Data(await world.Send(world.Amira, HttpMethod.Post, $"/api/performance/reviews/{mariamsReview}/close",
             new { expectedVersion = await world.ReviewVersionAsync(mariamsReview), reason = "Reviewed separately this year" }, At(start.AddDays(351))));
-        await Data(await world.Send(world.Amira, HttpMethod.Post, $"/api/performance/review-rounds/{roundId}/close",
-            new { expectedVersion = await world.RoundVersionAsync(roundId) }, At(start.AddDays(352))));
+        // Mariam's was the last open review: the round closed itself with it (D-34).
 
         // The day before the end, closing without a reason is an early close, as it would have been then.
         var cycleVersion = await world.CycleVersionAsync(cycleId);

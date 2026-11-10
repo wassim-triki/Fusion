@@ -538,13 +538,10 @@
   },
   "RunningActions": {
     "calibration": "Calibrage",
-    "closeRound": "Clôturer la campagne",
-    "roundClosed": "Campagne clôturée.",
     "finalizeAndRelease": "Finaliser et publier {ready}",
     "finalizeAndRelease2": "Finaliser et publier",
     "reviewReleased": "{length} évaluation publiée.",
     "reviewsReleased": "{length} évaluations publiées.",
-    "theRoundCouldntClose": "La campagne n’a pas pu être clôturée.",
     "readyReviewsCouldntBeReleased": "Les évaluations prêtes n’ont pas pu être publiées."
   },
   "MoveDueDates": {

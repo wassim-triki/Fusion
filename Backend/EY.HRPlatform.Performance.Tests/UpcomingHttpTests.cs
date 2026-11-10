@@ -174,14 +174,16 @@ public sealed class UpcomingHttpTests
     {
         var world = await ArrangeAsync();
         await using var _ = world.Factory;
-        await RoundAsync(world);
-        var response = await world.Factory.CreateAuthenticatedClient(employeeId: world.Nour, permissions: Employee).GetAsync("/api/performance/work");
-        var items = (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("data").EnumerateArray().ToArray();
-
-        var plan = Assert.Single(items, i => Kind(i) == "plan-write");
+        using var nour = world.Factory.CreateAuthenticatedClient(employeeId: world.Nour, permissions: Employee);
+        var planning = (await (await nour.GetAsync("/api/performance/work")).Content.ReadFromJsonAsync<JsonElement>()).GetProperty("data").EnumerateArray().ToArray();
+        var plan = Assert.Single(planning, i => Kind(i) == "plan-write");
         Assert.Equal(["You write it", "Lina approves", "Your year starts"],
             plan.GetProperty("steps").EnumerateArray().Select(s => s.GetProperty("label").GetString()));
 
+        // A launched round moves the year to Review (D-34): planning work is over, the self-assessment is the step.
+        await RoundAsync(world);
+        var items = (await (await nour.GetAsync("/api/performance/work")).Content.ReadFromJsonAsync<JsonElement>()).GetProperty("data").EnumerateArray().ToArray();
+        Assert.DoesNotContain(items, i => Kind(i) == "plan-write");
         var self = Assert.Single(items, i => Kind(i) == "self-assessment");
         var steps = self.GetProperty("steps").EnumerateArray().ToArray();
         Assert.Equal(["You", "Lina", "Calibration", "Your result"], steps.Select(s => s.GetProperty("label").GetString()));

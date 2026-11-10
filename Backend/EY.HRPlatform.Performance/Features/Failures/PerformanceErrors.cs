@@ -39,6 +39,7 @@ public static class PerformanceErrors
         public const string CycleNotActivatable = "Cycle.NotActivatable";
         public const string CycleNotDraft = "Cycle.NotDraft";
         public const string CycleNotFound = "Cycle.NotFound";
+        public const string CycleNotMovable = "Cycle.NotMovable";
         public const string DevelopmentForbidden = "Development.Forbidden";
         public const string DevelopmentInvalid = "Development.Invalid";
         public const string DevelopmentNotParticipant = "Development.NotParticipant";

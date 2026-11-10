@@ -538,13 +538,10 @@
   },
   "RunningActions": {
     "calibration": "Calibration",
-    "closeRound": "Close round",
-    "roundClosed": "Round closed.",
     "finalizeAndRelease": "Finalize and release {ready}",
     "finalizeAndRelease2": "Finalize and release",
     "reviewReleased": "{length} review released.",
     "reviewsReleased": "{length} reviews released.",
-    "theRoundCouldntClose": "The round couldn't close.",
     "readyReviewsCouldntBeReleased": "Ready reviews couldn't be released."
   },
   "MoveDueDates": {

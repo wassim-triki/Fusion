@@ -58,6 +58,10 @@ public static class PerformanceNotificationTemplates
     public static PerformanceNotificationMessage ForDevelopmentGoalAdded(string actorName, string goalTitle, string path)
         => Message("DevelopmentGoalAdded", "Context.goal", actorName, path, ("actor", actorName), ("goal", goalTitle));
 
+    /// <summary>"Amira nudged you: put your plan forward" — the step's key names what to do, the path opens where.</summary>
+    public static PerformanceNotificationMessage ForYearNudge(string actorName, string stepKey, string path)
+        => Message($"YearNudge.{stepKey}", "YearNudge.context", actorName, path, ("actor", actorName));
+
     public static string DevelopmentPath(Guid cycleId, Guid? planId, Guid employeeId, bool forOwner)
         => forOwner ? $"/performance/plan?cycle={cycleId}#development"
             : planId is Guid id ? $"{PlanPath(cycleId, id)}#development" : $"/performance/people/{employeeId}";
@@ -129,6 +133,7 @@ public static class PerformanceNotificationTemplates
             ("total", total.ToString(CultureInfo.InvariantCulture)));
 
     public const string ReviewsPath = "/performance/reviews";
+    public const string TeamPath = "/performance/team";
 
     public static string OneOnOnePath(Guid seriesId) => $"/performance/one-on-ones/{seriesId}";
     public static string FeedbackPath(Guid feedbackId) => $"/performance/feedback?feedback={feedbackId}";

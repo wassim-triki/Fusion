@@ -271,11 +271,9 @@ public sealed class ReviewRoundSetupTests
             await Data(await world.Admin.PostAsJsonAsync($"/api/performance/reviews/{id}/close",
                 new { expectedVersion = Version(id), reason = $"{person.DisplayName} left on 10 Sep" }));
         }
-        var active = await Data(await world.Admin.GetAsync($"/api/performance/review-rounds/{roundId}"));
-        await Data(await world.Admin.PostAsJsonAsync($"/api/performance/review-rounds/{roundId}/close",
-            new { expectedVersion = active.GetProperty("version").GetUInt32() }));
-
+        // Nothing left open: the round closed itself with the last review (D-34).
         var closed = await Data(await world.Admin.GetAsync($"/api/performance/review-rounds/{roundId}"));
+        Assert.Equal("Closed", closed.GetProperty("state").GetString());
         var outcome = closed.GetProperty("outcome");
         Assert.Equal((1, 4, 0), (outcome.GetProperty("released").GetInt32(), outcome.GetProperty("total").GetInt32(), outcome.GetProperty("acknowledged").GetInt32()));
         Assert.Equal(3, outcome.GetProperty("closedWithoutResult").GetArrayLength());

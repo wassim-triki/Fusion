@@ -99,6 +99,26 @@ public sealed class PerformanceCycle : PerformanceAggregate
         MarkUpdated();
     }
 
+    /// <summary>The day HR moved the year from Planning to Execution before the deadline (D-34); null when the dates did it.</summary>
+    public DateOnly? PlanningClosedOn { get; private set; }
+
+    /// <summary>
+    /// Moves the year on from Planning to Execution today: the planning deadline becomes today and the
+    /// move is recorded, so the phase reads Execution from this moment and never falls back.
+    /// </summary>
+    public void ClosePlanning(DateOnly today)
+    {
+        if (State != CycleLifecycleState.Active)
+            throw new InvalidOperationException("Only an Active year can be moved on.");
+        if (PlanningClosedOn is not null || today > PlanningDeadline)
+            throw new InvalidOperationException("Planning is already over.");
+        if (today < StartDate)
+            throw new InvalidOperationException("The year has not started.");
+        PlanningDeadline = today;
+        PlanningClosedOn = today;
+        MarkUpdated();
+    }
+
     /// <summary>Why the Cycle was closed before its end date, when it was.</summary>
     public string? EarlyCloseReason { get; private set; }
 

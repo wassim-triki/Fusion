@@ -538,13 +538,10 @@
   },
   "RunningActions": {
     "calibration": "المعايرة",
-    "closeRound": "إغلاق الجولة",
-    "roundClosed": "أُغلقت الجولة.",
     "finalizeAndRelease": "اعتماد ونشر {ready}",
     "finalizeAndRelease2": "اعتماد ونشر",
     "reviewReleased": "نُشر {length} تقييم.",
     "reviewsReleased": "نُشرت {length} تقييمات.",
-    "theRoundCouldntClose": "تعذّر إغلاق الجولة.",
     "readyReviewsCouldntBeReleased": "تعذّر نشر التقييمات الجاهزة."
   },
   "MoveDueDates": {

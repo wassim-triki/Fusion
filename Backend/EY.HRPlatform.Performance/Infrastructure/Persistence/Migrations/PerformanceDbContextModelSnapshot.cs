@@ -1129,6 +1129,9 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<DateOnly?>("PlanningClosedOn")
+                        .HasColumnType("date");
+
                     b.Property<DateOnly>("PlanningDeadline")
                         .HasColumnType("date");
 

@@ -265,7 +265,7 @@ public sealed class GetPersonSummaryHandler(PerformanceDbContext db, ICoreWorkfo
         PersonRelation relation, CancellationToken token)
     {
         var today = PerformanceClock.Today;
-        var phase = await CycleDetailComposer.PhaseAsync(db, cycle, today, token);
+        var phase = await YearPhases.ComputeAsync(db, cycle, token);
         var participant = await db.Participants.AsNoTracking().FirstOrDefaultAsync(p => p.CycleId == cycle.Id && p.EmployeeId == employeeId, token);
         var participates = participant is not null;
         if (!participates)

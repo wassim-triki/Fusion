@@ -108,8 +108,7 @@ public sealed class GetWorkspaceContextHandler(PerformanceDbContext db, Performa
             Feedback = true,
         };
 
-        var today = PerformanceClock.Today;
-        var phase = selected is null ? null : await CycleDetailComposer.PhaseAsync(db, selected, today, cancellationToken);
+        var phase = selected is null ? null : await YearPhases.ComputeAsync(db, selected, cancellationToken);
         return new WorkspaceContextDto(
             visible.Select(PerformanceMappers.ToSummary).ToList(),
             selected is null ? null : PerformanceMappers.ToSummary(selected),

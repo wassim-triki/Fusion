@@ -4,6 +4,8 @@ public static class PerformanceAuditActions
 {
     public const string CycleActivated = "Cycle.Activated";
     public const string CycleClosed = "Cycle.Closed";
+    public const string CyclePlanningClosed = "Cycle.PlanningClosed";
+    public const string YearNudged = "Cycle.Nudged";
     public const string CycleDraftDeleted = "Cycle.DraftDeleted";
     public const string ClosureExceptionRecorded = "Participant.ClosureExceptionRecorded";
     public const string PlanSubmitted = "Plan.Submitted";

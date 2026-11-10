@@ -198,8 +198,8 @@ public sealed class CycleClosureTests
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var planning = PerformanceCycle.CreateDraft(Guid.NewGuid(), "FY", today.AddDays(-1), today.AddMonths(11), today.AddDays(20)).Activated();
-        Assert.Equal(CyclePhase.Planning, CycleDetailComposer.PhaseOf(planning, today));
-        Assert.Null(CycleDetailComposer.PhaseOf(PerformanceCycle.CreateDraft(Guid.NewGuid(), "FY", PastStart, PastEnd, PastStart.AddDays(1)), today));
+        Assert.Equal(CyclePhase.Planning, YearPhase.Of(planning, today, YearEvidence.None));
+        Assert.Null(YearPhase.Of(PerformanceCycle.CreateDraft(Guid.NewGuid(), "FY", PastStart, PastEnd, PastStart.AddDays(1)), today, YearEvidence.None));
     }
 
     [Fact]

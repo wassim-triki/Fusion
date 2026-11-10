@@ -7,7 +7,8 @@
     "phase": {
       "Planning": "Planification",
       "Execution": "Exécution",
-      "Review": "Vérification"
+      "Review": "Vérification",
+      "ResultsOut": "Résultats publiés"
     },
     "closureDidNotLoad": "L’état de préparation à la clôture ne s’est pas chargé"
   },

@@ -39,7 +39,7 @@ public static class NotificationGroups
         PerformanceNotificationKind.FeedbackReceived or PerformanceNotificationKind.FeedbackForReport
             or PerformanceNotificationKind.FeedbackRequested or PerformanceNotificationKind.FeedbackRequestResponded
             or PerformanceNotificationKind.PraiseReceived or PerformanceNotificationKind.PraiseForReport => FeedbackAndPraise,
-        PerformanceNotificationKind.ReviewReminder => DeadlineReminders,
+        PerformanceNotificationKind.ReviewReminder or PerformanceNotificationKind.YearNudge => DeadlineReminders,
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Assign the notification kind to a group."),
     };
 }

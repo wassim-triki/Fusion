@@ -162,8 +162,83 @@ export interface CycleDetailDto {
   phase?: CyclePhase | null;
 }
 
-/** Where an Active Cycle is operationally — derived, never a lifecycle state. */
-export type CyclePhase = "Planning" | "Execution" | "Review";
+/** The year's step, read from what happened and the dates together; it only ever moves forward (D-34). */
+export type CyclePhase = "Planning" | "Execution" | "Review" | "ResultsOut";
+
+// ── The year (B-405 slice 2) ──────────────────────────────────────────────────────────
+
+export type YearStepState = "Done" | "Current" | "Ahead";
+
+export type YearStanding =
+  | "notStarted" | "drafting" | "submitted" | "returned"
+  | "updated" | "quiet"
+  | "selfReview" | "withManager" | "calibration"
+  | "released" | "acknowledged" | "closed";
+
+/** A person in a step of the year: their standing in it and since when. */
+export interface YearPersonDto {
+  employeeId: string;
+  name: string;
+  unitName: string | null;
+  standing: YearStanding;
+  since: string | null;
+}
+
+export interface YearStandingCountDto {
+  standing: YearStanding;
+  count: number;
+}
+
+/** One step of the year on its dates (estimated until it happens), with who is in it at the viewer's reach. */
+export interface YearStepDto {
+  phase: CyclePhase;
+  start: string;
+  end: string;
+  estimated: boolean;
+  state: YearStepState;
+  /** Everyone in the step within the viewer's scope; `people` is capped for a company. */
+  count: number;
+  people: YearPersonDto[];
+  standings: YearStandingCountDto[];
+}
+
+export type YearMoveKind = "closePlanning" | "launchRound" | "release";
+
+/** What moving the year on would do, for whom (D-58): the dry run and the move share this shape. */
+export interface YearMoveDto {
+  from: CyclePhase;
+  to: CyclePhase;
+  kind: YearMoveKind;
+  canMove: boolean;
+  blocker: "yearNotStarted" | "noDraftRound" | "nothingReady" | null;
+  roundId: string | null;
+  /** The planning deadline the move would set (closing planning sets it to today). */
+  planningDeadline: string | null;
+  affected: number;
+  people: YearPersonDto[];
+}
+
+/** The year as one object: its phase, its steps with the people in each, and HR's next move. */
+export interface YearDto {
+  cycleId: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  today: string;
+  state: CycleLifecycleState;
+  phase: CyclePhase | null;
+  planningClosedOn: string | null;
+  scope: "Company" | "Team" | "You";
+  total: number;
+  steps: YearStepDto[];
+  nextMove: YearMoveDto | null;
+  version: number;
+}
+
+export interface NudgeResultDto {
+  nudged: number;
+  skipped: string[];
+}
 
 /** A participant without an approved plan, as closing the Cycle would record them. */
 export interface ClosureParticipantDto {
@@ -2259,6 +2334,9 @@ export const performancePaths = {
     cycleId ? `/performance/context?cycleId=${encodeURIComponent(cycleId)}` : "/performance/context",
   activate: (id: string) => `/performance/cycles/${id}/activate`,
   closure: (id: string) => `/performance/cycles/${id}/closure`,
+  year: (id: string) => `/performance/cycles/${id}/year`,
+  yearMove: (id: string) => `/performance/cycles/${id}/move-on`,
+  nudges: (id: string) => `/performance/cycles/${id}/nudges`,
   close: (id: string) => `/performance/cycles/${id}/close`,
   strategy: (cycleId: string) => `/performance/cycles/${cycleId}/strategy`,
   strategyItem: (cycleId: string, objectiveId: string) =>
@@ -2330,7 +2408,6 @@ export const performancePaths = {
   reviewRoundLaunch: (roundId: string) => `/performance/review-rounds/${roundId}/launch`,
   reviewRoundStatus: (roundId: string) => `/performance/review-rounds/${roundId}/status`,
   reviewRoundFinalize: (roundId: string) => `/performance/review-rounds/${roundId}/finalize`,
-  reviewRoundClose: (roundId: string) => `/performance/review-rounds/${roundId}/close`,
   reviewWork: () => "/performance/reviews/work",
   reviewHistory: () => "/performance/reviews/history",
   review: (reviewId: string) => `/performance/reviews/${reviewId}`,
@@ -2365,6 +2442,8 @@ export const performanceQueryKeys = {
   competencies: () => [...performanceQueryKeys.all(), "competencies"] as const,
   cycle: (id: string) => [...performanceQueryKeys.all(), "cycle", id] as const,
   cycleClosure: (id: string) => [...performanceQueryKeys.all(), "cycle-closure", id] as const,
+  year: (id: string) => [...performanceQueryKeys.all(), "year", id] as const,
+  yearMove: (id: string) => [...performanceQueryKeys.all(), "year-move", id] as const,
   workspaceContext: (cycleId?: string | null) =>
     [...performanceQueryKeys.all(), "workspace-context", cycleId ?? "current"] as const,
   overviews: () => [...performanceQueryKeys.all(), "overview"] as const,
@@ -2481,8 +2560,6 @@ export function createPerformanceApi(client: ApiClient) {
       client.get<ReviewRoundStatusDto>(performancePaths.reviewRoundStatus(roundId), { signal }),
     finalizeReviewRound: (roundId: string, expectedVersion: number, reviewIds?: string[]) =>
       client.post<ReviewRoundFinalizationDto>(performancePaths.reviewRoundFinalize(roundId), { expectedVersion, reviewIds: reviewIds ?? null }),
-    closeReviewRound: (roundId: string, expectedVersion: number) =>
-      client.post<ReviewRoundFinalizationDto>(performancePaths.reviewRoundClose(roundId), { expectedVersion }),
     getReviewWork: (cycleId: string, signal?: AbortSignal) =>
       client.get<ReviewWorkItemDto[]>(performancePaths.reviewWork(), { signal, params: { cycleId } }),
     getReviewHistory: (cycleId?: string | null, signal?: AbortSignal) =>
@@ -2534,6 +2611,11 @@ export function createPerformanceApi(client: ApiClient) {
     activateCycle: (id: string, expectedVersion: number) =>
       client.post<CycleDetailDto>(performancePaths.activate(id), { expectedVersion }),
     cycleClosure: (id: string) => client.get<CycleClosureDto>(performancePaths.closure(id)),
+    year: (id: string, signal?: AbortSignal) => client.get<YearDto>(performancePaths.year(id), { signal }),
+    previewYearMove: (id: string, signal?: AbortSignal) => client.get<YearDto>(performancePaths.yearMove(id), { signal }),
+    moveYearOn: (id: string, expectedVersion: number, to: CyclePhase) =>
+      client.post<YearDto>(performancePaths.yearMove(id), { expectedVersion, to }),
+    nudge: (id: string, employeeIds: string[]) => client.post<NudgeResultDto>(performancePaths.nudges(id), { employeeIds }),
     closeCycle: (id: string, request: CloseCycleRequest, expectedVersion: number) =>
       client.post<CycleDetailDto>(performancePaths.close(id), { ...request, expectedVersion }),
     deleteDraftCycle: (id: string, expectedVersion: number) =>

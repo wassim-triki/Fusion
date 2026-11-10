@@ -158,6 +158,42 @@ public sealed record CycleDetailDto(
     public CyclePhase? Phase { get; init; }
 }
 
+// ── The year (B-405 slice 2, D-34, D-55, D-58) ──────────────────────────────────────────────────
+
+/// <summary>Where a step sits against today.</summary>
+public enum YearStepState { Done = 0, Current = 1, Ahead = 2 }
+
+/// <summary>A person in a step of the year: their standing in it and since when.</summary>
+public sealed record YearPersonDto(Guid EmployeeId, string Name, string? UnitName, string Standing, DateTime? Since);
+
+public sealed record YearStandingCountDto(string Standing, int Count);
+
+/// <summary>
+/// One step of the year with its dates (estimated until it happens), who is in it within the viewer's scope
+/// (<see cref="Count"/> is the whole scope; <see cref="People"/> is capped for a company) and the standings inside it.
+/// </summary>
+public sealed record YearStepDto(CyclePhase Phase, DateOnly Start, DateOnly End, bool Estimated, YearStepState State,
+    int Count, IReadOnlyList<YearPersonDto> People, IReadOnlyList<YearStandingCountDto> Standings);
+
+/// <summary>
+/// What moving the year on would do: the step it goes to, how (closePlanning, launchRound or release), whether it can
+/// happen now and why not, the planning deadline it would set, and who it changes for.
+/// </summary>
+public sealed record YearMoveDto(CyclePhase From, CyclePhase To, string Kind, bool CanMove, string? Blocker,
+    Guid? RoundId, DateOnly? PlanningDeadline, int Affected, IReadOnlyList<YearPersonDto> People);
+
+/// <summary>The year as one object: its phase, its steps with the people in each, and HR's next move.</summary>
+public sealed record YearDto(Guid CycleId, string Name, DateOnly StartDate, DateOnly EndDate, DateOnly Today,
+    CycleLifecycleState State, CyclePhase? Phase, DateOnly? PlanningClosedOn, string Scope, int Total,
+    IReadOnlyList<YearStepDto> Steps, YearMoveDto? NextMove, uint Version);
+
+public sealed record MoveYearOnRequest([property: System.Text.Json.Serialization.JsonRequired] uint ExpectedVersion, CyclePhase To);
+
+public sealed record NudgeRequest(IReadOnlyList<Guid> EmployeeIds);
+
+/// <summary>Who was nudged and who was skipped (nothing to nudge them about, or out of the caller's reach).</summary>
+public sealed record NudgeResultDto(int Nudged, IReadOnlyList<Guid> Skipped);
+
 /// <summary>What closing the Cycle would involve: whether the end is reached and who lacks an approved plan.</summary>
 public sealed record CycleClosureDto(
     Guid CycleId,

@@ -21,6 +21,10 @@ public interface IPerformanceNotifications
     void EnqueueUpdateRequested(UpdateRequest request, string? objectiveTitle);
     void EnqueueObjectiveAtRisk(EmployeePlan plan, Objective objective, ObjectiveStatus status, Guid progressUpdateId);
     void EnqueueUpdateRequestAnswered(UpdateRequest request, string ownerName, string? objectiveTitle);
+    /// <summary>Stages a nudge toward the person's next step in the year; one per nudge, never to the nudger.</summary>
+    void EnqueueYearNudge(Guid tenantId, Guid cycleId, Guid recipientEmployeeId, Guid actorEmployeeId, string actorName,
+        string stepKey, string path, Guid nudgeId);
+
     void EnqueueDevelopmentGoalAdded(Guid tenantId, Guid cycleId, Guid developmentPlanId, Guid goalId, Guid recipientEmployeeId,
         Guid actorEmployeeId, string actorName, string goalTitle, string path);
 
@@ -103,6 +107,15 @@ public sealed class PerformanceNotifications(PerformanceDbContext db) : IPerform
     }
 
     /// <summary>The other person hears when a development goal is added to the plan they share.</summary>
+    public void EnqueueYearNudge(Guid tenantId, Guid cycleId, Guid recipientEmployeeId, Guid actorEmployeeId, string actorName,
+        string stepKey, string path, Guid nudgeId)
+    {
+        if (recipientEmployeeId == Guid.Empty || recipientEmployeeId == actorEmployeeId) return;
+        var message = PerformanceOutboxMessage.ForPath(tenantId, PerformanceNotificationKind.YearNudge, recipientEmployeeId,
+            "Cycle", nudgeId, new PathNotificationPayload(cycleId, cycleId, actorName, path));
+        Stage(message, null, PerformanceNotificationTemplates.ForYearNudge(actorName, stepKey, path) with { ActorEmployeeId = actorEmployeeId });
+    }
+
     public void EnqueueDevelopmentGoalAdded(Guid tenantId, Guid cycleId, Guid developmentPlanId, Guid goalId, Guid recipientEmployeeId,
         Guid actorEmployeeId, string actorName, string goalTitle, string path)
     {

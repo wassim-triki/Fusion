@@ -121,10 +121,10 @@ public sealed class ReviewFinalizationTests
     }
 
     [Fact]
-    public async Task Review_close_requires_reason_and_round_close_waits_for_every_review_to_resolve()
+    public async Task Review_close_requires_reason_and_the_round_closes_itself_once_nothing_is_open()
     {
         var store = TestStore.ForNewTenant();
-        var fixture = CreateFixture(store, reviewCount: 1);
+        var fixture = CreateFixture(store, reviewCount: 2);
         await using var db = store.NewContext();
         db.Cycles.Add(fixture.Cycle);
         db.Participants.AddRange(fixture.Participants);
@@ -133,6 +133,8 @@ public sealed class ReviewFinalizationTests
         db.ReviewRounds.Add(fixture.Round);
         db.ReviewRoundSubjects.AddRange(fixture.Subjects);
         db.PerformanceReviews.AddRange(fixture.Reviews);
+        db.EmployeePlans.AddRange(fixture.Plans);
+        db.Objectives.AddRange(fixture.Objectives);
         await db.SaveChangesAsync();
 
         var cycleClose = await new CloseCycleHandler(db, new TestPerformanceAudit(db)).Handle(
@@ -140,29 +142,33 @@ public sealed class ReviewFinalizationTests
         Assert.True(cycleClose.IsFailure);
         Assert.Equal("Cycle.HasActiveReviewRound", cycleClose.Error.Code);
 
-        var roundHandler = new CloseReviewRoundHandler(db, new TestPerformanceAudit(db));
-        var staleRoundClose = await roundHandler.Handle(new(fixture.Round.Id, fixture.Round.Version + 1), default);
-        Assert.Equal("Performance.Stale", staleRoundClose.Error.Code);
-        var blocked = await roundHandler.Handle(new(fixture.Round.Id, fixture.Round.Version), default);
-        Assert.True(blocked.IsFailure);
-        Assert.Equal("ReviewRound.Unresolved", blocked.Error.Code);
-
         var audit = new TestPerformanceAudit(db);
         var reviewHandler = new CloseReviewHandler(db, audit, new PerformanceNotifications(db));
-        var staleReviewClose = await reviewHandler.Handle(new(fixture.Reviews[0].Id, fixture.Reviews[0].Version + 1, "Round ended by HR."), default);
+        var idle = fixture.Reviews[1];
+        var staleReviewClose = await reviewHandler.Handle(new(idle.Id, idle.Version + 1, "Round ended by HR."), default);
         Assert.Equal("Performance.Stale", staleReviewClose.Error.Code);
-        Assert.Equal(PerformanceReviewState.ManagerAssessment, fixture.Reviews[0].State);
-        var invalid = await reviewHandler.Handle(new(fixture.Reviews[0].Id, fixture.Reviews[0].Version, " "), default);
+        Assert.Equal(PerformanceReviewState.ManagerAssessment, idle.State);
+        var invalid = await reviewHandler.Handle(new(idle.Id, idle.Version, " "), default);
         Assert.True(invalid.IsFailure);
-        var closed = await reviewHandler.Handle(new(fixture.Reviews[0].Id, fixture.Reviews[0].Version, "Round ended by HR."), default);
+        var closed = await reviewHandler.Handle(new(idle.Id, idle.Version, "Round ended by HR."), default);
         Assert.True(closed.IsSuccess);
-        var retried = await reviewHandler.Handle(new(fixture.Reviews[0].Id, 0, "Different reason"), default);
+        var retried = await reviewHandler.Handle(new(idle.Id, 0, "Different reason"), default);
         Assert.True(retried.IsSuccess);
         Assert.Equal(1, await db.AuditEntries.CountAsync(entry => entry.Action == PerformanceAuditActions.ReviewAdministrativelyClosed));
+        // One review still open: the round runs on.
+        Assert.Equal(ReviewRoundState.Active, await db.ReviewRounds.Where(r => r.Id == fixture.Round.Id).Select(r => r.State).SingleAsync());
 
-        var result = await roundHandler.Handle(new(fixture.Round.Id, fixture.Round.Version), default);
-        Assert.True(result.IsSuccess);
-        Assert.Equal(ReviewRoundState.Closed, result.Value.State);
+        // Releasing the last one settles the round: it closes by itself, nobody presses Close (D-34).
+        var last = fixture.Reviews[0];
+        last.SubmitManagerAssessment(last.ReviewerEmployeeId, "Ready", 3, DateTime.UtcNow);
+        await db.SaveChangesAsync();
+        var released = await new FinalizeReviewRoundHandler(db, audit, new PerformanceNotifications(db))
+            .Handle(new(fixture.Round.Id, fixture.Round.Version, null), default);
+        Assert.True(released.IsSuccess);
+        Assert.Single(released.Value.Finalized);
+        Assert.Equal(ReviewRoundState.Closed, released.Value.State);
+        Assert.Equal(ReviewRoundState.Closed, await db.ReviewRounds.Where(r => r.Id == fixture.Round.Id).Select(r => r.State).SingleAsync());
+        Assert.Equal(1, await db.AuditEntries.CountAsync(entry => entry.Action == PerformanceAuditActions.ReviewRoundClosed));
         var finalizedAfterClose = await new FinalizeReviewRoundHandler(db, audit, new PerformanceNotifications(db))
             .Handle(new(fixture.Round.Id, 0, null), default);
         Assert.True(finalizedAfterClose.IsSuccess);

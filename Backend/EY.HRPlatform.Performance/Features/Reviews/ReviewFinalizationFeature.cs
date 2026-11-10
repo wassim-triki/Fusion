@@ -19,7 +19,6 @@ namespace EY.HRPlatform.Performance.Features.Reviews;
 public sealed record FinalizeReviewCommand(Guid ReviewId, uint ExpectedVersion, Guid ViewerEmployeeId = default) : ICommand<Result<ReviewFinalizationDto>>;
 public sealed record FinalizeReviewRoundCommand(Guid RoundId, uint ExpectedVersion, IReadOnlyList<Guid>? ReviewIds, Guid ViewerEmployeeId = default) : ICommand<Result<ReviewRoundFinalizationDto>>;
 public sealed record CloseReviewCommand(Guid ReviewId, uint ExpectedVersion, string Reason) : ICommand<Result<PerformanceReviewMutationDto>>;
-public sealed record CloseReviewRoundCommand(Guid RoundId, uint ExpectedVersion) : ICommand<Result<ReviewRoundFinalizationDto>>;
 public sealed record SkippedReviewDto(Guid ReviewId, string Reason);
 /// <summary>The rating source is calibration detail: an administrator finalizing their own review gets it null.</summary>
 public sealed record ReviewFinalizationDto(Guid ReviewId, PerformanceReviewState State, int FinalRating, string? FinalRatingSource, DateTime FinalizedAt);
@@ -76,6 +75,25 @@ internal static class ReviewFinalization
     }
 }
 
+/// <summary>
+/// A round closes itself (D-34): once nothing in it is still open, it is over and nobody presses Close.
+/// Called after the finalization or closure that may have settled it is saved; saves the closure itself.
+/// </summary>
+public static class ReviewRoundSettlement
+{
+    public static async Task CloseWhenSettledAsync(PerformanceDbContext db, ReviewRound round, IPerformanceAudit audit, CancellationToken token)
+    {
+        if (round.State != ReviewRoundState.Active) return;
+        var open = await db.PerformanceReviews.AnyAsync(r => r.ReviewRoundId == round.Id
+            && r.State != PerformanceReviewState.Finalized && r.State != PerformanceReviewState.Closed, token);
+        if (open) return;
+        round.Close();
+        audit.Record(round.TenantId, "ReviewRound", round.Id, round.CycleId, PerformanceAuditActions.ReviewRoundClosed,
+            new { before = ReviewRoundState.Active.ToString(), after = round.State.ToString() });
+        await db.SaveChangesAsync(token);
+    }
+}
+
 public sealed class FinalizeReviewHandler(PerformanceDbContext db, IPerformanceAudit audit, IPerformanceNotifications notifications)
     : ICommandHandler<FinalizeReviewCommand, Result<ReviewFinalizationDto>>
 {
@@ -96,6 +114,7 @@ public sealed class FinalizeReviewHandler(PerformanceDbContext db, IPerformanceA
         {
             var result = await ReviewFinalization.FinalizeAsync(db, review, round, audit, notifications, token);
             await db.SaveChangesAsync(token);
+            await ReviewRoundSettlement.CloseWhenSettledAsync(db, round, audit, token);
             return Result.Success(ReviewFinalization.ForViewer(result!, review, command.ViewerEmployeeId));
         }
         catch (InvalidOperationException ex) { return Result.Failure<ReviewFinalizationDto>(PerformanceErrors.InvalidState(PerformanceErrors.Codes.ReviewFinalizationNotReady, ex.Message)); }
@@ -151,6 +170,7 @@ public sealed class FinalizeReviewRoundHandler(PerformanceDbContext db, IPerform
                 new { finalizedReviewIds = finalized.Select(r => r.ReviewId).ToArray(), skippedReviewIds = skipped.Select(r => r.ReviewId).ToArray() });
         }
         await db.SaveChangesAsync(token);
+        await ReviewRoundSettlement.CloseWhenSettledAsync(db, round, audit, token);
         return Result.Success<ReviewRoundFinalizationDto>(new(round.Id, finalized, skipped, round.State));
     }
 }
@@ -180,28 +200,9 @@ public sealed class CloseReviewHandler(PerformanceDbContext db, IPerformanceAudi
             await CalibrationSessions.NotifyIfReadyAsync(db, session, notifications, token);
         await db.SaveChangesAsync(token);
         await CalibrationSessions.ConfirmReadyAfterCommitAsync(db, review.ReviewRoundId, notifications, token);
+        // Closing the last open review can also be what settles the round.
+        if (await db.ReviewRounds.FirstOrDefaultAsync(r => r.Id == review.ReviewRoundId, token) is { } round)
+            await ReviewRoundSettlement.CloseWhenSettledAsync(db, round, audit, token);
         return Result.Success(ReviewAssessmentCommands.ToDto(review));
-    }
-}
-
-public sealed class CloseReviewRoundHandler(PerformanceDbContext db, IPerformanceAudit audit)
-    : ICommandHandler<CloseReviewRoundCommand, Result<ReviewRoundFinalizationDto>>
-{
-    public async Task<Result<ReviewRoundFinalizationDto>> Handle(CloseReviewRoundCommand command, CancellationToken token)
-    {
-        var round = await db.ReviewRounds.FirstOrDefaultAsync(r => r.Id == command.RoundId, token);
-        if (round is null) return Result.Failure<ReviewRoundFinalizationDto>(PerformanceErrors.NotFound("ReviewRound", command.RoundId));
-        if (round.State == ReviewRoundState.Closed) return Result.Success<ReviewRoundFinalizationDto>(new(round.Id, [], [], round.State));
-        if (VersionGuard.Check(round, command.ExpectedVersion) is { } stale)
-            return Result.Failure<ReviewRoundFinalizationDto>(stale);
-        var unresolved = await db.PerformanceReviews.Where(r => r.ReviewRoundId == round.Id
-            && r.State != PerformanceReviewState.Finalized && r.State != PerformanceReviewState.Closed).CountAsync(token);
-        if (unresolved > 0) return Result.Failure<ReviewRoundFinalizationDto>(PerformanceErrors.InvalidState(PerformanceErrors.Codes.ReviewRoundUnresolved, $"Resolve or close all reviews before closing this round. {unresolved} remain."));
-        try { round.Close(); }
-        catch (InvalidOperationException ex) { return Result.Failure<ReviewRoundFinalizationDto>(PerformanceErrors.InvalidState(PerformanceErrors.Codes.ReviewFinalizationInvalid, ex.Message)); }
-        audit.Record(round.TenantId, "ReviewRound", round.Id, round.CycleId, PerformanceAuditActions.ReviewRoundClosed,
-            new { before = ReviewRoundState.Active.ToString(), after = round.State.ToString() });
-        await db.SaveChangesAsync(token);
-        return Result.Success<ReviewRoundFinalizationDto>(new(round.Id, [], [], round.State));
     }
 }

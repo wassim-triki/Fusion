@@ -47,6 +47,7 @@ public static class NotificationPreferenceCatalog
     private sealed record Group(string Key, string Label, string Summary, string LeaderSummary, Line[] Lines);
 
     private static readonly Line Reminder = new("A review of yours is due tomorrow or late", Reader.Everyone, [Kind.ReviewReminder]);
+    private static readonly Line Nudge = new("A nudge toward your next step in the year", Reader.Everyone, [Kind.YearNudge]);
 
     private static readonly Group[] Groups =
     [
@@ -95,7 +96,7 @@ public static class NotificationPreferenceCatalog
         new(NotificationGroups.DeadlineReminders, "Deadline reminders",
             "Something of yours is due soon or late",
             "Something of yours is due soon or late",
-            [Reminder]),
+            [Reminder, Nudge]),
     ];
 
     /// <summary>Every kind the catalogue lists, for the test that keeps it in step with the group map.</summary>

@@ -72,7 +72,7 @@ Each settled rule becomes a decision (D-43 onwards) and a line in `DESIGN.md`.
 
 **Materials:** tokens from `Frontend/packages/ds/src/styles/tokens.css` with D-32's lightness; Geist and Lora from Google Fonts; Hugeicons as inline SVG; the DS's real shapes (DataTable bands, choice controls, the person band, the Team band). **Real data:** Carthage presets (`data/README.md`: `fresh`, `planning`, `midyear` and the later ones) read through the API; real names with roles (Amira Khelifi, the administrator; Mariam Gharbi, a manager; Aicha Bouazizi, an employee on Mariam's team); demo companies have photos (D-05). Dark first at 1440×900, a theme switch on the page. Labels only, no paragraphs; variants only where the choice is taste, combinations offered where options aren't exclusive (`ui-decisions-shown-per-situation`). Each screen asks the D-40 question: what does this person do that Fusion could have done?
 
-**Checkpoints**, one session each:
+**Checkpoints**, one session each (3a published 2026-11-10: [explorer](https://claude.ai/artifact/U5iCrbjucCuc8ZB6H81qhM), `B-412-style-frame.html`, db doc `frame/main`):
 
 | # | Screens | Interactive | Settles |
 | --- | --- | --- | --- |

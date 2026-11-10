@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-419.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-420.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -34,6 +34,9 @@ None.
       - Organization › People, drag the date slider and press Replay: the thumb and date follow the hand, the chart catches up as each date loads (no page loading bar). Aicha shows on leave from 16 November.
       - Aicha › Make a change, type "promote Aicha to Senior QA Automation Engineer on 1 December": the Job row says there's no such job yet with Add it; the footer says why Save is grey until then.
       - Reports › Between: each click moves one end (a day before From moves From, after To moves To, inside the nearer one); neither clears the other.
+  - [ ] **B-419** (Ready) Replay and the date slider follow the hand for real: no request per date · Core HR · 2026-11-10
+        The user, 2026-11-10, after B-399: "still as laggy as ever". B-399 removed the page navigation per move, but every date still fetches a whole chart (~600–700 ms per request through the dev shell here, the gateway itself 5 ms) and lays it out again, so dragging waits on the network.
+        Direction: load the chart once with the window's dated history (who joins, leaves, moves, goes on leave, unit changes) and compute any date in the browser, so the slider and Replay need no request; measure in a production build too, and why the dev shell costs ~700 ms even for a favicon. Panning and drag lag on the chart (B-371 notes) checked in the same pass.
 
 ## Ready
 

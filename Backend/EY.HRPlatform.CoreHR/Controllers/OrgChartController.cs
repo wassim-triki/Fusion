@@ -137,6 +137,26 @@ public sealed class OrgChartController(
         return Ok(ApiResponse<IReadOnlyList<OrgChartChangeDto>>.Success(result.Value));
     }
 
+    /// <summary>
+    /// The whole company's chart over a window, each person once with their dated stretches: the page builds any day of
+    /// the window from it, so HR's time slider and Replay need no request per date (B-419). HR who see the whole chart
+    /// only, like any date other than today. Above 3,000 people it is refused and the page reads the chart by date.
+    /// </summary>
+    [HttpGet("history")]
+    [ProducesResponseType(typeof(ApiResponse<OrgChartHistoryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetHistory([FromQuery] DateOnly? from, [FromQuery] DateOnly? to, CancellationToken cancellationToken)
+    {
+        if (await Chart(null, cancellationToken) is not { Scope: OrgChartScopes.Tenant, Hr: true }) return Forbid();
+        if (from is not { } start || to is not { } end || end < start || end == DateOnly.MaxValue
+            || end.DayNumber - start.DayNumber > OrgChartHistoryQuery.MaxYears * 366)
+            return BadRequest(ApiResponse.Failure($"Give a window that ends on or after its start and spans {OrgChartHistoryQuery.MaxYears} years at most."));
+
+        var result = await sender.Send(new OrgChartHistoryQuery(start, end), cancellationToken);
+        return result.IsFailure ? BadRequest(ApiResponse.Failure(result.Error.Message)) : Ok(ApiResponse<OrgChartHistoryDto>.Success(result.Value));
+    }
+
     /// <summary>Adds an open role under a manager: a dashed Hiring card in their line. People admins only.</summary>
     [HttpPost("open-roles")]
     [ProducesResponseType(typeof(ApiResponse<OrgChartOpenRoleDto>), StatusCodes.Status201Created)]

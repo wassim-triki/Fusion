@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-420.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-422.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -31,12 +31,14 @@ None.
 - [ ] **B-399** Core HR functions the walk found broken or missing · Core HR, Identity · 2026-11-09
       Parent: B-396 (Stack 2 · Core HR › Functions). Built 2026-11-10; only the hand can judge the three below, the rest is settled by tests (LOG).
       Look at, as Amira in the walkthrough company (`amira.khelifi@walkthrough-202611082348.example.test`, local password), http://localhost:3000:
-      - Organization › People, drag the date slider and press Replay: the thumb and date follow the hand, the chart catches up as each date loads (no page loading bar). Aicha shows on leave from 16 November.
+      - Organization › People's slider and Replay: see B-419 below. Aicha shows on leave from 16 November.
       - Aicha › Make a change, type "promote Aicha to Senior QA Automation Engineer on 1 December": the Job row says there's no such job yet with Add it; the footer says why Save is grey until then.
       - Reports › Between: each click moves one end (a day before From moves From, after To moves To, inside the nearer one); neither clears the other.
-  - [ ] **B-419** (Ready) Replay and the date slider follow the hand for real: no request per date · Core HR · 2026-11-10
-        The user, 2026-11-10, after B-399: "still as laggy as ever". B-399 removed the page navigation per move, but every date still fetches a whole chart (~600–700 ms per request through the dev shell here, the gateway itself 5 ms) and lays it out again, so dragging waits on the network.
-        Direction: load the chart once with the window's dated history (who joins, leaves, moves, goes on leave, unit changes) and compute any date in the browser, so the slider and Replay need no request; measure in a production build too, and why the dev shell costs ~700 ms even for a favicon. Panning and drag lag on the chart (B-371 notes) checked in the same pass.
+  - [ ] **B-419** Replay and the date slider follow the hand for real: no request per date · Core HR · 2026-11-10
+        Built 2026-11-10 (LOG). Look at, as Amira in the walkthrough company (`amira.khelifi@walkthrough-202611082348.example.test`, local password), http://localhost:3000/core/organization?view=people:
+        - Drag the date slider back and forth: the thumb, the date and the chart move with the hand, cards jump straight to each date with their lines drawn; let go, nothing reloads.
+        - Press Replay: the company grows from 2018 to today without pauses between steps; it ends on today's 101 people.
+        - Then pan the chart and drag a person onto someone else: the chip follows the pointer.
 
 ## Ready
 
@@ -97,6 +99,7 @@ From B-331's walk (2026-11-09; the user's words, step by step, in `design/walkth
           Notes, Structure chart: opens compacted, showing only a few; decide how much to show without overwhelming (it does include the top levels, so maybe fine); its expand and collapse is jittery, reuse People's.
           Notes, List: follows the same header; enable drag and drop and the functions the charts have.
           Notes, Plan: the empty state is a wide empty block with a title and a two-word subtitle, embarrassing; a planned move's row carries the information but has lots of dead space on the right, and "Open one to see on the org chart" says in text what the design should show; redesign.
+      - [ ] **B-420** Structure and List follow the slider without a request per date, as People does since B-419: each date still reads the hierarchy and the staffing (two requests, ~450 ms each through the dev shell), so dragging and Replay wait there; give them the dated history too, or fold it into B-371's one surface · Core HR · 2026-11-10
     - [ ] **B-374** People and invitations (`/core/people`, its Invite drawer): rethink the page and the drawer as a whole · Core HR · 2026-11-09
           Notes, People: after the import the admin wants to see the people just brought in, not a drawer opened over them; open on the cards view rather than the table; the table itself is good, the filters are good, but it doesn't show people's job titles at all; the Manager cell should open the manager's page (today the whole row opens the person); Add a person is mostly good; low priority: its team section could borrow the People chart's cards; the new person's manager got an email (and likely a notification) on save; the search should be the same capable search as the charts'; the tabs above the table have no business there, the filters can do their work, and then cards and table share one search and filter bar (one reusable piece in code too); when nothing matches (e.g. Starting soon) the awkward box with grey "Nobody is starting soon" is bad.
           Notes, Invite drawer: its header (the stock icon, default-font title) looks bad; Who (everyone, managers first, choose) is the right idea, the radio choice looks poor; Choose should be a real multi-select combobox using the people picker that shows more about each person, the selection obvious (today only a name and avatar in a fixed list); When is a wide row for a small two-option switch, the date picker filling the space only on Later; the next section's title makes no sense, and the section titles don't follow the type scale; "Invite joiners on their first day": invite them to what, isn't this the invite?; "Remind people after 3 days": what reminder, another email?; showing the email as it will look is a good choice, what's around it isn't.
@@ -204,6 +207,7 @@ Security and scale that must hold once Fusion is online; nothing changes in the 
 - [ ] **B-296** Prove a single sign-on domain by DNS before Fusion is hosted: today the first company to pass a test sign-in from a domain proves it, so a company running its own provider could claim another company's unclaimed domain and show its button on that domain's sign-in page · Identity, Core HR · 2026-11-05
       Found in the B-191 security review (accepted rung 2 in the plan, D9). A claim never signs anyone in across companies; the risk is the sign-in page steering another company's people to that provider. Fix: a DNS TXT record per domain, checked before it counts as proved.
 - [ ] **B-310** Before hosting: the Gateway and Identity trust a forwarded client address only from loopback, so once the shell, Gateway and Identity run on separate machines each needs its hop's address in `KnownProxies`, and a shell behind a load balancer needs the stamp to take the balancer's address instead of the socket · Shell, Gateway, Identity · 2026-11-07
+- [ ] **B-421** Measure the shell's `/api` proxy in a production build before hosting: in dev every routed request through the Next shell costs ~450 ms (its `/api` route handler, even `favicon.ico`), static files 12 ms, the Gateway 2 ms (B-419). Core HR's app was measured in production, the shell wasn't · Platform · 2026-11-10
 - [ ] **B-255** Scale Reports filter values with viewer-scoped server search when company data grows; report runs currently return the complete allowed value set.
 
 ### Cleanup and tooling

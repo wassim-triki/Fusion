@@ -1,29 +1,94 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { useQueries, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { coreOrgChartQueryKeys, createCoreOrgChartApi, createPlatformApiClient, createReviewsApi, reviewQueryKeys, type OpenRoleRequest, type OrgChartDto } from "@repo/api";
 import { keepPreviousData, useApiMutation, useApiQuery } from "@repo/api/query";
-import { useAuth } from "@repo/auth";
+import { canAccessCorePeople, useAuth } from "@repo/auth";
+import { todayCalendarDate } from "@/features/organization/model/workspace-state";
+import { chartOn, coversDay } from "../model/org-chart-history";
 import { useOrgChartAccess } from "./use-org-chart-access";
 
 function useOrgChartApi() {
   return useMemo(() => createCoreOrgChartApi(createPlatformApiClient()), []);
 }
 
+/** The days Organization's time slider reaches: the chart's history covers them. */
+export interface ChartHistoryWindow {
+  from: string;
+  to: string;
+}
+
 /**
- * The people org chart as of a date (null = today), shaped for the viewer by Core HR. Moving the date keeps the
- * previous chart on screen until the next one arrives, so cards move instead of the stage flashing a skeleton.
+ * The whole company's chart over the slider's reach, each person once with their dated stretches (B-419): HR who see
+ * the whole chart, below 3,000 people (today's chart isn't a window). Off while the reach is null; a failure leaves the
+ * chart to read each date from Core HR.
  */
-export function useOrgChart(asOf: string | null = null) {
+export function useOrgChartHistory(reach: ChartHistoryWindow | null) {
+  const api = useOrgChartApi();
+  const { user } = useAuth();
+  const hr = canAccessCorePeople(user);
+  const today = useApiQuery(
+    coreOrgChartQueryKeys.chart(null),
+    useCallback((signal) => api.chart(null, signal), [api]),
+    { enabled: reach !== null && hr }
+  );
+  const wanted = reach !== null && hr && today.data?.scope === "Tenant" && today.data.window === null;
+  const from = reach?.from ?? "";
+  const to = reach?.to ?? "";
+  const history = useApiQuery(
+    coreOrgChartQueryKeys.history(from, to),
+    useCallback((signal) => api.history(from, to, signal), [api, from, to]),
+    { enabled: wanted, staleTime: 60_000, retry: false }
+  );
+  return { ...history, waiting: reach !== null && hr && (today.isLoading || (history.isFetching && !history.data)) };
+}
+
+/**
+ * The people org chart as of a date (null = today), shaped for the viewer by Core HR. Another date comes from the
+ * chart's history when the slider's reach is given, built in the browser, so moving the date waits on nothing; without
+ * it (a windowed chart, or the history failed) each date is read from Core HR. Moving the date keeps the previous chart
+ * on screen until the next one is ready, so cards move instead of the stage flashing a skeleton.
+ */
+export function useOrgChart(asOf: string | null = null, reach: ChartHistoryWindow | null = null) {
   const { isAuthenticated } = useAuth();
   const access = useOrgChartAccess();
   const api = useOrgChartApi();
-  return useApiQuery(
+  const enabled = !access.isLoading && isAuthenticated && access.canSee;
+  const today = useApiQuery(
+    coreOrgChartQueryKeys.chart(null),
+    useCallback((signal) => api.chart(null, signal), [api]),
+    { enabled }
+  );
+  const history = useOrgChartHistory(enabled ? reach : null);
+  const local = asOf !== null && history.data !== undefined && coversDay(history.data, asOf);
+  // While today's chart and the history load, the date waits for them rather than reading the chart once more.
+  const waiting = history.waiting;
+  const dated = useApiQuery(
     coreOrgChartQueryKeys.chart(asOf),
     useCallback((signal) => api.chart(asOf, signal), [api, asOf]),
-    { enabled: !access.isLoading && isAuthenticated && access.canSee, placeholderData: keepPreviousData }
+    { enabled: enabled && asOf !== null && !local && !waiting, placeholderData: keepPreviousData }
   );
+  const todayDay = useMemo(() => todayCalendarDate(), []);
+  const built = useMemo(
+    () => (local && history.data && today.data ? chartOn(history.data, today.data, asOf, todayDay) : undefined),
+    [local, history.data, today.data, asOf, todayDay]
+  );
+  const source = asOf === null ? today : dated;
+  const data = asOf === null ? today.data : local ? built : dated.data;
+  // The last chart shown stays until the next is ready.
+  const shown = useRef<OrgChartDto | undefined>(undefined);
+  if (data) shown.current = data;
+  const result = data ?? shown.current;
+  return {
+    data: result,
+    error: result ? null : source.error,
+    isLoading: !result && !source.error,
+    refetch: source.refetch,
+    /** The chart's history, for the changes coming after the date; `historyWaiting` while it loads. */
+    history: history.data,
+    historyWaiting: history.waiting,
+  };
 }
 
 export type BranchStatus = "loading" | "ready" | "failed";
@@ -74,21 +139,6 @@ export function useOrgChartChanges(from: string, to: string, enabled: boolean) {
 export function useReviewProgress(enabled: boolean) {
   const api = useMemo(() => createReviewsApi(createPlatformApiClient()), []);
   return useApiQuery(reviewQueryKeys.progress(), useCallback((signal) => api.getProgress(signal), [api]), { enabled });
-}
-
-/** Loads the chart for a date ahead of showing it: Replay steps through dates without waiting on each. */
-export function usePrefetchOrgChart() {
-  const queryClient = useQueryClient();
-  const api = useOrgChartApi();
-  return useCallback(
-    (asOf: string) =>
-      queryClient.fetchQuery({
-        queryKey: coreOrgChartQueryKeys.chart(asOf),
-        queryFn: ({ signal }) => api.chart(asOf, signal),
-        staleTime: 60_000,
-      }),
-    [queryClient, api]
-  );
 }
 
 /** Add and edit open roles (people admins); the chart refreshes after each. */

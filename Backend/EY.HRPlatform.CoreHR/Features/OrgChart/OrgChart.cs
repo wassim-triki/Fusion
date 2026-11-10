@@ -298,7 +298,7 @@ public sealed class OrgChartQueryHandler(
         });
     }
 
-    private static string Initials(string displayName)
+    internal static string Initials(string displayName)
     {
         var words = displayName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         return words.Length == 0 ? "?" : $"{words[0][0]}{words[^1][0]}".ToUpperInvariant();

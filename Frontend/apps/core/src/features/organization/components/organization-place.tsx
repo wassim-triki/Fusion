@@ -12,7 +12,9 @@ import { OrganizationPageSkeleton as PlaceSkeleton } from "@/shell/route-skeleto
 import { Segmented } from "@repo/ds/choice";
 import { PageHeader, PagePermissionNotice } from "@repo/ds/shell";
 import OrgChartWorkspace from "@/features/org-chart/components/org-chart-workspace";
+import { useOrgChartHistory } from "@/features/org-chart/api/use-org-chart";
 import { useOrgChartAccess } from "@/features/org-chart/api/use-org-chart-access";
+import { countsOn, coversDay } from "@/features/org-chart/model/org-chart-history";
 import { useUpcomingChanges } from "@/features/people/changes/use-changes";
 import { useOrganizationReadiness, useOrganizationUpcomingChanges } from "../api/use-organization";
 import { useStaffing, useStaffingAccess } from "../api/use-staffing";
@@ -57,7 +59,6 @@ export default function OrganizationPlace() {
   const readiness = useOrganizationReadiness(canStructure);
   const established = !canStructure || readiness.data?.hasPermanentRoot === true;
   const staffingAccess = useStaffingAccess(date, today);
-  const staffing = useStaffing(date, staffingAccess.counts && established);
   const opening = useStaffing(today, canStructure && established);
   const first = opening.data?.firstDate ?? null;
   const unitChanges = useOrganizationUpcomingChanges(canStructure && established);
@@ -66,6 +67,15 @@ export default function OrganizationPlace() {
   const timeLoading = (canStructure && opening.isLoading) || unitChanges.isLoading || peopleChanges.isLoading;
   const planned = usePlannedItems(peopleChanges.data ?? [], unitChanges.data ?? [], today);
   const span = useMemo(() => timeSpan(first, today, planned.map((item) => item.day)), [first, today, planned]);
+  // The People chart reads every day the slider reaches as one history (B-419); its figures come from it too, so
+  // moving the date asks Core HR for nothing.
+  const reach = useMemo(
+    () => (view === "people" && canMoveTime && established && !timeLoading ? { from: span.lo, to: span.hi } : null),
+    [view, canMoveTime, established, timeLoading, span]
+  );
+  const history = useOrgChartHistory(reach);
+  const local = history.data && coversDay(history.data, date) ? countsOn(history.data, date) : null;
+  const staffing = useStaffing(date, staffingAccess.counts && established && !history.data && !history.waiting);
 
   const navigate = useCallback(
     (next: { view?: OrganizationView; asOf?: string }) => {
@@ -81,16 +91,19 @@ export default function OrganizationPlace() {
       query.delete("reveal");
       const search = query.toString();
       // The view and the date live in the URL, but changing them is client state: the history API updates
-      // useSearchParams without a server round trip, so the slider and Replay follow the hand (B-399). The browser's
-      // path keeps the app's base path (/core), which Next's pathname leaves out.
+      // useSearchParams without a server round trip, so the slider and Replay follow the hand (B-399). The state is
+      // null: Next copies its own in, and skips updating useSearchParams for a state that already carries it (B-419).
+      // The browser's path keeps the app's base path (/core), which Next's pathname leaves out.
       const path = window.location.pathname;
-      window.history.replaceState(window.history.state, "", search ? `${path}?${search}` : path);
+      window.history.replaceState(null, "", search ? `${path}?${search}` : path);
     },
     [canStructure, params, today]
   );
 
   // ── Replay: the company from its first day to today, a step at a time, each step loaded before it shows ──
   const [replaying, setReplaying] = useState(false);
+  // While the hand drags the slider, the chart follows it without animating each date.
+  const [scrubbing, setScrubbing] = useState(false);
   const [actionsTarget, setActionsTarget] = useState<HTMLDivElement | null>(null);
   const run = useRef(0);
   const prefetch = useCallback(
@@ -98,6 +111,8 @@ export default function OrganizationPlace() {
       const client = createPlatformApiClient();
       if (view === "people") {
         const api = createCoreOrgChartApi(client);
+        // The history holds every step; without it (a chart too large, or it failed) each step is read ahead.
+        if (history.data && coversDay(history.data, day)) return;
         await queryClient.prefetchQuery({ queryKey: coreOrgChartQueryKeys.chart(day), queryFn: ({ signal }) => api.chart(day, signal), staleTime: 60_000 });
         return;
       }
@@ -108,7 +123,7 @@ export default function OrganizationPlace() {
         hr ? queryClient.prefetchQuery({ queryKey: coreOrgChartQueryKeys.staffing(day), queryFn: ({ signal }) => chart.staffing(day, signal), staleTime: 60_000 }) : null,
       ]);
     },
-    [hr, queryClient, view]
+    [hr, queryClient, view, history.data]
   );
   const stop = () => {
     run.current += 1;
@@ -151,13 +166,14 @@ export default function OrganizationPlace() {
     ] : []),
   ];
   const root = staffing.data?.units.reduce((top, unit) => (unit.people > (top?.people ?? -1) ? unit : top), staffing.data.units[0]);
-  const people = staffingAccess.counts && root ? root.people : null;
+  const people = local?.people ?? (staffingAccess.counts && root ? root.people : null);
+  const units = local?.units ?? staffing.data?.units.length ?? 0;
 
   return (
     <div className="grid gap-4 px-6 pt-5 pb-10">
       <PageHeader
         title={t("title")}
-        description={people !== null ? t("place.meta", { people, units: staffing.data?.units.length ?? 0 }) : undefined}
+        description={people !== null ? t("place.meta", { people, units }) : undefined}
         className="mb-0"
         actions={
           <>
@@ -176,13 +192,14 @@ export default function OrganizationPlace() {
           planned={planned.map((item) => ({ day: item.day, title: `${item.title} · ${item.meta}` }))}
           people={people}
           replaying={replaying}
+          onScrub={setScrubbing}
           onDate={(next) => { stop(); navigate({ asOf: next }); }}
           onReplay={() => void replay()}
         />
       ) : null}
       <div className="h-[clamp(520px,calc(100dvh-21rem),880px)] overflow-hidden rounded-surface bg-section">
         {view === "people" ? (
-          <OrgChartWorkspace asOf={date === today ? null : date} replaying={replaying} />
+          <OrgChartWorkspace asOf={date === today ? null : date} replaying={replaying} reach={reach} still={scrubbing} />
         ) : (
           <OrganizationWorkspace staffing={staffingAccess.counts ? staffing.byUnit : undefined} actionsTarget={actionsTarget} />
         )}

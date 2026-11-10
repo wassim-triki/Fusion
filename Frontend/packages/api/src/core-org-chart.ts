@@ -120,6 +120,44 @@ export interface OrgChartChangeDto {
   person: OrgChartPersonDto | null;
 }
 
+/** A person's card over a stretch of days, as HR reads it. */
+export interface OrgChartStretchDto {
+  /** yyyy-mm-dd, the first day it holds. */
+  from: string;
+  /** The first day it no longer holds; null when it holds to the window's end. */
+  until: string | null;
+  jobTitle: string | null;
+  unit: OrgChartUnitDto | null;
+  workLocation: string | null;
+  startYear: number | null;
+  startDate: string | null;
+  managerKey: string | null;
+  dottedLineManagerKeys: string[];
+}
+
+/** A person over the window: their stretches (gaps are days they weren't employed) and their leave, oldest first. */
+export interface OrgChartHistoryPersonDto {
+  employeeKey: string;
+  displayName: string;
+  initials: string;
+  workEmail: string | null;
+  photoUrl: string | null;
+  stretches: OrgChartStretchDto[];
+  leaves: { changeId: string; from: string; until: string | null; back: string | null }[];
+}
+
+/**
+ * `GET /api/corehr/org-chart/history`: the whole company's chart over a window, each person once (HR who see the whole
+ * chart). The page builds any day of the window from it, so the time slider and Replay need no request per date.
+ */
+export interface OrgChartHistoryDto {
+  from: string;
+  to: string;
+  people: OrgChartHistoryPersonDto[];
+  /** Each unit counts on the days before `until` (null: still). */
+  units: { id: string; until: string | null }[];
+}
+
 /** One unit as of a date: people in it and below, those placed in it, its head (whole-chart viewers only), open roles below it. */
 export interface UnitStaffingDto {
   unitId: string;
@@ -151,6 +189,7 @@ export const coreOrgChartPaths = {
   chart: () => "/corehr/org-chart",
   search: () => "/corehr/org-chart/search",
   changes: () => "/corehr/org-chart/changes",
+  history: () => "/corehr/org-chart/history",
   staffing: () => "/corehr/org-chart/staffing",
   unit: (id: string) => `/corehr/org-chart/units/${encodeURIComponent(id)}`,
   openRoles: () => "/corehr/org-chart/open-roles",
@@ -163,6 +202,7 @@ export const coreOrgChartQueryKeys = {
   branch: (asOf: string | null, root: string) => [...coreOrgChartQueryKeys.all(), asOf ?? "today", "branch", root] as const,
   search: (asOf: string | null, query: string) => [...coreOrgChartQueryKeys.all(), asOf ?? "today", "search", query] as const,
   changes: (from: string, to: string) => [...coreOrgChartQueryKeys.all(), "changes", from, to] as const,
+  history: (from: string, to: string) => [...coreOrgChartQueryKeys.all(), "history", from, to] as const,
   staffing: (asOf: string) => [...coreOrgChartQueryKeys.all(), asOf, "staffing"] as const,
   unit: (id: string, asOf: string) => [...coreOrgChartQueryKeys.all(), asOf, "unit", id] as const,
 };
@@ -180,6 +220,9 @@ export function createCoreOrgChartApi(client: ApiClient) {
     /** `GET /api/corehr/org-chart/changes`: HR only, both days included, two years at most. */
     changes: (from: string, to: string, signal?: AbortSignal) =>
       client.get<OrgChartChangeDto[]>(coreOrgChartPaths.changes(), { params: { from, to }, signal }),
+    /** `GET /api/corehr/org-chart/history`: HR who see the whole chart, both days included; refused above 3,000 people. */
+    history: (from: string, to: string, signal?: AbortSignal) =>
+      client.get<OrgChartHistoryDto>(coreOrgChartPaths.history(), { params: { from, to }, signal }),
     staffing: (asOf: string, signal?: AbortSignal) =>
       client.get<OrganizationStaffingDto>(coreOrgChartPaths.staffing(), { params: { asOf }, signal }),
     unit: (id: string, asOf: string, signal?: AbortSignal) =>

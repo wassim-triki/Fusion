@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { AlertTriangle, ArrowLeftRight, Briefcase, Search, X } from "lucide-react";
-import type { ChangePersonRef, OrgChartDto, OrgChartOpenRoleDto, OrgChartPersonDto, WorkforceChangeDto } from "@repo/api";
+import type { ChangePersonRef, OrgChartDto, OrgChartHistoryDto, OrgChartOpenRoleDto, OrgChartPersonDto, WorkforceChangeDto } from "@repo/api";
 import { canAccessCorePeople, canEnterPerformance, canAccessCoreTeam, canManageCoreEmployees, canManageCoreReporting, useAuth, PageRefusal } from "@repo/auth";
 import {
   Alert,
@@ -27,7 +27,8 @@ import { FilterChips, Segmented } from "@repo/ds/choice";
 import { PagePermissionNotice } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { canAccessEmployeeRoster } from "@/lib/employee-roster-access";
-import { useOrgChart, useOrgChartBranches, useOrgChartChanges, useOrgChartSearch, useReviewProgress } from "../api/use-org-chart";
+import { useOrgChart, useOrgChartBranches, useOrgChartChanges, useOrgChartSearch, useReviewProgress, type ChartHistoryWindow } from "../api/use-org-chart";
+import { changesBetween, coversDay } from "../model/org-chart-history";
 import { useOrgChartAccess } from "../api/use-org-chart-access";
 import {
   HR_LENSES,
@@ -86,12 +87,19 @@ type FitRequest = { mode: "fit" | "top" } | { mode: "centre"; id: string; s: num
  * Organization's People view: the people org chart on the Organization's date (null is today; another date is for
  * HR). The previous chart stays on screen while the next date loads; during Replay the camera fits each step.
  */
-export default function OrgChartWorkspace({ asOf, replaying }: { asOf: string | null; replaying: boolean }) {
+export default function OrgChartWorkspace({ asOf, replaying, reach = null, still = false }: {
+  asOf: string | null;
+  replaying: boolean;
+  /** The hand is dragging the date: each one shows at once, without cards gliding into place. */
+  still?: boolean;
+  /** The days Organization's time slider reaches, read once as the chart's history (HR). */
+  reach?: ChartHistoryWindow | null;
+}) {
   const t = useTranslations("orgChart");
   const { user } = useAuth();
   const access = useOrgChartAccess();
   const canView = access.canSee;
-  const chart = useOrgChart(asOf);
+  const chart = useOrgChart(asOf, reach);
 
   if (access.isLoading) return <Frame><StageSkeleton /></Frame>;
   if (!canView) {
@@ -138,7 +146,7 @@ export default function OrgChartWorkspace({ asOf, replaying }: { asOf: string | 
       </Frame>
     );
   }
-  return <OrgChart data={chart.data} asOf={asOf} replaying={replaying} />;
+  return <OrgChart data={chart.data} history={chart.history} historyWaiting={chart.historyWaiting} asOf={asOf} replaying={replaying} still={still} />;
 }
 
 function Frame({ children }: { children: React.ReactNode }) {
@@ -165,7 +173,15 @@ function StageSkeleton() {
   );
 }
 
-function OrgChart({ data, asOf, replaying }: { data: OrgChartDto; asOf: string | null; replaying: boolean }) {
+function OrgChart({ data, history, historyWaiting, asOf, replaying, still }: {
+  data: OrgChartDto;
+  /** The chart's history over the slider's reach: the changes coming after the date are read from it. */
+  history: OrgChartHistoryDto | undefined;
+  historyWaiting: boolean;
+  asOf: string | null;
+  replaying: boolean;
+  still: boolean;
+}) {
   const t = useTranslations("orgChart");
   const tc = useTranslations("changes");
   const { user } = useAuth();
@@ -179,8 +195,11 @@ function OrgChart({ data, asOf, replaying }: { data: OrgChartDto; asOf: string |
   const showsChanges = hr && !replaying && date >= range.lo && date < range.hi;
   // Review progress is today's, from Performance: offered to anyone who can enter it, on today's chart only.
   const reviewLens = canEnterPerformance(user) && date === today;
-  const changes = useOrgChartChanges(addDays(date, 1), range.hi, showsChanges);
-  const upcoming = showsChanges ? changes.data : undefined;
+  const after = addDays(date, 1);
+  const known = history !== undefined && coversDay(history, after) && coversDay(history, range.hi);
+  const changes = useOrgChartChanges(after, range.hi, showsChanges && !known && !historyWaiting);
+  const derived = useMemo(() => (showsChanges && known ? changesBetween(history, after, range.hi) : undefined), [showsChanges, known, history, after, range.hi]);
+  const upcoming = showsChanges ? derived ?? changes.data : undefined;
 
   // ── Above 3,000 people the chart is a window; branches load as people open them, for the chart's date ──
   const windowed = data.window !== null;
@@ -285,11 +304,15 @@ function OrgChart({ data, asOf, replaying }: { data: OrgChartDto; asOf: string |
     setFitRequest(null);
   }, [fitRequest, layout, flyTo, viewport]);
 
-  // Edges wait for the cards to settle in their new places.
+  // Edges wait for the cards to settle in their new places; cards that jump (dragging the date) keep them drawn.
   const [edgesShown, setEdgesShown] = useState(false);
   useEffect(() => {
+    if (!animate) {
+      setEdgesShown(true);
+      return;
+    }
     setEdgesShown(false);
-    const timer = window.setTimeout(() => setEdgesShown(true), animate ? SETTLE_MS : 0);
+    const timer = window.setTimeout(() => setEdgesShown(true), SETTLE_MS);
     return () => window.clearTimeout(timer);
   }, [layout, animate]);
 
@@ -298,6 +321,9 @@ function OrgChart({ data, asOf, replaying }: { data: OrgChartDto; asOf: string |
   type CardDrag = { id: string; x: number; y: number; over: string | null; target: string | null; refused: string | null };
   const cardDrag = useRef<CardDrag | null>(null);
   const [drag, setDrag] = useState<CardDrag | null>(null);
+  // The chip follows the pointer on its own; the chart renders again only when what's under it changes (B-419).
+  const chipRef = useRef<HTMLSpanElement>(null);
+  const chipAt = (at: { x: number; y: number }) => `translate(${at.x + 14}px, ${at.y + 14}px)`;
   /** A new manager must be on the chart today, outside the person's own branch, and not their manager already. */
   const canReportTo = (id: string, manager: string) =>
     manager !== id && tree.people.has(manager) && !tree.ghosts.has(manager)
@@ -320,8 +346,10 @@ function OrgChart({ data, asOf, replaying }: { data: OrgChartDto; asOf: string |
       dragged.current = true;
       const over = document.elementFromPoint(e.clientX, e.clientY)?.closest<HTMLElement>("[data-oc-id]")?.dataset.ocId ?? null;
       const target = over && canReportTo(id, over) ? over : null;
-      cardDrag.current = { id, x: e.clientX - stage.left, y: e.clientY - stage.top, over, target, refused: over && !target ? refusedBecause(id, over) : null };
-      setDrag(cardDrag.current);
+      const next = { id, x: e.clientX - stage.left, y: e.clientY - stage.top, over, target, refused: over && !target ? refusedBecause(id, over) : null };
+      cardDrag.current = next;
+      if (chipRef.current) chipRef.current.style.transform = chipAt(next);
+      setDrag((current) => (current && current.over === next.over && current.target === next.target && current.refused === next.refused ? current : next));
     };
     const up = () => {
       window.removeEventListener("pointermove", move);
@@ -446,7 +474,7 @@ function OrgChart({ data, asOf, replaying }: { data: OrgChartDto; asOf: string |
   useEffect(() => {
     if (lastStep.current === stepKey) return;
     lastStep.current = stepKey;
-    setAnimate(true);
+    setAnimate(!still);
     if (replaying) relayout({ mode: "fit" });
     // relayout is recreated each render; the step is what matters.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -735,7 +763,7 @@ function OrgChart({ data, asOf, replaying }: { data: OrgChartDto; asOf: string |
         ) : null}
 
         {drag ? (
-          <span className={cn("oc-dragchip rounded-control border bg-popover shadow-overlay", drag.refused && "oc-refused")} style={{ transform: `translate(${drag.x + 14}px, ${drag.y + 14}px)` }}>
+          <span ref={chipRef} className={cn("oc-dragchip rounded-control border bg-popover shadow-overlay", drag.refused && "oc-refused")} style={{ transform: chipAt(drag) }}>
             <OrgAvatar id={drag.id} size="sm" ctx={ctx} />
             <span className="min-w-0">
               <span className="block truncate text-sm font-semibold">{tree.people.get(drag.id)?.displayName}</span>

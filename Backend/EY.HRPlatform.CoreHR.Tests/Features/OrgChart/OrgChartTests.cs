@@ -554,6 +554,84 @@ public sealed class OrgChartTests
         Assert.Equal(["Zed Outsider"], await SearchAsync(world, "Zed", tenant: TenantB));
     }
 
+    // ── History over a window (B-419) ───────────────────────────────────────
+
+    private static async Task<OrgChartHistoryDto> HistoryAsync(World world, DateOnly from, DateOnly to, Guid? tenant = null)
+    {
+        var context = TestDbContextFactory.Create(TestTenantContext.WithTenant(tenant ?? TenantA), world.Db);
+        var tenantSettings = new Mock<ITenantSettingsReadService>();
+        tenantSettings.Setup(s => s.GetCurrentAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new TenantSettingsDto());
+        var result = await new OrgChartHistoryQueryHandler(context, tenantSettings.Object).Handle(new OrgChartHistoryQuery(from, to), default);
+        Assert.True(result.IsSuccess);
+        return result.Value;
+    }
+
+    /// <summary>A person's card on a day, read from their stretches as the page reads it.</summary>
+    private static OrgChartStretchDto? On(OrgChartHistoryPersonDto person, DateOnly day)
+        => person.Stretches.SingleOrDefault(s => s.From <= day && (s.Until is null || day < s.Until));
+
+    [Fact]
+    public async Task The_history_holds_the_chart_of_every_day_in_its_window()
+    {
+        var world = await SeedAsync();
+        var history = await HistoryAsync(world, Today.AddDays(-400), Today.AddDays(60));
+
+        foreach (var offset in new[] { -400, -365, -91, -90, -60, -31, -30, -1, 0, 9, 10, 19, 20, 39, 40, 60 })
+        {
+            var day = Today.AddDays(offset);
+            var chart = await ReadAsync(world, OrgChartScopes.Tenant, null, hr: true, asOf: day);
+            var expected = chart.People
+                .Select(p => (p.EmployeeKey, p.JobTitle, p.Unit, p.WorkLocation, p.StartDate, p.ManagerKey, string.Join(",", p.DottedLineManagerKeys.Order(StringComparer.Ordinal))))
+                .OrderBy(p => p.EmployeeKey, StringComparer.Ordinal);
+            var rebuilt = history.People
+                .Select(p => (p.EmployeeKey, Card: On(p, day)))
+                .Where(p => p.Card is not null)
+                .Select(p => (p.EmployeeKey, p.Card!.JobTitle, p.Card.Unit, p.Card.WorkLocation, p.Card.StartDate, p.Card.ManagerKey, string.Join(",", p.Card.DottedLineManagerKeys)))
+                .OrderBy(p => p.EmployeeKey, StringComparer.Ordinal);
+            Assert.Equal(expected, rebuilt);
+        }
+    }
+
+    [Fact]
+    public async Task The_history_sends_each_person_once_with_a_stretch_per_change_and_their_leave()
+    {
+        var world = await SeedAsync();
+        await using (var seed = TestDbContextFactory.CreateWithoutTenant(world.Db))
+        {
+            seed.WorkforceChanges.Add(WorkforceChange.Create(TenantA, world.Ids["Aicha"], WorkforceChangeKind.Leave, Today.AddDays(16), null, "{}", null, [], Today.AddDays(20)));
+            await seed.SaveChangesAsync();
+        }
+        var history = await HistoryAsync(world, Today.AddDays(-400), Today.AddDays(60));
+        OrgChartHistoryPersonDto Person(string first) => Assert.Single(history.People, p => p.EmployeeKey == world.Keys[first]);
+
+        Assert.Equal(9, history.People.Count);
+        // Years without a change travel as one stretch, the units' Fusion timeline starting included.
+        var sami = Assert.Single(Person("Sami").Stretches);
+        Assert.Equal((Today.AddDays(-400), (DateOnly?)null), (sami.From, sami.Until));
+        // Leila: no manager, then Omar, then Nour, the dotted line to Mariam kept.
+        Assert.Equal(
+            [(Today.AddDays(-400), (string?)null), (Today.AddDays(-30), world.Keys["Omar"]), (Today.AddDays(10), world.Keys["Nour"])],
+            Person("Leila").Stretches.Select(s => (s.From, s.ManagerKey)));
+        Assert.Equal([world.Keys["Mariam"]], Person("Leila").Stretches[^1].DottedLineManagerKeys);
+        // Omar's last stretch ends with his employment; Skander's first starts with his.
+        Assert.Equal(Today.AddDays(40), Person("Omar").Stretches[^1].Until);
+        Assert.Equal(Today.AddDays(20), Person("Skander").Stretches[0].From);
+
+        var leave = Assert.Single(Person("Aicha").Leaves);
+        Assert.Equal((Today.AddDays(16), (DateOnly?)Today.AddDays(20)), (leave.From, leave.Until));
+        Assert.True(leave.Back > leave.Until);
+        Assert.Empty(Person("Sami").Leaves);
+    }
+
+    [Fact]
+    public async Task The_history_stays_in_its_tenant()
+    {
+        var world = await SeedAsync();
+        var inB = await HistoryAsync(world, Today.AddDays(-400), Today.AddDays(60), TenantB);
+        Assert.Equal(["Zed Outsider"], inB.People.Select(p => p.DisplayName));
+        Assert.DoesNotContain((await HistoryAsync(world, Today.AddDays(-400), Today.AddDays(60))).People, p => p.DisplayName == "Zed Outsider");
+    }
+
     // ── Controller: who may ask for what ────────────────────────────────────
 
     private static ClaimsPrincipal Caller(Guid? employeeId, params (string Key, string Scope)[] grants)
@@ -574,6 +652,8 @@ public sealed class OrgChartTests
             .ReturnsAsync(Result.Success<IReadOnlyList<OrgChartChangeDto>>([]));
         sender.Setup(s => s.Send(It.IsAny<OrgChartSearchQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success<IReadOnlyList<OrgChartPersonDto>>([]));
+        sender.Setup(s => s.Send(It.IsAny<OrgChartHistoryQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((OrgChartHistoryQuery q, CancellationToken _) => Result.Success(new OrgChartHistoryDto(q.From, q.To, [], [])));
         return (new OrgChartController(sender.Object, new CoreAccessPolicyService(), settings ?? Audience(OrgChartAudiences.Everyone))
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = caller } },
@@ -704,6 +784,29 @@ public sealed class OrgChartTests
         Assert.IsType<BadRequestObjectResult>(await hr.GetChanges(null, Today, default));
         Assert.IsType<OkObjectResult>(await hr.GetChanges(Today, Today.AddDays(731), default));
         hrSender.Verify(s => s.Send(It.Is<OrgChartChangesQuery>(q => q.From == Today && q.To == Today.AddDays(731)), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task The_history_is_for_HR_who_see_the_whole_chart_over_a_bounded_window()
+    {
+        var (employee, employeeSender) = Controller(Caller(Guid.NewGuid(), Everyone));
+        Assert.IsType<ForbidResult>(await employee.GetHistory(Today.AddYears(-1), Today, default));
+        employeeSender.VerifyNoOtherCalls();
+        var (manager, managerSender) = Controller(Caller(Guid.NewGuid(), ManagerGrants));
+        Assert.IsType<ForbidResult>(await manager.GetHistory(Today.AddYears(-1), Today, default));
+        managerSender.VerifyNoOtherCalls();
+        var (hrOnABranch, _) = Controller(Caller(Guid.NewGuid(), Branch, Hr));
+        Assert.IsType<ForbidResult>(await hrOnABranch.GetHistory(Today.AddYears(-1), Today, default));
+        var (hrWithoutChart, _) = Controller(Caller(Guid.NewGuid(), Hr));
+        Assert.IsType<ForbidResult>(await hrWithoutChart.GetHistory(Today.AddYears(-1), Today, default));
+
+        var (hr, hrSender) = Controller(Caller(Guid.NewGuid(), Everyone, Hr));
+        Assert.IsType<BadRequestObjectResult>(await hr.GetHistory(Today, Today.AddDays(-1), default));
+        Assert.IsType<BadRequestObjectResult>(await hr.GetHistory(null, Today, default));
+        Assert.IsType<BadRequestObjectResult>(await hr.GetHistory(Today, Today.AddYears(101), default));
+        Assert.IsType<BadRequestObjectResult>(await hr.GetHistory(DateOnly.MaxValue.AddDays(-1), DateOnly.MaxValue, default));
+        Assert.IsType<OkObjectResult>(await hr.GetHistory(Today.AddYears(-10), Today.AddDays(730), default));
+        hrSender.Verify(s => s.Send(It.Is<OrgChartHistoryQuery>(q => q.From == Today.AddYears(-10) && q.To == Today.AddDays(730)), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

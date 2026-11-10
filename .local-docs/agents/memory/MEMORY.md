@@ -33,6 +33,7 @@
 - [Anti-vibecode design governance](design-governance-antivibecode.md) — DESIGN.md §33 tells→rules + §34 test; motion/elevation tokens.
 - [DS preset provenance](ds-preset-provenance.md) — `@repo/ds` = shadcn preset b6GMQMg3l (zinc + yellow + amber); 5 deliberate overrides.
 - [No useEffectEvent under Next 15.5](next-bundled-react-no-useeffectevent.md) — Next's bundled React lacks it; type-check passes, page crashes; use a ref.
+- [replaceState(null) for Next](next-replacestate-null-state.md) — a state carrying Next's `__NA` skips the useSearchParams sync (B-419).
 - [DS Spinner animation](ds-spinner-animation.md) — custom keyframes tree-shaken in TW4 prod; use built-in `animate-spin`.
 - [@repo/ui consolidation](repo-ui-consolidation.md) — owned apps moved to `@repo/ds`; interns' modules still on `@repo/ui`.
 - [Loading architecture](loading-architecture.md) — B-280 verified pending contract and stable Home frame; scoped production/dev evidence, retained hydration guards, independent auth/header follow-ups. July notes are historical.

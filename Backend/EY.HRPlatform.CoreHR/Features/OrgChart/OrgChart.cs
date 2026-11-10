@@ -54,7 +54,7 @@ public sealed record OrgChartPersonDto(
     int DirectCount,
     int TotalCount,
     string? PhotoUrl = null,
-    /// <summary>Leave they are on, or their next (today's chart only); the type is left out.</summary>
+    /// <summary>Leave they are on on the chart's date, or their next; the type is left out.</summary>
     People.Changes.PersonLeaveDto? Leave = null);
 
 /// <param name="DivisionId">The unit's top-level ancestor under the organization root (the unit itself at that level).</param>
@@ -171,14 +171,11 @@ public sealed class OrgChartQueryHandler(
         }
 
         var people = included.Where(chart.HasCard).Select(chart.Card).OrderBy(p => p.DisplayName, StringComparer.Ordinal).ToList();
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        if (request.AsOf == today)
-        {
-            var leaves = await People.Changes.LeaveReader.CurrentAsync(dbContext, included.Where(chart.HasCard).ToList(), today, cancellationToken);
-            people = people.Select(card => chart.IdOf.TryGetValue(card.EmployeeKey, out var id) && leaves.TryGetValue(id, out var leave)
-                ? card with { Leave = leave.WithoutType() }
-                : card).ToList();
-        }
+        // Who is away on the chart's date, so moving the date or replaying shows leave as it was or will be.
+        var leaves = await People.Changes.LeaveReader.CurrentAsync(dbContext, included.Where(chart.HasCard).ToList(), request.AsOf, cancellationToken);
+        people = people.Select(card => chart.IdOf.TryGetValue(card.EmployeeKey, out var id) && leaves.TryGetValue(id, out var leave)
+            ? card with { Leave = leave.WithoutType() }
+            : card).ToList();
 
         // Whoever reports to someone in the response but isn't in it, counted under them.
         var folded = included

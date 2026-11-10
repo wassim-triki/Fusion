@@ -26,6 +26,24 @@ public sealed class ChangeDrafterWordsTests
         => Assert.Equal(new DateOnly(2026, 12, 31), ChangeDrafter.ReadDate(ChangeDrafter.Fold("Aicha is retiring at the end of the year"), Today));
 
     [Fact]
+    public void A_seniority_before_a_known_title_names_a_job_the_company_lacks()
+    {
+        Assert.Equal("Senior QA Automation Engineer",
+            ChangeDrafter.SeniorOf("promote Aicha to senior QA Automation Engineer on 1 December", "QA Automation Engineer"));
+        Assert.Null(ChangeDrafter.SeniorOf("Aicha becomes QA Automation Engineer", "QA Automation Engineer"));
+        Assert.Null(ChangeDrafter.SeniorOf("Aicha becomes Senior Consultant", "Senior Consultant"));
+    }
+
+    [Fact]
+    public void A_missing_title_is_never_one_the_company_already_has()
+    {
+        var jobs = new[] { "QA Automation Engineer", "Senior Consultant" };
+        Assert.Equal("Senior QA Automation Engineer", ChangeDrafter.MissingTitle("  Senior QA  Automation Engineer ", jobs));
+        Assert.Null(ChangeDrafter.MissingTitle("qa automation engineer", jobs));
+        Assert.Null(ChangeDrafter.MissingTitle("", jobs));
+    }
+
+    [Fact]
     public void A_word_sharing_the_stem_of_a_name_finds_it()
     {
         var remote = Guid.NewGuid();

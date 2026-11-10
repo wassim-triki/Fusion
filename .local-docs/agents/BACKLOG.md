@@ -28,7 +28,12 @@ None.
 
 ## In review
 
-None.
+- [ ] **B-399** Core HR functions the walk found broken or missing · Core HR, Identity · 2026-11-09
+      Parent: B-396 (Stack 2 · Core HR › Functions). Built 2026-11-10; only the hand can judge the three below, the rest is settled by tests (LOG).
+      Look at, as Amira in the walkthrough company (`amira.khelifi@walkthrough-202611082348.example.test`, local password), http://localhost:3000:
+      - Organization › People, drag the date slider and press Replay: the thumb and date follow the hand, the chart catches up as each date loads (no page loading bar). Aicha shows on leave from 16 November.
+      - Aicha › Make a change, type "promote Aicha to Senior QA Automation Engineer on 1 December": the Job row says there's no such job yet with Add it; the footer says why Save is grey until then.
+      - Reports › Between: each click moves one end (a day before From moves From, after To moves To, inside the nearer one); neither clears the other.
 
 ## Ready
 
@@ -74,14 +79,6 @@ From B-331's walk (2026-11-09; the user's words, step by step, in `design/walkth
 - [ ] **B-396** Stack 2 · Core HR after the walk · Core HR · 2026-11-09
           Functions apart from visuals (user, 2026-11-09). The surfaces follow B-397's foundation once it's decided in B-390's first chapter.
   - **Functions**
-    - [ ] **B-399** Core HR functions the walk found broken or missing · Core HR, Identity · 2026-11-09
-          - Bug or rule to check: renaming the root unit (named by the agent's demo file) is refused with "The permanent root cannot be moved, retyped, or inactivated"; a rename is none of those. The server allows a rename (it refuses only a move, a type or parent change, or inactivating), so the edit form likely sends the type or parent as changed: a bug, probably small.
-          - Bug, confirmed (create and edit): "promote Aicha to Senior QA Automation Engineer" can't be saved: the company has no such job (only "QA Automation Engineer" among its 46), so no job is set and nothing counts as changed; the save button stays grey with no reason given, and only picking another manager lit it (the saved change then held just the manager, dated today, not the promotion or 1 December). Say why it can't save, and when the job doesn't exist offer to add it there (the smarter drafter the user asked for).
-          - Bug to check: a change effective today (9 November) didn't show when viewing the page as of today; 10 November did.
-          - Gap: on leave shows on today's chart only (`OrgChart.cs` reads leave when `AsOf == today`), so moving the date or replaying past Aicha's first day of leave (16 November) never marks her; the chart on a date should show who is away on that date.
-          - Notes, performance (must): the Replay slider takes ~10 s per move, it has to follow the hand in real time as agreed; panning and drag and drop sometimes lag or act oddly.
-          - Reports: The date range selector is broken: changing From disables or clears the chosen To, the two ends must be independent.
-          - People: Sorting doesn't work on every column, Sign-in included, so invited people can't be brought together.
     - [ ] **B-245** The import groups titles into job families when the files have no family column (D-23 widened the AI to it): suggestions marked with the sparkle, each family changeable on the chart's Jobs view · Core HR · 2026-11-01
   - **Surfaces to rethink**
     - [ ] **B-352** The import (What Fusion understood, then Review, `/core/import/{id}`): functionally right, but reads as AI-made, unclear about what to do, not the friendly BambooHR-like direction; redesign both pages, canvas first (accepted in B-186 from a drawing, now rejected on taste) · Core HR · 2026-11-09

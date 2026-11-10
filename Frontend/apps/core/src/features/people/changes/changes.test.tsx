@@ -4,9 +4,10 @@ import { describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { PeopleProfileDto, WorkforceChangeDetails, WorkforceChangeDto } from "@repo/api";
 
-const { rights, draft } = vi.hoisted(() => ({
-  rights: { people: true, lines: true, seeComing: true, propose: false, approve: false, employeeId: "me" },
+const { rights, draft, createJob } = vi.hoisted(() => ({
+  rights: { people: true, lines: true, seeComing: true, propose: false, approve: false, jobs: true, employeeId: "me" },
   draft: vi.fn(),
+  createJob: vi.fn(),
 }));
 
 vi.mock("./use-changes", () => ({
@@ -28,6 +29,7 @@ vi.mock("./use-changes", () => ({
 }));
 vi.mock("@/features/catalog/api/use-catalog", () => ({
   useJobs: () => ({ data: [] }),
+  useJobMutations: () => ({ create: { isLoading: false, mutateAsync: createJob } }),
   usePlaces: () => ({ data: [] }),
   useCompanyLists: () => ({ data: [
     { id: "change-reasons", values: [{ id: "promo", key: "promotion", label: "Promotion", sortOrder: 0, isRetired: false, usageCount: 0, inUse: false }] },
@@ -43,7 +45,7 @@ vi.mock("../api/use-people", () => ({ usePeopleProfile: () => ({ data: person() 
 vi.mock("@/features/organization/api/use-organization", () => ({ useOrganizationHierarchy: () => ({ data: { roots: [] }, isLoading: false }) }));
 
 import { setWriteLock } from "@repo/ds";
-import { CancelChangeDialog, ComingUpCard } from "./coming-up";
+import { CancelChangeDialog, ChangeBadge, ComingUpCard } from "./coming-up";
 import { ChangePanel } from "./change-panel";
 
 function person(): PeopleProfileDto {
@@ -117,6 +119,14 @@ describe("people changes", () => {
     expect(screen.getByRole("button", { name: "Cancel change" })).toBeInTheDocument();
   });
 
+  it("words a change dated today as already in effect, still undoable today (B-399)", () => {
+    const today = { ...move, effectiveDate: "2026-11-10", status: "InEffect" as const };
+    render(<><ComingUpCard change={today} canChange onEdit={vi.fn()} /><ChangeBadge change={today} /></>);
+    expect(screen.getByText("In effect")).toBeInTheDocument();
+    expect(screen.getByText("Moved today")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Cancel change" })).toBeInTheDocument();
+  });
+
   it("offers no actions to someone who can't change it", () => {
     render(<ComingUpCard change={move} canChange={false} />);
     expect(screen.queryByRole("button", { name: "Cancel change" })).not.toBeInTheDocument();
@@ -137,6 +147,25 @@ describe("people changes", () => {
     expect(screen.getByText("The change")).toBeInTheDocument();
     expect(screen.getByText("Reason")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Save change" })).toBeDisabled();
+    expect(screen.getByText("Pick what changes to save")).toBeInTheDocument();
+  });
+
+  it("says when the sentence names a job the company doesn't have, and adding it fills the job (B-399)", async () => {
+    draft.mockReset();
+    draft.mockResolvedValue({ kind: "job", date: "2026-12-01", jobId: null, jobTitle: null, jobLevel: null, missingJob: "Senior QA Automation Engineer",
+      orgUnitId: null, orgUnitName: null, placeId: null, placeName: null, reasonId: null, reason: null, understood: true, usedAi: true });
+    createJob.mockResolvedValue({ id: "senior-qa", title: "Senior QA Automation Engineer", family: null, level: null, isRetired: false, peopleCount: 0, openRoleCount: 0, inUse: false });
+    render(<ChangePanel employeeKey="HELA" kind="job" onClose={vi.fn()} />);
+    fireEvent.change(screen.getByLabelText("Describe it"), { target: { value: "Promote Hela to Senior QA Automation Engineer on 1 December" } });
+    fireEvent.keyDown(screen.getByLabelText("Describe it"), { key: "Enter" });
+    expect(await screen.findByText(/There's no/)).toHaveTextContent("There's no Senior QA Automation Engineer job yet");
+    expect(screen.getByText(/or pick another job to save/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Schedule for/ })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Add it" }));
+    await waitFor(() => expect(createJob).toHaveBeenCalledWith({ title: "Senior QA Automation Engineer" }));
+    expect(await screen.findByText("Senior QA Automation Engineer")).toBeInTheDocument();
+    expect(screen.queryByText(/There's no/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Schedule for/ })).toBeEnabled();
   });
 
   it("drafts a manager's sentence into the change and sends it for approval when the company asks", async () => {

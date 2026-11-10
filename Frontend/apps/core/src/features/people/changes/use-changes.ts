@@ -25,6 +25,7 @@ import {
   canAccessCoreTeam,
   canManageCoreEmployees,
   canManageCoreReporting,
+  canManageCoreOrganization,
   useAuth,
 } from "@repo/auth";
 
@@ -50,6 +51,8 @@ export function useChangeRights() {
     propose: ready && canProposeCoreChanges(user),
     /** Answers requests, for everyone. */
     approve: ready && canApproveCoreChanges(user),
+    /** Adds a job the company doesn't have yet. */
+    jobs: ready && canManageCoreOrganization(user),
     employeeId: user?.employeeId ?? null,
   };
 }

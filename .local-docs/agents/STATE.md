@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** B-412 closed: 3e recorded (D-88–D-95, every pick as starred; Insights as Fusion's one dashboard, setting up a year as one page), the note on board as B-418, slices 11–13 rewritten with Insights as slice 13, 2026-11-10.
+**Last finished:** B-399 built and In review: root rename, a promotion to a missing job (say why, Add it), a change dated today worded as in effect, leave on the chart's date, Reports' range ends independent, People sorts and the Manager cell, Replay without navigations, 2026-11-10.
 
 ## Active work
 
@@ -14,6 +14,5 @@ Session queue: a fresh session takes the first open row, sets it as Active work 
 
 | # | Session | Board items | Effort | Notes |
 |---|---|---|---|---|
-| 1 | Core HR functions | the rest of B-399: root rename, a promotion to a missing job (say why, offer to add the job), a change effective today, leave on a chosen date in the chart, Reports' date range, People sorting and the Manager cell, Replay speed | medium | Replay speed may need its own session if profiling shows it's large; split then, not before. |
-| 2 | Apply D-32 colours | B-370, B-418 (its colour half) | medium | `Frontend/packages/ds/src/styles/tokens.css` light and dark per D-32 (values in the decision; the study's tokens in `plans/B-397-colour.html`), then a pass over surfaces that hard-code tones (bands, sidebar, the person page hero) so the hero and the page share one tone; the accent's light-mode value per D-95 (no brown: charts, highlights). Visual-only: no tests beyond the hook; screens only if asked. |
-| 3+ | Performance's slices 1–13 | B-405–B-411, B-392, B-389, B-418 (edges) | per slice | One row of `plans/B-390-slices.md` per session, in its order; Insights is slice 13. Slice 1 (the frame) after row 2's colours. Port the explorers' drawings literally (memory `port-accepted-drawings-closely`); every slice holds D-95 (no brown in light mode, sections' edges lined up). |
+| 1 | Apply D-32 colours | B-370, B-418 (its colour half) | medium | `Frontend/packages/ds/src/styles/tokens.css` light and dark per D-32 (values in the decision; the study's tokens in `plans/B-397-colour.html`), then a pass over surfaces that hard-code tones (bands, sidebar, the person page hero) so the hero and the page share one tone; the accent's light-mode value per D-95 (no brown: charts, highlights). Visual-only: no tests beyond the hook; screens only if asked. |
+| 2+ | Performance's slices 1–13 | B-405–B-411, B-392, B-389, B-418 (edges) | per slice | One row of `plans/B-390-slices.md` per session, in its order; Insights is slice 13. Slice 1 (the frame) after row 1's colours. Port the explorers' drawings literally (memory `port-accepted-drawings-closely`); every slice holds D-95 (no brown in light mode, sections' edges lined up). |

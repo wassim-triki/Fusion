@@ -21,7 +21,11 @@ public enum PeopleSortField
 {
     Name,
     EmployeeNumber,
-    EmploymentDate
+    EmploymentDate,
+    Manager,
+    Place,
+    /// <summary>By sign-in state (not invited, invited, expired, signs in, suspended, no email); needs the sign-in facts.</summary>
+    SignIn
 }
 
 public enum PeopleSortDirection

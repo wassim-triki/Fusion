@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { List, Network, Users } from "lucide-react";
 import { coreOrgChartQueryKeys, coreOrganizationQueryKeys, createCoreOrgChartApi, createCoreOrganizationApi, createPlatformApiClient } from "@repo/api";
@@ -37,8 +37,6 @@ export default function OrganizationPlace() {
   const tc = useTranslations("orgChart");
   const { user, isLoading } = useAuth();
   const chartAccess = useOrgChartAccess();
-  const router = useRouter();
-  const pathname = usePathname();
   const params = useSearchParams();
   const queryClient = useQueryClient();
   const today = useMemo(() => todayCalendarDate(), []);
@@ -82,9 +80,13 @@ export default function OrganizationPlace() {
       }
       query.delete("reveal");
       const search = query.toString();
-      router.replace(search ? `${pathname}?${search}` : pathname, { scroll: false });
+      // The view and the date live in the URL, but changing them is client state: the history API updates
+      // useSearchParams without a server round trip, so the slider and Replay follow the hand (B-399). The browser's
+      // path keeps the app's base path (/core), which Next's pathname leaves out.
+      const path = window.location.pathname;
+      window.history.replaceState(window.history.state, "", search ? `${path}?${search}` : path);
     },
-    [canStructure, params, pathname, router, today]
+    [canStructure, params, today]
   );
 
   // ── Replay: the company from its first day to today, a step at a time, each step loaded before it shows ──

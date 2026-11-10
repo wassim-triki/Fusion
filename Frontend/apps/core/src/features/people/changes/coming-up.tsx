@@ -28,6 +28,9 @@ const first = (name: string) => name.split(" ")[0] ?? name;
 /** Leave the person is on today, rather than leave still to come. */
 const onLeaveNow = (change: WorkforceChangeDto) => change.kind === "Leave" && change.status === "InEffect";
 
+/** A change dated today has already applied; it stays listed only so it can still be undone today. */
+const appliedToday = (change: WorkforceChangeDto) => change.kind !== "Leave" && change.status === "InEffect";
+
 /**
  * The day a change is about: the last day for an end of employment, the return day for leave already under way, the
  * first day otherwise.
@@ -71,8 +74,12 @@ export function ChangeBadge({ change }: { change: WorkforceChangeDto }) {
     if (!onLeaveNow(change)) return <StatusBadge tone="neutral">{t("leaveFrom", { date })}</StatusBadge>;
     return <StatusBadge tone="info" dot>{change.back ? t("onLeave", { date }) : t("onLeaveOpen")}</StatusBadge>;
   }
-  if (change.kind === "Join") return <StatusBadge tone="info" dot>{t("joins", { date })}</StatusBadge>;
   if (change.kind === "EndEmployment") return <StatusBadge tone="danger" dot>{t("leaves", { date })}</StatusBadge>;
+  if (appliedToday(change)) {
+    const words = change.kind === "Join" ? t("joinedToday") : change.details.managerChanged ? t("movedToday") : t("changedToday");
+    return <StatusBadge tone="success" dot>{words}</StatusBadge>;
+  }
+  if (change.kind === "Join") return <StatusBadge tone="info" dot>{t("joins", { date })}</StatusBadge>;
   return <StatusBadge tone="warning" dot>{change.details.managerChanged ? t("moves", { date }) : t("changes", { date })}</StatusBadge>;
 }
 
@@ -177,7 +184,10 @@ export function ComingUpCard({
       <div className={cn(compact && "grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3.5", !compact && "contents")}>
         <CalendarTile date={changeDay(change)} />
         <div className="min-w-0">
-          <h4 className="type-label font-semibold">{describe(change)}</h4>
+          <h4 className="flex flex-wrap items-center gap-2 type-label font-semibold">
+            {describe(change)}
+            {appliedToday(change) && change.kind !== "EndEmployment" ? <StatusBadge tone="success">{t("inEffect")}</StatusBadge> : null}
+          </h4>
           {compact ? (
             <p className="mt-0.5 type-meta text-muted-foreground">
               {change.details.teamOutcome === "Along" && change.details.teamCount

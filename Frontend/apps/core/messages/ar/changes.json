@@ -33,7 +33,11 @@
     "done": "تم",
     "level": "المستوى",
     "reason": "السبب",
-    "drafted": "ملأه Fusion من جملتك"
+    "drafted": "ملأه Fusion من جملتك",
+    "missingJob": "لا توجد وظيفة <b>{title}</b> بعد",
+    "addJob": "إضافتها",
+    "askForJob": "اطلب من الموارد البشرية إضافتها",
+    "addJobFailed": "تعذّر على Fusion إضافة هذه الوظيفة."
   },
   "when": {
     "from": "ابتداءً من",
@@ -124,7 +128,8 @@
     "leaveGeneric": "إجازة",
     "changeLeave": "تعديل",
     "endEarly": "إنهاء مبكر",
-    "cancelLeave": "إلغاء الإجازة"
+    "cancelLeave": "إلغاء الإجازة",
+    "inEffect": "سارٍ"
   },
   "badge": {
     "moves": "ينتقل {date}",
@@ -133,7 +138,10 @@
     "leaves": "يغادر {date}",
     "onLeave": "في إجازة · العودة {date}",
     "onLeaveOpen": "في إجازة",
-    "leaveFrom": "إجازة من {date}"
+    "leaveFrom": "إجازة من {date}",
+    "movedToday": "انتقل اليوم",
+    "changedToday": "تغيّر اليوم",
+    "joinedToday": "انضم اليوم"
   },
   "cancel": {
     "move": "إلغاء انتقال {name} في {date}؟",
@@ -312,5 +320,10 @@
     "saved": "تبدأ إجازة {name} في {date}",
     "changed": "عُدّلت الإجازة",
     "noTypes": "أضف أنواع الإجازات أولًا في الإعدادات › القوائم."
+  },
+  "blocked": {
+    "missingJob": "أضف <b>{title}</b> أو اختر وظيفة أخرى للحفظ",
+    "nothing": "اختر ما يتغير للحفظ",
+    "manager": "اختر المدير الجديد للحفظ"
   }
 }

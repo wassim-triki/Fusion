@@ -70,6 +70,8 @@ export interface ChangeDraftDto {
   jobId: string | null;
   jobTitle: string | null;
   jobLevel: string | null;
+  /** A job the sentence names that the company doesn't have yet, as written. */
+  missingJob: string | null;
   orgUnitId: string | null;
   orgUnitName: string | null;
   placeId: string | null;

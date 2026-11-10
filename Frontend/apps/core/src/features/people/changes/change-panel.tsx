@@ -18,7 +18,7 @@ import { Check, MessageSquare, Pencil, Sparkles, Stamp, Target, Undo2, UserRound
 import { useCompanyWorkWeek } from "@repo/api/query";
 import { useRefusal } from "@/i18n/words";
 import { JobPicker, PlacePicker } from "@/features/catalog/components/catalog-pickers";
-import { useCompanyLists, useJobs } from "@/features/catalog/api/use-catalog";
+import { useCompanyLists, useJobMutations, useJobs } from "@/features/catalog/api/use-catalog";
 import { useOrganizationHierarchy } from "@/features/organization/api/use-organization";
 import { usePeopleProfile } from "../api/use-people";
 import { ManagerPicker, OrganizationPicker, flattenOrg } from "../components/workforce-pickers";
@@ -160,6 +160,9 @@ function JobForm({
   const [note, setNote] = useState(editing?.note ?? "");
   const [said, setSaid] = useState("");
   const [read, setRead] = useState<"nothing" | "leaving" | null>(null);
+  // A job the sentence names that the company doesn't have yet; adding it fills the job.
+  const [missingJob, setMissingJob] = useState<string | null>(null);
+  const jobMutations = useJobMutations();
   // Parts the person set themselves are never redrafted; the ones AI filled carry a sparkle.
   const byHand = useRef(new Set<Part>());
   const [byAi, setByAi] = useState<ReadonlySet<Part>>(new Set());
@@ -171,6 +174,17 @@ function JobForm({
   const approvals = useApprovalSettings(describes);
   const lists = useCompanyLists(!reportingOnly);
   const jobs = useJobs(describes);
+  const addMissingJob = async () => {
+    if (!missingJob) return;
+    setError(null);
+    try {
+      const created = await jobMutations.create.mutateAsync({ title: missingJob });
+      setJob({ id: created.id, name: created.title, level: created.level?.label ?? null });
+      setMissingJob(null);
+    } catch (caught) {
+      setError(refusal(caught, t("facts.addJobFailed")));
+    }
+  };
   const reasons = (lists.data?.find((list) => list.id === "change-reasons")?.values ?? []).filter((value) => !value.isRetired || value.id === reasonId);
   const employmentTypes = (lists.data?.find((list) => list.id === "employment-types")?.values ?? [])
     .filter((value) => !value.isRetired || value.id === employmentType?.id || value.id === person.employment.employmentTypeId);
@@ -221,6 +235,7 @@ function JobForm({
 
   const setByHand = (part: Part) => {
     byHand.current.add(part);
+    if (part === "job") setMissingJob(null);
     setByAi((parts) => { const next = new Set(parts); next.delete(part); return next; });
   };
 
@@ -248,7 +263,10 @@ function JobForm({
       const newUnit = Boolean(result.orgUnitId && result.orgUnitId !== work?.orgUnitId);
       const newPlace = Boolean(result.placeId && result.placeId !== work?.placeId);
       fill("date", Boolean(result.date), () => setDate(result.date ?? todayIso()));
-      fill("job", newJob, () => setJob(newJob ? { id: result.jobId!, name: result.jobTitle ?? "", level: result.jobLevel } : null));
+      fill("job", newJob, () => {
+        setJob(newJob ? { id: result.jobId!, name: result.jobTitle ?? "", level: result.jobLevel } : null);
+        setMissingJob(newJob ? null : result.missingJob);
+      });
       fill("unit", newUnit, () => setUnit(newUnit ? { id: result.orgUnitId!, name: result.orgUnitName ?? "" } : null));
       fill("place", newPlace, () => setPlace(newPlace ? { id: result.placeId!, name: result.placeName ?? "" } : undefined));
       fill("reason", Boolean(result.reasonId), () => setReasonId(result.reasonId ?? null));
@@ -312,6 +330,10 @@ function JobForm({
       ? t.rich("summary.withTeam", { name: firstName(person.identity.displayName), count: person.directReportCount, date: format.date(date), b })
       : isToday ? t.rich("summary.today", { b }) : t.rich("summary.scheduled", { date: format.date(date), b });
   const busy = changeJob.isLoading || editChange.isLoading || propose.isLoading;
+  const blocked = missingJob && !anything ? t.rich("blocked.missingJob", { title: missingJob, b })
+    : !anything ? t("blocked.nothing")
+    : noManager === false && managerChanged && !chosen ? t("blocked.manager")
+    : null;
 
   return (
     <>
@@ -348,6 +370,19 @@ function JobForm({
                 open={open === "title"} onOpen={() => setOpen("title")} onUndo={() => { setByHand("job"); setJob(null); setOpen(null); }} onDone={() => setOpen(null)}>
                 <JobPicker value={job?.id ?? work?.jobId ?? null} onChange={(next) => { setByHand("job"); setJob({ id: next.id, name: next.title, level: next.level?.label ?? null }); setOpen(null); }} />
               </FactRow>
+              {missingJob && !titleChanged ? (
+                <div className="grid min-h-[34px] grid-cols-[84px_minmax(0,1fr)] items-center gap-2.5 py-1 animate-in fade-in-0 duration-300">
+                  <span aria-hidden />
+                  <div className="flex flex-wrap items-center justify-between gap-2 rounded-control bg-inlay py-1.5 pe-1.5 ps-3">
+                    <span className="min-w-0 type-meta">{t.rich("facts.missingJob", { title: missingJob, b })}</span>
+                    {rights.jobs ? (
+                      <Button writes type="button" size="sm" variant="outline" disabled={jobMutations.create.isLoading} onClick={() => void addMissingJob()}>
+                        {t("facts.addJob")}
+                      </Button>
+                    ) : <span className="type-meta text-muted-foreground">{t("facts.askForJob")}</span>}
+                  </div>
+                </div>
+              ) : null}
               {titleChanged && levelTo && levelFrom !== levelTo ? (
                 <FactRow fixed label={t("facts.level")} current={levelFrom ?? t("facts.none")} next={levelTo} drafted={byAi.has("job")} open={false} onOpen={() => undefined} onUndo={() => undefined}>
                   {null}
@@ -516,9 +551,9 @@ function JobForm({
 
         {error ? <p role="alert" className="pt-2 type-body text-destructive">{error}</p> : null}
       </div>
-      <Footer summary={summary}>
+      <Footer summary={blocked ?? summary}>
         <Button type="button" variant="ghost" onClick={onClose}>{t("action.cancel")}</Button>
-        <Button writes type="button" disabled={!anything || (noManager === false && managerChanged && !chosen) || busy} onClick={() => void save()}>
+        <Button writes type="button" disabled={blocked !== null || busy} onClick={() => void save()}>
           {waits ? t("request.send") : isToday ? t("action.save") : t("action.schedule", { date: format.date(date) })}
         </Button>
       </Footer>

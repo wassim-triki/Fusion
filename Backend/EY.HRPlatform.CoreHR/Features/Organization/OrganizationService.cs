@@ -444,6 +444,15 @@ public sealed class OrganizationService(
     {
         await using var transaction = await BeginOrganizationWriteAsync(cancellationToken);
         var unit = await GetUnitForMutationAsync(id, expectedVersion, cancellationToken);
+        if (kind is OrganizationChangeKind.Change or OrganizationChangeKind.Correction
+            && await ResolveStateAsync(id, effectiveDate, cancellationToken) is { } current)
+            patch = patch with
+            {
+                NameChanged = patch.NameChanged && patch.Name != current.Name,
+                TypeIdChanged = patch.TypeIdChanged && patch.TypeId != current.OrganizationalUnitTypeId,
+                ParentIdChanged = patch.ParentIdChanged && patch.ParentId != current.ParentOrgUnitId,
+                LifecycleStateChanged = patch.LifecycleStateChanged && patch.LifecycleState != current.LifecycleState,
+            };
         if (unit.IsRoot && (kind == OrganizationChangeKind.Move || kind == OrganizationChangeKind.Inactivate || patch.TypeIdChanged || patch.ParentIdChanged))
             throw new ArgumentException("The permanent root cannot be moved, retyped, or inactivated.");
         if (kind == OrganizationChangeKind.Move && patch.ParentId is not Guid parentId)

@@ -7,7 +7,7 @@ export type PeopleEmploymentState =
   | "Former"
   | "Incomplete";
 export type PeopleOrganizationScope = "Direct" | "Subtree";
-export type PeopleSortField = "Name" | "EmployeeNumber" | "EmploymentDate";
+export type PeopleSortField = "Name" | "EmployeeNumber" | "EmploymentDate" | "Manager" | "Place" | "SignIn";
 export type PeopleSortDirection = "Asc" | "Desc";
 export type EmployeeNumberMode = "Generated" | "Manual";
 /** People's views (D-13); Left holds former people. */

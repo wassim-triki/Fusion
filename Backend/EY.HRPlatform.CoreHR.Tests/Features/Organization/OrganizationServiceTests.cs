@@ -197,6 +197,25 @@ public sealed class OrganizationServiceTests
     }
 
     [Fact]
+    public async Task Root_can_be_renamed_when_the_form_resends_its_type_but_not_retyped()
+    {
+        var tenantId = Guid.NewGuid();
+        await using var db = TestDbContextFactory.Create(TestTenantContext.WithTenant(tenantId));
+        var service = new OrganizationService(db, TestTenantContext.WithTenant(tenantId));
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var root = await service.CreateRootAsync(new CreateOrganizationRootRequest("ORG", "Fusion", today), default);
+
+        var renamed = await service.ChangeAsync(root.Id, root.Version,
+            new ChangeOrganizationUnitRequest("Fusion Group", root.TypeId, today), default);
+
+        Assert.Equal("Fusion Group", renamed.Name);
+        var history = await service.GetHistoryAsync(root.Id, default);
+        Assert.Equal([OrganizationBusinessEventKind.Renamed], history.Single(change => change.Kind == OrganizationChangeKind.Change).BusinessEventKinds);
+        await Assert.ThrowsAsync<ArgumentException>(() => service.ChangeAsync(root.Id, renamed.Version,
+            new ChangeOrganizationUnitRequest(null, OrganizationalUnitTypeCatalog.TeamId, today), default));
+    }
+
+    [Fact]
     public async Task Upcoming_changes_expose_move_and_inactivation_context_without_conflating_name_and_code()
     {
         var tenantId = Guid.NewGuid();

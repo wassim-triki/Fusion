@@ -1,40 +1,42 @@
 import { useState } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DateRangePicker, type DateRangeValue } from "./date-range-picker";
 
-function Picker({ closed = () => {} }: { closed?: () => void }) {
-  const [value, setValue] = useState<DateRangeValue>({ from: "2026-01-10", to: "2026-01-20" });
-  return <><DateRangePicker aria-label="Dates" value={value} onChange={setValue}
-    onOpenChange={open => { if (!open) closed(); }} /><output data-testid="value">{JSON.stringify(value)}</output></>;
+function Picker({ initial = { from: "2026-01-10", to: "2026-01-20" } }: { initial?: DateRangeValue }) {
+  const [value, setValue] = useState<DateRangeValue>(initial);
+  return <><DateRangePicker aria-label="Dates" value={value} onChange={setValue} /><output data-testid="value">{JSON.stringify(value)}</output></>;
 }
 
-describe("Date range interaction", () => {
-  it("starts a new range, accepts the same day twice and notifies closing", async () => {
-    const user = userEvent.setup(), closed = vi.fn();
-    render(<Picker closed={closed} />);
-    await user.click(screen.getByRole("button", { name: "Dates" }));
-    const day = document.querySelector<HTMLButtonElement>('button[data-day="1/15/2026"]')!;
-    await user.click(day);
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
-    await user.click(document.querySelector<HTMLButtonElement>('button[data-day="1/15/2026"]')!);
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(screen.getByTestId("value")).toHaveTextContent('{"from":"2026-01-15","to":"2026-01-15"}');
-    expect(closed).toHaveBeenCalledOnce();
-  });
+const day = (date: string) => document.querySelector<HTMLButtonElement>(`button[data-day="${date}"]`)!;
 
-  it("orders reverse clicks and starts fresh after reopening", async () => {
+describe("Date range interaction", () => {
+  it("moves each end on its own and never clears the other", async () => {
     const user = userEvent.setup();
     render(<Picker />);
     await user.click(screen.getByRole("button", { name: "Dates" }));
-    await user.click(document.querySelector<HTMLButtonElement>('button[data-day="1/25/2026"]')!);
-    await user.click(document.querySelector<HTMLButtonElement>('button[data-day="1/5/2026"]')!);
+    await user.click(day("1/5/2026"));
+    expect(screen.getByTestId("value")).toHaveTextContent('{"from":"2026-01-05","to":"2026-01-20"}');
+    await user.click(day("1/25/2026"));
     expect(screen.getByTestId("value")).toHaveTextContent('{"from":"2026-01-05","to":"2026-01-25"}');
+    // Inside the range, the nearer end moves.
+    await user.click(day("1/8/2026"));
+    expect(screen.getByTestId("value")).toHaveTextContent('{"from":"2026-01-08","to":"2026-01-25"}');
+    await user.click(day("1/22/2026"));
+    expect(screen.getByTestId("value")).toHaveTextContent('{"from":"2026-01-08","to":"2026-01-22"}');
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
+  it("orders the first two clicks of an empty range", async () => {
+    const user = userEvent.setup();
+    render(<Picker initial={{}} />);
     await user.click(screen.getByRole("button", { name: "Dates" }));
-    await user.click(document.querySelector<HTMLButtonElement>('button[data-day="1/12/2026"]')!);
-    expect(screen.getByTestId("value")).toHaveTextContent('{"from":"2026-01-12"}');
-    await user.keyboard("{Escape}");
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    const now = new Date();
+    const pick = (d: number) => day(`${now.getMonth() + 1}/${d}/${now.getFullYear()}`);
+    await user.click(pick(20));
+    await user.click(pick(5));
+    const iso = (d: number) => `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    expect(screen.getByTestId("value")).toHaveTextContent(JSON.stringify({ from: iso(5), to: iso(20) }));
   });
 });

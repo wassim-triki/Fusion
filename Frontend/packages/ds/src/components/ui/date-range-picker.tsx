@@ -23,6 +23,10 @@ export interface DateRangeValue {
  * {@link DatePicker}. Works in `YYYY-MM-DD` string space so it drops in wherever the API already
  * speaks dates, without touching serialization, and parses/formats in local time so the day the
  * user picks is the day that is stored.
+ *
+ * The two ends move independently (B-399): once both are set, a day before the start moves the start, a day after
+ * the end moves the end, and a day inside moves the nearer end. Nothing is cleared, and the popup stays open so both
+ * ends can be adjusted.
  */
 function DateRangePicker({
   value,
@@ -54,9 +58,6 @@ function DateRangePicker({
   const locale = useLocale();
   const t = useTranslations("ds.datePicker");
   const [open, setOpen] = React.useState(false);
-  // When the popup opens onto an already-complete range, the first day-click should start a fresh
-  // range from that day rather than nudge an endpoint of the old one — the intuitive way to re-pick.
-  const anchor = React.useRef<Date | null>(null);
 
   const from = parseISODate(value?.from);
   const to = parseISODate(value?.to);
@@ -75,7 +76,6 @@ function DateRangePicker({
       onOpenChange={(next) => {
         setOpen(next);
         onOpenChange?.(next);
-        if (next) anchor.current = null;
       }}
     >
       <PopoverTrigger asChild>
@@ -111,25 +111,22 @@ function DateRangePicker({
           endMonth={maxDate ?? new Date(2200, 11, 31)}
           disabled={disabledMatchers.length > 0 ? disabledMatchers : undefined}
           onSelect={(_range: DateRange | undefined, day: Date) => {
-            if (!anchor.current) {
-              anchor.current = day;
-              onChange({ from: formatISODate(day), to: undefined });
-              return;
-            }
-            const first = anchor.current;
-            const next = {
-              from: formatISODate(first <= day ? first : day),
-              to: formatISODate(first <= day ? day : first),
-            };
-            anchor.current = null;
-            onChange(next);
-            setOpen(false);
-            onOpenChange?.(false);
+            const next = moveEnd(from, to, day);
+            onChange({ from: formatISODate(next.from), to: next.to && formatISODate(next.to) });
           }}
         />
       </PopoverContent>
     </Popover>
   );
+}
+
+/** The range after a click on `day`: the first click sets the start, then each click moves one end, never clearing. */
+function moveEnd(from: Date | undefined, to: Date | undefined, day: Date): { from: Date; to?: Date } {
+  if (!from) return { from: day };
+  if (!to) return day < from ? { from: day, to: from } : { from, to: day };
+  if (day < from) return { from: day, to };
+  if (day > to) return { from, to: day };
+  return day.getTime() - from.getTime() <= to.getTime() - day.getTime() ? { from: day, to } : { from, to: day };
 }
 
 /** Parse `YYYY-MM-DD` into a local-time Date (midnight), or undefined. */

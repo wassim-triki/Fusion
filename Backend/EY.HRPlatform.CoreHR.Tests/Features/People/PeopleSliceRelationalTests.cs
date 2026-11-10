@@ -94,6 +94,17 @@ public sealed class PeopleSliceRelationalTests
             Assert.Equal("Fusion / People Operations", row.Work!.OrganizationPath);
             Assert.Equal("Maya North", row.PrimaryManager!.DisplayName);
 
+            // Sorting by manager keeps people without one last, whichever way it runs; by name, Jon comes first.
+            foreach (var direction in new[] { PeopleSortDirection.Asc, PeopleSortDirection.Desc })
+            {
+                var byManager = await new PeopleQueryHandler(db, tenant).Handle(
+                    new PeopleQuery(Sort: PeopleSortField.Manager, Direction: direction), default);
+                Assert.Equal(["Jon Vale", "Maya North"], byManager.Value.Items.Select(item => item.DisplayName));
+            }
+            var byNameDesc = await new PeopleQueryHandler(db, tenant).Handle(
+                new PeopleQuery(Sort: PeopleSortField.Name, Direction: PeopleSortDirection.Desc), default);
+            Assert.Equal(["Maya North", "Jon Vale"], byNameDesc.Value.Items.Select(item => item.DisplayName));
+
             var profile = await new PeopleProfileQueryHandler(db, organization, new EY.HRPlatform.CoreHR.Features.People.Changes.WorkforceChangeReader(db)).Handle(
                 new PeopleProfileQuery(establish.Value.EmployeeKey), default);
             Assert.True(profile.IsSuccess);

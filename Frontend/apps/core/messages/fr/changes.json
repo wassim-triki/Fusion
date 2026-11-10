@@ -33,7 +33,11 @@
     "done": "OK",
     "level": "Niveau",
     "reason": "Motif",
-    "drafted": "Rempli par Fusion à partir de votre phrase"
+    "drafted": "Rempli par Fusion à partir de votre phrase",
+    "missingJob": "Le poste <b>{title}</b> n'existe pas encore",
+    "addJob": "L'ajouter",
+    "askForJob": "Demandez aux RH de l'ajouter",
+    "addJobFailed": "Fusion n'a pas pu ajouter ce poste."
   },
   "when": {
     "from": "À partir du",
@@ -124,7 +128,8 @@
     "leaveGeneric": "absence",
     "changeLeave": "Modifier",
     "endEarly": "Terminer plus tôt",
-    "cancelLeave": "Annuler l'absence"
+    "cancelLeave": "Annuler l'absence",
+    "inEffect": "En vigueur"
   },
   "badge": {
     "moves": "Change le {date}",
@@ -133,7 +138,10 @@
     "leaves": "Part le {date}",
     "onLeave": "Absent · retour le {date}",
     "onLeaveOpen": "Absent",
-    "leaveFrom": "Absent à partir du {date}"
+    "leaveFrom": "Absent à partir du {date}",
+    "movedToday": "Changé aujourd'hui",
+    "changedToday": "Changé aujourd'hui",
+    "joinedToday": "Arrivé aujourd'hui"
   },
   "cancel": {
     "move": "Annuler le changement d'équipe de {name} le {date} ?",
@@ -312,5 +320,10 @@
     "saved": "L'absence de {name} commence le {date}",
     "changed": "Absence modifiée",
     "noTypes": "Ajoutez d'abord des types d'absence dans Paramètres › Listes."
+  },
+  "blocked": {
+    "missingJob": "Ajoutez <b>{title}</b> ou choisissez un autre poste pour enregistrer",
+    "nothing": "Choisissez ce qui change pour enregistrer",
+    "manager": "Choisissez le nouveau responsable pour enregistrer"
   }
 }

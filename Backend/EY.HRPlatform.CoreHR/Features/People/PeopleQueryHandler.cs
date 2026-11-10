@@ -112,6 +112,7 @@ public sealed class PeopleQueryHandler(
         candidates = await FilterByFieldsAsync(candidates, request.Fields, cancellationToken);
         if (request.IncludeSignIn)
             candidates = await WithSignInAsync(candidates, cancellationToken);
+        candidates = SortInMemory(candidates, request.Sort, request.Direction);
 
         var views = new PeopleViewCountsDto(
             candidates.Count(item => InView(item.Row, PeopleView.Everyone)),
@@ -291,6 +292,41 @@ public sealed class PeopleQueryHandler(
         return Result.Success(new PeoplePageDto(rows, total, page, pageSize, total == 0 ? 0 : (int)Math.Ceiling(total / (double)pageSize)));
     }
 
+    private static readonly PeopleSignInState[] SignInOrder =
+    [
+        PeopleSignInState.NotInvited, PeopleSignInState.Invited, PeopleSignInState.Expired,
+        PeopleSignInState.SignsIn, PeopleSignInState.Suspended, PeopleSignInState.NoEmail,
+    ];
+
+    /// <summary>
+    /// Sorts known only once the rows are read (the manager's and place's names, sign-in from Identity), over the
+    /// name order SQL already gave, so ties stay alphabetical; people with nothing to sort by go last.
+    /// </summary>
+    private static List<Candidate> SortInMemory(List<Candidate> candidates, PeopleSortField sort, PeopleSortDirection direction)
+    {
+        Func<Candidate, string?>? text = sort switch
+        {
+            PeopleSortField.Manager => item => item.Row.PrimaryManager?.DisplayName,
+            PeopleSortField.Place => item => item.Row.Work?.Location,
+            _ => null,
+        };
+        var descending = direction == PeopleSortDirection.Desc;
+        if (text is not null)
+        {
+            var known = candidates.Where(item => !string.IsNullOrWhiteSpace(text(item)));
+            var ordered = descending
+                ? known.OrderByDescending(text, StringComparer.CurrentCultureIgnoreCase)
+                : known.OrderBy(text, StringComparer.CurrentCultureIgnoreCase);
+            return ordered.Concat(candidates.Where(item => string.IsNullOrWhiteSpace(text(item)))).ToList();
+        }
+        if (sort == PeopleSortField.SignIn)
+        {
+            int Rank(Candidate item) => item.Row.SignIn is { } signIn ? Array.IndexOf(SignInOrder, signIn.State) : SignInOrder.Length;
+            return (descending ? candidates.OrderByDescending(Rank) : candidates.OrderBy(Rank)).ToList();
+        }
+        return candidates;
+    }
+
     private static string BuildOrderBy(PeopleSortField sort, PeopleSortDirection direction)
     {
         var dir = direction == PeopleSortDirection.Desc ? "DESC" : "ASC";
@@ -298,6 +334,8 @@ public sealed class PeopleQueryHandler(
         {
             PeopleSortField.EmployeeNumber => $"f.\"EmployeeNumber\" {dir}, f.\"EmployeeId\" ASC",
             PeopleSortField.EmploymentDate => $"f.\"EmploymentStart\" {dir} NULLS LAST, f.\"EmployeeId\" ASC",
+            // Sorted after reading (SortInMemory); ties by name, A–Z.
+            PeopleSortField.Manager or PeopleSortField.Place or PeopleSortField.SignIn => "lower(f.\"DisplayName\") ASC, f.\"EmployeeId\" ASC",
             // Roster shows "First Last", so "Name A–Z" must sort by the visible display name.
             _ => $"lower(f.\"DisplayName\") {dir}, f.\"EmployeeId\" ASC"
         };

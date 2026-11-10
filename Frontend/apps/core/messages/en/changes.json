@@ -33,7 +33,11 @@
     "done": "Done",
     "level": "Level",
     "reason": "Reason",
-    "drafted": "Filled by Fusion from your sentence"
+    "drafted": "Filled by Fusion from your sentence",
+    "missingJob": "There's no <b>{title}</b> job yet",
+    "addJob": "Add it",
+    "askForJob": "Ask HR to add it",
+    "addJobFailed": "Fusion couldn't add that job."
   },
   "when": {
     "from": "From",
@@ -124,7 +128,8 @@
     "leaveGeneric": "leave",
     "changeLeave": "Change",
     "endEarly": "End early",
-    "cancelLeave": "Cancel leave"
+    "cancelLeave": "Cancel leave",
+    "inEffect": "In effect"
   },
   "badge": {
     "moves": "Moves {date}",
@@ -133,7 +138,10 @@
     "leaves": "Leaves {date}",
     "onLeave": "On leave · back {date}",
     "onLeaveOpen": "On leave",
-    "leaveFrom": "Leave from {date}"
+    "leaveFrom": "Leave from {date}",
+    "movedToday": "Moved today",
+    "changedToday": "Changed today",
+    "joinedToday": "Joined today"
   },
   "cancel": {
     "move": "Cancel {name}'s move on {date}?",
@@ -312,5 +320,10 @@
     "saved": "{name}'s leave is set from {date}",
     "changed": "Leave changed",
     "noTypes": "Add leave types in Settings › Lists first."
+  },
+  "blocked": {
+    "missingJob": "Add <b>{title}</b> or pick another job to save",
+    "nothing": "Pick what changes to save",
+    "manager": "Pick the new manager to save"
   }
 }

@@ -1,13 +1,17 @@
 using EY.HRPlatform.CoreHR.Domain.Entities;
 using EY.HRPlatform.CoreHR.Features.Employees.Services;
+using EY.HRPlatform.CoreHR.Features.OrgChart;
 using EY.HRPlatform.CoreHR.Features.People;
 using EY.HRPlatform.CoreHR.Features.People.Changes;
+using EY.HRPlatform.CoreHR.Features.TenantSettings.Dtos;
+using EY.HRPlatform.CoreHR.Features.TenantSettings.Services;
 using EY.HRPlatform.CoreHR.Features.Workforce.Services;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence;
 using EY.HRPlatform.CoreHR.Tests.TestHelpers;
 using EY.HRPlatform.CoreHR.Tests.Features.Organization;
 using EY.HRPlatform.CoreHR.Tests.TestSupport;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 
 namespace EY.HRPlatform.CoreHR.Tests.Features.People;
 
@@ -41,6 +45,16 @@ public sealed partial class TemporalWorkforceMaintenanceRelationalTests
             Assert.Null((await AsColleagueAsync(db, ctx, ctx.KarimKey, ctx.YoussefId)).Leave!.Type);
             Assert.Equal("Annual leave", (await AsColleagueAsync(db, ctx, ctx.KarimKey, ctx.KarimId)).Leave!.Type);
             Assert.Contains((await ProfileAsync(db, ctx, ctx.KarimKey)).ComingUp, item => item.Id == leave.Id);
+
+            // The chart on a date shows who is away that day: coming today, away on its first day, back after it.
+            var settings = new Mock<ITenantSettingsReadService>();
+            settings.Setup(s => s.GetCurrentAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new TenantSettingsDto());
+            async Task<PersonLeaveDto?> OnChart(DateTime day) => (await new OrgChartQueryHandler(db, settings.Object)
+                .Handle(new OrgChartQuery(DateOnly.FromDateTime(day), OrgChartScopes.Tenant, null, HrAudience: true), default))
+                .Value.People.Single(p => p.EmployeeKey == ctx.KarimKey).Leave;
+            Assert.False((await OnChart(Today))!.Now);
+            Assert.Equal((true, (string?)null), ((await OnChart(monday))!.Now, (await OnChart(monday))!.Type));
+            Assert.Null(await OnChart(friday.AddDays(1)));
 
             // It neither waits for nor blocks a job change, before or after it.
             await JobAsync(db, ctx, ctx.KarimKey, new JobChangeRequest(Today.AddDays(3), JobId: db.JobId(ctx.Tenant.TenantId, "Lead")));

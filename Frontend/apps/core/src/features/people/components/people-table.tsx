@@ -31,6 +31,7 @@ import type {
   OrganizationHierarchyNodeDto,
   PeopleQueryParams,
   PeopleRowDto,
+  PeopleSortField,
   PeopleView,
   PeopleViewCountsDto,
   WorkforceChangeDto,
@@ -50,6 +51,8 @@ import { LayoutSwitch } from "./people-layout";
 import { PeoplePendingContent } from "./people-page-skeleton";
 
 const PAGE_SIZES = [10, 25, 50];
+/** Each sortable column's `?sort=` name and the server's sort for it. */
+const SORTS: Record<string, PeopleSortField> = { name: "Name", manager: "Manager", place: "Place", start: "EmploymentDate", signIn: "SignIn" };
 
 /** Each view's address and the server's name for it. */
 type ViewSlug = "everyone" | "starting-soon" | "leaving" | "not-signed-in" | "left";
@@ -243,6 +246,7 @@ export function PeopleTable({ header }: { header: (count: number | null) => Reac
   const viewSlug = searchParams.get("view") ?? "everyone";
   const current = VIEWS.find((item) => item.slug === viewSlug) ?? VIEWS[0]!;
   const sortParam = searchParams.get("sort") ?? "name";
+  const sortColumn = SORTS[sortParam.replace("-", "")] ? sortParam.replace("-", "") : "name";
   const query = useMemo<PeopleQueryParams>(() => {
     const fields: Record<string, string> = {};
     searchParams.forEach((value, key) => {
@@ -257,12 +261,12 @@ export function PeopleTable({ header }: { header: (count: number | null) => Reac
       manager: searchParams.get("manager"),
       fields: Object.keys(fields).length ? fields : null,
       importBatch: searchParams.get("importBatch"),
-      sort: sortParam.replace("-", "") === "start" ? "EmploymentDate" : "Name",
+      sort: SORTS[sortColumn],
       direction: sortParam.startsWith("-") ? "Desc" : "Asc",
       page: Math.max(1, Number(searchParams.get("page")) || 1),
       pageSize: PAGE_SIZES.includes(Number(searchParams.get("size"))) ? Number(searchParams.get("size")) : 10,
     };
-  }, [current.view, searchParams, sortParam]);
+  }, [current.view, searchParams, sortParam, sortColumn]);
 
   // Changes build on the last address asked for: the URL catches up asynchronously.
   const pending = useRef<URLSearchParams | null>(null);
@@ -363,23 +367,28 @@ export function PeopleTable({ header }: { header: (count: number | null) => Reac
           ),
         },
       }),
-      column.display({
+      column.accessor((row) => row.primaryManager?.displayName ?? "", {
         id: "manager",
         header: t("columns.manager"),
         cell: ({ row }) => {
           const manager = row.original.primaryManager;
+          // The manager opens their own page; the rest of the row opens the person.
           return manager ? (
-            <span className="flex min-w-0 items-center gap-2">
+            <Link
+              href={`/people/${manager.employeeKey}`}
+              onClick={(event) => event.stopPropagation()}
+              className="flex min-w-0 items-center gap-2 underline-offset-4 outline-none hover:underline focus-visible:rounded-control focus-visible:ring-2 focus-visible:ring-ring"
+            >
               <Monogram name={manager.displayName} photoUrl={manager.photoUrl} size="xs" />
               <span className="truncate type-body">{manager.displayName}</span>
-            </span>
+            </Link>
           ) : (
             <DataTableCellEmpty />
           );
         },
         meta: { hideBelow: "md", skeleton: <Skeleton className="h-4 w-28" /> },
       }),
-      column.display({
+      column.accessor((row) => row.work?.location ?? "", {
         id: "place",
         header: t("columns.place"),
         cell: ({ row }) => (row.original.work?.location ? <span className="truncate type-body">{row.original.work.location}</span> : <DataTableCellEmpty />),
@@ -400,7 +409,7 @@ export function PeopleTable({ header }: { header: (count: number | null) => Reac
       }),
       ...(showSignIn
         ? [
-            column.display({
+            column.accessor((row) => row.signIn?.state ?? "", {
               id: "signIn",
               header: t("columns.signIn"),
               cell: ({ row }) => <SignInCell person={row.original} />,
@@ -427,7 +436,7 @@ export function PeopleTable({ header }: { header: (count: number | null) => Reac
     [t, day, coming, showSignIn, rights.lines, rights.people, canInvite, changeSheet.start, invite]
   );
 
-  const sorting: SortingState = [{ id: sortParam.replace("-", "") === "start" ? "start" : "name", desc: sortParam.startsWith("-") }];
+  const sorting: SortingState = [{ id: sortColumn, desc: sortParam.startsWith("-") }];
   const model = useDataTable({
     data: data?.items,
     columns,

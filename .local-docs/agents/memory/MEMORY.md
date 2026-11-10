@@ -140,6 +140,7 @@
 - [Board categories](board-essentials-definition.md) — Ready/Needs discussion grouped: Big features · Polish · Before hosting · Cleanup and tooling · Parked.
 - [Graduation demo and report](graduation-demo-and-report.md) — jury audience, but build a real self-explanatory HRIS, no demo-story dumbing; time never constrains scope; report studies existing solutions → mark parity / improvement / new.
 - [Architecture-durable planning](architecture-durable-planning.md) — cycle-aware identity, one domain authz policy, capability composition not personas, no dubious aggregates.
+- [Fusion does the bookkeeping](fusion-does-the-bookkeeping.md) — frictionless first: nothing typed, ticked or waited on that Fusion can compute; calibration by exception (D-35, D-40).
 
 ## Working notes (tracked since B-159, 2026-10-29)
 - `.local-docs/agents/` (AGENTS.md, STATE, BACKLOG, LOG, plans, data/, git-conventions, this memory/) is tracked in the public repo; `archive/`, screen images, `data/*.local.json` and `.work/` stay local. The Claude memory folder is a junction to `memory/` here. No passwords in any of it: `FUSION_LOCAL_PASSWORD` (accounts) and `FUSION_PG_PASSWORD` (Postgres) are Windows user variables. Older notes are zipped in `archive/old-notes-2026-10.zip`; paths to `.local-docs/specs|core|screenshots` in older memories are gone.

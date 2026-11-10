@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-405.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-413.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -28,8 +28,7 @@ None.
 
 ## In review
 
-- [ ] **B-390** Performance scope page: answer it (stage 2's checkpoint) · Performance · 2026-11-10
-      Look at: https://claude.ai/artifact/VMaufYFnS2JUbPbd4xnbxm (picks preselected; change rungs, pull back from Not doing, answer Q1–Q5, Copy my choices or just say done). Reasoning: [brief](plans/B-390-target-brief.md). The item itself stays under Stack 1 in Ready.
+None.
 
 ## Ready
 
@@ -38,17 +37,32 @@ None.
 From B-331's walk (2026-11-09; the user's words, step by step, in `design/walkthrough-2026-11-09.md`; the B-numbers on notes trace to them). One item per surface: notes are evidence for rethinking the surface as a whole, not a list of fixes; functions sit apart from visuals. (D) = needs discussion.
 
 - [ ] **B-390** Stack 1 · Performance redesigned as a module, functions and visuals together · Performance · 2026-11-09
-          Map done 2026-11-09 (session 2): [plan](plans/B-390-performance-redesign.md), [map](plans/B-390-map.md). A first scope page (`plans/B-390-scope.html`) was superseded the same day; the foundation went first (D-32). Stage 2 redone 2026-11-10: [target brief](plans/B-390-target-brief.md) and a fresh scope page (`plans/B-390-scope-2.html`, https://claude.ai/artifact/VMaufYFnS2JUbPbd4xnbxm), waiting on the user's answers (In review).
+          Map done 2026-11-09 (session 2): [plan](plans/B-390-performance-redesign.md), [map](plans/B-390-map.md). Scope settled 2026-11-10 (checkpoint 2): [target brief](plans/B-390-target-brief.md) §7b, decisions D-33–D-42 in `design/decisions.md`; the user's word over everything: remove friction wherever Fusion can do the work (D-40). Stage 3 started: [design direction](plans/B-390-design-direction.md); next its checkpoint 3a style frame (B-412).
           First priority after B-398: Core HR could demo tomorrow, Performance couldn't (user). Not from the ground up: what the module does stays; its functions are cleaned up, fixed and completed, its visuals rewritten the way Core HR's were.
-          How, the Core HR rebuild's process again (B-164, files in `archive/plans/B-164-*`): a map of what exists (code inventory and a live walk, B-165) → a target brief and scope page with depth ladders per feature, studied against other products (B-163) → a design direction, then explorers checkpoint by checkpoint until every screen has an accepted design, recorded as decisions (B-166; Core HR's are D-01–D-30) → the rebuild in dependency-ordered slices, one session each (B-167). This walk is the live part of the map.
-          Its first chapter settles B-397's Fusion-wide decisions (colours, empty states, loading shapes, icons, navigation) so Performance isn't designed on rules that change after.
+          How, the Core HR rebuild's process again (B-164, files in `archive/plans/B-164-*`): map → target brief and scope page with depth ladders → design direction, then explorers checkpoint by checkpoint until every screen has an accepted design, recorded as decisions (D-43 onwards) → the rebuild in dependency-ordered slices, one session each.
           The user's verdict, at Organization direction right after launch: "I don't think we can save this … the front end for the Performance module is absolutely garbage." Notes for the redesign: the cycle page after launch (what it's for, what to do next); measures ask for a Direction that baseline and target already give; the AI coach works but may not stay as it is; the 1:1 page doesn't tell a manager what to do; an empty first agenda says nothing about why; calibration doesn't explain itself; Performance's Overview can't be trusted.
+  - [ ] **B-412** Performance's design: explorers 3a–3d until every screen has an accepted design, then the slices · Performance · 2026-11-10
+          [Direction](plans/B-390-design-direction.md) §6: 3a style frame (the Year page, Goals › You, writing a review), 3b goals and conversations, 3c reviews and the end of the year, 3d across Fusion; each settles B-397's leftover Fusion-wide rules in context (navigation, type, empty states, panels, icons, your menu) as D-43 onwards. Then dependency-ordered slices, one session each.
+  - [ ] **B-405** The year on one page (hero H1, shines first): the Year page for everyone (next step, team, company for HR, the year replayed on its timeline), the phase from what happened and never backwards (D-34), HR moves the year on with a preview, nudges from the Year page, closing with unfinished goals carried into next year's drafts, HR insights with each figure opening its people and this year against last · Performance · 2026-11-10
+          Scope: Y2, Y3 at 3; Y4, Y5 at 2; S4 at 3; replaces Overview and the cycle page (D-33). Folds in B-392's phase and round-closing items. Unblocks B-395 (a year demoed in one sitting).
+  - [ ] **B-406** Goals from the company down (hero H2): one Goals place (Company, units, You, Your team, the map as a view), company and unit goals at a glance, measures read back as sentences with direction from the numbers, the plan with even weights and its line up to the company's, approval from Home and Team with what changed, progress updated from the goal, the coach's quiet suggestions, goal grades from the measure (D-38) · Performance · 2026-11-10
+          Scope: G1 at 3, G2–G7 at 2, N12 pulled back (D-38), weights per D-40.
+  - [ ] **B-407** Conversations: 1:1s where the meeting is the page (agenda with each item's source, starter agenda, notes, actions), calendar invites and a feed (D-39), a monthly reminder to update goals, feedback from wherever a person appears with the request lifecycle, praise with starter values, reactions and the company wall (D-36), growth goals on the person page and in 1:1s and reviews · Performance · 2026-11-10
+          Scope: D2, D3, D5 at 2; D1 at 1; D4 at 3; N7 pulled back. Calendar feed: `security-review` in its slice. Folds in B-392's praise and notification items (D-37).
+  - [ ] **B-408** Reviews written from the year (hero H3): rounds launched and followed from the Year page, the form with the year beside it, the draft and reflection starter citing each sentence's source, grades prefilled, peers nominated without waiting and answering from Home, results read like a document and acknowledged in place · Performance · 2026-11-10
+          Scope: V2 at 3; V1, V3, V5 at 2; D-18 change per D-40.
+  - [ ] **B-409** Calibration by exception (hero H4, D-35): only flagged reviews to look at, each with why; keep in one click or adjust with a reason; finalize and release what's ready; nothing flagged goes straight to release; the full view with the nine-box and drag one click away · Performance · 2026-11-10
+          Scope: V4 at 3. Folds in B-392's calibration items.
+  - [ ] **B-410** Starter content and competencies by job (D-36, D-41): starter values, scale, competencies and questions offered when Performance starts; AI drafts values and competency expectations from jobs, families and units; expectations per job family and level used in reviews, with what the next level asks; settings previewed where they land · Performance · 2026-11-10
+          Scope: Y6, D6 at 3; Y7 at 2. Builds on Core HR jobs' family and level (B-245 fills families from the import).
+  - [ ] **B-411** Performance across Fusion: the Team page's Performance tab inside the frame (each person's year with the one action due, the team's goals under the manager's), the person page's tab as the one place (Performance's own person page goes), Needs you acting in place on Home, one notification per moment to act (D-37), results export from the round · Performance, Core HR, shell · 2026-11-10
+          Scope: S1 at 3; S2, S3, S5 at 2; S6 at 1. Folds in B-392's "No one reports to you" (B-383).
   - [ ] **B-392** Performance: functions that are broken, missing or misused (not the visual rework, B-390) · Performance · 2026-11-09
-          - Praise can never be sent in a new company: it must name a company value and a new company has none (`GET /api/performance/values` → []); the button stays grey with no reason. Unblocked in the walk by adding values in Performance › Settings › Competencies. Fix: a value optional, or starter values, or the form says where to add them.
-          - (D) Mariam was notified when Aicha added a development goal while still drafting, then again on submit: should drafting steps notify at all?
-          - Calibration can't be finalized while any manager review in the round is outstanding (the round holds the whole roster, about 92, with only Aicha's in); the reason sits only in a hover tooltip on the grey button. Say it on the page; (D) whether HR may finalize and release the reviews that are in, leaving the rest. Also: a rating kept as the manager gave it needs a "Discussed" tick before it saves, unexplained.
+          - Praise can never be sent in a new company: it must name a company value and a new company has none (`GET /api/performance/values` → []); the button stays grey with no reason. Unblocked in the walk by adding values in Performance › Settings › Competencies. Decided: values their own list with starter values (D-36).
+          - Mariam was notified when Aicha added a development goal while still drafting, then again on submit. Decided: drafting steps notify nobody (D-37).
+          - Calibration can't be finalized while any manager review in the round is outstanding (the round holds the whole roster, about 92, with only Aicha's in); the reason sits only in a hover tooltip on the grey button. Decided: calibration by exception, HR finalizes what's ready (D-35). Also: a rating kept as the manager gave it needs a "Discussed" tick before it saves, unexplained.
           - After results are released the cycle still reads "Review": the round stays open until closed separately (the phase is Review while any round is Active), and nothing says to close it.
-          - (D) After closing the round the cycle reads "Planning" again: with no round open the phase comes from the dates only (before the planning deadline), whatever already happened (plans approved, results released).
+          - After closing the round the cycle reads "Planning" again (decided: the phase follows what happened, never backwards, D-34): with no round open the phase comes from the dates only (before the planning deadline), whatever already happened (plans approved, results released).
           - Team's Performance tab tells Mariam "No one reports to you" though people do (B-383).
   - [ ] **B-389** Performance cycle setup (`/performance/cycle/setup`): built before the Core HR rework and liked ("not bad at all", "something I'm proud of"); polish, not a redesign · Performance · 2026-11-09
           Notes, Details: the section headers' little subtitles and icons (Cycle details, Timeline, At a glance) still read as AI-made.
@@ -159,6 +173,7 @@ Prep for the demo, not active work.
 
 - [ ] **B-395** A live demo of a cycle that takes months in real life: the phase follows the dates, so a cycle run in one sitting goes Planning → Review → back to Planning. Likely: live parts on a company whose dates put today in the right phase, plus a company prepared through the product (and a Development-only seeder where the API can't reach past dates, asked first) already at reviews and calibration · demo data, Performance · 2026-11-09
       User, 2026-11-09: agreed for the demo (live on a fresh company, cut over to a prepared one for reviews and calibration); not as the long-term answer.
+      2026-11-10: D-34 settles the long-term answer (the phase follows what happened, never backwards; HR moves the year on with a preview), built in B-405; revisit this item once it is.
 
 ### Big features
 

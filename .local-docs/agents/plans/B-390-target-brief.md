@@ -122,18 +122,57 @@ The scope page has every feature with its ladder (0 not built · 1 works, minima
 
 **Not doing** (visible on the page, any of it can be pulled back): compensation reviews, engagement surveys, succession and talent pools, improvement plans (PIPs), upward feedback, reopening released reviews, calendar sync, Slack and Teams, an AI that joins or records meetings, progress read from other tools, asking about performance in words (the assistant, B-147), OKR grading, live co-editing of plans, a skills marketplace, links to Learning.
 
-## 8. Changes this scope would make to B-068
+## 7b. Scope as settled at checkpoint 2 (2026-11-10)
 
-Proposed, not decided until the user answers:
+The user's answers on the [scope page](https://claude.ai/artifact/VMaufYFnS2JUbPbd4xnbxm) (db doc `scope/main` v59), with the agent's resolution where the user asked for a call. This section wins over §7 where they differ. The decisions it confirms are D-33–D-42 in `design/decisions.md`.
+
+**The user's word over everything** (2026-11-10): "I really really value non-friction, because this type of module depends on too much … we need to weed out what we can while keeping it a Performance module, but also remove the friction as much as we can." Hence principle 9 below and D-40's list.
+
+**Questions:** Q1–Q4 as recommended: HR finalizes what's ready; five places (Year · Goals · 1:1s · Feedback · Reviews); drafting steps don't notify; the year is called by its name ("2026"). Q5 "whichever makes sense for the context": **the Year page (H1) shines first**, because it's the spine every other surface hands off to and the walk's worst failure (launch landed nowhere).
+
+**Raised by the user to rung 3:**
+- **D4 Praise:** plus a company wall, the week's praise and the values most given (lives in Feedback; its place decided in the explorer).
+- **D6 Competencies by job:** expectations per job family and level, read from Core HR's jobs (each job has a family and a level), used in reviews, and a person sees what the next level asks. From rung 1: this is the biggest scope change.
+- **S1 The team's Performance:** inside the Team page, each person's year with the one action due, plus the team's goals under the manager's.
+- **S4 HR insights:** on the Year page, each figure opening the people behind it, plus this year against last (history from D-40's Development seeder, B-068).
+- **Y6 Starter content:** starter sets offered when Performance starts, plus AI drafting values and competency expectations from the company's jobs, families and units; each suggestion applied by a person (P4).
+
+**Pulled back from "Not doing":**
+- **N7 Calendar invites for 1:1s, rung 2:** every scheduled 1:1 emails both people a calendar invite (`.ics`), updated or cancelled when the meeting moves; a personal calendar feed link anyone can subscribe to from Google or Outlook. No account connection or two-way sync (needs registered apps with Google and Microsoft; with hosting at the earliest). The feed link is a secret per person, revocable: `security-review` in its slice.
+- **N12 Goal grades (0.0–1.0), rung 2:** at the end of the year each goal gets a grade read from its measure (percent: progress; baseline to target: the share covered; milestones: the weighted share done), capped at 1.0. Shown on the goal, prefilled in the self and manager review in place of a per-goal rating typed by hand (D-16's optional objective rating); changing one needs a short reason. The plan's weighted grade is the attainment D-25's "rating disagrees with outcome" flag already reads. One number, three uses, no extra work for anyone.
+
+**The user's V4 note, resolved:** "I dislike the friction of having to calibrate manually, if we can bypass that somehow cleanly without making a bad or illogical feature." **Calibration by exception** (D-35): as manager reviews come in, Fusion checks each against the round (D-25's computed flags: a lenient or harsh manager, a rating that disagrees with the goals' grades, a move of two levels since last year). A review with no flag is ready as rated: nobody has to open it. The session shows only the flagged ones, each with why; HR keeps a rating in one click or changes it with a reason. A round with nothing flagged goes straight to release. The full view (spread against the scale, the nine-box, drag to adjust) stays one click away for anyone who wants to look at everyone. Calibration stays a round component a company may switch off (D-15). This is logical, not a bypass: the reason to calibrate is inconsistency, and the flags are exactly the inconsistencies a session looks for; established practice (and HiBob's and Betterworks' tooling) already spends the session on outliers.
+
+**Principle 9, from the user's note: Fusion does the bookkeeping.** Whatever Fusion can know or compute, nobody types, ticks or waits for: direction read from baseline and target; plan weights shared evenly until someone sets one, always totalling 100; grades read from measures; calibration by exception; release closes the round; launch lands on the next step; nominations go out without waiting; a review written from a draft of the year. Each step a person still takes is one they decide. Friction is judged in every explorer: for each screen, what does the person do that Fusion could have done?
+
+**Agent's calls, from the answers:**
+- **Values become their own list** (B-068 D-14 said values are the competency catalogue). With competencies per job family and level (D6 at 3), one list can't be both: a value is company-wide ("We own it"), a competency belongs to a role and a level. Starter values come with Performance; praise never waits on Settings.
+- **Peer nominations go out straight away** (B-068 D-18 had the manager approve the list first): the manager sees the list and may change it while peers answer. One wait removed; oversight kept.
+- **Weights:** each new goal takes an even share until the person sets one; setting one re-balances the rest; the total is always 100, never an error to fix. The same for contribution weights on calculated parents.
+- **Probation reviews** stay out (V6 at 0, not pulled).
+
+**Everything else** as picked on the page: heroes H1–H4 at rung 3 (Y2, Y3, G1, V2, V4 at 3); rung 2 for Y1, Y4, Y5, Y7, G2–G7, D2, D3, D5, V1, V3, V5, S2, S3, S5; rung 1 for D1 check-ins (a monthly reminder) and S6 (results export from the round); not doing N1–N6, N8–N11, N13, N14.
+
+**What the slices will build** (board children of B-390, ordered by dependency in the slicing step after the explorers): the Year (B-405), Goals (B-406), conversations (B-407), reviews (B-408), calibration (B-409), starter content and competencies by job (B-410), Performance across Fusion (B-411); the design work is B-412. B-392 (broken functions) and B-389 (setup polish) fold into the slices that touch the same code.
+
+## 8. Changes this scope makes to B-068
+
+Confirmed at checkpoint 2 (2026-11-10), recorded as D-33–D-42 in `design/decisions.md` and logged in `archive/plans/B-068-decisions.md`:
 - **D-01 phase**: the phase reads from events and dates (Planning → Execution → Review → Results out), never backwards; HR may move it on deliberately (rung 3).
 - **D-14 praise**: a value becomes optional when the company has none, and starter values are offered.
-- **D-23 calibration**: finalize what's ready, leaving the rest (Q1 on the page).
-- **D-30 notifications**: drafting steps don't notify (Q3).
+- **D-23 calibration**: by exception, finalize what's ready, no "Discussed" tick to keep a rating (Q1, the V4 note).
+- **D-30 notifications**: drafting steps don't notify; one notification per moment someone must act (Q3).
 - **D-32 person summary**: Performance's own person page goes; the person page tab is the one place.
 - **S-15 (B-069)**: Organization direction joins the sidebar as Goals › Company.
-- **A12 one-off reviews**: probation reviews offered at rung 0, out unless pulled.
+- **A12 one-off reviews**: probation reviews stay out (not pulled).
+- **D-14 values** (added at the answers): their own company list, not the competency catalogue.
+- **D-16 objective rating** (added): replaced by the goal's grade read from its measure, adjustable with a reason.
+- **D-18 peer nominations** (added): go out without the manager's approval first; the manager may change the list.
+- **Competency catalogue** (added): expectations per job family and level.
 
 ## 9. Questions for the user (taste and demo calls, also on the page)
+
+Answered 2026-11-10: see §7b.
 
 1. May HR finalize the reviews that are in before the rest? (recommended: yes)
 2. The sidebar: Year · Goals · 1:1s · Feedback · Reviews (recommended), today's with Direction added, or by role (For you · Your team · Company).

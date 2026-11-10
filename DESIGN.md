@@ -117,7 +117,8 @@ Rule: **sans for the system, serif for the human,** visible but scarce. If unsur
 - **One canonical record per object,** addressed by its owning context (e.g. `{cycleId, objectiveId}`), never by "current cycle". Reading a record is not entering the workspace that manages it.
 - Performance's shape: Year · Goals · 1:1s · Feedback · Reviews (D-33); its settings live in Fusion Settings. 1:1s and Feedback belong to people, not years.
 - **Modules in one sidebar** (D-45): each module is a group that folds, open by default; Home and Settings sit outside the groups. No module switcher.
-- **A record opened from a page:** its own page with a breadcrumb back (Performance › Year › the goal), or a panel over the page, chosen by what the record holds in that state (D-46, reopened by D-53; settled per record in Performance's explorers).
+- **A record opened from a page** (D-61): a panel over the page it was opened from, Escape and the scrim closing it; the quick look for a record. A goal opens this way in every state, a company goal included.
+- **A short task** (D-63): a small dialog over the page (a progress update), saved with a toast and undo.
 
 **Responsive:** preserve the primary task and critical actions; reflow before shrinking text; collapse secondary controls; tables scroll inside their frame, never the page; no essential info behind unexplained icons.
 

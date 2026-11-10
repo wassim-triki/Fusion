@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  CalendarCheck,
-  Network,
-  Plus,
-  Users2,
-  UsersRound,
-  X,
-} from "@/lib/icons";
+import { CalendarCheck, Network, Plus, Users2, UsersRound, X } from "@repo/ds/icons";
 import type {
   OrgUnitSelectionInput,
   PopulationCandidateDto,

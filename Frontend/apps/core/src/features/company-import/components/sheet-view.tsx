@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@repo/ds";
 import { cn } from "@repo/ds/lib/utils";
 import { PEOPLE_FIELDS, UNIT_FIELDS, type CompanyImportDto, type CompanyImportField, type CompanyImportSheetDto, type ReadColumnDto } from "@repo/api";
-import { AlertTriangle, Check } from "lucide-react";
+import { AlertTriangle, Check } from "@repo/ds/icons";
 import type { useImportChange } from "../api/use-company-import";
 import { AiMark, useFieldLabel } from "./import-parts";
 

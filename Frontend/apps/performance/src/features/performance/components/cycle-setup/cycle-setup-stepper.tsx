@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Check } from "@/lib/icons";
+import { Check } from "@repo/ds/icons";
 import { cn } from "@repo/ds/lib/utils";
 import { SETUP_STEPS, setupStepHref, type SetupStep } from "./setup-readiness";
 import { useTranslations } from "next-intl";

@@ -3,7 +3,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
 import { useAuth } from "@repo/auth";
-import { ArrowLeft } from "@/lib/icons";
+import { ArrowLeft } from "@repo/ds/icons";
 import { planHref, withCycle } from "@/lib/performance-routes";
 import { PageContainer } from "@repo/ds/shell";
 import { Button } from "@repo/ds/components/ui/button";

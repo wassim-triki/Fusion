@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Eye } from "lucide-react";
+import { Eye } from "@repo/ds/icons";
 import { setWriteLock } from "@repo/ds";
 import { ADMINISTRATORS_ROLE, endViewAs, useViewAs } from "../view-as";
 

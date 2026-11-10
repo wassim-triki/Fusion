@@ -22,7 +22,7 @@ import { PageContainer, Section } from "@repo/ds/shell";
 import { Segmented } from "@repo/ds/choice";
 import { useQueryClient } from "@tanstack/react-query";
 import { coreImportQueryKeys, type ColumnQuestionDto, type CompanyImportDto, type CompanyImportFactDto, type CompanyImportFileDto, type CompanyImportSheetDto } from "@repo/api";
-import { AlertTriangle, ArrowRight, Briefcase, Building2, CheckCircle2, File as FileGlyph, FileX, MapPin, Network, UserRound, X } from "lucide-react";
+import { AlertTriangle, ArrowRight, Briefcase, Building2, CheckCircle2, File as FileGlyph, FileX, MapPin, Network, UserRound, X } from "@repo/ds/icons";
 import { cn } from "@repo/ds/lib/utils";
 import { useImportChange } from "../api/use-company-import";
 import { checkImportFiles, CORE_IMPORT_MAX_FILES } from "@repo/api";

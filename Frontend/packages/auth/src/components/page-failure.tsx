@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Home, LayoutGrid, RotateCw, Search } from "lucide-react";
+import { Home, LayoutGrid, RotateCw, Search } from "@repo/ds/icons";
 import { useTranslations } from "next-intl";
 import {
   pageFailureKind,

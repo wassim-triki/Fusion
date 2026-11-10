@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft, ArrowRight, Check, Eye, EyeOff, Lock, Mail, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Eye, EyeOff, Lock, Mail, X } from "@repo/ds/icons";
 import { useLocale, useTranslations } from "next-intl";
 import {
   Alert,

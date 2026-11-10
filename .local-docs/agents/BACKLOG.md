@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-422.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-423.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -27,6 +27,14 @@ Open work only. Agents keep it current from the conversation; closed items leave
 None.
 
 ## In review
+
+- [ ] **B-422** Fusion's frame for Performance's rebuild (slice 1 of B-390): Hugeicons in the shell, Core HR and DS chrome; tabs with icons; the state word with its glyph; striped empty bars; your menu top right; modules folding in one sidebar; the panel and dialog shells; the line of a flow's steps; the in-place preview · `@repo/ds`, shell, Core HR, Performance · 2026-11-10
+      Parent: B-390. Decisions D-45, D-47, D-50, D-52, D-61, D-63, D-67, D-72, D-78, D-82, D-83, D-95; drawings in `archive/plans/B-412-*.html`.
+      Built 2026-11-10 (LOG). Look at, as Amira in the walkthrough company (`amira.khelifi@walkthrough-202611082348.example.test`, local password), http://localhost:3000:
+      - The sidebar on Home, in Core HR and in Performance: Core HR and Performance as groups with their pages, each folding from its chevron and staying folded; Settings last; the same sidebar in all three places.
+      - Your face top right: the menu with your profile, notifications, language, Dark/Light, sign out; the sidebar's foot is empty for now (B-415, slice 12).
+      - Icons everywhere are Hugeicons (Core HR's pages, the top bar, the bell, menus); any that reads wrong or too thin.
+      - Section titles in Lora (People, Home's sections, Settings).
 
 - [ ] **B-370** Surface colours in both themes (D-32), with **B-418**'s colour half (D-95, no brown in light mode) · `@repo/ds`, all our apps · 2026-11-10
       Built 2026-11-10 (LOG); listed under B-397 › Foundation too. Look at, in light and in dark (your menu › theme), http://localhost:3000 as Amira in the walkthrough company (`amira.khelifi@walkthrough-202611082348.example.test`, local password):

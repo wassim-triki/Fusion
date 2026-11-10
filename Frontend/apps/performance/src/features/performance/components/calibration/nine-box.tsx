@@ -9,7 +9,7 @@ import { Textarea } from "@repo/ds/components/ui/textarea";
 import { AsyncButton } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { initials } from "@repo/performance-ui";
-import { Check } from "@/lib/icons";
+import { Check } from "@repo/ds/icons";
 import { bandLevels, bandRange, nearestLevel, POTENTIALS } from "./calibration-format";
 import { useTranslations } from "next-intl";
 import { performanceFailure } from "@/features/performance/api/performance-failure";

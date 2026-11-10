@@ -10,7 +10,7 @@ import { cn } from "@repo/ds/lib/utils";
 import { ApiError, checkImportFiles, CORE_IMPORT_MAX_FILES, coreImportQueryKeys } from "@repo/api";
 import { useTenantSummary } from "@repo/api/query";
 import { canImportCoreEmployees, canManageCoreOrganization, useAuth, PageRefusal } from "@repo/auth";
-import { AlertTriangle, Download, FileSpreadsheet, FileText, Upload } from "lucide-react";
+import { AlertTriangle, Download, FileSpreadsheet, FileText, Upload } from "@repo/ds/icons";
 import { downloadBlob } from "@/lib/download";
 import { useActiveImport, useEarlierImports, useImportApi } from "../api/use-company-import";
 import { EarlierImports } from "./again-step";

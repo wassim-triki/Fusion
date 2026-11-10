@@ -15,7 +15,7 @@ import { Switch } from "@repo/ds/components/ui/switch";
 import { AsyncButton, StatusBadge } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { PersonInitials } from "@repo/performance-ui";
-import { ArrowRight, Check, Growth, Layers, MessageSquare, Pencil, Rocket, Scale, Star, Target, Users, X } from "@/lib/icons";
+import { ArrowRight, Check, Growth, Layers, MessageSquare, Pencil, Rocket, Scale, Star, Target, Users, X } from "@repo/ds/icons";
 import { useCompetencies } from "../../api/use-performance";
 import { useEligibleReviewers, useReviewRoundMutations } from "../../api/use-reviews";
 import { useReviewQuestions } from "../../api/use-review-work";

@@ -29,18 +29,7 @@ import {
   Textarea,
   cn,
 } from "@repo/ds";
-import {
-  AlertTriangle,
-  ArrowRight,
-  CalendarClock,
-  Check,
-  ChevronsUpDown,
-  Plus,
-  Search,
-  Trash2,
-  UploadCloud,
-  X,
-} from "lucide-react";
+import { AlertTriangle, ArrowRight, CalendarClock, Check, ChevronsUpDown, Plus, Search, Trash2, UploadCloud, X } from "@repo/ds/icons";
 import { toast } from "sonner";
 import {
   translateOrganizationError,

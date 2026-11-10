@@ -30,7 +30,7 @@ import {
 import { PageListSkeleton } from "@repo/ds/shell";
 import { toast } from "sonner";
 import { useBreadcrumbLabel } from "@/shell/breadcrumb-overrides";
-import { useOrgChartAccess } from "@/features/org-chart/api/use-org-chart-access";
+import { useOrgChartAccess } from "@repo/auth";
 import {
   canAccessCorePeople,
   canAccessCoreTeam,
@@ -40,20 +40,7 @@ import {
   canManageWorkforceAccess,
   useAuth, PageFailure } from "@repo/auth";
 import { classifyApiError, type WorkforceAccessCandidateDto } from "@repo/api";
-import {
-  ArrowLeftRight,
-  CalendarDays,
-  Camera,
-  Check,
-  ChevronRight,
-  Link2,
-  MessageSquarePlus,
-  MoreHorizontal,
-  RotateCcw,
-  UserRoundPlus,
-  TreePalm, UserRoundX,
-  Workflow,
-} from "lucide-react";
+import { ArrowLeftRight, CalendarDays, Camera, Check, ChevronRight, Link2, MessageSquarePlus, MoreHorizontal, RotateCcw, UserRoundPlus, TreePalm, UserRoundX, Workflow } from "@repo/ds/icons";
 import {
   usePeopleAccessStatus,
   usePeopleJobHistory,

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import type { ChecklistKind, ChecklistOwner, ChecklistTemplateTaskInput, FusionSettingsSection } from "@repo/api";
 import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@repo/ds";
 import { SettingsBlock, SettingsPage, SettingsRows, SettingsSaveBar, useSettingsSectionName } from "@repo/ds/shell";
-import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Plus, Trash2 } from "@repo/ds/icons";
 import { useRefusal } from "@/i18n/words";
 import { useChecklistTemplates, useSaveChecklistTemplate } from "@/features/checklists/use-checklists";
 import { PageFailure } from "@repo/auth";

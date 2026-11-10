@@ -3,7 +3,7 @@
 import { useSay } from "@repo/ds/lib/say";
 import { useTranslations } from "next-intl";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { ChevronDown, ChevronRight, GripVertical, Plus } from "lucide-react";
+import { ChevronDown, ChevronRight, GripVertical, Plus } from "@repo/ds/icons";
 import type { UnitStaffingDto } from "@repo/api";
 import { Button, cn } from "@repo/ds";
 import { layoutTree } from "@repo/ds/flow";

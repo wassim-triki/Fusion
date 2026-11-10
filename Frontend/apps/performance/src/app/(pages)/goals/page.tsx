@@ -3,7 +3,7 @@
 import { Suspense, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ListView, MapView, Plus } from "@/lib/icons";
+import { ListView, MapView, Plus } from "@repo/ds/icons";
 import { toast } from "sonner";
 import { Button } from "@repo/ds/components/ui/button";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";

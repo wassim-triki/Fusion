@@ -1,4 +1,4 @@
-import { ArrowRight, TrendingDown, TrendingUp } from "@/lib/icons";
+import { ArrowRight, TrendingDown, TrendingUp } from "@repo/ds/icons";
 import { formatMeasureValue, isSymbolUnit } from "./plan-lib";
 import { useTranslations } from "next-intl";
 

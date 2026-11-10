@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, HeartHandshake, Lightbulb, PartyPopper, ThumbsUp } from "lucide-react";
+import { ChevronRight, HeartHandshake, Lightbulb, PartyPopper, ThumbsUp } from "@repo/ds/icons";
 import { useTranslations } from "next-intl";
 import { usePraiseFeed, useReactToPraise } from "@repo/api/query";
 import { resolveFusionAttentionModules, useAuth, PageFailure } from "@repo/auth";

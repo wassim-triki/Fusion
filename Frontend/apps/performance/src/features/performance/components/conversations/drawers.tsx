@@ -12,7 +12,7 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@repo/ds/comp
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { AsyncButton, Said, StatusBadge } from "@repo/ds/shell";
 import { AvatarStack, PersonInitials, PraiseReactions, ValueChip, usePerformanceWords } from "@repo/performance-ui";
-import { ArrowRight, Check, Eye, Lock, OneOnOnes } from "@/lib/icons";
+import { ArrowRight, Check, Eye, Lock, OneOnOnes } from "@repo/ds/icons";
 import { useDeletePraise, useFeedbackItem, useFeedbackRequest, useOneOnOne, useOneOnOneCommands, useOneOnOnes, usePraiseItem } from "../../api/use-conversations";
 import { formatDay } from "../one-on-ones/one-on-one-lib";
 import { SubjectChip, firstName } from "./conversation-parts";

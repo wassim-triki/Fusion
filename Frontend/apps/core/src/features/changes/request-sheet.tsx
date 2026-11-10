@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
-import { ArrowRight, Clock3, Quote, TriangleAlert, X } from "lucide-react";
+import { ArrowRight, Clock3, Quote, TriangleAlert, X } from "@repo/ds/icons";
 import type { ChangeRequestDto, PeopleHomeAddressDto } from "@repo/api";
 import { Button, PersonAvatar, Sheet, SheetContent, SheetTitle, Skeleton, Textarea, cn } from "@repo/ds";
 import { Said, StatusBadge } from "@repo/ds/shell";

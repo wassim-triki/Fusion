@@ -37,7 +37,7 @@ import type {
   WorkforceChangeDto,
 } from "@repo/api";
 import { toast } from "sonner";
-import { ArrowLeftRight, Building2, Briefcase, MapPin, Mail, MoreHorizontal, Tags, UserRound, UserRoundX, Workflow } from "lucide-react";
+import { ArrowLeftRight, Building2, Briefcase, MapPin, Mail, MoreHorizontal, Tags, UserRound, UserRoundX, Workflow } from "@repo/ds/icons";
 import { useJobs, usePlaces } from "@/features/catalog/api/use-catalog";
 import { useOrganizationHierarchy } from "@/features/organization/api/use-organization";
 import { usePeople } from "../api/use-people";

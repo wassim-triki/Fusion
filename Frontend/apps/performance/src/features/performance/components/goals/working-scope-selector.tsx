@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Building2, Check, ChevronDown, Search } from "@/lib/icons";
+import { Building2, Check, ChevronDown, Search } from "@repo/ds/icons";
 import type { OrganizationHierarchyNodeDto } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
 import { Input } from "@repo/ds/components/ui/input";

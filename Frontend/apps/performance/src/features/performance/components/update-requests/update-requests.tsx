@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Textarea } from "@repo/ds/components/ui/textarea";
 import { AsyncButton } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
-import { LineChart, MessageSquare } from "@/lib/icons";
+import { LineChart, MessageSquare } from "@repo/ds/icons";
 import { reportPerformanceFailure } from "@/features/performance/api/performance-failure";
 import { useUpdateRequestMutations, useUpdateRequests } from "../../api/use-update-requests";
 import { initials } from "../plan/plan-lib";

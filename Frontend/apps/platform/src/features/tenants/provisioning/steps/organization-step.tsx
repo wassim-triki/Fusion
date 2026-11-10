@@ -3,7 +3,7 @@
 import { useMemo, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useSay } from "@repo/ds/lib/say";
-import { Building2, Lightbulb } from "@/lib/icons";
+import { Building2, Lightbulb } from "@repo/ds/icons";
 import { Input } from "@repo/ds/components/ui/input";
 import { Textarea } from "@repo/ds/components/ui/textarea";
 import { Field, describedBy } from "../field";

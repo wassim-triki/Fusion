@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { Button, Skeleton } from "@repo/ds";
 import { Section, StatusBadge } from "@repo/ds/shell";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw } from "@repo/ds/icons";
 import type { WorkerProfileView } from "./worker-profile-view";
 
 /** HR's Access tab: the person's Fusion account, and the work email it signs in with. */

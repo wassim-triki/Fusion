@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button, cn } from "@repo/ds";
 import { useFormat } from "@repo/ds/lib/use-format";
-import { Play, Square } from "lucide-react";
+import { Play, Square } from "@repo/ds/icons";
 import { fromFraction, timeTicks, toFraction, type TimeSpan } from "../model/time";
 
 const STEPS = 1000;

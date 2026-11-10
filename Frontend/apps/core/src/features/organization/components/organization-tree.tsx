@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Input, cn } from "@repo/ds";
-import { Building2, Check, ChevronRight, Search } from "lucide-react";
+import { Building2, Check, ChevronRight, Search } from "@repo/ds/icons";
 import type { OrganizationHierarchyNodeDto } from "@repo/api";
 
 /**

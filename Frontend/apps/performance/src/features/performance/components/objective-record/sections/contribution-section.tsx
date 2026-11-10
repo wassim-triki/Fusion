@@ -4,7 +4,7 @@ import { reportPerformanceFailure } from "@/features/performance/api/performance
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Check, Lock } from "@/lib/icons";
+import { Check, Lock } from "@repo/ds/icons";
 import { Input } from "@repo/ds/components/ui/input";
 import { AsyncButton } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";

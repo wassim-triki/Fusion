@@ -9,7 +9,7 @@ import { useSetupGuide } from "@repo/api/query";
 import { canViewTenantAdministration, useAuth } from "@repo/auth";
 import { cn } from "@repo/ds/lib/utils";
 import type { CompanyImportDto, CompanyImportProgressDto } from "@repo/api";
-import { AlertTriangle, Check, CheckCircle2, Clock, File as FileGlyph, Loader2, Mail, MapPin, Network, PencilLine, RefreshCw } from "lucide-react";
+import { AlertTriangle, Check, CheckCircle2, Clock, File as FileGlyph, Loader2, Mail, MapPin, Network, PencilLine, RefreshCw } from "@repo/ds/icons";
 import { useImportChange } from "../api/use-company-import";
 import { leftSummary } from "./understood";
 

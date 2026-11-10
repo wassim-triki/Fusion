@@ -13,7 +13,7 @@ import { FilterChips } from "@repo/ds/choice";
 import { LinkTabs, PageContainer, PageHeader, Section, StatusBadge, Said } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { AvatarStack, PersonInitials, PraiseList, VALUE_TONE, ValueChip, useValueTones } from "@repo/performance-ui";
-import { ChevronRight, MessageSquare, Send, Star, Target } from "@/lib/icons";
+import { ChevronRight, MessageSquare, Send, Star, Target } from "@repo/ds/icons";
 import {
   useCompanyValues,
   useFeedbackList,

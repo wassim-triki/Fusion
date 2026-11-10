@@ -22,14 +22,7 @@ import { Segmented } from "@repo/ds/choice";
 import { PageContainer, Section } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { OverviewContentSkeleton } from "@/shell/route-skeletons";
-import {
-  ArrowRight,
-  BriefcaseBusiness,
-  ChartNoAxesCombined,
-  ChevronDown,
-  Plus,
-  Users,
-} from "lucide-react";
+import { ArrowRight, BriefcaseBusiness, ChartNoAxesCombined, ChevronDown, Plus, Users } from "@repo/ds/icons";
 import { TimeBar } from "@/features/organization/components/time-bar";
 import { UpcomingRow } from "@/features/people/components/worker-profile/overview-tab";
 import {

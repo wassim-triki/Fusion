@@ -19,7 +19,7 @@ import { AsyncButton } from "@repo/ds/shell";
 import { useTenantSummary } from "@repo/api/query";
 import type { InvitationAudience, ProvisioningSettingsDto } from "@repo/api";
 import { toast } from "sonner";
-import { Mail, Search, X } from "lucide-react";
+import { Mail, Search, X } from "@repo/ds/icons";
 import { EmailPreview } from "@/features/settings/brand/brand-previews";
 import { useProvisioningSettings, useUpdateProvisioningSettings } from "@/features/settings/api/use-tenant-settings";
 import { usePeople } from "../api/use-people";

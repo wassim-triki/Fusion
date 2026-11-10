@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
-import { Check, Mail, Lock, Home, Palette, Upload } from "lucide-react";
+import { Check, Mail, Lock, Home, Palette, Upload } from "@repo/ds/icons";
 import {
   createCompanyBrandApi,
   createPlatformApiClient,

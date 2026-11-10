@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Briefcase, X } from "lucide-react";
+import { Briefcase, X } from "@repo/ds/icons";
 import type { ChangePersonRef, OpenRoleStatus, OrgChartOpenRoleDto } from "@repo/api";
 import { Segmented } from "@repo/ds/choice";
 import { Button, DatePicker } from "@repo/ds";

@@ -26,7 +26,7 @@ import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { AsyncButton, PageContainer, PageHeader, Section, StatusBadge, Said } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { AvatarStack, ObjectiveStatusBadge, PersonInitials, PlanDial } from "@repo/performance-ui";
-import { CalendarDays, Check, ChevronDown, Flag, Plus, X } from "@/lib/icons";
+import { CalendarDays, Check, ChevronDown, Flag, Plus, X } from "@repo/ds/icons";
 import { useOneOnOne, useOneOnOneCommands } from "../../api/use-conversations";
 import { usePersonSummary } from "../../api/use-performance";
 import { useLanding } from "@/lib/use-landing";

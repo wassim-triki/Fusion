@@ -5,7 +5,7 @@ import { ApiError, type OneOnOneNotesConflict } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
 import { Textarea } from "@repo/ds/components/ui/textarea";
 import { cn } from "@repo/ds/lib/utils";
-import { Lock } from "@/lib/icons";
+import { Lock } from "@repo/ds/icons";
 import { useTranslations } from "next-intl";
 
 export const NOTES_MAX = 10_000;

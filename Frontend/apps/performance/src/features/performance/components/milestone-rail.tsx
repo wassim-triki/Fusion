@@ -1,6 +1,6 @@
 "use client";
 
-import { Check } from "@/lib/icons";
+import { Check } from "@repo/ds/icons";
 import type { MilestoneStateDto } from "@repo/api";
 import { cn } from "@repo/ds/lib/utils";
 import { useTranslations } from "next-intl";

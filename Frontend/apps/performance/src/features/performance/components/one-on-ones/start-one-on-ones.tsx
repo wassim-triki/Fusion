@@ -14,7 +14,7 @@ import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { AsyncButton } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { ObjectiveStatusBadge, PersonInitials } from "@repo/performance-ui";
-import { OneOnOnes, PencilLine, Plus, X } from "@/lib/icons";
+import { OneOnOnes, PencilLine, Plus, X } from "@repo/ds/icons";
 import { useOneOnOneStart, useStartOneOnOne } from "../../api/use-conversations";
 import { Segmented } from "@repo/ds/choice";
 import { CADENCES, TIME_SLOTS, defaultFirstMeeting, localDate, nextOccurrences, shortDay, toInstant, useOneOnOneWords } from "./one-on-one-lib";

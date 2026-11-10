@@ -23,7 +23,7 @@ import { Textarea } from "@repo/ds/components/ui/textarea";
 import { AsyncButton, PageContainer, PageHeader, PagePermissionNotice, PageSkeleton, StatusBadge, Said } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { AvatarStack, ObjectiveStatusBadge, PersonInitials, ValueChip } from "@repo/performance-ui";
-import { Ban, CalendarDays, Check, ChevronDown, Download, FeedbackIcon, FileText, Lock, OneOnOnes, Send, Star, Target, UserRoundCheck } from "@/lib/icons";
+import { Ban, CalendarDays, Check, ChevronDown, Download, FeedbackIcon, FileText, Lock, OneOnOnes, Send, Star, Target, UserRoundCheck } from "@repo/ds/icons";
 import { useReview, useReviewAssessmentMutations } from "../../api/use-reviews";
 import { useAcknowledge, useDownloadReviewPdf, usePeerCommands, useScheduleCommands } from "../../api/use-review-work";
 import { RecordCycleScope, useWorkspaceContext } from "../../api/use-workspace";

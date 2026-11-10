@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, type ReactNode } from "react";
-import { Minus, Plus, RotateCcw } from "@/lib/icons";
+import { Minus, Plus, RotateCcw } from "@repo/ds/icons";
 import { cn } from "@repo/ds/lib/utils";
 import type { DialDomain } from "./value-dial-lib";
 import { useTranslations } from "next-intl";

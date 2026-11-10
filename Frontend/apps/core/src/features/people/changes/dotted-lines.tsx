@@ -8,7 +8,7 @@ import { QuickPicks } from "@repo/ds/choice";
 import { Button, DatePicker, Popover, PopoverContent, PopoverTrigger, cn } from "@repo/ds";
 import { useFormat } from "@repo/ds/lib/use-format";
 import type { ChangePersonRef, PeopleProfileDto } from "@repo/api";
-import { Plus } from "lucide-react";
+import { Plus } from "@repo/ds/icons";
 import { useRefusal } from "@/i18n/words";
 import { Monogram } from "../components/workforce-ui";
 import { DottedMark, PersonPicker } from "./change-panel";

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } 
 import Link from "next/link";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
-import { ArrowLeft, Crown, Lock, MoreHorizontal, Search, ShieldCheck, UserPlus, X } from "lucide-react";
+import { ArrowLeft, Crown, Lock, MoreHorizontal, Search, ShieldCheck, UserPlus, X } from "@repo/ds/icons";
 import {
   createCorePeopleApi,
   createPlatformApiClient,

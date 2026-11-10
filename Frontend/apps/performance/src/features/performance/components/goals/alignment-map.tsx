@@ -21,7 +21,7 @@ import type {
 import { cn } from "@repo/ds/lib/utils";
 import { ObjectiveStatusBadge } from "@repo/performance-ui";
 import { AnchorViewport, layoutTree, useAnchoredToggle } from "@repo/ds/flow";
-import { ChevronDown, ChevronRight, Users } from "@/lib/icons";
+import { ChevronDown, ChevronRight, Users } from "@repo/ds/icons";
 import {
   buildAlignmentMap,
   defaultExpanded,

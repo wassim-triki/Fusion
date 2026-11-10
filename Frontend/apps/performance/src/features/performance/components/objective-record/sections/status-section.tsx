@@ -1,7 +1,7 @@
 "use client";
 
 import { reportPerformanceFailure } from "@/features/performance/api/performance-failure";
-import { Check } from "@/lib/icons";
+import { Check } from "@repo/ds/icons";
 import { AsyncButton, Said } from "@repo/ds/shell";
 import { ObjectiveStatusBadge } from "@repo/performance-ui";
 import { useAcknowledgeStatus } from "../../../api/use-performance";

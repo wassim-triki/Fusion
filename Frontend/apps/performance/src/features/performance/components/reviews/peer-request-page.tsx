@@ -8,7 +8,7 @@ import { Button } from "@repo/ds/components/ui/button";
 import { Textarea } from "@repo/ds/components/ui/textarea";
 import { AsyncButton, PageContainer, PageHeader, PageSkeleton, StatusBadge } from "@repo/ds/shell";
 import { PersonInitials } from "@repo/performance-ui";
-import { Ban, Eye, Lock, Send } from "@/lib/icons";
+import { Ban, Eye, Lock, Send } from "@repo/ds/icons";
 import { usePeerRequest, usePeerRequestCommands } from "../../api/use-review-work";
 import { ContentUnavailable } from "../content-unavailable";
 import { DueChip, dayLabel } from "./review-parts";

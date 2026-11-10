@@ -2,7 +2,7 @@
 
 import type { AgendaSourceKind, ObjectiveStatus, OneOnOneBeatDto } from "@repo/api";
 import { cn } from "@repo/ds/lib/utils";
-import { MessageSquare, RefreshCw, Star, Target } from "@/lib/icons";
+import { MessageSquare, RefreshCw, Star, Target } from "@repo/ds/icons";
 import { rhythmPosition, rhythmWindow, shortDay } from "./one-on-one-lib";
 import { useTranslations } from "next-intl";
 import { useFormat } from "@repo/ds/lib/use-format";

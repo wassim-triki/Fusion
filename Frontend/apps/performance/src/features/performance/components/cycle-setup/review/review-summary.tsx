@@ -2,21 +2,7 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
-import {
-  AlertTriangle,
-  CalendarClock,
-  CalendarDays,
-  CalendarRange,
-  ChartColumnBig,
-  Check,
-  CircleMinus,
-  FileText,
-  Layers,
-  Network,
-  Target,
-  Unlink,
-  Users,
-} from "@/lib/icons";
+import { AlertTriangle, CalendarClock, CalendarDays, CalendarRange, ChartColumnBig, Check, CircleMinus, FileText, Layers, Network, Target, Unlink, Users } from "@repo/ds/icons";
 import type { CycleDetailDto, CycleSettingsDto, PopulationDto } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
 import { cn } from "@repo/ds/lib/utils";

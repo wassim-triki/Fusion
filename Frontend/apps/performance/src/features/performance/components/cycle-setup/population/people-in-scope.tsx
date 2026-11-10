@@ -1,22 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsUpDown,
-  ChevronDown,
-  ChevronUp,
-  Ban,
-  Eye,
-  ExternalLink,
-  MoreHorizontal,
-  RotateCcw,
-  Search,
-  UserMinus,
-  Users,
-  X,
-} from "@/lib/icons";
+import { ChevronLeft, ChevronRight, ChevronsUpDown, ChevronDown, ChevronUp, Ban, Eye, ExternalLink, MoreHorizontal, RotateCcw, Search, UserMinus, Users, X } from "@repo/ds/icons";
 import type { PopulationCandidateDto } from "@repo/api";
 import { Input } from "@repo/ds/components/ui/input";
 import { FilterChips } from "@repo/ds/choice";

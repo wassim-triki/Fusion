@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { Building2, Check, ChevronDown, EyeOff, UserRoundSearch } from "lucide-react";
+import { Building2, Check, ChevronDown, EyeOff, UserRoundSearch } from "@repo/ds/icons";
 import type { RoleAreaDto, RoleAreaId, RoleHolderDto } from "@repo/api";
 import {
   cn,

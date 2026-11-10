@@ -3,7 +3,7 @@
 import { reportPerformanceFailure } from "@/features/performance/api/performance-failure";
 
 import { useEffect, useMemo, useState } from "react";
-import { Minus, Plus, Target, UserRound } from "@/lib/icons";
+import { Minus, Plus, Target, UserRound } from "@repo/ds/icons";
 import type {
   AddPlanObjectiveRequest,
   AlignmentTargetDto,

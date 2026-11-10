@@ -59,22 +59,7 @@ import {
   FilterFieldChip,
   type DataTableFilterField,
 } from "@repo/ds/data-table";
-import {
-  Bookmark,
-  BriefcaseBusiness,
-  CirclePlus,
-  ChevronDown,
-  Download,
-  Hourglass,
-  MapPin,
-  Percent,
-  UserRoundPlus,
-  UsersRound,
-  Save,
-  Share2,
-  SlidersHorizontal,
-  Trash2,
-} from "lucide-react";
+import { Bookmark, BriefcaseBusiness, CirclePlus, ChevronDown, Download, Hourglass, MapPin, Percent, UserRoundPlus, UsersRound, Save, Share2, SlidersHorizontal, Trash2 } from "@repo/ds/icons";
 import { toast } from "sonner";
 import { downloadBlob } from "@/lib/download";
 import { useBreadcrumbLabel } from "@/shell/breadcrumb-overrides";

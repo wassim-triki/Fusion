@@ -22,7 +22,7 @@ import {
   type DataTableFilterField,
 } from "@repo/ds/data-table";
 import { StatusBadge } from "@repo/ds/shell";
-import { Archive, GitMerge, MapPin, MoreHorizontal, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { Archive, GitMerge, MapPin, MoreHorizontal, Pencil, Plus, RotateCcw, Trash2 } from "@repo/ds/icons";
 import { usePlaceMutations, usePlaces } from "../api/use-catalog";
 import { CatalogFrame, CountCell } from "./catalog-frame";
 import { DeleteDialog, MergeDialog, PlaceDialog, toMergeable } from "./catalog-dialogs";

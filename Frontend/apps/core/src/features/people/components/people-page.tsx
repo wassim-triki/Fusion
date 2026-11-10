@@ -12,7 +12,7 @@ import {
 } from "@repo/ds";
 import { PageContainer, PageHeader } from "@repo/ds/shell";
 import { canImportCoreEmployees, canManageCoreEmployees, canManageWorkforceAccess, useAuth } from "@repo/auth";
-import { ChevronDown, Mail, Upload, UserRoundPlus } from "lucide-react";
+import { ChevronDown, Mail, Upload, UserRoundPlus } from "@repo/ds/icons";
 import { canAccessEmployeeRoster } from "@/lib/employee-roster-access";
 import { InviteSheet } from "./invite-sheet";
 import { PeopleDirectory } from "./people-directory";

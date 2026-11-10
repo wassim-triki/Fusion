@@ -13,7 +13,7 @@ import {
 } from "@repo/ds";
 import { StatusBadge } from "@repo/ds/shell";
 import type { ManagerOptionDto, OrganizationHierarchyNodeDto } from "@repo/api";
-import { Building2, Check, ChevronDown, Search } from "lucide-react";
+import { Building2, Check, ChevronDown, Search } from "@repo/ds/icons";
 import { OrganizationTree } from "@/features/organization/components/organization-tree";
 import { EmployeeIdentity, Monogram, OrgPath } from "./workforce-ui";
 

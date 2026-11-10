@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { AppBreadcrumb as SharedAppBreadcrumb } from "@repo/ds/shell";
 import { useBreadcrumbOverridesMap } from "@/shell/breadcrumb-overrides";
 import { APP_NAME } from "@/config/constants";
-import { useCoreNav } from "@/shell/navigation/use-core-nav";
+import { useCorePages } from "@repo/auth";
 
 // The route's own words ("import", "change-work"…), worded by `frame.breadcrumb`.
 const ROUTE_SEGMENTS = [
@@ -27,7 +27,7 @@ const ROUTES = new Set([
 export function AppBreadcrumb() {
   const pathname = usePathname();
   const pageOverrides = useBreadcrumbOverridesMap();
-  const nav = useCoreNav();
+  const pages = useCorePages();
   const t = useTranslations("frame.breadcrumb");
 
   const clean = pathname.replace(/^\/core/, "") || "/";
@@ -39,7 +39,7 @@ export function AppBreadcrumb() {
     <SharedAppBreadcrumb
       appName={APP_NAME}
       pathname={clean}
-      navItems={[...nav.people.items, ...nav.admin.items]}
+      navItems={pages.items}
       overrides={overrides}
       routeSegments={ROUTES}
     />

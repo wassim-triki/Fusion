@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { PageContainer, Section, TeamBand, TeamBandSkeleton } from "@repo/ds/shell";
 import { useTeamBand } from "@repo/api/query";
 import { Button } from "@repo/ds/components/ui/button";
-import { ArrowRight, Users } from "@/lib/icons";
+import { ArrowRight, Users } from "@repo/ds/icons";
 import { ContentUnavailable } from "@/features/performance/components/content-unavailable";
 import { TeamDirection } from "@/features/performance/components/team/team-direction";
 import { TeamWorkspaceSkeleton } from "@/shell/workspace-skeletons";

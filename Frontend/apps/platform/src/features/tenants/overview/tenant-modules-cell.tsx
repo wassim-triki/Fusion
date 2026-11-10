@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { ChevronDown } from "@/lib/icons";
+import { ChevronDown } from "@repo/ds/icons";
 import {
   Popover,
   PopoverContent,

@@ -1,30 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import {
-  BarChart3,
-  Briefcase,
-  CalendarDays,
-  CalendarRange,
-  CornerDownLeft,
-  Flag,
-  GitPullRequestArrow,
-  Home,
-  MapPin,
-  MessageSquarePlus,
-  MessagesSquare,
-  Search,
-  Settings,
-  ShieldCheck,
-  Star,
-  Target,
-  UserPlus,
-  UserRound,
-  Users,
-  Workflow,
-  ClipboardCheck,
-  type LucideIcon,
-} from "lucide-react";
+import { BarChart3, Briefcase, CalendarDays, CalendarRange, CornerDownLeft, Flag, GitPullRequestArrow, Home, MapPin, MessageSquarePlus, MessagesSquare, Search, Settings, ShieldCheck, Star, Target, UserPlus, UserRound, Users, Workflow, ClipboardCheck, type IconComponent } from "@repo/ds/icons";
 import { useTranslations } from "next-intl";
 import { visibleFusionModules, type CoreSearchPersonDto } from "@repo/api";
 import { useFusionSearch } from "@repo/api/query";
@@ -59,7 +36,7 @@ import {
   type Verb,
 } from "./top-bar-search-model";
 
-const ICONS: Record<SearchIcon, LucideIcon> = {
+const ICONS: Record<SearchIcon, IconComponent> = {
   home: Home,
   people: Users,
   chart: Workflow,
@@ -81,7 +58,7 @@ const ICONS: Record<SearchIcon, LucideIcon> = {
   change: Flag,
 };
 
-const ACTION_ICONS: Record<PersonAction["id"], LucideIcon> = {
+const ACTION_ICONS: Record<PersonAction["id"], IconComponent> = {
   orgChart: Workflow,
   praise: Star,
   feedback: MessageSquarePlus,

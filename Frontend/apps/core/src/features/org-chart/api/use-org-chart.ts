@@ -7,7 +7,7 @@ import { keepPreviousData, useApiMutation, useApiQuery } from "@repo/api/query";
 import { canAccessCorePeople, useAuth } from "@repo/auth";
 import { todayCalendarDate } from "@/features/organization/model/workspace-state";
 import { chartOn, coversDay } from "../model/org-chart-history";
-import { useOrgChartAccess } from "./use-org-chart-access";
+import { useOrgChartAccess } from "@repo/auth";
 
 function useOrgChartApi() {
   return useMemo(() => createCoreOrgChartApi(createPlatformApiClient()), []);

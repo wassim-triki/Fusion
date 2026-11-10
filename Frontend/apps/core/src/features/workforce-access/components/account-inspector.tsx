@@ -23,12 +23,7 @@ import {
   cn,
 } from "@repo/ds";
 import { StatusBadge, PageSkeleton } from "@repo/ds/shell";
-import {
-  AlertTriangle,
-  ArrowUpRight,
-  Mail,
-  ShieldCheck,
-} from "lucide-react";
+import { AlertTriangle, ArrowUpRight, Mail, ShieldCheck } from "@repo/ds/icons";
 import { toast } from "sonner";
 import {
   useAccessCandidate,

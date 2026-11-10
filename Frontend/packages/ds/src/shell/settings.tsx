@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { Check, ChevronRight, Eye } from "lucide-react";
+import { Check, ChevronRight, Eye } from "../icons";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "../lib/utils";
 import { formatDate, formatRelative, recencyOf } from "../lib/dates";

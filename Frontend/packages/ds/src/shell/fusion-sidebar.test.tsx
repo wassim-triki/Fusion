@@ -1,12 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
-import { BarChart3, BookOpen, BrainCircuit, LayoutDashboard, Users, UserRoundCheck } from "lucide-react";
+import { BarChart3, BookOpen, BrainCircuit, LayoutDashboard, Users, UserRoundCheck } from "../icons";
 import { FusionSidebar } from "./fusion-sidebar";
 import type { FusionSidebarProps } from "./types";
 
 let narrow = false;
 beforeEach(() => {
   narrow = false;
+  window.localStorage.clear();
   vi.stubGlobal("matchMedia", (query: string) => ({
     matches: narrow && query.includes("max-width"),
     media: query,
@@ -17,19 +18,30 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 const modules: FusionSidebarProps["modules"] = [
-  { key: "core", label: "Core HR", description: "People and organization", icon: BrainCircuit, href: "/core", count: 1 },
-  { key: "performance", label: "Performance", description: "Goals, conversations and reviews", icon: BarChart3, href: "/performance", count: 2 },
-  { key: "learning", label: "Learning", description: "Training and sessions", icon: BookOpen, href: "/learning" },
-];
-
-const sections: FusionSidebarProps["sections"] = [
   {
+    key: "core",
+    label: "Core HR",
+    icon: BrainCircuit,
+    href: "/core",
+    count: 1,
+    items: [
+      { label: "Overview", href: "/", icon: LayoutDashboard, exact: true },
+      { label: "People", href: "/people", icon: Users },
+    ],
+  },
+  {
+    key: "performance",
+    label: "Performance",
+    icon: BarChart3,
+    href: "/performance",
+    count: 2,
     items: [
       { label: "Overview", href: "/", icon: LayoutDashboard, exact: true },
       { label: "My Plan", href: "/plan", icon: UserRoundCheck },
       { label: "My Team", href: "/team", icon: Users },
     ],
   },
+  { key: "learning", label: "Learning", icon: BookOpen, href: "/learning" },
 ];
 
 function renderSidebar(props: Partial<FusionSidebarProps> = {}) {
@@ -41,52 +53,73 @@ function renderSidebar(props: Partial<FusionSidebarProps> = {}) {
       currentModuleKey="performance"
       basePath="/performance"
       activePath="/team"
-      sections={sections}
       sectionCounts={{ "/performance": 0, "/performance/plan": 0, "/performance/team": 2 }}
-      person={{ name: "Mariam Gharbi", detail: "VP, Product", onSignOut: vi.fn() }}
       {...props}
     />,
   );
 }
 
+const links = (nav: HTMLElement) => within(nav).getAllByRole("link").map((link) => [link.textContent, link.getAttribute("href")]);
+
 describe("FusionSidebar", () => {
-  it("inside a module: tenant, Home first, the switcher naming the module, its sections and the person", () => {
+  it("one sidebar: Home, then every module as a group with its pages, the other contributors' as one link (D-45)", () => {
     renderSidebar();
     const nav = screen.getByRole("complementary", { name: "Fusion navigation" });
-    expect(within(nav).getByText("Fusion")).toBeInTheDocument();
     expect(within(nav).getByText("Carthage Digital Group")).toBeInTheDocument();
-    const links = within(nav).getAllByRole("link");
-    expect(links[0]).toHaveAttribute("href", "/");
-    expect(links[0]).toHaveTextContent("Home3");
-    expect(within(nav).getByRole("button", { name: /Performance/ })).toBeInTheDocument();
-    expect(links.map((link) => link.textContent)).toEqual(["Home3", "Overview", "My Plan", "My Team2"]);
-    expect(within(nav).getByRole("link", { name: /My Team/ })).toHaveAttribute("aria-current", "page");
-    expect(within(nav).getByText("Mariam Gharbi")).toBeInTheDocument();
-    expect(within(nav).getByText("VP, Product")).toBeInTheDocument();
-    // No module list inside a module: the switcher replaces it.
-    expect(within(nav).queryByText("Modules")).not.toBeInTheDocument();
-  });
-
-  it("on Home: Home is current and the modules are listed with their counts", () => {
-    renderSidebar({ currentModuleKey: undefined, sections: undefined, basePath: undefined });
-    const nav = screen.getByRole("complementary", { name: "Fusion navigation" });
-    expect(within(nav).getByRole("link", { name: /Home/ })).toHaveAttribute("aria-current", "page");
-    expect(within(nav).getByText("Modules")).toBeInTheDocument();
-    expect(within(nav).getAllByRole("link").map((link) => [link.textContent, link.getAttribute("href")])).toEqual([
+    expect(links(nav)).toEqual([
       ["Home3", "/"],
-      ["Core HR1", "/core"],
-      ["Performance2", "/performance"],
+      ["Core HR", "/core"],
+      ["Overview", "/core"],
+      ["People", "/core/people"],
+      ["Performance", "/performance"],
+      ["Overview", "/"],
+      ["My Plan", "/plan"],
+      ["My Team2", "/team"],
       ["Learning", "/learning"],
     ]);
+    expect(within(nav).getByRole("link", { name: /My Team/ })).toHaveAttribute("aria-current", "page");
+    // Another module's page with the same name is not current.
+    expect(within(nav).getAllByRole("link", { name: "Overview" }).map((link) => link.getAttribute("aria-current"))).toEqual([null, null]);
+  });
+
+  it("a group folds and remembers it; folded, it carries the module's count", () => {
+    const { unmount } = renderSidebar();
+    const nav = screen.getByRole("complementary", { name: "Fusion navigation" });
+    fireEvent.click(within(nav).getByRole("button", { name: "Fold Core HR" }));
+    expect(within(nav).queryByRole("link", { name: "People" })).not.toBeInTheDocument();
+    expect(within(nav).getByRole("link", { name: /^Core HR/ }).parentElement).toHaveTextContent("Core HR1");
+    expect(within(nav).getByRole("button", { name: "Open Core HR" })).toHaveAttribute("aria-expanded", "false");
+    unmount();
+    renderSidebar();
+    expect(screen.queryByRole("link", { name: "People" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "My Plan" })).toBeInTheDocument();
+  });
+
+  it("on Home: Home is current and every module is listed with its pages", () => {
+    renderSidebar({ currentModuleKey: undefined, basePath: undefined, activePath: "/" });
+    const nav = screen.getByRole("complementary", { name: "Fusion navigation" });
+    expect(within(nav).getByRole("link", { name: /Home/ })).toHaveAttribute("aria-current", "page");
+    expect(within(nav).getByRole("link", { name: "My Plan" })).toHaveAttribute("href", "/performance/plan");
+    expect(within(nav).getAllByRole("link", { name: "Overview" }).map((link) => link.getAttribute("aria-current"))).toEqual([null, null]);
+  });
+
+  it("offers Settings at the end only when asked", () => {
+    const { unmount } = renderSidebar();
+    expect(screen.queryByRole("link", { name: "Settings" })).not.toBeInTheDocument();
+    unmount();
+    renderSidebar({ showSettings: true });
+    expect(screen.getByRole("link", { name: "Settings" })).toHaveAttribute("href", "/settings");
   });
 
   it("shows nothing for zero and no Home count before any module answers", () => {
-    renderSidebar({ homeCount: undefined, sectionCounts: {} });
+    renderSidebar({ homeCount: undefined, sectionCounts: {}, modules: modules.map((module) => ({ ...module, count: undefined })) });
     const nav = screen.getByRole("complementary", { name: "Fusion navigation" });
-    expect(within(nav).getAllByRole("link").map((link) => link.textContent)).toEqual(["Home", "Overview", "My Plan", "My Team"]);
+    expect(within(nav).getAllByRole("link").map((link) => link.textContent)).toEqual([
+      "Home", "Core HR", "Overview", "People", "Performance", "Overview", "My Plan", "My Team", "Learning",
+    ]);
   });
 
-  it("lists Recent records newest first, absent when there are none", () => {
+  it("lists Recent records under the module in view, absent when there are none", () => {
     const { unmount } = renderSidebar({
       recent: [
         { label: "Omar Mansour", kind: "Person", href: "/performance/people/o" },
@@ -104,26 +137,10 @@ describe("FusionSidebar", () => {
     expect(screen.queryByText("Recent")).not.toBeInTheDocument();
   });
 
-  it("names the account type when there is no job title, and holds a placeholder while it resolves", () => {
-    const { unmount } = renderSidebar({ person: { name: "Sami Admin", detail: "Tenant Administrator" } });
-    expect(screen.getByText("Tenant Administrator")).toBeInTheDocument();
-    unmount();
-    renderSidebar({ person: { name: "Mariam Gharbi", detail: "Employee", detailPending: true } });
-    expect(screen.queryByText("Employee")).not.toBeInTheDocument();
-  });
-
-  it("on Home, holds placeholders instead of a module list that grows once access is known", () => {
-    renderSidebar({ currentModuleKey: undefined, sections: undefined, basePath: undefined, pending: true });
+  it("holds placeholders under a module whose pages aren't known yet", () => {
+    renderSidebar({ modules: modules.map((module) => (module.key === "performance" ? { ...module, items: undefined, pending: true } : module)) });
     expect(screen.getByLabelText("Loading navigation")).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /Performance/ })).not.toBeInTheDocument();
-  });
-
-  it("renders the frame at once while sections resolve", () => {
-    renderSidebar({ pending: true });
-    expect(screen.getByLabelText("Loading navigation")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Home/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Performance/ })).toBeInTheDocument();
-    expect(screen.getByText("Mariam Gharbi")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "People" })).toBeInTheDocument();
     expect(screen.queryByText("My Plan")).not.toBeInTheDocument();
   });
 
@@ -133,15 +150,10 @@ describe("FusionSidebar", () => {
     const nav = screen.getByRole("complementary", { name: "Fusion navigation" });
     expect(nav).toHaveAttribute("data-collapsed", "true");
     expect(within(nav).getAllByRole("link").map((link) => link.getAttribute("aria-label"))).toEqual([
-      "Home",
-      "Overview",
-      "My Plan",
-      "My Team",
+      "Home", "Core HR", "Overview", "People", "Performance", "Overview", "My Plan", "My Team", "Learning",
     ]);
     expect(within(nav).queryByText("2")).not.toBeInTheDocument();
     expect(within(nav).getByRole("link", { name: "My Team" }).querySelector("span.rounded-full")).not.toBeNull();
-    expect(within(nav).getByRole("link", { name: "Overview" }).querySelector("span.rounded-full")).toBeNull();
-    expect(within(nav).getByRole("button", { name: "Switch module, current: Performance" })).toBeInTheDocument();
     expect(within(nav).getByRole("button", { name: "Expand sidebar" })).toBeInTheDocument();
   });
 

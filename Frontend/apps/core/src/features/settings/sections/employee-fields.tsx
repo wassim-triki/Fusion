@@ -28,7 +28,7 @@ import {
   cn,
 } from "@repo/ds";
 import { Said, Section, SettingsPage } from "@repo/ds/shell";
-import { Check, Eye, LockKeyhole, MoreHorizontal, Plus, Save, X } from "lucide-react";
+import { Check, Eye, LockKeyhole, MoreHorizontal, Plus, Save, X } from "@repo/ds/icons";
 import { usePeople, usePeopleFields, usePeopleProfile } from "@/features/people/api/use-people";
 import { Monogram } from "@/features/people/components/workforce-ui";
 import { useEmployeeFields, useUpdateEmployeeFields } from "@/features/settings/api/use-tenant-settings";

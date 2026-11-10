@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Check } from "@/lib/icons";
+import { ArrowRight, Check } from "@repo/ds/icons";
 import type { LaunchReadinessDto } from "@repo/api";
 import { AsyncButton } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";

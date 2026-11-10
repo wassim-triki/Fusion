@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { AlertTriangle, ArrowLeftRight, Briefcase, Search, X } from "lucide-react";
+import { AlertTriangle, ArrowLeftRight, Briefcase, Search, X } from "@repo/ds/icons";
 import type { ChangePersonRef, OrgChartDto, OrgChartHistoryDto, OrgChartOpenRoleDto, OrgChartPersonDto, WorkforceChangeDto } from "@repo/api";
 import { canAccessCorePeople, canEnterPerformance, canAccessCoreTeam, canManageCoreEmployees, canManageCoreReporting, useAuth, PageRefusal } from "@repo/auth";
 import {
@@ -29,7 +29,7 @@ import { useFormat } from "@repo/ds/lib/use-format";
 import { canAccessEmployeeRoster } from "@/lib/employee-roster-access";
 import { useOrgChart, useOrgChartBranches, useOrgChartChanges, useOrgChartSearch, useReviewProgress, type ChartHistoryWindow } from "../api/use-org-chart";
 import { changesBetween, coversDay } from "../model/org-chart-history";
-import { useOrgChartAccess } from "../api/use-org-chart-access";
+import { useOrgChartAccess } from "@repo/auth";
 import {
   HR_LENSES,
   addDays,

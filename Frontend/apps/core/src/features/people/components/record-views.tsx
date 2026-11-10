@@ -4,7 +4,7 @@ import Link from "next/link";
 import { createPerformanceApi, createPlatformApiClient, performanceQueryKeys } from "@repo/api";
 import { useApiQuery, useReactToPraise } from "@repo/api/query";
 import { PersonPerformanceSummary, type PraiseReactionIcons, type RenderSummaryLink } from "@repo/performance-ui";
-import { HeartHandshake, Lightbulb, PartyPopper, ThumbsUp } from "lucide-react";
+import { HeartHandshake, Lightbulb, PartyPopper, ThumbsUp } from "@repo/ds/icons";
 
 const BASE_PATH = "/core";
 

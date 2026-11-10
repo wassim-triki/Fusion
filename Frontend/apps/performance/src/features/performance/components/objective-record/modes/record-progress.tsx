@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft } from "@/lib/icons";
+import { ArrowLeft } from "@repo/ds/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import { AsyncButton, PageSkeleton } from "@repo/ds/shell";
 import { useObjectiveProgress, useProgressMutations } from "../../../api/use-performance";

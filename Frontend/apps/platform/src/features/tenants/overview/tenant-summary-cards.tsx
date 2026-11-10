@@ -1,17 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import {
-  Building2,
-  CheckCircle2,
-  Clock,
-  Hourglass,
-  Layers,
-  ShieldCheck,
-  TriangleAlert,
-  Wrench,
-} from "@/lib/icons";
-import type { LucideIcon } from "@/lib/icons";
+import { Building2, CheckCircle2, Clock, Hourglass, Layers, ShieldCheck, TriangleAlert, Wrench } from "@repo/ds/icons";
+import type { IconComponent } from "@repo/ds/icons";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { cn } from "@repo/ds/lib/utils";
 import { useFormat } from "@repo/ds/lib/use-format";
@@ -34,9 +25,9 @@ import type { OverviewFilter, TenantOverviewCounts } from "../api";
 /** Each card's label and meaning are `tenants.summary.<filter>` lines. */
 interface Summary {
   filter: OverviewFilter;
-  icon: LucideIcon;
+  icon: IconComponent;
   /** A second, smaller glyph for the metadata line. */
-  meaningIcon: LucideIcon;
+  meaningIcon: IconComponent;
   /** The icon tile's tint. Reinforces the state; never the only carrier of it. */
   tile: string;
 }

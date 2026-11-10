@@ -4,7 +4,7 @@ import { reportPerformanceFailure } from "@/features/performance/api/performance
 
 import Link from "next/link";
 import { toast } from "sonner";
-import { GitBranch, Pencil, Trash2 } from "@/lib/icons";
+import { GitBranch, Pencil, Trash2 } from "@repo/ds/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import { cn } from "@repo/ds/lib/utils";
 import { AsyncButton } from "@repo/ds/shell";

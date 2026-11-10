@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Archive, CircleCheck, PowerOff } from "@/lib/icons";
+import { Archive, CircleCheck, PowerOff } from "@repo/ds/icons";
 import { toast } from "sonner";
 import { Button } from "@repo/ds/components/ui/button";
 import { cn } from "@repo/ds/lib/utils";

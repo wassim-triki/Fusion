@@ -13,7 +13,7 @@ import {
   Slider,
 } from "@repo/ds";
 import { usePhoto } from "@repo/api/query";
-import { ImageUp, ZoomIn, ZoomOut } from "lucide-react";
+import { ImageUp, ZoomIn, ZoomOut } from "@repo/ds/icons";
 import { toast } from "sonner";
 import { useRefusal } from "@/i18n/words";
 import { usePhotoMutations } from "../../api/use-people";

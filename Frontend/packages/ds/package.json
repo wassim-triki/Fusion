@@ -29,7 +29,8 @@
     "./testing/intl-by-default": "./src/testing/intl-by-default.tsx",
     "./scripts/check-messages.cjs": "./scripts/check-messages.cjs",
     "./tokens.css": "./src/styles/tokens.css",
-    "./components.json": "./components.json"
+    "./components.json": "./components.json",
+    "./icons": "./src/icons.tsx"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
@@ -52,7 +53,6 @@
     "embla-carousel-react": "^8.5.1",
     "input-otp": "^1.4.1",
     "intl-messageformat": "^11.2.8",
-    "lucide-react": "^0.469.0",
     "next": "^15.1.0",
     "next-intl": "^4.13.0",
     "next-themes": "^0.4.4",

@@ -5,7 +5,7 @@ import type { DirectoryPersonDto } from "@repo/api";
 import { Avatar, AvatarFallback } from "@repo/ds/components/ui/avatar";
 import { Button } from "@repo/ds/components/ui/button";
 import { EntityPicker, type EntityOption } from "@repo/ds/components/ui/entity-picker";
-import { User, X } from "@/lib/icons";
+import { User, X } from "@repo/ds/icons";
 import { useDirectory } from "../../api/use-conversations";
 import { initials } from "../plan/plan-lib";
 import { useTranslations } from "next-intl";

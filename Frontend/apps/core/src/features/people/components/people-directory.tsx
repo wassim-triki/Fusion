@@ -7,9 +7,7 @@ import { useTranslations } from "next-intl";
 import { Button, cn } from "@repo/ds";
 import { DataTableFilters, DataTableSearch, useDataTable, type DataTableFilterField, type DataTableFilterState } from "@repo/ds/data-table";
 import type { PeopleDirectoryPersonDto } from "@repo/api";
-import { Building2, Briefcase, Mail, MapPin } from "lucide-react";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { HierarchyIcon } from "@hugeicons/core-free-icons";
+import { Building2, Briefcase, Mail, MapPin, Network } from "@repo/ds/icons";
 import { usePeopleDirectory } from "../api/use-people-directory";
 import { Monogram } from "./workforce-ui";
 import { LayoutSwitch } from "./people-layout";
@@ -89,8 +87,7 @@ function PersonCard({ person, tag, mine }: { person: PeopleDirectoryPersonDto; t
         ) : null}
         <Button asChild size="icon-sm" variant="ghost" className="relative z-10">
           <Link href={`/organization?view=people&focus=${encodeURIComponent(person.employeeKey)}`} aria-label={t("onChart", { name: person.displayName })}>
-            {/* The drawing's org chart glyph (D-28): people in a tree, not Lucide's boxes. */}
-            <HugeiconsIcon icon={HierarchyIcon} strokeWidth={1.5} aria-hidden />
+            <Network strokeWidth={1.5} aria-hidden />
           </Link>
         </Button>
       </div>

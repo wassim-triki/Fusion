@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Layers } from "@/lib/icons";
+import { Layers } from "@repo/ds/icons";
 import {
   AlertDialog,
   AlertDialogAction,

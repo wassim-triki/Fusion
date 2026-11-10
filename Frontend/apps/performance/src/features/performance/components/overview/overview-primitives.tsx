@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import type { OverviewChipDto } from "@repo/api";
-import { ArrowRight, Check, ChevronRight } from "@/lib/icons";
+import { ArrowRight, Check, ChevronRight } from "@repo/ds/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { cn } from "@repo/ds/lib/utils";

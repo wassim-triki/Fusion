@@ -7,7 +7,7 @@ import { ApiError, type CompanyListValueDto, type JobDto, type PlaceDto } from "
 import { canManageCoreOrganization, useAuth } from "@repo/auth";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@repo/ds";
 import { EntityPicker, type EntityOption } from "@repo/ds/components/ui/entity-picker";
-import { Briefcase, MapPin, Plus } from "lucide-react";
+import { Briefcase, MapPin, Plus } from "@repo/ds/icons";
 import { useJobMutations, useJobs, usePlaceMutations, usePlaces } from "../api/use-catalog";
 
 /**

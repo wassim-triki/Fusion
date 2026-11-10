@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Landmark, SquareArrowEnter } from "@/lib/icons";
+import { Landmark, SquareArrowEnter } from "@repo/ds/icons";
 import type { AlignmentTargetDto, PlanDecisionDto, PlanObjectiveDto } from "@repo/api";
 import { Avatar, AvatarFallback } from "@repo/ds/components/ui/avatar";
 import { ScopeMark } from "../scope-mark";

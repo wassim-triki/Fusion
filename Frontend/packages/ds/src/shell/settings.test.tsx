@@ -57,7 +57,6 @@ function renderSettings(props: Partial<FusionSidebarProps> = {}, locale: "en" | 
       currentModuleKey="core"
       basePath="/core"
       activePath="/settings/employee-fields"
-      person={{ name: "Sami Ferchichi", detail: "HR partner", onSignOut: vi.fn() }}
       {...props}
     />,
     locale === "fr" ? { locale, messages: fr } : {},
@@ -65,7 +64,7 @@ function renderSettings(props: Partial<FusionSidebarProps> = {}, locale: "en" | 
 }
 
 describe("FusionSidebar in settings mode", () => {
-  it("shows the way back, the groups in order and the person, without the switcher or Recent", () => {
+  it("shows the way back and the groups in order, without the modules or Recent", () => {
     renderSettings({ recent: [{ label: "Omar Mansour", kind: "Person", href: "/core/people/o" }] });
     const nav = screen.getByRole("complementary", { name: "Fusion navigation" });
     expect(within(nav).getByRole("link", { name: "Back to Core HR" })).toHaveAttribute("href", "/core/people");
@@ -74,10 +73,9 @@ describe("FusionSidebar in settings mode", () => {
       "Core HR, view only",
       "Performance",
     ]);
-    expect(within(nav).queryByRole("button", { name: /Switch module|Core HR/ })).not.toBeInTheDocument();
+    expect(within(nav).queryByRole("link", { name: /^Core HR/ })).not.toBeInTheDocument();
     expect(within(nav).queryByText("Recent")).not.toBeInTheDocument();
     expect(within(nav).queryByRole("link", { name: /^Home/ })).not.toBeInTheDocument();
-    expect(within(nav).getByText("Sami Ferchichi")).toBeInTheDocument();
   });
 
   it("marks the open section, links within the app by path and across apps by document", () => {
@@ -121,7 +119,6 @@ describe("FusionSidebar in settings mode", () => {
         currentModuleKey="core"
         basePath="/core"
         activePath="/people"
-        person={{ name: "Amira Khelifi" }}
       />,
     );
     expect(window.sessionStorage.getItem("fusion.settings.back")).toBe("/core/people?tab=all");

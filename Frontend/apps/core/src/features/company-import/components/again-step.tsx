@@ -8,7 +8,7 @@ import { Alert, AlertDescription, Button, DatePicker, PersonAvatar } from "@repo
 import { PageContainer, Section } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import type { AgainChangeDto, CompanyImportDto, ImportChangeDto } from "@repo/api";
-import { AlertTriangle, ArrowLeft, ArrowRight, Briefcase, Building2, CheckCircle2, UserCheck } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Briefcase, Building2, CheckCircle2, UserCheck } from "@repo/ds/icons";
 import { useEarlierImports, useImportChange } from "../api/use-company-import";
 import { CheckCard } from "./chart-step";
 import { importHref } from "./import-skeleton";

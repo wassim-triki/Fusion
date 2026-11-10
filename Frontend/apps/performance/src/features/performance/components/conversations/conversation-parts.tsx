@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { FeedbackSubjectDto } from "@repo/api";
 import { cn } from "@repo/ds/lib/utils";
 import { ValueChip } from "@repo/performance-ui";
-import { Target } from "@/lib/icons";
+import { Target } from "@repo/ds/icons";
 import { useTranslations } from "next-intl";
 import { useFormat } from "@repo/ds/lib/use-format";
 

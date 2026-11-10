@@ -22,7 +22,7 @@ export {
   saveLanguage,
 } from "./auth-service";
 export { useLanguage } from "./language";
-export { TopBarPreferences } from "./components/top-bar-preferences";
+export { YourMenu } from "./components/your-menu";
 export { TopBarSearch } from "./components/top-bar-search";
 export { ViewingAsBar } from "./components/viewing-as-bar";
 export {
@@ -126,3 +126,6 @@ export {
 } from "./sso";
 export { SignUpPage } from "./components/signup-page";
 export type { SignUpPageProps } from "./components/signup-page";
+export { useCorePages, usePerformancePages, useOrgChartAccess } from "./module-navigation";
+export type { ModulePages } from "./module-navigation";
+export { FusionSidebar } from "./components/fusion-sidebar";

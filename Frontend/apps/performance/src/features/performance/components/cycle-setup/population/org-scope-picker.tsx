@@ -2,16 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  AlertCircle,
-  Building2,
-  ChevronDown,
-  ChevronRight,
-  Network,
-  Search,
-  Users2,
-  X,
-} from "@/lib/icons";
+import { AlertCircle, Building2, ChevronDown, ChevronRight, Network, Search, Users2, X } from "@repo/ds/icons";
 import type {
   OrganizationHierarchyNodeDto,
   OrgUnitSelectionInput,

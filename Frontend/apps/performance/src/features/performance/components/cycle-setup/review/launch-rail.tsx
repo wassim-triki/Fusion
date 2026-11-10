@@ -1,18 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import {
-  Check as CheckIcon,
-  CircleAlert,
-  CircleCheck,
-  ClipboardList,
-  Lock,
-  MessageSquare,
-  Play,
-  Target,
-  Users2,
-  X,
-} from "@/lib/icons";
+import { Check as CheckIcon, CircleAlert, CircleCheck, ClipboardList, Lock, MessageSquare, Play, Target, Users2, X } from "@repo/ds/icons";
 import type { CycleDetailDto, PopulationDto } from "@repo/api";
 import { cn } from "@repo/ds/lib/utils";
 import { useTranslations } from "next-intl";

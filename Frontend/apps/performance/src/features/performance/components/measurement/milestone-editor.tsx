@@ -18,7 +18,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useState } from "react";
-import { CalendarDays, GripVertical, Plus, Trash2 } from "@/lib/icons";
+import { CalendarDays, GripVertical, Plus, Trash2 } from "@repo/ds/icons";
 import type { MeasurementDto, MeasurementInput } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
 import {

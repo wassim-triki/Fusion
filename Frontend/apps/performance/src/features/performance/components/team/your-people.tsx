@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type ComponentType, type ReactNode } from "react";
-import { CheckCircle2, CircleDashed, Clock, Download, Eye, PencilLine, RotateCcw, Users } from "@/lib/icons";
+import { CheckCircle2, CircleDashed, Clock, Download, Eye, PencilLine, RotateCcw, Users } from "@repo/ds/icons";
 import type {
   RosterAttentionDto,
   RosterPhaseFactsDto,

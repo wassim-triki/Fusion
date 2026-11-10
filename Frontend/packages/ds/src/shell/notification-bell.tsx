@@ -2,18 +2,7 @@
 
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import { createPortal } from "react-dom";
-import {
-  Bell,
-  CalendarDays,
-  CircleCheck,
-  ClipboardCheck,
-  Clock,
-  FileText,
-  MessageSquare,
-  Star,
-  Users,
-  X,
-} from "lucide-react";
+import { Bell, CalendarDays, CircleCheck, ClipboardCheck, Clock, FileText, MessageSquare, Star, Users, X } from "../icons";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "../lib/utils";
 import { Button } from "../components/ui/button";

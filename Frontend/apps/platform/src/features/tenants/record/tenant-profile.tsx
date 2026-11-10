@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatLocale } from "@repo/ds/lib/dates";
 import { useSay } from "@repo/ds/lib/say";
-import { FileText, Pencil } from "@/lib/icons";
+import { FileText, Pencil } from "@repo/ds/icons";
 import { toast } from "sonner";
 import { Button } from "@repo/ds/components/ui/button";
 import {

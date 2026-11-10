@@ -1,16 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import {
-  CircleCheck,
-  Info,
-  LoaderCircle,
-  RefreshCw,
-  ShieldCheck,
-  TriangleAlert,
-  UserRound,
-  UserX,
-} from "@/lib/icons";
+import { CircleCheck, Info, LoaderCircle, RefreshCw, ShieldCheck, TriangleAlert, UserRound, UserX } from "@repo/ds/icons";
 import type { PopulationDto } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
 import { Progress } from "@repo/ds/components/ui/progress";

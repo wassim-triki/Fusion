@@ -1,15 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  LogOut,
-  LogIn,
-  User,
-  Settings,
-  ChevronUp,
-  ChevronDown,
-  Home,
-} from "lucide-react";
+import { LogOut, LogIn, User, Settings, ChevronUp, ChevronDown, Home } from "@repo/ds/icons";
 import { useAuth } from "../auth-context";
 import { getSidebarAccountLabel } from "../account-label";
 import {

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useTranslations } from "next-intl";
-import { Maximize, Minus, Plus } from "lucide-react";
+import { Maximize, Minus, Plus } from "@repo/ds/icons";
 import { MAX_ZOOM, MIN_ZOOM, zoomTier, type Camera, type Viewport } from "../model/org-chart-model";
 
 /**

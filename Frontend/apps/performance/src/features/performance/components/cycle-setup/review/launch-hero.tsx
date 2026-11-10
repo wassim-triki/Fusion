@@ -2,15 +2,7 @@
 
 import type { ComponentType, ReactNode } from "react";
 import Link from "next/link";
-import {
-  CalendarDays,
-  Check,
-  FileText,
-  Rocket,
-  ShieldCheck,
-  TriangleAlert,
-  Users2,
-} from "@/lib/icons";
+import { CalendarDays, Check, FileText, Rocket, ShieldCheck, TriangleAlert, Users2 } from "@repo/ds/icons";
 import type { CycleDetailDto } from "@repo/api";
 import { AsyncButton } from "@repo/ds/shell";
 import { Button } from "@repo/ds/components/ui/button";

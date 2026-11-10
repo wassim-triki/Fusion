@@ -7,7 +7,7 @@ import { Button } from "@repo/ds/components/ui/button";
 import { Textarea } from "@repo/ds/components/ui/textarea";
 import { AsyncButton, Said } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
-import { ArrowRight, Check, Eye, Lock } from "@/lib/icons";
+import { ArrowRight, Check, Eye, Lock } from "@repo/ds/icons";
 import { useSummaryRevision } from "../../api/use-review-work";
 import { dayLabel } from "./review-parts";
 import { useTranslations } from "next-intl";

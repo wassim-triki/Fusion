@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useLocale } from "next-intl";
-import { Check, Copy, Lock } from "lucide-react";
+import { Check, Copy, Lock } from "@repo/ds/icons";
 import { ApiError, type SsoConfirmation, type SsoProviderKey, type SsoSettingsDto } from "@repo/api";
 import { ProviderMark, startSsoFlow, PageFailure } from "@repo/auth";
 import {

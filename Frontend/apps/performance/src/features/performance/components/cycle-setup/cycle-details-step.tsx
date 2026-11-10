@@ -4,7 +4,7 @@ import { reportPerformanceFailure } from "@/features/performance/api/performance
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, CalendarDays, ChevronRight, Clock, FileText, Flag, Users } from "@/lib/icons";
+import { ArrowRight, CalendarDays, ChevronRight, Clock, FileText, Flag, Users } from "@repo/ds/icons";
 import { toast } from "sonner";
 import type { CycleDetailDto } from "@repo/api";
 import { Input } from "@repo/ds/components/ui/input";

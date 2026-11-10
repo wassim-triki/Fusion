@@ -11,7 +11,7 @@ import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { PageContainer, PageHeader, StatusBadge } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { PersonInitials } from "@repo/performance-ui";
-import { ArrowRight, ChevronRight, Flag, MessageSquare, Plus, RefreshCw, Star, Target } from "@/lib/icons";
+import { ArrowRight, ChevronRight, Flag, MessageSquare, Plus, RefreshCw, Star, Target } from "@repo/ds/icons";
 import { useOneOnOne, useOneOnOnes } from "../../api/use-conversations";
 import { ContentUnavailable } from "../content-unavailable";
 import { PlanDocument, SidebarSection } from "../plan/plan-layout";

@@ -45,13 +45,36 @@ function render(ui: ReactElement, locale: "en" | "fr" = "en") {
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/", useRouter: () => ({ push: vi.fn() }) }));
 
-vi.mock("@repo/auth", async (importOriginal) => ({
-  ...(await importOriginal<Record<string, unknown>>()),
-  useAuth: () => ({ user: mocks.user, isLoading: false, logout: vi.fn() }),
-  useNotificationAlerts: () => ({ alerts: { popups: true, sound: true }, save: vi.fn(), saving: false }),
-  TopBarPreferences: () => null,
-  TopBarSearch: () => null,
-}));
+vi.mock("@repo/auth", async (importOriginal) => {
+  // The shared sidebar's page hooks read the package's own auth context; the DS frame with the mocked navigation stands in.
+  const { FusionSidebar: Frame } = await vi.importActual<typeof import("@repo/ds/shell")>("@repo/ds/shell");
+  const { Home } = await vi.importActual<typeof import("@repo/ds/icons")>("@repo/ds/icons");
+  const { useFusionNavigation } = await import("@repo/api/query");
+  const pages: Record<string, import("@repo/ds/shell").ShellNavItem[]> = {
+    core: [{ label: "People", href: "/people", icon: Home }],
+    performance: [{ label: "Year", href: "/", icon: Home, exact: true }],
+  };
+  return {
+    ...(await importOriginal<Record<string, unknown>>()),
+    useAuth: () => ({ user: mocks.user, isLoading: false, logout: vi.fn() }),
+    useNotificationAlerts: () => ({ alerts: { popups: true, sound: true }, save: vi.fn(), saving: false }),
+    YourMenu: () => null,
+    TopBarSearch: () => null,
+    FusionSidebar: ({ activePath }: { activePath: string }) => {
+      const navigation = useFusionNavigation(null, []);
+      return (
+        <Frame
+          tenantName={navigation.tenantName}
+          homeCount={navigation.homeCount}
+          modules={navigation.modules
+            .filter((module) => (mocks.user as { moduleEntitlements?: string[] }).moduleEntitlements?.includes(module.key === "core" ? "CoreHR" : module.key === "performance" ? "Performance" : "Learning") ?? true)
+            .map((module) => ({ ...module, items: pages[module.key] }))}
+          activePath={activePath}
+        />
+      );
+    },
+  };
+});
 
 vi.mock("@repo/api/query", () => ({
   useFusionWork: (modules: string[]) => {
@@ -389,8 +412,8 @@ describe("FusionHome", () => {
     expect(screen.queryByRole("complementary", { name: "Your year and praise" })).toBeNull();
   });
 
-  it("lists the person's modules with their waiting work in the sidebar, Home first", () => {
-    mocks.user = employee;
+  it("lists the person's modules with their pages and waiting work in the sidebar, Home first", () => {
+    mocks.user = { ...employee, moduleEntitlements: ["CoreHR", "Performance", "Learning"] };
     mocks.manager = { manager: null, isFirstWeek: false, teammates: [], teammateCount: 0 };
     mocks.work = { modules: ready, items: [] };
     render(<FusionHome />);
@@ -398,11 +421,12 @@ describe("FusionHome", () => {
     const links = Array.from(nav.querySelectorAll("a")).map((link) => [link.textContent, link.getAttribute("href")]);
     expect(links).toEqual([
       ["Home", "/"],
-      ["Core HR1", "/core"],
-      ["Performance2", "/performance"],
+      ["Core HR", "/core"],
+      ["People", "/core/people"],
+      ["Performance", "/performance"],
+      ["Year", "/performance"],
       ["Learning", "/learning"],
     ]);
     expect(nav.textContent).toContain("Carthage Digital Group");
-    expect(nav.textContent).toContain("QA Automation Engineer");
   });
 });

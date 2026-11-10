@@ -12,8 +12,7 @@
   },
   "dependencies": {
     "@repo/api": "workspace:*",
-    "@repo/ds": "workspace:*",
-    "lucide-react": "^0.469.0"
+    "@repo/ds": "workspace:*"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

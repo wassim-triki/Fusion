@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { AsyncButton } from "@repo/ds/shell";
 import { PersonInitials } from "@repo/performance-ui";
-import { Check, Eye, Lock, FileCheck2, Users } from "@/lib/icons";
+import { Check, Eye, Lock, FileCheck2, Users } from "@repo/ds/icons";
 import { useCalibrationFinalizePreview, type useCalibrationMutations } from "../../api/use-calibration";
 import { flagText } from "./calibration-format";
 import { useTranslations } from "next-intl";

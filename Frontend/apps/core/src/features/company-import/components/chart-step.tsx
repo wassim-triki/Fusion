@@ -9,7 +9,7 @@ import { OptionCards, Segmented } from "@repo/ds/choice";
 import { PageContainer } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import type { CheckDto, CompanyImportDto, CompanyImportSaidDto } from "@repo/api";
-import { AlertTriangle, ArrowLeft, CheckCircle2, Search } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CheckCircle2, Search } from "@repo/ds/icons";
 import { useImportApi, useImportChange } from "../api/use-company-import";
 import { ImportHeader, useFieldLabel } from "./import-parts";
 import { importHref } from "./import-skeleton";

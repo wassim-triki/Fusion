@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { AlertTriangle, ArrowLeft, ArrowRight } from "@/lib/icons";
+import { AlertTriangle, ArrowLeft, ArrowRight } from "@repo/ds/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import { AsyncButton } from "@repo/ds/shell";
 import { failureKind } from "../api";

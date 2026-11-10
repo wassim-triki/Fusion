@@ -34,7 +34,7 @@ import {
 } from "@repo/ds";
 import { PasswordStrengthField, passwordRuleChecks, type PasswordCheck } from "@repo/ds/shell";
 import type { PageStateDrawingKind } from "@repo/ds/shell";
-import { ArrowRight, Check, Eye, EyeOff, Lock, TriangleAlert, X } from "lucide-react";
+import { ArrowRight, Check, Eye, EyeOff, Lock, TriangleAlert, X } from "@repo/ds/icons";
 import {
   useValidateInvite,
   useAcceptInvite,

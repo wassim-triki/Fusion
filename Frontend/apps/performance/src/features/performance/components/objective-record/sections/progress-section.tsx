@@ -1,6 +1,6 @@
 "use client";
 
-import { LineChart, Minus, TrendingUp } from "@/lib/icons";
+import { LineChart, Minus, TrendingUp } from "@repo/ds/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import {
   useEvidenceOpener,

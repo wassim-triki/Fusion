@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState, type KeyboardEvent } from "react";
 import type { EmployeeProfileFieldDto } from "@repo/api";
 import { Badge, Button, Input } from "@repo/ds";
-import { X } from "lucide-react";
+import { X } from "@repo/ds/icons";
 import { toast } from "sonner";
 import { useRefusal } from "@/i18n/words";
 import { useUpdatePeopleField } from "../../api/use-people";

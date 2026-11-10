@@ -2,19 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import {
-  Ban,
-  Building2,
-  CircleSlash,
-  MailCheck,
-  MailX,
-  RefreshCw,
-  ScrollText,
-  Send,
-  UserCheck,
-  UserPen,
-  type LucideIcon,
-} from "@/lib/icons";
+import { Ban, Building2, CircleSlash, MailCheck, MailX, RefreshCw, ScrollText, Send, UserCheck, UserPen, type IconComponent } from "@repo/ds/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { cn } from "@repo/ds/lib/utils";
@@ -44,7 +32,7 @@ import { useFormat } from "@repo/ds/lib/use-format";
  * which one is authoritative.
  */
 
-const EVENT_ICON: Record<string, LucideIcon> = {
+const EVENT_ICON: Record<string, IconComponent> = {
   TenantProvisioned: Building2,
   InvitationResent: Send,
   InvitationRevoked: Ban,
@@ -54,7 +42,7 @@ const EVENT_ICON: Record<string, LucideIcon> = {
   ActivationRejected: CircleSlash,
 };
 
-function iconFor(entry: TenantActivityEntry): LucideIcon {
+function iconFor(entry: TenantActivityEntry): IconComponent {
   if (entry.eventType === "InvitationDeliveryAttempted") {
     // The same record is a sent invitation or a bounced one, so the glyph has
     // to follow the outcome rather than the event name.

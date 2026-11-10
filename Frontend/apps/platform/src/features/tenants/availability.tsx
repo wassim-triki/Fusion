@@ -1,6 +1,6 @@
 "use client";
 
-import type { LucideIcon } from "@/lib/icons";
+import type { IconComponent } from "@repo/ds/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import {
   Tooltip,
@@ -44,7 +44,7 @@ export function UnavailableAction({
   size = "sm",
 }: {
   label: string;
-  icon?: LucideIcon;
+  icon?: IconComponent;
   explanation?: string;
   variant?: "outline" | "ghost";
   size?: "sm" | "default";

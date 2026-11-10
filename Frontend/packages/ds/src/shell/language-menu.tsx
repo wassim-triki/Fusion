@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Languages } from "lucide-react";
+import { Check, Languages } from "../icons";
 import { useTranslations } from "next-intl";
 import { cn } from "../lib/utils";
 import { Button } from "../components/ui/button";

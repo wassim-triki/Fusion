@@ -3,7 +3,7 @@
 import { reportPerformanceFailure } from "@/features/performance/api/performance-failure";
 
 import { useRef, useState } from "react";
-import { FileText, Link2, Loader2, Paperclip, Plus, Type, X } from "@/lib/icons";
+import { FileText, Link2, Loader2, Paperclip, Plus, Type, X } from "@repo/ds/icons";
 import type { EvidenceInput } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
 import { Input } from "@repo/ds/components/ui/input";

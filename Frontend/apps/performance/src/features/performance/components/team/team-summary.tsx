@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import type { StatusMixDto, TeamResultsDto, YourPeoplePageDto } from "@repo/api";
-import { Lock } from "@/lib/icons";
+import { Lock } from "@repo/ds/icons";
 import { cn } from "@repo/ds/lib/utils";
 import { day } from "../overview/overview-model";
 import { useTranslations } from "next-intl";

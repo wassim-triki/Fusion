@@ -59,6 +59,7 @@ vi.mock("@/shell/breadcrumb-overrides", () => ({
 vi.mock("@/features/settings/roles/person-roles", () => ({ PersonRoles: () => null }));
 
 vi.mock("@repo/auth", () => ({
+  useOrgChartAccess: () => ({ canSee: true, isLoading: false }),
   PageFailure: ({ back }: { back: { href: string; label: string } }) => <a href={back.href}>{back.label}</a>,
   useAuth: () => ({
     user: { id: "u1", employeeId: "viewer-1" },
@@ -81,10 +82,6 @@ vi.mock("@repo/api/query", () => ({
   useTenantSummary: () => ({ data: { name: "Lumera" } }),
   useReactToPraise: () => ({ mutate: vi.fn(), isLoading: false }),
   useCompanyValues: () => ({ data: [] }),
-}));
-
-vi.mock("@/features/org-chart/api/use-org-chart-access", () => ({
-  useOrgChartAccess: () => ({ canSee: true, isLoading: false }),
 }));
 
 vi.mock("../changes/use-changes", () => ({

@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { AsyncButton, PageContainer, PageSkeleton } from "@repo/ds/shell";
 import { PersonInitials } from "@repo/performance-ui";
-import { ArrowLeft } from "@/lib/icons";
+import { ArrowLeft } from "@repo/ds/icons";
 import { roundHref, withCycle } from "@/lib/performance-routes";
 import Link from "next/link";
 import { RecordCycleScope, useWorkspaceContext } from "../../api/use-workspace";

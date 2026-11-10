@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight } from "@repo/ds/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { PageFailure } from "@repo/auth";
 import {

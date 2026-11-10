@@ -5,15 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useSay, type Say } from "@repo/ds/lib/say";
 import { toast } from "sonner";
-import {
-  CircleAlert,
-  CircleCheck,
-  Clock,
-  Mail,
-  TriangleAlert,
-  UsersRound,
-  type LucideIcon,
-} from "@/lib/icons";
+import { CircleAlert, CircleCheck, Clock, Mail, TriangleAlert, UsersRound, type IconComponent } from "@repo/ds/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import { cn } from "@repo/ds/lib/utils";
 import { personHueProps } from "@repo/ds/components/ui/person-avatar";
@@ -224,7 +216,7 @@ type HandoffTone = "info" | "success" | "warning" | "danger";
 
 interface HandoffView {
   description: string;
-  status: { label: string; icon: LucideIcon; tone: HandoffTone };
+  status: { label: string; icon: IconComponent; tone: HandoffTone };
   meta?: string;
   action:
     | {

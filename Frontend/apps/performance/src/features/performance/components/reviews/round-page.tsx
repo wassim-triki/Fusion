@@ -12,7 +12,7 @@ import { Textarea } from "@repo/ds/components/ui/textarea";
 import { AsyncButton, PageContainer, PageHeader, PageSkeleton, StatusBadge } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { AvatarStack, PersonInitials } from "@repo/performance-ui";
-import { Bell, CalendarDays, Check, FileText, Send } from "@/lib/icons";
+import { Bell, CalendarDays, Check, FileText, Send } from "@repo/ds/icons";
 import { RecordCycleScope, useWorkspaceContext } from "../../api/use-workspace";
 import { useReviewRound, useReviewRoundFinalization, useReviewRoundMutations } from "../../api/use-reviews";
 import { useScheduleCommands } from "../../api/use-review-work";

@@ -4,7 +4,7 @@ import Image from "next/image";
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { useLocale } from "next-intl";
-import { Home, LayoutGrid, Settings, TrendingUp, Users } from "lucide-react";
+import { Home, LayoutGrid, Settings, TrendingUp, Users } from "@repo/ds/icons";
 import { createCompanyBrandApi, createPlatformApiClient, type CompanyLanguage } from "@repo/api";
 import { useApiQuery } from "@repo/api/query";
 import { SignInFrame } from "@repo/auth";

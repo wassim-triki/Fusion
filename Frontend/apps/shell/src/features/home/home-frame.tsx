@@ -1,9 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { TopBarPreferences, TopBarSearch, ViewingAsBar } from "@repo/auth";
+import { FusionSidebar, YourMenu, TopBarSearch, ViewingAsBar } from "@repo/auth";
 import { AppShell, ThemeProvider, TopBar } from "@repo/ds/shell";
-import { FusionSidebar } from "./fusion-sidebar";
 import { ShellNotificationBell } from "./shell-notification-bell";
 
 /** Session readiness only gates the content; the Fusion frame stays mounted. */
@@ -11,13 +10,13 @@ export function HomeFrame({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
       <AppShell
-        sidebar={<FusionSidebar />}
+        sidebar={<FusionSidebar activePath="/" />}
         notice={<ViewingAsBar />}
         header={
           <TopBar>
             <TopBarSearch />
             <ShellNotificationBell />
-            <TopBarPreferences />
+            <YourMenu />
           </TopBar>
         }
       >

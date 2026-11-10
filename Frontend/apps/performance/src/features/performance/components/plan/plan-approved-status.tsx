@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@repo/auth";
-import { Check } from "@/lib/icons";
+import { Check } from "@repo/ds/icons";
 import type { EmployeePlanDto } from "@repo/api";
 
 import { PlanBannerMark } from "./plan-banner";

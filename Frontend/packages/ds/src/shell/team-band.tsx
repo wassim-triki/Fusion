@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { AlertTriangle, ArrowRightLeft, BriefcaseBusiness, Cake, Coffee, Gift, LogOut, PartyPopper, TreePalm, UserPlus, type LucideIcon } from "lucide-react";
+import { AlertTriangle, ArrowRightLeft, BriefcaseBusiness, Cake, Coffee, Gift, LogOut, PartyPopper, TreePalm, UserPlus, type IconComponent } from "../icons";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { PersonAvatar } from "../components/ui/person-avatar";
@@ -68,7 +68,7 @@ export function teamNext(person: TeamBandPerson, now: Date = new Date()): TeamNe
   return dated.find((item) => item.at <= add(WINDOW_DAYS))?.next ?? null;
 }
 
-const ICON: Record<TeamNext["kind"], LucideIcon> = {
+const ICON: Record<TeamNext["kind"], IconComponent> = {
   Joins: UserPlus,
   MovesIn: UserPlus,
   Leaves: LogOut,

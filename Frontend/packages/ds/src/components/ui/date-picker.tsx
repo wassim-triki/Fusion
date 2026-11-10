@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { CalendarIcon } from "lucide-react"
+import { CalendarIcon } from "../../icons";
 import { useLocale, useTranslations } from "next-intl"
 import type { Matcher } from "react-day-picker"
 

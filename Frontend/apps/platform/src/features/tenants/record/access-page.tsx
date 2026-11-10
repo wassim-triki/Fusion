@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Mail, ShieldAlert, ShieldCheck } from "@/lib/icons";
+import { Mail, ShieldAlert, ShieldCheck } from "@repo/ds/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { useFormat } from "@repo/ds/lib/use-format";

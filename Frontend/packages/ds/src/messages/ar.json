@@ -113,16 +113,9 @@
       "expand": "توسيع الشريط الجانبي",
       "collapse": "طي الشريط الجانبي",
       "home": "الرئيسية",
-      "modules": "الوحدات",
       "recent": "الأخيرة",
-      "switchModule": "تبديل الوحدة",
-      "switchModuleCurrent": "تبديل الوحدة، الحالية: {module}",
-      "currentModule": "الوحدة الحالية",
       "loadingNavigation": "جارٍ تحميل التنقل",
-      "loadingAccount": "جارٍ تحميل الحساب",
-      "signIn": "تسجيل الدخول",
       "settings": "الإعدادات",
-      "signOut": "تسجيل الخروج",
       "moduleDescriptions": {
         "core": "الأفراد والهيكل التنظيمي",
         "performance": "الأهداف والمحادثات والتقييمات",
@@ -131,7 +124,12 @@
         "onboarding": "رحلات الموظفين الجدد",
         "interview": "تقييم المترشحين"
       },
-      "myProfile": "ملفي الشخصي"
+      "foldModule": "طيّ {module}",
+      "openModule": "فتح {module}",
+      "switchModule": "تبديل الوحدة",
+      "loadingAccount": "جارٍ تحميل الحساب",
+      "signIn": "تسجيل الدخول",
+      "signOut": "تسجيل الخروج"
     },
     "notifications": {
       "title": "الإشعارات",

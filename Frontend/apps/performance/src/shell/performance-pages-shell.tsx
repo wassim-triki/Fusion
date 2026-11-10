@@ -2,13 +2,12 @@
 
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { TopBarPreferences, TopBarSearch, ViewingAsBar } from "@repo/auth";
+import { FusionSidebar, YourMenu, TopBarSearch, ViewingAsBar } from "@repo/auth";
 import { AppShell, SettingsBreadcrumb, TopBar } from "@repo/ds/shell";
 import { usePerformanceSettingsLabel } from "@/features/settings/performance-settings";
-import { PerformanceSidebar } from "@/shell/navigation/performance-sidebar";
 import { PerformanceCycleContext } from "@/shell/performance-cycle-context";
 import { FusionNotificationBell } from "@/shell/fusion-notification-bell";
-import { RecordCycleScopeProvider } from "@/features/performance/api/use-workspace";
+import { RecordCycleScopeProvider, useSelectedCycleId } from "@/features/performance/api/use-workspace";
 
 export function PerformancePagesShell({ children }: { children: ReactNode }) {
   // The light-mode white working surface is applied via a `--background` token
@@ -17,7 +16,8 @@ export function PerformancePagesShell({ children }: { children: ReactNode }) {
   // is parked until the breadcrumb architecture is revisited. Inside Settings it names the section instead.
   // usePathname omits the basePath; the optional prefix keeps this true either way.
   const performanceSettingsLabel = usePerformanceSettingsLabel();
-  const settingsSection = /^(?:\/performance)?\/settings(?:\/([^/?#]+))?$/.exec(usePathname() ?? "");
+  const pathname = usePathname() ?? "";
+  const settingsSection = /^(?:\/performance)?\/settings(?:\/([^/?#]+))?$/.exec(pathname);
   const left = settingsSection ? (
     <SettingsBreadcrumb trail={["Performance", ...(settingsSection[1] ? [performanceSettingsLabel(settingsSection[1])] : [])]} />
   ) : (
@@ -25,15 +25,21 @@ export function PerformancePagesShell({ children }: { children: ReactNode }) {
   );
   return (
     <RecordCycleScopeProvider>
-      <AppShell sidebar={<PerformanceSidebar />} notice={<ViewingAsBar />} header={
+      <AppShell sidebar={<PerformanceSidebarFrame activePath={pathname.replace(/^\/performance/, "") || "/"} />} notice={<ViewingAsBar />} header={
           <TopBar left={left}>
             <TopBarSearch />
             <FusionNotificationBell />
-          <TopBarPreferences />
+          <YourMenu />
           </TopBar>
         }>
         {children}
       </AppShell>
     </RecordCycleScopeProvider>
   );
+}
+
+/** Inside the record scope, so the sidebar's pages follow the year being looked at. */
+function PerformanceSidebarFrame({ activePath }: { activePath: string }) {
+  const cycleId = useSelectedCycleId();
+  return <FusionSidebar current="performance" activePath={activePath} cycleId={cycleId} />;
 }

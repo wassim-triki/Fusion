@@ -5,13 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { PageFailure } from "@repo/auth";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import {
-  Activity,
-  Blocks,
-  Building2,
-  CalendarDays,
-  Plus,
-} from "@/lib/icons";
+import { Activity, Blocks, Building2, CalendarDays, Plus } from "@repo/ds/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import {

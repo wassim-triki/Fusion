@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, MapView } from "@/lib/icons";
+import { ChevronRight, MapView } from "@repo/ds/icons";
 import { alignmentMapHref } from "@/lib/performance-routes";
 import { ScopeMark } from "../../scope-mark";
 import type { ObjectiveRef } from "../objective-ref";

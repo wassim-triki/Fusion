@@ -23,7 +23,7 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@repo/ds/comp
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { cn } from "@repo/ds/lib/utils";
 import { PersonInitials } from "@repo/performance-ui";
-import { ChevronDown, ChevronRight } from "@/lib/icons";
+import { ChevronDown, ChevronRight } from "@repo/ds/icons";
 import { useInsights, useInsightsPeople } from "../../api/use-performance";
 import { ContentUnavailable } from "../content-unavailable";
 import { appHref, day } from "../overview/overview-model";

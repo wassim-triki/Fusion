@@ -6,7 +6,7 @@ import { useState, type ReactNode } from "react";
 import type { EmployeeProfileFieldDto, PersonPerformanceSummaryDto } from "@repo/api";
 import { Button, Skeleton, Textarea, cn } from "@repo/ds";
 import { Section, Said } from "@repo/ds/shell";
-import { ArrowRight, BarChart3, BriefcaseBusiness, Inbox, MapPin, Users } from "lucide-react";
+import { ArrowRight, BarChart3, BriefcaseBusiness, Inbox, MapPin, Users } from "@repo/ds/icons";
 import { toast } from "sonner";
 import { useRefusal } from "@/i18n/words";
 import { usePeopleFields, useUpdatePeopleAbout } from "../../api/use-people";

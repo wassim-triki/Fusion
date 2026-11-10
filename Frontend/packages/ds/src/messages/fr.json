@@ -113,16 +113,9 @@
       "expand": "Déplier la barre latérale",
       "collapse": "Replier la barre latérale",
       "home": "Accueil",
-      "modules": "Modules",
       "recent": "Récents",
-      "switchModule": "Changer de module",
-      "switchModuleCurrent": "Changer de module, actuel : {module}",
-      "currentModule": "Module actuel",
       "loadingNavigation": "Chargement de la navigation",
-      "loadingAccount": "Chargement du compte",
-      "signIn": "Se connecter",
       "settings": "Paramètres",
-      "signOut": "Se déconnecter",
       "moduleDescriptions": {
         "core": "Collaborateurs et organisation",
         "performance": "Objectifs, échanges et évaluations",
@@ -131,7 +124,12 @@
         "onboarding": "Parcours d’intégration",
         "interview": "Évaluation des candidats"
       },
-      "myProfile": "Mon profil"
+      "foldModule": "Replier {module}",
+      "openModule": "Déplier {module}",
+      "switchModule": "Changer de module",
+      "loadingAccount": "Chargement du compte",
+      "signIn": "Se connecter",
+      "signOut": "Se déconnecter"
     },
     "notifications": {
       "title": "Notifications",

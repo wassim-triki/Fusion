@@ -13,7 +13,7 @@ import { Textarea } from "@repo/ds/components/ui/textarea";
 import { AsyncButton } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { PersonInitials, PraiseCard, VALUE_TONE, ValueDot, useValueTones } from "@repo/performance-ui";
-import { Lock, Send, Star, Target, Users } from "@/lib/icons";
+import { Lock, Send, Star, Target, Users } from "@repo/ds/icons";
 import { useAskForFeedback, useCompanyValues, useGiveFeedback, useGivePraise } from "../../api/use-conversations";
 import { usePersonSummary } from "../../api/use-performance";
 import { localDate } from "../one-on-ones/one-on-one-lib";

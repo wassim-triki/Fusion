@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Check } from "@/lib/icons";
+import { Check } from "@repo/ds/icons";
 import {
   Stepper,
   StepperIndicator,

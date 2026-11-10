@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import type { RowData } from "@tanstack/react-table";
-import { Plus, Search, X } from "lucide-react";
+import { Plus, Search, X } from "../icons";
 import { useLocale, useTranslations } from "next-intl";
 import type { DateRange } from "react-day-picker";
 import { ar, fr } from "react-day-picker/locale";

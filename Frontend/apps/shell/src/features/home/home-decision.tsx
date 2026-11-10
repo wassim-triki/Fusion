@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
 import { createPlatformApiClient, fusionAttentionQueryKeys, getFusionAttentionModule, type FusionAttentionModuleKey } from "@repo/api";
-import { Check, X } from "lucide-react";
+import { Check, X } from "@repo/ds/icons";
 import { Button, Textarea } from "@repo/ds";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ds/components/ui/popover";
 import type { WorkListItem } from "@repo/ds/shell";

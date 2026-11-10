@@ -4,7 +4,7 @@ import { reportPerformanceFailure } from "@/features/performance/api/performance
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, CircleCheck } from "@/lib/icons";
+import { ArrowRight, CircleCheck } from "@repo/ds/icons";
 import { toast } from "sonner";
 import type {
   OrgUnitSelectionInput,

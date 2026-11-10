@@ -4,7 +4,7 @@ import { useCallback, useMemo } from "react";
 import { coreOrgChartQueryKeys, createCoreOrgChartApi, createPlatformApiClient, type UnitStaffingDto } from "@repo/api";
 import { keepPreviousData, useApiQuery } from "@repo/api/query";
 import { canAccessCorePeople, canViewCoreOrganization, useAuth } from "@repo/auth";
-import { useOrgChartAccess } from "@/features/org-chart/api/use-org-chart-access";
+import { useOrgChartAccess } from "@repo/auth";
 
 function useOrgChartApi() {
   return useMemo(() => createCoreOrgChartApi(createPlatformApiClient()), []);

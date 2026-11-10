@@ -18,7 +18,7 @@ import {
 import { StatusBadge } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
 import type { WorkforceChangeDto } from "@repo/api";
-import { ArrowRight, Pencil } from "lucide-react";
+import { ArrowRight, Pencil } from "@repo/ds/icons";
 import { useRefusal } from "@/i18n/words";
 import { Monogram } from "../components/workforce-ui";
 import { useCancelChange } from "./use-changes";

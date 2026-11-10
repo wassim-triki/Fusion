@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Building2 } from "lucide-react";
+import { Building2 } from "@repo/ds/icons";
 import type { OrganizationHierarchyNodeDto } from "@repo/api";
 import { EntityPicker, type EntityOption } from "@repo/ds/components/ui/entity-picker";
 import { useOrgHierarchy } from "./hooks";

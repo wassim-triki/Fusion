@@ -11,14 +11,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { PageFailure } from "@repo/auth";
-import {
-  Archive,
-  Ban,
-  Check,
-  Copy,
-  MoreHorizontal,
-  RotateCcw,
-} from "@/lib/icons";
+import { Archive, Ban, Check, Copy, MoreHorizontal, RotateCcw } from "@repo/ds/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import {
   DropdownMenu,

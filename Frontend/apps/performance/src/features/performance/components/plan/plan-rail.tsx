@@ -1,7 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { Check, ChevronDown, Lock } from "@/lib/icons";
+import { Check, ChevronDown, Lock } from "@repo/ds/icons";
 import type { AlignmentTargetDto, EmployeePlanDto, PlanChangeRequestDto, PlanDecisionDto } from "@repo/api";
 import { Avatar, AvatarFallback } from "@repo/ds/components/ui/avatar";
 import { cn } from "@repo/ds/lib/utils";

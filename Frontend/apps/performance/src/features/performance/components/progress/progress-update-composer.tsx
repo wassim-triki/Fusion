@@ -4,7 +4,7 @@ import { reportPerformanceFailure } from "@/features/performance/api/performance
 
 import { MilestoneDue } from "../measurement/milestone-due";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, ChevronUp, X } from "@/lib/icons";
+import { Check, ChevronDown, ChevronUp, X } from "@repo/ds/icons";
 import type { EvidenceInput, ObjectiveProgressDto, ObjectiveStatus, SubmitProgressRequest } from "@repo/api";
 import { Label } from "@repo/ds/components/ui/label";
 import { Textarea } from "@repo/ds/components/ui/textarea";

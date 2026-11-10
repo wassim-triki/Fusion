@@ -15,7 +15,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@repo/ds/components/ui/tooltip";
 import { cn } from "@repo/ds/lib/utils";
 import { AvatarStack } from "@repo/performance-ui";
-import { ArrowLeft, ArrowRight, ChartColumn, Check, ChevronDown, ListView, NineBox, Search, X } from "@/lib/icons";
+import { ArrowLeft, ArrowRight, ChartColumn, Check, ChevronDown, ListView, NineBox, Search, X } from "@repo/ds/icons";
 import { roundHref, withCycle } from "@/lib/performance-routes";
 import type { CalibrationView } from "../../api/use-calibration";
 import { dayLabel } from "../reviews/review-parts";

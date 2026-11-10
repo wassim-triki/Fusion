@@ -360,12 +360,18 @@
     text-wrap: balance;
 }
 @utility type-section-title {
-    font-family: var(--font-heading);
+    /* Lora for section titles (D-47); the system (labels, controls, numbers) stays Geist. */
+    font-family: var(--font-editorial);
     font-size: 1.125rem;
     line-height: 1.4;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: -0.01em;
+    font-optical-sizing: auto;
     text-wrap: balance;
+}
+/* An empty bar is striped, not a flat track (D-83). */
+@utility bar-stripes {
+    background: repeating-linear-gradient(135deg, var(--inlay) 0 8px, color-mix(in oklab, var(--inlay) 60%, var(--card)) 8px 16px);
 }
 @utility type-subsection-title {
     font-size: 0.875rem;

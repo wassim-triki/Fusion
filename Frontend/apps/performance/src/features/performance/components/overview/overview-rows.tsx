@@ -5,7 +5,7 @@ import type { GoalNodeDto, OverviewRow as Row, UnitShareDto } from "@repo/api";
 import Link from "next/link";
 import { cn } from "@repo/ds/lib/utils";
 import { PersonInitials } from "@repo/performance-ui";
-import { Check, ChevronRight } from "@/lib/icons";
+import { Check, ChevronRight } from "@repo/ds/icons";
 import { useOneOnOnes } from "../../api/use-conversations";
 import { calibrationHref, roundHref, withCycle } from "@/lib/performance-routes";
 import { useObjectiveRecord } from "../objective-record/use-objective-record";

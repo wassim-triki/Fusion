@@ -7,7 +7,7 @@ import { Button } from "@repo/ds/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ds/components/ui/popover";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { cn } from "@repo/ds/lib/utils";
-import { ArrowRight, FeedbackIcon, FileText, Lock, OneOnOnes, RefreshCw, RotateCcw, Sparkles, Star, Target, Users, X } from "@/lib/icons";
+import { ArrowRight, FeedbackIcon, FileText, Lock, OneOnOnes, RefreshCw, RotateCcw, Sparkles, Star, Target, Users, X } from "@repo/ds/icons";
 import { useReviewsApi } from "../../api/use-review-work";
 import { useWorkspaceContext } from "../../api/use-workspace";
 import { useTranslations } from "next-intl";

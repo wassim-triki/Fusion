@@ -3,7 +3,7 @@
 import { reportPerformanceFailure } from "@/features/performance/api/performance-failure";
 
 import { useEffect, useMemo, useState } from "react";
-import { UserRound } from "@/lib/icons";
+import { UserRound } from "@repo/ds/icons";
 import type {
   CycleSummaryDto,
   ImprovementDirection,

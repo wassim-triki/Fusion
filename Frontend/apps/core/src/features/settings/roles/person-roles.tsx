@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw } from "@repo/ds/icons";
 import type { PersonRoleDto, PersonRoleReasonDto } from "@repo/api";
 import { Button, Skeleton } from "@repo/ds";
 import { Section } from "@repo/ds/shell";

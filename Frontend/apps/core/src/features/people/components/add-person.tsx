@@ -30,21 +30,7 @@ import {
   type OrganizationHierarchyNodeDto,
 } from "@repo/api";
 import { toast } from "sonner";
-import {
-  AlertTriangle,
-  ArrowLeft,
-  Briefcase,
-  CalendarDays,
-  Check,
-  ChevronDown,
-  CircleUserRound,
-  Mail,
-  MapPin,
-  Network,
-  Search,
-  UserPlus,
-  X,
-} from "lucide-react";
+import { AlertTriangle, ArrowLeft, Briefcase, CalendarDays, Check, ChevronDown, CircleUserRound, Mail, MapPin, Network, Search, UserPlus, X } from "@repo/ds/icons";
 import { useCompanyLists, useJobs, usePlaces } from "@/features/catalog/api/use-catalog";
 import { useOrganizationHierarchy } from "@/features/organization/api/use-organization";
 import { OrganizationTree } from "@/features/organization/components/organization-tree";

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight } from "@/lib/icons";
+import { ChevronRight } from "@repo/ds/icons";
 import { objectiveHref } from "@/lib/performance-routes";
 import { StatusBadge } from "@repo/ds/shell";
 import { STATE_TONE } from "../../goals/goals-lib";

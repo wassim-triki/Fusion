@@ -1,7 +1,7 @@
-import { Box, Briefcase, Building, Building2, Network, Shapes, Users, type LucideIcon } from "lucide-react";
+import { Box, Briefcase, Building, Building2, Network, Shapes, Users, type IconComponent } from "@repo/ds/icons";
 import { cn } from "@repo/ds/lib/utils";
 
-const ICONS: Record<string, LucideIcon> = {
+const ICONS: Record<string, IconComponent> = {
   organization: Building2,
   businessunit: Briefcase,
   division: Network,
@@ -11,7 +11,7 @@ const ICONS: Record<string, LucideIcon> = {
 };
 
 /** One fixed icon per organization type, so the icon itself says what kind of unit a row is. */
-function orgTypeIcon(typeName: string | null | undefined): LucideIcon {
+function orgTypeIcon(typeName: string | null | undefined): IconComponent {
   return ICONS[(typeName ?? "").toLowerCase().replace(/[^a-z]/g, "")] ?? Shapes;
 }
 

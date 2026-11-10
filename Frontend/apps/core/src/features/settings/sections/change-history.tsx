@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useLocale } from "next-intl";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight } from "@repo/ds/icons";
 import type { AccessAuditEventDto, FusionSettingsSection, RoleCellDto, SettingsAuditEventDto } from "@repo/api";
 import { cn, NativeSelect, NativeSelectOption } from "@repo/ds";
 import { formatDate, formatDateParts, formatTime } from "@repo/ds/lib/dates";

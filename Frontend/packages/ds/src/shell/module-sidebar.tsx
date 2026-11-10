@@ -3,12 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsUpDown,
-  Lock,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsUpDown, Lock } from "../icons";
 import { cn } from "../lib/utils";
 import {
   DropdownMenu,

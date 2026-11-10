@@ -1,4 +1,4 @@
-import { Target, Users, BarChart3 } from "@/lib/icons";
+import { Target, Users, BarChart3 } from "@repo/ds/icons";
 import { useTranslations } from "next-intl";
 
 const VALUES = [

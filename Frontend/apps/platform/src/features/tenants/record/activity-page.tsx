@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Clock } from "@/lib/icons";
+import { Clock } from "@repo/ds/icons";
 import { ActivityTimeline } from "./recent-activity";
 import { useTenantRecord } from "./record-shell";
 

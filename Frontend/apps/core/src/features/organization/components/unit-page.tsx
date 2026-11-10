@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { AlertTriangle, ArrowLeft, Network } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Network } from "@repo/ds/icons";
 import type { OrgChartOpenRoleDto, OrgChartPersonDto } from "@repo/api";
 import { useAuth, PageRefusal } from "@repo/auth";
 import { Alert, AlertDescription, AlertTitle, Button } from "@repo/ds";

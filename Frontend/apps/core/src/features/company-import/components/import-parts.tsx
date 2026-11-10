@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@repo/ds";
 import { cn } from "@repo/ds/lib/utils";
 import type { CompanyImportDto, CompanyImportField } from "@repo/api";
-import { FileSpreadsheet, FileText, Sparkles } from "lucide-react";
+import { FileSpreadsheet, FileText, Sparkles } from "@repo/ds/icons";
 
 export function FileIcon({ format, className }: { format: string; className?: string }) {
   const Icon = format === "csv" ? FileText : FileSpreadsheet;

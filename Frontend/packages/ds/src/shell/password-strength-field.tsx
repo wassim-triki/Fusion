@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, Eye, EyeOff, Lock, X } from "lucide-react";
+import { Check, Eye, EyeOff, Lock, X } from "../icons";
 import { useTranslations } from "next-intl";
 import {
   Field,

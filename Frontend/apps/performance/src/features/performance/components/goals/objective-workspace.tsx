@@ -2,24 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  BarChart3,
-  Building2,
-  ChevronDown,
-  ChevronRight,
-  Eye,
-  Gauge,
-  Layers,
-  MoreHorizontal,
-  Network,
-  Pencil,
-  Plus,
-  Send,
-  Target,
-  Trash2,
-  UsersRound,
-  type Icon as LucideIcon,
-} from "@/lib/icons";
+import { BarChart3, Building2, ChevronDown, ChevronRight, Eye, Gauge, Layers, MoreHorizontal, Network, Pencil, Plus, Send, Target, Trash2, UsersRound, type IconComponent as IconComponent } from "@repo/ds/icons";
 import type { GoalNodeDto, GoalsOverviewDto } from "@repo/api";
 import { ScopeMark } from "../scope-mark";
 import { Avatar, AvatarFallback } from "@repo/ds/components/ui/avatar";
@@ -1347,7 +1330,7 @@ function DirectionValue({
   title,
   description,
 }: {
-  icon: LucideIcon;
+  icon: IconComponent;
   title: string;
   description: string;
 }) {

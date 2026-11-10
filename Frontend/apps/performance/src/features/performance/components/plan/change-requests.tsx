@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Check, MessageSquare, Pencil, Trash2 } from "@/lib/icons";
+import { Check, MessageSquare, Pencil, Trash2 } from "@repo/ds/icons";
 import type { PlanChangeRequestDto } from "@repo/api";
 import { Avatar, AvatarFallback } from "@repo/ds/components/ui/avatar";
 import { Button } from "@repo/ds/components/ui/button";

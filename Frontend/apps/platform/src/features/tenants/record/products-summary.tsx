@@ -2,15 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import {
-  BarChart3,
-  BookOpen,
-  BrainCircuit,
-  Layers,
-  UsersRound,
-  Video,
-  type LucideIcon,
-} from "@/lib/icons";
+import { BarChart3, BookOpen, BrainCircuit, Layers, UsersRound, Video, type IconComponent } from "@repo/ds/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import { cn } from "@repo/ds/lib/utils";
 import { StatusBadge, type StatusTone } from "@repo/ds/shell";
@@ -35,7 +27,7 @@ import { useTenantRecord } from "./record-shell";
 interface ProductDefinition {
   key: string;
   label: string;
-  icon: LucideIcon;
+  icon: IconComponent;
   /** The entitlement this product maps to, when the model knows one. */
   module?: TenantModule;
   /** Granted with every tenant regardless of entitlement. */
@@ -67,7 +59,7 @@ export interface ProductRow {
   /** Worded by `record.products.states`. */
   state: "Included" | "Enabled" | "Disabled";
   tone: StatusTone;
-  icon: LucideIcon;
+  icon: IconComponent;
   /** The entitlement behind the row, when the model knows one. */
   module?: TenantModule;
   /** A platform administrator can turn it on or off: an entitlement that isn't granted with every tenant. */

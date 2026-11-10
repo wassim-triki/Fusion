@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Archive, ArrowDown, ArrowUp, ChevronRight, Pencil, Plus, Trash2 } from "@/lib/icons";
+import { Archive, ArrowDown, ArrowUp, ChevronRight, Pencil, Plus, Trash2 } from "@repo/ds/icons";
 import { ApiError, type FusionSettingsSection, type ReviewQuestionAudience, type ReviewQuestionDto } from "@repo/api";
 import { Button, cn, Input } from "@repo/ds";
 import { formatDate } from "@repo/ds/lib/dates";

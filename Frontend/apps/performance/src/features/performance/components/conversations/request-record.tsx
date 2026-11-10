@@ -11,7 +11,7 @@ import { Textarea } from "@repo/ds/components/ui/textarea";
 import { AsyncButton, PageContainer, PageHeader, StatusBadge, Said } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { PersonInitials } from "@repo/performance-ui";
-import { Check, Eye, Send } from "@/lib/icons";
+import { Check, Eye, Send } from "@repo/ds/icons";
 import { useFeedbackRequest, useFeedbackRequestCommands } from "../../api/use-conversations";
 import { formatDay } from "../one-on-ones/one-on-one-lib";
 import { ContentUnavailable } from "../content-unavailable";

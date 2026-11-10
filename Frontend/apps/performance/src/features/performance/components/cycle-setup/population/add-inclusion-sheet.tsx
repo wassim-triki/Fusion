@@ -3,7 +3,7 @@
 import { reportPerformanceFailure } from "@/features/performance/api/performance-failure";
 
 import { useEffect, useMemo, useState } from "react";
-import { Check, Plus, Search, TriangleAlert, UserPlus, X } from "@/lib/icons";
+import { Check, Plus, Search, TriangleAlert, UserPlus, X } from "@repo/ds/icons";
 import type { WorkforceEmployeeSummaryDto } from "@repo/api";
 import { useEmployeePicker } from "@repo/workforce-ui";
 import {

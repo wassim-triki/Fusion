@@ -1,7 +1,7 @@
 "use client";
 
 import type { ComponentType } from "react";
-import { ChevronsUpDown, LogOut } from "lucide-react";
+import { ChevronsUpDown, LogOut } from "../icons";
 import { useTranslations } from "next-intl";
 import { cn } from "../lib/utils";
 import {

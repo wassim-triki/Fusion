@@ -5,10 +5,10 @@ import type { WorkforceAccountHistoryEventDto, WorkforceAccountHistoryKind } fro
 import { Button, Skeleton, cn } from "@repo/ds";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { Section } from "@repo/ds/shell";
-import { LogIn, MailCheck, MailX, RotateCcw, Send, ShieldCheck, ShieldOff, UserCheck, UserX, type LucideIcon } from "lucide-react";
+import { LogIn, MailCheck, MailX, RotateCcw, Send, ShieldCheck, ShieldOff, UserCheck, UserX, type IconComponent } from "@repo/ds/icons";
 import { useAccessHistory } from "@/features/workforce-access/api/use-workforce-access";
 
-const ICON: Record<WorkforceAccountHistoryKind, LucideIcon> = {
+const ICON: Record<WorkforceAccountHistoryKind, IconComponent> = {
   Invited: Send,
   SentAgain: Send,
   Delivered: MailCheck,

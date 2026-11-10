@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Monitor, Moon, Sun, type LucideIcon } from "lucide-react";
+import { Monitor, Moon, Sun, type IconComponent } from "@repo/ds/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
 import { fusionAttentionQueryKeys } from "@repo/api";
@@ -22,7 +22,7 @@ import {
 
 type Appearance = "dark" | "light" | "system";
 
-const APPEARANCES: { value: Appearance; icon: LucideIcon }[] = [
+const APPEARANCES: { value: Appearance; icon: IconComponent }[] = [
   { value: "dark", icon: Moon },
   { value: "light", icon: Sun },
   { value: "system", icon: Monitor },

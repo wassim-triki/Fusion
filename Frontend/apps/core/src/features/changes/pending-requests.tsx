@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Hourglass } from "lucide-react";
+import { Hourglass } from "@repo/ds/icons";
 import type { ChangeRequestDto } from "@repo/api";
 import { useChangeRequests } from "@/features/people/changes/use-changes";
 import { RequestSheet, RequestStatus } from "./request-sheet";

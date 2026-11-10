@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ExternalLink, FileText, Link2, Loader2, Paperclip, Triangle } from "@/lib/icons";
+import { ChevronDown, ExternalLink, FileText, Link2, Loader2, Paperclip, Triangle } from "@repo/ds/icons";
 import { useState, type ReactNode } from "react";
 import type { EvidenceDto, ProgressUpdateDto } from "@repo/api";
 import { AsyncButton } from "@repo/ds/shell";

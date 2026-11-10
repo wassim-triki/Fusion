@@ -2,7 +2,7 @@
 // (sidebar, app frame, and page-layout kit).
 
 export { ModuleSidebar } from "./module-sidebar";
-export { FusionSidebar, sectionPaths, useSettingsSectionName } from "./fusion-sidebar";
+export { FusionSidebar, pagePaths, useSettingsSectionName } from "./fusion-sidebar";
 export { FUSION_MODULE_ICONS, FUSION_MODULES } from "./modules";
 export { ShellUserPanel } from "./shell-user-panel";
 export type {
@@ -58,6 +58,14 @@ export {
 export type { KpiStatProps, DashboardSectionProps } from "./dashboard";
 export { Section } from "./section";
 export { ProgressSegments } from "./progress-segments";
+export { Bar } from "./bar";
+export type { BarTone } from "./bar";
+export { StateWord } from "./state-word";
+export type { StateTone } from "./state-word";
+export { FlowSteps } from "./flow-steps";
+export type { FlowStep } from "./flow-steps";
+export { InPlacePreview, PreviewRow } from "./in-place-preview";
+export { Panel, PanelBody, PanelContent, PanelDescription, PanelFooter, PanelHeader, PanelTitle } from "./panel";
 export { LinkTabs } from "./link-tabs";
 export { Said } from "./said";
 export type { SaidProps } from "./said";
@@ -79,7 +87,6 @@ export type {
   ShellModule,
   ModuleSidebarProps,
   FusionSidebarModule,
-  FusionSidebarPerson,
   FusionSidebarProps,
   FusionSidebarRecord,
   FusionSidebarSettings,

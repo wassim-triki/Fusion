@@ -6,7 +6,7 @@ import { cn } from "@repo/ds";
 import { StatusBadge } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
 import type { PersonLeaveDto } from "@repo/api";
-import { TreePalm } from "lucide-react";
+import { TreePalm } from "@repo/ds/icons";
 
 /** The small leave mark on a person's photo while they are away (B-229): the same everywhere they appear. */
 export function LeaveMark({ className }: { className?: string }) {

@@ -9,15 +9,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@repo/ds/components/ui/dropdown-menu";
-import { Check, ChevronsUpDown } from "@/lib/icons";
+import { Check, ChevronsUpDown } from "@repo/ds/icons";
 import { CycleContextBar } from "@/features/performance/components/cycle-context-bar";
 import { useCurrentCycle } from "@/features/performance/api/use-performance";
 import { useWorkspaceContext } from "@/features/performance/api/use-workspace";
 
 import { isCycleAddress, withCycle } from "@/lib/performance-routes";
-import { CYCLE_FREE_ROUTES } from "@/data/sidebar-nav";
 import { resolvePerformanceWorkspaceAccessState } from "./performance-workspace-access";
 import { useTranslations } from "next-intl";
+
+/** Destinations that belong to people, not cycles: the cycle switcher never follows into them. */
+const CYCLE_FREE_ROUTES = ["/one-on-ones", "/feedback", "/settings"];
 import { useFormat } from "@repo/ds/lib/use-format";
 
 /**
@@ -33,7 +35,7 @@ export function PerformanceCycleContext() {
   const pathname = usePathname();
   // 1:1s and Feedback belong to people, not cycles (S-07): no cycle context to show or switch there.
   const path = pathname.replace(/^\/performance/, "") || "/";
-  const cycleFree = [...CYCLE_FREE_ROUTES].some((route) => path === route || path.startsWith(`${route}/`));
+  const cycleFree = CYCLE_FREE_ROUTES.some((route) => path === route || path.startsWith(`${route}/`));
   // The header reads nothing until the session is confirmed to enter Performance, and never on cycle-free routes.
   const { state: access } = useHydratedWorkspaceAccess(resolvePerformanceWorkspaceAccessState);
   const enabled = access === "allowed" && !cycleFree;

@@ -16,7 +16,7 @@ import { Button } from "@repo/ds/components/ui/button";
 import { cn } from "@repo/ds/lib/utils";
 import { Said } from "@repo/ds/shell";
 import { PersonInitials } from "@repo/performance-ui";
-import { ArrowRight, ChevronDown, Flag, Users } from "@/lib/icons";
+import { ArrowRight, ChevronDown, Flag, Users } from "@repo/ds/icons";
 import { dayLabel } from "../reviews/review-parts";
 import { average, flagText, leniencyText, signed } from "./calibration-format";
 import { useTranslations } from "next-intl";

@@ -1,7 +1,7 @@
 "use client";
 
 import type { RowData } from "@tanstack/react-table";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "../icons";
 import { useTranslations } from "next-intl";
 import { Button } from "../components/ui/button";
 import {

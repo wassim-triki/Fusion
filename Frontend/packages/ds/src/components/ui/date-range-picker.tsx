@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon } from "../../icons";
 import { ar, fr } from "react-day-picker/locale";
 import type { DateRange, Matcher } from "react-day-picker";
 

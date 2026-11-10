@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Check, ChevronDown, X } from "@/lib/icons";
+import { Check, ChevronDown, X } from "@repo/ds/icons";
 import type { PlanReadinessDto } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
 import { cn } from "@repo/ds/lib/utils";

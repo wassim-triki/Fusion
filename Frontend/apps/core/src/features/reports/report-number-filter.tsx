@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, X } from "lucide-react";
+import { Plus, X } from "@repo/ds/icons";
 import { Button, Input, Label, Popover, PopoverContent, PopoverTrigger } from "@repo/ds";
 
 export function ReportNumberFilter({ label, from, to, disabled, onChange }: {

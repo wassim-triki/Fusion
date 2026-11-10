@@ -9,7 +9,7 @@ import type {
 } from "@repo/api";
 import { Avatar, AvatarFallback, Button, Input, Textarea } from "@repo/ds";
 import { StatusBadge } from "@repo/ds/shell";
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight, Search } from "@repo/ds/icons";
 import { useAccessRoster, useCorrectIdentity } from "../api/use-workforce-access";
 import {
   useWorkforceAccessWords,

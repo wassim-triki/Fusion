@@ -42,7 +42,7 @@ import {
   type SsoProviderKey,
   type SsoRefusalDto,
 } from "@repo/api";
-import { ArrowRight, Check, Eye, EyeOff, Lock, TriangleAlert, X } from "lucide-react";
+import { ArrowRight, Check, Eye, EyeOff, Lock, TriangleAlert, X } from "@repo/ds/icons";
 import {
   BOOTSTRAP_JOURNEY,
   journeyTerminalState,

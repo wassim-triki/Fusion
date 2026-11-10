@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSay } from "@repo/ds/lib/say";
-import { Info, Lock } from "@/lib/icons";
+import { Info, Lock } from "@repo/ds/icons";
 import { Switch } from "@repo/ds/components/ui/switch";
 import {
   Tooltip,

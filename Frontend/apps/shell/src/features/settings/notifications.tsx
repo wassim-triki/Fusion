@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ChevronRight, Lock } from "lucide-react";
+import { Check, ChevronRight, Lock } from "@repo/ds/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { ApiError, type FusionSettingsModuleKey, type NotificationGroupKey, type NotificationPreferenceGroup } from "@repo/api";
 import { useNotificationPreferences, useUpdateNotificationPreferences } from "@repo/api/query";

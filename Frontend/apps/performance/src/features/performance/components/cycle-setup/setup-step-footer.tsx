@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "@/lib/icons";
+import { ArrowLeft } from "@repo/ds/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import { useTranslations } from "next-intl";
 

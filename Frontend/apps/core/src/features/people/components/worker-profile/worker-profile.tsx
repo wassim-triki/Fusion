@@ -8,7 +8,7 @@ import type { PersonLeaveDto } from "@repo/api";
 import { LinkTabs, PageContainer, StatusBadge } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { usePhoto, useTenantSummary } from "@repo/api/query";
-import { Mail, MapPin, Phone, TreePalm, Workflow } from "lucide-react";
+import { Mail, MapPin, Phone, TreePalm, Workflow } from "@repo/ds/icons";
 import { useSay } from "@repo/ds/lib/say";
 import { Monogram, useWorkforceDate } from "../workforce-ui";
 import { LeaveMark } from "../leave";

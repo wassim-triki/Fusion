@@ -3,15 +3,7 @@
 import { reportPerformanceFailure } from "@/features/performance/api/performance-failure";
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import {
-  Building2,
-  Gauge,
-  Info,
-  Sigma,
-  Target,
-  UserRound,
-  Waypoints,
-} from "@/lib/icons";
+import { Building2, Gauge, Info, Sigma, Target, UserRound, Waypoints } from "@repo/ds/icons";
 import { toast } from "sonner";
 import type {
   CreateOrganizationalObjectiveRequest,

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useSay, type Say } from "@repo/ds/lib/say";
-import { Clock } from "@/lib/icons";
+import { Clock } from "@repo/ds/icons";
 import { cn } from "@repo/ds/lib/utils";
 import type { TenantHistoryEntry } from "../api";
 import { isFailureOutcome, useTenantWords } from "../language";

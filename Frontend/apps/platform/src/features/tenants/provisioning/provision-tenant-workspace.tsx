@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useSay } from "@repo/ds/lib/say";
-import { ArrowLeft } from "@/lib/icons";
+import { ArrowLeft } from "@repo/ds/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import {
   AlertDialog,

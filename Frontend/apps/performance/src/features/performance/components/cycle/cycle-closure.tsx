@@ -17,7 +17,7 @@ import { Label } from "@repo/ds/components/ui/label";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { Textarea } from "@repo/ds/components/ui/textarea";
 import { AsyncButton } from "@repo/ds/shell";
-import { Lock } from "@/lib/icons";
+import { Lock } from "@repo/ds/icons";
 import { useCloseCycle } from "../../api/use-performance";
 import { performanceFailure, reportPerformanceFailure } from "../../api/performance-failure";
 import { useTranslations } from "next-intl";

@@ -3,18 +3,7 @@
 import { useMemo, type ComponentType, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSay } from "@repo/ds/lib/say";
-import {
-  AlertCircle,
-  ArrowRight,
-  BarChart3,
-  Building2,
-  Check,
-  CheckCircle2,
-  Globe,
-  LayoutGrid,
-  Pencil,
-  User,
-} from "@/lib/icons";
+import { AlertCircle, ArrowRight, BarChart3, Building2, Check, CheckCircle2, Globe, LayoutGrid, Pencil, User } from "@repo/ds/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import { AsyncButton } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";

@@ -1,5 +1,5 @@
-import type { LucideIcon } from "lucide-react";
-import type { ComponentType, ReactNode } from "react";
+import type { IconComponent } from "../icons";
+import type { ReactNode } from "react";
 
 /** A single navigation destination within a module. `href` is module-relative (basePath is prepended). */
 export interface ShellNavItem {
@@ -14,7 +14,7 @@ export interface ShellNavItem {
    * the basePath and silently point at a different page.
    */
   shellRoute?: boolean;
-  icon: LucideIcon;
+  icon: IconComponent;
   badge?: string | number;
   disabled?: boolean;
   disabledReason?: string;
@@ -38,14 +38,14 @@ export interface ShellModule {
   key: string;
   label: string;
   description?: string;
-  icon: LucideIcon;
+  icon: IconComponent;
   href: string;
 }
 
 export interface ModuleSidebarProps {
   brandTitle: string;
   brandSubtitle?: string;
-  brandIcon: LucideIcon;
+  brandIcon: IconComponent;
   /** Current path within the module (e.g. "/employees"), used for active state. Nav hrefs are
    *  module-relative; Next.js auto-prepends the app basePath, so no basePath prop is needed. */
   activePath: string;
@@ -67,16 +67,20 @@ export interface ModuleSidebarProps {
   pending?: boolean;
 }
 
-/** A module in the Fusion sidebar's switcher or, on Home, its module list. `href` is absolute. */
+/** A module in the Fusion sidebar: a group that folds, with its pages under it (D-45). `href` is absolute. */
 export interface FusionSidebarModule {
   key: string;
   label: string;
   description?: string;
   /** Defaults to the module's icon in `FUSION_MODULE_ICONS`. */
-  icon?: LucideIcon;
+  icon?: IconComponent;
   href: string;
   /** Waiting work in the module; absent when it serves none or hasn't answered. */
   count?: number;
+  /** The module's pages, hrefs relative to `href`; a module without them (the other contributors') is one link. */
+  items?: ShellNavItem[];
+  /** The pages aren't known yet: placeholders under the group. */
+  pending?: boolean;
 }
 
 /** A record the person opened recently in the current module. `href` is absolute. */
@@ -86,19 +90,6 @@ export interface FusionSidebarRecord {
   href: string;
 }
 
-export interface FusionSidebarPerson {
-  name?: string | null;
-  /** Their photo, ready to display; initials without one. */
-  photo?: string | null;
-  /** Job title, else the account type in plain words. */
-  detail?: string | null;
-  /** The job title is still resolving. */
-  detailPending?: boolean;
-  /** The session is still restoring. */
-  pending?: boolean;
-  links?: { label: string; href: string; icon: ComponentType<{ className?: string }> }[];
-  onSignOut?: () => void;
-}
 
 /** A settings section in the settings-mode sidebar. `path` is absolute. */
 export interface FusionSidebarSettingsSection {
@@ -140,18 +131,15 @@ export interface FusionSidebarProps {
   homeCount?: number;
   /** The modules the person can enter, in sidebar order. */
   modules: FusionSidebarModule[];
-  /** The module being shown. Omitted on the Fusion home, where the modules are listed instead. */
+  /** The module being shown; its pages are client navigations. Omitted on the Fusion home. */
   currentModuleKey?: string;
   /** The app's basePath (e.g. "/performance"): turns item hrefs into the absolute paths counts are keyed by. */
   basePath?: string;
   /** Current path within the module, for active state. */
   activePath: string;
-  /** The module's own sections, exactly as the module decides them. */
-  sections?: ShellNavSection[];
   /** Waiting work per absolute navigation path. */
   sectionCounts?: Record<string, number>;
-  /** Sections not known yet: stable placeholders in their place. */
-  pending?: boolean;
   recent?: FusionSidebarRecord[];
-  person: FusionSidebarPerson;
+  /** Fusion's Settings is offered under the modules (the person may change some company settings). */
+  showSettings?: boolean;
 }

@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Segmented } from "@repo/ds/choice";
-import { LayoutGrid, List } from "lucide-react";
+import { LayoutGrid, List } from "@repo/ds/icons";
 
 export type PeopleLayout = "table" | "cards";
 

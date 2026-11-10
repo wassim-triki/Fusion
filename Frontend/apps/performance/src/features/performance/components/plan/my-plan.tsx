@@ -3,16 +3,7 @@
 import { performanceFailure, reportPerformanceFailure } from "@/features/performance/api/performance-failure";
 
 import { useMemo, useState, type ReactNode } from "react";
-import {
-  Check,
-  BarChart3,
-  Plus,
-  Send,
-  Share2,
-  Target,
-  User,
-  Users,
-} from "@/lib/icons";
+import { Check, BarChart3, Plus, Send, Share2, Target, User, Users } from "@repo/ds/icons";
 import { toast } from "sonner";
 import { useAuth, PageFailure } from "@repo/auth";
 import type {

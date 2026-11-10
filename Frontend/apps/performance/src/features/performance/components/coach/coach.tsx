@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Button } from "@repo/ds/components/ui/button";
 import { cn } from "@repo/ds/lib/utils";
-import { Loader2, Sparkles, X } from "@/lib/icons";
+import { Loader2, Sparkles, X } from "@repo/ds/icons";
 import type { CoachState } from "./coach-model";
 import { useTranslations } from "next-intl";
 

@@ -4,7 +4,7 @@ import Image from "next/image";
 
 import { useEffect, useMemo, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Check, ChevronRight, FileSpreadsheet, Upload } from "lucide-react";
+import { Check, ChevronRight, FileSpreadsheet, Upload } from "@repo/ds/icons";
 import { formatWorkWeek, ApiError, checkImportFiles, CORE_IMPORT_MAX_FILES, createCoreImportApi, createPlatformApiClient, coreImportQueryKeys } from "@repo/api";
 import { useCompanyWorkWeek, useApiQuery, useMyCard, usePhoto, useSetupGuide, useTenantSummary, type SetupGuide, type SetupStepKey } from "@repo/api/query";
 import { canImportCoreEmployees, canManageCoreOrganization, canViewTenantAdministration, useAuth, PageFailure } from "@repo/auth";

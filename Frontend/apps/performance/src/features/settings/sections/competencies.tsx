@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Archive, ChevronRight, Plus, Trash2, X } from "@/lib/icons";
+import { Archive, ChevronRight, Plus, Trash2, X } from "@repo/ds/icons";
 import { ApiError, type CompetencyDto, type FusionSettingsSection } from "@repo/api";
 import { useStagedSettings } from "@repo/api/react";
 import { Button, cn, Input, Label, Textarea } from "@repo/ds";

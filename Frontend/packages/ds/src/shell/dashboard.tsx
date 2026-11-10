@@ -1,6 +1,6 @@
 import type { ComponentType, ReactNode } from "react";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "../icons";
 import { cn } from "../lib/utils";
 
 type KpiTone = "default" | "warning" | "danger" | "success" | "info";

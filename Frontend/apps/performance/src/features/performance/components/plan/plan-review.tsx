@@ -3,7 +3,7 @@
 import { performanceFailure, reportPerformanceFailure } from "@/features/performance/api/performance-failure";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { Check, Landmark, LineChart, RotateCcw, ShieldCheck } from "@/lib/icons";
+import { Check, Landmark, LineChart, RotateCcw, ShieldCheck } from "@repo/ds/icons";
 import { toast } from "sonner";
 import type { AlignmentTargetDto, CycleSummaryDto, EmployeePlanDto, PlanObjectiveDto } from "@repo/api";
 import { Avatar, AvatarFallback } from "@repo/ds/components/ui/avatar";

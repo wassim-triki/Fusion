@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Check, ChevronDown, Eye, Lock, MoreHorizontal, Plus, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ChevronDown, Eye, Lock, MoreHorizontal, Plus, X } from "@repo/ds/icons";
 import {
   ApiError,
   type FusionSettingsSection,

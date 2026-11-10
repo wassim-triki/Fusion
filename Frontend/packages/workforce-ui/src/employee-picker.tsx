@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { UserRound } from "lucide-react";
+import { UserRound } from "@repo/ds/icons";
 import { Avatar, AvatarFallback } from "@repo/ds/components/ui/avatar";
 import { EntityPicker, type EntityOption } from "@repo/ds/components/ui/entity-picker";
 import { useEmployeePicker } from "./hooks";

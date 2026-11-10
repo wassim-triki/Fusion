@@ -12,7 +12,7 @@ import {
   useDataTable,
   type DataTableFilterField,
 } from "@repo/ds/data-table";
-import { Layers } from "lucide-react";
+import { Layers } from "@repo/ds/icons";
 import { Monogram } from "@/features/people/components/workforce-ui";
 import type { OrganizationHierarchyModel } from "../model/hierarchy";
 

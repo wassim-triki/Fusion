@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** B-370 + B-418's colour half built and In review: D-32's surface tones in both themes, D-95's light amber (no brown), sidebar follows the theme, 2026-11-10.
+**Last finished:** B-422, Performance's slice 1 (the frame): one Hugeicons set, one folding sidebar, your menu top right, the DS's state word, striped bars, flow steps, in-place preview and panel shells; In review, 2026-11-10.
 
 ## Active work
 
@@ -14,4 +14,4 @@ Session queue: a fresh session takes the first open row, sets it as Active work 
 
 | # | Session | Board items | Effort | Notes |
 |---|---|---|---|---|
-| 2+ | Performance's slices 1–13 | B-405–B-411, B-392, B-389, B-418 (edges) | per slice | One row of `plans/B-390-slices.md` per session, in its order; Insights is slice 13. Slice 1 (the frame) after row 1's colours. Port the explorers' drawings literally (memory `port-accepted-drawings-closely`); every slice holds D-95 (no brown in light mode, sections' edges lined up). |
+| 2+ | Performance's slices 2–13 | B-405–B-411, B-392, B-389, B-418 (edges) | per slice | One row of `plans/B-390-slices.md` per session, in its order; Insights is slice 13. Slice 1 (the frame, B-422) built 2026-11-10. Port the explorers' drawings literally (memory `port-accepted-drawings-closely`); every slice holds D-95 (no brown in light mode, sections' edges lined up). |

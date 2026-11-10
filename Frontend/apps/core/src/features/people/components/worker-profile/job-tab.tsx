@@ -12,17 +12,7 @@ import {
   createDataTableColumnHelper,
   useDataTable,
 } from "@repo/ds/data-table";
-import {
-  ArrowRight,
-  BriefcaseBusiness,
-  ChartNoAxesColumnIncreasing,
-  Layers,
-  MapPin,
-  Plus,
-  RotateCcw,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowRight, BriefcaseBusiness, ChartNoAxesColumnIncreasing, Layers, MapPin, Plus, RotateCcw, Users, type IconComponent } from "@repo/ds/icons";
 import { Monogram, useWorkforceDate } from "../workforce-ui";
 import { useTenure } from "./worker-profile";
 import type { WorkerProfileView } from "./worker-profile-view";
@@ -124,7 +114,7 @@ function JobSection({ title, aside, children }: { title: string; aside?: string;
 export interface JobFact {
   label: string;
   value: string | null | undefined;
-  icon: LucideIcon;
+  icon: IconComponent;
   /** A person's fact (the manager) leads with their face and opens their page. */
   person?: { name: string; href: string; photoUrl?: string | null };
 }

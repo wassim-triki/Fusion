@@ -3,7 +3,7 @@ import type { RatingScaleLevelDto } from "@repo/api";
 import { Section } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { formatDate } from "@repo/ds/lib/dates";
-import { Check, Clock } from "@/lib/icons";
+import { Check, Clock } from "@repo/ds/icons";
 import { useTranslations } from "next-intl";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { english, type Say } from "@/i18n/say";

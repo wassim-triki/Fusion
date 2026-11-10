@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Inbox } from "lucide-react";
+import { Inbox } from "@repo/ds/icons";
 import type { ChangeRequestDto } from "@repo/api";
 import { Button, PersonAvatar, Skeleton } from "@repo/ds";
 import { LinkTabs, PageContainer, PageHeader } from "@repo/ds/shell";

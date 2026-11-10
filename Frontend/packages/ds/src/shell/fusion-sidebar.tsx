@@ -8,9 +8,10 @@ import {
   Award,
   BarChart3,
   Bell,
+  Briefcase,
   Building2,
-  Check,
-  ChevronsUpDown,
+  ChevronDown,
+  ChevronLeft,
   Eye,
   FileCheck2,
   History,
@@ -18,45 +19,32 @@ import {
   List,
   ListChecks,
   Lock,
-  LogOut,
   Mail,
+  MapPin,
   MessageSquare,
   MessageSquareText,
-  ChevronLeft,
   Settings,
   ShieldCheck,
   SlidersHorizontal,
   Sparkles,
+  Stamp,
   Target,
   TriangleAlert,
-  type LucideIcon,
-  Stamp,
-  Briefcase,
-  MapPin,
-} from "lucide-react";
+  type IconComponent,
+} from "../icons";
 import { useCompanyColor } from "../brand/use-company-color";
 import { cn } from "../lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "../components/ui/dropdown-menu";
 import { Kbd } from "../components/ui/kbd";
-import { PersonAvatar } from "../components/ui/person-avatar";
 import { Skeleton } from "../components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../components/ui/tooltip";
 import { FUSION_MODULE_ICONS } from "./modules";
-import type { ShellUserPanelLink } from "./shell-user-panel";
 import type {
   FusionSidebarModule,
   FusionSidebarProps,
+  FusionSidebarRecord,
   FusionSidebarSettings,
   FusionSidebarSettingsGroup,
   ShellNavItem,
-  ShellNavSection,
 } from "./types";
 
 /** Where Fusion Settings opens: Preferences, served by the shell. */
@@ -89,7 +77,7 @@ function rememberReturn() {
 }
 
 /** Each settings section's mark: same section, same icon wherever it is listed. */
-const SETTINGS_SECTION_ICONS: Record<string, LucideIcon> = {
+const SETTINGS_SECTION_ICONS: Record<string, IconComponent> = {
   preferences: SlidersHorizontal,
   notifications: Bell,
   company: Building2,
@@ -115,9 +103,9 @@ function isItemActive(activePath: string, item: ShellNavItem): boolean {
   return activePath === item.href || activePath.startsWith(`${item.href}/`);
 }
 
-/** The absolute paths of a module's navigation items, which the shared hook counts work under. */
-export function sectionPaths(basePath: string, sections: readonly ShellNavSection[]): string[] {
-  return sections.flatMap((section) => section.items.map((item) => absolutePath(basePath, item.href)));
+/** The absolute paths of the modules' pages, which the shared hook counts work under. */
+export function pagePaths(modules: readonly Pick<FusionSidebarModule, "href" | "items">[]): string[] {
+  return modules.flatMap((module) => (module.items ?? []).map((item) => absolutePath(module.href, item.href)));
 }
 
 /** Absolute navigation path of a module-relative item, the key section counts use. */
@@ -208,24 +196,23 @@ function moduleIcon(module: Pick<FusionSidebarModule, "key" | "icon">) {
   return module.icon ?? FUSION_MODULE_ICONS[module.key] ?? Home;
 }
 
-function ModuleMark({ module, emphasis }: { module: Pick<FusionSidebarModule, "key" | "icon">; emphasis: boolean }) {
-  const Icon = moduleIcon(module);
-  return (
-    <span
-      className={cn(
-        "grid size-[30px] shrink-0 place-items-center rounded-detail",
-        emphasis ? "bg-primary-tint text-primary-ink" : "bg-inlay text-muted-foreground",
-      )}
-    >
-      <Icon className="size-4" />
-    </span>
-  );
+/** Which module groups the person folded; open by default (D-45). */
+const FOLDED_KEY = "fusion.nav.folded";
+
+function readFolded(): string[] {
+  try {
+    const raw = window.localStorage.getItem(FOLDED_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter((key): key is string => typeof key === "string") : [];
+  } catch {
+    return [];
+  }
 }
 
 /**
- * The shell-owned Fusion sidebar (fusion-navigation): tenant brand, Home first, the module switcher (or,
- * on Home, the module list), the current module's own sections with counts of waiting work, Recent and the
- * person. Pure presentation: each app passes its sections and the shared navigation state from
+ * The shell-owned Fusion sidebar (fusion-navigation): tenant brand, Home, then every module the person can enter as
+ * a group that folds, its pages under it (D-45), Recent for the current module, and Settings at the end. Pure
+ * presentation: each app passes the modules with their pages and the shared navigation state from
  * `useFusionNavigation` in `@repo/api/query`. Below 1024px, or on request, it collapses to an icon rail.
  */
 export function FusionSidebar({
@@ -239,25 +226,19 @@ export function FusionSidebar({
   currentModuleKey,
   basePath = "",
   activePath,
-  sections = [],
   sectionCounts = {},
-  pending = false,
   recent = [],
-  person,
+  showSettings = false,
 }: FusionSidebarProps) {
   const t = useTranslations("ds.sidebar");
   const locale = useLocale();
   const [collapsed, setCollapsed] = useState(false);
+  const [folded, setFolded] = useState<string[]>([]);
   // The width animates only for a click, not when a page opens already collapsed.
   const [animate, setAnimate] = useState(false);
   useCompanyColor(brandColor);
-  const describeModule = (module: FusionSidebarModule) => {
-    const key = `moduleDescriptions.${module.key}` as Parameters<typeof t>[0];
-    return t.has(key) ? t(key) : module.description;
-  };
   const inSettings = mode === "settings" && settings !== undefined;
   const onHome = !currentModuleKey && !inSettings;
-  const current = inSettings ? undefined : modules.find((module) => module.key === currentModuleKey);
 
   // Ctrl+B (⌘B) folds or opens it from anywhere but a text field, where the keys belong to the writing.
   const collapsedRef = useRef(collapsed);
@@ -283,6 +264,7 @@ export function FusionSidebar({
     // every destination with a dedicated expand control.
     const query = window.matchMedia("(max-width: 1023px)");
     if (query.matches || readCollapsed()) setCollapsed(true);
+    setFolded(readFolded());
     const handleChange = (event: MediaQueryListEvent) => setCollapsed(event.matches || readCollapsed());
     query.addEventListener("change", handleChange);
     return () => query.removeEventListener("change", handleChange);
@@ -303,53 +285,15 @@ export function FusionSidebar({
     chooseRef.current = choose;
   });
 
-  const switcher = current ? (
-    <DropdownMenu>
-      {withTooltip(
-        collapsed,
-        current.label,
-        <DropdownMenuTrigger
-          aria-label={collapsed ? t("switchModuleCurrent", { module: current.label }) : undefined}
-          className={cn(
-            "relative flex w-full items-center gap-2.5 rounded-control text-start outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-            collapsed
-              ? "justify-center p-1.5 hover:bg-inlay"
-              : "border border-border bg-card py-2 pe-2.5 ps-2 hover:bg-inlay data-[state=open]:ring-2 data-[state=open]:ring-ring",
-          )}
-        >
-          <ModuleMark module={current} emphasis />
-          {!collapsed ? (
-            <>
-              <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">{current.label}</span>
-              <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
-            </>
-          ) : null}
-        </DropdownMenuTrigger>,
-      )}
-      <DropdownMenuContent align="start" side={collapsed ? "right" : "bottom"} className="w-[316px] p-1.5">
-        <DropdownMenuLabel className="px-2.5 pt-2 pb-1.5 type-meta font-normal text-muted-foreground">
-          {t("switchModule")}
-        </DropdownMenuLabel>
-        {modules.map((module) => {
-          const active = module.key === current.key;
-          const description = describeModule(module);
-          return (
-            <DropdownMenuItem key={module.key} asChild className={cn("gap-2.5 rounded-inset px-2.5 py-2", active && "bg-inlay")}>
-              <a href={module.href}>
-                <ModuleMark module={module} emphasis={active} />
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate text-sm font-semibold text-foreground">{module.label}</span>
-                  {description ? <span className="truncate text-xs text-muted-foreground">{description}</span> : null}
-                </span>
-                <Count value={module.count} collapsed={false} />
-                {active ? <Check aria-label={t("currentModule")} className="size-4 shrink-0 text-primary-ink" /> : null}
-              </a>
-            </DropdownMenuItem>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  ) : null;
+  const fold = (key: string, open: boolean) => {
+    const next = open ? folded.filter((k) => k !== key) : [...folded.filter((k) => k !== key), key];
+    setFolded(next);
+    try {
+      window.localStorage.setItem(FOLDED_KEY, JSON.stringify(next));
+    } catch {
+      // Storage off: the fold lasts for this page.
+    }
+  };
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -430,123 +374,182 @@ export function FusionSidebar({
               collapsed={collapsed}
             />
           ) : (
-          <>
-          {/* Home, always first */}
-          {withTooltip(
-            collapsed,
-            homeCount ? `${t("home")} ${homeCount}` : t("home"),
-            <a href="/" aria-current={onHome ? "page" : undefined} aria-label={collapsed ? t("home") : undefined} className={rowClass(onHome, collapsed)}>
-              <ActiveMark active={onHome} />
-              <Home className="size-4 shrink-0" />
-              {!collapsed ? <span className="flex-1 truncate">{t("home")}</span> : null}
-              <Count value={homeCount} collapsed={collapsed} />
-            </a>,
-          )}
-
-          <div className="mx-1 my-2.5 h-px bg-border" />
-
-          {onHome ? (
-            // Home has no current module: the modules are listed here instead of the switcher.
-            <div>
-              {!collapsed ? (
-                <p className="px-2.5 pt-1.5 pb-1.5 type-eyebrow text-muted-foreground/70">{t("modules")}</p>
-              ) : null}
-              {pending ? (
-                // Which modules the person may enter isn't known yet: placeholders, not a list that grows.
-                <div aria-busy aria-label={t("loadingNavigation")} className="flex flex-col gap-0.5">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className={cn("flex items-center gap-3 px-2.5 py-2", collapsed && "justify-center")}>
-                      <Skeleton className="size-4 shrink-0 rounded-detail" />
-                      {!collapsed ? <Skeleton className="h-4 flex-1" /> : null}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-              <ul className="flex flex-col gap-0.5">
-                {modules.map((module) => {
-                  const Icon = moduleIcon(module);
-                  return (
-                    <li key={module.key}>
-                      {withTooltip(
-                        collapsed,
-                        module.count ? `${module.label} ${module.count}` : module.label,
-                        <a href={module.href} aria-label={collapsed ? module.label : undefined} className={rowClass(false, collapsed)}>
-                          <Icon className="size-4 shrink-0" />
-                          {!collapsed ? <span className="flex-1 truncate">{module.label}</span> : null}
-                          <Count value={module.count} collapsed={collapsed} />
-                        </a>,
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-              )}
-            </div>
-          ) : (
             <>
-              <div className="mb-2">{switcher}</div>
-              {pending ? (
-                // Sections not known yet (session or workspace access resolving): stable rows in place.
-                <div aria-busy aria-label={t("loadingNavigation")} className="flex flex-col gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className={cn("flex items-center gap-3 px-2.5 py-2", collapsed && "justify-center")}>
-                      <Skeleton className="size-4 shrink-0 rounded-detail" />
-                      {!collapsed ? <Skeleton className="h-4 flex-1" /> : null}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                sections.map((section, index) => (
-                  <div key={`${section.title ?? "section"}-${index}`} className={cn(index > 0 && "mt-2")}>
-                    {section.title && !collapsed ? (
-                      <p className="px-2.5 pt-3 pb-1.5 type-eyebrow text-muted-foreground/70">{section.title}</p>
-                    ) : null}
-                    {section.title && collapsed && index > 0 ? <div className="mx-2 my-2 h-px bg-border" /> : null}
-                    <ul className="flex flex-col gap-0.5">
-                      {section.items.map((item) => (
-                        <li key={item.href}>
-                          <SectionItem
-                            item={item}
-                            active={isItemActive(activePath, item)}
-                            collapsed={collapsed}
-                            count={sectionCounts[absolutePath(basePath, item.href)]}
-                          />
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))
+              {/* Home, always first */}
+              {withTooltip(
+                collapsed,
+                homeCount ? `${t("home")} ${homeCount}` : t("home"),
+                <a href="/" aria-current={onHome ? "page" : undefined} aria-label={collapsed ? t("home") : undefined} className={rowClass(onHome, collapsed)}>
+                  <ActiveMark active={onHome} />
+                  <Home className="size-4 shrink-0" />
+                  {!collapsed ? <span className="flex-1 truncate">{t("home")}</span> : null}
+                  <Count value={homeCount} collapsed={collapsed} />
+                </a>,
               )}
 
-              {recent.length > 0 && !collapsed ? (
-                <div className="mt-2">
-                  <p className="px-2.5 pt-3 pb-1.5 type-eyebrow text-muted-foreground/70">{t("recent")}</p>
-                  <ul className="flex flex-col gap-0.5">
-                    {recent.map((record) => (
-                      <li key={record.href}>
-                        <RecentLink href={record.href} basePath={basePath}>
-                          <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
-                          <span className="flex min-w-0 flex-col">
-                            <span className="truncate text-sm text-foreground/90">{record.label}</span>
-                            <span className="truncate text-xs text-muted-foreground/70">{record.kind}</span>
-                          </span>
-                        </RecentLink>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+              <div className="mx-1 my-2.5 h-px bg-border" />
+
+              {/* Every module as a group that folds, open by default (D-45) */}
+              <ul className="flex flex-col gap-0.5">
+                {modules.map((module) => (
+                  <li key={module.key}>
+                    <ModuleGroup
+                      module={module}
+                      current={module.key === currentModuleKey}
+                      open={!folded.includes(module.key)}
+                      onFold={(open) => fold(module.key, open)}
+                      collapsed={collapsed}
+                      activePath={activePath}
+                      sectionCounts={sectionCounts}
+                      recent={module.key === currentModuleKey ? recent : []}
+                      basePath={basePath}
+                    />
+                  </li>
+                ))}
+              </ul>
+
+              {showSettings ? (
+                <>
+                  <div className="mx-1 my-2.5 h-px bg-border" />
+                  {withTooltip(
+                    collapsed,
+                    t("settings"),
+                    <a href={SETTINGS_HREF} onClick={rememberReturn} aria-label={collapsed ? t("settings") : undefined} className={rowClass(false, collapsed)}>
+                      <Settings className="size-4 shrink-0" />
+                      {!collapsed ? <span className="flex-1 truncate">{t("settings")}</span> : null}
+                    </a>,
+                  )}
+                </>
               ) : null}
             </>
           )}
-          </>
-          )}
         </nav>
-
-        <div className="mx-3 border-t border-border py-3">
-          <PersonPanel collapsed={collapsed} {...person} />
-        </div>
       </aside>
     </TooltipProvider>
+  );
+}
+
+/** A module's group: its name opens the module's front page; the chevron folds the pages under it. */
+function ModuleGroup({
+  module,
+  current,
+  open,
+  onFold,
+  collapsed,
+  activePath,
+  sectionCounts,
+  recent,
+  basePath,
+}: {
+  module: FusionSidebarModule;
+  current: boolean;
+  open: boolean;
+  onFold: (open: boolean) => void;
+  collapsed: boolean;
+  activePath: string;
+  sectionCounts: Record<string, number>;
+  recent: FusionSidebarRecord[];
+  basePath: string;
+}) {
+  const t = useTranslations("ds.sidebar");
+  const Icon = moduleIcon(module);
+  const items = module.items;
+  const label = module.count ? `${module.label} ${module.count}` : module.label;
+  // A module without pages (the other contributors') is one link.
+  if (!items && !module.pending) {
+    return withTooltip(
+      collapsed,
+      label,
+      <a href={module.href} aria-label={collapsed ? module.label : undefined} className={rowClass(false, collapsed)}>
+        <Icon className="size-4 shrink-0" />
+        {!collapsed ? <span className="flex-1 truncate">{module.label}</span> : null}
+        <Count value={module.count} collapsed={collapsed} />
+      </a>,
+    );
+  }
+  const head = collapsed ? (
+    withTooltip(
+      true,
+      label,
+      <a href={module.href} aria-label={module.label} className={cn(rowClass(false, true), current && "text-foreground")}>
+        <Icon className="size-4 shrink-0" />
+        <Count value={module.count} collapsed />
+      </a>,
+    )
+  ) : (
+    <div
+      className={cn(
+        "flex items-center gap-3 rounded-control px-2.5 py-2 text-sm transition-colors hover:bg-inlay/60",
+        current || open ? "font-semibold text-foreground" : "font-medium text-muted-foreground",
+      )}
+    >
+      <a href={module.href} className="flex min-w-0 flex-1 items-center gap-3 rounded-detail outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <Icon className="size-4 shrink-0" />
+        <span className="flex-1 truncate">{module.label}</span>
+      </a>
+      {!open ? <Count value={module.count} collapsed={false} /> : null}
+      <button
+        type="button"
+        onClick={() => onFold(!open)}
+        aria-expanded={open}
+        aria-label={open ? t("foldModule", { module: module.label }) : t("openModule", { module: module.label })}
+        className="grid size-5 shrink-0 place-items-center rounded-detail text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <ChevronDown aria-hidden className={cn("size-3.5 transition-transform duration-150", !open && "-rotate-90 rtl:rotate-90")} />
+      </button>
+    </div>
+  );
+  return (
+    <div>
+      {head}
+      {open ? (
+        <div className={cn(!collapsed && "ps-3")}>
+          {module.pending ? (
+            <div aria-busy aria-label={t("loadingNavigation")} className="flex flex-col gap-0.5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className={cn("flex items-center gap-3 px-2.5 py-2", collapsed && "justify-center")}>
+                  <Skeleton className="size-4 shrink-0 rounded-detail" />
+                  {!collapsed ? <Skeleton className="h-4 flex-1" /> : null}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-0.5">
+              {(items ?? []).map((item) => (
+                <li key={item.href}>
+                  <SectionItem
+                    item={item}
+                    active={current && isItemActive(activePath, item)}
+                    collapsed={collapsed}
+                    count={sectionCounts[absolutePath(module.href, item.href)]}
+                    // Another module's page: a document load, since a client link would carry this app's basePath.
+                    href={current ? undefined : absolutePath(module.href, item.href)}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
+          {recent.length > 0 && !collapsed ? (
+            <div className="mt-1">
+              <p className="px-2.5 pt-2 pb-1.5 type-eyebrow text-muted-foreground/70">{t("recent")}</p>
+              <ul className="flex flex-col gap-0.5">
+                {recent.map((record) => (
+                  <li key={record.href}>
+                    <RecentLink href={record.href} basePath={basePath}>
+                      <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
+                      <span className="flex min-w-0 flex-col">
+                        <span className="truncate text-sm text-foreground/90">{record.label}</span>
+                        <span className="truncate text-xs text-muted-foreground/70">{record.kind}</span>
+                      </span>
+                    </RecentLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -555,11 +558,14 @@ function SectionItem({
   active,
   collapsed,
   count,
+  href,
 }: {
   item: ShellNavItem;
   active: boolean;
   collapsed: boolean;
   count?: number;
+  /** An absolute address outside this app: a document load. */
+  href?: string;
 }) {
   const Icon = item.icon;
   const value = count || (typeof item.badge === "number" ? item.badge : undefined);
@@ -578,9 +584,9 @@ function SectionItem({
     <div aria-disabled aria-label={label} className={item.pending ? "cursor-default" : undefined}>
       {content}
     </div>
-  ) : item.shellRoute ? (
+  ) : item.shellRoute || href ? (
     // Leaves this app's basePath, so it is a document load by nature.
-    <a href={target} aria-label={label} aria-current={active ? "page" : undefined}>
+    <a href={href ?? target} aria-label={label} aria-current={active ? "page" : undefined}>
       {content}
     </a>
   ) : (
@@ -613,100 +619,6 @@ function RecentLink({ href, basePath, children }: { href: string; basePath: stri
     <a href={href} className={className}>
       {children}
     </a>
-  );
-}
-
-function PersonPanel({
-  collapsed,
-  name,
-  photo,
-  detail,
-  detailPending = false,
-  pending = false,
-  links = [],
-  onSignOut,
-}: FusionSidebarProps["person"] & { collapsed: boolean }) {
-  const t = useTranslations("ds.sidebar");
-  if (pending) {
-    return (
-      <div className={cn("flex items-center gap-2.5 p-1.5", collapsed && "justify-center")} aria-busy aria-label={t("loadingAccount")}>
-        <Skeleton className="size-8 shrink-0 rounded-full" />
-        {!collapsed ? (
-          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-            <Skeleton className="h-3.5 w-24" />
-            <Skeleton className="h-2.5 w-16" />
-          </div>
-        ) : null}
-      </div>
-    );
-  }
-
-  if (!name) {
-    return (
-      <a
-        href="/auth/signin"
-        className={cn(
-          "flex items-center gap-2 rounded-control px-2 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-inlay hover:text-foreground",
-          collapsed && "justify-center",
-        )}
-      >
-        <LogOut className="size-4 rotate-180" />
-        {!collapsed ? <span>{t("signIn")}</span> : null}
-      </a>
-    );
-  }
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        aria-label={collapsed ? name : undefined}
-        className={cn(
-          "flex w-full items-center gap-2.5 rounded-control p-1.5 text-start outline-none transition-colors hover:bg-inlay focus-visible:ring-2 focus-visible:ring-ring",
-          collapsed && "justify-center",
-        )}
-      >
-        <PersonAvatar name={name} photo={photo} size="sm" />
-        {!collapsed ? (
-          <>
-            <span className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate text-sm font-semibold">{name}</span>
-              {detailPending ? (
-                <Skeleton className="mt-1 h-2.5 w-20" />
-              ) : detail ? (
-                <span className="truncate text-xs text-muted-foreground">{detail}</span>
-              ) : null}
-            </span>
-            <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground/70" />
-          </>
-        ) : null}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align={collapsed ? "start" : "end"} side={collapsed ? "right" : "top"} className="w-56">
-        {links.map((link: ShellUserPanelLink) => {
-          const Icon = link.icon;
-          return (
-            <DropdownMenuItem key={link.href} asChild>
-              <a href={link.href} className="flex items-center gap-2.5">
-                <Icon className="size-4" />
-                {link.label}
-              </a>
-            </DropdownMenuItem>
-          );
-        })}
-        <DropdownMenuItem asChild>
-          <a href={SETTINGS_HREF} onClick={rememberReturn} className="flex items-center gap-2.5">
-            <Settings className="size-4" />
-            {t("settings")}
-          </a>
-        </DropdownMenuItem>
-        {onSignOut ? <DropdownMenuSeparator /> : null}
-        {onSignOut ? (
-          <DropdownMenuItem onSelect={onSignOut} className="flex items-center gap-2.5">
-            <LogOut className="size-4" />
-            {t("signOut")}
-          </DropdownMenuItem>
-        ) : null}
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }
 

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check } from "@repo/ds/icons";
 import { coreChecklistQueryKeys, createCoreChecklistsApi, createPlatformApiClient, type MyManagerDto, type ChecklistTaskDto } from "@repo/api";
 import { useApiQuery, useMyTeam, usePhoto, usePhotos, type UseApiQueryResult } from "@repo/api/query";
 import { canAccessCorePeople, useAuth, PageFailure } from "@repo/auth";

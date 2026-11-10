@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Save, Trash2 } from "@/lib/icons";
+import { Save, Trash2 } from "@repo/ds/icons";
 import {
   AlertDialog,
   AlertDialogCancel,

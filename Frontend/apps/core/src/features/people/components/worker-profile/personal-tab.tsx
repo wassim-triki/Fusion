@@ -12,7 +12,7 @@ import {
   type UpdatePersonalRequest,
 } from "@repo/api";
 import { Button, DatePicker, Input, Label, Skeleton, cn } from "@repo/ds";
-import { Clock3, Eye, Lock, Plus, RotateCcw, X } from "lucide-react";
+import { Clock3, Eye, Lock, Plus, RotateCcw, X } from "@repo/ds/icons";
 import { toast } from "sonner";
 import { useRefusal } from "@/i18n/words";
 import { useFormat } from "@repo/ds/lib/use-format";

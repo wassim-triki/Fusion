@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@repo/ds/comp
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { AsyncButton } from "@repo/ds/shell";
 import { PersonInitials } from "@repo/performance-ui";
-import { Check, Plus, RefreshCw, X } from "@/lib/icons";
+import { Check, Plus, RefreshCw, X } from "@repo/ds/icons";
 import { useReview } from "../../api/use-reviews";
 import { usePeerCommands, usePeerSuggestions } from "../../api/use-review-work";
 import { ColleaguePicker, type PickedColleague } from "../conversations/colleague-picker";

@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import type { Column, RowData } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronsUpDown } from "../icons";
 import { useTranslations } from "next-intl";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";

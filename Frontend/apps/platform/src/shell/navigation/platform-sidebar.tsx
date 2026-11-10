@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Settings2, Shield } from "@/lib/icons";
+import { Settings2, Shield } from "@repo/ds/icons";
 import { canAccessPlatform, useAuth } from "@repo/auth";
 import { ModuleSidebar, ShellUserPanel } from "@repo/ds/shell";
 import { usePlatformNav } from "@/shell/navigation/use-platform-nav";

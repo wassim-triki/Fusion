@@ -10,7 +10,7 @@ import { Button } from "@repo/ds/components/ui/button";
 import { PageContainer, PageHeader, StatusBadge } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { AvatarStack, PersonInitials } from "@repo/performance-ui";
-import { ArrowRight, Check, ChevronRight, Download, Layers, Pencil, Plus } from "@/lib/icons";
+import { ArrowRight, Check, ChevronRight, Download, Layers, Pencil, Plus } from "@repo/ds/icons";
 import { useSelectedCycleId } from "../../api/use-workspace";
 import { useDownloadReviewPdf, useReviewsWorkspace } from "../../api/use-review-work";
 import { ContentUnavailable } from "../content-unavailable";

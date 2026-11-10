@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { useSay } from "@repo/ds/lib/say";
-import { CheckCircle2, Mail, ShieldCheck } from "@/lib/icons";
+import { CheckCircle2, Mail, ShieldCheck } from "@repo/ds/icons";
 import { Input } from "@repo/ds/components/ui/input";
 import { Switch } from "@repo/ds/components/ui/switch";
 import { Field, describedBy } from "../field";

@@ -229,7 +229,7 @@ Selection is an amber tint everywhere. A real one-off toggle (a chart node, a si
 
 **Visuals over labels.** Prefer a shape, mark, diagram, chip or state that registers instantly over text that must be read: a timeline over a date range, a filled segment over "2 of 3". The visual must encode meaning; a glyph beside every label is decoration.
 
-**Icons.** Hugeicons everywhere (D-78), through each app's adapter (`src/lib/icons.tsx`, lint-guarded); Core HR, the shell and DS chrome move off Lucide in the frame slice. Tabs carry icons. Never mix sets in one composition. An icon must aid recognition, state, navigation or discoverability, or it goes. Same concept, same icon everywhere. Default `size-4`, baseline-aligned, text-colored unless semantic. Unfamiliar actions keep a visible label.
+**Icons.** Hugeicons everywhere (D-78), through the one adapter `@repo/ds/icons` (Lucide's names kept; `lucide-react` is lint-guarded out of our apps and packages). Tabs carry icons (`LinkTabs`' `icon`). Never mix sets in one composition. An icon must aid recognition, state, navigation or discoverability, or it goes. Same concept, same icon everywhere. Default `size-4`, baseline-aligned, text-colored unless semantic. Unfamiliar actions keep a visible label.
 
 **Motion is functional.** It shows what changed, preserves orientation, or answers an action: expand and collapse, overlays, state changes, reordering, progress, revealing a control when it's needed (progressive disclosure). Use the DS duration and easing tokens (`--duration-*`, `--ease-*`) and plain `animate-*` utilities. Quick, controlled, coherent; never slow decoration, bounce, simultaneous unrelated movement, or anything that delays interaction. Nothing floats up on hover and nothing moves perpetually.
 

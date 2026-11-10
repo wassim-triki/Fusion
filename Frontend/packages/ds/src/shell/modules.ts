@@ -1,12 +1,4 @@
-import {
-  BarChart3,
-  BookOpen,
-  BrainCircuit,
-  Briefcase,
-  UsersRound,
-  Video,
-  type LucideIcon,
-} from "lucide-react";
+import { BarChart3, BookOpen, BrainCircuit, Briefcase, UsersRound, Video, type IconComponent } from "../icons";
 import type { ShellModule } from "./types";
 
 /**
@@ -22,7 +14,7 @@ export const FUSION_MODULES: ShellModule[] = [
 ];
 
 /** The Fusion sidebar's icon for each module of the shared registry, by module key. */
-export const FUSION_MODULE_ICONS: Record<string, LucideIcon> = {
+export const FUSION_MODULE_ICONS: Record<string, IconComponent> = {
   core: BrainCircuit,
   performance: BarChart3,
   learning: BookOpen,

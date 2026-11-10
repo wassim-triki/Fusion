@@ -1,7 +1,7 @@
 "use client";
 
 import type { RowData } from "@tanstack/react-table";
-import { Search, X } from "lucide-react";
+import { Search, X } from "../icons";
 import { useTranslations } from "next-intl";
 import {
   InputGroup,

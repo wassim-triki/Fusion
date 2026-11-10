@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { ListFilter } from "lucide-react";
+import { ListFilter } from "../icons";
 import { Button } from "../components/ui/button";
 
 interface TableFilterToolbarProps {

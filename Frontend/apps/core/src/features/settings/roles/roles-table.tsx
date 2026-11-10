@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Building2, ChartNoAxesColumn, Lock, Plus, Users } from "lucide-react";
+import { Building2, ChartNoAxesColumn, Lock, Plus, Users } from "@repo/ds/icons";
 import { RECOMMENDED_ADMINISTRATORS, type FusionSettingsSection, type RoleAreaDto, type RoleCellDto, type RoleSummaryDto } from "@repo/api";
 import {
   Button,

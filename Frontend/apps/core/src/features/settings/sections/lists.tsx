@@ -32,7 +32,7 @@ import {
   cn,
 } from "@repo/ds";
 import { SettingsBlock, SettingsPage, SettingsRows, StatusBadge, useSettingsSectionName } from "@repo/ds/shell";
-import { Archive, GripVertical, MoreHorizontal, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { Archive, GripVertical, MoreHorizontal, Pencil, Plus, RotateCcw, Trash2 } from "@repo/ds/icons";
 import { useCompanyLists, useListMutations } from "@/features/catalog/api/use-catalog";
 import { PageFailure } from "@repo/auth";
 

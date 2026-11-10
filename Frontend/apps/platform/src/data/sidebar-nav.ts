@@ -1,4 +1,4 @@
-import { Building2 } from "@/lib/icons";
+import { Building2 } from "@repo/ds/icons";
 import type { ShellNavSection } from "@repo/ds/shell";
 
 /** Platform's navigation. Labels are keys of the `frame.nav` catalogue, resolved by `usePlatformNav`. */

@@ -12,7 +12,7 @@ import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { Textarea } from "@repo/ds/components/ui/textarea";
 import { AsyncButton, Said } from "@repo/ds/shell";
 import { ObjectiveStatusBadge, PersonInitials } from "@repo/performance-ui";
-import { ArrowRight, Check, RotateCcw } from "@/lib/icons";
+import { ArrowRight, Check, RotateCcw } from "@repo/ds/icons";
 import { reviewHref } from "@/lib/performance-routes";
 import { useCalibrationSubject, type useCalibrationMutations } from "../../api/use-calibration";
 import { dayLabel, LevelCards } from "../reviews/review-parts";

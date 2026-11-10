@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useAuth, canEnterPerformance, PageFailure } from "@repo/auth";
 import { useTeamBand } from "@repo/api/query";
 import { PageContainer, PageEmpty, TeamBand, TeamBandSkeleton } from "@repo/ds/shell";
-import { Users } from "lucide-react";
+import { Users } from "@repo/ds/icons";
 
 export type TeamTab = "overview" | "orgChart";
 export type TeamBandData = ReturnType<typeof useTeamBand>;

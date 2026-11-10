@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ExternalLink, History, MoreHorizontal, UserPen } from "@/lib/icons";
+import { ExternalLink, History, MoreHorizontal, UserPen } from "@repo/ds/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import {
   DropdownMenu,
@@ -19,7 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@repo/ds/components/ui/tooltip";
-import type { LucideIcon } from "@/lib/icons";
+import type { IconComponent } from "@repo/ds/icons";
 import type { RecoveryAction, TenantOverviewRow } from "../api";
 import { useTenantWords } from "../language";
 import { useInvitationRecovery } from "../queries";
@@ -191,7 +191,7 @@ function NotConnectedItem({
   icon: Icon,
   label,
 }: {
-  icon: LucideIcon;
+  icon: IconComponent;
   label: string;
 }) {
   const t = useTranslations("tenants.rowActions");

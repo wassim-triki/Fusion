@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { User } from "lucide-react";
+import { User } from "@repo/ds/icons";
 import { useFieldVisibility } from "@repo/api/query";
 import { PageFailure, useAuth } from "@repo/auth";
 import { PageContainer, PageEmpty, PageHeader } from "@repo/ds/shell";

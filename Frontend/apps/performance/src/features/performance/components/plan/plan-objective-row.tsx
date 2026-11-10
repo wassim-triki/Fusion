@@ -5,20 +5,7 @@ import {
   isMilestoneOverdue,
   milestoneSchedule,
 } from "../measurement/milestone-due";
-import {
-  SquareArrowEnter,
-  CalendarRange,
-  LineChart,
-  MoreHorizontal,
-  SquarePen,
-  Target,
-  Trash2,
-  Unlink,
-  Measurement,
-  Milestones,
-  NumericGoal,
-  PercentMeasure,
-} from "@/lib/icons";
+import { SquareArrowEnter, CalendarRange, LineChart, MoreHorizontal, SquarePen, Target, Trash2, Unlink, Measurement, Milestones, NumericGoal, PercentMeasure } from "@repo/ds/icons";
 import { TargetRange } from "./target-range";
 import type { ReactNode } from "react";
 import type { PlanObjectiveDto } from "@repo/api";

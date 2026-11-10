@@ -113,16 +113,9 @@
       "expand": "Expand sidebar",
       "collapse": "Collapse sidebar",
       "home": "Home",
-      "modules": "Modules",
       "recent": "Recent",
-      "switchModule": "Switch module",
-      "switchModuleCurrent": "Switch module, current: {module}",
-      "currentModule": "Current module",
       "loadingNavigation": "Loading navigation",
-      "loadingAccount": "Loading account",
-      "signIn": "Sign in",
       "settings": "Settings",
-      "signOut": "Sign out",
       "moduleDescriptions": {
         "core": "People and organization",
         "performance": "Objectives, conversations and reviews",
@@ -131,7 +124,12 @@
         "onboarding": "New-hire journeys",
         "interview": "Candidate assessments"
       },
-      "myProfile": "My profile"
+      "foldModule": "Fold {module}",
+      "openModule": "Open {module}",
+      "switchModule": "Switch module",
+      "loadingAccount": "Loading account",
+      "signIn": "Sign in",
+      "signOut": "Sign out"
     },
     "notifications": {
       "title": "Notifications",

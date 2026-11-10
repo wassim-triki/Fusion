@@ -6,7 +6,7 @@ import type { MyTeamDto, TeamEventDto } from "@repo/api";
 import { PersonAvatar, Skeleton } from "@repo/ds";
 import { Section } from "@repo/ds/shell";
 import { dateFormatter } from "@repo/ds/lib/dates";
-import { ArrowRight, MapPin, Network } from "lucide-react";
+import { ArrowRight, MapPin, Network } from "@repo/ds/icons";
 import { ChecklistSection } from "@/features/checklists/checklist-section";
 import { UpcomingRow, useDayParts, type UpcomingItem } from "@/features/people/components/worker-profile/overview-tab";
 import { TeamFrame, type TeamBandData } from "./team-frame";

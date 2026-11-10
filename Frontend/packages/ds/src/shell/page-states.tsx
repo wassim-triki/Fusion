@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from "react";
-import { Inbox, Lock } from "lucide-react";
+import { Inbox, Lock } from "../icons";
 import { useTranslations } from "next-intl";
 import { cn } from "../lib/utils";
 import { Skeleton } from "../components/ui/skeleton";

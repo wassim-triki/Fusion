@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Ban, RefreshCw, Send, UserPen, type LucideIcon } from "@/lib/icons";
+import { Ban, RefreshCw, Send, UserPen, type IconComponent } from "@repo/ds/icons";
 import { Button } from "@repo/ds/components/ui/button";
 import {
   Dialog,
@@ -31,7 +31,7 @@ import { isEmailAddress } from "@repo/ds/lib/email";
  * Each recovery reads faster with a glyph that matches what it does — resending
  * and reissuing are otherwise easy to confuse in a plain text menu.
  */
-export const RECOVERY_ICON: Record<RecoveryAction, LucideIcon> = {
+export const RECOVERY_ICON: Record<RecoveryAction, IconComponent> = {
   resend: Send,
   reissue: RefreshCw,
   replace: UserPen,

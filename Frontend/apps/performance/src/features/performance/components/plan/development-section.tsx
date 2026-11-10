@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { MoreHorizontal, Pencil, Plus, Trash2, X } from "@/lib/icons";
+import { MoreHorizontal, Pencil, Plus, Trash2, X } from "@repo/ds/icons";
 import type { DevelopmentGoalDto, DevelopmentGoalInput, DevelopmentGoalStatus, DevelopmentPlanDto } from "@repo/api";
 import {
   AlertDialog,

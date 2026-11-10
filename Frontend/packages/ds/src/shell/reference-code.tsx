@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Copy } from "lucide-react";
+import { Copy } from "../icons";
 import { useTranslations } from "next-intl";
 
 /** A failure's code, for someone to copy and send to their administrator. */

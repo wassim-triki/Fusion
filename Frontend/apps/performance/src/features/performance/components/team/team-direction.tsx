@@ -31,28 +31,7 @@ import {
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { StatusBadge } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
-import {
-  BarChart3,
-  CalendarDays,
-  ArrowRight,
-  ChartColumn,
-  ChevronRight,
-  CornerLeftUp,
-  Eye,
-  Flag,
-  Info,
-  Layers,
-  Link2,
-  MoreHorizontal,
-  Pencil,
-  Plus,
-  Target,
-  Trash2,
-  TrendingUp,
-  UserRound,
-  Users,
-  Waypoints,
-} from "@/lib/icons";
+import { BarChart3, CalendarDays, ArrowRight, ChartColumn, ChevronRight, CornerLeftUp, Eye, Flag, Info, Layers, Link2, MoreHorizontal, Pencil, Plus, Target, Trash2, TrendingUp, UserRound, Users, Waypoints } from "@repo/ds/icons";
 import { toast } from "sonner";
 import {
   useGoal,

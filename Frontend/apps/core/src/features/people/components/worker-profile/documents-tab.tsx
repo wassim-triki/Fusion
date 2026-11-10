@@ -6,7 +6,7 @@ import type { EmployeeDocumentDto } from "@repo/api";
 import { Button, Skeleton } from "@repo/ds";
 import { Section } from "@repo/ds/shell";
 import { useFormat } from "@repo/ds/lib/use-format";
-import { Download, Eye, FileImage, FileText, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { Download, Eye, FileImage, FileText, Plus, RotateCcw, Trash2 } from "@repo/ds/icons";
 import { toast } from "sonner";
 import { useRefusal } from "@/i18n/words";
 import { useDocumentMutations, usePeopleDocuments } from "../../api/use-people";

@@ -2,7 +2,7 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { Briefcase, Building2, ChevronDown, ChevronUp, Crosshair, Mail, MapPin, MoreHorizontal, TreePalm, Users } from "lucide-react";
+import { Briefcase, Building2, ChevronDown, ChevronUp, Crosshair, Mail, MapPin, MoreHorizontal, TreePalm, Users } from "@repo/ds/icons";
 import type { OrgChartPersonDto } from "@repo/api";
 import { usePhoto } from "@repo/api/query";
 import { Spinner, cn } from "@repo/ds";

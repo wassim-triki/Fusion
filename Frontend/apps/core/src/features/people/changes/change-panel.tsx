@@ -14,7 +14,7 @@ import type {
   PeopleProfileDto,
   WorkforceChangeDto,
 } from "@repo/api";
-import { Check, MessageSquare, Pencil, Sparkles, Stamp, Target, Undo2, UserRound, X } from "lucide-react";
+import { Check, MessageSquare, Pencil, Sparkles, Stamp, Target, Undo2, UserRound, X } from "@repo/ds/icons";
 import { useCompanyWorkWeek } from "@repo/api/query";
 import { useRefusal } from "@/i18n/words";
 import { JobPicker, PlacePicker } from "@/features/catalog/components/catalog-pickers";

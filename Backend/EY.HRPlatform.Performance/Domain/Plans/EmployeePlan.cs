@@ -135,7 +135,8 @@ public sealed class EmployeePlan : PerformanceAggregate
     /// least one change request on a specific objective, or both (D-09); at most one request per objective.
     /// The caller has checked that each request's objective belongs to this plan.
     /// </summary>
-    public void Return(Guid actorEmployeeId, string? feedback, IReadOnlyCollection<PlanChangeRequestDraft>? changeRequests = null)
+    public void Return(Guid actorEmployeeId, string? feedback, IReadOnlyCollection<PlanChangeRequestDraft>? changeRequests = null,
+        IReadOnlyList<PlanGoalSnapshot>? goals = null)
     {
         if (State != PlanLifecycleState.Submitted)
             throw new InvalidOperationException("Only a Submitted plan can be returned.");
@@ -150,7 +151,23 @@ public sealed class EmployeePlan : PerformanceAggregate
         SubmittedAt = null;
         var decision = RecordDecision(PlanDecisionKind.Returned, actorEmployeeId, feedback);
         foreach (var request in built) decision.Carry(request);
+        if (goals is not null) decision.Snapshot(goals);
         MarkUpdated();
+    }
+
+    /// <summary>
+    /// The return a resubmitted plan answers: while the plan is Submitted again after being returned, the latest return,
+    /// whose snapshot tells the reviewer what changed since (B-406).
+    /// </summary>
+    public PlanDecision? AnsweredReturn
+    {
+        get
+        {
+            if (State != PlanLifecycleState.Submitted) return null;
+            var ordered = _decisions.OrderBy(decision => decision.DecidedAt).ToList();
+            return ordered.Count >= 2 && ordered[^1].Kind == PlanDecisionKind.Submitted && ordered[^2].Kind == PlanDecisionKind.Returned
+                ? ordered[^2] : null;
+        }
     }
 
     /// <summary>The latest return, while the plan is back in Draft because of it.</summary>

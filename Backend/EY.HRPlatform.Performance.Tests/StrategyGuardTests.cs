@@ -10,7 +10,7 @@ public sealed class StrategyGuardTests
 {
     private static readonly DateOnly Start = new(2026, 1, 1);
     private static readonly DateOnly End = new(2026, 12, 31);
-    private static readonly MeasurementInput Measurement = new(MeasurementMethod.ManualPercentage, null, null, null, null, null);
+    private static readonly MeasurementInput Measurement = new(MeasurementMethod.ManualPercentage, null, null, null, null);
 
     [Theory]
     [InlineData("create")]
@@ -86,7 +86,7 @@ public sealed class StrategyGuardTests
         var cycle = PerformanceCycle.CreateDraft(store.TenantId, "FY2026", Start, End, Start.AddDays(30));
         db.Cycles.Add(cycle);
         await db.SaveChangesAsync();
-        var measurement = new MeasurementInput(MeasurementMethod.WeightedMilestones, null, null, null, null,
+        var measurement = new MeasurementInput(MeasurementMethod.WeightedMilestones, null, null, null,
             [new MilestoneInput("Deliver", 40m, null)]);
         var result = await new CreateStrategicObjectiveHandler(db, store.Tenant, new TestPerformanceAudit(db)).Handle(
             new(cycle.Id, new("Direction", null, Guid.NewGuid(), Start, End, measurement, Publish: true)), default);

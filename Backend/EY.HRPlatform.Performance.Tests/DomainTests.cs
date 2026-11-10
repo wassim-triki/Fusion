@@ -45,7 +45,7 @@ public sealed class DomainTests
     [Fact]
     public void Numeric_measurement_rejects_equal_baseline_and_target()
         => Assert.Throws<ArgumentException>(() =>
-            ObjectiveMeasurement.NumericTarget(100m, 100m, "%", ImprovementDirection.Increase));
+            ObjectiveMeasurement.NumericTarget(100m, 100m, "%"));
 
     [Fact]
     public void Weighted_measurement_locks_only_at_100_percent()

@@ -1082,7 +1082,8 @@ export interface TeamObjectiveWorkspaceDto {
 
 export interface ContributionInput {
   childObjectiveId: string;
-  weight: number;
+  /** Null shares what the weighted contributors leave, evenly. */
+  weight: number | null;
 }
 
 export interface ConfigureContributionRequest {
@@ -1117,6 +1118,10 @@ export interface PlanObjectiveDto {
   /** The owner's latest reported status; null until the first check-in that carries one. */
   status: ObjectiveStatus | null;
   statusReportedAt: string | null;
+  /** Whether someone chose planWeight; otherwise it is the goal's even share of what the chosen ones leave (D-40). */
+  planWeightIsSet: boolean;
+  /** The goal's grade from its measure, 0 to 1 (D-38). */
+  grade: number;
 }
 
 export interface PlanReadinessDto {
@@ -1191,6 +1196,18 @@ export interface EmployeePlanDto {
   canApproveExceptionally: boolean;
   /** The caller is the approved plan's responsible reviewer and may ask for updates. */
   canRequestUpdate: boolean;
+  /** The plan's grade: its goals' grades weighted by their plan weights (D-38). */
+  grade: number;
+  /** On a plan resubmitted after a return: the goals added, removed and changed since, for its reviewer. */
+  changesSinceReturn: PlanGoalChangeDto[] | null;
+}
+
+export interface PlanGoalChangeDto {
+  objectiveId: string;
+  title: string;
+  kind: "added" | "removed" | "changed";
+  /** For a changed goal: each field ("title", "measure", "weight") with its value then and now. */
+  fields: Array<{ field: "title" | "measure" | "weight"; before: string | null; after: string | null }>;
 }
 
 export interface PlanPreviewDto {
@@ -1673,14 +1690,16 @@ export interface AddPlanObjectiveRequest {
   startDate?: string | null;
   endDate?: string | null;
   measurement: MeasurementInput;
-  planWeight: number;
+  /** A weight someone chose; null shares what the chosen weights leave, evenly (D-40). */
+  planWeight: number | null;
 }
 
 export type UpdatePlanObjectiveRequest = AddPlanObjectiveRequest;
 
 export interface SetPlanWeightsRequest {
   expectedVersion: number;
-  weights: Array<{ objectiveId: string; weight: number }>;
+  /** A weight per goal; null hands the goal back to its even share. */
+  weights: Array<{ objectiveId: string; weight: number | null }>;
 }
 
 export interface ChangeRequestInput {
@@ -1838,12 +1857,12 @@ export interface UpdateCycleRequest {
   description?: string | null;
 }
 
+/** A measure as written: a numeric one's direction is read from its baseline and target, never chosen. */
 export interface MeasurementInput {
   method: MeasurementMethod;
   baseline?: number | null;
   target?: number | null;
   unit?: string | null;
-  direction?: ImprovementDirection | null;
   milestones?: Array<{
     title: string;
     weight: number;

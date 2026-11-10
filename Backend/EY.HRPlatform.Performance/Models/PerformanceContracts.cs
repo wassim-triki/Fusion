@@ -233,12 +233,12 @@ public sealed record CloseCycleRequest(
 
 public sealed record MilestoneInput(string Title, decimal Weight, DateOnly? DueDate);
 
+/// <summary>A measure as written: a numeric one's direction is read from its baseline and target, never chosen.</summary>
 public sealed record MeasurementInput(
     MeasurementMethod Method,
     decimal? Baseline,
     decimal? Target,
     string? Unit,
-    ImprovementDirection? Direction,
     IReadOnlyList<MilestoneInput>? Milestones);
 
 // ----- Objective coach (AI) -----
@@ -586,7 +586,8 @@ public sealed record TeamObjectiveWorkspaceDto(
     bool CanCreate,
     bool CanChooseTeam);
 
-public sealed record ContributionInput(Guid ChildObjectiveId, decimal Weight);
+/// <summary>A contributing child, with a weight or null to share what the weighted ones leave (D-40).</summary>
+public sealed record ContributionInput(Guid ChildObjectiveId, decimal? Weight);
 
 public sealed record ConfigureContributionRequest(IReadOnlyList<ContributionInput> Contributors)
 {
@@ -631,6 +632,12 @@ public sealed record PlanObjectiveDto(
     /// <summary>The owner's latest reported status; null until the first check-in that carries one.</summary>
     public ObjectiveStatus? Status { get; init; }
     public DateTime? StatusReportedAt { get; init; }
+
+    /// <summary>Whether someone chose <see cref="PlanWeight"/>; otherwise it is the goal's even share (D-40).</summary>
+    public bool PlanWeightIsSet { get; init; }
+
+    /// <summary>The goal's grade from its measure, 0.0 to 1.0 (D-38).</summary>
+    public decimal Grade { get; init; }
 }
 
 /// <summary>Live readiness of a plan for submission — the whole-plan invariants, computed continuously.</summary>
@@ -687,6 +694,11 @@ public sealed record AddressChangeRequestRequest(string? Reply)
 }
 
 /// <summary>The full employee-plan surface — objectives, readiness, agreement history, and caller capabilities.</summary>
+public sealed record PlanGoalFieldChangeDto(string Field, string? Before, string? After);
+
+/// <summary>A goal added, removed or changed since the plan was returned; `kind` is added, removed or changed.</summary>
+public sealed record PlanGoalChangeDto(Guid ObjectiveId, string Title, string Kind, IReadOnlyList<PlanGoalFieldChangeDto> Fields);
+
 public sealed record EmployeePlanDto(
     Guid Id,
     Guid CycleId,
@@ -717,6 +729,12 @@ public sealed record EmployeePlanDto(
 
     /// <summary>The caller is the Approved plan's responsible reviewer in an Active Cycle, so may ask for updates.</summary>
     public bool CanRequestUpdate { get; init; }
+
+    /// <summary>The plan's grade: its goals' grades weighted by their plan weights (D-38).</summary>
+    public decimal Grade { get; init; }
+
+    /// <summary>On a plan resubmitted after a return: the goals added, removed and changed since, for its reviewer.</summary>
+    public IReadOnlyList<PlanGoalChangeDto>? ChangesSinceReturn { get; init; }
 
     /// <summary>Why the responsible reviewer holds that responsibility, and as of when.</summary>
     public ReviewerBasis? ResponsibleReviewerBasis { get; init; }
@@ -980,7 +998,7 @@ public sealed record AddPlanObjectiveRequest(
     DateOnly? StartDate,
     DateOnly? EndDate,
     MeasurementInput Measurement,
-    decimal PlanWeight)
+    decimal? PlanWeight)
 {
     [System.Text.Json.Serialization.JsonRequired]
     public uint ExpectedVersion { get; init; }
@@ -993,13 +1011,14 @@ public sealed record UpdatePlanObjectiveRequest(
     DateOnly? StartDate,
     DateOnly? EndDate,
     MeasurementInput Measurement,
-    decimal PlanWeight)
+    decimal? PlanWeight)
 {
     [System.Text.Json.Serialization.JsonRequired]
     public uint ExpectedVersion { get; init; }
 }
 
-public sealed record PlanWeightInput(Guid ObjectiveId, decimal Weight);
+/// <summary>A weight someone chose, or null to hand the goal back to its even share (D-40).</summary>
+public sealed record PlanWeightInput(Guid ObjectiveId, decimal? Weight);
 
 public sealed record SetPlanWeightsRequest(IReadOnlyList<PlanWeightInput> Weights)
 {

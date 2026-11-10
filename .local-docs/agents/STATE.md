@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** B-405 slice 3, the Year page with the employee's half (her goals and the latest praise under the next step), In review 2026-11-10; screens on the [screens page](https://claude.ai/artifact/BY7faok5JPSVTHHTisqYjb).
+**Last finished:** B-406 slice 4, Goals' domain (B-390 row 4), closed ○ 2026-11-10: direction from the numbers, even weights totalling 100, grades from the measure, what changed since a return. Next: slice 5, Goals' surfaces (high effort; split at the session if long: panel and dialog first).
 
 ## Active work
 
@@ -14,4 +14,4 @@ Session queue: a fresh session takes the first open row, sets it as Active work 
 
 | # | Session | Board items | Effort | Notes |
 |---|---|---|---|---|
-| 4+ | Performance's slices 4–13 | B-405–B-411, B-392, B-389, B-418 (edges) | per slice | One row of `plans/B-390-slices.md` per session, in its order; Insights is slice 13. Slice 1 (the frame, B-422) and slice 2 (the year's domain: `GET cycles/{id}/year`, `GET|POST cycles/{id}/move-on`, `POST cycles/{id}/nudges`, `CyclePhase.ResultsOut`) built 2026-11-10; slice 3 (the Year page at `/`, `components/year/`) built 2026-11-10, In review. Next: slice 4, Goals' domain. Port the explorers' drawings literally (memory `port-accepted-drawings-closely`); every slice holds D-95 (no brown in light mode, sections' edges lined up). |
+| 5+ | Performance's slices 5–13 | B-405–B-411, B-392, B-389, B-418 (edges) | per slice | One row of `plans/B-390-slices.md` per session, in its order; Insights is slice 13. Slice 1 (the frame, B-422) and slice 2 (the year's domain: `GET cycles/{id}/year`, `GET|POST cycles/{id}/move-on`, `POST cycles/{id}/nudges`, `CyclePhase.ResultsOut`) built 2026-11-10; slice 3 (the Year page at `/`, `components/year/`) built 2026-11-10, In review. Slice 4 (Goals' domain) built 2026-11-10. Next: slice 5, Goals' surfaces. Port the explorers' drawings literally (memory `port-accepted-drawings-closely`); every slice holds D-95 (no brown in light mode, sections' edges lined up). |

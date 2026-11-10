@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 import { UserRound } from "@repo/ds/icons";
 import type {
   CycleSummaryDto,
-  ImprovementDirection,
   MeasurementInput,
   MeasurementMethod,
   StrategicObjectiveDto,
@@ -85,7 +84,6 @@ export function ObjectiveEditor({
   const [baseline, setBaseline] = useState("");
   const [target, setTarget] = useState("");
   const [unit, setUnit] = useState("");
-  const [direction, setDirection] = useState<ImprovementDirection>("Increase");
   const [milestones, setMilestones] = useState<MilestoneRow[]>(() =>
     milestonesFromMeasurement(objective?.measurement)
   );
@@ -113,7 +111,6 @@ export function ObjectiveEditor({
     setBaseline(m?.baseline != null ? String(m.baseline) : "");
     setTarget(m?.target != null ? String(m.target) : "");
     setUnit(m?.unit ?? "");
-    setDirection(m?.direction ?? "Increase");
     setMilestones(milestonesFromMeasurement(m));
   }, [open, objective, cycle]);
 
@@ -182,7 +179,7 @@ export function ObjectiveEditor({
   // A compact outcome readout, kept beside the measurement rather than in a standalone card.
   const preview = useMemo(() => {
     if (method === "NumericTarget") {
-      const arrow = direction === "Decrease" ? "↓" : "→";
+      const arrow = "→";
       return `${baseline || "?"} ${arrow} ${target || "?"} ${unit}`.trim();
     }
     if (method === "WeightedMilestones") {
@@ -190,7 +187,7 @@ export function ObjectiveEditor({
       return (named === 1 ? t("milestone", { named, weightSum }) : t("milestones", { named, weightSum }));
     }
     return t("manualPercentage");
-  }, [method, baseline, target, unit, direction, milestones, weightSum, t]);
+  }, [method, baseline, target, unit, milestones, weightSum, t]);
 
   function buildMeasurement(): MeasurementInput {
     if (method === "NumericTarget")
@@ -199,7 +196,6 @@ export function ObjectiveEditor({
         baseline: base.num ?? 0,
         target: tgt.num ?? 0,
         unit: unit.trim(),
-        direction,
       };
     if (method === "WeightedMilestones")
       return {
@@ -325,13 +321,11 @@ export function ObjectiveEditor({
                 baseline={baseline}
                 target={target}
                 unit={unit}
-                direction={direction}
                 numericInvalid={numericInvalid}
                 numericSameValue={sameValue}
                 onBaseline={setBaseline}
                 onTarget={setTarget}
                 onUnit={setUnit}
-                onDirection={setDirection}
                 milestones={milestones}
                 milestoneWeightSum={weightSum}
                 onMilestonesChange={setMilestones}

@@ -35,8 +35,14 @@ public sealed class Objective : PerformanceAggregate
     /// <summary>The owning employee plan (employee objectives only).</summary>
     public Guid? EmployeePlanId { get; private set; }
 
-    /// <summary>This objective's weight within its employee plan (employee objectives only); the plan totals 100%.</summary>
+    /// <summary>
+    /// This objective's weight within its employee plan (employee objectives only), the weight in force: the one someone
+    /// chose, or its even share of what the chosen ones leave (D-40). The plan totals 100%.
+    /// </summary>
     public decimal? PlanWeight { get; private set; }
+
+    /// <summary>Whether someone chose <see cref="PlanWeight"/>; when not, it is the goal's even share (<see cref="PlanWeights"/>).</summary>
+    public bool PlanWeightIsSet { get; private set; }
 
     /// <summary>The single aligned parent objective. Organizational and employee objectives may be standalone.</summary>
     public Guid? ParentObjectiveId { get; private set; }
@@ -344,8 +350,11 @@ public sealed class Objective : PerformanceAggregate
         MarkUpdated();
     }
 
-    /// <summary>Configures the contributing children of a calculated objective (product-spec §21).</summary>
-    public void ConfigureContribution(IEnumerable<(Guid ChildObjectiveId, decimal Weight)> links)
+    /// <summary>
+    /// Configures the contributing children of a calculated objective (product-spec §21). Children given no weight share
+    /// what the weighted ones leave, evenly (D-40).
+    /// </summary>
+    public void ConfigureContribution(IEnumerable<(Guid ChildObjectiveId, decimal? Weight)> links)
     {
         RequireOrganizational();
         if (!IsCalculated)
@@ -360,10 +369,12 @@ public sealed class Objective : PerformanceAggregate
         if (childIds.Distinct().Count() != childIds.Count)
             throw new InvalidOperationException("A child may appear at most once in the contribution set.");
 
+        var shares = new Queue<decimal>(PlanWeights.Shares(100m - materialized.Sum(link => link.Weight ?? 0m),
+            materialized.Count(link => link.Weight is null)));
         _contributionLinks.Clear();
         foreach (var link in materialized)
         {
-            var contribution = ContributionLink.Create(TenantId, link.ChildObjectiveId, link.Weight);
+            var contribution = ContributionLink.Create(TenantId, link.ChildObjectiveId, link.Weight ?? shares.Dequeue());
             contribution.AttachTo(Id);
             _contributionLinks.Add(contribution);
         }
@@ -414,7 +425,7 @@ public sealed class Objective : PerformanceAggregate
         DateOnly startDate,
         DateOnly endDate,
         ObjectiveMeasurement measurement,
-        decimal planWeight,
+        decimal? planWeight,
         DateOnly? parentStart,
         DateOnly? parentEnd,
         DateOnly cycleStart,
@@ -434,7 +445,7 @@ public sealed class Objective : PerformanceAggregate
                 throw new ArgumentException("An aligned objective needs its parent's dates.", nameof(parentStart));
             ValidateDatesWithin(startDate, endDate, parentStart.Value, parentEnd.Value, "its aligned objective's dates");
         }
-        ValidatePlanWeight(planWeight);
+        if (planWeight is decimal chosen) ValidatePlanWeight(chosen);
 
         var objective = new Objective
         {
@@ -450,7 +461,8 @@ public sealed class Objective : PerformanceAggregate
             EndDate = endDate,
             ProgressSource = ObjectiveProgressSource.Direct,
             Measurement = measurement,
-            PlanWeight = planWeight,
+            PlanWeight = planWeight ?? 0m,
+            PlanWeightIsSet = planWeight is not null,
             State = ObjectiveLifecycleState.Draft,
         };
 
@@ -465,7 +477,7 @@ public sealed class Objective : PerformanceAggregate
         DateOnly startDate,
         DateOnly endDate,
         ObjectiveMeasurement measurement,
-        decimal planWeight,
+        decimal? planWeight,
         DateOnly? parentStart,
         DateOnly? parentEnd,
         DateOnly cycleStart,
@@ -482,7 +494,7 @@ public sealed class Objective : PerformanceAggregate
                 throw new ArgumentException("An aligned objective needs its parent's dates.", nameof(parentStart));
             ValidateDatesWithin(startDate, endDate, parentStart.Value, parentEnd.Value, "its aligned objective's dates");
         }
-        ValidatePlanWeight(planWeight);
+        if (planWeight is decimal chosen) ValidatePlanWeight(chosen);
 
         Title = title.Trim();
         Description = Normalize(description);
@@ -490,17 +502,30 @@ public sealed class Objective : PerformanceAggregate
         StartDate = startDate;
         EndDate = endDate;
         Measurement = measurement;
-        PlanWeight = planWeight;
+        if (planWeight is decimal set) PlanWeight = set;
+        PlanWeightIsSet = planWeight is not null;
         AttachMilestones();
         MarkUpdated();
     }
 
-    /// <summary>Reassigns just this objective's plan weight (employee objectives only).</summary>
-    public void SetPlanWeight(decimal planWeight)
+    /// <summary>Chooses this objective's plan weight, or with null hands it back to the even share (employee objectives only).</summary>
+    public void SetPlanWeight(decimal? planWeight)
     {
         RequireEmployee();
-        ValidatePlanWeight(planWeight);
-        PlanWeight = planWeight;
+        if (planWeight is decimal chosen)
+        {
+            ValidatePlanWeight(chosen);
+            PlanWeight = chosen;
+        }
+        PlanWeightIsSet = planWeight is not null;
+        MarkUpdated();
+    }
+
+    /// <summary>Gives an unchosen weight its even share; only <see cref="PlanWeights"/> calls it.</summary>
+    internal void ShareWeight(decimal share)
+    {
+        if (PlanWeightIsSet || PlanWeight == share) return;
+        PlanWeight = share;
         MarkUpdated();
     }
 

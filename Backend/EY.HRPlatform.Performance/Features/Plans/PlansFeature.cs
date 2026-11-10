@@ -88,6 +88,19 @@ public abstract class PlanHandlerBase(PerformanceDbContext db, ICoreWorkforceCli
     /// A new plan-decision row (and the change requests a return carries) reached through an already-tracked plan
     /// is detected Modified; correct it to Added.
     /// </summary>
+    /// <summary>
+    /// Shares the weights nobody chose evenly across the plan's goals as they stand in this unit of work (D-40): saved
+    /// goals, goals just added, without goals just removed.
+    /// </summary>
+    protected async Task RebalanceWeightsAsync(Guid planId, CancellationToken cancellationToken)
+    {
+        var stored = await Db.Objectives.Where(o => o.EmployeePlanId == planId).ToListAsync(cancellationToken);
+        var goals = stored.Concat(Db.Objectives.Local.Where(o => o.EmployeePlanId == planId))
+            .Distinct()
+            .Where(o => Db.Entry(o).State != EntityState.Deleted);
+        PlanWeights.Rebalance(goals);
+    }
+
     protected void FixNewPlanRows()
     {
         var added = new HashSet<Guid>();
@@ -321,6 +334,7 @@ public sealed class AddPlanObjectiveHandler(PerformanceDbContext db, ICoreWorkfo
 
             Db.Objectives.Add(objective);
             plan.RecordEdit();
+            await RebalanceWeightsAsync(plan.Id, cancellationToken);
             await Db.SaveChangesAsync(cancellationToken);
             return await ProjectAsync(cycle, plan.Id, command.Actor, cancellationToken);
         }
@@ -388,6 +402,7 @@ public sealed class UpdatePlanObjectiveHandler(PerformanceDbContext db, ICoreWor
                 cycle.EndDate);
 
             plan.RecordEdit();
+            await RebalanceWeightsAsync(plan.Id, cancellationToken);
             await Db.SaveChangesAsync(cancellationToken);
             return await ProjectAsync(cycle, plan.Id, command.Actor, cancellationToken);
         }
@@ -434,6 +449,7 @@ public sealed class RemovePlanObjectiveHandler(PerformanceDbContext db, ICoreWor
 
         Db.Objectives.Remove(objective);
         plan.RecordEdit();
+        await RebalanceWeightsAsync(plan.Id, cancellationToken);
         // Removing the objective in question settles the change requested on it (D-09).
         if (plan.ObjectiveRemoved(objective.Id) is { } settled)
             audit.Record(plan.TenantId, "EmployeePlan", plan.Id, cycle.Id, PerformanceAuditActions.PlanChangeRequestAddressed,
@@ -472,6 +488,7 @@ public sealed class SetPlanWeightsHandler(PerformanceDbContext db, ICoreWorkforc
                 objective.SetPlanWeight(weight.Weight);
             }
 
+            PlanWeights.Rebalance(objectives);
             plan.RecordEdit();
             await Db.SaveChangesAsync(cancellationToken);
             return await ProjectAsync(cycle, plan.Id, command.Actor, cancellationToken);
@@ -540,8 +557,8 @@ public sealed class ReturnPlanHandler(PerformanceDbContext db, ICoreWorkforceCli
             return Result.Failure<EmployeePlanDto>(PerformanceErrors.Forbidden(PerformanceErrors.Codes.PlanDecideForbidden, "Only the responsible manager can return this plan."));
 
         // Each request must name an objective of this plan; titles are kept with the request.
-        var titles = await Db.Objectives.AsNoTracking().Where(o => o.EmployeePlanId == plan.Id)
-            .ToDictionaryAsync(o => o.Id, o => o.Title, cancellationToken);
+        var goals = await Db.Objectives.AsNoTracking().Where(o => o.EmployeePlanId == plan.Id).ToListAsync(cancellationToken);
+        var titles = goals.ToDictionary(o => o.Id, o => o.Title);
         var inputs = command.Request.ChangeRequests ?? [];
         if (inputs.Any(input => !titles.ContainsKey(input.ObjectiveId)))
             return Result.Failure<EmployeePlanDto>(PerformanceErrors.Validation(PerformanceErrors.Codes.PlanChangeRequestInvalid,
@@ -559,7 +576,7 @@ public sealed class ReturnPlanHandler(PerformanceDbContext db, ICoreWorkforceCli
         var before = plan.State.ToString();
         try
         {
-            plan.Return(command.Actor.CallerEmployeeId, command.Request.Feedback, drafts);
+            plan.Return(command.Actor.CallerEmployeeId, command.Request.Feedback, drafts, goals.Select(PlansComposer.Snapshot).ToList());
             FixNewPlanRows();
             audit.Record(plan.TenantId, "EmployeePlan", plan.Id, cycle.Id, PerformanceAuditActions.PlanReturned,
                 new { before, after = plan.State.ToString(), reason = (string?)command.Request.Feedback,

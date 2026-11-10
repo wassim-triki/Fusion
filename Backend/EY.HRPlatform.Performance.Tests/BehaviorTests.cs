@@ -406,7 +406,7 @@ public sealed class BehaviorTests
         {
             db.CycleSettings.Add(CycleSettings.CreateDefault(store.TenantId));
             var strategy = Objective.CreateStrategic(store.TenantId, cycleId, "Grow revenue", null, Guid.NewGuid(),
-                Start, End, ObjectiveMeasurement.NumericTarget(1000m, 1300m, "k€", ImprovementDirection.Increase), Start, End);
+                Start, End, ObjectiveMeasurement.NumericTarget(1000m, 1300m, "k€"), Start, End);
             strategy.Publish();
             db.Objectives.Add(strategy);
             await db.SaveChangesAsync();

@@ -46,6 +46,8 @@ public sealed class PlanDecisionConfiguration : IEntityTypeConfiguration<PlanDec
         builder.HasKey(decision => decision.Id);
         builder.Property(decision => decision.Kind).HasConversion<string>().HasMaxLength(30).IsRequired();
         builder.Property(decision => decision.Feedback).HasMaxLength(2000);
+        builder.Property(decision => decision.GoalsSnapshotJson).HasColumnType("jsonb");
+        builder.Ignore(decision => decision.GoalsSnapshot);
         builder.HasIndex(decision => decision.PlanId);
 
         builder.HasMany(decision => decision.ChangeRequests)

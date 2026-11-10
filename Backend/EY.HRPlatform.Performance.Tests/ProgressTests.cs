@@ -29,7 +29,7 @@ public sealed class ProgressTests
     public void Numeric_progress_derives_from_actual_against_baseline_and_target()
     {
         // Decrease 24 → 12; an actual of 18 is halfway = 50%.
-        var m = ObjectiveMeasurement.NumericTarget(24m, 12m, "hours", ImprovementDirection.Decrease);
+        var m = ObjectiveMeasurement.NumericTarget(24m, 12m, "hours");
         Assert.Equal(50m, m.DerivedProgress(null, 18m));
         // Reaching the target is 100%; beyond it overachieves past 100.
         Assert.Equal(100m, m.DerivedProgress(null, 12m));
@@ -53,7 +53,7 @@ public sealed class ProgressTests
         var cycleId = Guid.NewGuid();
         var planId = Guid.NewGuid();
         var over = Objective.CreateEmployee(tenant, cycleId, planId, Guid.NewGuid(), "A", null, null, Start, End,
-            ObjectiveMeasurement.NumericTarget(0m, 100m, "u", ImprovementDirection.Increase), 50m, null, null, Start, End);
+            ObjectiveMeasurement.NumericTarget(0m, 100m, "u"), 50m, null, null, Start, End);
         over.ApplyNumericActual(120m); // 120%
         var half = Objective.CreateEmployee(tenant, cycleId, planId, Guid.NewGuid(), "B", null, null, Start, End,
             ObjectiveMeasurement.ManualPercentage(), 50m, null, null, Start, End);

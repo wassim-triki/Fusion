@@ -469,7 +469,7 @@ public sealed class RelationalTests
             {
                 var version = (await db.EmployeePlans.SingleAsync(p => p.Id == planId)).Version;
                 var request = new EY.HRPlatform.Performance.Models.AddPlanObjectiveRequest("Own outcome", null, strategyId, Start, End,
-                    new(MeasurementMethod.ManualPercentage, null, null, null, null, null), 100m) { ExpectedVersion = version };
+                    new(MeasurementMethod.ManualPercentage, null, null, null, null), 100m) { ExpectedVersion = version };
                 var result = await new EY.HRPlatform.Performance.Features.Plans.AddPlanObjectiveHandler(db, workforce, TestTenantContext.WithTenant(tenant))
                     .Handle(new(cycleId, request, actor), default);
                 Assert.True(result.IsSuccess, result.IsFailure ? result.Error.Message : null);

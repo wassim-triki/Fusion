@@ -199,7 +199,6 @@ public sealed class RunObjectiveCoachHandler(
                         baseline = measure.Baseline,
                         target = measure.Target,
                         unit = measure.Unit,
-                        direction = measure.Direction?.ToString(),
                         milestones = measure.Milestones?.Select(milestone => new { title = milestone.Title, weight = milestone.Weight }),
                     }
                     : null,

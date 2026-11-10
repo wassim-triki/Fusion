@@ -19,7 +19,14 @@ public sealed class ObjectiveMeasurement
     public decimal? Baseline { get; private set; }
     public decimal? Target { get; private set; }
     public string? Unit { get; private set; }
-    public ImprovementDirection? Direction { get; private set; }
+
+    /// <summary>
+    /// Which way the number should move, read from the numbers (D-40): down when the target is below the baseline,
+    /// else up. Nobody picks it; only a numeric measure has one.
+    /// </summary>
+    public ImprovementDirection? Direction => Method == MeasurementMethod.NumericTarget && Baseline is decimal baseline && Target is decimal target
+        ? target < baseline ? ImprovementDirection.Decrease : ImprovementDirection.Increase
+        : null;
 
     // Weighted milestones.
     public IReadOnlyList<ObjectiveMilestone> Milestones => _milestones;
@@ -30,8 +37,7 @@ public sealed class ObjectiveMeasurement
     public static ObjectiveMeasurement NumericTarget(
         decimal baseline,
         decimal target,
-        string unit,
-        ImprovementDirection direction)
+        string unit)
     {
         if (string.IsNullOrWhiteSpace(unit))
             throw new ArgumentException("A numeric-target measurement requires a unit.", nameof(unit));
@@ -45,7 +51,6 @@ public sealed class ObjectiveMeasurement
             Baseline = baseline,
             Target = target,
             Unit = unit.Trim(),
-            Direction = direction,
         };
     }
 

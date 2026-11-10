@@ -97,7 +97,6 @@ export function draftMeasurement(input: {
   baseline: string;
   target: string;
   unit: string;
-  direction: ImprovementDirection;
   milestones: MilestoneRow[];
 }): MeasurementInput | null {
   if (input.method === null) return null;
@@ -109,7 +108,6 @@ export function draftMeasurement(input: {
       baseline: baseline.invalid ? null : baseline.num,
       target: target.invalid ? null : target.num,
       unit: input.unit.trim() || null,
-      direction: input.direction,
     };
   }
   if (input.method === "WeightedMilestones")

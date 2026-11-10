@@ -83,11 +83,11 @@ public sealed class EmployeePlansTests
 
     private static AddPlanObjectiveRequest AlignedNumeric(Guid parentId, decimal weight, string title = "Reduce escalation time")
         => new(title, null, parentId, null, null,
-            new MeasurementInput(MeasurementMethod.NumericTarget, 24m, 12m, "hours", ImprovementDirection.Decrease, null), weight);
+            new MeasurementInput(MeasurementMethod.NumericTarget, 24m, 12m, "hours", null), weight);
 
     private static AddPlanObjectiveRequest Standalone(decimal weight, string title = "Complete operational documentation")
         => new(title, null, null, null, null,
-            new MeasurementInput(MeasurementMethod.ManualPercentage, null, null, null, null, null), weight);
+            new MeasurementInput(MeasurementMethod.ManualPercentage, null, null, null, null), weight);
 
     // ── Handler wiring ────────────────────────────────────────────────────
 
@@ -541,7 +541,7 @@ public sealed class EmployeePlansTests
     {
         var f = await ArrangeAsync();
         await CreatePlanAsync(f, Employee(f.EmployeeId));
-        var milestones = new MeasurementInput(MeasurementMethod.WeightedMilestones, null, null, null, null,
+        var milestones = new MeasurementInput(MeasurementMethod.WeightedMilestones, null, null, null,
             [new MilestoneInput("Draft the playbook", 50m, CycleStart.AddDays(10)), new MilestoneInput("Roll it out", 50m, null)]);
         var add = await AddObjectiveAsync(f, new AddPlanObjectiveRequest("Ship the playbook", null, f.StrategicId, null, null, milestones, 100m),
             Employee(f.EmployeeId));
@@ -569,7 +569,7 @@ public sealed class EmployeePlansTests
         await CreatePlanAsync(f, Employee(f.EmployeeId));
 
         AddPlanObjectiveRequest WithDue(DateOnly due) => new("Ship the playbook", null, f.StrategicId, null, null,
-            new MeasurementInput(MeasurementMethod.WeightedMilestones, null, null, null, null,
+            new MeasurementInput(MeasurementMethod.WeightedMilestones, null, null, null,
                 [new MilestoneInput("Draft", 40m, due), new MilestoneInput("Roll out", 60m, null)]), 100m);
 
         var outside = await AddObjectiveAsync(f, WithDue(CycleEnd.AddDays(1)), Employee(f.EmployeeId));

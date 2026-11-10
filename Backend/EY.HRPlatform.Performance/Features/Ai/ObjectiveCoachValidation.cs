@@ -77,7 +77,7 @@ public static class ObjectiveCoachValidation
         var baseline = part.Baseline ?? (direction == ImprovementDirection.Increase ? target - 1 : target + 1);
         try
         {
-            ObjectiveMeasurement.NumericTarget(baseline, target, unit, direction.Value);
+            ObjectiveMeasurement.NumericTarget(baseline, target, unit);
         }
         catch (ArgumentException)
         {
@@ -113,7 +113,6 @@ public static class ObjectiveCoachValidation
             MeasurementMethod.ManualPercentage => true,
             MeasurementMethod.NumericTarget => draft.Target == candidate.Target
                 && string.Equals(draft.Unit?.Trim(), candidate.Unit, StringComparison.OrdinalIgnoreCase)
-                && draft.Direction == candidate.Direction
                 && (candidate.Baseline is null || draft.Baseline == candidate.Baseline),
             MeasurementMethod.WeightedMilestones => (draft.Milestones ?? [])
                 .Select(milestone => (Normalize(milestone.Title), milestone.Weight))

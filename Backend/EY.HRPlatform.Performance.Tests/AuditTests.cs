@@ -24,7 +24,7 @@ public sealed class AuditTests
 {
     private static readonly DateOnly Start = new(2026, 1, 1);
     private static readonly DateOnly End = new(2026, 12, 31);
-    private static readonly MeasurementInput Manual = new(MeasurementMethod.ManualPercentage, null, null, null, null, null);
+    private static readonly MeasurementInput Manual = new(MeasurementMethod.ManualPercentage, null, null, null, null);
 
     [Theory]
     [InlineData(false, false)]

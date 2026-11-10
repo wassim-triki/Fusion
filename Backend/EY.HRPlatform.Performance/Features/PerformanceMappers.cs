@@ -142,8 +142,7 @@ public static class PerformanceMappers
             MeasurementMethod.NumericTarget => ObjectiveMeasurement.NumericTarget(
                 input.Baseline ?? throw new ArgumentException("A numeric-target measurement requires a baseline."),
                 input.Target ?? throw new ArgumentException("A numeric-target measurement requires a target."),
-                input.Unit ?? throw new ArgumentException("A numeric-target measurement requires a unit."),
-                input.Direction ?? ImprovementDirection.Increase),
+                input.Unit ?? throw new ArgumentException("A numeric-target measurement requires a unit.")),
             MeasurementMethod.WeightedMilestones => ObjectiveMeasurement.WeightedMilestones(
                 (input.Milestones ?? []).Select(milestone =>
                     ObjectiveMilestone.Create(tenantId, milestone.Title, milestone.Weight, milestone.DueDate))),

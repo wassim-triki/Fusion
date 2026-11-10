@@ -83,7 +83,7 @@ public sealed class OrganizationalGoalsTests
     private static CreateOrganizationalObjectiveRequest DirectNumeric(Guid orgUnitId, Guid accountable, Guid parentId, string title = "Improve reliability")
         => new(orgUnitId, "Talent Pod", title, null, accountable, parentId, null, null,
             ObjectiveProgressSource.Direct,
-            new MeasurementInput(MeasurementMethod.NumericTarget, 80m, 95m, "%", ImprovementDirection.Increase, null));
+            new MeasurementInput(MeasurementMethod.NumericTarget, 80m, 95m, "%", null));
 
     private static CreateOrganizationalObjectiveHandler Create(Fixture f, PerformanceDbContext db)
         => new(db, f.Workforce, f.Store.Tenant);
@@ -211,7 +211,7 @@ public sealed class OrganizationalGoalsTests
         var f = await ArrangeAsync();
         var request = new CreateOrganizationalObjectiveRequest(f.TalentPodId, "Talent Pod", "Too long", null, f.NourId, f.StrategicId,
             CycleStart.AddDays(-5), CycleEnd, ObjectiveProgressSource.Direct,
-            new MeasurementInput(MeasurementMethod.ManualPercentage, null, null, null, null, null));
+            new MeasurementInput(MeasurementMethod.ManualPercentage, null, null, null, null));
         var result = await CreateAsync(f, request, Admin(f.CooId));
 
         Assert.True(result.IsFailure);
@@ -224,7 +224,7 @@ public sealed class OrganizationalGoalsTests
         var request = new CreateOrganizationalObjectiveRequest(
             null, null, "Build leadership bench", null, f.NourId, null, null, null,
             ObjectiveProgressSource.Direct,
-            new MeasurementInput(MeasurementMethod.ManualPercentage, null, null, null, null, null));
+            new MeasurementInput(MeasurementMethod.ManualPercentage, null, null, null, null));
 
         var created = await CreateAsync(f, request, Manager(f.NourId));
 
@@ -243,7 +243,7 @@ public sealed class OrganizationalGoalsTests
         var standalone = await CreateAsync(f, new CreateOrganizationalObjectiveRequest(
             null, null, "Standalone delivery", null, f.NourId, null, null, null,
             ObjectiveProgressSource.Direct,
-            new MeasurementInput(MeasurementMethod.ManualPercentage, null, null, null, null, null)), manager);
+            new MeasurementInput(MeasurementMethod.ManualPercentage, null, null, null, null)), manager);
         var aligned = await CreateAsync(f, DirectNumeric(f.TalentPodId, f.NourId, f.StrategicId, "Aligned delivery"), manager);
         Assert.True(standalone.IsSuccess && aligned.IsSuccess);
 
@@ -344,7 +344,7 @@ public sealed class OrganizationalGoalsTests
         var disconnected = await CreateAsync(f, new CreateOrganizationalObjectiveRequest(
             f.TalentPodId, null, "Local standalone", null, f.NourId, null, null, null,
             ObjectiveProgressSource.Direct,
-            new MeasurementInput(MeasurementMethod.ManualPercentage, null, null, null, null, null)), admin);
+            new MeasurementInput(MeasurementMethod.ManualPercentage, null, null, null, null)), admin);
         Assert.True(disconnected.IsSuccess);
         Assert.True((await PublishAsync(f, disconnected.Value.Node.Id, admin)).IsSuccess);
 
@@ -460,7 +460,7 @@ public sealed class OrganizationalGoalsTests
         var result = await new UpdateOrganizationalObjectiveHandler(db, f.Workforce, f.Store.Tenant, new TestPerformanceAudit(db)).Handle(
             new(f.CycleId, created.Value.Node.Id,
                 new("Delivery", null, f.NourId, null, CycleStart, CycleEnd, ObjectiveProgressSource.Direct,
-                    new(MeasurementMethod.ManualPercentage, null, null, null, null, null)), Manager(f.NourId)), default);
+                    new(MeasurementMethod.ManualPercentage, null, null, null, null)), Manager(f.NourId)), default);
         Assert.True(result.IsSuccess, result.IsFailure ? result.Error.Message : null);
         var entry = Assert.Single(await db.AuditEntries.ToListAsync());
         await AuditAssertions.RecordedAsync(db, "Objective.Realigned", created.Value.Node.Id, f.CycleId);
@@ -485,7 +485,7 @@ public sealed class OrganizationalGoalsTests
             var reassign = await new UpdateOrganizationalObjectiveHandler(db, f.Workforce, f.Store.Tenant, new TestPerformanceAudit(db)).Handle(
                 new UpdateOrganizationalObjectiveCommand(f.CycleId, objectiveId,
                     new UpdateOrganizationalObjectiveRequest("Improve reliability", null, other.EmployeeId, f.StrategicId, CycleStart, CycleEnd,
-                        ObjectiveProgressSource.Direct, new MeasurementInput(MeasurementMethod.NumericTarget, 80m, 95m, "%", ImprovementDirection.Increase, null)),
+                        ObjectiveProgressSource.Direct, new MeasurementInput(MeasurementMethod.NumericTarget, 80m, 95m, "%", null)),
                     Manager(f.NourId)), default);
             Assert.True(reassign.IsSuccess, reassign.IsFailure ? reassign.Error.Message : null);
             Assert.Equal(other.EmployeeId, reassign.Value.Accountable.Id);

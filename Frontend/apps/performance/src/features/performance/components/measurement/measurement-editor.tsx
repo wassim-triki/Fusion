@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Flag, Info, LineChart, Percent, TrendingDown, TrendingUp } from "@repo/ds/icons";
-import type { ImprovementDirection, MeasurementMethod } from "@repo/api";
+import type { MeasurementMethod } from "@repo/api";
 import { Input } from "@repo/ds/components/ui/input";
-import { OptionCards, Segmented } from "@repo/ds/choice";
+import { OptionCards } from "@repo/ds/choice";
 import { Label } from "@repo/ds/components/ui/label";
 import {
   Autocomplete,
@@ -45,13 +45,11 @@ export function MeasurementEditor({
   baseline,
   target,
   unit,
-  direction,
   numericInvalid,
   numericSameValue,
   onBaseline,
   onTarget,
   onUnit,
-  onDirection,
   milestones,
   milestoneWeightSum,
   onMilestonesChange,
@@ -64,13 +62,11 @@ export function MeasurementEditor({
   baseline: string;
   target: string;
   unit: string;
-  direction: ImprovementDirection;
   numericInvalid: boolean;
   numericSameValue: boolean;
   onBaseline: (v: string) => void;
   onTarget: (v: string) => void;
   onUnit: (v: string) => void;
-  onDirection: (v: ImprovementDirection) => void;
   milestones: MilestoneRow[];
   milestoneWeightSum: number;
   onMilestonesChange: (
@@ -108,13 +104,11 @@ export function MeasurementEditor({
           baseline={baseline}
           target={target}
           unit={unit}
-          direction={direction}
           numericInvalid={numericInvalid}
           sameValue={numericSameValue}
           onBaseline={onBaseline}
           onTarget={onTarget}
           onUnit={onUnit}
-          onDirection={onDirection}
         />
       ) : null}
 
@@ -132,30 +126,34 @@ export function MeasurementEditor({
   );
 }
 
-// ── Numeric target editor (baseline → target, unit, direction) ────────────────────────
+/** Which way the number should move, read from baseline and target; null until both are numbers and differ. */
+function readDirection(baseline: string, target: string): "Increase" | "Decrease" | null {
+  const from = Number(baseline.replace(",", "."));
+  const to = Number(target.replace(",", "."));
+  if (baseline.trim() === "" || target.trim() === "" || Number.isNaN(from) || Number.isNaN(to) || from === to) return null;
+  return to < from ? "Decrease" : "Increase";
+}
+
+// ── Numeric target editor (baseline → target, unit) ────────────────────────
 
 function NumericTargetEditor({
   baseline,
   target,
   unit,
-  direction,
   numericInvalid,
   sameValue,
   onBaseline,
   onTarget,
   onUnit,
-  onDirection,
 }: {
   baseline: string;
   target: string;
   unit: string;
-  direction: ImprovementDirection;
   numericInvalid: boolean;
   sameValue: boolean;
   onBaseline: (v: string) => void;
   onTarget: (v: string) => void;
   onUnit: (v: string) => void;
-  onDirection: (v: ImprovementDirection) => void;
 }) {
   const t = useTranslations("progress.NumericTargetEditor");
   const error = numericInvalid
@@ -188,20 +186,14 @@ function NumericTargetEditor({
           </Label>
           <UnitCombobox value={unit} onChange={onUnit} />
         </div>
-        <div className="space-y-1.5">
-          <Label>{t("direction")}</Label>
-          <Segmented
-            fill
-            label={t("direction")}
-            value={direction}
-            onChange={onDirection}
-            options={[
-              { value: "Increase", label: t("increase"), icon: <TrendingUp aria-hidden /> },
-              { value: "Decrease", label: t("decrease"), icon: <TrendingDown aria-hidden /> },
-            ]}
-          />
-        </div>
       </div>
+      {/* D-40: the direction is read from the numbers, never picked. */}
+      {readDirection(baseline, target) ? (
+        <p className="flex items-center gap-1.5 type-meta text-muted-foreground">
+          {readDirection(baseline, target) === "Decrease" ? <TrendingDown aria-hidden className="size-4" /> : <TrendingUp aria-hidden className="size-4" />}
+          {readDirection(baseline, target) === "Decrease" ? t("fewerIsBetter") : t("moreIsBetter")}
+        </p>
+      ) : null}
       {error ? <p className="type-body text-destructive">{error}</p> : null}
     </div>
   );

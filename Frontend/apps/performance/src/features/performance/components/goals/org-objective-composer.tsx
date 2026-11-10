@@ -10,7 +10,6 @@ import type {
   CycleSummaryDto,
   GoalDetailDto,
   AlignmentTargetDto,
-  ImprovementDirection,
   MeasurementInput,
   MeasurementMethod,
   ObjectiveProgressSource,
@@ -187,9 +186,6 @@ export function OrgObjectiveComposer({
     measurement?.target != null ? String(measurement.target) : ""
   );
   const [unit, setUnit] = useState(measurement?.unit ?? "");
-  const [direction, setDirection] = useState<ImprovementDirection>(
-    measurement?.direction ?? "Increase"
-  );
   const [milestones, setMilestones] = useState<MilestoneRow[]>(() =>
     milestonesFromMeasurement(measurement)
   );
@@ -314,7 +310,6 @@ export function OrgObjectiveComposer({
             baseline,
             target,
             unit,
-            direction,
             milestones,
           }),
     parentObjectiveId:
@@ -337,7 +332,6 @@ export function OrgObjectiveComposer({
       if (measure.baseline !== null) setBaseline(String(measure.baseline));
       setTarget(measure.target !== null ? String(measure.target) : "");
       setUnit(measure.unit ?? "");
-      setDirection(measure.direction ?? "Increase");
     }
     if (measure.method === "WeightedMilestones")
       setMilestones(milestoneRows(measure));
@@ -363,7 +357,6 @@ export function OrgObjectiveComposer({
         baseline: base.num ?? 0,
         target: tgt.num ?? 0,
         unit: unit.trim(),
-        direction,
       };
     if (method === "WeightedMilestones")
       return {
@@ -722,13 +715,11 @@ export function OrgObjectiveComposer({
                   baseline={baseline}
                   target={target}
                   unit={unit}
-                  direction={direction}
                   numericInvalid={numericInvalid}
                   numericSameValue={sameValue}
                   onBaseline={edited(setBaseline)}
                   onTarget={edited(setTarget)}
                   onUnit={edited(setUnit)}
-                  onDirection={edited(setDirection)}
                   milestones={milestones}
                   milestoneWeightSum={weightSum}
                   onMilestonesChange={edited(setMilestones)}

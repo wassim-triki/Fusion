@@ -20,6 +20,14 @@ public sealed class PlanDecision : PerformanceChildEntity
     public string? Feedback { get; private set; }
     public DateTime DecidedAt { get; private set; }
 
+    /// <summary>On a return: the plan's goals as the reviewer saw them, so the resubmission shows what changed since.</summary>
+    public string? GoalsSnapshotJson { get; private set; }
+
+    public IReadOnlyList<PlanGoalSnapshot> GoalsSnapshot => GoalsSnapshotJson is null ? []
+        : System.Text.Json.JsonSerializer.Deserialize<List<PlanGoalSnapshot>>(GoalsSnapshotJson) ?? [];
+
+    internal void Snapshot(IReadOnlyList<PlanGoalSnapshot> goals) => GoalsSnapshotJson = System.Text.Json.JsonSerializer.Serialize(goals);
+
     public IReadOnlyList<PlanChangeRequest> ChangeRequests => _changeRequests;
 
     public static PlanDecision Record(Guid tenantId, PlanDecisionKind kind, Guid actorEmployeeId, string? feedback)

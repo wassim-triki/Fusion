@@ -15,9 +15,8 @@
     "baseline": "البداية",
     "target": "الهدف",
     "unit": "الوحدة",
-    "direction": "الاتجاه",
-    "increase": "زيادة",
-    "decrease": "خفض"
+    "fewerIsBetter": "الأقل أفضل",
+    "moreIsBetter": "الأكثر أفضل"
   },
   "UnitCombobox": {
     "percent": "نسبة مئوية (%)",

@@ -1665,6 +1665,9 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                     b.Property<decimal?>("PlanWeight")
                         .HasColumnType("numeric(6,2)");
 
+                    b.Property<bool>("PlanWeightIsSet")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("ProgressSource")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -1890,6 +1893,9 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                     b.Property<string>("Feedback")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("GoalsSnapshotJson")
+                        .HasColumnType("jsonb");
 
                     b.Property<string>("Kind")
                         .IsRequired()
@@ -3808,10 +3814,6 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
 
                             b1.Property<decimal?>("Baseline")
                                 .HasColumnType("numeric(18,4)");
-
-                            b1.Property<string>("Direction")
-                                .HasMaxLength(20)
-                                .HasColumnType("character varying(20)");
 
                             b1.Property<string>("Method")
                                 .IsRequired()

@@ -327,7 +327,7 @@ public sealed class ObjectiveAccessTests
     {
         var f = await ArrangeAsync(active: family == "plan");
         await using var db = f.Store.NewContext();
-        var measurement = new EY.HRPlatform.Performance.Models.MeasurementInput(MeasurementMethod.ManualPercentage, null, null, null, null, null);
+        var measurement = new EY.HRPlatform.Performance.Models.MeasurementInput(MeasurementMethod.ManualPercentage, null, null, null, null);
         EY.HRPlatform.SharedKernel.Results.Error error;
         switch (family)
         {

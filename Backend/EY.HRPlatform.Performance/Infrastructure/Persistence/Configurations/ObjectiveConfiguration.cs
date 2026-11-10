@@ -34,7 +34,7 @@ public sealed class ObjectiveConfiguration : IEntityTypeConfiguration<Objective>
         {
             measurement.Property(item => item.Method).HasConversion<string>().HasMaxLength(30);
             measurement.Property(item => item.Unit).HasMaxLength(60);
-            measurement.Property(item => item.Direction).HasConversion<string>().HasMaxLength(20);
+            measurement.Ignore(item => item.Direction);
             measurement.Property(item => item.Baseline).HasColumnType("numeric(18,4)");
             measurement.Property(item => item.Target).HasColumnType("numeric(18,4)");
 

@@ -8,7 +8,6 @@ import type {
   AddPlanObjectiveRequest,
   AlignmentTargetDto,
   CycleSummaryDto,
-  ImprovementDirection,
   MeasurementInput,
   PlanObjectiveDto,
 } from "@repo/api";
@@ -123,7 +122,6 @@ export function PlanGoalComposer({
   const [baseline, setBaseline] = useState("");
   const [target, setTarget] = useState("");
   const [unit, setUnit] = useState("");
-  const [direction, setDirection] = useState<ImprovementDirection>("Increase");
   // An explicit window override. Null means "not set" — the objective follows its inherited window
   // (the aligned parent's, or the cycle's) until the author picks a range.
   const [dateOverride, setDateOverride] = useState<DateRangeValue | null>(null);
@@ -161,7 +159,6 @@ export function PlanGoalComposer({
     setBaseline(numeric ? String(numeric.baseline) : "");
     setTarget(numeric ? String(numeric.target) : "");
     setUnit(numeric?.unit ?? "");
-    setDirection(numeric?.direction ?? "Increase");
     // Editing starts from the objective's own dates; a new objective starts from the inherited window.
     setDateOverride(
       objective?.startDate
@@ -293,7 +290,6 @@ export function PlanGoalComposer({
         baseline: base.num ?? 0,
         target: tgt.num ?? 0,
         unit: unit.trim(),
-        direction,
       };
     return { method: "ManualPercentage" };
   }
@@ -307,7 +303,6 @@ export function PlanGoalComposer({
       baseline,
       target,
       unit,
-      direction,
       milestones,
     }),
     parentObjectiveId: mode === "aligned" && parentId ? parentId : null,
@@ -334,7 +329,6 @@ export function PlanGoalComposer({
       if (measure.baseline !== null) setBaseline(String(measure.baseline));
       setTarget(measure.target !== null ? String(measure.target) : "");
       setUnit(measure.unit ?? "");
-      setDirection(measure.direction ?? "Increase");
     }
     if (measure.method === "WeightedMilestones")
       setMilestones(milestoneRows(measure));
@@ -635,13 +629,11 @@ export function PlanGoalComposer({
                 baseline={baseline}
                 target={target}
                 unit={unit}
-                direction={direction}
                 numericInvalid={numericInvalid}
                 numericSameValue={numericSameValue}
                 onBaseline={edited(setBaseline)}
                 onTarget={edited(setTarget)}
                 onUnit={edited(setUnit)}
-                onDirection={edited(setDirection)}
                 milestones={milestones}
                 milestoneWeightSum={milestoneSum}
                 onMilestonesChange={edited(setMilestones)}

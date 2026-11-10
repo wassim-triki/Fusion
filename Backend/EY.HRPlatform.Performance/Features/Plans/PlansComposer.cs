@@ -122,8 +122,19 @@ public static class PlansComposer
             CanSubmit: canAuthor && readiness.CanSubmit,
             CanDecide: canDecide,
             CanApproveExceptionally: canApproveExceptionally)
-{ Version = plan.Version, IsOwner = isSelf, CanRequestUpdate = PlanPolicy.CanRequestUpdate(actor.ToGoalActor(), plan, cycle) };
+{ Version = plan.Version, IsOwner = isSelf, CanRequestUpdate = PlanPolicy.CanRequestUpdate(actor.ToGoalActor(), plan, cycle),
+    Grade = GoalGrades.Plan(planObjectiveEntities),
+    ChangesSinceReturn = plan.AnsweredReturn is { } answered
+        ? PlanChanges.Since(answered.GoalsSnapshot, planObjectiveEntities.Select(Snapshot).ToList())
+            .Select(change => new PlanGoalChangeDto(change.ObjectiveId, change.Title, change.Kind,
+                change.Fields.Select(field => new PlanGoalFieldChangeDto(field.Field, field.Before, field.After)).ToList()))
+            .ToList()
+        : null };
     }
+
+    /// <summary>A goal as a returned plan's snapshot keeps it: what its reviewer reads to see what changed since.</summary>
+    public static PlanGoalSnapshot Snapshot(Objective objective)
+        => new(objective.Id, objective.Title, PerformanceMappers.MeasurementSummary(objective), objective.PlanWeight);
 
     /// <summary>Who acted on the plan: from the cycle's names, else the plan's own recorded reviewer and employee.</summary>
     private static string? ActorName(EmployeePlan plan, GoalsComposer.Graph graph, Guid actorId)
@@ -350,6 +361,8 @@ public static class PlansComposer
             Version = objective.Version,
             Status = objective.CurrentStatus,
             StatusReportedAt = objective.StatusReportedAt,
+            PlanWeightIsSet = objective.PlanWeightIsSet,
+            Grade = GoalGrades.Of(objective),
         };
 
     private static bool ConnectsToStrategic(Objective objective, GoalsComposer.Graph graph)

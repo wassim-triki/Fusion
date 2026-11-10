@@ -15,9 +15,8 @@
     "baseline": "Valeur de départ",
     "target": "Cible",
     "unit": "Unité",
-    "direction": "Orientation",
-    "increase": "Augmenter",
-    "decrease": "Diminuer"
+    "fewerIsBetter": "Moins, c’est mieux",
+    "moreIsBetter": "Plus, c’est mieux"
   },
   "UnitCombobox": {
     "percent": "Pourcentage (%)",

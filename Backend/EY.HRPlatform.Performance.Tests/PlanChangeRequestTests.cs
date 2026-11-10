@@ -77,8 +77,8 @@ public sealed class PlanChangeRequestTests
     private static PlanActorContext Employee(Guid id) => new(id, IsAdmin: false, CanReviewReports: false);
     private static PlanActorContext Manager(Guid id) => new(id, IsAdmin: false, CanReviewReports: true);
 
-    private static AddPlanObjectiveRequest Manual(string title, decimal weight)
-        => new(title, null, null, null, null, new MeasurementInput(MeasurementMethod.ManualPercentage, null, null, null, null, null), weight);
+    private static AddPlanObjectiveRequest Manual(string title, decimal? weight)
+        => new(title, null, null, null, null, new MeasurementInput(MeasurementMethod.ManualPercentage, null, null, null, null), weight);
 
     private static async Task<uint> PlanVersionAsync(World w)
         => await Run(w.Store, async db => (await db.EmployeePlans.AsNoTracking().SingleAsync(p => p.Id == w.PlanId)).Version);
@@ -196,7 +196,7 @@ public sealed class PlanChangeRequestTests
         var version = await PlanVersionAsync(w);
         Ok(await Run(w.Store, db => new UpdatePlanObjectiveHandler(db, w.Workforce, w.Store.Tenant).Handle(new UpdatePlanObjectiveCommand(w.CycleId, w.FirstId,
             new UpdatePlanObjectiveRequest("Ship the gateway with 99.9% uptime", null, null, null, null,
-                new MeasurementInput(MeasurementMethod.ManualPercentage, null, null, null, null, null), 60m) { ExpectedVersion = version }, Employee(w.Emma)), default)));
+                new MeasurementInput(MeasurementMethod.ManualPercentage, null, null, null, null), 60m) { ExpectedVersion = version }, Employee(w.Emma)), default)));
         foreach (var request in Requests(returned)) Ok(await AddressAsync(w, request.Id));
         Ok(await SubmitAsync(w));
 
@@ -227,6 +227,50 @@ public sealed class PlanChangeRequestTests
         Ok(await AddressAsync(w, Requests(returned)[0].Id));
         var items = await Run(w.Store, db => new GetWorkItemsHandler(db).Handle(new GetWorkItemsQuery(new WorkActor(w.Emma, Guid.NewGuid(), true, false, false, false)), default));
         Assert.Equal("1 change to address", Assert.Single(items.Value, i => i.Kind == "plan-revise").Context);
+    }
+
+    [Fact]
+    public async Task The_reviewer_reads_what_changed_since_the_return_and_unchosen_weights_share_the_rest()
+    {
+        var w = await ArrangeAsync();
+        var returned = Ok(await ReturnAsync(w, null, new ChangeRequestInput(w.FirstId, "Make this measurable")));
+        var version = await PlanVersionAsync(w);
+        // Emma renames the first goal and hands its weight back; drops the second; adds a third without a weight.
+        Ok(await Run(w.Store, db => new UpdatePlanObjectiveHandler(db, w.Workforce, w.Store.Tenant).Handle(new UpdatePlanObjectiveCommand(w.CycleId, w.FirstId,
+            new UpdatePlanObjectiveRequest("Ship the gateway with 99.9% uptime", null, null, null, null,
+                new MeasurementInput(MeasurementMethod.ManualPercentage, null, null, null, null), null) { ExpectedVersion = version }, Employee(w.Emma)), default)));
+        version = await PlanVersionAsync(w);
+        Ok(await Run(w.Store, db => new RemovePlanObjectiveHandler(db, w.Workforce, w.Store.Tenant, new TestPerformanceAudit(db))
+            .Handle(new RemovePlanObjectiveCommand(w.CycleId, w.SecondId, Employee(w.Emma), version), default)));
+        version = await PlanVersionAsync(w);
+        var draft = Ok(await Run(w.Store, db => new AddPlanObjectiveHandler(db, w.Workforce, w.Store.Tenant)
+            .Handle(new AddPlanObjectiveCommand(w.CycleId, Manual("Write the migration guide", 0m) with { PlanWeight = null, ExpectedVersion = version }, Employee(w.Emma)), default)));
+        // D-40: nobody chose a weight now, so the two goals share 100 evenly and the plan is ready.
+        Assert.Equal([50m, 50m], draft.Objectives.Select(o => o.PlanWeight!.Value).OrderBy(x => x));
+        Assert.All(draft.Objectives, o => Assert.False(o.PlanWeightIsSet));
+        Assert.Equal(100m, draft.Readiness.WeightTotal);
+        foreach (var request in Requests(returned).Where(r => r.State == PlanChangeRequestState.Open)) Ok(await AddressAsync(w, request.Id));
+        Ok(await SubmitAsync(w));
+
+        var seen = Ok(await Run(w.Store, db => new GetPlanForReviewHandler(db, w.Workforce, w.Store.Tenant)
+            .Handle(new GetPlanForReviewQuery(w.CycleId, w.PlanId, Manager(w.Mo)), default)));
+        var changes = seen.ChangesSinceReturn!;
+        var renamed = Assert.Single(changes, c => c.Kind == PlanChanges.Changed);
+        Assert.Equal(w.FirstId, renamed.ObjectiveId);
+        Assert.Equal([(PlanChanges.Title, "Ship the gateway", "Ship the gateway with 99.9% uptime"), (PlanChanges.Weight, "60%", "50%")],
+            renamed.Fields.Select(f => (f.Field, f.Before, f.After)));
+        Assert.Equal("Document the runbook", Assert.Single(changes, c => c.Kind == PlanChanges.Removed).Title);
+        Assert.Equal("Write the migration guide", Assert.Single(changes, c => c.Kind == PlanChanges.Added).Title);
+
+        // A plan never returned has nothing to compare.
+        var other = await ArrangeAsync();
+        var fresh = Ok(await Run(other.Store, db => new GetPlanForReviewHandler(db, other.Workforce, other.Store.Tenant)
+            .Handle(new GetPlanForReviewQuery(other.CycleId, other.PlanId, Manager(other.Mo)), default)));
+        Assert.Null(fresh.ChangesSinceReturn);
+        // Another company's reviewer can't read it.
+        var outside = await Run(other.Store, db => new GetPlanForReviewHandler(db, other.Workforce, other.Store.Tenant)
+            .Handle(new GetPlanForReviewQuery(w.CycleId, w.PlanId, Manager(w.Mo)), default));
+        Assert.True(outside.IsFailure);
     }
 
     [Fact]

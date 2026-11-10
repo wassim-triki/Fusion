@@ -15,9 +15,8 @@
     "baseline": "Baseline",
     "target": "Target",
     "unit": "Unit",
-    "direction": "Direction",
-    "increase": "Increase",
-    "decrease": "Decrease"
+    "fewerIsBetter": "Fewer is better",
+    "moreIsBetter": "More is better"
   },
   "UnitCombobox": {
     "percent": "Percent (%)",

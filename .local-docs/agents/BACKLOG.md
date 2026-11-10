@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-415.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-418.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -28,8 +28,7 @@ None.
 
 ## In review
 
-- [ ] **B-412** Performance's design, checkpoint 3d across Fusion, the goal surface (B-413) and the year's end (B-414) redrawn (child of B-390, listed under it in Ready) · Performance · 2026-11-10
-      Look at: the [explorer](https://claude.ai/artifact/6oAspqyDbNmt1L1G8D97BE) (`plans/B-412-across-fusion.html`, answers in db doc `across/main`; 3c is recorded as D-67–D-75). Goals, You (Planning and Mid-year: the plan as one bar by weight, each goal on the year against its pace; Use the coach's measure on a lane); A goal, opened (Just written: Link and Use this measure; Mid-year: click Build a resilient… in the path to open the company goal, then go back; A company goal; click another lane); The year's end (no tiles; Set up FY2028 goes to setup); Team (Book, Ask for an update); A person's page (your menu, top right); Home (pick a time and Book it, Approve, Ask for an update); HR insights (open a row, Nudge); Competencies (Draft the empty ones, Apply one by one, click a cell to see where it lands; A new company); Setting up a year (drag the steps' edges, then Who's in, Launch). Answer "Is Performance across Fusion right?" and the questions under each screen.
+None.
 
 ## Ready
 
@@ -38,16 +37,18 @@ None.
 From B-331's walk (2026-11-09; the user's words, step by step, in `design/walkthrough-2026-11-09.md`; the B-numbers on notes trace to them). One item per surface: notes are evidence for rethinking the surface as a whole, not a list of fixes; functions sit apart from visuals. (D) = needs discussion.
 
 - [ ] **B-390** Stack 1 · Performance redesigned as a module, functions and visuals together · Performance · 2026-11-09
-          Map done 2026-11-09 (session 2): [plan](plans/B-390-performance-redesign.md), [map](plans/B-390-map.md). Scope settled 2026-11-10 (checkpoint 2): [target brief](plans/B-390-target-brief.md) §7b, decisions D-33–D-42 in `design/decisions.md`; the user's word over everything: remove friction wherever Fusion can do the work (D-40). Stage 3 started: [design direction](plans/B-390-design-direction.md); checkpoint 3a recorded (D-43–D-60); 3b recorded (D-61–D-66; goal surface rejected, B-413); 3c recorded (D-67–D-75; Amira's year's end rejected, B-414); 3d published 2026-11-10 ([explorer](https://claude.ai/artifact/6oAspqyDbNmt1L1G8D97BE), B-412 In review).
+          Map done 2026-11-09 (session 2): [plan](plans/B-390-performance-redesign.md), [map](plans/B-390-map.md). Scope settled 2026-11-10 (checkpoint 2): [target brief](plans/B-390-target-brief.md) §7b, decisions D-33–D-42 in `design/decisions.md`; the user's word over everything: remove friction wherever Fusion can do the work (D-40). Stage 3 started: [design direction](plans/B-390-design-direction.md); checkpoint 3a recorded (D-43–D-60); 3b recorded (D-61–D-66; goal surface rejected, B-413); 3c recorded (D-67–D-75; Amira's year's end rejected, B-414); 3d recorded (D-76–D-87; the goal surface accepted, B-413 closed; the year's end, dashboards, setting up a year, the sidebar's foot and competencies' empty cells go to 3e). Slices laid out: [slices](plans/B-390-slices.md), 3e first, slices 1–10 can start beside it.
           First priority after B-398: Core HR could demo tomorrow, Performance couldn't (user). Not from the ground up: what the module does stays; its functions are cleaned up, fixed and completed, its visuals rewritten the way Core HR's were.
           How, the Core HR rebuild's process again (B-164, files in `archive/plans/B-164-*`): map → target brief and scope page with depth ladders → design direction, then explorers checkpoint by checkpoint until every screen has an accepted design, recorded as decisions (D-43 onwards) → the rebuild in dependency-ordered slices, one session each.
           The user's verdict, at Organization direction right after launch: "I don't think we can save this … the front end for the Performance module is absolutely garbage." Notes for the redesign: the cycle page after launch (what it's for, what to do next); measures ask for a Direction that baseline and target already give; the AI coach works but may not stay as it is; the 1:1 page doesn't tell a manager what to do; an empty first agenda says nothing about why; calibration doesn't explain itself; Performance's Overview can't be trusted.
-  - [ ] **B-412** Performance's design: explorers 3a–3d until every screen has an accepted design, then the slices · Performance · 2026-11-10
-          [Direction](plans/B-390-design-direction.md) §6: 3a style frame (the Year page, Goals › You, writing a review), 3b goals and conversations, 3c reviews and the end of the year, 3d across Fusion; each settles B-397's leftover Fusion-wide rules in context (navigation, type, empty states, panels, icons, your menu) as D-43 onwards. Then dependency-ordered slices, one session each.
-    - [ ] **B-413** The goal surface redrawn from its job: a goal's panel in its three states and the Goals, You page behind it (D-65) · Performance · 2026-11-10
-          User at 3b: the just-written goal's panel and the page behind it "both are ass"; mid-year "isn't as bad, but the underlying choices are bad". Stands: panel in every state (D-61), progress in a dialog (D-63). Redraw before B-406 is sliced; drop the tile header, stacked labelled sections, label/value rows and plain goal cards with a weight. Drawn in 3d: the panel as title, the goal's line against its pace and its story, the path up to the company's goal on top; Goals, You as the plan in one bar by weight and each goal on the year.
-    - [ ] **B-414** The administrator's year's end redrawn without summary tiles (D-75) · Performance · 2026-11-10
-          User at 3c: the three tiles under Set up FY2028 ("FY2027's steps, a year on", "The 3 company goals", "101 people") are "AI slop". Show what setup carries over as the thing itself, or nothing. Drawn in 3d: the next step with FY2028's steps drawn under it, nothing else.
+  - [ ] **B-412** Performance's design: explorers 3a–3e until every screen has an accepted design · Performance · 2026-11-10
+          [Direction](plans/B-390-design-direction.md) §6: 3a–3d recorded (D-43–D-87); 3e next: B-414, B-415, B-416, B-417 in one explorer. Slices laid out in [slices](plans/B-390-slices.md).
+    - [ ] **B-414** The year's end with real figures and charts, and where Fusion's dashboards live (one per module or one across) · Performance, Core HR · 2026-11-10
+          D-75 (no summary tiles) and D-85: at 3d the year's end read "boring, almost nothing to show" next to HR insights, and why the two are apart wasn't clear. The agent decides where dashboards live from research and draws it in 3e; slices 12 and 13 build it.
+    - [ ] **B-415** The sidebar's foot: something that belongs there now your menu is top right (D-82), found from research, not filler · shell · 2026-11-10
+    - [ ] **B-416** Setting up a year redrawn from its job: steps dragged on the year or typed as dates (D-81), no line of steps at the top right (D-87) · Performance · 2026-11-10
+          Slice 12 builds it with B-389's setup bugs.
+    - [ ] **B-417** Competencies' empty cells with a small clean mark instead of "Not set", and where expectations come from (written, drafted from jobs, a file) (D-86) · Performance · 2026-11-10
   - [ ] **B-405** The year on one page (hero H1, shines first): the Year page for everyone (next step, team, company for HR, the year replayed on its timeline), the phase from what happened and never backwards (D-34), HR moves the year on with a preview, nudges from the Year page, closing with unfinished goals carried into next year's drafts, HR insights with each figure opening its people and this year against last · Performance · 2026-11-10
           Scope: Y2, Y3 at 3; Y4, Y5 at 2; S4 at 3; replaces Overview and the cycle page (D-33). Folds in B-392's phase and round-closing items. Unblocks B-395 (a year demoed in one sitting).
   - [ ] **B-406** Goals from the company down (hero H2): one Goals place (Company, units, You, Your team, the map as a view), company and unit goals at a glance, measures read back as sentences with direction from the numbers, the plan with even weights and its line up to the company's, approval from Home and Team with what changed, progress updated from the goal, the coach's quiet suggestions, goal grades from the measure (D-38) · Performance · 2026-11-10
@@ -76,6 +77,7 @@ From B-331's walk (2026-11-09; the user's words, step by step, in `design/walkth
           Bug: in the population table the Reviewer column's avatar is drawn differently from the Employee column's; style it the same.
           Notes, Review: after confirming the exclusions the admin still clicks Continue by hand to reach Review; Review recaps the setup and offers Launch.
           Notes, after launch: it lands on the cycle page (`/performance/cycle`), "abysmal"; what the page should be is open; not discussed now (B-390).
+          2026-11-10, 3d: the setup surface itself now reads thin to the user (D-87): redrawn in 3e (B-416), built in slice 12 with these bugs; launch lands on the Year (D-84).
           Notes: after launch nothing says what to do next; the administrator couldn't find where to set the company's direction (organization objectives) and typed `/performance/goals` by hand.
 - [ ] **B-396** Stack 2 · Core HR after the walk · Core HR · 2026-11-09
           Functions apart from visuals (user, 2026-11-09). The surfaces follow B-397's foundation once it's decided in B-390's first chapter.

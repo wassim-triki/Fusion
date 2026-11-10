@@ -117,6 +117,7 @@ Rule: **sans for the system, serif for the human,** visible but scarce. If unsur
 - **One canonical record per object,** addressed by its owning context (e.g. `{cycleId, objectiveId}`), never by "current cycle". Reading a record is not entering the workspace that manages it.
 - Performance's shape: Year · Goals · 1:1s · Feedback · Reviews (D-33); its settings live in Fusion Settings. 1:1s and Feedback belong to people, not years.
 - **Modules in one sidebar** (D-45): each module is a group that folds, open by default; Home and Settings sit outside the groups. No module switcher.
+- **Your menu** (D-82): your face, top right (profile, notifications, language, theme, sign out). The sidebar's foot holds only what earns its place there (B-415).
 - **A record opened from a page** (D-61): a panel over the page it was opened from, Escape and the scrim closing it; the quick look for a record. A goal opens this way in every state, a company goal included.
 - **A short task** (D-63): a small dialog over the page (a progress update), saved with a toast and undo.
 - **Steps of a flow** (D-67): where a person stands in a flow they go through (a review round) is a line of its steps, the current one lit with who holds it.
@@ -224,11 +225,11 @@ Selection is an amber tint everywhere. A real one-off toggle (a chart node, a si
 
 **Overlays by task depth.** Dialog: confirmation, short focused tasks, compact edits. Drawer: contextual inspection or light editing without losing the list. Dedicated page: deep workflows, complex editing, multi-section tasks. Don't force complex forms into dialogs.
 
-**Status.** Consistent across modules. No generic badges (D-52): state is carried by where a thing sits (a step, a group), a bar's colour, or the word alone in its state colour, no glyph beside it unless the icon set is truly good (D-54); pills are for things that are pills (filters, a chosen value), never sprinkled on rows as status. Routine success is transient, not a permanent badge. Important state never hides in muted metadata.
+**Status.** Consistent across modules. No generic badges (D-52): state is carried by where a thing sits (a step, a group), a bar's colour, or its word in its state colour with its Hugeicons glyph (D-78: On track, At risk, Off track); an empty bar is striped, never a flat track (D-83); pills are for things that are pills (filters, a chosen value), never sprinkled on rows as status. Routine success is transient, not a permanent badge. Important state never hides in muted metadata.
 
 **Visuals over labels.** Prefer a shape, mark, diagram, chip or state that registers instantly over text that must be read: a timeline over a date range, a filled segment over "2 of 3". The visual must encode meaning; a glyph beside every label is decoration.
 
-**Icons.** One set per app through its adapter (Performance and Platform: Hugeicons via `src/lib/icons.tsx`, lint-guarded; DS chrome stays Lucide for now). Never mix sets in one composition. An icon must aid recognition, state, navigation or discoverability, or it goes. Same concept, same icon everywhere. Default `size-4`, baseline-aligned, text-colored unless semantic. Unfamiliar actions keep a visible label.
+**Icons.** Hugeicons everywhere (D-78), through each app's adapter (`src/lib/icons.tsx`, lint-guarded); Core HR, the shell and DS chrome move off Lucide in the frame slice. Tabs carry icons. Never mix sets in one composition. An icon must aid recognition, state, navigation or discoverability, or it goes. Same concept, same icon everywhere. Default `size-4`, baseline-aligned, text-colored unless semantic. Unfamiliar actions keep a visible label.
 
 **Motion is functional.** It shows what changed, preserves orientation, or answers an action: expand and collapse, overlays, state changes, reordering, progress, revealing a control when it's needed (progressive disclosure). Use the DS duration and easing tokens (`--duration-*`, `--ease-*`) and plain `animate-*` utilities. Quick, controlled, coherent; never slow decoration, bounce, simultaneous unrelated movement, or anything that delays interaction. Nothing floats up on hover and nothing moves perpetually.
 

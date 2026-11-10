@@ -119,6 +119,8 @@ Rule: **sans for the system, serif for the human,** visible but scarce. If unsur
 - **Modules in one sidebar** (D-45): each module is a group that folds, open by default; Home and Settings sit outside the groups. No module switcher.
 - **A record opened from a page** (D-61): a panel over the page it was opened from, Escape and the scrim closing it; the quick look for a record. A goal opens this way in every state, a company goal included.
 - **A short task** (D-63): a small dialog over the page (a progress update), saved with a toast and undo.
+- **Steps of a flow** (D-67): where a person stands in a flow they go through (a review round) is a line of its steps, the current one lit with who holds it.
+- **Can't be taken back** (D-72): previewed in place on the page it changes (who it reaches, with faces and counts, and that it's final), then confirmed there; no dialog. **Long work:** a live count as it happens, faces landing as each one is done.
 
 **Responsive:** preserve the primary task and critical actions; reflow before shrinking text; collapse secondary controls; tables scroll inside their frame, never the page; no essential info behind unexplained icons.
 
@@ -212,6 +214,7 @@ Selection is an amber tint everywhere. A real one-off toggle (a chart node, a si
 - **Empty:** a precise state, one short line if needed, one relevant action. No product explanations, oversized illustrations or motivational filler.
 - **First use** (D-48, D-56): a page before anything exists shows a ghost of what fills in, in its real shape and with what's already true (everyone in the first step, the later steps as empty outlines), never a blank page or a sentence about it.
 - **Waiting on someone** (D-49): who it's with, since when, and a nudge.
+- **No summary tiles** (D-75): never a row of tiles of icon, bold title and muted caption (under a next step, a header or anywhere); show the thing itself or nothing.
 - **Fusion's work, marked** (D-50): the sparkle for AI only; anything else Fusion filled in says so in a few quiet words ("Shared evenly", "From the measure"). A goal's grade shows as the number with a measure icon whose tooltip gives the measure's words (D-51).
 - **Failure:** one family, `PageState`: plain words, no status codes, one small drawing with one movement, a next step, the frame kept around it. Only failure pages get a drawing; ordinary empty states don't.
 - **Error:** what happened, what it affects, what to do. No vague "Something went wrong" when the cause is known.

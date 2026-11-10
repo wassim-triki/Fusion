@@ -15,6 +15,7 @@
 - [Presentation diagrams](presentation-diagrams.md) — `.local-docs/diagrams/`, Mermaid + PlantUML use-case, `-v0` versioning.
 - [Audit/history deferred](audit-history-deferred.md) — change-history UI deferred to a unified Perf+Core audit integration.
 
+- [Artifacts: one account](artifacts-one-account.md) — explorers and answers live in the publishing claude.ai account; on "not found" ask for `/login`; snapshot answers to `plans/*.answers.json`.
 - [Cloud sessions, fallback](cloud-sessions-partial.md) — local is normal; cloud occasional (B-158); home repo is the fork `wassim-triki/Fusion` (`origin`), org repo read-only `upstream`.
 
 ## Design system & doctrine

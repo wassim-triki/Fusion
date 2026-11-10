@@ -94,7 +94,7 @@ export function HomePreview({ draft, firstName, label }: { draft: BrandDraftView
   return (
     <ScaledScreen draft={draft} label={label}>
       <div className="flex h-full">
-        <aside className="dark flex w-[264px] shrink-0 flex-col border-e border-border bg-section px-3 pt-4 text-foreground">
+        <aside className="flex w-[264px] shrink-0 flex-col border-e border-sidebar-border bg-sidebar px-3 pt-4 text-sidebar-foreground">
           <div className="flex items-center gap-2.5 px-1 pb-4">
             <Mark draft={draft} className="size-9 rounded-detail text-base" />
             <span className="flex min-w-0 flex-col">
@@ -148,7 +148,7 @@ export function HomePreview({ draft, firstName, label }: { draft: BrandDraftView
                 ))}
                 <h2 className="mt-2 type-section-title">{text.yourTeam}</h2>
                 <div className="flex -space-x-2 rtl:space-x-reverse">
-                  {["#5b8def", "#e0708a", "#3fb68b", "#c08a3e"].map((tone) => (
+                  {["#5b8def", "#e0708a", "#3fb68b", "#e2b021"].map((tone) => (
                     <span key={tone} className="size-9 rounded-full border-2 border-card" style={{ background: tone }} />
                   ))}
                 </div>

@@ -429,7 +429,7 @@ function ReportEditor({
   return (
     <PageContainer width="wide" className="px-10 pt-9 pb-14">
       <div className="grid items-start gap-9 lg:grid-cols-[260px_minmax(0,1fr)]">
-        <nav aria-label={t("title")} className="rounded-surface bg-section p-4">
+        <nav aria-label={t("title")} className="rounded-surface bg-card p-4">
           <div className="px-2 pb-5 pt-1">
             <h2 className="type-section-title">{t("title")}</h2>
             <p className="mt-1 type-meta text-muted-foreground">{t("libraryHint")}</p>
@@ -446,7 +446,7 @@ function ReportEditor({
                   "flex min-w-0 items-center justify-between gap-2 rounded-control px-2.5 py-1.5 transition-colors",
                   reportId === id
                     ? "bg-primary-tint type-label text-primary-ink ring-1 ring-primary/30"
-                    : "type-body text-foreground hover:bg-card"
+                    : "type-body text-foreground hover:bg-inlay"
                 )}
               >
                 <span className="flex min-w-0 items-center gap-3">
@@ -471,11 +471,11 @@ function ReportEditor({
                   "flex min-w-0 items-center justify-between gap-2 rounded-control px-2.5 py-1.5 transition-colors",
                   reportId === item.id
                     ? "bg-primary-tint type-label text-primary-ink ring-1 ring-primary/30"
-                    : "type-body text-foreground hover:bg-card"
+                    : "type-body text-foreground hover:bg-inlay"
                 )}
               >
                 <span className="flex min-w-0 items-center gap-3">
-                  <span className={cn("grid size-8 shrink-0 place-items-center rounded-control-sm", reportId === item.id ? "bg-primary/15 text-primary-ink" : "bg-card text-muted-foreground")}><Bookmark aria-hidden="true" className="size-4" /></span>
+                  <span className={cn("grid size-8 shrink-0 place-items-center rounded-control-sm", reportId === item.id ? "bg-primary/15 text-primary-ink" : "bg-inlay text-muted-foreground")}><Bookmark aria-hidden="true" className="size-4" /></span>
                   <span className="min-w-0 break-words">{item.name}</span>
                 </span>
                 {reportId === item.id && <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-primary" />}

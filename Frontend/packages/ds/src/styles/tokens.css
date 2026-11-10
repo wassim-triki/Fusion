@@ -18,29 +18,29 @@
     --font-heading: var(--font-sans);
     --font-editorial: "Lora Variable", "Noto Sans Arabic Variable", Georgia, "Times New Roman", serif;
     --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-    /* Frames have no border (DESIGN.md §5), so light mode carries every step in tone: a grey canvas, sections a
-       step up, cards and overlays true white (B-219). */
-    --background: oklch(0.955 0.002 286.375);
+    /* D-32: frames have no border (DESIGN.md §5), so tone carries every step. The page and its bands (heroes) are
+       one soft tone, cards a step up, never stark white beside the rest; the inlay, set into a card, drops below it. */
+    --background: oklch(0.975 0.002 286.375);
     --foreground: oklch(0.141 0.005 285.823);
-    --card: oklch(1 0 0);
+    --card: oklch(0.993 0.001 286.375);
     --card-foreground: oklch(0.141 0.005 285.823);
-    --popover: oklch(1 0 0);
+    --popover: oklch(0.997 0.001 286.375);
     --popover-foreground: oklch(0.141 0.005 285.823);
-    /* Surface tone ladder (DESIGN.md §5): canvas → section → card, each nested level one step lighter. Light
-       mode can't lift past white, so the inlay, set into a white card, drops to a near-white tint. */
-    --section: oklch(0.977 0.001 286.375);
-    --inlay: oklch(0.967 0.001 286.375);
+    /* Surface tone ladder (DESIGN.md §5): page = band (section) → card → inlay. */
+    --section: var(--background);
+    --inlay: oklch(0.958 0.002 286.375);
     --primary: oklch(0.852 0.199 91.936);
-    --primary-foreground: oklch(0.421 0.095 57.708);
+    /* D-95: ink on the yellow, never brown. */
+    --primary-foreground: oklch(0.21 0.006 285.885);
     /* Amber icon tiles: light amber is pale on white, so its tint and ring sit a step firmer; the ink is the same amber hue, slightly deeper. */
     --primary-tint: color-mix(in oklab, var(--primary) 22%, transparent);
     --primary-ring: color-mix(in oklab, var(--primary) 42%, transparent);
     --primary-ink: oklch(0.78 0.18 91.936); /* the brand amber, a step deeper for contrast on white */
-    --secondary: oklch(0.967 0.001 286.375);
+    --secondary: oklch(0.955 0.002 286.375);
     --secondary-foreground: oklch(0.21 0.006 285.885);
-    --muted: oklch(0.967 0.001 286.375);
+    --muted: oklch(0.955 0.002 286.375);
     --muted-foreground: oklch(0.552 0.016 285.938);
-    --accent: oklch(0.967 0.001 286.375);
+    --accent: oklch(0.955 0.002 286.375);
     --accent-foreground: oklch(0.21 0.006 285.885);
     --destructive: oklch(0.577 0.245 27.325);
     /* Semantic state families — normalized from Fusion's existing state colors.
@@ -53,16 +53,18 @@
     --warning-subtle: color-mix(in oklab, var(--warning) 15%, transparent);
     --info: oklch(0.55 0.13 264);
     --info-subtle: color-mix(in oklab, var(--info) 14%, transparent);
-    --border: oklch(0.92 0.004 286.32);
-    --input: oklch(0.92 0.004 286.32);
+    --border: oklch(0.915 0.004 286.32);
+    --input: oklch(0.915 0.004 286.32);
     /* Fields are carved in: a shade darker than whatever surface they sit on (B-227). */
     --field: oklch(0 0 0 / 3%);
     --ring: oklch(0.705 0.015 286.067);
-    --chart-1: oklch(0.879 0.169 91.605);
-    --chart-2: oklch(0.769 0.188 70.08);
-    --chart-3: oklch(0.666 0.179 58.318);
-    --chart-4: oklch(0.555 0.163 48.998);
-    --chart-5: oklch(0.473 0.137 46.201);
+    /* D-95: on light surfaces the amber family darkens into brown, so the series stay a clear yellow-gold and step
+       into zinc ink beyond the second. */
+    --chart-1: oklch(0.86 0.18 91.6);
+    --chart-2: oklch(0.79 0.17 84);
+    --chart-3: oklch(0.7 0.012 286);
+    --chart-4: oklch(0.54 0.014 286);
+    --chart-5: oklch(0.36 0.01 286);
     /* Identity hues for categories people tell apart by colour (company values). Never state or emphasis. */
     --identity-1: oklch(0.52 0.15 255);
     --identity-2: oklch(0.52 0.1 185);
@@ -71,13 +73,13 @@
     --identity-5: oklch(0.55 0.18 340);
     --identity-6: oklch(0.58 0.15 50);
     --radius: 0.75rem;
-    --sidebar: oklch(0.985 0 0);
+    --sidebar: oklch(0.965 0.002 286.375);
     --sidebar-foreground: oklch(0.141 0.005 285.823);
-    --sidebar-primary: oklch(0.681 0.162 75.834);
-    --sidebar-primary-foreground: oklch(0.987 0.026 102.212);
-    --sidebar-accent: oklch(0.967 0.001 286.375);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-accent: oklch(0.945 0.002 286.375);
     --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-    --sidebar-border: oklch(0.92 0.004 286.32);
+    --sidebar-border: oklch(0.915 0.004 286.32);
     --sidebar-ring: oklch(0.705 0.015 286.067);
     /* Semantic elevation (DESIGN.md §8, §33.6). Two tiers only — do not add
        arbitrary per-component shadows. `raised` is for genuinely lifted content
@@ -99,24 +101,25 @@
 
 .dark {
     color-scheme: dark;
-    --background: oklch(0.141 0.005 285.823);
+    /* D-32: graphite, off near-black; the page and its bands one tone, each nested level a step lighter. */
+    --background: oklch(0.215 0.006 285.885);
     --foreground: oklch(0.985 0 0);
-    --card: oklch(0.21 0.006 285.885);
+    --card: oklch(0.255 0.006 285.885);
     --card-foreground: oklch(0.985 0 0);
-    --section: oklch(0.175 0.006 285.9); /* page-level frames */
-    --inlay: oklch(0.235 0.006 285.9); /* blocks set into a card */
-    --popover: oklch(0.245 0.006 285.95); /* lifted off cards so overlays read as a layer */
+    --section: var(--background); /* bands: the page's own tone */
+    --inlay: oklch(0.29 0.006 285.9); /* blocks set into a card */
+    --popover: oklch(0.3 0.006 285.95); /* lifted off cards so overlays read as a layer */
     --popover-foreground: oklch(0.985 0 0);
     --primary: oklch(0.795 0.184 86.047);
     --primary-foreground: oklch(0.421 0.095 57.708);
     --primary-tint: color-mix(in oklab, var(--primary) 10%, transparent);
     --primary-ring: color-mix(in oklab, var(--primary) 20%, transparent);
     --primary-ink: var(--primary);
-    --secondary: oklch(0.274 0.006 286.033);
+    --secondary: oklch(0.32 0.006 286.033);
     --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.274 0.006 286.033);
-    --muted-foreground: oklch(0.705 0.015 286.067);
-    --accent: oklch(0.274 0.006 286.033);
+    --muted: oklch(0.32 0.006 286.033);
+    --muted-foreground: oklch(0.72 0.015 286.067);
+    --accent: oklch(0.32 0.006 286.033);
     --accent-foreground: oklch(0.985 0 0);
     --destructive: oklch(0.704 0.191 22.216);
     /* Lighter state colors for legibility on dark surfaces; subtle tints inherit
@@ -139,11 +142,11 @@
     --identity-4: oklch(0.75 0.14 295);
     --identity-5: oklch(0.76 0.15 340);
     --identity-6: oklch(0.78 0.13 60);
-    --sidebar: oklch(0.21 0.006 285.885);
+    --sidebar: oklch(0.2 0.006 285.885);
     --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.795 0.184 86.047);
-    --sidebar-primary-foreground: oklch(0.987 0.026 102.212);
-    --sidebar-accent: oklch(0.274 0.006 286.033);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-accent: oklch(0.27 0.006 286.033);
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.552 0.016 285.938);

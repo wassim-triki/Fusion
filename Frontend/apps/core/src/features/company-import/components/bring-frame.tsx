@@ -77,7 +77,7 @@ export function BringFrame({ data }: { data: CompanyImportDto }) {
           </h1>
         </header>
 
-        <section className="grid gap-6 rounded-surface bg-section px-8 pb-7 pt-8" aria-busy={!done && !stopped} aria-live="polite">
+        <section className="grid gap-6 rounded-surface bg-card px-8 pb-7 pt-8" aria-busy={!done && !stopped} aria-live="polite">
           <div className="flex flex-wrap items-start justify-center gap-x-8 gap-y-6">
             {groups.map((group) => (
               <div key={group.name} className="grid max-w-[15rem] gap-2">

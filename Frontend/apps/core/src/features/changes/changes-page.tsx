@@ -53,8 +53,8 @@ export function ChangesPage() {
       ) : !list.data ? (
         <div className="grid gap-2"><Skeleton className="h-[76px] rounded-surface" /><Skeleton className="h-[76px] rounded-surface" /></div>
       ) : list.data.length === 0 ? (
-        <div className="grid justify-items-center gap-3 rounded-surface bg-section px-6 py-14 text-center">
-          <span className="grid size-11 place-items-center rounded-full bg-card"><Inbox aria-hidden className="size-5 text-muted-foreground" /></span>
+        <div className="grid justify-items-center gap-3 rounded-surface bg-card px-6 py-14 text-center">
+          <span className="grid size-11 place-items-center rounded-full bg-inlay"><Inbox aria-hidden className="size-5 text-muted-foreground" /></span>
           <p className="type-body text-muted-foreground">{view === "pending" ? t("emptyWaiting") : t("emptyAnswered")}</p>
         </div>
       ) : (

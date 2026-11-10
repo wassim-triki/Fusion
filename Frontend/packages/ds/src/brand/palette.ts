@@ -11,17 +11,17 @@ export type BrandMode = "light" | "dark";
 const FUSION_TOKENS: Record<BrandMode, BrandTokens> = {
   light: {
     primary: "oklch(0.852 0.199 91.936)",
-    primaryForeground: "oklch(0.421 0.095 57.708)",
+    primaryForeground: "oklch(0.21 0.006 285.885)",
     primaryInk: "oklch(0.78 0.18 91.936)",
-    sidebarPrimary: "oklch(0.681 0.162 75.834)",
-    sidebarPrimaryForeground: "oklch(0.987 0.026 102.212)",
+    sidebarPrimary: "oklch(0.852 0.199 91.936)",
+    sidebarPrimaryForeground: "oklch(0.21 0.006 285.885)",
   },
   dark: {
     primary: "oklch(0.795 0.184 86.047)",
     primaryForeground: "oklch(0.421 0.095 57.708)",
     primaryInk: "oklch(0.795 0.184 86.047)",
     sidebarPrimary: "oklch(0.795 0.184 86.047)",
-    sidebarPrimaryForeground: "oklch(0.987 0.026 102.212)",
+    sidebarPrimaryForeground: "oklch(0.421 0.095 57.708)",
   },
 };
 
@@ -31,8 +31,8 @@ const FUSION_WARNING: Record<BrandMode, string> = {
   dark: FUSION_TOKENS.dark.primary,
 };
 
-/** The surfaces text in the colour sits on: white cards in light mode, the dark card in dark mode. */
-const SURFACE: Record<BrandMode, string> = { light: "#ffffff", dark: "#18181b" };
+/** The surfaces text in the colour sits on: the card in each theme (D-32). */
+const SURFACE: Record<BrandMode, string> = { light: "#fdfdfd", dark: "#222226" };
 const WHITE = "#ffffff";
 const INK = "#09090b";
 

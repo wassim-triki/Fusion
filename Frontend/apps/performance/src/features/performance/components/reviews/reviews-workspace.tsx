@@ -453,10 +453,10 @@ function RunningRoundCard({ round, cycleId, cycleEnd }: { round: ReviewsWorkspac
     ...(cycleEnd ? [{ label: t("cycleEnds"), detail: dayLabel(cycleEnd, format.locale), state: "todo" } as Step] : []),
   ];
   return (
-    <section aria-label={t("runningRound")} className="rounded-surface bg-section p-6">
+    <section aria-label={t("runningRound")} className="rounded-surface bg-card p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-4">
-          <span className="flex size-11 items-center justify-center rounded-control bg-primary-tint text-primary"><Layers className="size-5" aria-hidden /></span>
+          <span className="flex size-11 items-center justify-center rounded-control bg-primary-tint text-primary-ink"><Layers className="size-5" aria-hidden /></span>
           <div className="min-w-0">
             <p className="type-meta text-muted-foreground">{t("runningLaunched", { dayLabel: dayLabel(round.launchedAt?.slice(0, 10), format.locale) })}</p>
             <h2 className="mt-1 type-page-title text-foreground">{round.name}</h2>

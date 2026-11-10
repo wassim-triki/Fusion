@@ -1019,7 +1019,7 @@ function ContextHeader({
 }) {
   const t = useTranslations("goals.ContextHeader");
   return (
-    <section className="flex items-center gap-4 rounded-surface bg-section p-4 sm:px-5">
+    <section className="flex items-center gap-4 rounded-surface bg-card p-4 sm:px-5">
       <span
         aria-hidden
         className="flex size-11 shrink-0 items-center justify-center rounded-control border border-primary-ring bg-primary-tint type-subsection-title text-primary-ink"

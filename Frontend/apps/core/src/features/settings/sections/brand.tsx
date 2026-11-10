@@ -340,7 +340,7 @@ export function BrandSettings({ section }: { section: FusionSettingsSection }) {
               </Control>
             </div>
 
-            <div className="flex flex-col gap-4 rounded-surface bg-section p-4">
+            <div className="flex flex-col gap-4 rounded-surface bg-card p-4">
               <Segmented
                 label={t("preview")}
                 value={preview}

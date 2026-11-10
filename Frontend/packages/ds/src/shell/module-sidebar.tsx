@@ -79,7 +79,7 @@ export function ModuleSidebar({
       <aside
         data-collapsed={collapsed}
         className={cn(
-          "dark relative flex h-screen shrink-0 flex-col border-e border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200",
+          "relative flex h-screen shrink-0 flex-col border-e border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200",
           collapsed ? "w-[68px]" : "w-[264px]"
         )}
       >

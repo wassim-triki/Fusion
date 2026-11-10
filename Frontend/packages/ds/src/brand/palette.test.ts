@@ -30,8 +30,8 @@ describe("brand palette", () => {
 
   it("lifts a colour too dark to see on dark surfaces", () => {
     const dark = brandTokens("#14213d", "dark");
-    expect(contrastRatio(dark.primary, "#18181b")).toBeGreaterThanOrEqual(CONTROL_CONTRAST);
-    expect(contrastRatio(dark.primaryInk, "#18181b")).toBeGreaterThanOrEqual(TEXT_CONTRAST);
+    expect(contrastRatio(dark.primary, "#222226")).toBeGreaterThanOrEqual(CONTROL_CONTRAST);
+    expect(contrastRatio(dark.primaryInk, "#222226")).toBeGreaterThanOrEqual(TEXT_CONTRAST);
     expect(contrastRatio(dark.primary, dark.primaryForeground)).toBeGreaterThanOrEqual(TEXT_CONTRAST);
   });
 

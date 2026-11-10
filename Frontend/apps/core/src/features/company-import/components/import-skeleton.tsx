@@ -58,7 +58,7 @@ export function ImportSkeleton({ step }: { step: ImportStep }) {
             <Skeleton className="h-4 w-48" />
             <Skeleton className="h-10 w-96 max-w-full" />
           </div>
-          <div className="grid gap-6 rounded-surface bg-section px-8 pb-7 pt-8">
+          <div className="grid gap-6 rounded-surface bg-card px-8 pb-7 pt-8">
             <div className="flex flex-wrap justify-center gap-x-8 gap-y-6">
               {[0, 1, 2].map((i) => (
                 <div key={i} className="grid w-48 gap-2">

@@ -234,7 +234,7 @@ export function RolePreview({
       : say("roles.preview.nobody", { role: roleName });
 
   return (
-    <aside aria-label={say("roles.preview.viewer")} className="grid gap-3 rounded-surface bg-section p-4 lg:sticky lg:top-5">
+    <aside aria-label={say("roles.preview.viewer")} className="grid gap-3 rounded-surface bg-card p-4 lg:sticky lg:top-5">
       <div className="flex min-h-[34px] items-center justify-between gap-3">
         <h2 className="min-w-0 truncate type-subsection-title">{title}</h2>
         {viewer && (people.length > 1 || canSearch) ? (

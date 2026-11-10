@@ -214,7 +214,7 @@ function ModuleMark({ module, emphasis }: { module: Pick<FusionSidebarModule, "k
     <span
       className={cn(
         "grid size-[30px] shrink-0 place-items-center rounded-detail",
-        emphasis ? "bg-primary/15 text-primary" : "bg-inlay text-muted-foreground",
+        emphasis ? "bg-primary-tint text-primary-ink" : "bg-inlay text-muted-foreground",
       )}
     >
       <Icon className="size-4" />
@@ -342,7 +342,7 @@ export function FusionSidebar({
                   {description ? <span className="truncate text-xs text-muted-foreground">{description}</span> : null}
                 </span>
                 <Count value={module.count} collapsed={false} />
-                {active ? <Check aria-label={t("currentModule")} className="size-4 shrink-0 text-primary" /> : null}
+                {active ? <Check aria-label={t("currentModule")} className="size-4 shrink-0 text-primary-ink" /> : null}
               </a>
             </DropdownMenuItem>
           );
@@ -358,7 +358,7 @@ export function FusionSidebar({
         lang={locale}
         aria-label={t("navigation")}
         className={cn(
-          "dark relative flex h-screen shrink-0 flex-col border-e border-border bg-section text-foreground",
+          "relative flex h-screen shrink-0 flex-col border-e border-sidebar-border bg-sidebar text-sidebar-foreground",
           animate && "transition-[width] duration-200",
           collapsed ? "w-[68px]" : "w-[264px]",
         )}

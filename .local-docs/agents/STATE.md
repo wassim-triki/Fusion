@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** B-419 built and In review: the People chart reads its dated history once and builds every slider date and Replay step in the browser (no request per date), the slider follows the hand again (Next `replaceState` fix), 2026-11-10.
+**Last finished:** B-370 + B-418's colour half built and In review: D-32's surface tones in both themes, D-95's light amber (no brown), sidebar follows the theme, 2026-11-10.
 
 ## Active work
 
@@ -14,5 +14,4 @@ Session queue: a fresh session takes the first open row, sets it as Active work 
 
 | # | Session | Board items | Effort | Notes |
 |---|---|---|---|---|
-| 1 | Apply D-32 colours | B-370, B-418 (its colour half) | medium | `Frontend/packages/ds/src/styles/tokens.css` light and dark per D-32 (values in the decision; the study's tokens in `plans/B-397-colour.html`), then a pass over surfaces that hard-code tones (bands, sidebar, the person page hero) so the hero and the page share one tone; the accent's light-mode value per D-95 (no brown: charts, highlights). Visual-only: no tests beyond the hook; screens only if asked. |
 | 2+ | Performance's slices 1–13 | B-405–B-411, B-392, B-389, B-418 (edges) | per slice | One row of `plans/B-390-slices.md` per session, in its order; Insights is slice 13. Slice 1 (the frame) after row 1's colours. Port the explorers' drawings literally (memory `port-accepted-drawings-closely`); every slice holds D-95 (no brown in light mode, sections' edges lined up). |

@@ -32,7 +32,7 @@ const TINTS = [
   "bg-sky-500/12 text-sky-700 dark:text-sky-300",
   "bg-violet-500/12 text-violet-700 dark:text-violet-300",
   "bg-emerald-500/12 text-emerald-700 dark:text-emerald-300",
-  "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+  "bg-primary-tint text-foreground dark:text-primary-ink",
   "bg-rose-500/12 text-rose-700 dark:text-rose-300",
   "bg-teal-500/12 text-teal-700 dark:text-teal-300",
 ];

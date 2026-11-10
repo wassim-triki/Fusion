@@ -28,6 +28,12 @@ None.
 
 ## In review
 
+- [ ] **B-370** Surface colours in both themes (D-32), with **B-418**'s colour half (D-95, no brown in light mode) · `@repo/ds`, all our apps · 2026-11-10
+      Built 2026-11-10 (LOG); listed under B-397 › Foundation too. Look at, in light and in dark (your menu › theme), http://localhost:3000 as Amira in the walkthrough company (`amira.khelifi@walkthrough-202611082348.example.test`, local password):
+      - Aicha's page (`/core/people`, open Aicha): the hero is the page's own tone, cards a step up; dark is graphite, not near-black; light has no stark white.
+      - The sidebar now follows the theme (light in light mode); the active item and the company's mark.
+      - Core HR's front page, Add a person, Reports' list, Settings › Brand and Roles' preview: frames that were bands now read as cards.
+      - Any yellow button: dark ink text, not brown; charts beyond two series step from gold to grey.
 - [ ] **B-399** Core HR functions the walk found broken or missing · Core HR, Identity · 2026-11-09
       Parent: B-396 (Stack 2 · Core HR › Functions). Built 2026-11-10; only the hand can judge the three below, the rest is settled by tests (LOG).
       Look at, as Amira in the walkthrough company (`amira.khelifi@walkthrough-202611082348.example.test`, local password), http://localhost:3000:
@@ -147,10 +153,10 @@ From B-331's walk (2026-11-09; the user's words, step by step, in `design/walkth
           Decisions and rules are settled first, on their own page, per situation: [page](https://claude.ai/artifact/Kq91ddwjiTPb4BrEEVzCLF), [plan](plans/B-397-foundation.md), waiting on the user; applying them to Core HR comes with B-396; Home after Performance, since it surfaces what matters from both.
   - **Foundation**
     - [ ] **B-370** Surface colours in both themes, product-wide: light mode first, then dark · `@repo/ds`, all our apps · 2026-11-09
-          Decided 2026-11-09: D-32 in `design/decisions.md` (dark graphite; light, the hero and the page one soft tone, cards a step up). Left: apply it in `tokens.css` and check every surface in both themes.
+          Decided 2026-11-09: D-32 in `design/decisions.md` (dark graphite; light, the hero and the page one soft tone, cards a step up). Applied 2026-11-10: In review above.
           Notes: light mode is all over the place; the page background is too grey (a dark white); the person page hero's light background would suit the app's body, with slightly different tones for sections. On the import's done page the main section's tone is right and the sections below lift lighter in dark mode (the opposite in light). Unify across the apps, then do the same for dark.
     - [ ] **B-418** Nothing brown in light mode, sections' edges lined up (D-95): the amber that suits dark (chart bars, highlights, accents) gets a light-mode value that stays a clear yellow-gold; every page's sections share edges with no gaps or misalignment, by arranging content, never filler · `@repo/ds`, all our apps · 2026-11-10
-          The user, at 3e (the Insights charts in light mode): "I don't like that the right bar graphs and some stuff is colored brown … no empty spaces or misalignment in the edges of sections". The colour goes in with B-370 (STATE row 3); the edges rule is held in every Performance slice and in B-396's Core HR pass.
+          The user, at 3e (the Insights charts in light mode): "I don't like that the right bar graphs and some stuff is colored brown … no empty spaces or misalignment in the edges of sections". The colour went in with B-370 (In review); the edges rule is held in every Performance slice and in B-396's Core HR pass.
     - [ ] **B-376** Empty states across the product are mostly bad: grey words in a box ("No cycle", "No review", "Nobody is starting soon", the Organization Plan); give them real design · all our apps · 2026-11-09
     - [ ] **B-379** Loading shapes across the product: almost every surface shows a loading shape that doesn't match it, at least on first load (Home, Brand, the import, Organization, Roles, …); one pass over all of them · all our apps · 2026-11-09
     - [ ] **B-347** No AI tells: no em dashes anywhere (browser tab titles first), no "100 people · 42 units" style stat lines strung with dots (show the information another way, if it's needed at all), no fluffy wording ("the whole story" for a link to the Job tab: say it straight), and a sweep for the other tells · all our apps · 2026-11-09

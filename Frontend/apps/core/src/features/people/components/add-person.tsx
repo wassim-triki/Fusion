@@ -534,7 +534,7 @@ export default function AddPerson() {
   );
 
   const band = (
-    <section aria-labelledby="add-title" className="grid gap-x-7 rounded-surface bg-section px-8 pt-7 pb-6 sm:grid-cols-[8rem_minmax(0,1fr)]">
+    <section aria-labelledby="add-title" className="grid gap-x-7 rounded-surface bg-card px-8 pt-7 pb-6 sm:grid-cols-[8rem_minmax(0,1fr)]">
       <h1 id="add-title" className="sr-only">{name || t("newPerson")}</h1>
       {name ? (
         <PersonAvatar name={name} size="profile" className="mb-4 size-32 font-editorial text-[2.75rem] sm:mb-0" />
@@ -702,7 +702,7 @@ export default function AddPerson() {
 
   const managerFirst = manager?.displayName.split(" ")[0] ?? "";
   const offer = roles.length && manager ? (
-    <section className="grid gap-3 rounded-surface bg-section px-6 pt-5.5 pb-6" aria-labelledby="add-hiring">
+    <section className="grid gap-3 rounded-surface bg-card px-6 pt-5.5 pb-6" aria-labelledby="add-hiring">
       <h2 id="add-hiring" className="type-section-title">{t("hiring", { name: managerFirst })}</h2>
       {roles.map((item) => {
         const on = item.id === form.openRoleId;
@@ -715,7 +715,7 @@ export default function AddPerson() {
             onClick={() => toggleRole(item.id)}
             className={cn(
               "flex w-full animate-in items-center gap-3.5 rounded-control border px-3.5 py-3 text-start fade-in-0 slide-in-from-top-1 outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              on ? "border-primary-ring bg-primary-tint" : "border-border bg-card hover:border-foreground/25",
+              on ? "border-primary-ring bg-primary-tint" : "border-border bg-inlay hover:border-foreground/25",
             )}
           >
             <span className={cn("grid size-9 shrink-0 place-items-center rounded-nested border-[1.5px] [&_svg]:size-4", on ? "border-primary-ring text-primary-ink" : "border-dashed border-muted-foreground/60 text-muted-foreground")}>
@@ -762,7 +762,7 @@ export default function AddPerson() {
   })();
 
   const coming = (
-    <section className="grid gap-3.5 rounded-surface bg-section px-6 pt-5.5 pb-6" aria-labelledby="add-coming">
+    <section className="grid gap-3.5 rounded-surface bg-card px-6 pt-5.5 pb-6" aria-labelledby="add-coming">
       <div className="flex min-h-7 flex-wrap items-center justify-between gap-3">
         <h2 id="add-coming" className="type-section-title">{t("comingUp")}</h2>
         <Segmented
@@ -775,7 +775,7 @@ export default function AddPerson() {
         />
       </div>
       <div className="grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-4">
-        <div className="w-16 overflow-hidden rounded-inset bg-card text-center">
+        <div className="w-16 overflow-hidden rounded-inset bg-card ring-1 ring-border text-center">
           <small className={cn("block pt-1 pb-0.5 text-[0.6875rem] font-semibold", form.firstDay ? "bg-primary-tint text-primary-ink" : "bg-inlay text-muted-foreground")}>
             {form.firstDay ? dates.weekday(form.firstDay) : t("dayTile")}
           </small>
@@ -791,7 +791,7 @@ export default function AddPerson() {
           <p className="type-meta text-muted-foreground">{form.firstDay ? dates.relative(form.firstDay) : t("notSet")}</p>
         </div>
       </div>
-      <div className="flex items-center gap-2.5 rounded-control bg-card px-3 py-2.5">
+      <div className="flex items-center gap-2.5 rounded-control bg-inlay px-3 py-2.5">
         <Mail className="size-4 shrink-0 text-muted-foreground" aria-hidden />
         <div className="min-w-0 flex-1">
           <p className="truncate type-label">{inviteLine.title}</p>
@@ -829,9 +829,9 @@ export default function AddPerson() {
     </section>
   );
 
-  const node = "flex min-w-0 w-full items-center gap-2.5 rounded-inset bg-card px-3 py-2.5";
+  const node = "flex min-w-0 w-full items-center gap-2.5 rounded-inset bg-inlay px-3 py-2.5";
   const team = (
-    <section className="grid gap-4 rounded-surface bg-section px-6 pt-5.5 pb-6" aria-labelledby="add-team">
+    <section className="grid gap-4 rounded-surface bg-card px-6 pt-5.5 pb-6" aria-labelledby="add-team">
       {manager ? (
         <div className="flex min-h-7 items-center justify-between gap-3">
           <h2 id="add-team" className="type-subsection-title">{t("team", { name: managerFirst })}</h2>
@@ -912,14 +912,14 @@ export default function AddPerson() {
             </div>
           ) : null}
           {twin ? (
-            <div role="alert" className="grid gap-2.5 rounded-control bg-card px-3.5 py-3">
+            <div role="alert" className="grid gap-2.5 rounded-control bg-inlay px-3.5 py-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="type-label">{t("sameName")}</p>
                 <AsyncButton size="sm" variant="outline" pending={mutation.isLoading} onClick={() => void save(true)}>{t("addAnyway", { name: first })}</AsyncButton>
               </div>
               {twin.map((suggestion) => (
                 <Link key={suggestion.employeeKey} href={`/people/${suggestion.employeeKey}`}
-                  className="flex items-center gap-2.5 rounded-nested bg-inlay px-2.5 py-2 hover:bg-secondary">
+                  className="flex items-center gap-2.5 rounded-nested bg-card px-2.5 py-2 hover:bg-secondary">
                   <PersonAvatar name={suggestion.displayName} size="sm" />
                   <span className="min-w-0 flex-1">
                     <span className="block type-label">{suggestion.displayName}</span>

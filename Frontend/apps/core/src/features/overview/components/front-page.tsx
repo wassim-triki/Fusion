@@ -85,7 +85,7 @@ export default function FrontPage() {
     <PageContainer width="wide" className="space-y-6 pb-10">
       <header className="flex items-center gap-4">
         <div
-          className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-control bg-section type-panel-title"
+          className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-control bg-card type-panel-title"
           aria-hidden
         >
           {company.data?.logoUrl ? (

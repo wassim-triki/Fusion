@@ -129,17 +129,17 @@ Rule: **sans for the system, serif for the human,** visible but scarce. If unsur
 
 ## 5. Elevation & Depth
 
-**Depth is tone, and tone only lifts.** Each nested level is one step lighter than its parent:
+**Depth is tone** (D-32). The page and its bands share one soft tone; cards step up from it. Dark mode is graphite, never near-black, and each nested level is a step lighter. Light mode has no stark white: cards a step above the page, inlays set into a card a step below it.
 
 | Tone | Utility | For |
 |---|---|---|
 | Canvas | `bg-background` | the page itself, never nested |
-| Section | `bg-section` | page-level frames grouping a page area |
+| Band | `bg-section` | heroes and bands (a person's or team's header, a front page's opening, chart stages): the page's own tone, so they read as the page, not a box. A frame that must stand out on the page is a card |
 | Card | `bg-card` | objects: rows, cards, tables, rails, inspectors |
 | Inlay | `bg-inlay` | blocks set into a card: notes, fact groups, editors, table headers, chips at rest |
 | Overlay | `bg-popover` | dialogs, sheets, drawers, menus, floating bars (with shadow) |
 
-1. A child is always a higher tier than its parent. Tiers may be skipped, never reversed.
+1. A child is always a higher tier than its parent (band → card → inlay). Tiers may be skipped, never reversed.
 2. No fourth neutral tone: inside an inlay, separate with dividers.
 3. Peers share a tone.
 4. Container fills are opaque tokens. Translucent neutrals (`bg-muted/30`, `bg-card/60`) are only for state variants, small marks and DS controls; lint warns at rest.
@@ -147,7 +147,7 @@ Rule: **sans for the system, serif for the human,** visible but scarce. If unsur
 6. Empty and drop placeholders have no fill: a dashed border on the parent's tone.
 7. Emphasis is not a tone: semantic tints mark state on top of the right tier, never replace it.
 8. Controls carry their own lift via DS variants; never paint them with a surface tone.
-9. Section, card and inlay frames have no border: the tone step is their edge (`Card` ships borderless). Borders stay for controls, chips and picks at rest, dividers inside a frame, overlays, dashed placeholders and state rings (`border-primary-ring`). Light mode keeps the same rule: a grey canvas, sections a step up, cards white; never a border in light where dark has none.
+9. Section, card and inlay frames have no border: the tone step is their edge (`Card` ships borderless). Borders stay for controls, chips and picks at rest, dividers inside a frame, overlays, dashed placeholders and state rings (`border-primary-ring`). Light mode keeps the same rule: never a border in light where dark has none.
 
 **Shadows mean real elevation** (`shadow-raised`, `shadow-overlay` only): dropdowns, dialogs, popovers, dragged objects. A shadow must answer "elevated above what?"; if nothing, remove it. Static content stays flat; nested elevation is rare. Borders clarify structure, state or separation; not every container gets one.
 
@@ -301,7 +301,7 @@ Product language, not assistant language: concise, specific, factual, calm, huma
 - Is the page title dominant and supporting information visibly secondary?
 - Do containers earn their boundaries? Is anything nested or equal-weight without reason?
 - Is the hierarchy from type roles, or does it all read as `text-sm font-medium`?
-- Are canvas, surfaces and overlays distinct in dark and light?
+- Are canvas, surfaces and overlays distinct in dark and light? In light mode, does anything read brown (D-95)? Amber marks and charts stay a clear yellow-gold, or step to ink.
 - Would it still feel designed without the amber? Are pastels or icons used as decoration?
 - Do items share edges and differ by anchors, so they're told apart before they're read?
 - Is any sentence, label or tooltip replaceable by a shape, mark or state? Is anything repeated just because the data exists?

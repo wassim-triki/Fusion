@@ -18,13 +18,12 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-423.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-424.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
 ## In progress
 
-None.
 
 ## In review
 
@@ -77,6 +76,8 @@ From B-331's walk (2026-11-09; the user's words, step by step, in `design/walkth
   - [ ] **B-405** Year page: the design-role lint flags raw text sizes and radii in `components/year/` (about 30 warnings: `type-*` and `rounded-*` roles instead of pixel sizes ported from the drawing); move them onto the roles, adding a role to the DS where the drawing needs one · Performance · 2026-11-10
   - [ ] **B-406** Goals from the company down (hero H2): one Goals place (Company, units, You, Your team, the map as a view), company and unit goals at a glance, measures read back as sentences with direction from the numbers, the plan with even weights and its line up to the company's, approval from Home and Team with what changed, progress updated from the goal, the coach's quiet suggestions, goal grades from the measure (D-38) · Performance · 2026-11-10
           Scope: G1 at 3, G2–G7 at 2, N12 pulled back (D-38), weights per D-40. Slice 5 part 1 (the goal panel and the progress dialog) ✓ accepted 2026-11-10; part 2 (Goals' pages and approval with what changed) In review 2026-11-10. Slice 4 (the domain) ○ 2026-11-10: direction from the numbers, even weights totalling 100 on plans and contributions, grades on plan goals and plans, what changed since a return on a resubmitted plan; slice 5 draws them (the grade as a number with the measure's words behind an icon, D-51; "shared evenly" on unchosen weights; the changes beside Approve) and the empty plan's AI starters (D-59), which the coach doesn't offer yet.
+    - [ ] **B-406** Build the redrawn Goals, Company (D-98) and the unit tab (D-99), with the state mark (D-96, D-97) as `StateWord` in `@repo/ds` across Goals, the goal panel and the Year page: port `plans/B-406-goals-redraw.html` (answers in `plans/B-406-goals-redraw.answers.json`); the company figure rolls up from the goals under it (backend if the roll-up isn't served) · `@repo/ds`, Performance · 2026-11-11
+    - [ ] **B-423** Light mode's accent matches dark's (D-100): retune `--primary-ink` and the light-mode amber in `@repo/ds` styles so nothing reads brown, then check contrast of text on it · `@repo/ds` · 2026-11-11
     - [ ] **B-406** Cold build of `performance` after `/plan` was removed (`pnpm --filter performance build`, with the frontend stopped): the run on 2026-11-10 was stopped for low memory · Performance · 2026-11-10
     - [ ] **B-406** Goals' pages, left from slice 5 part 2: the empty plan's AI starters (D-59; the coach doesn't offer them yet); units with no goal under a company goal as outlines with a nudge (needs the unit list beside the map's data); the plan page a manager approves on keeps its older layout (only "Changed since you asked" is new); Home's Needs you shows a waiting plan as one line with Approve and Ask for a change, not its goals in place (slice 10); raw text sizes in `goals-you.tsx`, `goals-company.tsx`, `plan-changes.tsx` flagged by the design-role lint (with B-405's); wording keys of the deleted My plan page and Organization-direction list still in `plan.json` and `goals.json` · Performance · 2026-11-10
   - [ ] **B-407** Conversations: 1:1s where the meeting is the page (agenda with each item's source, starter agenda, notes, actions), calendar invites and a feed (D-39), a monthly reminder to update goals, feedback from wherever a person appears with the request lifecycle, praise with starter values, reactions and the company wall (D-36), growth goals on the person page and in 1:1s and reviews · Performance · 2026-11-10

@@ -408,15 +408,24 @@ export interface PraisePageDto {
   next: string | null;
 }
 
+export interface CompanyValueDto {
+  id: string;
+  name: string;
+}
+
 export interface PraiseValueCountDto {
   id: string;
   name: string;
   count: number;
 }
 
-/** What the company celebrated over the window, and how much praise the caller received and gave. */
+/**
+ * The wall's week (from Monday, `weekStart` as a date) and how much praise it holds; each of the company's values
+ * with how often it was named this month; how much praise the caller received and gave.
+ */
 export interface PraiseSummaryDto {
-  windowDays: number;
+  weekStart: string;
+  thisWeek: number;
   values: PraiseValueCountDto[];
   received: number;
   given: number;
@@ -432,7 +441,7 @@ export interface PraiseListQuery {
 export interface GivePraiseRequest {
   id: string;
   recipientEmployeeIds: string[];
-  competencyId: string;
+  valueId: string;
   message: string;
 }
 
@@ -461,7 +470,9 @@ export const conversationPaths = {
   praiseItem: (id: string) => `/performance/praise/${id}`,
   praiseSummary: () => "/performance/praise/summary",
   directory: () => "/performance/people/directory",
+  directoryNear: () => "/performance/people/directory/near",
   values: () => "/performance/values",
+  settingsValues: () => "/performance/settings/values",
 } as const;
 
 export const conversationQueryKeys = {
@@ -481,6 +492,7 @@ export const conversationQueryKeys = {
   praiseItem: (id: string) => [...conversationQueryKeys.praise(), "item", id] as const,
   praiseSummary: () => [...conversationQueryKeys.praise(), "summary"] as const,
   directory: (term: string) => [...conversationQueryKeys.all(), "directory", term] as const,
+  directoryNear: () => [...conversationQueryKeys.all(), "directory", "near"] as const,
   values: () => [...conversationQueryKeys.all(), "values"] as const,
 } as const;
 
@@ -551,10 +563,16 @@ export function createConversationsApi(client: ApiClient) {
         : client.delete<PraiseDto>(`${conversationPaths.praiseItem(id)}/reactions/${kind}`),
     deletePraise: (id: string) => client.delete<unknown>(conversationPaths.praiseItem(id)),
 
-    /** The company's values (active competencies) that praise and feedback can name. */
-    listValues: (signal?: AbortSignal) => client.get<{ id: string; name: string }[]>(conversationPaths.values(), { signal }),
+    /** The company's values, the short list praise names (D-36); a new company starts with the starters. */
+    listValues: (signal?: AbortSignal) => client.get<CompanyValueDto[]>(conversationPaths.values(), { signal }),
+    /** Settings: each change answers with the list as it now stands. */
+    addValue: (name: string) => client.post<CompanyValueDto[]>(conversationPaths.settingsValues(), { name }),
+    renameValue: (id: string, name: string) => client.put<CompanyValueDto[]>(`${conversationPaths.settingsValues()}/${id}`, { name }),
+    removeValue: (id: string) => client.delete<CompanyValueDto[]>(`${conversationPaths.settingsValues()}/${id}`),
 
     // Directory
+    /** The caller's teammates, then their reports, then their manager: six at most, for praise's quick picks. */
+    nearPeople: (signal?: AbortSignal) => client.get<DirectoryPersonDto[]>(conversationPaths.directoryNear(), { signal }),
     searchDirectory: (search: string, signal?: AbortSignal) =>
       client.get<DirectoryPersonDto[]>(conversationPaths.directory(), { params: { search }, signal }),
   };

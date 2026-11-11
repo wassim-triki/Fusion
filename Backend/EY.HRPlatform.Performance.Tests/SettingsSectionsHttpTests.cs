@@ -97,7 +97,7 @@ public sealed class SettingsSectionsHttpTests
     }
 
     [Fact]
-    public async Task Sections_list_all_eight_with_the_callers_access()
+    public async Task Sections_list_all_nine_with_the_callers_access()
     {
         await using var factory = new PerformanceApiFactory();
         using var viewer = factory.CreateAuthenticatedClient(permissions: Viewer);
@@ -105,10 +105,10 @@ public sealed class SettingsSectionsHttpTests
 
         var viewed = (await SectionsAsync(viewer)).EnumerateArray().ToList();
         Assert.Equal(
-            ["rating-scale", "competencies", "review-questions", "reviews", "planning", "conversations", "ai-and-data", "notifications"],
+            ["rating-scale", "competencies", "values", "review-questions", "reviews", "planning", "conversations", "ai-and-data", "notifications"],
             viewed.Select(section => section.GetProperty("id").GetString()));
         Assert.Equal(
-            ["Rating scale", "Competencies", "Review questions", "Reviews", "Planning", "Conversations", "AI and data", "Notifications"],
+            ["Rating scale", "Competencies", "Values", "Review questions", "Reviews", "Planning", "Conversations", "AI and data", "Notifications"],
             viewed.Select(section => section.GetProperty("label").GetString()));
         Assert.All(viewed, section =>
         {

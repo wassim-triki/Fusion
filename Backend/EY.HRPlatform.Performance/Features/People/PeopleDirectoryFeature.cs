@@ -30,3 +30,32 @@ public sealed class SearchPeopleDirectoryHandler(ICoreWorkforceClient workforce)
             .Select(p => new DirectoryPersonDto(p.EmployeeId, p.DisplayName, p.JobTitle, p.OrgUnit?.Name)).ToList());
     }
 }
+
+/// <summary>The people the caller works with most closely, for praise's quick picks.</summary>
+public sealed record NearbyPeopleQuery(Guid EmployeeId) : IQuery<Result<IReadOnlyList<DirectoryPersonDto>>>;
+
+/// <summary>
+/// Teammates (the same manager), then the caller's reports, then their manager: active people only, never the caller,
+/// at most <see cref="MaxResults"/>. Someone with no employee record or no one around them gets an empty list.
+/// </summary>
+public sealed class NearbyPeopleHandler(ICoreWorkforceClient workforce) : IQueryHandler<NearbyPeopleQuery, Result<IReadOnlyList<DirectoryPersonDto>>>
+{
+    public const int MaxResults = 6;
+
+    public async Task<Result<IReadOnlyList<DirectoryPersonDto>>> Handle(NearbyPeopleQuery query, CancellationToken token)
+    {
+        var me = query.EmployeeId;
+        if (me == Guid.Empty) return Result.Success<IReadOnlyList<DirectoryPersonDto>>([]);
+        var now = PerformanceClock.UtcNow;
+        var self = (await workforce.ResolveAsync(now, [me], token)).FirstOrDefault();
+        if (self is null) return Result.Success<IReadOnlyList<DirectoryPersonDto>>([]);
+        var managerId = self.Manager is { IsActive: true } m ? m.EmployeeId : (Guid?)null;
+        var around = await workforce.GetDirectReportsAsync(now, managerId is Guid id ? [id, me] : [me], token);
+        var manager = managerId is Guid mid ? (await workforce.ResolveAsync(now, [mid], token)).FirstOrDefault() : null;
+        var ordered = around.Where(p => p.Manager?.EmployeeId == managerId && managerId is not null)
+            .Concat(around.Where(p => p.Manager?.EmployeeId == me))
+            .Concat(manager is null ? [] : [manager]);
+        return Result.Success<IReadOnlyList<DirectoryPersonDto>>(ordered.Where(p => p.IsActive && p.EmployeeId != me).DistinctBy(p => p.EmployeeId)
+            .Take(MaxResults).Select(p => new DirectoryPersonDto(p.EmployeeId, p.DisplayName, p.JobTitle, p.OrgUnit?.Name)).ToList());
+    }
+}

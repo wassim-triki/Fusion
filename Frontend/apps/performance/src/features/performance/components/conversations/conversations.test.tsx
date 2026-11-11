@@ -15,6 +15,8 @@ const state = vi.hoisted(() => ({
   praiseDetail: null as unknown,
   summary: undefined as unknown,
   give: { mutateAsync: vi.fn(async () => ({})), isLoading: false, error: null },
+  givePraise: { mutateAsync: vi.fn(async () => ({ id: "p9" })), isLoading: false, error: null },
+  praiseItems: [] as unknown[],
   answer: { mutate: vi.fn(), isLoading: false, error: null },
   decline: { mutate: vi.fn(), isLoading: false, error: null },
   close: { mutate: vi.fn(), isLoading: false, error: null },
@@ -28,26 +30,31 @@ vi.mock("next/navigation", () => ({
 }));
 vi.mock("@repo/auth", () => ({ useAuth: () => ({ user: { employeeId: "me", fullName: "Rim Mahjoub" } }) }));
 vi.mock("../../api/use-performance", () => ({ usePersonSummary: () => ({ data: undefined, isLoading: false, error: null }) }));
-vi.mock("@repo/api/query", () => ({ useReactToPraise: () => ({ mutate: vi.fn(), isLoading: false }), useCompanyValues: () => ({ data: [{ id: "v1", name: "Collaboration" }] }) }));
+vi.mock("@repo/api/query", () => ({
+  useReactToPraise: () => ({ mutate: vi.fn(), isLoading: false }),
+  useCompanyValues: () => ({ data: [{ id: "v1", name: "One team" }] }),
+  useTenantSummary: () => ({ data: { name: "Carthage" } }),
+}));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("../../api/use-conversations", () => ({
   useOneOnOnes: () => ({ data: { reports: [{ with: { employeeId: "x" } }], startWithReports: [], withManager: null } }),
   useOneOnOne: () => ({ data: undefined }),
   useOneOnOneCommands: () => ({ addAgendaItem: { mutateAsync: vi.fn(), isLoading: false } }),
   useFeedbackSummary: () => ({ data: state.summary }),
-  usePraiseSummary: () => ({ data: { windowDays: 90, values: [], received: 0, given: 0 } }),
+  usePraiseSummary: () => ({ data: { weekStart: "2026-11-09", thisWeek: state.praiseItems.length ? 1 : 0, values: [{ id: "v1", name: "One team", count: 1 }], received: 0, given: 0 } }),
   useFeedbackList: () => ({ data: { items: state.feedback, next: null }, isLoading: false, error: null, refetch: vi.fn() }),
   useFeedbackItem: () => ({ data: state.feedback[0], error: null }),
   useFeedbackRequests: () => ({ data: state.requests, error: null, refetch: vi.fn() }),
   useFeedbackRequest: () => ({ data: state.request, error: null, refetch: vi.fn() }),
   useFeedbackRequestCommands: () => ({ answer: state.answer, decline: state.decline, close: state.close }),
-  usePraisePage: () => ({ data: { items: [], next: null }, error: null, refetch: vi.fn() }),
+  usePraisePage: () => ({ data: { items: state.praiseItems, next: null }, error: null, refetch: vi.fn() }),
   usePraiseItem: () => ({ data: state.praiseDetail, error: null }),
   useDeletePraise: () => ({ mutateAsync: vi.fn(), isLoading: false }),
   useGiveFeedback: () => state.give,
   useAskForFeedback: () => ({ mutateAsync: vi.fn(), isLoading: false, error: null }),
-  useGivePraise: () => ({ mutateAsync: vi.fn(), isLoading: false, error: null }),
-  useCompanyValues: () => ({ data: [{ id: "v1", name: "Collaboration" }] }),
+  useGivePraise: () => state.givePraise,
+  useNearPeople: () => ({ data: [{ employeeId: "leila", displayName: "Leila Baccouche", jobTitle: null, orgUnitName: null }] }),
+  useCompanyValues: () => ({ data: [{ id: "v1", name: "One team" }] }),
   useDirectory: () => ({ data: [], isLoading: false, error: null }),
 }));
 
@@ -78,38 +85,62 @@ beforeEach(() => {
   state.feedback = [];
   state.summary = undefined;
   state.give.mutateAsync.mockClear();
+  state.givePraise.mutateAsync.mockClear();
+  state.praiseItems = [];
+  state.requests = { toAnswer: [], mine: [] };
   state.answer.mutate.mockClear();
   state.replace.mockClear();
 });
 
 describe("Feedback workspace", () => {
-  it("opens on Received with one action to ask when nothing has arrived", () => {
+  it("opens on Praise; a new company sees the ghost wall and its starter values", () => {
+    render(<FeedbackWorkspace />);
+    expect(screen.getByRole("link", { name: "Praise" }).getAttribute("aria-current")).toBe("page");
+    expect(screen.getByRole("heading", { name: "This week at Carthage" })).toBeTruthy();
+    expect(screen.getByText("No praise yet")).toBeTruthy();
+    expect(screen.getByText("Starter values, yours to change in Settings")).toBeTruthy();
+    expect(screen.getByText("Nothing asked of you")).toBeTruthy();
+  });
+
+  it("sends praise once someone, a value and their words are set", async () => {
+    render(<FeedbackWorkspace />);
+    const send = screen.getByRole("button", { name: "Send praise" });
+    expect((send as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: /Leila/ }));
+    fireEvent.click(screen.getByRole("radio", { name: "One team" }));
+    fireEvent.change(screen.getByLabelText("What they did"), { target: { value: "Covered my release." } });
+    expect(screen.getByText("Leila's manager hears about it too")).toBeTruthy();
+    fireEvent.click(send);
+    await vi.waitFor(() => expect(state.givePraise.mutateAsync).toHaveBeenCalled());
+    const [args] = state.givePraise.mutateAsync.mock.calls[0] as unknown as [{ recipientEmployeeIds: string[]; valueId: string; message: string }];
+    expect(args).toMatchObject({ recipientEmployeeIds: ["leila"], valueId: "v1", message: "Covered my release." });
+  });
+
+  it("puts this week's praise on the wall with its reactions, and older praise under Earlier", () => {
+    state.praiseItems = [
+      { ...praise, id: "w1", givenAt: "2026-11-10T08:00:00Z", value: { id: "v1", name: "One team" }, reactions: [{ kind: "Applause", count: 4, mine: false }] },
+      { ...praise, id: "w2", givenAt: "2026-11-02T08:00:00Z" },
+    ];
+    render(<FeedbackWorkspace />);
+    expect(screen.getByText("1 this week")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Earlier" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Applause, 4" })).toBeTruthy();
+  });
+
+  it("opens Yours on Received with one action to ask when nothing has arrived", () => {
+    state.params = new URLSearchParams("tab=yours");
     state.summary = {
       received: 0, fromCount: 0, from: [], subjects: [], given: 0, toAnswer: 0,
       askAbout: [{ cycleId: "c1", objectiveId: "o1", title: "Ship the gateway", status: null, feedback: 0 }],
     };
     render(<FeedbackWorkspace />);
-    expect(screen.getByRole("link", { name: "Received" }).getAttribute("aria-current")).toBe("page");
+    expect(screen.getByRole("link", { name: "Yours" }).getAttribute("aria-current")).toBe("page");
     expect(screen.getByText("No feedback yet")).toBeTruthy();
     expect(screen.getByText("Ask about Ship the gateway")).toBeTruthy();
   });
 
-  it("leads Received with the year in feedback and what waits on the caller", () => {
-    state.feedback = [feedback({ subject: { kind: "Competency", cycleId: null, objectiveId: null, competencyId: "v1", label: "Collaboration", href: null } })];
-    state.summary = {
-      received: 1, fromCount: 1, from: [{ id: "leila", name: "Leila Baccouche" }],
-      subjects: [{ kind: "Competency", objectiveId: null, competencyId: "v1", label: "Collaboration", count: 1 }],
-      given: 2, toAnswer: 1, askAbout: [],
-    };
-    render(<FeedbackWorkspace />);
-    expect(screen.getByLabelText("Your feedback at a glance").textContent).toContain("from 1 colleague");
-    expect(screen.getByRole("button", { name: /1 to answer/ })).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Requests 1" })).toBeTruthy();
-    expect(screen.getAllByText("Collaboration").length).toBeGreaterThan(0);
-  });
-
   it("marks manager-only feedback in the team view and opens the drawer from a deep link", () => {
-    state.params = new URLSearchParams("tab=team&feedback=f1");
+    state.params = new URLSearchParams("tab=yours&view=team&feedback=f1");
     state.feedback = [feedback({ visibility: "ManagerOnly", addressedManager: { id: "me", name: "Karim Haddad" } })];
     render(<FeedbackWorkspace />);
     expect(screen.getAllByText(/Manager only/).length).toBeGreaterThan(0);
@@ -118,17 +149,16 @@ describe("Feedback workspace", () => {
   });
 
   it("keeps the tab in the address", () => {
-    state.params = new URLSearchParams("tab=requests");
+    state.params = new URLSearchParams("tab=asked");
     render(<FeedbackWorkspace />);
     expect(screen.getByRole("heading", { name: "Asked of you" })).toBeTruthy();
-    expect(screen.getByText("Nothing to answer")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Requests" }).getAttribute("aria-current")).toBe("page");
-    expect(screen.getByRole("link", { name: "Praise" }).getAttribute("href")).toBe("/feedback?tab=praise");
-    expect(screen.getByRole("link", { name: "Received" }).getAttribute("href")).toBe("/feedback");
+    expect(screen.getByRole("link", { name: "Asked of you" }).getAttribute("aria-current")).toBe("page");
+    expect(screen.getByRole("link", { name: "Praise" }).getAttribute("href")).toBe("/feedback");
+    expect(screen.getByRole("link", { name: "Yours" }).getAttribute("href")).toBe("/feedback?tab=yours");
   });
 
   it("opens one of your requests beside the list, with who was asked and the answers", () => {
-    state.params = new URLSearchParams("tab=requests");
+    state.params = new URLSearchParams("tab=yours&view=requests");
     const mine = {
       id: "r2", question: "How did the onboarding sessions land?", requester: { id: "me", name: "Rim Mahjoub" }, dueDate: "2026-10-30",
       state: "Open" as const, overdue: false, answered: 1, declined: 0, invited: 2, myStatus: null, requestedAt: "2026-10-20T08:00:00Z", subject: null,
@@ -145,7 +175,7 @@ describe("Feedback workspace", () => {
       answers: [feedback({ id: "a1", author: { id: "khaled", name: "Khaled Sassi" }, message: "They were short and useful." })],
     });
     render(<FeedbackWorkspace />);
-    expect(screen.getByRole("heading", { name: "Yours" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Open requests" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /How did the onboarding sessions land/ }));
     const drawer = screen.getByRole("dialog");
     expect(within(drawer).getByText("Aicha Bouazizi")).toBeTruthy();
@@ -163,14 +193,12 @@ describe("feedback composer", () => {
     fireEvent.change(screen.getByLabelText("Feedback"), { target: { value: "Clear and kind." } });
     fireEvent.click(screen.getByRole("radio", { name: /Manager only/ }));
     expect(screen.getByRole("radio", { name: /Manager only/ }).getAttribute("aria-checked")).toBe("true");
-    fireEvent.click(screen.getByRole("radio", { name: /Collaboration/ }));
     fireEvent.click(send);
     fireEvent.click(send);
-    const calls = state.give.mutateAsync.mock.calls as unknown as [{ id: string; visibility: string; competencyId: string | null }][];
+    const calls = state.give.mutateAsync.mock.calls as unknown as [{ id: string; visibility: string }][];
     expect(calls.length).toBeGreaterThan(0);
     expect(new Set(calls.map(([args]) => args.id)).size).toBe(1);
     expect(calls[0]![0].visibility).toBe("ManagerOnly");
-    expect(calls[0]![0].competencyId).toBe("v1");
   });
 });
 

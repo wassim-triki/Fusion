@@ -223,5 +223,22 @@ export function useDirectory(term: string, enabled: boolean) {
   });
 }
 
+/** The caller's teammates, reports and manager, for praise's quick picks. */
+export function useNearPeople() {
+  const api = useConversationsApi();
+  return useApiQuery(conversationQueryKeys.directoryNear(), (signal) => api.nearPeople(signal), { staleTime: 5 * 60_000 });
+}
+
+/** Settings › Values: each change answers with the list as it now stands; praise's summary follows. */
+export function useCompanyValueCommands() {
+  const api = useConversationsApi();
+  const invalidateQueries = [{ queryKey: conversationQueryKeys.values() }, { queryKey: conversationQueryKeys.praiseSummary() }];
+  return {
+    add: useApiMutation((name: string) => api.addValue(name), { invalidateQueries }),
+    rename: useApiMutation(({ id, name }: { id: string; name: string }) => api.renameValue(id, name), { invalidateQueries }),
+    remove: useApiMutation((id: string) => api.removeValue(id), { invalidateQueries }),
+  };
+}
+
 /** The company's values, from the shared hook so every surface agrees on their hues. */
 export { useCompanyValues } from "@repo/api/query";

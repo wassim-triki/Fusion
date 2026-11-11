@@ -167,9 +167,13 @@ public abstract class DevelopmentHandlerBase(PerformanceDbContext db, ICoreWorkf
             ? context.Participant.DisplayName
             : context.ObjectivePlan?.ResponsibleManagerName ?? context.Participant.ManagerDisplayName ?? "Your reviewer";
 
-    /// <summary>Tells the other person when one of them adds a goal.</summary>
+    /// <summary>
+    /// Tells the other person when one of them adds a goal, once the plan has been put forward: drafting notifies
+    /// nobody (D-37), the manager sees the goal with the plan when it arrives.
+    /// </summary>
     protected static void NotifyAdded(IPerformanceNotifications notifications, Context context, DevelopmentPlan plan, DevelopmentGoal goal, Guid actorId)
     {
+        if (context.ObjectivePlan is not { State: not PlanLifecycleState.Draft }) return;
         var owner = context.Participant.EmployeeId;
         var recipient = actorId == owner ? context.ReviewerId : owner;
         if (recipient is not Guid to || to == Guid.Empty || to == actorId) return;

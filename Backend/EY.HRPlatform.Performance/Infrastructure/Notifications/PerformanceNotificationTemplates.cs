@@ -147,7 +147,7 @@ public static class PerformanceNotificationTemplates
     // Notifications land on the item in its list (B-154): the hash names the card or action to scroll to and outline.
     // The query forms above open a drawer instead; both work for old links.
     public static string FeedbackLandingPath(Guid feedbackId, bool team = false)
-        => $"/performance/feedback{(team ? "?tab=team" : "")}#feedback-{feedbackId}";
+        => $"/performance/feedback?tab=yours{(team ? "&view=team" : "")}#feedback-{feedbackId}";
     public static string PraiseLandingPath(Guid praiseId) => $"/performance/feedback?tab=praise#praise-{praiseId}";
     public static string ActionLandingPath(Guid seriesId, Guid actionId) => $"{OneOnOnePath(seriesId)}#action-{actionId}";
 

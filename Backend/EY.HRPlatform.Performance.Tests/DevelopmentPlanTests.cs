@@ -2,6 +2,7 @@ using EY.HRPlatform.Performance.Domain.Audit;
 using EY.HRPlatform.Performance.Domain.Cycles;
 using EY.HRPlatform.Performance.Domain.Development;
 using EY.HRPlatform.Performance.Domain.Notifications;
+using EY.HRPlatform.Performance.Domain.Plans;
 using EY.HRPlatform.Performance.Domain.Population;
 using EY.HRPlatform.Performance.Domain.Settings;
 using EY.HRPlatform.Performance.Features.Development;
@@ -138,11 +139,30 @@ public sealed class DevelopmentPlanTests
     }
 
     [Fact]
-    public async Task Each_person_hears_when_the_other_adds_a_goal()
+    public async Task Drafting_tells_nobody_and_once_the_plan_is_put_forward_each_person_hears_when_the_other_adds_a_goal()
     {
         var w = await ArrangeAsync();
-        var plan = Ok(await AddAsync(w, As(w.Nour, reviews: false), Goal()));
-        Ok(await AddAsync(w, As(w.Lina), Goal("Present at the forum", version: plan.Version)));
+        var drafted = Ok(await AddAsync(w, As(w.Nour, reviews: false), Goal("Read the platform runbook")));
+        var plan = await Run(w, async db =>
+        {
+            var participant = await db.Participants.SingleAsync(p => p.CycleId == w.CycleId);
+            var goals = EmployeePlan.Create(w.Store.TenantId, w.CycleId, participant.Id, w.Nour, "Nour Trabelsi", "Platform", w.Lina, "Lina Ben Ali");
+            db.EmployeePlans.Add(goals);
+            await db.SaveChangesAsync();
+            return goals;
+        });
+        drafted = Ok(await AddAsync(w, As(w.Nour, reviews: false), Goal("Pair on an incident", version: drafted.Version)));
+        Assert.Empty(await Run(w, db => db.Notifications.AsNoTracking().ToListAsync()));
+
+        await Run(w, async db =>
+        {
+            var goals = await db.EmployeePlans.Include(p => p.Decisions).SingleAsync(p => p.Id == plan.Id);
+            goals.Submit(w.Nour, new PlanSubmissionFacts(1, true, 100m, true, false, PlanAlignmentPolicy.AtLeastOneConnected));
+            foreach (var entry in db.ChangeTracker.Entries<PlanDecision>().Where(e => e.State == EntityState.Modified)) entry.State = EntityState.Added;
+            return await db.SaveChangesAsync();
+        });
+        var put = Ok(await AddAsync(w, As(w.Nour, reviews: false), Goal(version: drafted.Version)));
+        Ok(await AddAsync(w, As(w.Lina), Goal("Present at the forum", version: put.Version)));
         var told = await Run(w, db => db.Notifications.AsNoTracking().Where(n => n.Kind == PerformanceNotificationKind.DevelopmentGoalAdded).ToListAsync());
         Assert.Contains(told, n => n.RecipientEmployeeId == w.Lina && n.EnglishTitle() == "Nour Trabelsi added a development goal");
         Assert.Contains(told, n => n.RecipientEmployeeId == w.Nour && n.Href.StartsWith("/performance/goals?cycle=", StringComparison.Ordinal));

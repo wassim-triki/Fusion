@@ -12,6 +12,7 @@ import {
 } from "@/features/settings/sections/cycle-sections";
 import { RatingScaleSettings } from "@/features/settings/sections/rating-scale";
 import { ReviewQuestionsSettings } from "@/features/settings/sections/review-questions";
+import { ValuesSettings } from "@/features/settings/sections/values";
 
 /** One Performance settings section, shown once the server says the person may see it. */
 export default function SettingsSectionPage({ params }: { params: Promise<{ section: string }> }) {
@@ -25,6 +26,8 @@ export default function SettingsSectionPage({ params }: { params: Promise<{ sect
             return <RatingScaleSettings section={section} />;
           case "competencies":
             return <CompetenciesSettings section={section} />;
+          case "values":
+            return <ValuesSettings section={section} />;
           case "review-questions":
             return <ReviewQuestionsSettings section={section} />;
           case "reviews":

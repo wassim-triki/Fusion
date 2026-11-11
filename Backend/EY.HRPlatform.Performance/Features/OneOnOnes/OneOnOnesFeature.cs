@@ -5,6 +5,7 @@ using EY.HRPlatform.Performance.Domain.Cycles;
 using EY.HRPlatform.Performance.Domain.Notifications;
 using EY.HRPlatform.Performance.Domain.Plans;
 using EY.HRPlatform.Performance.Domain.Progress;
+using EY.HRPlatform.Performance.Features.Conversations;
 using EY.HRPlatform.Performance.Features.Failures;
 using EY.HRPlatform.Performance.Features.Goals;
 using EY.HRPlatform.Performance.Features.Security;
@@ -256,13 +257,13 @@ public sealed class OneOnOneSuggestions(PerformanceDbContext db)
         var praise = await PraisePolicy.Readable(db.Praise.AsNoTracking())
             .Where(p => p.GivenAt > since && p.Recipients.Any(r => r.EmployeeId == report))
             .OrderByDescending(p => p.GivenAt).Take(10).ToListAsync(token);
-        competencyIds.AddRange(praise.Select(p => p.CompetencyId));
-        var values = await db.Competencies.AsNoTracking().Where(c => competencyIds.Contains(c.Id)).ToDictionaryAsync(c => c.Id, c => c.Name, token);
+        var competencies = await db.Competencies.AsNoTracking().Where(c => competencyIds.Contains(c.Id)).ToDictionaryAsync(c => c.Id, c => c.Name, token);
+        var values = await CompanyValues.NamesAsync(db, praise.Select(p => p.ValueId), token);
 
         suggestions.AddRange(feedback.Select(f => new OneOnOneSuggestionDto(AgendaSourceKind.Feedback, f.Id, null,
-            FeedbackLabel(f, values), null, PerformanceNotificationTemplates.FeedbackPath(f.Id), f.SentAt) { By = f.AuthorEmployeeId }));
+            FeedbackLabel(f, competencies), null, PerformanceNotificationTemplates.FeedbackPath(f.Id), f.SentAt) { By = f.AuthorEmployeeId }));
         suggestions.AddRange(praise.Select(p => new OneOnOneSuggestionDto(AgendaSourceKind.Praise, p.Id, null,
-            $"Praise from {p.AuthorName} for {values.GetValueOrDefault(p.CompetencyId) ?? "a company value"}", null,
+            $"Praise from {p.AuthorName} for {values.GetValueOrDefault(p.ValueId) ?? "a company value"}", null,
             PerformanceNotificationTemplates.PraisePath(p.Id), p.GivenAt) { By = p.AuthorEmployeeId }));
         return suggestions;
     }

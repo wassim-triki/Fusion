@@ -191,5 +191,17 @@
       "off": "Les suggestions disparaissent partout immédiatement, évaluations en cours comprises.",
       "retention": "Les pièces justificatives sont conservées {count} mois après la clôture de leur cycle, cycles clôturés compris."
     }
+  },
+  "values": {
+    "title": "Valeurs",
+    "add": "Ajouter une valeur",
+    "placeholder": "Une valeur, en quelques mots",
+    "rename": "Renommer {name}",
+    "remove": "Retirer {name}",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "none": "Aucune valeur. Il en faut au moins une pour saluer quelqu’un.",
+    "notSaved": "Ce changement n’a pas été enregistré. Réessayez.",
+    "full": "Douze valeurs au plus"
   }
 }

@@ -1,3 +1,4 @@
+using EY.HRPlatform.Performance.Features.Conversations;
 using EY.HRPlatform.Performance.Features.Notifications;
 using EY.HRPlatform.Performance.Features.Security;
 using EY.HRPlatform.Performance.Features.Settings;
@@ -98,6 +99,28 @@ public sealed class SettingsController(IMediator mediator, IPerformanceAccessPol
     {
         if (!policy.CanManageSettings(User)) return CapabilityForbidden();
         return MapResult(await mediator.Send(new ArchiveCompetencyCommand(id, request), cancellationToken));
+    }
+
+    /// <summary>The company's values (D-36): Settings adds, renames and removes them; everyone reads them at <c>GET values</c>.</summary>
+    [HttpPost("values")]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<CompanyValueDto>>>> AddValue([FromBody] CompanyValueRequest request, CancellationToken cancellationToken)
+    {
+        if (!policy.CanManageSettings(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new AddCompanyValueCommand(request), cancellationToken));
+    }
+
+    [HttpPut("values/{id:guid}")]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<CompanyValueDto>>>> RenameValue(Guid id, [FromBody] CompanyValueRequest request, CancellationToken cancellationToken)
+    {
+        if (!policy.CanManageSettings(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new RenameCompanyValueCommand(id, request), cancellationToken));
+    }
+
+    [HttpDelete("values/{id:guid}")]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<CompanyValueDto>>>> RemoveValue(Guid id, CancellationToken cancellationToken)
+    {
+        if (!policy.CanManageSettings(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new RemoveCompanyValueCommand(id), cancellationToken));
     }
 
     [HttpGet("review-questions")]

@@ -42,7 +42,7 @@ function RequestView({ request }: { request: FeedbackRequestDto }) {
     <PageContainer>
       <div className="mx-auto max-w-3xl">
         <PageHeader className="mb-4"
-          back={{ href: "/feedback?tab=requests", label: t("requests") }}
+          back={invitee ? { href: "/feedback?tab=asked", label: t("askedOfYou") } : { href: "/feedback?tab=yours&view=requests", label: t("yourRequests") }}
           eyebrow={
             invitee ? (
               <span className="mb-3 flex items-center gap-3">

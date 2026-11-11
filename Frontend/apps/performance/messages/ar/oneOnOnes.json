@@ -218,7 +218,15 @@
     "time": "الوقت",
     "howOften": "كم مرة",
     "cancel": "إلغاء",
-    "move": "انقله"
+    "move": "انقله",
+    "yourGrowth": "تطوّرك",
+    "theirGrowth": "تطوّر {name}",
+    "growth": {
+      "NotStarted": "لم يبدأ",
+      "InProgress": "قيد التنفيذ",
+      "Done": "مُنجز"
+    },
+    "growthBy": "بحلول {day}"
   },
   "CalendarLink": {
     "title": "اجتماعاتك الفردية في تطبيق التقويم",

@@ -39,9 +39,9 @@ public sealed class ConversationsFrameHttpTests
         var leila = factory.Core.Add("Leila Baccouche", managerId: amira).EmployeeId;
         var loner = factory.Core.Add("Sami Ben Youssef").EmployeeId;
         factory.Core.Add("Rima Gone", isActive: false);
-        var ownership = Competency.Create(factory.Store.TenantId, "Ownership", "Owns outcomes", null);
+        var ownership = CompanyValue.Create(factory.Store.TenantId, "Ownership", 0);
         await using var db = factory.Store.NewContext();
-        db.Competencies.Add(ownership);
+        db.CompanyValues.Add(ownership);
         await db.SaveChangesAsync();
         return new World(factory, amira, karim, nour, leila, loner, ownership.Id);
     }
@@ -154,7 +154,7 @@ public sealed class ConversationsFrameHttpTests
         var w = await ArrangeAsync();
         await using var _ = w.Factory;
         await DataAsync(await w.As(w.Leila).PostAsJsonAsync("/api/performance/praise",
-            new { id = Guid.NewGuid(), recipientEmployeeIds = new[] { w.Nour }, competencyId = w.Ownership, message = "Great cut-over" }));
+            new { id = Guid.NewGuid(), recipientEmployeeIds = new[] { w.Nour }, valueId = w.Ownership, message = "Great cut-over" }));
         await DataAsync(await w.As(w.Leila).PostAsJsonAsync("/api/performance/feedback",
             new { id = Guid.NewGuid(), receiverEmployeeId = w.Nour, visibility = "Shared", message = "SHARED" }));
         await DataAsync(await w.As(w.Leila).PostAsJsonAsync("/api/performance/feedback",

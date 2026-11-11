@@ -49,18 +49,6 @@
     "askedColleague": "سُئل {length} زميل.",
     "askedColleagues": "سُئل {length} زملاء."
   },
-  "PraiseComposer": {
-    "whatTheyDidInYour": "ما فعلوه، بكلماتك.",
-    "givePraise": "تقديم إشادة",
-    "who": "من",
-    "value": "القيمة",
-    "for": "لأجل",
-    "whatTheyDid": "ما فعلوه",
-    "everyoneWillSee": "سيراها الجميع",
-    "cancel": "إلغاء",
-    "praisePeople": "الإشادة بـ{length} أشخاص",
-    "praiseShared": "نُشرت الإشادة."
-  },
   "DueBlock": {
     "overdue": "متأخر",
     "due": "الاستحقاق",
@@ -102,19 +90,23 @@
     "couldNotDelete": "تعذّر حذف هذه الإشادة."
   },
   "FeedbackWorkspace": {
-    "yourTeam": "فريقك",
     "feedback": "الملاحظات",
     "askForFeedback": "طلب ملاحظات",
     "giveFeedback": "تقديم ملاحظات",
     "noFeedbackAboutYourTeam": "لا ملاحظات عن فريقك بعد",
     "youHaventGivenFeedbackYet": "لم تقدّم ملاحظات بعد",
     "tabs": {
-      "received": "الواردة",
-      "given": "المقدّمة",
-      "requests": "الطلبات",
       "praise": "الإشادات",
-      "team": "فريقك"
-    }
+      "asked": "مطلوب منك",
+      "yours": "ملاحظاتك"
+    },
+    "views": {
+      "received": "المستلمة",
+      "given": "المقدّمة",
+      "requests": "طلباتك",
+      "team": "عن فريقك"
+    },
+    "show": "عرض"
   },
   "ReceivedTab": {
     "noFeedbackYet": "لا ملاحظات بعد",
@@ -152,17 +144,16 @@
   },
   "RequestsTab": {
     "askedOfYou": "مطلوبة منك",
-    "nothingToAnswer": "لا شيء للرد عليه",
-    "lastAnsweredFor": "· آخر رد لـ{name}",
-    "yours": "طلباتك",
-    "open": "{length} مفتوحة",
     "noOpenRequests": "لا طلبات مفتوحة",
     "closed": "مغلقة",
     "asked": "سأل {name}:",
     "answered": "تم الرد",
     "declined": "اعتذر",
     "answer": "{answered} رد",
-    "answers": "{answered} ردود"
+    "answers": "{answered} ردود",
+    "nothingAskedOfYou": "لا شيء مطلوب منك",
+    "earlier": "سابقًا",
+    "openRequests": "الطلبات المفتوحة"
   },
   "AskedOfYou": {
     "askedYou": "سألك · {requestedAt}",
@@ -173,43 +164,16 @@
     "due": "الاستحقاق",
     "ofAnswered": "ردّ {answered} من {invited}"
   },
-  "PraiseTab": {
-    "showPraise": "عرض الإشادات",
-    "praise": "الإشادات",
-    "filters": {
-      "all": "الجميع",
-      "forMe": "لك",
-      "byMe": "منك"
-    }
-  },
-  "GivePraiseBar": {
-    "praiseAColleagueFor": "أشد بزميل لأجل…",
-    "praiseSomeoneFor": "أشد بشخص لأجل {name}",
-    "givePraise": "تقديم إشادة"
-  },
-  "PraiseSidebar": {
-    "whatWeCelebrateLastDays": "ما نحتفي به · آخر {windowDays} يومًا",
-    "received": "واردة",
-    "given": "مقدّمة",
-    "yourPraise": "إشاداتك"
-  },
-  "PraisePage": {
-    "praise": "الإشادات",
-    "noPraiseYet": "لا إشادات بعد",
-    "giveTheFirst": "قدّم الأولى",
-    "noPraiseForYouYet": "لا إشادات لك بعد",
-    "youHaventGivenPraiseYet": "لم تقدّم إشادة بعد",
-    "showOlder": "عرض الأقدم"
-  },
   "RequestView": {
-    "requests": "الطلبات",
     "askedYou": "سألك {name}",
     "open": "مفتوح",
     "closed": "مغلق",
     "asked": "طُلب {requestedAt}",
     "due": "· مستحق في {dueDate}",
     "closed2": "· أُغلق {closedAt}",
-    "closeRequest": "إغلاق الطلب"
+    "closeRequest": "إغلاق الطلب",
+    "askedOfYou": "مطلوب منك",
+    "yourRequests": "طلباتك"
   },
   "FullView": {
     "asked": "طُلب",
@@ -279,5 +243,42 @@
     "openTheRequest": "فتح الطلب",
     "unavailable": "هذا الطلب غير متاح لك.",
     "loading": "جارٍ تحميل الطلب"
+  },
+  "PraiseWall": {
+    "thisWeekAt": "هذا الأسبوع في {company}",
+    "yourCompany": "شركتك",
+    "noPraiseYet": "لا إشادات بعد",
+    "countThisWeek": "{count, plural, other {# هذا الأسبوع}}",
+    "quietWeek": "لا شيء بعد هذا الأسبوع",
+    "earlier": "سابقًا",
+    "showOlder": "عرض الأقدم",
+    "aColleague": "زميل",
+    "praised": "أشاد {author} بـ{recipients}",
+    "to": "إلى",
+    "justNow": "الآن",
+    "reactions": "التفاعلات",
+    "praiseSomeone": "أشِد بأحدهم",
+    "starterValues": "قيم أولية، يمكنك تغييرها في الإعدادات",
+    "who": "من",
+    "searchAnyone": "ابحث عن أي شخص",
+    "anyone": "أي شخص",
+    "value": "القيمة",
+    "whatTheyDid": "ما الذي فعلوه",
+    "whatDidNameDo": "ماذا فعل {name}؟",
+    "whatDidTheyDo": "ماذا فعلوا؟",
+    "managerHears": "سيعلم مدير {name} بذلك أيضًا",
+    "managersHear": "سيعلم مديروهم بذلك أيضًا",
+    "everyoneSees": "يراها الجميع في الشركة",
+    "sendPraise": "أرسل الإشادة",
+    "sentTo": "أُرسلت الإشادة إلى {names}",
+    "undo": "تراجع",
+    "couldNotUndo": "تعذّر التراجع",
+    "valuesThisMonth": "القيم هذا الشهر",
+    "askedOfYou": "مطلوب منك",
+    "seeAll": "عرض الكل ({count})",
+    "nothingAskedOfYou": "لا شيء مطلوب منك",
+    "askedForYourFeedback": "يطلب ملاحظاتك",
+    "answer": "أجب",
+    "askedOn": "طُلب في {day}"
   }
 }

@@ -32,6 +32,7 @@ import { useLanding } from "@/lib/use-landing";
 import { ContentUnavailable } from "../content-unavailable";
 import { GoalState } from "../objective-record/goal-state";
 import { useObjectiveRecord } from "../objective-record/use-objective-record";
+import { usePersonSummary } from "../../api/use-performance";
 import { appHref, dayMonth, daysBetween, firstName, fullDay } from "../year/year-words";
 import { CalendarLink } from "./calendar-link";
 import { NotesEditor } from "./notes-editor";
@@ -157,6 +158,7 @@ function MeetingPage({ series }: { series: OneOnOneSeriesDto }) {
 
           <aside className="grid gap-3">
             <GoalsCard series={series} other={other} />
+            <GrowthCard series={series} other={other} />
             <ActionsCard series={series} />
             <AboutCard series={series} other={other} />
           </aside>
@@ -520,6 +522,31 @@ function Earlier({ meetings }: { meetings: OneOnOneMeetingDto[] }) {
 }
 
 // ── Beside the meeting ─────────────────────────────────────────────────────────
+
+/** The report's growth goals for the year, each with where it stands, so a 1:1 can talk about them; none, no card. */
+function GrowthCard({ series, other }: { series: OneOnOneSeriesDto; other: OneOnOnePersonDto }) {
+  const t = useTranslations("oneOnOnes.Meeting");
+  const locale = useLocale();
+  const mine = series.viewerRole === "Report";
+  const summary = usePersonSummary(series.report.employeeId);
+  const goals = summary.data?.development?.goals ?? [];
+  if (goals.length === 0) return null;
+  return (
+    <section className="grid gap-2.5 rounded-surface bg-card px-5 py-[18px]">
+      <h2 className="type-section-title text-foreground">{mine ? t("yourGrowth") : t("theirGrowth", { name: firstName(other.displayName) })}</h2>
+      {goals.map((goal, index) => (
+        <div key={`${goal.title}-${index}`} className="grid gap-0.5">
+          <span className="font-editorial text-[14px] text-foreground">{goal.title}</span>
+          <span className="text-sm text-muted-foreground">
+            {[t(`growth.${goal.status}`), goal.targetDate && goal.status !== "Done" ? t("growthBy", { day: dayMonth(goal.targetDate, locale) }) : null]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
+        </div>
+      ))}
+    </section>
+  );
+}
 
 function GoalsCard({ series, other }: { series: OneOnOneSeriesDto; other: OneOnOnePersonDto }) {
   const t = useTranslations("oneOnOnes.Meeting");

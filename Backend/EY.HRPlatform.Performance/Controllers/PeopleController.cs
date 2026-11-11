@@ -48,4 +48,12 @@ public sealed class PeopleController(IMediator mediator, IPerformanceAccessPolic
         if (!policy.CanEnterPerformance(User)) return CapabilityForbidden();
         return MapResult(await mediator.Send(new SearchPeopleDirectoryQuery(search), cancellationToken));
     }
+
+    /// <summary>The caller's teammates, reports and manager, for praise's quick picks.</summary>
+    [HttpGet("directory/near")]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<DirectoryPersonDto>>>> Near(CancellationToken cancellationToken)
+    {
+        if (!policy.CanEnterPerformance(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new NearbyPeopleQuery(User.GetEmployeeId() ?? Guid.Empty), cancellationToken));
+    }
 }

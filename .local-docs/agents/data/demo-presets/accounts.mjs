@@ -30,18 +30,23 @@ export async function activateEveryone(people, log) {
   await Promise.all(Array.from({ length: 5 }, worker));
   log(`${done + 1} accounts active (everyone, Amira included)`);
 
-  // Omar reviews his team without the Core HR team view, as in Carthage.
-  const profiles = await amira.get("/api/identity/core-access/profiles");
-  const manager = profiles.find((profile) => profile.name === "Manager");
-  ensure(manager, "The tenant's Manager profile is missing.");
-  const restricted = await amira.post("/api/identity/core-access/profiles", {
-    name: "Manager reviewer without team view",
-    description: "Local demo reviewer access without team-view permission.",
-    grants: manager.grants.filter((g) => g.permissionKey !== "core.team.view").map((g) => ({ permissionKey: g.permissionKey, scope: g.scope })),
-  });
-  const omar = people.find((p) => p.employeeNumber === "CDG-006");
-  const assignment = (await amira.get("/api/identity/core-access/assignments")).find((a) => a.email === omar.email);
-  ensure(assignment?.userId, "Omar's account wasn't found among the assignments.");
-  await amira.put(`/api/identity/core-access/assignments/${assignment.userId}`, { accessProfileIds: [restricted.id] });
-  log("Omar reviews without core.team.view");
+  // Omar reviews his team without the Core HR team view, as in Carthage. Custom access profiles went with the roles
+  // model (POST now answers 405), so a build without them carries on and Omar keeps the team view (board: B-429).
+  try {
+    const profiles = await amira.get("/api/identity/core-access/profiles");
+    const manager = profiles.find((profile) => profile.name === "Managers" || profile.name === "Manager");
+    ensure(manager, "The tenant's Manager profile is missing.");
+    const restricted = await amira.post("/api/identity/core-access/profiles", {
+      name: "Manager reviewer without team view",
+      description: "Local demo reviewer access without team-view permission.",
+      grants: manager.grants.filter((g) => g.permissionKey !== "core.team.view").map((g) => ({ permissionKey: g.permissionKey, scope: g.scope })),
+    });
+    const omar = people.find((p) => p.employeeNumber === "CDG-006");
+    const assignment = (await amira.get("/api/identity/core-access/assignments")).find((a) => a.email === omar.email);
+    ensure(assignment?.userId, "Omar's account wasn't found among the assignments.");
+    await amira.put(`/api/identity/core-access/assignments/${assignment.userId}`, { accessProfileIds: [restricted.id] });
+    log("Omar reviews without core.team.view");
+  } catch (error) {
+    log(`Omar keeps the team view: ${String(error.message ?? error).split(/\r?\n/)[0]}`);
+  }
 }

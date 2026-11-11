@@ -19,14 +19,13 @@ namespace EY.HRPlatform.Performance.Features.Conversations;
 
 // ── Contracts ────────────────────────────────────────────────────────────────
 
-public sealed record PraiseValueDto(Guid Id, string Name);
 public sealed record PraiseReactionDto(PraiseReactionKind Kind, int Count, bool Mine);
 
 public sealed record PraiseDto(
     Guid Id,
     PersonRefDto Author,
     IReadOnlyList<PersonRefDto> Recipients,
-    PraiseValueDto Value,
+    CompanyValueDto Value,
     string Message,
     DateTime GivenAt,
     IReadOnlyList<PraiseReactionDto> Reactions,
@@ -39,7 +38,7 @@ public sealed record PraisePageDto(IReadOnlyList<PraiseDto> Items, string? Next)
 
 public enum PraiseScope { All = 0, ForMe = 1, ByMe = 2 }
 
-public sealed record GivePraiseRequest(Guid Id, IReadOnlyList<Guid> RecipientEmployeeIds, Guid CompetencyId, string Message);
+public sealed record GivePraiseRequest(Guid Id, IReadOnlyList<Guid> RecipientEmployeeIds, Guid ValueId, string Message);
 
 public sealed record PraiseActor(Guid EmployeeId, bool IsAdministrator);
 
@@ -49,14 +48,14 @@ public sealed record GivePraiseCommand(GivePraiseRequest Request, PraiseActor Ac
 public sealed record ReactToPraiseCommand(Guid PraiseId, PraiseReactionKind Kind, bool Add, PraiseActor Actor) : ICommand<Result<PraiseDto>>;
 public sealed record DeletePraiseCommand(Guid PraiseId, PraiseActor Actor) : ICommand<Result>;
 
-/// <summary>The company's values: the active competencies, by name. Everyone in Performance chooses from them.</summary>
-public sealed record ListCompanyValuesQuery : IQuery<Result<IReadOnlyList<PraiseValueDto>>>;
-
-/// <summary>How often a value was named in praise across the company over the summary's window.</summary>
+/// <summary>How often a value was named in praise across the company this month.</summary>
 public sealed record PraiseValueCountDto(Guid Id, string Name, int Count);
 
-/// <summary>What the company celebrates lately, and how much praise the caller has received and given.</summary>
-public sealed record PraiseSummaryDto(int WindowDays, IReadOnlyList<PraiseValueCountDto> Values, int Received, int Given);
+/// <summary>
+/// The wall's week (from Monday, UTC) and how much praise it holds; each of the company's values with how often it was
+/// named this month; how much praise the caller has received and given.
+/// </summary>
+public sealed record PraiseSummaryDto(DateOnly WeekStart, int ThisWeek, IReadOnlyList<PraiseValueCountDto> Values, int Received, int Given);
 
 public sealed record GetPraiseSummaryQuery(Guid EmployeeId) : IQuery<Result<PraiseSummaryDto>>;
 
@@ -68,14 +67,13 @@ public sealed class PraiseReader(PerformanceDbContext db)
     {
         if (items.Count == 0) return [];
         var ids = items.Select(p => p.Id).ToList();
-        var valueIds = items.Select(p => p.CompetencyId).Distinct().ToList();
-        var values = await db.Competencies.AsNoTracking().Where(c => valueIds.Contains(c.Id)).ToDictionaryAsync(c => c.Id, c => c.Name, token);
+        var values = await CompanyValues.NamesAsync(db, items.Select(p => p.ValueId), token);
         var reactions = await db.PraiseReactions.AsNoTracking().Where(r => ids.Contains(r.PraiseId))
             .Select(r => new { r.PraiseId, r.Kind, r.ReactorEmployeeId }).ToListAsync(token);
         var me = actor.EmployeeId;
         return items.Select(p => new PraiseDto(p.Id, new PersonRefDto(p.AuthorEmployeeId, p.AuthorName),
             p.Recipients.OrderBy(r => r.Name).Select(r => new PersonRefDto(r.EmployeeId, r.Name)).ToList(),
-            new PraiseValueDto(p.CompetencyId, values.GetValueOrDefault(p.CompetencyId) ?? "A company value"), p.Message, p.GivenAt,
+            new CompanyValueDto(p.ValueId, values.GetValueOrDefault(p.ValueId) ?? CompanyValues.Fallback), p.Message, p.GivenAt,
             Enum.GetValues<PraiseReactionKind>().Select(kind =>
             {
                 var mine = reactions.Where(r => r.PraiseId == p.Id && r.Kind == kind).ToList();
@@ -148,7 +146,7 @@ public sealed class GivePraiseHandler(PerformanceDbContext db, ICoreWorkforceCli
         var wanted = (request.RecipientEmployeeIds ?? []).Distinct().ToList();
         if (wanted.Count is 0 or > Praise.MaxRecipients) return Invalid($"Praise 1 to {Praise.MaxRecipients} people.");
         if (wanted.Contains(me)) return Invalid("Praise someone other than yourself.");
-        var value = await db.Competencies.FirstOrDefaultAsync(c => c.Id == request.CompetencyId && c.State == CompetencyState.Active, token);
+        var value = (await CompanyValues.ActiveAsync(db, tenant.TenantId, token)).FirstOrDefault(v => v.Id == request.ValueId);
         if (value is null) return Invalid("Choose one of the company's values.");
 
         var people = await workforce.ResolveAsync(PerformanceClock.UtcNow, [.. wanted, me], token);
@@ -165,10 +163,9 @@ public sealed class GivePraiseHandler(PerformanceDbContext db, ICoreWorkforceCli
                 recipients.Select(r => (r!.EmployeeId, r.DisplayName)).ToList(), PerformanceClock.UtcNow);
         }
         catch (ArgumentException ex) { return Invalid(ex.Message); }
-        value.MarkUsed(PerformanceClock.UtcNow);
         db.Praise.Add(praise);
         audit.Record(praise.TenantId, "Praise", praise.Id, null, PerformanceAuditActions.PraiseGiven,
-            new { authorEmployeeId = me, recipientEmployeeIds = wanted, competencyId = value.Id });
+            new { authorEmployeeId = me, recipientEmployeeIds = wanted, valueId = value.Id });
 
         // Recipients hear it themselves; a recipient's manager hears once per praise, unless they were praised too.
         var recipientIds = wanted.ToHashSet();
@@ -211,13 +208,6 @@ public sealed class ReactToPraiseHandler(PerformanceDbContext db, ITenantContext
     }
 }
 
-public sealed class ListCompanyValuesHandler(PerformanceDbContext db) : IQueryHandler<ListCompanyValuesQuery, Result<IReadOnlyList<PraiseValueDto>>>
-{
-    public async Task<Result<IReadOnlyList<PraiseValueDto>>> Handle(ListCompanyValuesQuery query, CancellationToken token)
-        => Result.Success<IReadOnlyList<PraiseValueDto>>(await db.Competencies.AsNoTracking().Where(c => c.State == CompetencyState.Active)
-            .OrderBy(c => c.Name).Select(c => new PraiseValueDto(c.Id, c.Name)).ToListAsync(token));
-}
-
 public sealed class DeletePraiseHandler(PerformanceDbContext db, IPerformanceAudit audit) : ICommandHandler<DeletePraiseCommand, Result>
 {
     public async Task<Result> Handle(DeletePraiseCommand command, CancellationToken token)
@@ -238,24 +228,24 @@ public sealed class DeletePraiseHandler(PerformanceDbContext db, IPerformanceAud
     }
 }
 
-public sealed class GetPraiseSummaryHandler(PerformanceDbContext db) : IQueryHandler<GetPraiseSummaryQuery, Result<PraiseSummaryDto>>
+public sealed class GetPraiseSummaryHandler(PerformanceDbContext db, ITenantContext tenant) : IQueryHandler<GetPraiseSummaryQuery, Result<PraiseSummaryDto>>
 {
-    public const int WindowDays = 90;
-
     public async Task<Result<PraiseSummaryDto>> Handle(GetPraiseSummaryQuery query, CancellationToken token)
     {
         var me = query.EmployeeId;
-        var since = PerformanceClock.UtcNow.AddDays(-WindowDays);
+        var now = PerformanceClock.UtcNow;
+        var today = DateOnly.FromDateTime(now);
+        var weekStart = today.AddDays(-(((int)today.DayOfWeek + 6) % 7));
+        var weekFrom = weekStart.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var monthFrom = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
         var praise = PraisePolicy.Readable(db.Praise.AsNoTracking());
-        var counts = await praise.Where(p => p.GivenAt >= since).GroupBy(p => p.CompetencyId)
-            .Select(g => new { Id = g.Key, Count = g.Count() }).ToListAsync(token);
-        var ids = counts.Select(c => c.Id).ToList();
-        // Archived values keep their name here, as they do on the praise itself.
-        var names = await db.Competencies.AsNoTracking().Where(c => ids.Contains(c.Id)).ToDictionaryAsync(c => c.Id, c => c.Name, token);
-        var values = counts.Select(c => new PraiseValueCountDto(c.Id, names.GetValueOrDefault(c.Id) ?? "A company value", c.Count))
-            .OrderByDescending(v => v.Count).ThenBy(v => v.Name).ToList();
+        var thisWeek = await praise.CountAsync(p => p.GivenAt >= weekFrom, token);
+        var counts = await praise.Where(p => p.GivenAt >= monthFrom).GroupBy(p => p.ValueId)
+            .Select(g => new { Id = g.Key, Count = g.Count() }).ToDictionaryAsync(c => c.Id, c => c.Count, token);
+        var values = (await CompanyValues.ActiveAsync(db, tenant.TenantId, token))
+            .Select(v => new PraiseValueCountDto(v.Id, v.Name, counts.GetValueOrDefault(v.Id))).ToList();
         var received = me == Guid.Empty ? 0 : await praise.CountAsync(p => p.Recipients.Any(r => r.EmployeeId == me), token);
         var given = me == Guid.Empty ? 0 : await praise.CountAsync(p => p.AuthorEmployeeId == me, token);
-        return Result.Success(new PraiseSummaryDto(WindowDays, values, received, given));
+        return Result.Success(new PraiseSummaryDto(weekStart, thisWeek, values, received, given));
     }
 }

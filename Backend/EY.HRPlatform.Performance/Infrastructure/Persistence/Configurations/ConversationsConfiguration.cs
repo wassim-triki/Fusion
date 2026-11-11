@@ -191,6 +191,21 @@ public sealed class PraiseConfiguration : IEntityTypeConfiguration<Praise>
     }
 }
 
+public sealed class CompanyValueConfiguration : IEntityTypeConfiguration<CompanyValue>
+{
+    public void Configure(EntityTypeBuilder<CompanyValue> builder)
+    {
+        builder.ToTable("CompanyValues");
+        builder.HasKey(value => value.Id);
+        builder.Property(value => value.Id).ValueGeneratedNever();
+        builder.Property(value => value.Version).IsRowVersion();
+        builder.Property(value => value.Name).IsRequired().HasMaxLength(CompanyValue.MaxNameLength);
+        builder.Property(value => value.NameKey).IsRequired().HasMaxLength(CompanyValue.MaxNameLength);
+        builder.Ignore(value => value.IsActive);
+        builder.HasIndex(value => new { value.TenantId, value.NameKey }).IsUnique().HasFilter("\"RemovedAt\" IS NULL");
+    }
+}
+
 public sealed class PraiseRecipientConfiguration : IEntityTypeConfiguration<PraiseRecipient>
 {
     public void Configure(EntityTypeBuilder<PraiseRecipient> builder)

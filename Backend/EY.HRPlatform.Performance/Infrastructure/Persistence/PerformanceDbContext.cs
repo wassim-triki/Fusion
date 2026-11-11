@@ -90,6 +90,7 @@ public sealed class PerformanceDbContext : DbContext
     public DbSet<Feedback> Feedback => Set<Feedback>();
     public DbSet<FeedbackRequest> FeedbackRequests => Set<FeedbackRequest>();
     public DbSet<FeedbackRequestInvitee> FeedbackRequestInvitees => Set<FeedbackRequestInvitee>();
+    public DbSet<CompanyValue> CompanyValues => Set<CompanyValue>();
     public DbSet<Praise> Praise => Set<Praise>();
     public DbSet<PraiseRecipient> PraiseRecipients => Set<PraiseRecipient>();
     public DbSet<PraiseReaction> PraiseReactions => Set<PraiseReaction>();
@@ -214,6 +215,8 @@ public sealed class PerformanceDbContext : DbContext
         modelBuilder.Entity<FeedbackRequest>()
             .HasQueryFilter(e => CurrentTenantId != Guid.Empty && e.TenantId == CurrentTenantId);
         modelBuilder.Entity<FeedbackRequestInvitee>()
+            .HasQueryFilter(e => CurrentTenantId != Guid.Empty && e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<CompanyValue>()
             .HasQueryFilter(e => CurrentTenantId != Guid.Empty && e.TenantId == CurrentTenantId);
         modelBuilder.Entity<Praise>()
             .HasQueryFilter(e => CurrentTenantId != Guid.Empty && e.TenantId == CurrentTenantId);

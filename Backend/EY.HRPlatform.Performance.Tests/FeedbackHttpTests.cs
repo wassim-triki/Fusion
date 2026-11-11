@@ -105,7 +105,7 @@ public sealed class FeedbackHttpTests
 
         await using var db = w.Factory.Store.NewContext();
         var notification = Assert.Single(await db.Notifications.Where(n => n.RecipientEmployeeId == w.Rim).ToListAsync());
-        Assert.Equal($"/performance/feedback#feedback-{id}", notification.Href);
+        Assert.Equal($"/performance/feedback?tab=yours#feedback-{id}", notification.Href);
         var outbox = await db.OutboxMessages.SingleAsync(m => m.RecipientEmployeeId == w.Rim);
         var email = notification.EnglishEmail();
         Assert.DoesNotContain("SECRET-MESSAGE-TEXT", email.Text + email.Html + email.Subject + outbox.Payload + notification.ValuesJson);

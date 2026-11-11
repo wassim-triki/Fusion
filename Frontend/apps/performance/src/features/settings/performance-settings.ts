@@ -4,6 +4,7 @@ import { useSettingsSectionName } from "@repo/ds/shell";
 export const PERFORMANCE_SETTINGS_SECTIONS = [
   { id: "rating-scale", label: "Rating scale" },
   { id: "competencies", label: "Competencies" },
+  { id: "values", label: "Values" },
   { id: "review-questions", label: "Review questions" },
   { id: "reviews", label: "Reviews" },
   { id: "planning", label: "Planning" },

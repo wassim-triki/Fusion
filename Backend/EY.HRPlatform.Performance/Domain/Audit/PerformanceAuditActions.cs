@@ -37,6 +37,9 @@ public static class PerformanceAuditActions
     public const string FeedbackRequestClosed = "Feedback.RequestClosed";
     public const string PraiseGiven = "Praise.Given";
     public const string PraiseDeleted = "Praise.Deleted";
+    public const string ValueAdded = "Value.Added";
+    public const string ValueRenamed = "Value.Renamed";
+    public const string ValueRemoved = "Value.Removed";
     public const string SettingsChanged = "Settings.Changed";
     public const string RatingScaleChanged = "RatingScale.Changed";
     public const string NotificationDefaultsChanged = "NotificationDefaults.Changed";

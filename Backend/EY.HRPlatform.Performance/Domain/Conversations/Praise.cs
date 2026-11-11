@@ -6,7 +6,7 @@ public enum PraiseReactionKind { Applause = 0, Celebrate = 1, Insightful = 2, Th
 public enum PraiseDeletedBy { Author = 0, Administrator = 1 }
 
 /// <summary>
-/// Public recognition for one or more colleagues, tagged with one company value (D-14). Everyone with Performance
+/// Public recognition for one or more colleagues, tagged with one of the company's values (D-36). Everyone with Performance
 /// access reads it. Its text never changes; the author or an administrator can delete it, which hides it everywhere
 /// while the row stays for the audit and the notifications that point at it.
 /// </summary>
@@ -21,7 +21,7 @@ public sealed class Praise : PerformanceAggregate
 
     public Guid AuthorEmployeeId { get; private set; }
     public string AuthorName { get; private set; } = string.Empty;
-    public Guid CompetencyId { get; private set; }
+    public Guid ValueId { get; private set; }
     public string Message { get; private set; } = string.Empty;
     public DateTime GivenAt { get; private set; }
     public DateTime? DeletedAt { get; private set; }
@@ -31,13 +31,13 @@ public sealed class Praise : PerformanceAggregate
     public IReadOnlyList<PraiseRecipient> Recipients => _recipients;
     public bool IsDeleted => DeletedAt is not null;
 
-    public static Praise Give(Guid id, Guid tenantId, Guid authorEmployeeId, string authorName, Guid competencyId, string message,
+    public static Praise Give(Guid id, Guid tenantId, Guid authorEmployeeId, string authorName, Guid valueId, string message,
         IReadOnlyList<(Guid EmployeeId, string Name)> recipients, DateTime now)
     {
         if (id == Guid.Empty) throw new ArgumentException("Praise needs an id.", nameof(id));
         if (tenantId == Guid.Empty) throw new ArgumentException("TenantId is required.", nameof(tenantId));
         if (authorEmployeeId == Guid.Empty) throw new ArgumentException("Praise has an author.", nameof(authorEmployeeId));
-        if (competencyId == Guid.Empty) throw new ArgumentException("Choose a value.", nameof(competencyId));
+        if (valueId == Guid.Empty) throw new ArgumentException("Choose a value.", nameof(valueId));
         var text = message?.Trim() ?? string.Empty;
         if (text.Length == 0) throw new ArgumentException("Write what they did.", nameof(message));
         if (text.Length > MaxMessageLength) throw new ArgumentException($"Keep praise to {MaxMessageLength} characters.", nameof(message));
@@ -48,7 +48,7 @@ public sealed class Praise : PerformanceAggregate
         var praise = new Praise
         {
             Id = id, TenantId = tenantId, AuthorEmployeeId = authorEmployeeId, AuthorName = authorName,
-            CompetencyId = competencyId, Message = text, GivenAt = now,
+            ValueId = valueId, Message = text, GivenAt = now,
         };
         foreach (var person in people) praise._recipients.Add(PraiseRecipient.Create(tenantId, praise.Id, person.EmployeeId, person.Name));
         return praise;

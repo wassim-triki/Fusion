@@ -175,11 +175,12 @@ export function storyContext(people) {
     disagreeing: mariamsOthers[0]?.index ?? null,
     amira: () => as(byIndex(P.AMIRA).email),
     values: [],
+    praiseValues: [],
     cycles: {},
   };
 }
 
-/** Competencies the reviews rate and praise is tagged with; once per preset, before the first cycle. */
+/** Competencies the reviews rate (and growth goals and feedback name), and the company's values praise is tagged with; once per preset. */
 export function companySetup(t, ctx, when) {
   const competencies = [
     ["Systems Thinking", "Connects product, platform and service decisions to wider business outcomes.", ["Identifies dependencies", "Balances near-term delivery with long-term sustainability"]],
@@ -191,7 +192,8 @@ export function companySetup(t, ctx, when) {
   t.add(moment(when, 9), "Amira sets up the competencies", async () => {
     for (const [name, description, behaviors] of competencies)
       await ctx.amira().post("/api/performance/settings/competencies", { name, description, behaviors });
-    ctx.values = (await ctx.amira().get("/api/performance/values")).map((v) => v.id);
+    ctx.values = (await ctx.amira().get("/api/performance/settings/competencies")).filter((c) => c.state === "Active").map((c) => c.id);
+    ctx.praiseValues = (await ctx.amira().get("/api/performance/values")).map((v) => v.id);
   });
 }
 
@@ -611,10 +613,7 @@ function reviewRound(t, ctx, cycle) {
       if (id) await as(person.email).post(`/api/performance/reviews/${id}/acknowledge`, { comment: hash("ackNote", person.index) % 3 ? null : "Thanks. Agreed on the focus for next year." });
     });
   }
-  t.add(moment(addDays(R, 7), 12), "Amira closes the Year-end review", async () => {
-    const round = await amira().get(`/api/performance/review-rounds/${r.id}`);
-    await amira().post(`/api/performance/review-rounds/${r.id}/close`, { expectedVersion: round.version });
-  });
+  // The round closes itself once results are out (B-405 slice 2); nothing to close by hand.
 }
 
 // ── Conversations across the whole preset ──────────────────────────────────────────────────────────────────────────
@@ -638,21 +637,22 @@ export function conversations(t, ctx, from, today) {
       if (!upcoming || upcoming.scheduledAt.slice(0, 10) >= ymd(today)) return;
       const at = new Date(upcoming.scheduledAt);
       const k = n++;
+      const itemId = crypto.randomUUID();
       t.add(new Date(at.getTime() - 20 * 3_600_000).toISOString(), `${other.name} adds to the 1:1 agenda`, async () => {
         await as(other.email).post(`/api/performance/one-on-ones/meetings/${upcoming.id}/agenda`,
-          { id: crypto.randomUUID(), text: ["Release plan for next month", "Training budget", "Workload this sprint", "Feedback from the client"][k % 4] });
+          { id: itemId, text: ["Release plan for next month", "Training budget", "Workload this sprint", "Feedback from the client"][k % 4] });
       });
-      t.add(new Date(at.getTime() + 30 * 60_000).toISOString(), `${manager.name} holds the 1:1 with ${other.name}`, async () => {
+      // A 1:1 lasts 30 minutes and completes itself; its notes stay open until the next one (slice 6).
+      t.add(new Date(at.getTime() + 45 * 60_000).toISOString(), `${manager.name} holds the 1:1 with ${other.name}`, async () => {
         const m = `/api/performance/one-on-ones/meetings/${upcoming.id}`;
-        let current = await as(manager.email).put(`${m}/notes/shared`,
+        let current = await as(manager.email).put(`${m}/agenda/${itemId}/note`,
           { text: ["Agreed the next two releases and who owns each.", "Talked through the estimate; Aicha brings the numbers next time.", "Good month. Two blockers raised, both with owners."][k % 3], expectedRevision: 0 });
-        for (const action of (current.upcoming?.actions ?? []).filter((a) => !a.doneAt && a.ownerEmployeeId === other.employeeId))
+        for (const action of (current.actions ?? current.upcoming?.actions ?? []).filter((a) => !a.doneAt && a.ownerEmployeeId === other.employeeId))
           current = await as(other.email).put(`/api/performance/one-on-ones/${series.id}/actions/${action.id}/done`, { done: true });
         if (k % 2 === 0) await as(manager.email).post(`/api/performance/one-on-ones/${series.id}/actions`,
           { id: crypto.randomUUID(), text: "Share the revised estimate with the client", ownerEmployeeId: other.employeeId, dueDate: ymd(addDays(at, 5)) });
         const latest = await as(manager.email).get(`/api/performance/one-on-ones/${series.id}`);
-        const completed = await as(manager.email).post(`${m}/complete`, { expectedVersion: latest.upcoming.version });
-        scheduleMeeting(completed.upcoming);
+        scheduleMeeting(latest.upcoming?.id === upcoming.id ? null : latest.upcoming);
       });
     };
   }
@@ -669,7 +669,7 @@ export function conversations(t, ctx, from, today) {
       t.add(moment(d, 15), `${giver.name} praises ${receiver.name}`, async () => {
         await as(giver.email).post("/api/performance/praise", {
           id: crypto.randomUUID(), recipientEmployeeIds: k % 2 ? [receiver.employeeId] : [receiver.employeeId, extra.employeeId],
-          competencyId: ctx.values[k % ctx.values.length], message: PRAISE[k % PRAISE.length],
+          valueId: ctx.praiseValues[k % ctx.praiseValues.length], message: PRAISE[k % PRAISE.length],
         });
       });
     } else {

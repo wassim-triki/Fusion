@@ -191,5 +191,17 @@
       "off": "Suggestions disappear everywhere at once, open reviews included.",
       "retention": "Evidence is kept {count} months after its cycle closes, closed cycles included."
     }
+  },
+  "values": {
+    "title": "Values",
+    "add": "Add a value",
+    "placeholder": "A value, in a few words",
+    "rename": "Rename {name}",
+    "remove": "Remove {name}",
+    "save": "Save",
+    "cancel": "Cancel",
+    "none": "No values. Praise needs at least one.",
+    "notSaved": "This change wasn't saved. Try again.",
+    "full": "Twelve values at most"
   }
 }

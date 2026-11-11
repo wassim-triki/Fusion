@@ -49,18 +49,6 @@
     "askedColleague": "Demande envoyée à {length} collègue.",
     "askedColleagues": "Demande envoyée à {length} collègues."
   },
-  "PraiseComposer": {
-    "whatTheyDidInYour": "Ce qu’il ou elle a fait, avec vos mots.",
-    "givePraise": "Féliciter",
-    "who": "Qui",
-    "value": "Valeur",
-    "for": "Pour",
-    "whatTheyDid": "Ce qu’il ou elle a fait",
-    "everyoneWillSee": "Tout le monde le verra",
-    "cancel": "Annuler",
-    "praisePeople": "Reconnaître {length} personnes",
-    "praiseShared": "Reconnaissance partagée."
-  },
   "DueBlock": {
     "overdue": "En retard",
     "due": "Échéance",
@@ -102,19 +90,23 @@
     "couldNotDelete": "Impossible de supprimer cette reconnaissance."
   },
   "FeedbackWorkspace": {
-    "yourTeam": "Votre équipe",
     "feedback": "Feedback",
     "askForFeedback": "Demander un feedback",
     "giveFeedback": "Donner un feedback",
     "noFeedbackAboutYourTeam": "Aucun feedback sur votre équipe pour l’instant",
     "youHaventGivenFeedbackYet": "Vous n’avez pas encore donné de feedback",
     "tabs": {
+      "praise": "Reconnaissances",
+      "asked": "Pour vous",
+      "yours": "Les vôtres"
+    },
+    "views": {
       "received": "Reçus",
       "given": "Donnés",
-      "requests": "Demandes",
-      "praise": "Reconnaissances",
-      "team": "Votre équipe"
-    }
+      "requests": "Vos demandes",
+      "team": "Sur votre équipe"
+    },
+    "show": "Afficher"
   },
   "ReceivedTab": {
     "noFeedbackYet": "Aucun feedback pour l’instant",
@@ -152,17 +144,16 @@
   },
   "RequestsTab": {
     "askedOfYou": "Qui vous sont adressées",
-    "nothingToAnswer": "Rien à répondre",
-    "lastAnsweredFor": "· dernière réponse pour {name}",
-    "yours": "Les vôtres",
-    "open": "{length} ouvertes",
     "noOpenRequests": "Aucune demande ouverte",
     "closed": "Clôturé",
     "asked": "{name} a demandé :",
     "answered": "Répondu",
     "declined": "Refusé",
     "answer": "{answered} réponse",
-    "answers": "{answered} réponses"
+    "answers": "{answered} réponses",
+    "nothingAskedOfYou": "Rien ne vous est demandé",
+    "earlier": "Plus tôt",
+    "openRequests": "Demandes ouvertes"
   },
   "AskedOfYou": {
     "askedYou": "vous a demandé · {requestedAt}",
@@ -173,43 +164,16 @@
     "due": "Échéance",
     "ofAnswered": "{answered} sur {invited} ont répondu"
   },
-  "PraiseTab": {
-    "showPraise": "Afficher les reconnaissances",
-    "praise": "Reconnaissances",
-    "filters": {
-      "all": "Tout le monde",
-      "forMe": "Pour vous",
-      "byMe": "Par vous"
-    }
-  },
-  "GivePraiseBar": {
-    "praiseAColleagueFor": "Reconnaître un collègue pour…",
-    "praiseSomeoneFor": "Reconnaître quelqu’un pour {name}",
-    "givePraise": "Féliciter"
-  },
-  "PraiseSidebar": {
-    "whatWeCelebrateLastDays": "Ce que nous célébrons · {windowDays} derniers jours",
-    "received": "reçues",
-    "given": "données",
-    "yourPraise": "Vos reconnaissances"
-  },
-  "PraisePage": {
-    "praise": "Reconnaissances",
-    "noPraiseYet": "Aucune reconnaissance pour l’instant",
-    "giveTheFirst": "Donner la première",
-    "noPraiseForYouYet": "Aucune reconnaissance pour vous pour l’instant",
-    "youHaventGivenPraiseYet": "Vous n’avez pas encore donné de reconnaissance",
-    "showOlder": "Afficher les plus anciens"
-  },
   "RequestView": {
-    "requests": "Demandes",
     "askedYou": "{name} vous a demandé",
     "open": "Ouvrir",
     "closed": "Clôturé",
     "asked": "Demandé le {requestedAt}",
     "due": "· échéance le {dueDate}",
     "closed2": "· clôturée le {closedAt}",
-    "closeRequest": "Clôturer la demande"
+    "closeRequest": "Clôturer la demande",
+    "askedOfYou": "Pour vous",
+    "yourRequests": "Vos demandes"
   },
   "FullView": {
     "asked": "Demandé",
@@ -279,5 +243,42 @@
     "openTheRequest": "Ouvrir la demande",
     "unavailable": "Cette demande ne vous est pas accessible.",
     "loading": "Chargement de la demande"
+  },
+  "PraiseWall": {
+    "thisWeekAt": "Cette semaine chez {company}",
+    "yourCompany": "votre entreprise",
+    "noPraiseYet": "Aucune reconnaissance pour l’instant",
+    "countThisWeek": "{count, plural, one {# cette semaine} other {# cette semaine}}",
+    "quietWeek": "Rien encore cette semaine",
+    "earlier": "Plus tôt",
+    "showOlder": "Voir plus ancien",
+    "aColleague": "Un collègue",
+    "praised": "{author} a salué {recipients}",
+    "to": "à",
+    "justNow": "À l’instant",
+    "reactions": "Réactions",
+    "praiseSomeone": "Saluer quelqu’un",
+    "starterValues": "Valeurs de départ, modifiables dans les paramètres",
+    "who": "Qui",
+    "searchAnyone": "Chercher quelqu’un",
+    "anyone": "Quelqu’un d’autre",
+    "value": "Valeur",
+    "whatTheyDid": "Ce qu’ils ont fait",
+    "whatDidNameDo": "Qu’a fait {name} ?",
+    "whatDidTheyDo": "Qu’ont-ils fait ?",
+    "managerHears": "Le manager de {name} en est informé aussi",
+    "managersHear": "Leurs managers en sont informés aussi",
+    "everyoneSees": "Toute l’entreprise la voit",
+    "sendPraise": "Envoyer",
+    "sentTo": "Reconnaissance envoyée à {names}",
+    "undo": "Annuler",
+    "couldNotUndo": "Impossible de l’annuler",
+    "valuesThisMonth": "Valeurs ce mois-ci",
+    "askedOfYou": "Pour vous",
+    "seeAll": "Voir les {count}",
+    "nothingAskedOfYou": "Rien ne vous est demandé",
+    "askedForYourFeedback": "vous demande un feedback",
+    "answer": "Répondre",
+    "askedOn": "Demandé le {day}"
   }
 }

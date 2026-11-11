@@ -218,7 +218,15 @@
     "time": "Heure",
     "howOften": "Fréquence",
     "cancel": "Annuler",
-    "move": "Déplacer"
+    "move": "Déplacer",
+    "yourGrowth": "Votre développement",
+    "theirGrowth": "Développement de {name}",
+    "growth": {
+      "NotStarted": "Pas commencé",
+      "InProgress": "En cours",
+      "Done": "Fait"
+    },
+    "growthBy": "d’ici le {day}"
   },
   "CalendarLink": {
     "title": "Vos tête-à-tête dans votre agenda",

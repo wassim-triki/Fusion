@@ -16,6 +16,7 @@ public static class SettingsSections
 {
     public const string RatingScale = "rating-scale";
     public const string Competencies = "competencies";
+    public const string Values = "values";
     public const string ReviewQuestions = "review-questions";
     public const string Reviews = "reviews";
     public const string Planning = "planning";
@@ -29,6 +30,7 @@ public static class SettingsSections
     [
         new(RatingScale, "Rating scale"),
         new(Competencies, "Competencies"),
+        new(Values, "Values"),
         new(ReviewQuestions, "Review questions"),
         new(Reviews, "Reviews"),
         new(Planning, "Planning"),
@@ -116,6 +118,9 @@ public sealed class GetSettingsSectionsHandler(PerformanceDbContext db, ICoreWor
         PerformanceAuditActions.CompetencyChanged,
         PerformanceAuditActions.CompetencyArchived,
         PerformanceAuditActions.CompetencyDeleted,
+        PerformanceAuditActions.ValueAdded,
+        PerformanceAuditActions.ValueRenamed,
+        PerformanceAuditActions.ValueRemoved,
         PerformanceAuditActions.ReviewQuestionCreated,
         PerformanceAuditActions.ReviewQuestionChanged,
         PerformanceAuditActions.ReviewQuestionArchived,
@@ -144,6 +149,7 @@ public sealed class GetSettingsSectionsHandler(PerformanceDbContext db, ICoreWor
                 PerformanceAuditActions.RatingScaleChanged => [SettingsSections.RatingScale],
                 PerformanceAuditActions.NotificationDefaultsChanged => [SettingsSections.Notifications],
                 _ when entry.Action.StartsWith("Competency.", StringComparison.Ordinal) => [SettingsSections.Competencies],
+                _ when entry.Action.StartsWith("Value.", StringComparison.Ordinal) => [SettingsSections.Values],
                 _ => [SettingsSections.ReviewQuestions],
             };
             foreach (var section in sections)
@@ -156,6 +162,7 @@ public sealed class GetSettingsSectionsHandler(PerformanceDbContext db, ICoreWor
         {
             [SettingsSections.RatingScale] = await db.RatingScales.AsNoTracking().Select(item => (DateTime?)item.CreatedAt).FirstOrDefaultAsync(token),
             [SettingsSections.Competencies] = await db.Competencies.AsNoTracking().MinAsync(item => (DateTime?)item.CreatedAt, token),
+            [SettingsSections.Values] = await db.CompanyValues.AsNoTracking().MinAsync(item => (DateTime?)item.CreatedAt, token),
             [SettingsSections.ReviewQuestions] = await db.ReviewQuestions.AsNoTracking().MinAsync(item => (DateTime?)item.CreatedAt, token),
             [SettingsSections.Notifications] = await db.NotificationDefaults.AsNoTracking().Select(item => (DateTime?)item.CreatedAt).FirstOrDefaultAsync(token),
         };

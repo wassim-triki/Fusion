@@ -24,14 +24,14 @@ public sealed class PraiseController(IMediator mediator, IPerformanceAccessPolic
         [FromQuery] string? before = null, [FromQuery] int limit = 10, CancellationToken cancellationToken = default)
         => Entered ? MapResult(await mediator.Send(new ListPraiseQuery(scope, employeeId, before, limit, Actor), cancellationToken)) : CapabilityForbidden();
 
-    /// <summary>The values the company celebrated over the last 90 days, and the caller's received and given counts.</summary>
+    /// <summary>This week's count for the wall, each value's count this month, and the caller's received and given counts.</summary>
     [HttpGet("summary")]
     public async Task<ActionResult<ApiResponse<PraiseSummaryDto>>> Summary(CancellationToken cancellationToken)
         => Entered ? MapResult(await mediator.Send(new GetPraiseSummaryQuery(Actor.EmployeeId), cancellationToken)) : CapabilityForbidden();
 
-    /// <summary>The values praise and feedback can name: the active competency catalogue, names only.</summary>
+    /// <summary>The company's values, the list praise names (D-36); a company that never had any starts with the starters.</summary>
     [HttpGet("~/api/performance/values")]
-    public async Task<ActionResult<ApiResponse<IReadOnlyList<PraiseValueDto>>>> Values(CancellationToken cancellationToken)
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<CompanyValueDto>>>> Values(CancellationToken cancellationToken)
         => Entered ? MapResult(await mediator.Send(new ListCompanyValuesQuery(), cancellationToken)) : CapabilityForbidden();
 
     [HttpGet("{praiseId:guid}")]

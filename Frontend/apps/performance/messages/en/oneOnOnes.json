@@ -218,7 +218,15 @@
     "time": "Time",
     "howOften": "How often",
     "cancel": "Cancel",
-    "move": "Move it"
+    "move": "Move it",
+    "yourGrowth": "Your growth",
+    "theirGrowth": "{name}'s growth",
+    "growth": {
+      "NotStarted": "Not started",
+      "InProgress": "Under way",
+      "Done": "Done"
+    },
+    "growthBy": "by {day}"
   },
   "CalendarLink": {
     "title": "Your 1:1s in your calendar app",

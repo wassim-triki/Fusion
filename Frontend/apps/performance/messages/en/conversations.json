@@ -49,18 +49,6 @@
     "askedColleague": "Asked {length} colleague.",
     "askedColleagues": "Asked {length} colleagues."
   },
-  "PraiseComposer": {
-    "whatTheyDidInYour": "What they did, in your words.",
-    "givePraise": "Give praise",
-    "who": "Who",
-    "value": "Value",
-    "for": "For",
-    "whatTheyDid": "What they did",
-    "everyoneWillSee": "Everyone will see",
-    "cancel": "Cancel",
-    "praisePeople": "Praise {length} people",
-    "praiseShared": "Praise shared."
-  },
   "DueBlock": {
     "overdue": "Overdue",
     "due": "Due",
@@ -102,19 +90,23 @@
     "couldNotDelete": "Could not delete this praise."
   },
   "FeedbackWorkspace": {
-    "yourTeam": "Your team",
     "feedback": "Feedback",
     "askForFeedback": "Ask for feedback",
     "giveFeedback": "Give feedback",
     "noFeedbackAboutYourTeam": "No feedback about your team yet",
     "youHaventGivenFeedbackYet": "You haven't given feedback yet",
     "tabs": {
+      "praise": "Praise",
+      "asked": "Asked of you",
+      "yours": "Yours"
+    },
+    "views": {
       "received": "Received",
       "given": "Given",
-      "requests": "Requests",
-      "praise": "Praise",
-      "team": "Your team"
-    }
+      "requests": "Your requests",
+      "team": "About your team"
+    },
+    "show": "Show"
   },
   "ReceivedTab": {
     "noFeedbackYet": "No feedback yet",
@@ -152,17 +144,16 @@
   },
   "RequestsTab": {
     "askedOfYou": "Asked of you",
-    "nothingToAnswer": "Nothing to answer",
-    "lastAnsweredFor": "· last answered for {name}",
-    "yours": "Yours",
-    "open": "{length} open",
     "noOpenRequests": "No open requests",
     "closed": "Closed",
     "asked": "{name} asked:",
     "answered": "Answered",
     "declined": "Declined",
     "answer": "{answered} answer",
-    "answers": "{answered} answers"
+    "answers": "{answered} answers",
+    "nothingAskedOfYou": "Nothing asked of you",
+    "earlier": "Earlier",
+    "openRequests": "Open requests"
   },
   "AskedOfYou": {
     "askedYou": "asked you · {requestedAt}",
@@ -173,43 +164,16 @@
     "due": "Due",
     "ofAnswered": "{answered} of {invited} answered"
   },
-  "PraiseTab": {
-    "showPraise": "Show praise",
-    "praise": "Praise",
-    "filters": {
-      "all": "Everyone",
-      "forMe": "For you",
-      "byMe": "By you"
-    }
-  },
-  "GivePraiseBar": {
-    "praiseAColleagueFor": "Praise a colleague for…",
-    "praiseSomeoneFor": "Praise someone for {name}",
-    "givePraise": "Give praise"
-  },
-  "PraiseSidebar": {
-    "whatWeCelebrateLastDays": "What we celebrate · last {windowDays} days",
-    "received": "received",
-    "given": "given",
-    "yourPraise": "Your praise"
-  },
-  "PraisePage": {
-    "praise": "Praise",
-    "noPraiseYet": "No praise yet",
-    "giveTheFirst": "Give the first",
-    "noPraiseForYouYet": "No praise for you yet",
-    "youHaventGivenPraiseYet": "You haven't given praise yet",
-    "showOlder": "Show older"
-  },
   "RequestView": {
-    "requests": "Requests",
     "askedYou": "{name} asked you",
     "open": "Open",
     "closed": "Closed",
     "asked": "Asked {requestedAt}",
     "due": "· due {dueDate}",
     "closed2": "· closed {closedAt}",
-    "closeRequest": "Close request"
+    "closeRequest": "Close request",
+    "askedOfYou": "Asked of you",
+    "yourRequests": "Your requests"
   },
   "FullView": {
     "asked": "Asked",
@@ -279,5 +243,42 @@
     "openTheRequest": "Open the request",
     "unavailable": "This request isn't available to you.",
     "loading": "Loading the request"
+  },
+  "PraiseWall": {
+    "thisWeekAt": "This week at {company}",
+    "yourCompany": "your company",
+    "noPraiseYet": "No praise yet",
+    "countThisWeek": "{count, plural, one {# this week} other {# this week}}",
+    "quietWeek": "Nothing yet this week",
+    "earlier": "Earlier",
+    "showOlder": "Show older",
+    "aColleague": "A colleague",
+    "praised": "{author} praised {recipients}",
+    "to": "to",
+    "justNow": "Just now",
+    "reactions": "Reactions",
+    "praiseSomeone": "Praise someone",
+    "starterValues": "Starter values, yours to change in Settings",
+    "who": "Who",
+    "searchAnyone": "Search anyone",
+    "anyone": "Anyone",
+    "value": "Value",
+    "whatTheyDid": "What they did",
+    "whatDidNameDo": "What did {name} do?",
+    "whatDidTheyDo": "What did they do?",
+    "managerHears": "{name}'s manager hears about it too",
+    "managersHear": "Their managers hear about it too",
+    "everyoneSees": "Everyone in the company sees it",
+    "sendPraise": "Send praise",
+    "sentTo": "Praise sent to {names}",
+    "undo": "Undo",
+    "couldNotUndo": "Couldn't take it back",
+    "valuesThisMonth": "Values this month",
+    "askedOfYou": "Asked of you",
+    "seeAll": "See all {count}",
+    "nothingAskedOfYou": "Nothing asked of you",
+    "askedForYourFeedback": "asked for your feedback",
+    "answer": "Answer",
+    "askedOn": "Asked {day}"
   }
 }

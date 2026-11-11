@@ -1,6 +1,7 @@
 using EY.HRPlatform.Performance.Domain.Audit;
 using EY.HRPlatform.Performance.Domain.Conversations;
 using EY.HRPlatform.Performance.Infrastructure.Core;
+using EY.HRPlatform.Performance.Infrastructure.Notifications;
 using EY.HRPlatform.Performance.Infrastructure.Persistence;
 using EY.HRPlatform.SharedKernel.Multitenancy;
 using Microsoft.EntityFrameworkCore;
@@ -8,8 +9,9 @@ using Microsoft.EntityFrameworkCore;
 namespace EY.HRPlatform.Performance.Features.OneOnOnes;
 
 /// <summary>
-/// Ends 1:1 series whose reporting line Core HR no longer reports (D-12), so a series nobody touches still ends.
-/// Writes already end a broken series on the spot; this catches the rest. Runs per tenant, in batches.
+/// Keeps 1:1s moving without anyone ticking a box: ends series whose reporting line Core HR no longer reports (D-12),
+/// so a series nobody touches still ends, and completes meetings once they're over, carrying what wasn't noted onto
+/// the next one and inviting both people to it (D-39, D-64). Runs per tenant, in batches.
 /// </summary>
 public sealed class OneOnOneReconciler(IServiceScopeFactory scopes)
 {
@@ -32,8 +34,9 @@ public sealed class OneOnOneReconciler(IServiceScopeFactory scopes)
         {
             await using var scope = scopes.CreateAsyncScope();
             scope.ServiceProvider.GetRequiredService<TenantContext>().SetTenant(tenantId);
-            ended += await ReconcileTenantAsync(scope.ServiceProvider.GetRequiredService<PerformanceDbContext>(),
-                scope.ServiceProvider.GetRequiredService<ICoreWorkforceClient>(), now, cancellationToken);
+            var db = scope.ServiceProvider.GetRequiredService<PerformanceDbContext>();
+            ended += await ReconcileTenantAsync(db, scope.ServiceProvider.GetRequiredService<ICoreWorkforceClient>(), now, cancellationToken);
+            await CompleteOverAsync(db, now, cancellationToken);
         }
         return ended;
     }
@@ -63,13 +66,47 @@ public sealed class OneOnOneReconciler(IServiceScopeFactory scopes)
             }
             if (endedIds.Count > 0)
             {
+                var invites = new PerformanceNotifications(db);
                 foreach (var meeting in await db.OneOnOneMeetings
                     .Where(m => endedIds.Contains(m.SeriesId) && m.State == OneOnOneMeetingState.Upcoming).ToListAsync(cancellationToken))
+                {
                     meeting.MarkNotHeld();
+                    invites.EnqueueInvite(batch.First(s => s.Id == meeting.SeriesId), meeting.Id, OneOnOneInvites.Cancelled);
+                }
                 await db.SaveChangesAsync(cancellationToken);
                 ended += endedIds.Count;
             }
         }
         return ended;
+    }
+
+    /// <summary>
+    /// One tenant's meetings that are over: each completes by itself, schedules the next one and carries what wasn't
+    /// noted onto it, and both people get the next one's invite. Returns how many completed.
+    /// </summary>
+    public static async Task<int> CompleteOverAsync(PerformanceDbContext db, DateTime now, CancellationToken cancellationToken)
+    {
+        var cutoff = now - OneOnOneSchedule.Length;
+        var due = await db.OneOnOneMeetings
+            .Where(m => m.State == OneOnOneMeetingState.Upcoming && m.ScheduledAt <= cutoff)
+            .OrderBy(m => m.ScheduledAt).Take(BatchSize).ToListAsync(cancellationToken);
+        if (due.Count == 0) return 0;
+        var seriesIds = due.Select(m => m.SeriesId).Distinct().ToList();
+        var series = await db.OneOnOneSeries.Where(s => seriesIds.Contains(s.Id) && s.EndedAt == null).ToDictionaryAsync(s => s.Id, cancellationToken);
+        var invites = new PerformanceNotifications(db);
+        var completed = 0;
+        foreach (var meeting in due)
+        {
+            if (!series.TryGetValue(meeting.SeriesId, out var owner)) continue;
+            if (meeting.Complete(owner, null, now) is not { } next) continue;
+            db.OneOnOneMeetings.Add(next);
+            invites.EnqueueInvite(owner, next.Id, OneOnOneInvites.ScheduledFor(next.Id, next.ScheduledAt));
+            db.AuditEntries.Add(PerformanceAuditEntry.Record(owner.TenantId, "OneOnOneMeeting", meeting.Id, null,
+                PerformanceAuditActions.OneOnOneCompleted, new { seriesId = owner.Id, scheduledAt = meeting.ScheduledAt, nextMeetingAt = next.ScheduledAt },
+                Actor, null, $"one-on-one-completion:{meeting.Id:N}"));
+            completed++;
+        }
+        await db.SaveChangesAsync(cancellationToken);
+        return completed;
     }
 }

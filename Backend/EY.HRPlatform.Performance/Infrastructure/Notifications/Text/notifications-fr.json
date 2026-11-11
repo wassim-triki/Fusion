@@ -207,5 +207,15 @@
   "group.reviews-and-calibration": "Évaluations et calibration",
   "group.one-on-ones": "1:1",
   "group.feedback-and-praise": "Retours et félicitations",
-  "group.deadline-reminders": "Rappels d'échéance"
+  "group.deadline-reminders": "Rappels d'échéance",
+
+  "GoalUpdateReminder": "Le moment de mettre à jour vos objectifs",
+  "GoalUpdateReminder.subject": "Le moment de mettre à jour vos objectifs",
+  "GoalUpdateReminder.lead": "Certains de vos objectifs n'ont pas été mis à jour depuis un mois. Une minute maintenant tient votre manager et votre évaluation à jour.",
+  "GoalUpdateReminder.action": "Mettre à jour vos objectifs",
+  "OneOnOneInvite.subject": "Tête-à-tête avec {subject}",
+  "OneOnOneInvite.lead": "{due}. L'invitation est jointe, et chaque changement arrivera de la même façon.",
+  "OneOnOneInvite.action": "Ouvrir le tête-à-tête",
+  "OneOnOneInvite.cancelled.subject": "Annulé : tête-à-tête avec {subject}",
+  "OneOnOneInvite.cancelled.lead": "Vos tête-à-tête avec {subject} ont pris fin, celui-ci quitte donc votre agenda."
 }

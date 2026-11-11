@@ -69,15 +69,29 @@ public static class OneOnOneRhythm
     public static readonly TimeSpan LookBack = TimeSpan.FromDays(42);
 }
 
+/// <summary>
+/// An item on a meeting's agenda with the note both people see; a note marks it talked about (D-64). A starter's
+/// <see cref="Text"/> is its key (<see cref="OneOnOneStarters"/>). <see cref="CarriedFromAt"/> is the earlier meeting it
+/// carried over from, having no note there.
+/// </summary>
 public sealed record OneOnOneAgendaItemDto(Guid Id, string Text, Guid AuthorEmployeeId, bool Discussed,
-    AgendaSourceKind? SourceKind, Guid? SourceId, string? Href);
+    AgendaSourceKind? SourceKind, Guid? SourceId, string? Href, string Note, uint NoteRevision, DateTime AddedAt, DateTime? CarriedFromAt);
 
 public sealed record OneOnOneActionDto(Guid Id, string Text, Guid OwnerEmployeeId, DateOnly? DueDate, bool Done, DateTime? DoneAt,
     Guid CreatedInMeetingId, DateTime CreatedInMeetingAt, Guid CreatedByEmployeeId, bool CarriedOver, bool Overdue);
 
-/// <summary>A talking point computed for the viewer. Labels never carry feedback or praise text.</summary>
+/// <summary>
+/// A talking point computed for the viewer, shown on the agenda until a note adds it there. Labels never carry feedback
+/// or praise text. <see cref="Percent"/> is a goal's progress; <see cref="By"/> who it's from (the requester, the author,
+/// an action's owner); <see cref="DueDate"/> a late action's due date.
+/// </summary>
 public sealed record OneOnOneSuggestionDto(AgendaSourceKind Kind, Guid SourceId, Guid? CycleId, string Label, ObjectiveStatus? Status,
-    string Href, DateTime? At);
+    string Href, DateTime? At)
+{
+    public decimal? Percent { get; init; }
+    public Guid? By { get; init; }
+    public DateOnly? DueDate { get; init; }
+}
 
 /// <summary>The caller's own private note on a meeting; nobody else's is ever returned.</summary>
 public sealed record OneOnOnePrivateNoteDto(string Text, uint Revision);
@@ -89,14 +103,25 @@ public sealed record OneOnOneMeetingDto(
     OneOnOneMeetingState State,
     DateTime? CompletedAt,
     IReadOnlyList<OneOnOneAgendaItemDto> Agenda,
-    string SharedNotes,
-    uint SharedNotesRevision,
     OneOnOnePrivateNoteDto PrivateNote,
     bool NotesWritable,
     IReadOnlyList<OneOnOneActionDto> Actions,
     IReadOnlyList<OneOnOneSuggestionDto> Suggestions);
 
-public sealed record OneOnOneCapabilitiesDto(bool Write, bool Complete);
+public sealed record OneOnOneCapabilitiesDto(bool Write);
+
+/// <summary>One of the report's goals this year, as the 1:1 shows it beside the agenda.</summary>
+public sealed record OneOnOneGoalDto(Guid Id, Guid CycleId, string Title, ObjectiveStatus? Status, decimal? Percent);
+
+/// <summary>The latest praise the report received.</summary>
+public sealed record OneOnOnePraiseDto(Guid Id, Guid AuthorEmployeeId, string AuthorName, string Message, DateTime At);
+
+/// <summary>
+/// What sits beside the meeting about the report: their goals (when the viewer may read the plan), when a plan is due
+/// if there's none approved yet, the latest praise, and who they are.
+/// </summary>
+public sealed record OneOnOneContextDto(IReadOnlyList<OneOnOneGoalDto> Goals, bool PlanApproved, DateOnly? PlanDue,
+    OneOnOnePraiseDto? LatestPraise, DateOnly? JoinedOn, string? Unit);
 
 public sealed record OneOnOneSeriesDto(
     Guid Id,
@@ -115,7 +140,14 @@ public sealed record OneOnOneSeriesDto(
     IReadOnlyList<OneOnOneMeetingDto> Past,
     int OpenActions,
     int OverdueActions,
-    OneOnOneCapabilitiesDto Can);
+    OneOnOneCapabilitiesDto Can)
+{
+    /// <summary>No meeting held yet: the upcoming one is the first.</summary>
+    public bool First { get; init; }
+    /// <summary>When what isn't noted on the upcoming meeting carries to.</summary>
+    public DateTime? CarriesTo { get; init; }
+    public OneOnOneContextDto? Context { get; init; }
+}
 
 /// <summary>Starts a series; <see cref="Agenda"/> puts talking points on the first meeting, the same way they're added later.</summary>
 public sealed record StartOneOnOneRequest(Guid WithEmployeeId, OneOnOneCadence? Cadence, DateTime FirstMeetingAt,
@@ -130,14 +162,11 @@ public sealed record RescheduleOneOnOneRequest(DateTime ScheduledAt)
     [System.Text.Json.Serialization.JsonRequired]
     public uint ExpectedVersion { get; init; }
 }
-public sealed record CompleteOneOnOneRequest
-{
-    [System.Text.Json.Serialization.JsonRequired]
-    public uint ExpectedVersion { get; init; }
-}
-/// <summary>An agenda item, or a suggestion added by naming its source (its label is then derived on the server).</summary>
-public sealed record AddAgendaItemRequest(Guid Id, string? Text, AgendaSourceKind? SourceKind, Guid? SourceId);
-public sealed record SetDiscussedRequest(bool Discussed);
+/// <summary>
+/// An agenda item, or a suggestion added by naming its source (its label is then derived on the server). A
+/// <see cref="Note"/> adds it already talked about: writing on a suggestion is how it joins the agenda.
+/// </summary>
+public sealed record AddAgendaItemRequest(Guid Id, string? Text, AgendaSourceKind? SourceKind, Guid? SourceId, string? Note = null);
 public sealed record SetNotesRequest(string Text)
 {
     [System.Text.Json.Serialization.JsonRequired]
@@ -156,11 +185,9 @@ public sealed record GetOneOnOneStartQuery(Guid WithEmployeeId, OneOnOneViewer V
 public sealed record StartOneOnOneCommand(StartOneOnOneRequest Request, OneOnOneViewer Viewer) : ICommand<Result<OneOnOneSeriesDto>>;
 public sealed record ChangeOneOnOneCadenceCommand(Guid SeriesId, ChangeOneOnOneCadenceRequest Request, OneOnOneViewer Viewer) : ICommand<Result<OneOnOneSeriesDto>>;
 public sealed record RescheduleOneOnOneCommand(Guid MeetingId, RescheduleOneOnOneRequest Request, OneOnOneViewer Viewer) : ICommand<Result<OneOnOneSeriesDto>>;
-public sealed record CompleteOneOnOneCommand(Guid MeetingId, CompleteOneOnOneRequest Request, OneOnOneViewer Viewer) : ICommand<Result<OneOnOneSeriesDto>>;
 public sealed record AddAgendaItemCommand(Guid MeetingId, AddAgendaItemRequest Request, OneOnOneViewer Viewer) : ICommand<Result<OneOnOneSeriesDto>>;
-public sealed record SetAgendaItemDiscussedCommand(Guid MeetingId, Guid ItemId, bool Discussed, OneOnOneViewer Viewer) : ICommand<Result<OneOnOneSeriesDto>>;
+public sealed record SetAgendaNoteCommand(Guid MeetingId, Guid ItemId, SetNotesRequest Request, OneOnOneViewer Viewer) : ICommand<Result<OneOnOneSeriesDto>>;
 public sealed record RemoveAgendaItemCommand(Guid MeetingId, Guid ItemId, OneOnOneViewer Viewer) : ICommand<Result<OneOnOneSeriesDto>>;
-public sealed record SetSharedNotesCommand(Guid MeetingId, SetNotesRequest Request, OneOnOneViewer Viewer) : ICommand<Result<OneOnOneSeriesDto>>;
 public sealed record SetPrivateNotesCommand(Guid MeetingId, SetNotesRequest Request, OneOnOneViewer Viewer) : ICommand<Result<OneOnOneSeriesDto>>;
 public sealed record AddActionCommand(Guid SeriesId, AddActionRequest Request, OneOnOneViewer Viewer) : ICommand<Result<OneOnOneSeriesDto>>;
 public sealed record EditActionCommand(Guid SeriesId, Guid ActionId, EditActionRequest Request, OneOnOneViewer Viewer) : ICommand<Result<OneOnOneSeriesDto>>;
@@ -169,10 +196,10 @@ public sealed record SetActionDoneCommand(Guid SeriesId, Guid ActionId, bool Don
 // ── Suggestions ──────────────────────────────────────────────────────────────
 
 /// <summary>
-/// Talking points about the report for the upcoming meeting (D-12), computed on read for the viewer: risky objectives
-/// in the active cycle, open update requests on their plan, and shared feedback and praise they received since the last
-/// completed meeting. Every source is filtered through its own policy; manager-only feedback never appears because the
-/// agenda is shared with the report.
+/// Talking points about the report for the upcoming meeting (D-12, D-66), computed on read for the viewer: risky
+/// objectives in the active cycle, the series' late actions, open update requests on their plan, and shared feedback
+/// and praise they received since the last completed meeting. Every source is filtered through its own policy;
+/// manager-only feedback never appears because the agenda is shared with the report.
 /// </summary>
 public sealed class OneOnOneSuggestions(PerformanceDbContext db)
 {
@@ -180,41 +207,45 @@ public sealed class OneOnOneSuggestions(PerformanceDbContext db)
     public static readonly TimeSpan FirstMeetingLookBack = TimeSpan.FromDays(30);
 
     public async Task<IReadOnlyList<OneOnOneSuggestionDto>> ForAsync(Guid report, OneOnOneViewer viewer, DateTime since,
-        IReadOnlySet<Guid> viewerReportIds, CancellationToken token)
+        IReadOnlySet<Guid> viewerReportIds, CancellationToken token, OneOnOneSeries? series = null)
     {
         var suggestions = new List<OneOnOneSuggestionDto>();
 
         var cycle = await db.Cycles.AsNoTracking().Where(c => c.State == CycleLifecycleState.Active)
             .OrderByDescending(c => c.StartDate).FirstOrDefaultAsync(token);
-        if (cycle is not null)
+        var plan = cycle is null ? null : await ReadablePlanAsync(db, cycle.Id, report, viewer, token);
+        if (cycle is not null && plan is { State: PlanLifecycleState.Approved })
         {
-            var plan = await db.EmployeePlans.AsNoTracking().Include(p => p.Decisions)
-                .FirstOrDefaultAsync(p => p.CycleId == cycle.Id && p.EmployeeId == report, token);
-            // Relationship rules only: being an administrator never widens what a 1:1 suggests.
-            var actor = new GoalActorContext(viewer.EmployeeId, IsAdmin: false, HasOrgManageGrant: false, CanReviewReports: viewer.ReviewsReports);
-            if (plan is not null && PlanPolicy.CanRead(actor, plan))
-            {
-                if (plan.State == PlanLifecycleState.Approved)
-                {
-                    var risky = await db.Objectives.AsNoTracking()
-                        .Where(o => o.EmployeePlanId == plan.Id
-                            && (o.CurrentStatus == ObjectiveStatus.AtRisk || o.CurrentStatus == ObjectiveStatus.OffTrack))
-                        .OrderBy(o => o.Title).ToListAsync(token);
-                    suggestions.AddRange(risky.Select(o => new OneOnOneSuggestionDto(AgendaSourceKind.Objective, o.Id, cycle.Id, o.Title,
-                        o.CurrentStatus, PerformanceNotificationTemplates.ObjectivePath(cycle.Id, o.Id), o.StatusSince)));
-                }
-                var requests = await db.UpdateRequests.AsNoTracking()
-                    .Where(r => r.CycleId == cycle.Id && r.PlanId == plan.Id && r.State == UpdateRequestState.Open)
-                    .OrderBy(r => r.RequestedAt).ToListAsync(token);
-                var titles = await ObjectiveTitlesAsync(requests.Select(r => r.ObjectiveId), token);
-                suggestions.AddRange(requests.Select(r => new OneOnOneSuggestionDto(AgendaSourceKind.UpdateRequest, r.Id, cycle.Id,
-                    r.ObjectiveId is Guid o && titles.TryGetValue(o, out var title) ? $"Update requested: {title}" : "Update requested on the plan",
-                    null,
-                    r.ObjectiveId is Guid objectiveId
-                        ? PerformanceNotificationTemplates.ObjectivePath(cycle.Id, objectiveId)
-                        : PerformanceNotificationTemplates.PlanPath(cycle.Id, plan.Id),
-                    r.RequestedAt)));
-            }
+            var risky = await db.Objectives.AsNoTracking()
+                .Where(o => o.EmployeePlanId == plan.Id
+                    && (o.CurrentStatus == ObjectiveStatus.AtRisk || o.CurrentStatus == ObjectiveStatus.OffTrack))
+                .OrderBy(o => o.Title).ToListAsync(token);
+            suggestions.AddRange(risky.Select(o => new OneOnOneSuggestionDto(AgendaSourceKind.Objective, o.Id, cycle.Id, o.Title,
+                o.CurrentStatus, PerformanceNotificationTemplates.ObjectivePath(cycle.Id, o.Id), o.LastProgressAt ?? o.StatusSince)
+                { Percent = o.CurrentPercentage }));
+        }
+
+        if (series is not null)
+        {
+            var today = PerformanceClock.Today;
+            suggestions.AddRange(series.OpenActionItems().Where(a => a.DueDate is DateOnly due && due < today)
+                .OrderBy(a => a.DueDate).Select(a => new OneOnOneSuggestionDto(AgendaSourceKind.Action, a.Id, null, a.Text, null,
+                    PerformanceNotificationTemplates.ActionLandingPath(series.Id, a.Id), a.CreatedAt) { By = a.OwnerEmployeeId, DueDate = a.DueDate }));
+        }
+
+        if (cycle is not null && plan is not null)
+        {
+            var requests = await db.UpdateRequests.AsNoTracking()
+                .Where(r => r.CycleId == cycle.Id && r.PlanId == plan.Id && r.State == UpdateRequestState.Open)
+                .OrderBy(r => r.RequestedAt).ToListAsync(token);
+            var titles = await ObjectiveTitlesAsync(requests.Select(r => r.ObjectiveId), token);
+            suggestions.AddRange(requests.Select(r => new OneOnOneSuggestionDto(AgendaSourceKind.UpdateRequest, r.Id, cycle.Id,
+                r.ObjectiveId is Guid o && titles.TryGetValue(o, out var title) ? $"Update requested: {title}" : "Update requested on the plan",
+                null,
+                r.ObjectiveId is Guid objectiveId
+                    ? PerformanceNotificationTemplates.ObjectivePath(cycle.Id, objectiveId)
+                    : PerformanceNotificationTemplates.PlanPath(cycle.Id, plan.Id),
+                r.RequestedAt) { By = r.RequestedByEmployeeId }));
         }
 
         var feedbackViewer = FeedbackViewer.For(viewer.EmployeeId, isAdministrator: false, viewer.ReviewsReports, viewerReportIds);
@@ -229,11 +260,21 @@ public sealed class OneOnOneSuggestions(PerformanceDbContext db)
         var values = await db.Competencies.AsNoTracking().Where(c => competencyIds.Contains(c.Id)).ToDictionaryAsync(c => c.Id, c => c.Name, token);
 
         suggestions.AddRange(feedback.Select(f => new OneOnOneSuggestionDto(AgendaSourceKind.Feedback, f.Id, null,
-            FeedbackLabel(f, values), null, PerformanceNotificationTemplates.FeedbackPath(f.Id), f.SentAt)));
+            FeedbackLabel(f, values), null, PerformanceNotificationTemplates.FeedbackPath(f.Id), f.SentAt) { By = f.AuthorEmployeeId }));
         suggestions.AddRange(praise.Select(p => new OneOnOneSuggestionDto(AgendaSourceKind.Praise, p.Id, null,
             $"Praise from {p.AuthorName} for {values.GetValueOrDefault(p.CompetencyId) ?? "a company value"}", null,
-            PerformanceNotificationTemplates.PraisePath(p.Id), p.GivenAt)));
+            PerformanceNotificationTemplates.PraisePath(p.Id), p.GivenAt) { By = p.AuthorEmployeeId }));
         return suggestions;
+    }
+
+    /// <summary>The report's plan in the cycle when the viewer may read it; relationship rules only, never an admin's reach.</summary>
+    public static async Task<EmployeePlan?> ReadablePlanAsync(PerformanceDbContext db, Guid cycleId, Guid report, OneOnOneViewer viewer,
+        CancellationToken token)
+    {
+        var plan = await db.EmployeePlans.AsNoTracking().Include(p => p.Decisions)
+            .FirstOrDefaultAsync(p => p.CycleId == cycleId && p.EmployeeId == report, token);
+        var actor = new GoalActorContext(viewer.EmployeeId, IsAdmin: false, HasOrgManageGrant: false, CanReviewReports: viewer.ReviewsReports);
+        return plan is not null && PlanPolicy.CanRead(actor, plan) ? plan : null;
     }
 
     public static AgendaSource SourceOf(OneOnOneSuggestionDto offered) => new(offered.Kind, offered.SourceId, offered.CycleId);
@@ -272,7 +313,7 @@ public sealed class OneOnOneSuggestions(PerformanceDbContext db)
 public sealed record OneOnOnePair(Guid ManagerId, Guid ReportId, string ManagerName, string ReportName, OneOnOnePersonDto With);
 
 public abstract class OneOnOneHandlerBase(PerformanceDbContext db, ICoreWorkforceClient workforce, PerformanceViewer performanceViewer,
-    IPerformanceAudit? audit = null)
+    IPerformanceAudit? audit = null, IPerformanceNotifications? notifications = null)
 {
     protected PerformanceDbContext Db => db;
 
@@ -342,7 +383,10 @@ public abstract class OneOnOneHandlerBase(PerformanceDbContext db, ICoreWorkforc
     {
         if (!series.End(reason, PerformanceClock.UtcNow)) return;
         foreach (var upcoming in await db.OneOnOneMeetings.Where(m => m.SeriesId == series.Id && m.State == OneOnOneMeetingState.Upcoming).ToListAsync(token))
+        {
             upcoming.MarkNotHeld();
+            notifications?.EnqueueInvite(series, upcoming.Id, OneOnOneInvites.Cancelled);
+        }
         audit?.Record(series.TenantId, "OneOnOneSeries", series.Id, null, PerformanceAuditActions.OneOnOneEnded,
             new { reason = reason.ToString(), managerEmployeeId = series.ManagerEmployeeId, reportEmployeeId = series.ReportEmployeeId });
     }
@@ -384,7 +428,7 @@ public abstract class OneOnOneHandlerBase(PerformanceDbContext db, ICoreWorkforc
             var since = meetings.Where(m => m.State == OneOnOneMeetingState.Completed).Select(m => m.CompletedAt).Max()
                 ?? series.StartedAt - OneOnOneSuggestions.FirstMeetingLookBack;
             var all = await new OneOnOneSuggestions(db).ForAsync(series.ReportEmployeeId, viewer, since,
-                ReportIdsFor(viewer, series.ReportEmployeeId), token);
+                ReportIdsFor(viewer, series.ReportEmployeeId), token, series);
             var onAgenda = upcoming.Agenda.Where(i => i.SourceKind is not null).Select(i => (i.SourceKind!.Value, i.SourceId!.Value)).ToHashSet();
             suggestions = all.Where(s => !onAgenda.Contains((s.Kind, s.SourceId))).ToList();
         }
@@ -392,6 +436,11 @@ public abstract class OneOnOneHandlerBase(PerformanceDbContext db, ICoreWorkforc
         OneOnOneActionDto Action(OneOnOneActionItem a, Guid inMeeting) => new(a.Id, a.Text, a.OwnerEmployeeId, a.DueDate, a.DoneAt is not null,
             a.DoneAt, a.CreatedInMeetingId, byId.TryGetValue(a.CreatedInMeetingId, out var created) ? created.ScheduledAt : series.StartedAt,
             a.CreatedByEmployeeId, a.CreatedInMeetingId != inMeeting, a.DoneAt is null && a.DueDate is DateOnly due && due < today);
+
+        var itemMeeting = meetings.SelectMany(m => m.Agenda.Select(i => (i.Id, m.ScheduledAt))).ToDictionary(x => x.Id, x => x.ScheduledAt);
+        OneOnOneAgendaItemDto Item(OneOnOneAgendaItem i) => new(i.Id, i.Text, i.AuthorEmployeeId, i.HasNote, i.SourceKind, i.SourceId,
+            AgendaHref(series.Id, i), i.Note, i.NoteRevision, i.FirstAddedAt,
+            i.CarriedFromItemId is Guid from && itemMeeting.TryGetValue(from, out var fromAt) ? fromAt : null);
 
         OneOnOneMeetingDto Meeting(OneOnOneMeeting m)
         {
@@ -403,9 +452,8 @@ public abstract class OneOnOneHandlerBase(PerformanceDbContext db, ICoreWorkforc
                 : series.Actions.Where(a => a.CreatedInMeetingId == m.Id || a.DoneInMeetingId == m.Id);
             var note = myNotes.GetValueOrDefault(m.Id);
             return new OneOnOneMeetingDto(m.Id, m.Version, m.ScheduledAt, m.State, m.CompletedAt,
-                m.Agenda.OrderBy(i => i.Order).Select(i => new OneOnOneAgendaItemDto(i.Id, i.Text, i.AuthorEmployeeId, i.DiscussedAt is not null,
-                    i.SourceKind, i.SourceId, AgendaHref(i))).ToList(),
-                m.SharedNotes, m.SharedNotesRevision, new OneOnOnePrivateNoteDto(note?.Text ?? string.Empty, note?.Revision ?? 0), writable,
+                m.Agenda.OrderBy(i => i.Order).Select(Item).ToList(),
+                new OneOnOnePrivateNoteDto(note?.Text ?? string.Empty, note?.Revision ?? 0), writable,
                 actions.OrderBy(a => a.DoneAt is not null).ThenBy(a => a.DueDate ?? DateOnly.MaxValue).ThenBy(a => a.CreatedAt)
                     .Select(a => Action(a, m.Id)).ToList(),
                 m.Id == upcoming?.Id ? suggestions : []);
@@ -420,7 +468,32 @@ public abstract class OneOnOneHandlerBase(PerformanceDbContext db, ICoreWorkforc
             upcoming is null ? null : Meeting(upcoming),
             meetings.Where(m => m.Id != upcoming?.Id && m.State != OneOnOneMeetingState.Upcoming).Select(Meeting).ToList(),
             open.Count, open.Count(a => a.DueDate is DateOnly due && due < today),
-            new OneOnOneCapabilitiesDto(canWrite, canWrite && upcoming is not null)));
+            new OneOnOneCapabilitiesDto(canWrite))
+        {
+            First = meetings.All(m => m.State != OneOnOneMeetingState.Completed),
+            CarriesTo = upcoming is null ? null : OneOnOneSchedule.Step(upcoming.ScheduledAt, series.Cadence),
+            Context = await ContextAsync(series, viewer, people, token),
+        });
+    }
+
+    /// <summary>What the 1:1 shows beside the agenda about the report; goals only through the plan's own read rule.</summary>
+    private async Task<OneOnOneContextDto> ContextAsync(OneOnOneSeries series, OneOnOneViewer viewer, IReadOnlyList<WorkforceSnapshot>? people,
+        CancellationToken token)
+    {
+        var report = series.ReportEmployeeId;
+        var cycle = await db.Cycles.AsNoTracking().Where(c => c.State == CycleLifecycleState.Active)
+            .OrderByDescending(c => c.StartDate).FirstOrDefaultAsync(token);
+        var plan = cycle is null ? null : await OneOnOneSuggestions.ReadablePlanAsync(db, cycle.Id, report, viewer, token);
+        var goals = plan is null ? [] : (await db.Objectives.AsNoTracking()
+                .Where(o => o.EmployeePlanId == plan.Id && o.ArchivedAt == null).OrderBy(o => o.CreatedAt).ToListAsync(token))
+            .Select(o => new OneOnOneGoalDto(o.Id, o.CycleId, o.Title, o.CurrentStatus, o.CurrentPercentage)).ToList();
+        var approved = plan?.State == PlanLifecycleState.Approved;
+        var praise = await PraisePolicy.Readable(db.Praise.AsNoTracking())
+            .Where(p => p.Recipients.Any(r => r.EmployeeId == report)).OrderByDescending(p => p.GivenAt).FirstOrDefaultAsync(token);
+        var snapshot = people?.FirstOrDefault(p => p.EmployeeId == report);
+        return new OneOnOneContextDto(goals, approved, cycle is not null && !approved ? cycle.PlanningDeadline : null,
+            praise is null ? null : new OneOnOnePraiseDto(praise.Id, praise.AuthorEmployeeId, praise.AuthorName, praise.Message, praise.GivenAt),
+            snapshot?.EmploymentStart, snapshot?.OrgUnit?.Name);
     }
 
     public static OneOnOnePersonDto Person(Guid id, string storedName, IReadOnlyList<WorkforceSnapshot>? people)
@@ -429,8 +502,9 @@ public abstract class OneOnOneHandlerBase(PerformanceDbContext db, ICoreWorkforc
         return new OneOnOnePersonDto(id, current?.DisplayName ?? (string.IsNullOrWhiteSpace(storedName) ? "Former colleague" : storedName), current?.JobTitle);
     }
 
-    private static string? AgendaHref(OneOnOneAgendaItem item) => (item.SourceKind, item.SourceId, item.SourceCycleId) switch
+    private static string? AgendaHref(Guid seriesId, OneOnOneAgendaItem item) => (item.SourceKind, item.SourceId, item.SourceCycleId) switch
     {
+        (AgendaSourceKind.Action, Guid id, _) => PerformanceNotificationTemplates.ActionLandingPath(seriesId, id),
         (AgendaSourceKind.Objective, Guid id, Guid cycle) => PerformanceNotificationTemplates.ObjectivePath(cycle, id),
         (AgendaSourceKind.Feedback, Guid id, _) => PerformanceNotificationTemplates.FeedbackPath(id),
         (AgendaSourceKind.Praise, Guid id, _) => PerformanceNotificationTemplates.PraisePath(id),
@@ -467,6 +541,16 @@ public abstract class OneOnOneHandlerBase(PerformanceDbContext db, ICoreWorkforc
 
     protected static string NameOf(OneOnOneSeries series, Guid employeeId)
         => employeeId == series.ManagerEmployeeId ? series.ManagerName : series.ReportName;
+}
+
+/// <summary>What changed for a meeting's invite, so each change sends once to each person.</summary>
+public static class OneOnOneInvites
+{
+    public static readonly Guid Cancelled = new("0f1e2d3c-4b5a-4968-8776-655443322110");
+
+    /// <summary>Scheduled for, or moved to, <paramref name="at"/>: one invite per time.</summary>
+    public static Guid ScheduledFor(Guid meetingId, DateTime at)
+        => new(System.Security.Cryptography.MD5.HashData(System.Text.Encoding.UTF8.GetBytes($"{meetingId:N}:{at:O}")));
 }
 
 // ── Handlers ─────────────────────────────────────────────────────────────────
@@ -555,7 +639,7 @@ public sealed class GetOneOnOneSeriesHandler(PerformanceDbContext db, ICoreWorkf
 
 public sealed class StartOneOnOneHandler(PerformanceDbContext db, ICoreWorkforceClient workforce, PerformanceViewer viewer,
     IPerformanceAudit audit, IPerformanceNotifications notifications, ITenantContext tenant)
-    : OneOnOneHandlerBase(db, workforce, viewer, audit), ICommandHandler<StartOneOnOneCommand, Result<OneOnOneSeriesDto>>
+    : OneOnOneHandlerBase(db, workforce, viewer, audit, notifications), ICommandHandler<StartOneOnOneCommand, Result<OneOnOneSeriesDto>>
 {
     public async Task<Result<OneOnOneSeriesDto>> Handle(StartOneOnOneCommand command, CancellationToken token)
     {
@@ -585,6 +669,7 @@ public sealed class StartOneOnOneHandler(PerformanceDbContext db, ICoreWorkforce
             if (await FirstAgendaAsync(first, reportId, command, token) is { } refused) return refused;
             Db.OneOnOneSeries.Add(series);
             Db.OneOnOneMeetings.Add(first);
+            notifications.EnqueueInvite(series, first.Id, OneOnOneInvites.ScheduledFor(first.Id, first.ScheduledAt));
         }
         catch (ArgumentException ex) { return Invalid(ex); }
 
@@ -597,12 +682,20 @@ public sealed class StartOneOnOneHandler(PerformanceDbContext db, ICoreWorkforce
 
     public const int MaxFirstAgenda = 10;
 
-    /// <summary>Talking points chosen while starting: written text, or a suggestion offered for the pair right now.</summary>
+    /// <summary>
+    /// Talking points chosen while starting: written text, or a suggestion offered for the pair right now. Starting with
+    /// none, a first 1:1 opens on Fusion's starter agenda (D-66).
+    /// </summary>
     private async Task<Result<OneOnOneSeriesDto>?> FirstAgendaAsync(OneOnOneMeeting first, Guid reportId, StartOneOnOneCommand command,
         CancellationToken token)
     {
         var items = command.Request.Agenda ?? [];
-        if (items.Count == 0) return null;
+        if (items.Count == 0)
+        {
+            foreach (var key in OneOnOneStarters.Keys)
+                first.AddAgendaItem(Guid.NewGuid(), key, command.Viewer.EmployeeId, new AgendaSource(AgendaSourceKind.Starter, Guid.Empty, null), out _);
+            return null;
+        }
         if (items.Count > MaxFirstAgenda)
             return Fail(PerformanceErrors.Validation(PerformanceErrors.Codes.OneOnOneInvalid, $"Start with up to {MaxFirstAgenda} talking points."));
         var offered = items.Any(i => i.SourceKind is not null)
@@ -672,7 +765,7 @@ public sealed class ChangeOneOnOneCadenceHandler(PerformanceDbContext db, ICoreW
 
 public sealed class RescheduleOneOnOneHandler(PerformanceDbContext db, ICoreWorkforceClient workforce, PerformanceViewer viewer,
     IPerformanceAudit audit, IPerformanceNotifications notifications)
-    : OneOnOneHandlerBase(db, workforce, viewer, audit), ICommandHandler<RescheduleOneOnOneCommand, Result<OneOnOneSeriesDto>>
+    : OneOnOneHandlerBase(db, workforce, viewer, audit, notifications), ICommandHandler<RescheduleOneOnOneCommand, Result<OneOnOneSeriesDto>>
 {
     public async Task<Result<OneOnOneSeriesDto>> Handle(RescheduleOneOnOneCommand command, CancellationToken token)
     {
@@ -688,36 +781,11 @@ public sealed class RescheduleOneOnOneHandler(PerformanceDbContext db, ICoreWork
             audit.Record(series.TenantId, "OneOnOneMeeting", meeting.Id, null, PerformanceAuditActions.OneOnOneRescheduled,
                 new { seriesId = series.Id, before, after = meeting.ScheduledAt });
             // One notification per new time: a reschedule to a third time notifies again.
-            var transition = new Guid(System.Security.Cryptography.MD5.HashData(
-                System.Text.Encoding.UTF8.GetBytes($"{meeting.Id:N}:{meeting.ScheduledAt:O}")));
+            var transition = OneOnOneInvites.ScheduledFor(meeting.Id, meeting.ScheduledAt);
             notifications.EnqueueConversation(series.TenantId, PerformanceNotificationKind.OneOnOneRescheduled, series.OtherThan(me), me,
                 "OneOnOneSeries", series.Id, transition, PerformanceNotificationTemplates.ForOneOnOneRescheduled(NameOf(series, me), series.Id));
+            notifications.EnqueueInvite(series, meeting.Id, transition);
         }
-        return await SaveAsync(series.Id, command.Viewer, token);
-    }
-}
-
-public sealed class CompleteOneOnOneHandler(PerformanceDbContext db, ICoreWorkforceClient workforce, PerformanceViewer viewer, IPerformanceAudit audit)
-    : OneOnOneHandlerBase(db, workforce, viewer, audit), ICommandHandler<CompleteOneOnOneCommand, Result<OneOnOneSeriesDto>>
-{
-    public async Task<Result<OneOnOneSeriesDto>> Handle(CompleteOneOnOneCommand command, CancellationToken token)
-    {
-        if (await MeetingAsync(command.MeetingId, command.Viewer, token) is not ({ } meeting, { } series)) return NotFound(command.MeetingId);
-        // A retried completion returns the record as it stands: same meeting, same successor.
-        if (meeting.State == OneOnOneMeetingState.Completed) return await ProjectAsync(series.Id, command.Viewer, token);
-        if (await GuardWriteAsync(series, command.Viewer, token) is { } refused) return refused;
-        if (VersionGuard.Check(meeting, command.Request.ExpectedVersion) is { } stale) return Fail(stale);
-        try
-        {
-            var next = meeting.Complete(series, command.Viewer.EmployeeId, PerformanceClock.UtcNow);
-            if (next is not null)
-            {
-                Db.OneOnOneMeetings.Add(next);
-                audit.Record(series.TenantId, "OneOnOneMeeting", meeting.Id, null, PerformanceAuditActions.OneOnOneCompleted,
-                    new { seriesId = series.Id, scheduledAt = meeting.ScheduledAt, nextMeetingAt = next.ScheduledAt });
-            }
-        }
-        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException) { return Invalid(ex); }
         return await SaveAsync(series.Id, command.Viewer, token);
     }
 }
@@ -740,26 +808,49 @@ public sealed class AddAgendaItemHandler(PerformanceDbContext db, ICoreWorkforce
             var since = await Db.OneOnOneMeetings.AsNoTracking().Where(m => m.SeriesId == series.Id && m.State == OneOnOneMeetingState.Completed)
                 .MaxAsync(m => m.CompletedAt, token) ?? series.StartedAt - OneOnOneSuggestions.FirstMeetingLookBack;
             var offered = (await new OneOnOneSuggestions(Db).ForAsync(series.ReportEmployeeId, command.Viewer, since,
-                    ReportIdsFor(command.Viewer, series.ReportEmployeeId), token))
+                    ReportIdsFor(command.Viewer, series.ReportEmployeeId), token, series))
                 .FirstOrDefault(s => s.Kind == kind && s.SourceId == request.SourceId);
             if (offered is null) return Fail(PerformanceErrors.Validation(PerformanceErrors.Codes.OneOnOneInvalid, "That isn't something you can add here."));
             (source, text) = (OneOnOneSuggestions.SourceOf(offered), OneOnOneSuggestions.AgendaText(offered));
         }
-        try { meeting.AddAgendaItem(request.Id, text ?? string.Empty, command.Viewer.EmployeeId, source, out _); }
+        try
+        {
+            meeting.AddAgendaItem(request.Id, text ?? string.Empty, command.Viewer.EmployeeId, source, out _);
+            if (!string.IsNullOrWhiteSpace(request.Note))
+                meeting.SetItemNote(request.Id, request.Note, 0, successorCompleted: false, PerformanceClock.UtcNow);
+        }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException) { return Invalid(ex); }
         return await SaveAsync(series.Id, command.Viewer, token);
     }
 }
 
-public sealed class SetAgendaItemDiscussedHandler(PerformanceDbContext db, ICoreWorkforceClient workforce, PerformanceViewer viewer)
-    : OneOnOneHandlerBase(db, workforce, viewer), ICommandHandler<SetAgendaItemDiscussedCommand, Result<OneOnOneSeriesDto>>
+/// <summary>
+/// Writes an item's note (D-64): a note marks it talked about. Noting an item after its meeting completed drops the
+/// copy that carried onto the next one, unless that copy has a note of its own.
+/// </summary>
+public sealed class SetAgendaNoteHandler(PerformanceDbContext db, ICoreWorkforceClient workforce, PerformanceViewer viewer)
+    : OneOnOneHandlerBase(db, workforce, viewer), ICommandHandler<SetAgendaNoteCommand, Result<OneOnOneSeriesDto>>
 {
-    public async Task<Result<OneOnOneSeriesDto>> Handle(SetAgendaItemDiscussedCommand command, CancellationToken token)
+    public async Task<Result<OneOnOneSeriesDto>> Handle(SetAgendaNoteCommand command, CancellationToken token)
     {
         if (await MeetingAsync(command.MeetingId, command.Viewer, token) is not ({ } meeting, { } series)) return NotFound(command.MeetingId);
         if (await GuardWriteAsync(series, command.Viewer, token) is { } refused) return refused;
-        try { meeting.SetDiscussed(command.ItemId, command.Discussed, PerformanceClock.UtcNow); }
-        catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException) { return Invalid(ex); }
+        var successorCompleted = await SetPrivateNotesHandler.SuccessorCompletedAsync(Db, meeting, token);
+        try
+        {
+            meeting.SetItemNote(command.ItemId, command.Request.Text, command.Request.ExpectedRevision, successorCompleted, PerformanceClock.UtcNow);
+            if (meeting.State == OneOnOneMeetingState.Completed && meeting.Item(command.ItemId).HasNote && meeting.NextMeetingId is Guid nextId
+                && await Db.OneOnOneMeetings.FirstOrDefaultAsync(m => m.Id == nextId, token) is { } next)
+                next.DropCarriedCopy(command.ItemId);
+        }
+        catch (OneOnOneNotesConflictException)
+        {
+            // The conflict carries the current note so the client can show it beside the unsaved text.
+            var item = meeting.Item(command.ItemId);
+            return Fail(PerformanceErrors.Create(PerformanceErrors.Codes.OneOnOneNotesChanged, "These notes changed since you opened them.",
+                FailureKind.Stale, new { text = item.Note, revision = item.NoteRevision }));
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or KeyNotFoundException) { return Invalid(ex); }
         return await SaveAsync(series.Id, command.Viewer, token);
     }
 }
@@ -778,30 +869,6 @@ public sealed class RemoveAgendaItemHandler(PerformanceDbContext db, ICoreWorkfo
     }
 }
 
-public sealed class SetSharedNotesHandler(PerformanceDbContext db, ICoreWorkforceClient workforce, PerformanceViewer viewer)
-    : OneOnOneHandlerBase(db, workforce, viewer), ICommandHandler<SetSharedNotesCommand, Result<OneOnOneSeriesDto>>
-{
-    public async Task<Result<OneOnOneSeriesDto>> Handle(SetSharedNotesCommand command, CancellationToken token)
-    {
-        if (await MeetingAsync(command.MeetingId, command.Viewer, token) is not ({ } meeting, { } series)) return NotFound(command.MeetingId);
-        if (await GuardWriteAsync(series, command.Viewer, token) is { } refused) return refused;
-        var successorCompleted = await SuccessorCompletedAsync(Db, meeting, token);
-        try { meeting.SetSharedNotes(command.Request.Text, command.Request.ExpectedRevision, successorCompleted); }
-        catch (OneOnOneNotesConflictException)
-        {
-            // The conflict carries the current note so the client can show it beside the unsaved text.
-            return Fail(PerformanceErrors.Create(PerformanceErrors.Codes.OneOnOneNotesChanged, "These notes changed since you opened them.",
-                FailureKind.Stale, new { text = meeting.SharedNotes, revision = meeting.SharedNotesRevision }));
-        }
-        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException) { return Invalid(ex); }
-        return await SaveAsync(series.Id, command.Viewer, token);
-    }
-
-    internal static async Task<bool> SuccessorCompletedAsync(PerformanceDbContext db, OneOnOneMeeting meeting, CancellationToken token)
-        => meeting.NextMeetingId is Guid next
-            && await db.OneOnOneMeetings.AsNoTracking().AnyAsync(m => m.Id == next && m.State == OneOnOneMeetingState.Completed, token);
-}
-
 public sealed class SetPrivateNotesHandler(PerformanceDbContext db, ICoreWorkforceClient workforce, PerformanceViewer viewer)
     : OneOnOneHandlerBase(db, workforce, viewer), ICommandHandler<SetPrivateNotesCommand, Result<OneOnOneSeriesDto>>
 {
@@ -812,7 +879,7 @@ public sealed class SetPrivateNotesHandler(PerformanceDbContext db, ICoreWorkfor
         var me = command.Viewer.EmployeeId;
         try
         {
-            meeting.EnsureNotesWritable(await SetSharedNotesHandler.SuccessorCompletedAsync(Db, meeting, token));
+            meeting.EnsureNotesWritable(await SuccessorCompletedAsync(Db, meeting, token));
             var note = await Db.OneOnOnePrivateNotes.FirstOrDefaultAsync(n => n.MeetingId == meeting.Id && n.AuthorEmployeeId == me, token);
             if (note is null)
             {
@@ -824,6 +891,10 @@ public sealed class SetPrivateNotesHandler(PerformanceDbContext db, ICoreWorkfor
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or OneOnOneNotesConflictException) { return Invalid(ex); }
         return await SaveAsync(series.Id, command.Viewer, token);
     }
+
+    internal static async Task<bool> SuccessorCompletedAsync(PerformanceDbContext db, OneOnOneMeeting meeting, CancellationToken token)
+        => meeting.NextMeetingId is Guid next
+            && await db.OneOnOneMeetings.AsNoTracking().AnyAsync(m => m.Id == next && m.State == OneOnOneMeetingState.Completed, token);
 }
 
 public sealed class AddActionHandler(PerformanceDbContext db, ICoreWorkforceClient workforce, PerformanceViewer viewer,

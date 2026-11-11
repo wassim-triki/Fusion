@@ -86,6 +86,7 @@ public sealed class PerformanceDbContext : DbContext
     public DbSet<OneOnOneMeeting> OneOnOneMeetings => Set<OneOnOneMeeting>();
     public DbSet<OneOnOneAgendaItem> OneOnOneAgendaItems => Set<OneOnOneAgendaItem>();
     public DbSet<OneOnOnePrivateNote> OneOnOnePrivateNotes => Set<OneOnOnePrivateNote>();
+    public DbSet<CalendarFeed> CalendarFeeds => Set<CalendarFeed>();
     public DbSet<Feedback> Feedback => Set<Feedback>();
     public DbSet<FeedbackRequest> FeedbackRequests => Set<FeedbackRequest>();
     public DbSet<FeedbackRequestInvitee> FeedbackRequestInvitees => Set<FeedbackRequestInvitee>();
@@ -205,6 +206,8 @@ public sealed class PerformanceDbContext : DbContext
         modelBuilder.Entity<OneOnOneAgendaItem>()
             .HasQueryFilter(e => CurrentTenantId != Guid.Empty && e.TenantId == CurrentTenantId);
         modelBuilder.Entity<OneOnOnePrivateNote>()
+            .HasQueryFilter(e => CurrentTenantId != Guid.Empty && e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<CalendarFeed>()
             .HasQueryFilter(e => CurrentTenantId != Guid.Empty && e.TenantId == CurrentTenantId);
         modelBuilder.Entity<Feedback>()
             .HasQueryFilter(e => CurrentTenantId != Guid.Empty && e.TenantId == CurrentTenantId);

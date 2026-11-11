@@ -23,6 +23,7 @@ export function NotesEditor({
   label,
   isPrivate = false,
   reading = false,
+  compact = false,
   text,
   revision,
   writable,
@@ -33,6 +34,8 @@ export function NotesEditor({
   isPrivate?: boolean;
   /** People-authored record read in the human voice (the shared notes). */
   reading?: boolean;
+  /** A field inside a line: the label becomes the placeholder and the field starts short. */
+  compact?: boolean;
   text: string;
   revision: number;
   writable: boolean;
@@ -91,7 +94,7 @@ export function NotesEditor({
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
-        <label htmlFor={id} className={cn("flex items-center gap-1.5 type-label", isPrivate ? "text-muted-foreground" : "text-foreground")}>
+        <label htmlFor={id} className={cn("flex items-center gap-1.5 type-label", isPrivate ? "text-muted-foreground" : "text-foreground", compact && "sr-only")}>
           {isPrivate ? <Lock className="size-3.5" aria-hidden /> : null}
           {label}
         </label>
@@ -108,9 +111,9 @@ export function NotesEditor({
         onBlur={() => {
           if (writable && state !== "conflict") void flush();
         }}
-        placeholder={writable ? (isPrivate ? t("onlyYouSeeThis") : t("startWriting")) : undefined}
+        placeholder={writable ? (compact ? label : isPrivate ? t("onlyYouSeeThis") : t("startWriting")) : undefined}
         voice={reading ? "narrative" : "system"}
-        className="min-h-36 resize-y border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 dark:bg-transparent"
+        className={cn("resize-y border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 dark:bg-transparent", compact ? "min-h-16" : "min-h-36")}
       />
       {state === "conflict" && theirs ? (
         <div role="alert" className="space-y-3 rounded-control border border-warning/40 p-3">

@@ -207,5 +207,15 @@
   "group.reviews-and-calibration": "Reviews and calibration",
   "group.one-on-ones": "1:1s",
   "group.feedback-and-praise": "Feedback and praise",
-  "group.deadline-reminders": "Deadline reminders"
+  "group.deadline-reminders": "Deadline reminders",
+
+  "GoalUpdateReminder": "Time to update your goals",
+  "GoalUpdateReminder.subject": "Time to update your goals",
+  "GoalUpdateReminder.lead": "Some of your goals haven't been updated in a month. A minute now keeps your manager and your review up to date.",
+  "GoalUpdateReminder.action": "Update your goals",
+  "OneOnOneInvite.subject": "1:1 with {subject}",
+  "OneOnOneInvite.lead": "{due}. It's in the attached invite, and every change to it comes the same way.",
+  "OneOnOneInvite.action": "Open the 1:1",
+  "OneOnOneInvite.cancelled.subject": "Cancelled: 1:1 with {subject}",
+  "OneOnOneInvite.cancelled.lead": "Your 1:1s with {subject} ended, so this one is off your calendar."
 }

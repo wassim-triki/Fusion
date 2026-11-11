@@ -35,6 +35,7 @@ public sealed class PerformanceApiFactory(string environment = "Testing") : WebA
         builder.UseSetting("ConnectionStrings:PerformanceDb", "Host=localhost;Database=unused_http_test_store");
         builder.UseSetting("Urls", "http://localhost");
         builder.UseSetting("Notifications:UnsubscribeKey", UnsubscribeKey);
+        builder.UseSetting("Notifications:ShellBaseUrl", "http://localhost:3000");
 
         builder.ConfigureServices(services =>
         {

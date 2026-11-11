@@ -215,5 +215,15 @@
   "group.reviews-and-calibration": "التقييمات والمعايرة",
   "group.one-on-ones": "اللقاءات الفردية",
   "group.feedback-and-praise": "الملاحظات والإشادات",
-  "group.deadline-reminders": "تذكيرات المواعيد"
+  "group.deadline-reminders": "تذكيرات المواعيد",
+
+  "GoalUpdateReminder": "حان وقت تحديث أهدافك",
+  "GoalUpdateReminder.subject": "حان وقت تحديث أهدافك",
+  "GoalUpdateReminder.lead": "لم يتم تحديث بعض أهدافك منذ شهر. دقيقة الآن تُبقي مديرك وتقييمك على اطلاع.",
+  "GoalUpdateReminder.action": "حدّث أهدافك",
+  "OneOnOneInvite.subject": "اجتماع فردي مع {subject}",
+  "OneOnOneInvite.lead": "{due}. الدعوة مرفقة، وكل تغيير عليها سيصلك بالطريقة نفسها.",
+  "OneOnOneInvite.action": "افتح الاجتماع",
+  "OneOnOneInvite.cancelled.subject": "أُلغي: اجتماع فردي مع {subject}",
+  "OneOnOneInvite.cancelled.lead": "انتهت اجتماعاتك الفردية مع {subject}، لذا أُزيل هذا الاجتماع من تقويمك."
 }

@@ -136,6 +136,10 @@ public static class PerformanceNotificationTemplates
     public const string TeamPath = "/performance/team";
 
     public static string OneOnOnePath(Guid seriesId) => $"/performance/one-on-ones/{seriesId}";
+    public static string GoalsPath(Guid cycleId) => $"/performance/goals?cycle={cycleId}";
+
+    public static PerformanceNotificationMessage ForGoalUpdateReminder(string path)
+        => Message("GoalUpdateReminder", null, null, path);
     public static string FeedbackPath(Guid feedbackId) => $"/performance/feedback?feedback={feedbackId}";
     public static string FeedbackRequestPath(Guid requestId) => $"/performance/feedback/requests/{requestId}";
     public static string PraisePath(Guid praiseId) => $"/performance/feedback?tab=praise&praise={praiseId}";

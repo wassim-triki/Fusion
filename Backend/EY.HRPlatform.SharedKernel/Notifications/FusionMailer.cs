@@ -18,9 +18,14 @@ public sealed class FusionSmtpOptions
 /// <summary>
 /// One email on its way out. <paramref name="MessageId"/> is stable for the durable message, so a retry is the same
 /// email. <paramref name="UnsubscribeUrl"/> is set for groups a person may turn off: it becomes the one-click
-/// <c>List-Unsubscribe</c> header (RFC 8058) that mail apps show as "Unsubscribe".
+/// <c>List-Unsubscribe</c> header (RFC 8058) that mail apps show as "Unsubscribe". <paramref name="Calendar"/> is an
+/// iCalendar invite (RFC 6047): mail apps offer it as an event to add, update or cancel.
 /// </summary>
-public sealed record FusionOutgoingEmail(string To, RenderedEmail Content, string MessageId, string? UnsubscribeUrl = null);
+public sealed record FusionOutgoingEmail(string To, RenderedEmail Content, string MessageId, string? UnsubscribeUrl = null,
+    FusionCalendarPart? Calendar = null);
+
+/// <summary>An invite's iCalendar text and its method (REQUEST or CANCEL).</summary>
+public sealed record FusionCalendarPart(string Ics, string Method);
 
 /// <summary>Sends a Fusion email as HTML with its plain-text twin. Headers carry no business content.</summary>
 public static class FusionMailer
@@ -38,6 +43,13 @@ public static class FusionMailer
         };
         mail.To.Add(email.To);
         mail.AlternateViews.Add(HtmlView(email.Content.Html, email.Content.Images));
+        if (email.Calendar is { } calendar)
+        {
+            var type = new ContentType("text/calendar") { CharSet = "UTF-8" };
+            type.Parameters.Add("method", calendar.Method);
+            mail.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(calendar.Ics, type));
+            mail.Attachments.Add(new Attachment(new MemoryStream(Encoding.UTF8.GetBytes(calendar.Ics)), "invite.ics", "application/ics"));
+        }
         mail.Headers.Add("Message-ID", email.MessageId);
         if (email.UnsubscribeUrl is not null)
         {

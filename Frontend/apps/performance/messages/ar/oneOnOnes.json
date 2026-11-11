@@ -27,7 +27,8 @@
     "notMeetingYet": "لا لقاءات بعد",
     "noManagerInCoreHr": "لا مدير في الموارد البشرية الأساسية",
     "actionsYouOwe": "إجراءات عليك{value}",
-    "thisWeek": "هذا الأسبوع"
+    "thisWeek": "هذا الأسبوع",
+    "inYourCalendar": "في تقويمك"
   },
   "NextUp": {
     "nextUp": "التالي · {howSoon}",
@@ -46,7 +47,9 @@
       "Objective": "{count, plural, one {هدف واحد في خطر} two {هدفان في خطر} other {# أهداف في خطر}}",
       "UpdateRequest": "{count, plural, one {تحديث واحد مطلوب} two {تحديثان مطلوبان} other {# تحديثات مطلوبة}}",
       "Feedback": "{count} ملاحظات",
-      "Praise": "{count} إشادات"
+      "Praise": "{count} إشادات",
+      "Action": "{count, plural, one {إجراء متأخر} two {إجراءان متأخران} other {# إجراءات متأخرة}}",
+      "Starter": "{count} للبداية"
     }
   },
   "RhythmTable": {
@@ -85,119 +88,6 @@
   },
   "OneOnOnesSkeleton": {
     "loadingYour11s": "جارٍ تحميل لقاءاتك الفردية"
-  },
-  "SeriesView": {
-    "n11With": "لقاء فردي مع {displayName}",
-    "someoneLeftTheCompanyYou": "غادر أحدكما الشركة · التقيتما {toLowerCase}، {startedAt} – {value}",
-    "theReportingLineChangedYou": "تغيّر خط التبعية · التقيتما {toLowerCase}، {startedAt} – {value}",
-    "ended": "انتهت",
-    "reschedule": "تغيير الموعد",
-    "completeMeeting": "إكمال اللقاء",
-    "earlierMeetings": "اللقاءات السابقة",
-    "since": "{value} منذ {startedAt}"
-  },
-  "MeetingTrack": {
-    "notHeld": "لم يُعقد",
-    "ended": "انتهت",
-    "meetings": "اللقاءات",
-    "point": "{length} نقطة",
-    "points": "{length} نقاط"
-  },
-  "UpcomingMeeting": {
-    "talkingPoints": "نقاط النقاش",
-    "fromSYear": "من عام {reportFirstName}",
-    "fromYourYear": "من عامك",
-    "actions": "الإجراءات",
-    "notes": "الملاحظات"
-  },
-  "TalkingPoints": {
-    "nothingOnTheAgenda": "لا شيء على جدول الأعمال",
-    "addedBy": "أضافه {value}",
-    "remove": "حذف {text}",
-    "talkedAbout": "نوقش: {text}",
-    "addATalkingPoint": "إضافة نقطة نقاش",
-    "add": "إضافة"
-  },
-  "Suggestions": {
-    "add": "إضافة",
-    "addToTheTalkingPoints": "إضافة {label} إلى نقاط النقاش"
-  },
-  "Actions": {
-    "noActions": "لا إجراءات",
-    "done": "منجز: {text}",
-    "from": "من {createdInMeetingAt}",
-    "overdue": "متأخر",
-    "due": "الاستحقاق",
-    "newAction": "إجراء جديد",
-    "addAnAction": "إضافة إجراء",
-    "owner": "المالك",
-    "dueDate": "تاريخ الاستحقاق",
-    "add": "إضافة"
-  },
-  "MeetingNotes": {
-    "sharedWith": "مشتركة مع {value}",
-    "onlyYou": "أنت فقط"
-  },
-  "History": {
-    "lastMeeting": "آخر لقاء",
-    "noMeetingWasHeld": "لم يُعقد أي لقاء.",
-    "earlierMeetings": "اللقاءات السابقة",
-    "meetings": "اللقاءات"
-  },
-  "EarlierMeetings": {
-    "notHeld": "لم يُعقد",
-    "noTalkingPoints": "لا نقاط نقاش",
-    "missed": "فات",
-    "talkingPoints": "{count, plural, one {+نقطة نقاش واحدة} two {+نقطتا نقاش} other {+# نقاط نقاش}}",
-    "actions": "{count, plural, one {إجراء واحد} two {إجراءان} other {# إجراءات}}",
-    "notes": "ملاحظات"
-  },
-  "MeetingDetail": {
-    "talkedAbout": "نوقش",
-    "noTalkingPoints": "لا نقاط نقاش",
-    "notReached": "لم يُتطرق إليه",
-    "actions": "الإجراءات",
-    "notes": "الملاحظات",
-    "none": "لا شيء",
-    "onlyYou": "أنت فقط"
-  },
-  "MeetingNotesStacked": {
-    "sharedWith": "مشتركة مع {value}",
-    "onlyYou": "أنت فقط"
-  },
-  "SeriesSidebar": {
-    "meetingsHeld": "لقاءات عُقدت",
-    "actionsDone": "إجراءات أُنجزت",
-    "overTheSeries": "على مدى السلسلة",
-    "objective": "{length} أهداف",
-    "s": "",
-    "atRisk": "{atRisk} في خطر",
-    "noneAtRisk": "لا شيء في خطر",
-    "open": "فتح",
-    "their": "خطتهم",
-    "your": "خطتك",
-    "plan": "",
-    "noPlanInTheCurrent": "لا خطة في الدورة الحالية",
-    "year": "عام {value}{value2}",
-    "recognition": "التقدير",
-    "howOften": "التكرار",
-    "heldOf": "عُقد {held} من {meetings} ·",
-    "since": "منذ {startedAt}",
-    "rhythm": "الإيقاع",
-    "unshared": {
-      "NotStarted": "لا خطة بعد",
-      "Draft": "خطة مسودة",
-      "ReturnedForChanges": "خطة أُعيدت للتعديل",
-      "Submitted": "خطة بانتظار الاعتماد",
-      "Approved": "لا أهداف"
-    }
-  },
-  "RescheduleDialog": {
-    "moveTheNextMeeting": "نقل اللقاء التالي",
-    "date": "التاريخ",
-    "time": "الوقت",
-    "cancel": "إلغاء",
-    "moveMeeting": "نقل اللقاء"
   },
   "SeriesSkeleton": {
     "loadingThis11": "جارٍ تحميل هذا اللقاء الفردي"
@@ -238,7 +128,9 @@
       "Objective": "هدف",
       "UpdateRequest": "طلب تحديث",
       "Feedback": "ملاحظات",
-      "Praise": "إشادة"
+      "Praise": "إشادة",
+      "Action": "إجراء",
+      "Starter": "للبداية"
     },
     "todayAt": "اليوم {time}",
     "tomorrowAt": "غدًا {time}",
@@ -249,6 +141,94 @@
     "inMinutes": "بعد {count} د",
     "inHours": "{count, plural, one {بعد ساعة} two {بعد ساعتين} other {بعد # ساعات}}",
     "tomorrowSoon": "غدًا",
-    "inDays": "{count, plural, one {بعد يوم} two {بعد يومين} other {بعد # أيام}}"
+    "inDays": "{count, plural, one {بعد يوم} two {بعد يومين} other {بعد # أيام}}",
+    "starter": {
+      "howItsGoing": "كيف تسير الأمور",
+      "theYearsPlan": "خطة لبقية السنة",
+      "feedbackStyle": "كيف تحب أن تتلقى الملاحظات",
+      "whatWouldHelp": "ما الذي سيساعد أكثر الآن"
+    }
+  },
+  "Meeting": {
+    "title": "اجتماع فردي مع {name}",
+    "endedLeft": "انتهى في {day}: غادر أحدكما الشركة",
+    "endedLine": "انتهى في {day}: تغيّر التسلسل الإداري",
+    "inBothCalendars": "في تقويمَي كليكما",
+    "moveIt": "انقله",
+    "agenda": "جدول الأعمال",
+    "starterAgenda": "جدول أعمال لأول اجتماع فردي",
+    "fromTheYear": "من الأهداف والإجراءات والطلبات",
+    "lastTime": "المرة الماضية، {day}",
+    "stillOpen": "تبقى الملاحظات مفتوحة حتى الاجتماع التالي",
+    "todayDay": "اليوم، {day}",
+    "tomorrowDay": "غدًا، {day}",
+    "when": "{day}، من {start} إلى {end}، {cadence}",
+    "whenFirst": "{day}، من {start} إلى {end}، اجتماعك الأول",
+    "nothingOnIt": "لا شيء على جدول الأعمال",
+    "notesBoth": "ملاحظات يراها كلاكما",
+    "noted": "مُدوَّن",
+    "isAtRisk": "في خطر",
+    "isOffTrack": "خارج المسار",
+    "fromGoal": "هدف، أُنجز {percent}%، حُدّث في {day}",
+    "fromGoalNoProgress": "هدف، لا تحديث بعد",
+    "fromAction": "إجراء من {day}، {who}{late, plural, =0 {} one {، متأخر يومًا واحدًا} other {، متأخر # أيام}}",
+    "you": "أنت",
+    "youAsked": "طلبته في {day}",
+    "theyAsked": "طلبه {name} في {day}",
+    "fromPraise": "إشادة، {day}، تستحق الذكر",
+    "fromFeedback": "ملاحظة، {day}",
+    "starter": "للبداية",
+    "carriedFrom": "مُرحَّل من {day}",
+    "youAdded": "أضفته أنت",
+    "theyAdded": "أضافه {name}",
+    "actionFor": "إجراء لـ{name}",
+    "actionForYou": "إجراء لك",
+    "whatYouWillDo": "ما ستفعله",
+    "whatTheyWillDo": "ما سيفعله {name}",
+    "byWhen": "بحلول",
+    "add": "أضف",
+    "addToAgenda": "أضف إلى جدول الأعمال",
+    "carriesTo": "ما لم يُدوَّن يُرحَّل إلى {day}",
+    "onlyYou": "لا يراه أحد غيرك",
+    "privateNotes": "ملاحظات خاصة",
+    "earlier": "سابقًا",
+    "notHeld": "لم يُعقد",
+    "nothingNoted": "لا شيء مُدوَّن",
+    "yourGoals": "أهدافك",
+    "theirGoals": "أهداف {name}",
+    "noPlanDue": "لا خطة بعد، مطلوبة في {day}",
+    "noPlan": "لا خطة بعد",
+    "noUpdate": "لا تحديث بعد",
+    "actions": "الإجراءات",
+    "noActions": "لا شيء بعد",
+    "markDone": "وضع علامة منجز: {text}",
+    "doneOn": "أُنجز في {day}",
+    "daysLate": "{count, plural, one {متأخر يومًا واحدًا} other {متأخر # أيام}}",
+    "due": "مستحق في {day}",
+    "open": "مفتوح",
+    "done": "منجز",
+    "joined": "الانضمام",
+    "job": "الوظيفة",
+    "unit": "الوحدة",
+    "about": "عن {name}",
+    "lately": "مؤخرًا",
+    "praised": "أشاد {author} بـ{name}، {day}",
+    "moveTitle": "انقل هذا الاجتماع",
+    "date": "التاريخ",
+    "time": "الوقت",
+    "howOften": "كم مرة",
+    "cancel": "إلغاء",
+    "move": "انقله"
+  },
+  "CalendarLink": {
+    "title": "اجتماعاتك الفردية في تطبيق التقويم",
+    "link": "رابط التقويم",
+    "copy": "نسخ",
+    "copied": "تم النسخ",
+    "on": "رابط تقويمك مفعّل.",
+    "off": "اشترك من تقويم Google أو Outlook برابط.",
+    "getLink": "احصل على رابط تقويم",
+    "newLink": "أنشئ رابطًا جديدًا",
+    "turnOff": "أوقفه"
   }
 }

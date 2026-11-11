@@ -8,6 +8,7 @@ using EY.HRPlatform.Performance.Domain.Plans;
 using EY.HRPlatform.Performance.Domain.Population;
 using EY.HRPlatform.Performance.Domain.Progress;
 using EY.HRPlatform.Performance.Domain.Settings;
+using EY.HRPlatform.Performance.Features.OneOnOnes;
 using EY.HRPlatform.Performance.Infrastructure.Core;
 using EY.HRPlatform.Performance.Tests.TestHelpers;
 using EY.HRPlatform.SharedKernel.Auth;
@@ -73,8 +74,22 @@ public sealed class OneOnOneHttpTests
     private static JsonElement Upcoming(JsonElement series) => series.GetProperty("upcoming");
     private static Guid Id(JsonElement element) => element.GetProperty("id").GetGuid();
 
+    /// <summary>The meeting is over: the reconciler completes it, as it does on its own, and the series is read back.</summary>
+    private static async Task<JsonElement> CompleteAsync(World w, JsonElement series, HttpClient reader)
+    {
+        await using (var db = w.Factory.Store.NewContext())
+        {
+            var meetingId = Id(Upcoming(series));
+            var at = (await db.OneOnOneMeetings.SingleAsync(m => m.Id == meetingId)).ScheduledAt;
+            await OneOnOneReconciler.CompleteOverAsync(db, at + OneOnOneSchedule.Length + TimeSpan.FromMinutes(1), CancellationToken.None);
+        }
+        return await DataAsync(await reader.GetAsync($"/api/performance/one-on-ones/{Id(series)}"));
+    }
+
+    private static int Starters => OneOnOneStarters.Keys.Count;
+
     [Fact]
-    public async Task The_report_starts_with_their_manager_who_is_notified()
+    public async Task The_report_starts_with_their_manager_who_is_notified_and_both_get_the_invite()
     {
         var w = Arrange();
         await using var _ = w.Factory;
@@ -82,12 +97,19 @@ public sealed class OneOnOneHttpTests
         Assert.Equal("Report", series.GetProperty("viewerRole").GetString());
         Assert.Equal("EveryTwoWeeks", series.GetProperty("cadence").GetString());
         Assert.Equal("Upcoming", Upcoming(series).GetProperty("state").GetString());
+        Assert.True(series.GetProperty("first").GetBoolean());
+        // A first 1:1 opens on the starter agenda.
+        var agenda = Upcoming(series).GetProperty("agenda").EnumerateArray().ToList();
+        Assert.Equal(OneOnOneStarters.Keys, agenda.Select(i => i.GetProperty("text").GetString()));
+        Assert.All(agenda, i => Assert.Equal("Starter", i.GetProperty("sourceKind").GetString()));
 
         await using var db = w.Factory.Store.NewContext();
         var notification = Assert.Single(await db.Notifications.Where(n => n.RecipientEmployeeId == w.Karim).ToListAsync());
         Assert.Equal($"/performance/one-on-ones/{Id(series)}", notification.Href);
         Assert.Equal(w.Nour, notification.ActorEmployeeId);
         Assert.Empty(await db.Notifications.Where(n => n.RecipientEmployeeId == w.Nour).ToListAsync());
+        var invites = await db.OutboxMessages.Where(m => m.Kind == Domain.Notifications.PerformanceNotificationKind.OneOnOneInvite).ToListAsync();
+        Assert.Equal(new[] { w.Karim, w.Nour }.OrderBy(x => x), invites.Select(m => m.RecipientEmployeeId).OrderBy(x => x));
     }
 
     [Fact]
@@ -117,28 +139,45 @@ public sealed class OneOnOneHttpTests
     }
 
     [Fact]
-    public async Task Completing_creates_the_next_meeting_once_and_a_stale_version_conflicts()
+    public async Task A_meeting_completes_once_when_over_carrying_what_was_not_noted_and_inviting_both_to_the_next()
     {
         var w = Arrange();
         await using var _ = w.Factory;
         var series = await StartAsync(w, w.Karim, w.Nour, Manager, cadence: "Weekly");
         var meeting = Upcoming(series);
-        var client = w.As(w.Karim, Manager);
+        var karim = w.As(w.Karim, Manager);
+        var noted = Guid.NewGuid();
+        await DataAsync(await karim.PostAsJsonAsync($"/api/performance/one-on-ones/meetings/{Id(meeting)}/agenda",
+            new { id = noted, text = "Vendor timeline", note = "Agreed to push to March." }));
+        var open = Guid.NewGuid();
+        await DataAsync(await karim.PostAsJsonAsync($"/api/performance/one-on-ones/meetings/{Id(meeting)}/agenda",
+            new { id = open, text = "Training budget" }));
 
-        var stale = await client.PostAsJsonAsync($"/api/performance/one-on-ones/meetings/{Id(meeting)}/complete", new { expectedVersion = 999u });
-        Assert.Equal(HttpStatusCode.Conflict, stale.StatusCode);
-
-        var body = new { expectedVersion = meeting.GetProperty("version").GetUInt32() };
-        var completed = await DataAsync(await client.PostAsJsonAsync($"/api/performance/one-on-ones/meetings/{Id(meeting)}/complete", body));
+        var completed = await CompleteAsync(w, series, karim);
         var next = Upcoming(completed);
         Assert.NotEqual(Id(meeting), Id(next));
         Assert.Equal(meeting.GetProperty("scheduledAt").GetDateTime().AddDays(7), next.GetProperty("scheduledAt").GetDateTime());
-        Assert.Single(completed.GetProperty("past").EnumerateArray());
+        var past = Assert.Single(completed.GetProperty("past").EnumerateArray());
+        Assert.True(past.GetProperty("agenda").EnumerateArray().Single(i => Id(i) == noted).GetProperty("discussed").GetBoolean());
+        // Everything without a note carries over (the starters and the budget); the noted item stays behind.
+        var carried = next.GetProperty("agenda").EnumerateArray().ToList();
+        Assert.Equal(Starters + 1, carried.Count);
+        Assert.Contains(carried, i => i.GetProperty("text").GetString() == "Training budget"
+            && i.GetProperty("carriedFromAt").GetDateTime() == meeting.GetProperty("scheduledAt").GetDateTime());
+        Assert.DoesNotContain(carried, i => i.GetProperty("text").GetString() == "Vendor timeline");
+        Assert.False(completed.GetProperty("first").GetBoolean());
 
-        var retried = await DataAsync(await client.PostAsJsonAsync($"/api/performance/one-on-ones/meetings/{Id(meeting)}/complete", body));
-        Assert.Equal(Id(next), Id(Upcoming(retried)));
+        // Noting the budget after the meeting takes its carried copy off the next agenda.
+        var noteOpen = await DataAsync(await karim.PutAsJsonAsync($"/api/performance/one-on-ones/meetings/{Id(meeting)}/agenda/{open}/note",
+            new { text = "Approved after all.", expectedRevision = 0u }));
+        Assert.DoesNotContain(Upcoming(noteOpen).GetProperty("agenda").EnumerateArray(), i => i.GetProperty("text").GetString() == "Training budget");
+
+        // A second pass finds nothing over; the next meeting's invite went to both.
         await using var db = w.Factory.Store.NewContext();
+        Assert.Equal(0, await OneOnOneReconciler.CompleteOverAsync(db, DateTime.UtcNow.AddHours(4), CancellationToken.None));
         Assert.Equal(2, await db.OneOnOneMeetings.CountAsync());
+        Assert.Equal(2, await db.OutboxMessages.CountAsync(m => m.Kind == Domain.Notifications.PerformanceNotificationKind.OneOnOneInvite
+            && m.ResourceId == Id(next)));
     }
 
     [Fact]
@@ -155,9 +194,11 @@ public sealed class OneOnOneHttpTests
             new { text = "KARIM-PRIVATE-ASK-ABOUT-WORKLOAD", expectedRevision = 0u }));
         await DataAsync(await nour.PutAsJsonAsync($"/api/performance/one-on-ones/meetings/{meetingId}/notes/private",
             new { text = "NOUR-PRIVATE-MENTION-LEAVE", expectedRevision = 0u }));
-        await DataAsync(await nour.PutAsJsonAsync($"/api/performance/one-on-ones/meetings/{meetingId}/notes/shared",
+        var itemId = Id(Upcoming(series).GetProperty("agenda").EnumerateArray().First());
+        var noted = await DataAsync(await nour.PutAsJsonAsync($"/api/performance/one-on-ones/meetings/{meetingId}/agenda/{itemId}/note",
             new { text = "Agreed the vendor timeline.", expectedRevision = 0u }));
-        var conflict = await DataAsync(await karim.PutAsJsonAsync($"/api/performance/one-on-ones/meetings/{meetingId}/notes/shared",
+        Assert.True(Upcoming(noted).GetProperty("agenda").EnumerateArray().First().GetProperty("discussed").GetBoolean());
+        var conflict = await DataAsync(await karim.PutAsJsonAsync($"/api/performance/one-on-ones/meetings/{meetingId}/agenda/{itemId}/note",
             new { text = "Other text", expectedRevision = 0u }), HttpStatusCode.Conflict);
         Assert.Contains("Agreed the vendor timeline.", conflict.GetRawText());
 
@@ -175,9 +216,7 @@ public sealed class OneOnOneHttpTests
             new { id = Guid.NewGuid(), text = "Someone else", ownerEmployeeId = w.Sami });
         Assert.Equal(HttpStatusCode.BadRequest, outsider.StatusCode);
 
-        var current = await DataAsync(await karim.GetAsync($"/api/performance/one-on-ones/{Id(series)}"));
-        var completed = await DataAsync(await karim.PostAsJsonAsync($"/api/performance/one-on-ones/meetings/{meetingId}/complete",
-            new { expectedVersion = Upcoming(current).GetProperty("version").GetUInt32() }));
+        var completed = await CompleteAsync(w, series, karim);
         var carried = Assert.Single(Upcoming(completed).GetProperty("actions").EnumerateArray());
         Assert.Equal(actionId, carried.GetProperty("id").GetGuid());
         Assert.True(carried.GetProperty("carriedOver").GetBoolean());
@@ -196,7 +235,7 @@ public sealed class OneOnOneHttpTests
         var actionsPath = $"/api/performance/one-on-ones/{Id(series)}/actions";
         var nour = w.As(w.Nour);
 
-        for (var i = 1; i <= OneOnOneMeeting.MaxAgendaItems; i++)
+        for (var i = Starters + 1; i <= OneOnOneMeeting.MaxAgendaItems; i++)
             await DataAsync(await nour.PostAsJsonAsync($"/api/performance/one-on-ones/meetings/{meetingId}/agenda", new { id = Guid.NewGuid(), text = $"Item {i}" }));
         var agendaFull = await DataAsync(await nour.PostAsJsonAsync($"/api/performance/one-on-ones/meetings/{meetingId}/agenda",
             new { id = Guid.NewGuid(), text = "One more" }), HttpStatusCode.BadRequest);
@@ -338,17 +377,18 @@ public sealed class OneOnOneHttpTests
         Assert.Contains(praiseId, sources);
         Assert.DoesNotContain(managerOnlyId, sources);
         Assert.DoesNotContain(oldFeedbackId, sources);
-        var raw = series.GetRawText();
+        // Agenda labels never carry what feedback or praise says; praise, public on the wall, shows beside the meeting.
+        var raw = Upcoming(series).GetRawText();
         Assert.DoesNotContain("SHARED-TEXT", raw);
-        Assert.DoesNotContain("MANAGER-ONLY-TEXT", raw);
         Assert.DoesNotContain("PRAISE-TEXT", raw);
+        Assert.DoesNotContain("MANAGER-ONLY-TEXT", series.GetRawText());
         Assert.Equal("AtRisk", suggestions.Single(s => s.GetProperty("sourceId").GetGuid() == riskyId).GetProperty("status").GetString());
 
         var meetingId = Id(Upcoming(series));
         var karim = w.As(w.Karim, Manager);
         var added = await DataAsync(await karim.PostAsJsonAsync($"/api/performance/one-on-ones/meetings/{meetingId}/agenda",
             new { id = Guid.NewGuid(), sourceKind = "Objective", sourceId = riskyId }));
-        var item = Assert.Single(Upcoming(added).GetProperty("agenda").EnumerateArray());
+        var item = Upcoming(added).GetProperty("agenda").EnumerateArray().Single(i => i.GetProperty("sourceKind").GetString() == "Objective");
         Assert.Equal("Integrate the vendor API · At risk", item.GetProperty("text").GetString());
         Assert.DoesNotContain(Upcoming(added).GetProperty("suggestions").EnumerateArray(), s => s.GetProperty("sourceId").GetGuid() == riskyId);
 
@@ -358,12 +398,12 @@ public sealed class OneOnOneHttpTests
         Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
 
         // After completing, only what arrives later is suggested again.
-        var completed = await DataAsync(await karim.PostAsJsonAsync($"/api/performance/one-on-ones/meetings/{meetingId}/complete",
-            new { expectedVersion = Upcoming(added).GetProperty("version").GetUInt32() }));
+        var completed = await CompleteAsync(w, series, karim);
         var after = Upcoming(completed).GetProperty("suggestions").EnumerateArray().Select(s => s.GetProperty("sourceId").GetGuid()).ToHashSet();
         Assert.DoesNotContain(sharedId, after);
         Assert.DoesNotContain(praiseId, after);
-        Assert.Contains(riskyId, after);
+        Assert.DoesNotContain(riskyId, after);
+        Assert.Contains(Upcoming(completed).GetProperty("agenda").EnumerateArray(), i => i.GetProperty("sourceKind").GetString() == "Objective");
     }
 
     [Fact]
@@ -375,9 +415,7 @@ public sealed class OneOnOneHttpTests
         Assert.Empty(Upcoming(series).GetProperty("suggestions").EnumerateArray());
         var added = await DataAsync(await w.As(w.Nour).PostAsJsonAsync($"/api/performance/one-on-ones/meetings/{Id(Upcoming(series))}/agenda",
             new { id = Guid.NewGuid(), text = "Career goals" }));
-        var completed = await DataAsync(await w.As(w.Karim, Manager).PostAsJsonAsync(
-            $"/api/performance/one-on-ones/meetings/{Id(Upcoming(added))}/complete",
-            new { expectedVersion = Upcoming(added).GetProperty("version").GetUInt32() }));
+        var completed = await CompleteAsync(w, series, w.As(w.Karim, Manager));
         Assert.Single(completed.GetProperty("past").EnumerateArray());
     }
 
@@ -451,9 +489,7 @@ public sealed class OneOnOneHttpTests
             new { id = Guid.NewGuid(), text = "Book the vendor review", ownerEmployeeId = w.Karim, dueDate = Today.AddDays(-1) }));
         await DataAsync(await karim.PostAsJsonAsync($"{seriesPath}/actions",
             new { id = Guid.NewGuid(), text = "Send the vendor draft", ownerEmployeeId = w.Nour, dueDate = (DateOnly?)null }));
-        var current = await DataAsync(await karim.GetAsync(seriesPath));
-        var completed = await DataAsync(await karim.PostAsJsonAsync($"/api/performance/one-on-ones/meetings/{Id(Upcoming(current))}/complete",
-            new { expectedVersion = Upcoming(current).GetProperty("version").GetUInt32() }));
+        var completed = await CompleteAsync(w, series, karim);
         var next = Upcoming(completed);
         await DataAsync(await w.As(w.Nour).PostAsJsonAsync($"/api/performance/one-on-ones/meetings/{Id(next)}/agenda",
             new { id = Guid.NewGuid(), text = "Vendor timeline" }));
@@ -461,7 +497,7 @@ public sealed class OneOnOneHttpTests
         var list = await DataAsync(await karim.GetAsync("/api/performance/one-on-ones"));
         var row = Assert.Single(list.GetProperty("reports").EnumerateArray());
         Assert.Equal(Id(next), row.GetProperty("nextMeetingId").GetGuid());
-        Assert.Equal(1, row.GetProperty("agendaCount").GetInt32());
+        Assert.Equal(Starters + 1, row.GetProperty("agendaCount").GetInt32());
         Assert.NotEqual(JsonValueKind.Null, row.GetProperty("lastMetAt").ValueKind);
         Assert.Equal(["Completed", "Upcoming"], row.GetProperty("recent").EnumerateArray().Select(b => b.GetProperty("state").GetString()));
         var owed = Assert.Single(list.GetProperty("myActions").EnumerateArray());
@@ -477,5 +513,93 @@ public sealed class OneOnOneHttpTests
         // An ended series leaves the owed list.
         Reassign(w, w.Nour, w.Leila);
         Assert.Empty((await DataAsync(await w.As(w.Nour).GetAsync("/api/performance/one-on-ones"))).GetProperty("myActions").EnumerateArray());
+    }
+
+    [Fact]
+    public async Task A_late_action_joins_the_agenda_and_the_report_s_goals_and_praise_sit_beside_it()
+    {
+        var w = Arrange();
+        await using var _ = w.Factory;
+        var tenant = w.Factory.Store.TenantId;
+        var start = Today.AddMonths(-1);
+        await using (var db = w.Factory.Store.NewContext())
+        {
+            var cycle = PerformanceCycle.CreateDraft(tenant, "FY2027", start, Today.AddMonths(11), start.AddDays(14)).Activated();
+            var participant = Participant.Create(tenant, cycle.Id, w.Nour, "Nour Trabelsi", null, null, "Platform", w.Karim, "Karim Haddad", false, start);
+            var plan = EmployeePlan.Create(tenant, cycle.Id, participant.Id, w.Nour, "Nour Trabelsi", "Platform", w.Karim, "Karim Haddad");
+            var goal = Objective.CreateEmployee(tenant, cycle.Id, plan.Id, w.Nour, "Ship the gateway", null, null,
+                start, Today.AddMonths(11), ObjectiveMeasurement.ManualPercentage(), 100m, null, null, start, Today.AddMonths(11));
+            plan.Submit(w.Nour, new PlanSubmissionFacts(1, true, 100m, true, false, PlanAlignmentPolicy.Optional));
+            plan.Approve(w.Karim);
+            var value = Competency.Create(tenant, "Collaboration", "Works well with others", null);
+            var praise = Praise.Give(Guid.NewGuid(), tenant, w.Leila, "Leila Baccouche", value.Id, "The drill was the best we ran.",
+                [(w.Nour, "Nour Trabelsi")], DateTime.UtcNow);
+            db.AddRange(cycle, participant, plan, goal, value, praise);
+            await db.SaveChangesAsync();
+        }
+        var series = await StartAsync(w, w.Karim, w.Nour, Manager);
+        var karim = w.As(w.Karim, Manager);
+        var late = Guid.NewGuid();
+        await DataAsync(await karim.PostAsJsonAsync($"/api/performance/one-on-ones/{Id(series)}/actions",
+            new { id = late, text = "Share the revised estimate", ownerEmployeeId = w.Nour, dueDate = Today.AddDays(-9) }));
+
+        var asNour = await DataAsync(await w.As(w.Nour).GetAsync($"/api/performance/one-on-ones/{Id(series)}"));
+        var offered = Upcoming(asNour).GetProperty("suggestions").EnumerateArray().Single(s => s.GetProperty("kind").GetString() == "Action");
+        Assert.Equal(late, offered.GetProperty("sourceId").GetGuid());
+        Assert.Equal(w.Nour, offered.GetProperty("by").GetGuid());
+
+        // A note on a suggestion is how it joins the agenda.
+        var noted = await DataAsync(await w.As(w.Nour).PostAsJsonAsync($"/api/performance/one-on-ones/meetings/{Id(Upcoming(series))}/agenda",
+            new { id = Guid.NewGuid(), sourceKind = "Action", sourceId = late, note = "Sent it this morning." }));
+        var item = Upcoming(noted).GetProperty("agenda").EnumerateArray().Single(i => i.GetProperty("sourceKind").GetString() == "Action");
+        Assert.True(item.GetProperty("discussed").GetBoolean());
+        Assert.Equal("Sent it this morning.", item.GetProperty("note").GetString());
+
+        var context = asNour.GetProperty("context");
+        Assert.Equal("Ship the gateway", context.GetProperty("goals").EnumerateArray().Single().GetProperty("title").GetString());
+        Assert.True(context.GetProperty("planApproved").GetBoolean());
+        Assert.Equal("Leila Baccouche", context.GetProperty("latestPraise").GetProperty("authorName").GetString());
+    }
+
+    [Fact]
+    public async Task The_calendar_feed_lists_only_its_owner_s_meetings_and_dies_when_revoked_or_used_elsewhere()
+    {
+        var w = Arrange();
+        await using var _ = w.Factory;
+        await StartAsync(w, w.Karim, w.Nour, Manager);
+        await StartAsync(w, w.Karim, w.Sami, Manager);
+        var nour = w.As(w.Nour);
+        var anonymous = w.Factory.CreateClient();
+
+        var off = await DataAsync(await nour.GetAsync("/api/performance/one-on-ones/calendar-feed"));
+        Assert.False(off.GetProperty("on").GetBoolean());
+        var made = await DataAsync(await nour.PostAsync("/api/performance/one-on-ones/calendar-feed", null));
+        var url = made.GetProperty("url").GetString()!;
+        var path = new Uri(url).AbsolutePath;
+        Assert.StartsWith("/api/performance/calendar/", path);
+        // The link shows once: reading the status again never returns it.
+        Assert.Equal(JsonValueKind.Null, (await DataAsync(await nour.GetAsync("/api/performance/one-on-ones/calendar-feed"))).GetProperty("url").ValueKind);
+
+        var feed = await anonymous.GetAsync(path);
+        Assert.Equal(HttpStatusCode.OK, feed.StatusCode);
+        Assert.Equal("text/calendar", feed.Content.Headers.ContentType?.MediaType);
+        var ics = await feed.Content.ReadAsStringAsync();
+        Assert.Contains("BEGIN:VCALENDAR", ics);
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(ics, "BEGIN:VEVENT"));
+        Assert.Contains("SUMMARY:1:1 with Karim Haddad", ics);
+        Assert.DoesNotContain("Sami", ics);
+
+        // A guess, the same secret under another tenant, and a replaced link all read nothing.
+        var token = path["/api/performance/calendar/".Length..^".ics".Length];
+        var secret = token[(token.IndexOf('.') + 1)..];
+        Assert.Equal(HttpStatusCode.NotFound, (await anonymous.GetAsync($"/api/performance/calendar/{Guid.NewGuid():N}.{secret}.ics")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await anonymous.GetAsync("/api/performance/calendar/not-a-token.ics")).StatusCode);
+        var foreign = w.Factory.CreateAuthenticatedClient(tenantId: Guid.NewGuid(), employeeId: w.Nour, permissions: Employee);
+        Assert.Equal(HttpStatusCode.NotFound, (await foreign.GetAsync(path)).StatusCode);
+        await DataAsync(await nour.PostAsync("/api/performance/one-on-ones/calendar-feed", null));
+        Assert.Equal(HttpStatusCode.NotFound, (await anonymous.GetAsync(path)).StatusCode);
+
+        await DataAsync(await nour.DeleteAsync("/api/performance/one-on-ones/calendar-feed"));
+        Assert.False((await DataAsync(await nour.GetAsync("/api/performance/one-on-ones/calendar-feed"))).GetProperty("on").GetBoolean());
     }
 }

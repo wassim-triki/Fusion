@@ -8,23 +8,23 @@ function client() {
 }
 
 describe("1:1 contracts", () => {
-  it("starts a series and completes a meeting with its version", async () => {
+  it("starts a series and makes a calendar feed link", async () => {
     const { calls, api } = client();
     await api.startOneOnOne({ withEmployeeId: "e1", cadence: null, firstMeetingAt: "2026-10-20T10:00:00Z" });
-    await api.completeMeeting("m1", 3);
+    await api.createCalendarFeed();
     expect(calls.post).toHaveBeenCalledWith("/performance/one-on-ones", {
       withEmployeeId: "e1",
       cadence: null,
       firstMeetingAt: "2026-10-20T10:00:00Z",
     });
-    expect(calls.post).toHaveBeenCalledWith("/performance/one-on-ones/meetings/m1/complete", { expectedVersion: 3 });
+    expect(calls.post).toHaveBeenCalledWith("/performance/one-on-ones/calendar-feed", {});
   });
 
-  it("saves shared and private notes against their own revisions", async () => {
+  it("saves an item's note and private notes against their own revisions", async () => {
     const { calls, api } = client();
-    await api.setSharedNotes("m1", "Agreed", 2);
+    await api.setAgendaNote("m1", "i1", "Agreed", 2);
     await api.setPrivateNotes("m1", "Mine", 0);
-    expect(calls.put).toHaveBeenCalledWith("/performance/one-on-ones/meetings/m1/notes/shared", { text: "Agreed", expectedRevision: 2 });
+    expect(calls.put).toHaveBeenCalledWith("/performance/one-on-ones/meetings/m1/agenda/i1/note", { text: "Agreed", expectedRevision: 2 });
     expect(calls.put).toHaveBeenCalledWith("/performance/one-on-ones/meetings/m1/notes/private", { text: "Mine", expectedRevision: 0 });
   });
 

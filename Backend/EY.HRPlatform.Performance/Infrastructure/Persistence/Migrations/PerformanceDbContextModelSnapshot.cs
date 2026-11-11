@@ -347,6 +347,46 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                     b.ToTable("CalibrationSubjects", "performance");
                 });
 
+            modelBuilder.Entity("EY.HRPlatform.Performance.Domain.Conversations.CalendarFeed", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("TenantId", "EmployeeId")
+                        .IsUnique();
+
+                    b.ToTable("CalendarFeeds", "performance");
+                });
+
             modelBuilder.Entity("EY.HRPlatform.Performance.Domain.Conversations.Feedback", b =>
                 {
                     b.Property<Guid>("Id")
@@ -647,6 +687,9 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("AuthorEmployeeId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("CarriedFromItemId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -656,8 +699,19 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DiscussedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime>("FirstAddedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid>("MeetingId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasMaxLength(10000)
+                        .HasColumnType("character varying(10000)");
+
+                    b.Property<long>("NoteRevision")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Order")
                         .HasColumnType("integer");
@@ -719,14 +773,6 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
 
                     b.Property<Guid>("SeriesId")
                         .HasColumnType("uuid");
-
-                    b.Property<string>("SharedNotes")
-                        .IsRequired()
-                        .HasMaxLength(10000)
-                        .HasColumnType("character varying(10000)");
-
-                    b.Property<long>("SharedNotesRevision")
-                        .HasColumnType("bigint");
 
                     b.Property<string>("State")
                         .IsRequired()

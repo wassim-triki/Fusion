@@ -27,7 +27,8 @@
     "notMeetingYet": "Not meeting yet",
     "noManagerInCoreHr": "No manager in Core HR",
     "actionsYouOwe": "Actions you owe{value}",
-    "thisWeek": "This week"
+    "thisWeek": "This week",
+    "inYourCalendar": "In your calendar"
   },
   "NextUp": {
     "nextUp": "Next up · {howSoon}",
@@ -46,7 +47,9 @@
       "Objective": "{count, plural, one {# objective at risk} other {# objectives at risk}}",
       "UpdateRequest": "{count, plural, one {# update requested} other {# updates requested}}",
       "Feedback": "{count} feedback",
-      "Praise": "{count} praise"
+      "Praise": "{count} praise",
+      "Action": "{count, plural, one {# late action} other {# late actions}}",
+      "Starter": "{count} starters"
     }
   },
   "RhythmTable": {
@@ -85,119 +88,6 @@
   },
   "OneOnOnesSkeleton": {
     "loadingYour11s": "Loading your 1:1s"
-  },
-  "SeriesView": {
-    "n11With": "1:1 with {displayName}",
-    "someoneLeftTheCompanyYou": "Someone left the company · you met {toLowerCase}, {startedAt} – {value}",
-    "theReportingLineChangedYou": "The reporting line changed · you met {toLowerCase}, {startedAt} – {value}",
-    "ended": "Ended",
-    "reschedule": "Reschedule",
-    "completeMeeting": "Complete meeting",
-    "earlierMeetings": "Earlier meetings",
-    "since": "{value} since {startedAt}"
-  },
-  "MeetingTrack": {
-    "notHeld": "Not held",
-    "ended": "Ended",
-    "meetings": "Meetings",
-    "point": "{length} point",
-    "points": "{length} points"
-  },
-  "UpcomingMeeting": {
-    "talkingPoints": "Talking points",
-    "fromSYear": "From {reportFirstName}'s year",
-    "fromYourYear": "From your year",
-    "actions": "Actions",
-    "notes": "Notes"
-  },
-  "TalkingPoints": {
-    "nothingOnTheAgenda": "Nothing on the agenda",
-    "addedBy": "Added by {value}",
-    "remove": "Remove {text}",
-    "talkedAbout": "Talked about: {text}",
-    "addATalkingPoint": "Add a talking point",
-    "add": "Add"
-  },
-  "Suggestions": {
-    "add": "Add",
-    "addToTheTalkingPoints": "Add {label} to the talking points"
-  },
-  "Actions": {
-    "noActions": "No actions",
-    "done": "Done: {text}",
-    "from": "From {createdInMeetingAt}",
-    "overdue": "Overdue",
-    "due": "Due",
-    "newAction": "New action",
-    "addAnAction": "Add an action",
-    "owner": "Owner",
-    "dueDate": "Due date",
-    "add": "Add"
-  },
-  "MeetingNotes": {
-    "sharedWith": "Shared with {value}",
-    "onlyYou": "Only you"
-  },
-  "History": {
-    "lastMeeting": "Last meeting",
-    "noMeetingWasHeld": "No meeting was held.",
-    "earlierMeetings": "Earlier meetings",
-    "meetings": "Meetings"
-  },
-  "EarlierMeetings": {
-    "notHeld": "Not held",
-    "noTalkingPoints": "No talking points",
-    "missed": "Missed",
-    "talkingPoints": "{count, plural, one {+# talking point} other {+# talking points}}",
-    "actions": "{count, plural, one {# action} other {# actions}}",
-    "notes": "notes"
-  },
-  "MeetingDetail": {
-    "talkedAbout": "Talked about",
-    "noTalkingPoints": "No talking points",
-    "notReached": "Not reached",
-    "actions": "Actions",
-    "notes": "Notes",
-    "none": "None",
-    "onlyYou": "Only you"
-  },
-  "MeetingNotesStacked": {
-    "sharedWith": "Shared with {value}",
-    "onlyYou": "Only you"
-  },
-  "SeriesSidebar": {
-    "meetingsHeld": "meetings held",
-    "actionsDone": "actions done",
-    "overTheSeries": "Over the series",
-    "objective": "{length} objective",
-    "s": "s",
-    "atRisk": "{atRisk} at risk",
-    "noneAtRisk": "None at risk",
-    "open": "Open",
-    "their": "their",
-    "your": "your",
-    "plan": "plan",
-    "noPlanInTheCurrent": "No plan in the current cycle",
-    "year": "{value} year{value2}",
-    "recognition": "Recognition",
-    "howOften": "How often",
-    "heldOf": "Held {held} of {meetings} ·",
-    "since": "since {startedAt}",
-    "rhythm": "Rhythm",
-    "unshared": {
-      "NotStarted": "No plan yet",
-      "Draft": "Plan in draft",
-      "ReturnedForChanges": "Plan returned for changes",
-      "Submitted": "Plan waiting for approval",
-      "Approved": "No objectives"
-    }
-  },
-  "RescheduleDialog": {
-    "moveTheNextMeeting": "Move the next meeting",
-    "date": "Date",
-    "time": "Time",
-    "cancel": "Cancel",
-    "moveMeeting": "Move meeting"
   },
   "SeriesSkeleton": {
     "loadingThis11": "Loading this 1:1"
@@ -238,7 +128,9 @@
       "Objective": "Objective",
       "UpdateRequest": "Update requested",
       "Feedback": "Feedback",
-      "Praise": "Praise"
+      "Praise": "Praise",
+      "Action": "Action",
+      "Starter": "Starter"
     },
     "todayAt": "Today {time}",
     "tomorrowAt": "Tomorrow {time}",
@@ -249,6 +141,94 @@
     "inMinutes": "in {count} min",
     "inHours": "{count, plural, one {in # hour} other {in # hours}}",
     "tomorrowSoon": "tomorrow",
-    "inDays": "{count, plural, one {in # day} other {in # days}}"
+    "inDays": "{count, plural, one {in # day} other {in # days}}",
+    "starter": {
+      "howItsGoing": "How things are going",
+      "theYearsPlan": "A plan for the rest of the year",
+      "feedbackStyle": "How you like to get feedback",
+      "whatWouldHelp": "What would help most right now"
+    }
+  },
+  "Meeting": {
+    "title": "1:1 with {name}",
+    "endedLeft": "Ended {day}: someone left the company",
+    "endedLine": "Ended {day}: the reporting line changed",
+    "inBothCalendars": "In both calendars",
+    "moveIt": "Move it",
+    "agenda": "Agenda",
+    "starterAgenda": "A starter agenda for a first 1:1",
+    "fromTheYear": "From goals, actions and requests",
+    "lastTime": "Last time, {day}",
+    "stillOpen": "Notes stay open until the next one",
+    "todayDay": "Today, {day}",
+    "tomorrowDay": "Tomorrow, {day}",
+    "when": "{day}, {start} to {end}, {cadence}",
+    "whenFirst": "{day}, {start} to {end}, your first",
+    "nothingOnIt": "Nothing on the agenda",
+    "notesBoth": "Notes, both of you see these",
+    "noted": "Noted",
+    "isAtRisk": "is at risk",
+    "isOffTrack": "is off track",
+    "fromGoal": "Goal, {percent}% done, updated {day}",
+    "fromGoalNoProgress": "Goal, no update yet",
+    "fromAction": "Action from {day}, {who}{late, plural, =0 {} one {, # day late} other {, # days late}}",
+    "you": "you",
+    "youAsked": "You asked {day}",
+    "theyAsked": "{name} asked {day}",
+    "fromPraise": "Praise, {day}, worth a word",
+    "fromFeedback": "Feedback, {day}",
+    "starter": "Starter",
+    "carriedFrom": "Carried from {day}",
+    "youAdded": "You added it",
+    "theyAdded": "{name} added it",
+    "actionFor": "Action for {name}",
+    "actionForYou": "Action for you",
+    "whatYouWillDo": "What you'll do",
+    "whatTheyWillDo": "What {name} will do",
+    "byWhen": "By when",
+    "add": "Add",
+    "addToAgenda": "Add to the agenda",
+    "carriesTo": "What isn't noted carries to {day}",
+    "onlyYou": "Only you see this",
+    "privateNotes": "Private notes",
+    "earlier": "Earlier",
+    "notHeld": "Not held",
+    "nothingNoted": "Nothing noted",
+    "yourGoals": "Your goals",
+    "theirGoals": "{name}'s goals",
+    "noPlanDue": "No plan yet, due {day}",
+    "noPlan": "No plan yet",
+    "noUpdate": "No update yet",
+    "actions": "Actions",
+    "noActions": "None yet",
+    "markDone": "Mark done: {text}",
+    "doneOn": "Done {day}",
+    "daysLate": "{count, plural, one {# day late} other {# days late}}",
+    "due": "Due {day}",
+    "open": "Open",
+    "done": "Done",
+    "joined": "Joined",
+    "job": "Job",
+    "unit": "Unit",
+    "about": "About {name}",
+    "lately": "Lately",
+    "praised": "{author} praised {name}, {day}",
+    "moveTitle": "Move this 1:1",
+    "date": "Date",
+    "time": "Time",
+    "howOften": "How often",
+    "cancel": "Cancel",
+    "move": "Move it"
+  },
+  "CalendarLink": {
+    "title": "Your 1:1s in your calendar app",
+    "link": "Calendar link",
+    "copy": "Copy",
+    "copied": "Copied",
+    "on": "Your calendar link is on.",
+    "off": "Subscribe from Google Calendar or Outlook with a link.",
+    "getLink": "Get a calendar link",
+    "newLink": "Make a new link",
+    "turnOff": "Turn it off"
   }
 }

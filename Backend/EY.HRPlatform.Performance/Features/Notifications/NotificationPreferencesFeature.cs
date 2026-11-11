@@ -81,7 +81,8 @@ public static class NotificationPreferenceCatalog
             "A 1:1 started or moved, actions assigned to you",
             "A 1:1 started or moved, actions assigned to you",
             [
-                new("A 1:1 started or moved", Reader.Everyone, [Kind.OneOnOneStarted, Kind.OneOnOneRescheduled]),
+                new("A 1:1 started or moved, with its calendar invite", Reader.Everyone,
+                    [Kind.OneOnOneStarted, Kind.OneOnOneRescheduled, Kind.OneOnOneInvite]),
                 new("Actions assigned to you", Reader.Everyone, [Kind.OneOnOneActionAssigned]),
             ]),
         new(NotificationGroups.FeedbackAndPraise, "Feedback and praise",
@@ -96,7 +97,7 @@ public static class NotificationPreferenceCatalog
         new(NotificationGroups.DeadlineReminders, "Deadline reminders",
             "Something of yours is due soon or late",
             "Something of yours is due soon or late",
-            [Reminder, Nudge]),
+            [Reminder, Nudge, new("Goals you haven't updated in a month", Reader.Everyone, [Kind.GoalUpdateReminder])]),
     ];
 
     /// <summary>Every kind the catalogue lists, for the test that keeps it in step with the group map.</summary>

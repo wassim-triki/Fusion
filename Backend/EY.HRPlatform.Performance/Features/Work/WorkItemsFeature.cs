@@ -57,7 +57,6 @@ public sealed class GetWorkItemsHandler(PerformanceDbContext db)
             await PeerWorkAsync(actor, today, items, token);
             await FeedbackRequestsAsync(actor.EmployeeId, items, token);
             await OneOnOneActionsAsync(actor.EmployeeId, today, items, token);
-            await OverdueMeetingsAsync(actor.EmployeeId, today, items, token);
         }
         if (actor.Calibrates && actor.UserId != Guid.Empty) await CalibrationAsync(actor.UserId, items, token);
         if (actor.Administers) await FinalizationAsync(items, token);
@@ -75,7 +74,6 @@ public sealed class GetWorkItemsHandler(PerformanceDbContext db)
         ["update-request"] = "Record progress",
         ["feedback-request"] = "Answer",
         ["one-on-one-action"] = "Open the 1:1",
-        ["one-on-one-meeting"] = "Open the 1:1",
         ["self-assessment"] = "Write your self-assessment",
         ["manager-assessment"] = "Write the review",
         ["nominate-peers"] = "Choose peers",
@@ -213,26 +211,6 @@ public sealed class GetWorkItemsHandler(PerformanceDbContext db)
         items.AddRange(due.Select(a => new FusionWorkItemDto(Id("one-on-one-action", a.ActionId), Module, "one-on-one-action", a.Text,
             $"1:1 with {(a.ManagerEmployeeId == employeeId ? a.ReportName : a.ManagerName)}", a.DueDate,
             PerformanceNotificationTemplates.OneOnOnePath(a.SeriesId), Section: Sections.OneOnOnes)));
-    }
-
-    /// <summary>
-    /// A 1:1 whose day has passed without being completed, for both people: the series' next meeting is only scheduled once
-    /// it's completed, so until then it's owed work (complete or reschedule it). Not cycle-bound.
-    /// </summary>
-    private async Task OverdueMeetingsAsync(Guid employeeId, DateOnly today, List<FusionWorkItemDto> items, CancellationToken token)
-    {
-        var dayStart = today.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-        var overdue = await (from meeting in db.OneOnOneMeetings.AsNoTracking()
-                             join series in db.OneOnOneSeries.AsNoTracking() on meeting.SeriesId equals series.Id
-                             where (series.ManagerEmployeeId == employeeId || series.ReportEmployeeId == employeeId) && series.EndedAt == null
-                                   && meeting.State == Domain.Conversations.OneOnOneMeetingState.Upcoming && meeting.ScheduledAt < dayStart
-                             orderby meeting.ScheduledAt
-                             select new { meeting.Id, meeting.ScheduledAt, SeriesId = series.Id,
-                                 With = series.ManagerEmployeeId == employeeId ? series.ReportName : series.ManagerName })
-            .ToListAsync(token);
-        items.AddRange(overdue.Select(m => new FusionWorkItemDto(Id("one-on-one-meeting", m.Id), Module, "one-on-one-meeting",
-            $"1:1 with {m.With}", "Not completed yet", DateOnly.FromDateTime(m.ScheduledAt),
-            PerformanceNotificationTemplates.OneOnOnePath(m.SeriesId), Section: Sections.OneOnOnes)));
     }
 
     /// <summary>The round name, and how late the task is once past its current due date.</summary>

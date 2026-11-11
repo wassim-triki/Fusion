@@ -78,21 +78,32 @@ export function useOneOnOneCommands(seriesId: string) {
       api.changeCadence(seriesId, args.cadence, args.expectedVersion)),
     reschedule: useSeriesCommand(seriesId, (args: { meetingId: string; scheduledAt: string; expectedVersion: number }) =>
       api.reschedule(args.meetingId, args.scheduledAt, args.expectedVersion)),
-    complete: useSeriesCommand(seriesId, (args: { meetingId: string; expectedVersion: number }) =>
-      api.completeMeeting(args.meetingId, args.expectedVersion)),
     addAgendaItem: useSeriesCommand(seriesId, (args: { meetingId: string; request: AddAgendaItemRequest }) =>
       api.addAgendaItem(args.meetingId, args.request)),
-    setDiscussed: useSeriesCommand(seriesId, (args: { meetingId: string; itemId: string; discussed: boolean }) =>
-      api.setAgendaItemDiscussed(args.meetingId, args.itemId, args.discussed)),
     removeAgendaItem: useSeriesCommand(seriesId, (args: { meetingId: string; itemId: string }) =>
       api.removeAgendaItem(args.meetingId, args.itemId)),
     // Notes saves handle their own conflicts, so they stay quiet.
-    setSharedNotes: useSeriesCommand(seriesId, (args: { meetingId: string; text: string; expectedRevision: number }) =>
-      api.setSharedNotes(args.meetingId, args.text, args.expectedRevision), true),
+    setAgendaNote: useSeriesCommand(seriesId, (args: { meetingId: string; itemId: string; text: string; expectedRevision: number }) =>
+      api.setAgendaNote(args.meetingId, args.itemId, args.text, args.expectedRevision), true),
     setPrivateNotes: useSeriesCommand(seriesId, (args: { meetingId: string; text: string; expectedRevision: number }) =>
       api.setPrivateNotes(args.meetingId, args.text, args.expectedRevision), true),
     addAction: useSeriesCommand(seriesId, (request: AddActionRequest) => api.addAction(seriesId, request)),
     setActionDone: useSeriesCommand(seriesId, (args: { actionId: string; done: boolean }) => api.setActionDone(seriesId, args.actionId, args.done)),
+  };
+}
+
+/** The caller's calendar feed: whether it's on; the link itself only comes back from making it. */
+export function useCalendarFeed() {
+  const api = useConversationsApi();
+  return useApiQuery(conversationQueryKeys.calendarFeed(), (signal) => api.getCalendarFeed(signal));
+}
+
+export function useCalendarFeedCommands() {
+  const api = useConversationsApi();
+  const invalidateQueries = [{ queryKey: conversationQueryKeys.calendarFeed() }];
+  return {
+    create: useApiMutation(() => api.createCalendarFeed(), { invalidateQueries }),
+    revoke: useApiMutation(() => api.revokeCalendarFeed(), { invalidateQueries }),
   };
 }
 

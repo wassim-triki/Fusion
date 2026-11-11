@@ -102,8 +102,6 @@ public sealed class OneOnOneDomainTests
         Assert.Same(nours, meeting.AddAgendaItem(nours.Id, "Vendor API timeline", Nour, null, out var retried));
         Assert.False(retried);
         Assert.Throws<UnauthorizedAccessException>(() => meeting.RemoveAgendaItem(nours.Id, Karim));
-        Assert.True(meeting.SetDiscussed(nours.Id, true, Tuesday));
-        Assert.False(meeting.SetDiscussed(nours.Id, true, Tuesday));
 
         meeting.Complete(series, Karim, Tuesday);
         Assert.Throws<InvalidOperationException>(() => meeting.RemoveAgendaItem(nours.Id, Nour));
@@ -121,18 +119,43 @@ public sealed class OneOnOneDomainTests
     }
 
     [Fact]
-    public void Shared_notes_guard_their_revision_and_lock_after_the_successor_completes()
+    public void A_note_marks_an_item_talked_about_guards_its_revision_and_locks_after_the_successor_completes()
     {
         var (series, meeting) = Start();
-        Assert.True(meeting.SetSharedNotes("Agreed the timeline.", 0, successorCompleted: false));
-        Assert.Throws<OneOnOneNotesConflictException>(() => meeting.SetSharedNotes("Other text", 0, successorCompleted: false));
+        var item = meeting.AddAgendaItem(Guid.NewGuid(), "Vendor timeline", Nour, null, out _);
+        Assert.True(meeting.SetItemNote(item.Id, "Agreed the timeline.", 0, successorCompleted: false, Tuesday));
+        Assert.True(item.HasNote);
+        Assert.Throws<OneOnOneNotesConflictException>(() => meeting.SetItemNote(item.Id, "Other text", 0, successorCompleted: false, Tuesday));
+        // Clearing the note un-marks it.
+        meeting.SetItemNote(item.Id, "  ", 1, successorCompleted: false, Tuesday);
+        Assert.False(item.HasNote);
 
-        var next = meeting.Complete(series, Karim, Tuesday)!;
-        Assert.True(meeting.SetSharedNotes("Agreed the timeline. Follow up Friday.", 1, successorCompleted: false));
+        var next = meeting.Complete(series, null, Tuesday)!;
+        Assert.Null(meeting.CompletedByEmployeeId);
+        Assert.True(meeting.SetItemNote(item.Id, "Agreed after all.", 2, successorCompleted: false, Tuesday));
+        Assert.Throws<InvalidOperationException>(() => meeting.SetItemNote(item.Id, "Too late", 3, successorCompleted: true, Tuesday));
+        Assert.Throws<ArgumentException>(() => meeting.SetItemNote(item.Id, new string('x', 10_001), 3, successorCompleted: false, Tuesday));
+    }
 
-        next.Complete(series, Karim, Tuesday.AddDays(7));
-        Assert.Throws<InvalidOperationException>(() => meeting.SetSharedNotes("Too late", 2, successorCompleted: true));
-        Assert.Throws<ArgumentException>(() => next.SetSharedNotes(new string('x', 10_001), 0, successorCompleted: false));
+    [Fact]
+    public void Completing_carries_what_has_no_note_and_a_late_note_drops_the_copy()
+    {
+        var (series, meeting) = Start();
+        var talked = meeting.AddAgendaItem(Guid.NewGuid(), "Vendor timeline", Nour, null, out _);
+        var open = meeting.AddAgendaItem(Guid.NewGuid(), "Training budget", Karim, new AgendaSource(AgendaSourceKind.Objective, Guid.NewGuid(), null), out _);
+        meeting.SetItemNote(talked.Id, "Agreed.", 0, successorCompleted: false, Tuesday);
+
+        var next = meeting.Complete(series, null, Tuesday)!;
+        var copy = Assert.Single(next.Agenda);
+        Assert.Equal("Training budget", copy.Text);
+        Assert.Equal(open.Id, copy.CarriedFromItemId);
+        Assert.Equal(Karim, copy.AuthorEmployeeId);
+        Assert.Equal(open.SourceId, copy.SourceId);
+        Assert.Equal(open.FirstAddedAt, copy.FirstAddedAt);
+
+        Assert.True(next.DropCarriedCopy(open.Id));
+        Assert.Empty(next.Agenda);
+        Assert.False(next.DropCarriedCopy(open.Id));
     }
 
     [Fact]

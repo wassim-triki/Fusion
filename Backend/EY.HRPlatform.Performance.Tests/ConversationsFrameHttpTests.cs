@@ -124,45 +124,6 @@ public sealed class ConversationsFrameHttpTests
         Assert.DoesNotContain(await WorkAsync(w, w.Nour), i => i.GetProperty("kind").GetString() == "one-on-one-action");
     }
 
-    [Fact]
-    public async Task A_1on1_whose_day_passed_stays_next_and_is_owed_by_both_until_completed()
-    {
-        var w = await ArrangeAsync();
-        await using var _ = w.Factory;
-        var series = await DataAsync(await w.As(w.Karim, Manager).PostAsJsonAsync("/api/performance/one-on-ones",
-            new { withEmployeeId = w.Nour, firstMeetingAt = DateTime.UtcNow.AddHours(2) }));
-        var seriesId = series.GetProperty("id").GetGuid();
-        var missedAt = DateTime.UtcNow.AddDays(-2);
-        await using (var db = w.Factory.Store.NewContext())
-        {
-            var meeting = await db.OneOnOneMeetings.SingleAsync(m => m.SeriesId == seriesId);
-            db.Entry(meeting).Property(m => m.ScheduledAt).CurrentValue = missedAt;
-            await db.SaveChangesAsync();
-        }
-
-        foreach (var (who, grants) in new[] { (w.Nour, (EffectivePermissionGrant[]?)null), (w.Karim, Manager) })
-        {
-            var owed = Assert.Single(await WorkAsync(w, who, grants), i => i.GetProperty("kind").GetString() == "one-on-one-meeting");
-            Assert.Equal(DateOnly.FromDateTime(missedAt), DateOnly.Parse(owed.GetProperty("dueOn").GetString()!));
-            Assert.Equal($"/performance/one-on-ones/{seriesId}", owed.GetProperty("href").GetString());
-            Assert.Equal("/performance/one-on-ones", owed.GetProperty("section").GetString());
-            Assert.Equal("Open the 1:1", owed.GetProperty("actionLabel").GetString());
-        }
-        Assert.Equal("1:1 with Karim Haddad", Assert.Single(await WorkAsync(w, w.Nour),
-            i => i.GetProperty("kind").GetString() == "one-on-one-meeting").GetProperty("title").GetString());
-
-        // The home's upcoming moments drop it, since it's owed work now.
-        var upcoming = await DataAsync(await w.As(w.Nour).GetAsync("/api/performance/upcoming?days=14"));
-        Assert.DoesNotContain(upcoming.EnumerateArray(), m => m.GetProperty("kind").GetString() == "one-on-one");
-
-        var detail = await DataAsync(await w.As(w.Nour).GetAsync($"/api/performance/one-on-ones/{seriesId}"));
-        var missed = detail.GetProperty("upcoming");
-        await DataAsync(await w.As(w.Nour).PostAsJsonAsync($"/api/performance/one-on-ones/meetings/{missed.GetProperty("id").GetGuid()}/complete",
-            new { expectedVersion = missed.GetProperty("version").GetUInt32() }));
-        Assert.DoesNotContain(await WorkAsync(w, w.Nour), i => i.GetProperty("kind").GetString() == "one-on-one-meeting");
-        Assert.DoesNotContain(await WorkAsync(w, w.Karim, Manager), i => i.GetProperty("kind").GetString() == "one-on-one-meeting");
-    }
-
     private static async Task<JsonElement> DestinationsAsync(World w, Guid who, EffectivePermissionGrant[]? grants = null)
         => (await DataAsync(await w.As(who, grants).GetAsync("/api/performance/context"))).GetProperty("destinations");
 

@@ -20,10 +20,17 @@ vi.mock("../../api/use-conversations", () => ({
   useOneOnOneStart: () => ({ data: state.start, isLoading: false, error: null }),
   useOneOnOneCommands: () => state.commands,
   useStartOneOnOne: () => ({ mutateAsync: state.startMutate, isLoading: false, error: null }),
+  useCalendarFeed: () => ({ data: { on: false, since: null, url: null }, isLoading: false, error: null }),
+  useCalendarFeedCommands: () => ({ create: command(), revoke: command() }),
 }));
+vi.mock("../objective-record/use-objective-record", () => ({ useObjectiveRecord: () => ({ open: vi.fn() }) }));
 vi.mock("../../api/use-performance", () => ({ usePersonSummary: () => ({ data: undefined, isLoading: false, error: null }) }));
 vi.mock("@repo/auth", () => ({ useAuth: () => ({ user: { employeeId: "nour", fullName: "Nour Trabelsi" } }) }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => "/one-on-ones/s1",
+}));
 
 const nour = { employeeId: "nour", displayName: "Nour Trabelsi", jobTitle: "Engineer" };
 const karim = { employeeId: "karim", displayName: "Karim Haddad", jobTitle: "Engineering manager" };
@@ -41,14 +48,15 @@ function list(overrides: Partial<OneOnOnesDto> = {}): OneOnOnesDto {
 }
 
 function meeting(overrides: Partial<OneOnOneMeetingDto> = {}): OneOnOneMeetingDto {
-  return { id: "m1", version: 2, scheduledAt: "2030-01-08T10:00:00Z", state: "Upcoming", completedAt: null, agenda: [], sharedNotes: "",
-    sharedNotesRevision: 0, privateNote: { text: "", revision: 0 }, notesWritable: true, actions: [], suggestions: [], ...overrides };
+  return { id: "m1", version: 2, scheduledAt: "2030-01-08T10:00:00Z", state: "Upcoming", completedAt: null, agenda: [],
+    privateNote: { text: "", revision: 0 }, notesWritable: true, actions: [], suggestions: [], ...overrides };
 }
 
 function series(overrides: Partial<OneOnOneSeriesDto> = {}): OneOnOneSeriesDto {
   return { id: "s1", version: 1, manager: karim, report: nour, viewerRole: "Manager", cadence: "Weekly", startedAt: "2029-12-01T10:00:00Z",
     startedByEmployeeId: "karim", ended: false, endedAt: null, endReason: null, upcoming: meeting(), past: [], openActions: 0,
-    overdueActions: 0, can: { write: true, complete: true }, ...overrides };
+    overdueActions: 0, can: { write: true }, first: false, carriesTo: "2030-01-15T10:00:00Z",
+    context: { goals: [], planApproved: false, planDue: null, latestPraise: null, joinedOn: null, unit: null }, ...overrides };
 }
 
 beforeEach(() => {
@@ -56,7 +64,7 @@ beforeEach(() => {
   state.start = { with: karim, defaultCadence: "EveryTwoWeeks", suggestions: [] };
   state.startMutate = vi.fn(async () => ({ id: "s9" }));
   state.commands = Object.fromEntries(
-    ["changeCadence", "reschedule", "complete", "addAgendaItem", "setDiscussed", "removeAgendaItem", "setSharedNotes", "setPrivateNotes",
+    ["changeCadence", "reschedule", "addAgendaItem", "removeAgendaItem", "setAgendaNote", "setPrivateNotes",
       "addAction", "setActionDone"].map((name) => [name, command()]),
   );
 });
@@ -109,7 +117,7 @@ describe("1:1s workspace", () => {
     state.start = {
       with: karim,
       defaultCadence: "EveryTwoWeeks",
-      suggestions: [{ kind: "Objective", sourceId: "o1", cycleId: "c1", label: "Ship the gateway", status: "AtRisk", href: "/x", at: null }],
+      suggestions: [{ kind: "Objective", sourceId: "o1", cycleId: "c1", label: "Ship the gateway", status: "AtRisk", href: "/x", at: null, percent: null, by: null, dueDate: null }],
     };
     render(<OneOnOnesWorkspace />);
     expect(screen.getByRole("heading", { name: "1:1s with Karim Haddad" })).toBeTruthy();
@@ -122,52 +130,82 @@ describe("1:1s workspace", () => {
   });
 });
 
-describe("series record", () => {
-  it("completes the next meeting from the header with its version", () => {
-    render(<SeriesRecord seriesId="s1" />);
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toContain("Nour Trabelsi");
-    fireEvent.click(screen.getByRole("button", { name: "Complete meeting" }));
-    expect(state.commands.complete!.mutate).toHaveBeenCalledWith({ meetingId: "m1", expectedVersion: 2 });
-  });
+const item = (overrides: Partial<OneOnOneMeetingDto["agenda"][number]> = {}): OneOnOneMeetingDto["agenda"][number] => ({
+  id: "i1", text: "Training budget", authorEmployeeId: "nour", discussed: false, sourceKind: null, sourceId: null, href: null,
+  note: "", noteRevision: 0, addedAt: "2030-01-01T10:00:00Z", carriedFromAt: null, ...overrides,
+});
 
-  it("adds a suggestion by its source and marks carried actions", () => {
+describe("the meeting page", () => {
+  it("puts the year's suggestions on the agenda with where they came from, and a note adds one", async () => {
     state.series = series({
       upcoming: meeting({
-        suggestions: [{ kind: "Objective", sourceId: "o1", cycleId: "c1", label: "Integrate the vendor API", status: "AtRisk", href: "/x", at: null }],
-        actions: [{ id: "a1", text: "Send the vendor draft", ownerEmployeeId: "nour", dueDate: null, done: false, doneAt: null,
-          createdInMeetingId: "m0", createdInMeetingAt: "2029-12-25T10:00:00Z", createdByEmployeeId: "karim", carriedOver: true, overdue: false }],
+        agenda: [item()],
+        suggestions: [{ kind: "Objective", sourceId: "o1", cycleId: "c1", label: "Integrate the vendor API", status: "AtRisk", href: "/x",
+          at: "2030-01-02T10:00:00Z", percent: 42, by: null, dueDate: null }],
       }),
     });
+    state.commands.addAgendaItem!.mutateAsync = vi.fn(async () => series());
     render(<SeriesRecord seriesId="s1" />);
-    expect(screen.getByRole("heading", { name: /From Nour's year/ })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Add Integrate the vendor API to the talking points" }));
-    expect(state.commands.addAgendaItem!.mutate).toHaveBeenCalledWith({
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("1:1 with Nour");
+    expect(screen.getByText("From goals, actions and requests")).toBeTruthy();
+    expect(screen.getByText(/Goal, 42% done/)).toBeTruthy();
+    expect(screen.getByText("Nour added it")).toBeTruthy();
+    expect(screen.getByText(`What isn't noted carries to ${formatDate("2030-01-15")}`)).toBeTruthy();
+
+    fireEvent.click(screen.getByText("Integrate the vendor API"));
+    const note = screen.getByPlaceholderText("Notes, both of you see these");
+    fireEvent.change(note, { target: { value: "Pairing with Omar this week." } });
+    fireEvent.blur(note);
+    await vi.waitFor(() => expect(state.commands.addAgendaItem!.mutateAsync).toHaveBeenCalledWith({
       meetingId: "m1",
-      request: expect.objectContaining({ sourceKind: "Objective", sourceId: "o1" }),
-    });
-    expect(screen.getByText(`From ${formatDate("2029-12-25")}`)).toBeTruthy();
+      request: expect.objectContaining({ sourceKind: "Objective", sourceId: "o1", note: "Pairing with Omar this week." }),
+    }));
+    expect(screen.getByRole("button", { name: "Action for Nour" })).toBeTruthy();
   });
 
-  it("keeps the private note under its own label, apart from the shared notes", () => {
+  it("saves a note on an item against its revision and shows it noted", async () => {
+    state.series = series({ upcoming: meeting({ agenda: [item({ discussed: true, note: "Approved", noteRevision: 3 })] }) });
+    state.commands.setAgendaNote!.mutateAsync = vi.fn(async () => series());
     render(<SeriesRecord seriesId="s1" />);
-    expect(screen.getByLabelText("Shared with Nour")).toBeTruthy();
-    expect(screen.getByLabelText("Only you")).toBeTruthy();
+    expect(screen.getByText("Noted")).toBeTruthy();
+    fireEvent.click(screen.getByText("Training budget"));
+    const note = screen.getByPlaceholderText("Notes, both of you see these");
+    fireEvent.change(note, { target: { value: "Approved, 2 courses" } });
+    fireEvent.blur(note);
+    await vi.waitFor(() => expect(state.commands.setAgendaNote!.mutateAsync).toHaveBeenCalledWith({
+      meetingId: "m1", itemId: "i1", text: "Approved, 2 courses", expectedRevision: 3,
+    }));
   });
 
-  it("offers no edits on an ended series and opens its last meeting", () => {
+  it("opens a first 1:1 on the starter agenda and says who the person is", () => {
+    state.series = series({
+      first: true,
+      upcoming: meeting({ agenda: [item({ id: "s1", text: "howItsGoing", sourceKind: "Starter" }), item({ id: "s2", text: "feedbackStyle", sourceKind: "Starter" })] }),
+      context: { goals: [], planApproved: false, planDue: "2030-01-30", latestPraise: null, joinedOn: "2029-12-01", unit: "Engineering A Core" },
+    });
+    render(<SeriesRecord seriesId="s1" />);
+    expect(screen.getByText("A starter agenda for a first 1:1")).toBeTruthy();
+    expect(screen.getByText("How things are going")).toBeTruthy();
+    expect(screen.getByText("How you like to get feedback")).toBeTruthy();
+    expect(screen.getByText(`No plan yet, due ${formatDate("2030-01-30")}`)).toBeTruthy();
+    expect(screen.getByText("Engineering A Core")).toBeTruthy();
+    expect(screen.queryByText(/carries to/)).toBeNull();
+  });
+
+  it("shows an ended series as what was noted, with nothing to edit", () => {
     state.series = series({
       ended: true,
       endedAt: "2030-01-10T10:00:00Z",
       endReason: "ReportingLineEnded",
       upcoming: null,
-      can: { write: false, complete: false },
-      past: [meeting({ id: "m0", state: "Completed", notesWritable: false, sharedNotes: "Agreed the plan" })],
+      can: { write: false },
+      past: [meeting({ id: "m0", state: "Completed", notesWritable: false, agenda: [item({ discussed: true, note: "Agreed the plan" })] })],
     });
     render(<SeriesRecord seriesId="s1" />);
-    expect(screen.queryByRole("button", { name: "Complete meeting" })).toBeNull();
-    expect(screen.queryByLabelText("Add a talking point")).toBeNull();
-    expect(screen.getAllByText(/^Ended/).length).toBeGreaterThan(0);
-    expect(screen.getByRole("heading", { name: "Last meeting" })).toBeTruthy();
+    expect(screen.queryByText("Agenda")).toBeNull();
+    expect(screen.queryByText("Move it")).toBeNull();
+    expect(screen.getByText(/the reporting line changed/)).toBeTruthy();
+    fireEvent.click(screen.getByText("Training budget"));
     expect(screen.getByText("Agreed the plan")).toBeTruthy();
   });
 });

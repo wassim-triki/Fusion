@@ -63,7 +63,7 @@ public static class NotificationFeed
             or PerformanceNotificationKind.UpdateRequested or PerformanceNotificationKind.ObjectiveAtRisk
             or PerformanceNotificationKind.UpdateRequestAnswered or PerformanceNotificationKind.DevelopmentGoalAdded => "plan",
         PerformanceNotificationKind.ReviewDueDateMoved or PerformanceNotificationKind.ReviewReminder
-            or PerformanceNotificationKind.YearNudge => "reminder",
+            or PerformanceNotificationKind.YearNudge or PerformanceNotificationKind.GoalUpdateReminder => "reminder",
         _ => "review",
     };
 

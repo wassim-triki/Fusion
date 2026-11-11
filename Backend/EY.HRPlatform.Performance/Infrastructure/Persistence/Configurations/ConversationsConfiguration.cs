@@ -53,7 +53,6 @@ public sealed class OneOnOneMeetingConfiguration : IEntityTypeConfiguration<OneO
         builder.HasKey(meeting => meeting.Id);
         builder.Property(meeting => meeting.Version).IsRowVersion();
         builder.Property(meeting => meeting.State).HasConversion<string>().HasMaxLength(20).IsRequired();
-        builder.Property(meeting => meeting.SharedNotes).IsRequired().HasMaxLength(OneOnOneMeeting.MaxNotesLength);
         builder.HasIndex(meeting => new { meeting.SeriesId, meeting.ScheduledAt });
         builder.HasIndex(meeting => meeting.TenantId);
         builder.HasOne<OneOnOneSeries>().WithMany().HasForeignKey(meeting => meeting.SeriesId).OnDelete(DeleteBehavior.Cascade);
@@ -75,7 +74,21 @@ public sealed class OneOnOneAgendaItemConfiguration : IEntityTypeConfiguration<O
         builder.Property(item => item.Id).ValueGeneratedNever();
         builder.Property(item => item.Text).IsRequired().HasMaxLength(OneOnOneAgendaItem.MaxTextLength);
         builder.Property(item => item.SourceKind).HasConversion<string>().HasMaxLength(20);
+        builder.Property(item => item.Note).IsRequired().HasMaxLength(OneOnOneMeeting.MaxNotesLength);
         builder.HasIndex(item => item.MeetingId);
+    }
+}
+
+/// <summary>One feed per person; the token's hash finds it, within the tenant the token names.</summary>
+public sealed class CalendarFeedConfiguration : IEntityTypeConfiguration<CalendarFeed>
+{
+    public void Configure(EntityTypeBuilder<CalendarFeed> builder)
+    {
+        builder.ToTable("CalendarFeeds");
+        builder.HasKey(feed => feed.Id);
+        builder.Property(feed => feed.TokenHash).IsRequired().HasMaxLength(64);
+        builder.HasIndex(feed => new { feed.TenantId, feed.EmployeeId }).IsUnique();
+        builder.HasIndex(feed => feed.TokenHash).IsUnique();
     }
 }
 

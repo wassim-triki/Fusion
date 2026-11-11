@@ -6,14 +6,25 @@ public enum OneOnOneCadence { Weekly = 0, EveryTwoWeeks = 1, Monthly = 2 }
 public enum OneOnOneEndReason { ReportingLineEnded = 0, PersonInactive = 1 }
 public enum OneOnOneMeetingState { Upcoming = 0, Completed = 1, NotHeld = 2 }
 
-/// <summary>Where a suggested agenda item came from; the item keeps a link to it.</summary>
-public enum AgendaSourceKind { Objective = 0, UpdateRequest = 1, Feedback = 2, Praise = 3 }
+/// <summary>
+/// Where an agenda item came from; the item keeps a link to it. A starter is one of Fusion's opening points for a
+/// first 1:1 (<see cref="OneOnOneStarters"/>): its text is the starter's key, worded by the client.
+/// </summary>
+public enum AgendaSourceKind { Objective = 0, UpdateRequest = 1, Feedback = 2, Praise = 3, Action = 4, Starter = 5 }
+
+/// <summary>The starter agenda a first 1:1 opens with (D-66); each is a key the client words.</summary>
+public static class OneOnOneStarters
+{
+    public static readonly IReadOnlyList<string> Keys = ["howItsGoing", "theYearsPlan", "feedbackStyle", "whatWouldHelp"];
+}
 
 /// <summary>Cadence arithmetic: steps keep the weekday and time of day.</summary>
 public static class OneOnOneSchedule
 {
     public static readonly TimeSpan MaxPast = TimeSpan.FromHours(24);
     public static readonly TimeSpan MaxAhead = TimeSpan.FromDays(365);
+    /// <summary>How long a meeting runs; once it's over, it completes by itself.</summary>
+    public static readonly TimeSpan Length = TimeSpan.FromMinutes(30);
 
     public static DateTime Step(DateTime from, OneOnOneCadence cadence) => cadence switch
     {
@@ -225,8 +236,9 @@ public sealed class OneOnOneActionItem : PerformanceChildEntity
 }
 
 /// <summary>
-/// One meeting of a series: its time, agenda and shared notes. Private notes live beside it, in their own rows,
-/// and are only ever read by their author. Completing it schedules the next one a cadence later.
+/// One meeting of a series: its time and agenda, each item with the note both people see (D-64). Private notes live
+/// beside it, in their own rows, and are only ever read by their author. Once over it completes by itself, schedules
+/// the next one a cadence later and carries what wasn't noted onto it.
 /// </summary>
 public sealed class OneOnOneMeeting : PerformanceAggregate
 {
@@ -241,14 +253,13 @@ public sealed class OneOnOneMeeting : PerformanceAggregate
     public DateTime ScheduledAt { get; private set; }
     public OneOnOneMeetingState State { get; private set; }
     public DateTime? CompletedAt { get; private set; }
+    /// <summary>Null when the meeting completed by itself.</summary>
     public Guid? CompletedByEmployeeId { get; private set; }
     /// <summary>The meeting completing this one created; set once, so a retried completion finds it.</summary>
     public Guid? NextMeetingId { get; private set; }
-    public string SharedNotes { get; private set; } = string.Empty;
-    /// <summary>Guards the shared note on its own, so an agenda change never conflicts with a notes save.</summary>
-    public uint SharedNotesRevision { get; private set; }
 
     public IReadOnlyList<OneOnOneAgendaItem> Agenda => _agenda;
+    public DateTime EndsAt => ScheduledAt + OneOnOneSchedule.Length;
 
     internal static OneOnOneMeeting Schedule(OneOnOneSeries series, DateTime at)
         => new() { TenantId = series.TenantId, SeriesId = series.Id, ScheduledAt = at, State = OneOnOneMeetingState.Upcoming };
@@ -262,19 +273,37 @@ public sealed class OneOnOneMeeting : PerformanceAggregate
         MarkUpdated();
     }
 
-    /// <summary>Completes the meeting and schedules its successor, or returns null when it was already completed.</summary>
-    public OneOnOneMeeting? Complete(OneOnOneSeries series, Guid actorEmployeeId, DateTime now)
+    /// <summary>
+    /// Completes the meeting and schedules its successor with every item that has no note carried onto it, or returns
+    /// null when it was already completed. <paramref name="actorEmployeeId"/> is null when it completes by itself.
+    /// </summary>
+    public OneOnOneMeeting? Complete(OneOnOneSeries series, Guid? actorEmployeeId, DateTime now)
     {
         if (State == OneOnOneMeetingState.Completed) return null;
         EnsureUpcoming();
         series.EnsureActive();
         var next = Schedule(series, OneOnOneSchedule.NextAfter(ScheduledAt, series.Cadence, now));
+        foreach (var item in _agenda.Where(i => !i.HasNote).OrderBy(i => i.Order))
+            next._agenda.Add(item.CarryTo(next, next._agenda.Count));
         State = OneOnOneMeetingState.Completed;
         CompletedAt = now;
         CompletedByEmployeeId = actorEmployeeId;
         NextMeetingId = next.Id;
         MarkUpdated();
         return next;
+    }
+
+    /// <summary>
+    /// Drops the copy carried from <paramref name="fromItemId"/> once the original got its note after the meeting,
+    /// unless the copy has a note of its own. False when there's nothing to drop.
+    /// </summary>
+    public bool DropCarriedCopy(Guid fromItemId)
+    {
+        var copy = _agenda.FirstOrDefault(i => i.CarriedFromItemId == fromItemId && !i.HasNote);
+        if (copy is null || State != OneOnOneMeetingState.Upcoming) return false;
+        _agenda.Remove(copy);
+        MarkUpdated();
+        return true;
     }
 
     /// <summary>The series ended before this meeting was held.</summary>
@@ -292,7 +321,8 @@ public sealed class OneOnOneMeeting : PerformanceAggregate
         if (existing is not null) { added = false; return existing; }
         EnsureUpcoming();
         if (itemId == Guid.Empty) throw new ArgumentException("An agenda item needs an id.", nameof(itemId));
-        if (source is not null && _agenda.Any(i => i.SourceKind == source.Kind && i.SourceId == source.Id))
+        if (source is not null && _agenda.Any(i => i.SourceKind == source.Kind && i.SourceId == source.Id
+                && (source.Id != Guid.Empty || i.Text == text)))
             throw new InvalidOperationException("That's already on the agenda.");
         if (_agenda.Count >= MaxAgendaItems) throw new ArgumentException($"An agenda holds up to {MaxAgendaItems} items.");
         var order = _agenda.Count == 0 ? 0 : _agenda.Max(i => i.Order) + 1;
@@ -303,13 +333,19 @@ public sealed class OneOnOneMeeting : PerformanceAggregate
         return item;
     }
 
-    public bool SetDiscussed(Guid itemId, bool discussed, DateTime now)
+    /// <summary>
+    /// Writes an item's note when the caller saw its current revision; a note marks the item talked about, clearing
+    /// it un-marks it (D-64). Writable while upcoming, and after completion until the next meeting completes too.
+    /// </summary>
+    public bool SetItemNote(Guid itemId, string text, uint expectedRevision, bool successorCompleted, DateTime now)
     {
-        EnsureUpcoming();
-        var changed = FindItem(itemId).SetDiscussed(discussed, now);
+        EnsureNotesWritable(successorCompleted);
+        var changed = FindItem(itemId).SetNote(text, expectedRevision, now);
         if (changed) MarkUpdated();
         return changed;
     }
+
+    public OneOnOneAgendaItem Item(Guid itemId) => FindItem(itemId);
 
     /// <summary>Removes the author's own item. False when it's already gone.</summary>
     public bool RemoveAgendaItem(Guid itemId, Guid actorEmployeeId)
@@ -319,19 +355,6 @@ public sealed class OneOnOneMeeting : PerformanceAggregate
         EnsureUpcoming();
         if (item.AuthorEmployeeId != actorEmployeeId) throw new UnauthorizedAccessException("Only the person who added an item removes it.");
         _agenda.Remove(item);
-        MarkUpdated();
-        return true;
-    }
-
-    /// <summary>Replaces the shared note when the caller saw its current revision.</summary>
-    public bool SetSharedNotes(string text, uint expectedRevision, bool successorCompleted)
-    {
-        EnsureNotesWritable(successorCompleted);
-        if (expectedRevision != SharedNotesRevision) throw new OneOnOneNotesConflictException();
-        var value = OneOnOneText.Optional(text, MaxNotesLength, "notes");
-        if (value == SharedNotes) return false;
-        SharedNotes = value;
-        SharedNotesRevision++;
         MarkUpdated();
         return true;
     }
@@ -365,10 +388,21 @@ public sealed class OneOnOneAgendaItem : PerformanceChildEntity
     public string Text { get; private set; } = string.Empty;
     public Guid AuthorEmployeeId { get; private set; }
     public int Order { get; private set; }
+    /// <summary>When the item got its note: a note is what marks it talked about.</summary>
     public DateTime? DiscussedAt { get; private set; }
     public AgendaSourceKind? SourceKind { get; private set; }
     public Guid? SourceId { get; private set; }
     public Guid? SourceCycleId { get; private set; }
+    /// <summary>What both people wrote about it.</summary>
+    public string Note { get; private set; } = string.Empty;
+    /// <summary>Guards the note on its own, so two people's notes on different items never conflict.</summary>
+    public uint NoteRevision { get; private set; }
+    /// <summary>The item on an earlier meeting this one carried over from, having no note there.</summary>
+    public Guid? CarriedFromItemId { get; private set; }
+    /// <summary>When the first of its line was added, carried over or not.</summary>
+    public DateTime FirstAddedAt { get; private set; }
+
+    public bool HasNote => DiscussedAt is not null;
 
     internal static OneOnOneAgendaItem Create(Guid tenantId, Guid id, Guid meetingId, string text, Guid authorEmployeeId, int order, AgendaSource? source)
         => new()
@@ -376,12 +410,24 @@ public sealed class OneOnOneAgendaItem : PerformanceChildEntity
             Id = id, TenantId = tenantId, MeetingId = meetingId, AuthorEmployeeId = authorEmployeeId, Order = order,
             Text = OneOnOneText.Required(text, MaxTextLength, "an agenda item"),
             SourceKind = source?.Kind, SourceId = source?.Id, SourceCycleId = source?.CycleId,
+            FirstAddedAt = PerformanceClock.UtcNow,
         };
 
-    internal bool SetDiscussed(bool discussed, DateTime now)
+    internal OneOnOneAgendaItem CarryTo(OneOnOneMeeting next, int order)
+        => new()
+        {
+            TenantId = TenantId, MeetingId = next.Id, AuthorEmployeeId = AuthorEmployeeId, Order = order, Text = Text,
+            SourceKind = SourceKind, SourceId = SourceId, SourceCycleId = SourceCycleId, CarriedFromItemId = Id, FirstAddedAt = FirstAddedAt,
+        };
+
+    internal bool SetNote(string text, uint expectedRevision, DateTime now)
     {
-        if (discussed == (DiscussedAt is not null)) return false;
-        DiscussedAt = discussed ? now : null;
+        if (expectedRevision != NoteRevision) throw new OneOnOneNotesConflictException();
+        var value = OneOnOneText.Optional(text, OneOnOneMeeting.MaxNotesLength, "notes");
+        if (value == Note) return false;
+        Note = value;
+        NoteRevision++;
+        DiscussedAt = value.Trim().Length == 0 ? null : DiscussedAt ?? now;
         MarkUpdated();
         return true;
     }

@@ -1,5 +1,6 @@
 using EY.HRPlatform.Performance.Domain.Calibration;
 using EY.HRPlatform.Performance.Domain.Common;
+using EY.HRPlatform.Performance.Domain.Conversations;
 using EY.HRPlatform.Performance.Domain.Notifications;
 using EY.HRPlatform.Performance.Domain.Objectives;
 using EY.HRPlatform.Performance.Domain.Progress;
@@ -34,6 +35,12 @@ public interface IPerformanceNotifications
     /// </summary>
     void EnqueueConversation(Guid tenantId, PerformanceNotificationKind kind, Guid recipientEmployeeId, Guid actorEmployeeId,
         string resourceType, Guid resourceId, Guid transitionId, PerformanceNotificationMessage text);
+
+    /// <summary>Stages a meeting's calendar invite (or cancellation) for both people; email only, no bell.</summary>
+    void EnqueueInvite(OneOnOneSeries series, Guid meetingId, Guid transitionId);
+
+    /// <summary>The monthly reminder to update goals; once per person per month, keyed by <paramref name="month"/>.</summary>
+    void EnqueueGoalUpdateReminder(Guid tenantId, Guid cycleId, Guid planId, Guid recipientEmployeeId, DateOnly month);
 
     /// <summary>Stages a peer, schedule, reminder or acknowledgement notification. Nothing is staged without a recipient.</summary>
     void EnqueueReviewWork(PerformanceReview review, PerformanceNotificationKind kind, Guid recipientEmployeeId, string resourceType,
@@ -132,6 +139,29 @@ public sealed class PerformanceNotifications(PerformanceDbContext db) : IPerform
         var message = PerformanceOutboxMessage.ForConversation(tenantId, kind, recipientEmployeeId, resourceType, transitionId,
             new ConversationNotificationPayload(resourceId, text.ActorName, text.Href));
         Stage(message, null, text with { ActorEmployeeId = actorEmployeeId });
+    }
+
+    public void EnqueueInvite(OneOnOneSeries series, Guid meetingId, Guid transitionId)
+    {
+        foreach (var recipient in new[] { series.ManagerEmployeeId, series.ReportEmployeeId })
+        {
+            var message = PerformanceOutboxMessage.ForInvite(series.TenantId, recipient, series.Id, meetingId, transitionId);
+            if (!db.OutboxMessages.Local.Any(m => m.TenantId == message.TenantId && m.DedupeKey == message.DedupeKey))
+                db.OutboxMessages.Add(message);
+        }
+    }
+
+    /// <summary>The month's transition in a goal reminder's dedupe key: one reminder per person per month.</summary>
+    public static Guid GoalUpdateTransition(DateOnly month)
+        => new(System.Security.Cryptography.MD5.HashData(System.Text.Encoding.UTF8.GetBytes($"goal-update:{month:yyyy-MM}")));
+
+    public void EnqueueGoalUpdateReminder(Guid tenantId, Guid cycleId, Guid planId, Guid recipientEmployeeId, DateOnly month)
+    {
+        var path = PerformanceNotificationTemplates.GoalsPath(cycleId);
+        var transition = GoalUpdateTransition(month);
+        var message = PerformanceOutboxMessage.ForPath(tenantId, PerformanceNotificationKind.GoalUpdateReminder, recipientEmployeeId,
+            "EmployeePlan", transition, new PathNotificationPayload(cycleId, planId, null, path));
+        Stage(message, null, PerformanceNotificationTemplates.ForGoalUpdateReminder(path));
     }
 
     public void EnqueueReviewWork(PerformanceReview review, PerformanceNotificationKind kind, Guid recipientEmployeeId, string resourceType,

@@ -17,7 +17,14 @@ public enum PerformanceNotificationKind
     CalibrationFinalized,
     /// <summary>Someone nudged the person toward their next step in the year (D-49).</summary>
     YearNudge,
+    /// <summary>A 1:1's calendar invite (or cancellation) by email to each of the two people (D-39); no bell.</summary>
+    OneOnOneInvite,
+    /// <summary>The monthly reminder to update goals nobody has touched in a month.</summary>
+    GoalUpdateReminder,
 }
+
+/// <summary>The meeting an invite is about; the email is worded from its state when it's sent.</summary>
+public sealed record OneOnOneInvitePayload(Guid SeriesId, Guid MeetingId);
 
 /// <summary>
 /// A review-work notification (peers, schedule, reminders, acknowledgement): the review's context plus the exact in-app
@@ -102,7 +109,8 @@ public sealed class PerformanceOutboxMessage : PerformanceChildEntity
             || !payload.Path.StartsWith("/performance/", StringComparison.Ordinal))
             throw new ArgumentException("Notification tenant, recipient, resource, transition and path are required.");
         if (kind is not (PerformanceNotificationKind.ObjectiveAtRisk or PerformanceNotificationKind.UpdateRequestAnswered
-            or PerformanceNotificationKind.DevelopmentGoalAdded or PerformanceNotificationKind.YearNudge))
+            or PerformanceNotificationKind.DevelopmentGoalAdded or PerformanceNotificationKind.YearNudge
+            or PerformanceNotificationKind.GoalUpdateReminder))
             throw new ArgumentException("Choose a path notification kind.", nameof(kind));
         return new PerformanceOutboxMessage
         {
@@ -110,6 +118,24 @@ public sealed class PerformanceOutboxMessage : PerformanceChildEntity
             ResourceType = resourceType, ResourceId = payload.ResourceId,
             Payload = JsonSerializer.Serialize(payload),
             DedupeKey = $"{kind}:{payload.ResourceId:N}:{transitionId:N}:{recipientEmployeeId:N}",
+            NextAttemptAt = PerformanceClock.UtcNow,
+        };
+    }
+
+    /// <summary>
+    /// A calendar invite for one meeting to one of its two people. <paramref name="transitionId"/> names what changed
+    /// (scheduled, moved, cancelled), so each change sends once.
+    /// </summary>
+    public static PerformanceOutboxMessage ForInvite(Guid tenantId, Guid recipientEmployeeId, Guid seriesId, Guid meetingId, Guid transitionId)
+    {
+        if (tenantId == Guid.Empty || recipientEmployeeId == Guid.Empty || seriesId == Guid.Empty || meetingId == Guid.Empty || transitionId == Guid.Empty)
+            throw new ArgumentException("Invite tenant, recipient, meeting and transition are required.");
+        return new PerformanceOutboxMessage
+        {
+            TenantId = tenantId, Kind = PerformanceNotificationKind.OneOnOneInvite, RecipientEmployeeId = recipientEmployeeId,
+            ResourceType = "OneOnOneMeeting", ResourceId = meetingId,
+            Payload = JsonSerializer.Serialize(new OneOnOneInvitePayload(seriesId, meetingId)),
+            DedupeKey = $"{PerformanceNotificationKind.OneOnOneInvite}:{meetingId:N}:{transitionId:N}:{recipientEmployeeId:N}",
             NextAttemptAt = PerformanceClock.UtcNow,
         };
     }

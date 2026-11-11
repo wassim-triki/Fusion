@@ -1,4 +1,4 @@
-import type { AgendaSourceKind, OneOnOneCadence } from "@repo/api";
+import type { AgendaSourceKind, OneOnOneAgendaItemDto, OneOnOneCadence } from "@repo/api";
 import { formatDate, formatDateParts } from "@repo/ds/lib/dates";
 import { useMemo } from "react";
 import { useSay } from "@repo/ds/lib/say";
@@ -134,7 +134,7 @@ export function useOneOnOneWords() {
     return {
       cadence: byCadence("cadence"),
       then: byCadence("then"),
-      source: Object.fromEntries((["Objective", "UpdateRequest", "Feedback", "Praise"] as const).map((k) => [k, say(`source.${k}`)])) as Record<AgendaSourceKind, string>,
+      source: Object.fromEntries((["Objective", "UpdateRequest", "Feedback", "Praise", "Action", "Starter"] as const).map((k) => [k, say(`source.${k}`)])) as Record<AgendaSourceKind, string>,
       meetingTime: (iso: string) => meetingTime(iso, new Date(), say, locale),
       timeBlock: (iso: string) => timeBlock(iso, new Date(), say, locale),
       howSoon: (iso: string) => howSoon(iso, new Date(), say),
@@ -160,4 +160,13 @@ export function rhythmWindow(now: Date = new Date()): { start: number; end: numb
 export function rhythmPosition(iso: string | number, window: { start: number; end: number }): number {
   const t = typeof iso === "number" ? iso : new Date(iso).getTime();
   return Math.min(1, Math.max(0, (t - window.start) / (window.end - window.start)));
+}
+
+/** An agenda item's words: a starter's key worded in the person's language, anything else as written. */
+export function useAgendaText() {
+  const say = useSay("oneOnOnes.lib");
+  return useMemo(
+    () => (item: Pick<OneOnOneAgendaItemDto, "sourceKind" | "text">) => (item.sourceKind === "Starter" ? say(`starter.${item.text}`) : item.text),
+    [say],
+  );
 }

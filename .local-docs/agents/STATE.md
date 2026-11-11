@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** B-406 Goals redrawn (D-96 to D-100, B-423 folded in), 2026-11-11, accepted; the owed cold build of `performance` passed. Next: slice 6, 1:1s.
+**Last finished:** B-424 slice 6, 1:1s (the meeting as the page, notes carry over, calendar invites and feed, the monthly goal reminder), 2026-11-11, In review. Next: slice 7, Feedback and praise.
 
 ## Active work
 
@@ -14,4 +14,4 @@ Session queue: a fresh session takes the first open row, sets it as Active work 
 
 | # | Session | Board items | Effort | Notes |
 |---|---|---|---|---|
-| 5+ | Performance's slices 5–13 | B-405–B-411, B-392, B-389, B-418 (edges) | per slice | One row of `plans/B-390-slices.md` per session, in its order; Insights is slice 13. Slice 1 (the frame, B-422) and slice 2 (the year's domain: `GET cycles/{id}/year`, `GET|POST cycles/{id}/move-on`, `POST cycles/{id}/nudges`, `CyclePhase.ResultsOut`) built 2026-11-10; slice 3 (the Year page at `/`, `components/year/`) built 2026-11-10, In review. Slice 4 (Goals' domain) built 2026-11-10. Slice 5 part 1 (the goal panel and dialog) built 2026-11-10. Slice 5 (Goals) accepted 2026-11-11 with its redraw (D-96 to D-100). Next: slice 6, 1:1s. Port the explorers' drawings literally (memory `port-accepted-drawings-closely`); every slice holds D-95 (no brown in light mode, sections' edges lined up). |
+| 5+ | Performance's slices 5–13 | B-405–B-411, B-392, B-389, B-418 (edges) | per slice | One row of `plans/B-390-slices.md` per session, in its order; Insights is slice 13. Slice 1 (the frame, B-422) and slice 2 (the year's domain: `GET cycles/{id}/year`, `GET|POST cycles/{id}/move-on`, `POST cycles/{id}/nudges`, `CyclePhase.ResultsOut`) built 2026-11-10; slice 3 (the Year page at `/`, `components/year/`) built 2026-11-10, In review. Slice 4 (Goals' domain) built 2026-11-10. Slice 5 part 1 (the goal panel and dialog) built 2026-11-10. Slice 5 (Goals) accepted 2026-11-11 with its redraw (D-96 to D-100). Slice 6 (1:1s, B-424) built 2026-11-11, In review. Next: slice 7, Feedback and praise. Port the explorers' drawings literally (memory `port-accepted-drawings-closely`); every slice holds D-95 (no brown in light mode, sections' edges lined up). |

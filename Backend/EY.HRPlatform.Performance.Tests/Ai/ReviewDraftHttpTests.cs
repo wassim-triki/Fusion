@@ -135,7 +135,9 @@ public sealed class ReviewDraftHttpTests
         {
             var (series, meeting) = OneOnOneSeries.Start(factory.Store.TenantId, aicha.ReviewerEmployeeId, aicha.SubjectEmployeeId,
                 OneOnOneCadence.EveryTwoWeeks, aicha.ReviewerEmployeeId, DateTime.UtcNow.AddDays(-14), DateTime.UtcNow.AddDays(-30), "Mariam Gharbi", "Aicha Bouazizi");
-            meeting.SetSharedNotes("SHARED-NOTE: agreed to raise vendor delays earlier.", 0, false);
+            var talked = Guid.NewGuid();
+            meeting.AddAgendaItem(talked, "Vendor delays", aicha.ReviewerEmployeeId, null, out _);
+            meeting.SetItemNote(talked, "SHARED-NOTE: agreed to raise vendor delays earlier.", 0, false, DateTime.UtcNow);
             var mine = OneOnOnePrivateNote.Create(factory.Store.TenantId, meeting.Id, aicha.ReviewerEmployeeId);
             mine.Set("PRIVATE-NOTE: watch the hand-offs.", 0);
             var hers = OneOnOnePrivateNote.Create(factory.Store.TenantId, meeting.Id, aicha.SubjectEmployeeId);

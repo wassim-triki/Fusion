@@ -2,10 +2,12 @@
 
 import { SeriesSkeleton } from "./one-on-one-skeletons";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import {
   newClientId,
+  type ObjectiveStatus,
   type OneOnOneActionDto,
   type OneOnOneAgendaItemDto,
   type OneOnOneCadence,
@@ -15,130 +17,162 @@ import {
   type OneOnOneSuggestionDto,
 } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
-import { Checkbox } from "@repo/ds/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@repo/ds/components/ui/collapsible";
 import { DatePicker } from "@repo/ds/components/ui/date-picker";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@repo/ds/components/ui/dialog";
 import { Input } from "@repo/ds/components/ui/input";
 import { Label } from "@repo/ds/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@repo/ds/components/ui/select";
-import { Skeleton } from "@repo/ds/components/ui/skeleton";
-import { AsyncButton, PageContainer, PageHeader, Section, StatusBadge, Said } from "@repo/ds/shell";
+import { AsyncButton, Bar, PageContainer, Said, StateWord, type BarTone } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
-import { AvatarStack, ObjectiveStatusBadge, PersonInitials, PlanDial } from "@repo/performance-ui";
-import { CalendarDays, Check, ChevronDown, Flag, Plus, X } from "@repo/ds/icons";
+import { AvatarStack, PersonInitials } from "@repo/performance-ui";
+import { CalendarCheck, Check, ChevronDown, Clapping, MessageSquare, Plus, Send, Sparkles, Target, TriangleAlert, Users } from "@repo/ds/icons";
 import { useOneOnOne, useOneOnOneCommands } from "../../api/use-conversations";
-import { usePersonSummary } from "../../api/use-performance";
 import { useLanding } from "@/lib/use-landing";
 import { ContentUnavailable } from "../content-unavailable";
-import { PlanDocument, SectionTitle, SidebarSection } from "../plan/plan-layout";
+import { GoalState } from "../objective-record/goal-state";
+import { useObjectiveRecord } from "../objective-record/use-objective-record";
+import { appHref, dayMonth, daysBetween, firstName, fullDay } from "../year/year-words";
+import { CalendarLink } from "./calendar-link";
 import { NotesEditor } from "./notes-editor";
-import {
-  CADENCES,
-  TIME_SLOTS,
-  formatDay,
-  localDate,
-  localTime,
-  nextOccurrences,
-  shortDay,
-  toInstant,
-  useOneOnOneWords,
-} from "./one-on-one-lib";
-import { SourceWell } from "./one-on-one-parts";
+import { CADENCES, TIME_SLOTS, localDate, localTime, toInstant, useAgendaText, useOneOnOneWords } from "./one-on-one-lib";
 import { useRecentRecord } from "@repo/api/react";
-import { useTranslations } from "next-intl";
-import { useFormat } from "@repo/ds/lib/use-format";
-import type { Say } from "@/i18n/say";
 
-/** The app's own routes drop the basePath the server's hrefs carry. */
-const appHref = (href: string) => href.replace(/^\/performance/, "");
+const BAR: Record<ObjectiveStatus, BarTone> = { OnTrack: "ok", AtRisk: "warn", OffTrack: "bad" };
 
-type Names = Map<string, string>;
+/** A line on the agenda: an item already on it, or a suggestion from the year that a note puts there (D-66). */
+type Entry =
+  | { key: string; kind: "item"; item: OneOnOneAgendaItemDto }
+  | { key: string; kind: "suggestion"; suggestion: OneOnOneSuggestionDto };
+
+/** Items and suggestions about the same source share a key, so writing on a suggestion keeps its place open. */
+const sourceKey = (kind: string, id: string) => `${kind}:${id}`;
+const keyOf = (item: OneOnOneAgendaItemDto) =>
+  item.sourceKind && item.sourceKind !== "Starter" && item.sourceId ? sourceKey(item.sourceKind, item.sourceId) : item.id;
+
+/** What needs talking about first comes first: goals in trouble, late actions, requests; then what people added; then recognition. */
+export function agendaEntries(meeting: OneOnOneMeetingDto): Entry[] {
+  const offered = (kinds: string[]) =>
+    meeting.suggestions.filter((s) => kinds.includes(s.kind))
+      .map((s): Entry => ({ key: sourceKey(s.kind, s.sourceId), kind: "suggestion", suggestion: s }));
+  return [
+    ...offered(["Objective", "Action", "UpdateRequest"]),
+    ...meeting.agenda.map((item): Entry => ({ key: keyOf(item), kind: "item", item })),
+    ...offered(["Feedback", "Praise"]),
+  ];
+}
 
 /**
- * R7, one 1:1 series (D-12). The series reads as a track of meetings; the next one is the page: what to talk about
- * (with talking points ready from the report's year), the actions between the two people, and the notes, shared and
- * private. The report's year sits beside it so the conversation has context. An ended series is its history.
+ * A 1:1 where the meeting is the page (D-66): the agenda from the year, each line saying where it came from; a note on
+ * a line marks it talked about and the rest carries to the next meeting (D-64); actions for either person from any
+ * line; in both calendars (D-39). Beside it, the report's goals, the actions between the two, and the latest praise.
  */
 export function SeriesRecord({ seriesId }: { seriesId: string }) {
   const query = useOneOnOne(seriesId);
   if (query.error) return <ContentUnavailable list="oneOnOnes" error={query.error} onRetry={query.refetch} />;
   if (!query.data) return <SeriesSkeleton />;
-  return <SeriesView series={query.data} />;
+  return <MeetingPage series={query.data} />;
 }
 
-function SeriesView({ series }: { series: OneOnOneSeriesDto }) {
+function MeetingPage({ series }: { series: OneOnOneSeriesDto }) {
+  const t = useTranslations("oneOnOnes.Meeting");
+  const locale = useLocale();
   const w = useOneOnOneWords();
-  const format = useFormat();
-  const t = useTranslations("oneOnOnes.SeriesView");
   const commands = useOneOnOneCommands(series.id);
   // A notification about an action assigned to you lands on it.
   useLanding("action", true);
-  const [rescheduling, setRescheduling] = useState(false);
+  const [moving, setMoving] = useState(false);
   const isManager = series.viewerRole === "Manager";
   const other = isManager ? series.report : series.manager;
   const me = isManager ? series.manager : series.report;
-  useRecentRecord("performance", { label: t("n11With", { displayName: other.displayName }), kind: "1:1", href: `/performance/one-on-ones/${series.id}` });
+  useRecentRecord("performance", { label: t("title", { name: firstName(other.displayName) }), kind: "1:1", href: `/performance/one-on-ones/${series.id}` });
   const upcoming = series.upcoming;
-  const names: Names = new Map([
-    [series.manager.employeeId, series.manager.displayName],
-    [series.report.employeeId, series.report.displayName],
-  ]);
-  const subtitle = series.ended
-    ? (series.endReason === "PersonInactive" ? t("someoneLeftTheCompanyYou", { toLowerCase: w.cadence[series.cadence].toLowerCase(), startedAt: shortDay(series.startedAt, format.locale), value: series.endedAt ? shortDay(series.endedAt, format.locale) : "" }) : t("theReportingLineChangedYou", { toLowerCase: w.cadence[series.cadence].toLowerCase(), startedAt: shortDay(series.startedAt, format.locale), value: series.endedAt ? shortDay(series.endedAt, format.locale) : "" }))
-    : [other.jobTitle, t("since", { value: w.cadence[series.cadence], startedAt: shortDay(series.startedAt, format.locale) })].filter(Boolean).join(" · ");
+  // The meeting just held stays open for notes until the next one; shown only when it had something on it.
+  const lastWritable = series.past.find((m) => m.state === "Completed" && m.notesWritable && m.agenda.length > 0) ?? null;
 
   return (
     <PageContainer width="wide">
-      <PageHeader className="mb-4"
-        back={{ href: "/one-on-ones", label: "1:1s" }}
-        leading={<AvatarStack names={[me.displayName, other.displayName]} size="xl" className={series.ended ? "opacity-80" : undefined} />}
-        eyebrow={series.ended ? <StatusBadge tone="muted">{t("ended")} {series.endedAt ? shortDay(series.endedAt, format.locale) : ""}</StatusBadge> : undefined}
-        title={other.displayName}
-        description={subtitle}
-        actions={
-          upcoming && series.can.complete ? (
-            <>
-              <Button variant="outline" onClick={() => setRescheduling(true)}>{t("reschedule")}</Button>
-              <AsyncButton
-                pending={commands.complete.isLoading}
-                onClick={() => commands.complete.mutate({ meetingId: upcoming.id, expectedVersion: upcoming.version })}
-              >
-                <Check className="size-4" data-icon="inline-start" /> {t("completeMeeting")}
-              </AsyncButton>
-            </>
-          ) : null
-        }
-      />
-      <MeetingTrack series={series} />
-      <div className="mt-10">
-        <PlanDocument
-          main={
-            series.ended || !upcoming ? (
-              <History series={series} names={names} />
-            ) : (
-              <div className="space-y-6">
-                <UpcomingMeeting series={series} meeting={upcoming} me={me} other={other} names={names} />
-                {series.past.length > 0 ? <EarlierMeetings series={series} meetings={series.past} names={names} title={t("earlierMeetings")} /> : null}
-              </div>
-            )
-          }
-          sidebar={
-            <SeriesSidebar
-              series={series}
-              onCadence={(cadence) => commands.changeCadence.mutate({ cadence, expectedVersion: series.version })}
-            />
-          }
-        />
+      <div className="mx-auto grid max-w-[1120px] gap-5">
+        <header className="flex flex-wrap items-end gap-4 pt-2">
+          <AvatarStack names={[me.displayName, other.displayName]} size="xl" className={series.ended ? "opacity-80" : undefined} />
+          <div className="grid min-w-0 gap-1">
+            <h1 className="type-page-title text-foreground">{t("title", { name: firstName(other.displayName) })}</h1>
+            <p className="text-muted-foreground">
+              {series.ended
+                ? t(series.endReason === "PersonInactive" ? "endedLeft" : "endedLine", { day: series.endedAt ? fullDay(series.endedAt, locale) : "" })
+                : upcoming
+                  ? <MeetingWhen meeting={upcoming} first={series.first} cadence={w.cadence[series.cadence]} />
+                  : null}
+            </p>
+          </div>
+          {upcoming && !series.ended ? (
+            <div className="ms-auto grid justify-items-end gap-1.5">
+              <CalendarLink trigger={
+                <button type="button" className="rounded-control hover:underline">
+                  <Mark tone="ok" icon={<CalendarCheck className="size-3.5" />}>{t("inBothCalendars")}</Mark>
+                </button>
+              } />
+              {series.can.write ? (
+                <button type="button" className="text-sm text-foreground underline-offset-4 hover:underline" onClick={() => setMoving(true)}>
+                  {t("moveIt")}
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+        </header>
+
+        <div className="grid items-start gap-[22px] lg:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="grid gap-[18px]">
+            {upcoming && !series.ended ? (
+              <>
+                <section className="grid gap-1.5 rounded-surface bg-card px-6 py-[22px]">
+                  <div className="mb-1.5 flex items-center gap-3">
+                    <h2 className="type-section-title text-foreground">{t("agenda")}</h2>
+                    <span className="ms-auto">
+                      <Mark icon={<Sparkles className="size-3.5" />}>{series.first ? t("starterAgenda") : t("fromTheYear")}</Mark>
+                    </span>
+                  </div>
+                  <AgendaList series={series} meeting={upcoming} me={me} other={other} writable={series.can.write} />
+                  {series.can.write ? (
+                    <AddToAgenda
+                      onAdd={(text) => commands.addAgendaItem.mutate({ meetingId: upcoming.id, request: { id: newClientId(), text } })}
+                      carries={!series.first && series.carriesTo ? dayMonth(series.carriesTo, locale) : null}
+                    />
+                  ) : null}
+                </section>
+                <PrivateNote series={series} meeting={upcoming} />
+              </>
+            ) : null}
+            {lastWritable && !series.ended ? (
+              <section className="grid gap-1.5 rounded-surface bg-card px-6 py-[22px]">
+                <div className="mb-1.5 flex items-center gap-3">
+                  <h2 className="type-section-title text-foreground">{t("lastTime", { day: dayMonth(lastWritable.scheduledAt, locale) })}</h2>
+                  <span className="ms-auto text-sm text-muted-foreground">{t("stillOpen")}</span>
+                </div>
+                <AgendaList series={series} meeting={lastWritable} me={me} other={other} writable={series.can.write} />
+              </section>
+            ) : null}
+            <Earlier meetings={series.past.filter((m) => m !== lastWritable || series.ended)} />
+          </div>
+
+          <aside className="grid gap-3">
+            <GoalsCard series={series} other={other} />
+            <ActionsCard series={series} />
+            <AboutCard series={series} other={other} />
+          </aside>
+        </div>
       </div>
-      {rescheduling && upcoming ? (
-        <RescheduleDialog
+      {moving && upcoming ? (
+        <MoveDialog
           meeting={upcoming}
-          pending={commands.reschedule.isLoading}
-          onClose={() => setRescheduling(false)}
-          onSave={async (scheduledAt) => {
-            await commands.reschedule.mutateAsync({ meetingId: upcoming.id, scheduledAt, expectedVersion: upcoming.version });
-            setRescheduling(false);
+          cadence={series.cadence}
+          pending={commands.reschedule.isLoading || commands.changeCadence.isLoading}
+          onClose={() => setMoving(false)}
+          onSave={async (scheduledAt, cadence) => {
+            if (cadence !== series.cadence) await commands.changeCadence.mutateAsync({ cadence, expectedVersion: series.version });
+            if (scheduledAt !== new Date(upcoming.scheduledAt).toISOString())
+              await commands.reschedule.mutateAsync({ meetingId: upcoming.id, scheduledAt, expectedVersion: upcoming.version });
+            setMoving(false);
           }}
         />
       ) : null}
@@ -146,150 +180,258 @@ function SeriesView({ series }: { series: OneOnOneSeriesDto }) {
   );
 }
 
-// ── The series as a track ──────────────────────────────────────────────────────
+/** "Today, 10 Nov, 11:00 to 11:30, every two weeks", or a first meeting's day with "your first". */
+function MeetingWhen({ meeting, first, cadence }: { meeting: OneOnOneMeetingDto; first: boolean; cadence: string }) {
+  const t = useTranslations("oneOnOnes.Meeting");
+  const locale = useLocale();
+  const start = new Date(meeting.scheduledAt);
+  const end = new Date(start.getTime() + 30 * 60_000);
+  const time = (at: Date) => at.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  const today = new Date();
+  const days = daysBetween(localDate(today), localDate(start));
+  const day = days === 0 ? t("todayDay", { day: dayMonth(meeting.scheduledAt, locale) })
+    : days === 1 ? t("tomorrowDay", { day: dayMonth(meeting.scheduledAt, locale) })
+    : fullDay(meeting.scheduledAt, locale);
+  return <>{t(first ? "whenFirst" : "when", { day, start: time(start), end: time(end), cadence: cadence.toLowerCase() })}</>;
+}
 
-type Stop = { key: string; at: string; kind: "held" | "missed" | "next" | "ahead" | "ended"; detail?: string };
-
-/** Up to four meetings behind, the next one, two ahead on the rhythm; an ended series closes with its end. */
-function MeetingTrack({ series }: { series: OneOnOneSeriesDto }) {
-  const w = useOneOnOneWords();
-  const format = useFormat();
-  const t = useTranslations("oneOnOnes.MeetingTrack");
-  const behind = [...series.past].reverse().slice(series.ended || !series.upcoming ? -7 : -4);
-  const stops: Stop[] = behind.map((m) => ({
-    key: m.id,
-    at: m.scheduledAt,
-    kind: m.state === "Completed" ? "held" : "missed",
-    detail: m.state === "Completed" ? (m.agenda.length === 1 ? t("point", { length: m.agenda.length }) : t("points", { length: m.agenda.length })) : t("notHeld"),
-  }));
-  if (series.upcoming) {
-    stops.push({ key: series.upcoming.id, at: series.upcoming.scheduledAt, kind: "next", detail: w.howSoon(series.upcoming.scheduledAt) });
-    nextOccurrences(series.upcoming.scheduledAt, series.cadence, 2).forEach((date) =>
-      stops.push({ key: date.toISOString(), at: date.toISOString(), kind: "ahead" }));
-  } else if (series.ended && series.endedAt) {
-    stops.push({ key: "ended", at: series.endedAt, kind: "ended", detail: t("ended") });
-  }
-  if (stops.length < 2) return null;
-
+/** A quiet label with its glyph: Fusion saying how something came about. */
+function Mark({ icon, children, tone = "muted" }: { icon: ReactNode; children: ReactNode; tone?: "muted" | "ok" }) {
   return (
-    <ol className="relative mt-6 grid" style={{ gridTemplateColumns: `repeat(${stops.length}, minmax(0, 1fr))` }} aria-label={t("meetings")}>
-      <span
-        aria-hidden
-        className="absolute top-2.5 h-px bg-border"
-        style={{ left: `${50 / stops.length}%`, right: `${50 / stops.length}%` }}
-      />
-      {stops.map((stop) => (
-        <li key={stop.key} className="relative flex flex-col items-center gap-2 text-center">
-          <span
-            aria-hidden
-            className={cn(
-              "grid size-5 place-items-center rounded-full",
-              stop.kind === "held" && "bg-success text-background",
-              stop.kind === "missed" && "border-2 border-muted-foreground/60 bg-background",
-              stop.kind === "next" && "border-2 border-primary bg-background ring-4 ring-primary-tint",
-              stop.kind === "ahead" && "border border-dashed border-muted-foreground/50 bg-background",
-              stop.kind === "ended" && "rounded-detail border border-border bg-inlay text-muted-foreground",
-            )}
-          >
-            {stop.kind === "held" ? <Check className="size-3" /> : null}
-            {stop.kind === "next" ? <span className="size-2 rounded-full bg-primary" /> : null}
-            {stop.kind === "ended" ? <Flag className="size-3" /> : null}
-          </span>
-          <span className="min-w-0">
-            <span className={cn("block type-label tabular-nums", stop.kind === "next" ? "text-primary-ink" : stop.kind === "ahead" ? "text-muted-foreground" : "text-foreground")}>
-              {stop.kind === "next" ? w.meetingTime(stop.at) : shortDay(stop.at, format.locale)}
-            </span>
-            {stop.detail ? <span className="block type-meta text-muted-foreground">{stop.detail}</span> : null}
-          </span>
-        </li>
-      ))}
-    </ol>
+    <span className={cn("inline-flex items-center gap-1.5 text-[12.5px] font-medium", tone === "ok" ? "text-success" : "text-muted-foreground")}>
+      <span aria-hidden className="shrink-0">{icon}</span>
+      {children}
+    </span>
   );
 }
 
-// ── The next meeting ───────────────────────────────────────────────────────────
+// ── The agenda ─────────────────────────────────────────────────────────────────
 
-function UpcomingMeeting({
-  series,
-  meeting,
-  me,
-  other,
-  names,
-}: {
+function AgendaList({ series, meeting, me, other, writable }: {
   series: OneOnOneSeriesDto;
   meeting: OneOnOneMeetingDto;
   me: OneOnOnePersonDto;
   other: OneOnOnePersonDto;
-  names: Names;
+  writable: boolean;
 }) {
-  const t = useTranslations("oneOnOnes.UpcomingMeeting");
-  const commands = useOneOnOneCommands(series.id);
-  const writable = series.can.write;
-  const reportFirstName = series.report.displayName.split(" ")[0];
-  const open = meeting.actions.filter((a) => !a.done).length;
+  const t = useTranslations("oneOnOnes.Meeting");
+  const entries = agendaEntries(meeting);
+  const [open, setOpen] = useState<string | null>(null);
+  if (entries.length === 0) return <p className="px-3.5 py-3 text-sm text-muted-foreground">{t("nothingOnIt")}</p>;
   return (
-    <>
-      <Section id="talking-points" title={<SectionTitle label={t("talkingPoints")} count={meeting.agenda.length} />} flush>
-        <TalkingPoints
-          items={meeting.agenda}
-          myId={me.employeeId}
-          names={names}
-          writable={writable}
-          onAdd={(text) => commands.addAgendaItem.mutate({ meetingId: meeting.id, request: { id: newClientId(), text } })}
-          onDiscussed={(item, discussed) => commands.setDiscussed.mutate({ meetingId: meeting.id, itemId: item.id, discussed })}
-          onRemove={(item) => commands.removeAgendaItem.mutate({ meetingId: meeting.id, itemId: item.id })}
+    <div className="grid">
+      {entries.map((entry, i) => (
+        <AgendaRow
+          key={entry.key}
+          entry={entry}
+          first={i === 0}
+          open={open === entry.key}
+          onOpen={() => setOpen(open === entry.key ? null : entry.key)}
+          series={series}
+          meeting={meeting}
+          me={me}
+          other={other}
+          writable={writable && meeting.notesWritable}
         />
-      </Section>
-
-      {writable && meeting.suggestions.length > 0 ? (
-        <Section
-          id="from-the-year"
-          title={<SectionTitle label={series.viewerRole === "Manager" ? t("fromSYear", { reportFirstName: reportFirstName ?? "" }) : t("fromYourYear")} count={meeting.suggestions.length} />}
-        >
-          <Suggestions
-            suggestions={meeting.suggestions}
-            onAdd={(s) => commands.addAgendaItem.mutate({ meetingId: meeting.id, request: { id: newClientId(), sourceKind: s.kind, sourceId: s.sourceId } })}
-          />
-        </Section>
-      ) : null}
-
-      <Section id="actions" title={<SectionTitle label={t("actions")} count={open} />} flush>
-        <Actions
-          actions={meeting.actions}
-          names={names}
-          people={[other, me]}
-          writable={writable}
-          onDone={(action, done) => commands.setActionDone.mutate({ actionId: action.id, done })}
-          onAdd={(text, ownerEmployeeId, dueDate) => commands.addAction.mutate({ id: newClientId(), text, ownerEmployeeId, dueDate })}
-        />
-      </Section>
-
-      <Section id="notes" title={t("notes")}>
-        <MeetingNotes series={series} meeting={meeting} otherName={other.displayName} />
-      </Section>
-    </>
+      ))}
+    </div>
   );
 }
 
-function TalkingPoints({
-  items,
-  myId,
-  names,
-  writable,
-  onAdd,
-  onDiscussed,
-  onRemove,
-}: {
-  items: OneOnOneAgendaItemDto[];
-  myId: string;
-  names: Names;
+function AgendaRow({ entry, first, open, onOpen, series, meeting, me, other, writable }: {
+  entry: Entry;
+  first: boolean;
+  open: boolean;
+  onOpen: () => void;
+  series: OneOnOneSeriesDto;
+  meeting: OneOnOneMeetingDto;
+  me: OneOnOnePersonDto;
+  other: OneOnOnePersonDto;
   writable: boolean;
-  onAdd: (text: string) => void;
-  onDiscussed: (item: OneOnOneAgendaItemDto, discussed: boolean) => void;
-  onRemove: (item: OneOnOneAgendaItemDto) => void;
 }) {
-  const w = useOneOnOneWords();
-  const t = useTranslations("oneOnOnes.TalkingPoints");
+  const t = useTranslations("oneOnOnes.Meeting");
+  const commands = useOneOnOneCommands(series.id);
+  const item = entry.kind === "item" ? entry.item : null;
+  const noted = Boolean(item?.discussed);
+  const kind = item ? item.sourceKind : entry.kind === "suggestion" ? entry.suggestion.kind : null;
+  const revisionOf = (dto: OneOnOneSeriesDto, key: string) => {
+    const saved = [dto.upcoming, ...dto.past].find((m) => m?.id === meeting.id);
+    return saved?.agenda.find((i) => keyOf(i) === key)?.noteRevision ?? 0;
+  };
+  const save = async (text: string, expectedRevision: number) => {
+    if (item) return revisionOf(await commands.setAgendaNote.mutateAsync({ meetingId: meeting.id, itemId: item.id, text, expectedRevision }), entry.key);
+    if (entry.kind !== "suggestion" || !text.trim()) return 0;
+    const s = entry.suggestion;
+    return revisionOf(await commands.addAgendaItem.mutateAsync({
+      meetingId: meeting.id, request: { id: newClientId(), sourceKind: s.kind, sourceId: s.sourceId, note: text },
+    }), entry.key);
+  };
+
+  return (
+    <div
+      className={cn(
+        "grid grid-cols-[30px_minmax(0,1fr)_auto] items-start gap-3 px-3.5 py-[13px]",
+        open ? "rounded-inset bg-inlay" : "cursor-pointer",
+        !first && !open && "border-t border-border",
+      )}
+      onClick={open ? undefined : onOpen}
+    >
+      <span aria-hidden className={cn("grid size-[30px] place-items-center rounded-[9px] text-muted-foreground", open ? "bg-card" : "bg-inlay",
+        kind === "Objective" && entry.kind === "suggestion" && "text-warning")}>
+        <SourceIcon kind={kind} entry={entry} />
+      </span>
+      <div className="grid min-w-0 gap-[3px]">
+        <button type="button" className="text-start text-[14.5px] text-foreground" onClick={open ? onOpen : undefined} aria-expanded={open}>
+          <EntryTitle entry={entry} />
+        </button>
+        <EntrySource entry={entry} series={series} me={me} />
+        {open ? (
+          <div className="mt-2 grid gap-1.5" onClick={(event) => event.stopPropagation()}>
+            <div className="rounded-inset bg-card px-3.5 py-2.5">
+              <NotesEditor
+                id={`note-${meeting.id}-${entry.key}`}
+                label={t("notesBoth")}
+                text={item?.note ?? ""}
+                revision={item?.noteRevision ?? 0}
+                writable={writable}
+                reading
+                compact
+                save={save}
+              />
+            </div>
+            {writable && meeting.state === "Upcoming" ? <ActionFrom series={series} me={me} other={other} /> : null}
+          </div>
+        ) : null}
+      </div>
+      {noted ? <Mark tone="ok" icon={<Check className="size-3.5" />}>{t("noted")}</Mark> : <span />}
+    </div>
+  );
+}
+
+function SourceIcon({ kind, entry }: { kind: string | null; entry: Entry }) {
+  const icon = "size-4";
+  if (kind === "Starter" && entry.kind === "item") {
+    const starter = entry.item.text;
+    if (starter === "theYearsPlan") return <Target className={icon} />;
+    if (starter === "feedbackStyle") return <MessageSquare className={icon} />;
+    if (starter === "whatWouldHelp") return <Users className={icon} />;
+    return <Sparkles className={icon} />;
+  }
+  switch (kind) {
+    case "Objective": return entry.kind === "suggestion" ? <TriangleAlert className={icon} /> : <Target className={icon} />;
+    case "Action": return <Check className={icon} />;
+    case "UpdateRequest": return <Send className={icon} />;
+    case "Feedback": return <MessageSquare className={icon} />;
+    case "Praise": return <Clapping className={icon} />;
+    default: return <Plus className={icon} />;
+  }
+}
+
+function EntryTitle({ entry }: { entry: Entry }) {
+  const t = useTranslations("oneOnOnes.Meeting");
+  const text = useAgendaText();
+  if (entry.kind === "item") return <>{text(entry.item)}</>;
+  const s = entry.suggestion;
+  if (s.kind === "Objective")
+    return <><span className="font-editorial text-[15px]">{s.label}</span> {t(s.status === "OffTrack" ? "isOffTrack" : "isAtRisk")}</>;
+  return <>{s.label}</>;
+}
+
+/** Where a line came from, in a few words: the source, who, and when. */
+function EntrySource({ entry, series, me }: { entry: Entry; series: OneOnOneSeriesDto; me: OneOnOnePersonDto }) {
+  const t = useTranslations("oneOnOnes.Meeting");
+  const locale = useLocale();
+  const nameOf = (id: string | null | undefined) => (id === series.manager.employeeId ? series.manager.displayName : id === series.report.employeeId ? series.report.displayName : null);
+  const you = (id: string | null | undefined) => id === me.employeeId;
+  let by: string | null = null;
+  let line: string;
+  if (entry.kind === "suggestion") {
+    const s = entry.suggestion;
+    switch (s.kind) {
+      case "Objective":
+        line = s.percent !== null ? t("fromGoal", { percent: Math.round(s.percent), day: s.at ? dayMonth(s.at, locale) : "" }) : t("fromGoalNoProgress");
+        break;
+      case "Action": {
+        by = s.by;
+        const late = s.dueDate ? daysBetween(s.dueDate, localDate(new Date())) : 0;
+        line = t("fromAction", { day: s.at ? dayMonth(s.at, locale) : "", who: you(s.by) ? t("you") : firstName(nameOf(s.by)), late });
+        break;
+      }
+      case "UpdateRequest":
+        by = s.by;
+        line = you(s.by) ? t("youAsked", { day: s.at ? dayMonth(s.at, locale) : "" }) : t("theyAsked", { name: firstName(nameOf(s.by)), day: s.at ? dayMonth(s.at, locale) : "" });
+        break;
+      case "Praise":
+        line = t("fromPraise", { day: s.at ? dayMonth(s.at, locale) : "" });
+        break;
+      default:
+        line = t("fromFeedback", { day: s.at ? dayMonth(s.at, locale) : "" });
+    }
+  } else {
+    const item = entry.item;
+    if (item.sourceKind === "Starter") line = t("starter");
+    else if (item.carriedFromAt) line = t("carriedFrom", { day: dayMonth(item.carriedFromAt, locale) });
+    else {
+      by = item.authorEmployeeId;
+      line = you(item.authorEmployeeId) ? t("youAdded") : t("theyAdded", { name: firstName(nameOf(item.authorEmployeeId)) });
+    }
+  }
+  return (
+    <span className="flex items-center gap-1.5 text-[12.5px] text-muted-foreground">
+      {by && nameOf(by) ? <PersonInitials name={nameOf(by)} size="xs" className="size-4 text-[0.5rem]" /> : null}
+      {line}
+    </span>
+  );
+}
+
+/** "Action for Aicha" / "Action for you" under an open line: the action is written in place, with an optional day. */
+function ActionFrom({ series, me, other }: { series: OneOnOneSeriesDto; me: OneOnOnePersonDto; other: OneOnOnePersonDto }) {
+  const t = useTranslations("oneOnOnes.Meeting");
+  const commands = useOneOnOneCommands(series.id);
+  const [owner, setOwner] = useState<OneOnOnePersonDto | null>(null);
+  const [text, setText] = useState("");
+  const [due, setDue] = useState("");
+  const add = () => {
+    if (!owner || !text.trim()) return;
+    commands.addAction.mutate({ id: newClientId(), text: text.trim(), ownerEmployeeId: owner.employeeId, dueDate: due || null });
+    setOwner(null);
+    setText("");
+    setDue("");
+  };
+  if (!owner) {
+    return (
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" variant="outline" onClick={() => setOwner(other)}>
+          <Plus className="size-4" data-icon="inline-start" />{t("actionFor", { name: firstName(other.displayName) })}
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => setOwner(me)}>{t("actionForYou")}</Button>
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <PersonInitials name={owner.displayName} size="xs" />
+      <Input
+        autoFocus
+        aria-label={owner === me ? t("actionForYou") : t("actionFor", { name: firstName(owner.displayName) })}
+        placeholder={owner === me ? t("whatYouWillDo") : t("whatTheyWillDo", { name: firstName(owner.displayName) })}
+        value={text}
+        maxLength={200}
+        onChange={(event) => setText(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") { event.preventDefault(); add(); }
+          if (event.key === "Escape") setOwner(null);
+        }}
+        className="h-8 min-w-48 flex-1"
+      />
+      <DatePicker value={due} onChange={setDue} min={localDate(new Date())} placeholder={t("byWhen")} className="h-8 w-36" />
+      <Button size="sm" onClick={add} disabled={!text.trim()}>{t("add")}</Button>
+    </div>
+  );
+}
+
+function AddToAgenda({ onAdd, carries }: { onAdd: (text: string) => void; carries: string | null }) {
+  const t = useTranslations("oneOnOnes.Meeting");
   const [draft, setDraft] = useState("");
   const submit = () => {
     const text = draft.trim();
@@ -298,565 +440,273 @@ function TalkingPoints({
     setDraft("");
   };
   return (
-    <ul className="divide-y divide-border">
-      {items.length === 0 && !writable ? <li className="px-5 py-4 type-body-secondary text-muted-foreground">{t("nothingOnTheAgenda")}</li> : null}
-      {items.map((item) => (
-        <li key={item.id} className="group flex min-h-16 items-center gap-4 px-5 py-3">
-          {item.sourceKind ? <SourceWell kind={item.sourceKind} /> : <PersonInitials name={names.get(item.authorEmployeeId)} size="sm" className="mx-1" />}
-          <div className="min-w-0 flex-1">
-            {item.href ? (
-              <Link href={appHref(item.href)} className={cn("type-label hover:underline", item.discussed ? "text-muted-foreground line-through" : "text-foreground")}>
-                {item.text}
-              </Link>
-            ) : (
-              <p className={cn("type-label break-words", item.discussed ? "text-muted-foreground line-through" : "text-foreground")}>{item.text}</p>
-            )}
-            <p className="type-meta text-muted-foreground">
-              {item.sourceKind ? w.source[item.sourceKind] : t("addedBy", { value: item.authorEmployeeId === myId ? "you" : names.get(item.authorEmployeeId)?.split(" ")[0] ?? "them" })}
-            </p>
-          </div>
-          {writable && item.authorEmployeeId === myId ? (
-            <Button writes
-              variant="ghost"
-              size="icon-sm"
-              aria-label={t("remove", { text: item.text })}
-              onClick={() => onRemove(item)}
-              className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-            >
-              <X className="size-4" />
-            </Button>
-          ) : null}
-          <Checkbox
-            checked={item.discussed}
-            disabled={!writable}
-            onCheckedChange={(checked) => onDiscussed(item, checked === true)}
-            aria-label={t("talkedAbout", { text: item.text })}
-            className="size-5"
-          />
-        </li>
-      ))}
-      {writable ? (
-        <li className="flex items-center gap-4 px-5 py-2.5">
-          <span className="grid size-9 shrink-0 place-items-center rounded-control border border-dashed border-border text-muted-foreground" aria-hidden>
-            <Plus className="size-4" />
-          </span>
-          <Input
-            aria-label={t("addATalkingPoint")}
-            placeholder={t("addATalkingPoint")}
-            value={draft}
-            maxLength={200}
-            onChange={(event) => setDraft(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                submit();
-              }
-            }}
-            className="h-9 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 dark:bg-transparent"
-          />
-          {draft.trim() ? <Button size="sm" variant="ghost" onClick={submit}>{t("add")}</Button> : null}
-        </li>
-      ) : null}
-    </ul>
-  );
-}
-
-/** What the report's year offers since the last meeting, told apart by kind; one click puts it on the agenda. */
-function Suggestions({ suggestions, onAdd }: { suggestions: OneOnOneSuggestionDto[]; onAdd: (s: OneOnOneSuggestionDto) => void }) {
-  const w = useOneOnOneWords();
-  const format = useFormat();
-  const t = useTranslations("oneOnOnes.Suggestions");
-  return (
-    <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-      {suggestions.map((s) => (
-        <li key={`${s.kind}:${s.sourceId}`} className="flex flex-col gap-3 rounded-inset bg-inlay p-4">
-          <div className="flex items-center gap-2.5">
-            <SourceWell kind={s.kind} status={s.status} size="sm" />
-            <span className="type-meta text-muted-foreground">
-              {w.source[s.kind]}
-              {s.at ? ` · ${shortDay(s.at, format.locale)}` : ""}
-            </span>
-          </div>
-          <p className="type-label text-foreground">{s.label}</p>
-          <div className="mt-auto flex items-center justify-between gap-2">
-            <Button writes size="sm" variant="outline" onClick={() => onAdd(s)} aria-label={t("addToTheTalkingPoints", { label: s.label })}>
-              <Plus className="size-4" data-icon="inline-start" /> {t("add")}
-            </Button>
-            {s.status ? <ObjectiveStatusBadge status={s.status} /> : null}
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function Actions({
-  actions,
-  names,
-  people,
-  writable,
-  onDone,
-  onAdd,
-}: {
-  actions: OneOnOneActionDto[];
-  names: Names;
-  people: OneOnOnePersonDto[];
-  writable: boolean;
-  onDone: (action: OneOnOneActionDto, done: boolean) => void;
-  onAdd: (text: string, ownerEmployeeId: string, dueDate: string | null) => void;
-}) {
-  const format = useFormat();
-  const t = useTranslations("oneOnOnes.Actions");
-  const [text, setText] = useState("");
-  const [owner, setOwner] = useState(people[0]!.employeeId);
-  const [due, setDue] = useState("");
-  const add = () => {
-    if (!text.trim()) return;
-    onAdd(text.trim(), owner, due || null);
-    setText("");
-    setDue("");
-  };
-  return (
-    <ul className="divide-y divide-border">
-      {actions.length === 0 && !writable ? <li className="px-5 py-4 type-body-secondary text-muted-foreground">{t("noActions")}</li> : null}
-      {actions.map((action) => (
-        <li key={action.id} id={`action-${action.id}`} className="flex min-h-14 scroll-mt-24 items-center gap-4 px-5 py-3">
-          <Checkbox
-            checked={action.done}
-            disabled={!writable}
-            onCheckedChange={(checked) => onDone(action, checked === true)}
-            aria-label={t("done", { text: action.text })}
-            className="size-5"
-          />
-          <div className="min-w-0 flex-1">
-            <p className={cn("type-label break-words", action.done ? "text-muted-foreground line-through" : "text-foreground")}>{action.text}</p>
-            {action.carriedOver ? <p className="type-meta text-muted-foreground">{t("from", { createdInMeetingAt: shortDay(action.createdInMeetingAt, format.locale) })}</p> : null}
-          </div>
-          {action.dueDate && !action.done ? (
-            <StatusBadge tone={action.overdue ? "danger" : "neutral"}>{action.overdue ? t("overdue") : t("due")} {format.date(action.dueDate)}</StatusBadge>
-          ) : null}
-          <PersonInitials name={names.get(action.ownerEmployeeId)} size="xs" />
-        </li>
-      ))}
-      {writable ? (
-        <li className="flex flex-wrap items-center gap-3 px-5 py-2.5">
-          <span className="size-5 shrink-0 rounded-detail border border-dashed border-border" aria-hidden />
-          <Input
-            aria-label={t("newAction")}
-            placeholder={t("addAnAction")}
-            value={text}
-            maxLength={200}
-            onChange={(event) => setText(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                add();
-              }
-            }}
-            className="h-9 min-w-40 flex-1 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 dark:bg-transparent"
-          />
-          <Select value={owner} onValueChange={setOwner}>
-            <SelectTrigger aria-label={t("owner")} size="sm" className="w-auto gap-2">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {people.map((person) => (
-                <SelectItem key={person.employeeId} value={person.employeeId}>{person.displayName.split(" ")[0]}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <DatePicker value={due} onChange={setDue} min={localDate(new Date())} placeholder={t("dueDate")} className="h-8 w-36" />
-          {text.trim() ? <Button size="sm" onClick={add}>{t("add")}</Button> : null}
-        </li>
-      ) : null}
-    </ul>
-  );
-}
-
-/** The shared notes read as the meeting's record; the private note sits apart, for the writer only. */
-function MeetingNotes({ series, meeting, otherName }: { series: OneOnOneSeriesDto; meeting: OneOnOneMeetingDto; otherName: string }) {
-  const t = useTranslations("oneOnOnes.MeetingNotes");
-  const commands = useOneOnOneCommands(series.id);
-  const revisionOf = (dto: OneOnOneSeriesDto, field: "shared" | "private") => {
-    const saved = [dto.upcoming, ...dto.past].find((m) => m?.id === meeting.id);
-    return field === "shared" ? saved?.sharedNotesRevision ?? 0 : saved?.privateNote.revision ?? 0;
-  };
-  return (
-    <div className="grid gap-3 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-      <div className="rounded-inset bg-inlay p-5">
-        <NotesEditor
-          id={`shared-${meeting.id}`}
-          label={t("sharedWith", { value: (otherName.split(" ")[0]) ?? "" })}
-          text={meeting.sharedNotes}
-          revision={meeting.sharedNotesRevision}
-          writable={meeting.notesWritable}
-          reading
-          save={async (text, expectedRevision) =>
-            revisionOf(await commands.setSharedNotes.mutateAsync({ meetingId: meeting.id, text, expectedRevision }), "shared")}
-        />
-      </div>
-      <div className="rounded-inset border border-border p-5">
-        <NotesEditor
-          id={`private-${meeting.id}`}
-          label={t("onlyYou")}
-          isPrivate
-          text={meeting.privateNote.text}
-          revision={meeting.privateNote.revision}
-          writable={meeting.notesWritable}
-          save={async (text, expectedRevision) =>
-            revisionOf(await commands.setPrivateNotes.mutateAsync({ meetingId: meeting.id, text, expectedRevision }), "private")}
-        />
-      </div>
-    </div>
-  );
-}
-
-// ── History ────────────────────────────────────────────────────────────────────
-
-/** An ended series, or one between meetings: the last meeting open, the rest a list. */
-function History({ series, names }: { series: OneOnOneSeriesDto; names: Names }) {
-  const t = useTranslations("oneOnOnes.History");
-  const last = series.past.find((m) => m.state === "Completed");
-  const earlier = series.past.filter((m) => m !== last);
-  return (
-    <div className="space-y-6">
-      {last ? (
-        <Section id="last-meeting" title={t("lastMeeting")}>
-          <MeetingDetail series={series} meeting={last} names={names} bare />
-        </Section>
-      ) : (
-        <p className="type-body-secondary text-muted-foreground">{t("noMeetingWasHeld")}</p>
-      )}
-      {earlier.length > 0 ? <EarlierMeetings series={series} meetings={earlier} names={names} title={last ? t("earlierMeetings") : t("meetings")} /> : null}
-    </div>
-  );
-}
-
-function EarlierMeetings({ series, meetings, names, title }: { series: OneOnOneSeriesDto; meetings: OneOnOneMeetingDto[]; names: Names; title: string }) {
-  const t = useTranslations("oneOnOnes.EarlierMeetings");
-  return (
-    <Section id="earlier-meetings" title={<SectionTitle label={title} count={meetings.length} />} flush>
-      <ul className="divide-y divide-border">
-        {meetings.map((meeting) => (
-          <li key={meeting.id}>
-            <Collapsible>
-              <CollapsibleTrigger
-                disabled={meeting.state === "NotHeld"}
-                className="group flex w-full items-center gap-4 px-5 py-3.5 text-start hover:bg-inlay/50 disabled:cursor-default disabled:hover:bg-transparent"
-              >
-                <DateBlock iso={meeting.scheduledAt} />
-                <span className="min-w-0 flex-1">
-                  <span className={cn("block truncate type-label", meeting.state === "NotHeld" ? "text-muted-foreground" : "text-foreground")}>
-                    {meeting.state === "NotHeld" ? t("notHeld") : meeting.agenda[0]?.text ?? t("noTalkingPoints")}
-                  </span>
-                  <span className="block type-meta text-muted-foreground">{meetingFacts(meeting, (key, values) => t(key as "notes", values as never))}</span>
-                </span>
-                {meeting.state === "NotHeld" ? (
-                  <StatusBadge tone="muted">{t("missed")}</StatusBadge>
-                ) : (
-                  <ChevronDown className="size-4 text-muted-foreground transition-transform group-data-[state=closed]:-rotate-90" aria-hidden />
-                )}
-              </CollapsibleTrigger>
-              <CollapsibleContent className="border-t border-border bg-inlay/40 px-5 py-5">
-                <MeetingDetail series={series} meeting={meeting} names={names} bare />
-              </CollapsibleContent>
-            </Collapsible>
-          </li>
-        ))}
-      </ul>
-    </Section>
-  );
-}
-
-function meetingFacts(meeting: OneOnOneMeetingDto, say: Say): string {
-  if (meeting.state === "NotHeld") return "";
-  const extra = meeting.agenda.length - 1;
-  const created = meeting.actions.length;
-  return [
-    extra > 0 ? say("talkingPoints", { count: extra }) : null,
-    created > 0 ? say("actions", { count: created }) : null,
-    meeting.sharedNotes ? say("notes") : null,
-  ].filter(Boolean).join(" · ");
-}
-
-function DateBlock({ iso }: { iso: string }) {
-  const format = useFormat();
-  const at = new Date(iso);
-  return (
-    <span className="flex w-12 shrink-0 flex-col items-center rounded-control bg-inlay py-1.5">
-      <span className="type-eyebrow text-muted-foreground">{format.parts(at, { month: "short" })}</span>
-      <span className="type-label tabular-nums text-foreground">{at.getDate()}</span>
-    </span>
-  );
-}
-
-/** One past meeting: what was talked about, the actions it produced, and the notes. */
-function MeetingDetail({ series, meeting, names, bare = false }: { series: OneOnOneSeriesDto; meeting: OneOnOneMeetingDto; names: Names; bare?: boolean }) {
-  const t = useTranslations("oneOnOnes.MeetingDetail");
-  const other = series.viewerRole === "Manager" ? series.report : series.manager;
-  return (
-    <div className={cn("grid gap-8 md:grid-cols-2", !bare && "rounded-surface bg-card p-6")}>
-      <div className="min-w-0 space-y-6">
-        <div>
-          <p className="type-meta text-muted-foreground">{t("talkedAbout")}</p>
-          {meeting.agenda.length === 0 ? (
-            <p className="mt-2 type-body-secondary text-muted-foreground">{t("noTalkingPoints")}</p>
-          ) : (
-            <ul className="mt-2.5 space-y-2">
-              {meeting.agenda.map((item) => (
-                <li key={item.id} className="flex items-center gap-2.5">
-                  <Mark on={item.discussed} />
-                  <span className={cn("min-w-0 flex-1 type-body", item.discussed ? "text-foreground" : "text-muted-foreground")}>{item.text}</span>
-                  {item.discussed ? null : <span className="type-meta text-muted-foreground">{t("notReached")}</span>}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-        {meeting.actions.length > 0 ? (
-          <div>
-            <p className="type-meta text-muted-foreground">{t("actions")}</p>
-            <ul className="mt-2.5 space-y-2">
-              {meeting.actions.map((action) => (
-                <li key={action.id} className="flex items-center gap-2.5">
-                  <Mark on={action.done} />
-                  <span className={cn("min-w-0 flex-1 type-body", action.done ? "text-foreground" : "text-muted-foreground")}>{action.text}</span>
-                  <PersonInitials name={names.get(action.ownerEmployeeId)} size="xs" />
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-      </div>
-      <div className="min-w-0 space-y-6">
-        {meeting.notesWritable ? (
-          <MeetingNotesStacked series={series} meeting={meeting} otherName={other.displayName} />
-        ) : (
-          <>
-            <div>
-              <p className="type-meta text-muted-foreground">{t("notes")}</p>
-              {meeting.sharedNotes ? (
-                <Said className="mt-2.5">{meeting.sharedNotes}</Said>
-              ) : (
-                <p className="mt-2 type-body-secondary text-muted-foreground">{t("none")}</p>
-              )}
-            </div>
-            {meeting.privateNote.text ? (
-              <div>
-                <p className="type-meta text-muted-foreground">{t("onlyYou")}</p>
-                <p className="mt-2.5 type-body whitespace-pre-wrap text-foreground">{meeting.privateNote.text}</p>
-              </div>
-            ) : null}
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/** The last completed meeting's notes stay editable until the next one is held. */
-function MeetingNotesStacked({ series, meeting, otherName }: { series: OneOnOneSeriesDto; meeting: OneOnOneMeetingDto; otherName: string }) {
-  const t = useTranslations("oneOnOnes.MeetingNotesStacked");
-  const commands = useOneOnOneCommands(series.id);
-  const revisionOf = (dto: OneOnOneSeriesDto, field: "shared" | "private") => {
-    const saved = [dto.upcoming, ...dto.past].find((m) => m?.id === meeting.id);
-    return field === "shared" ? saved?.sharedNotesRevision ?? 0 : saved?.privateNote.revision ?? 0;
-  };
-  return (
-    <>
-      <NotesEditor
-        id={`shared-${meeting.id}`}
-        label={t("sharedWith", { value: (otherName.split(" ")[0]) ?? "" })}
-        text={meeting.sharedNotes}
-        revision={meeting.sharedNotesRevision}
-        writable
-        reading
-        save={async (text, expectedRevision) =>
-          revisionOf(await commands.setSharedNotes.mutateAsync({ meetingId: meeting.id, text, expectedRevision }), "shared")}
+    <div className="flex items-center gap-3 px-3.5 pt-2.5 text-muted-foreground">
+      <Plus className="size-4 shrink-0" aria-hidden />
+      <Input
+        aria-label={t("addToAgenda")}
+        placeholder={t("addToAgenda")}
+        value={draft}
+        maxLength={200}
+        onChange={(event) => setDraft(event.target.value)}
+        onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); submit(); } }}
+        className="h-8 flex-1 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 dark:bg-transparent"
       />
+      {carries ? <Mark icon={<Sparkles className="size-3.5" />}>{t("carriesTo", { day: carries })}</Mark> : null}
+    </div>
+  );
+}
+
+function PrivateNote({ series, meeting }: { series: OneOnOneSeriesDto; meeting: OneOnOneMeetingDto }) {
+  const t = useTranslations("oneOnOnes.Meeting");
+  const commands = useOneOnOneCommands(series.id);
+  return (
+    <section className="grid gap-2 rounded-surface bg-card px-6 py-[22px]">
+      <h2 className="type-section-title text-foreground">{t("onlyYou")}</h2>
       <NotesEditor
         id={`private-${meeting.id}`}
-        label={t("onlyYou")}
+        label={t("privateNotes")}
         isPrivate
+        compact
         text={meeting.privateNote.text}
         revision={meeting.privateNote.revision}
-        writable
-        save={async (text, expectedRevision) =>
-          revisionOf(await commands.setPrivateNotes.mutateAsync({ meetingId: meeting.id, text, expectedRevision }), "private")}
+        writable={meeting.notesWritable && series.can.write}
+        save={async (text, expectedRevision) => {
+          const saved = await commands.setPrivateNotes.mutateAsync({ meetingId: meeting.id, text, expectedRevision });
+          return [saved.upcoming, ...saved.past].find((m) => m?.id === meeting.id)?.privateNote.revision ?? 0;
+        }}
       />
-    </>
+    </section>
   );
 }
 
-function Mark({ on }: { on: boolean }) {
+// ── Earlier meetings ───────────────────────────────────────────────────────────
+
+/** Meetings before this one, newest first: what was noted, item by item. */
+function Earlier({ meetings }: { meetings: OneOnOneMeetingDto[] }) {
+  const t = useTranslations("oneOnOnes.Meeting");
+  const locale = useLocale();
+  const text = useAgendaText();
+  if (meetings.length === 0) return null;
   return (
-    <span
-      aria-hidden
-      className={cn(
-        "grid size-4 shrink-0 place-items-center rounded-detail",
-        on ? "bg-success text-background" : "border border-border",
-      )}
-    >
-      {on ? <Check className="size-3" /> : null}
-    </span>
+    <section className="grid gap-1 rounded-surface bg-card px-6 py-[22px]">
+      <h2 className="mb-1.5 type-section-title text-foreground">{t("earlier")}</h2>
+      {meetings.map((meeting, i) => {
+        const noted = meeting.agenda.filter((item) => item.discussed);
+        return (
+          <Collapsible key={meeting.id} className={cn(i > 0 && "border-t border-border")}>
+            <CollapsibleTrigger
+              disabled={meeting.state === "NotHeld" || noted.length === 0}
+              className="group flex w-full items-center gap-3 py-3 text-start disabled:cursor-default"
+            >
+              <span className="w-24 shrink-0 text-sm tabular-nums text-foreground">{dayMonth(meeting.scheduledAt, locale)}</span>
+              <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
+                {meeting.state === "NotHeld" ? t("notHeld") : noted.length === 0 ? t("nothingNoted") : noted.map((item) => text(item)).join(" · ")}
+              </span>
+              {noted.length > 0 ? <ChevronDown className="size-4 text-muted-foreground transition-transform group-data-[state=closed]:-rotate-90" aria-hidden /> : null}
+            </CollapsibleTrigger>
+            <CollapsibleContent className="grid gap-3 pb-4 ps-[108px]">
+              {noted.map((item) => (
+                <div key={item.id} className="grid gap-1">
+                  <span className="text-sm font-medium text-foreground">{text(item)}</span>
+                  <Said className="text-[14px]">{item.note}</Said>
+                </div>
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
+        );
+      })}
+    </section>
   );
 }
 
-// ── Sidebar ────────────────────────────────────────────────────────────────────
+// ── Beside the meeting ─────────────────────────────────────────────────────────
 
-function SeriesSidebar({ series, onCadence }: { series: OneOnOneSeriesDto; onCadence: (cadence: OneOnOneCadence) => void }) {
-  const w = useOneOnOneWords();
-  const format = useFormat();
-  const t = useTranslations("oneOnOnes.SeriesSidebar");
-  const report = series.report;
-  const isManager = series.viewerRole === "Manager";
-  const summary = usePersonSummary(report.employeeId);
-  const cycle = summary.data?.currentCycle?.isParticipant ? summary.data.currentCycle : null;
-  const atRisk = cycle?.objectives.filter((o) => o.status === "AtRisk" || o.status === "OffTrack").length ?? 0;
-  const held = series.past.filter((m) => m.state === "Completed").length;
-  const meetings = series.past.length;
-  const doneActions = series.past.flatMap((m) => m.actions).filter((a) => a.done).length;
-  const allActions = new Set(series.past.flatMap((m) => m.actions).map((a) => a.id)).size;
+function GoalsCard({ series, other }: { series: OneOnOneSeriesDto; other: OneOnOnePersonDto }) {
+  const t = useTranslations("oneOnOnes.Meeting");
+  const locale = useLocale();
+  const record = useObjectiveRecord();
+  const context = series.context;
+  const mine = series.viewerRole === "Report";
+  const title = mine ? t("yourGoals") : t("theirGoals", { name: firstName(other.displayName) });
+  const goals = context?.goals ?? [];
+  return (
+    <section className="grid gap-3 rounded-surface bg-card px-5 py-[18px]">
+      <h2 className="type-section-title text-foreground">{title}</h2>
+      {goals.length === 0 ? (
+        <span className="text-sm text-muted-foreground">
+          {context?.planDue ? t("noPlanDue", { day: dayMonth(context.planDue, locale) }) : t("noPlan")}
+        </span>
+      ) : (
+        goals.map((goal) => (
+          <button
+            key={goal.id}
+            type="button"
+            className="grid gap-1.5 text-start"
+            onClick={() => record.open({ cycleId: goal.cycleId, objectiveId: goal.id })}
+          >
+            <span className="font-editorial text-[14px] text-foreground hover:underline">{goal.title}</span>
+            {context?.planApproved ? (
+              <span className="flex items-center gap-2.5">
+                {goal.status ? <GoalState status={goal.status} /> : <StateWord tone="muted">{t("noUpdate")}</StateWord>}
+                <span className="flex-1"><Bar value={goal.percent ?? 0} tone={goal.status ? BAR[goal.status] : "muted"} size="sm" label={goal.title} /></span>
+                <span className="text-sm tabular-nums text-muted-foreground">{Math.round(goal.percent ?? 0)}%</span>
+              </span>
+            ) : null}
+          </button>
+        ))
+      )}
+    </section>
+  );
+}
 
+function ActionsCard({ series }: { series: OneOnOneSeriesDto }) {
+  const t = useTranslations("oneOnOnes.Meeting");
+  const locale = useLocale();
+  const commands = useOneOnOneCommands(series.id);
+  const actions: OneOnOneActionDto[] = series.upcoming?.actions ?? [];
+  const nameOf = (id: string) => (id === series.manager.employeeId ? series.manager.displayName : series.report.displayName);
+  const today = localDate(new Date());
+  return (
+    <section className="grid gap-2.5 rounded-surface bg-card px-5 py-[18px]">
+      <h2 className="type-section-title text-foreground">{t("actions")}</h2>
+      {actions.length === 0 ? <span className="text-sm text-muted-foreground">{t("noActions")}</span> : (
+        <div className="grid">
+          {actions.map((action, i) => {
+            const late = !action.done && action.dueDate ? daysBetween(action.dueDate, today) : 0;
+            return (
+              <div key={action.id} id={`action-${action.id}`}
+                className={cn("group grid scroll-mt-24 grid-cols-[26px_minmax(0,1fr)_auto] items-center gap-2.5 py-[9px]", i > 0 && "border-t border-border")}>
+                <PersonInitials name={nameOf(action.ownerEmployeeId)} size="xs" />
+                <span className={cn("text-sm", action.done ? "text-muted-foreground line-through" : "text-foreground")}>{action.text}</span>
+                {series.can.write && !action.done ? (
+                  <button
+                    type="button"
+                    className="whitespace-nowrap"
+                    aria-label={t("markDone", { text: action.text })}
+                    onClick={() => commands.setActionDone.mutate({ actionId: action.id, done: true })}
+                  >
+                    <ActionState late={late} due={action.dueDate} locale={locale} />
+                  </button>
+                ) : action.done ? (
+                  <StateWord tone="ok">{t("doneOn", { day: action.doneAt ? dayMonth(action.doneAt, locale) : "" })}</StateWord>
+                ) : (
+                  <ActionState late={late} due={action.dueDate} locale={locale} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
+/** An open action's state; on hover, the button it sits in offers to mark it done. */
+function ActionState({ late, due, locale }: { late: number; due: string | null; locale: string }) {
+  const t = useTranslations("oneOnOnes.Meeting");
   return (
     <>
-      {series.ended ? (
-        <SidebarSection label={t("overTheSeries")}>
-          <div className="mt-3.5 grid grid-cols-2 gap-4">
-            <Figure value={held} of={meetings} label={t("meetingsHeld")} />
-            <Figure value={doneActions} of={allActions} label={t("actionsDone")} />
-          </div>
-        </SidebarSection>
-      ) : null}
-
-      <SidebarSection label={t("year", { value: isManager ? `${report.displayName.split(" ")[0]}'s` : "Your", value2: cycle ? ` · ${cycle.cycleName}` : "" })}>
-        {summary.isLoading ? (
-          <Skeleton className="mt-3 h-20 w-full" />
-        ) : cycle ? (
-          <>
-            <div className="mt-3.5 flex items-center gap-4">
-              <PlanDial cycle={cycle} />
-              <div className="min-w-0">
-                {cycle.objectives.length > 0 ? (
-                  <>
-                    <p className="type-label text-foreground">{t("objective", { length: cycle.objectives.length })}{cycle.objectives.length === 1 ? "" : t("s")}</p>
-                    {atRisk > 0 ? <p className="type-meta text-primary-ink">{t("atRisk", { atRisk })}</p> : <p className="type-meta text-muted-foreground">{t("noneAtRisk")}</p>}
-                  </>
-                ) : (
-                  // A plan not put forward yet shows no objectives to anyone else: say where it stands, not "0 objectives".
-                  <p className="type-label text-foreground">{t(`unshared.${cycle.planStatus ?? "NotStarted"}`)}</p>
-                )}
-                {cycle.planHref ? (
-                  <Link href={appHref(cycle.planHref)} className="mt-1 inline-block type-meta text-foreground hover:underline">
-                    {t("open")} {isManager ? t("their") : t("your")} {t("plan")}
-                  </Link>
-                ) : null}
-              </div>
-            </div>
-            <ul className="mt-4 space-y-2.5">
-              {/* A 1:1's two people always reach the objective's record; only an Observer's summary has no links. */}
-              {cycle.objectives.flatMap((objective) => (objective.href ? [{ ...objective, href: objective.href }] : [])).map((objective) => (
-                <li key={objective.objectiveId}>
-                  <Link href={appHref(objective.href)} className="flex items-center gap-2.5 hover:underline">
-                    <span className="min-w-0 flex-1 truncate type-body text-foreground">{objective.title}</span>
-                    {objective.status ? <ObjectiveStatusBadge status={objective.status} /> : null}
-                    <span className="w-9 text-end type-meta tabular-nums text-muted-foreground">
-                      {objective.progress !== null ? `${Math.round(objective.progress)}%` : ""}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </>
-        ) : (
-          <p className="mt-3 type-body-secondary text-muted-foreground">{t("noPlanInTheCurrent")}</p>
-        )}
-      </SidebarSection>
-
-      {summary.data && (summary.data.feedback || summary.data.praise) ? (
-        <SidebarSection label={t("recognition")}>
-          <div className="mt-3.5 flex gap-8">
-            {summary.data.feedback ? <Figure value={summary.data.feedback.total} label="feedback" /> : null}
-            {summary.data.praise ? <Figure value={summary.data.praise.total} label="praise" /> : null}
-          </div>
-        </SidebarSection>
-      ) : null}
-
-      <SidebarSection label={t("rhythm")}>
-        {series.can.write ? (
-          <Select value={series.cadence} onValueChange={(value) => onCadence(value as OneOnOneCadence)}>
-            <SelectTrigger aria-label={t("howOften")} className="mt-3 w-full">
-              <CalendarDays className="size-4 text-muted-foreground" aria-hidden />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {CADENCES.map((cadence) => <SelectItem key={cadence} value={cadence}>{w.cadence[cadence]}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        ) : (
-          <p className="mt-3 type-body text-foreground">{w.cadence[series.cadence]}</p>
-        )}
-        <p className="mt-2.5 type-meta text-muted-foreground">
-          {meetings > 0 ? t("heldOf", { held, meetings }) + " " : ""}{t("since", { startedAt: formatDay(series.startedAt, format.locale) })}
-        </p>
-      </SidebarSection>
+      <span className="group-hover:hidden">
+        {late > 0 ? <StateWord tone="bad">{t("daysLate", { count: late })}</StateWord>
+          : due ? <StateWord tone="muted">{t("due", { day: dayMonth(due, locale) })}</StateWord>
+          : <StateWord tone="muted">{t("open")}</StateWord>}
+      </span>
+      <span className="hidden text-[13px] font-semibold text-success group-hover:inline-flex group-hover:items-center group-hover:gap-1">
+        <Check className="size-3.5" aria-hidden />{t("done")}
+      </span>
     </>
   );
 }
 
-function Figure({ value, of, label }: { value: number; of?: number; label: string }) {
+/** The latest praise once there's history; for a first 1:1, who the person is. */
+function AboutCard({ series, other }: { series: OneOnOneSeriesDto; other: OneOnOnePersonDto }) {
+  const t = useTranslations("oneOnOnes.Meeting");
+  const locale = useLocale();
+  const context = series.context;
+  const praise = context?.latestPraise ?? null;
+  const report = series.report;
+  if (series.first && series.viewerRole === "Manager") {
+    const props: [string, string | null][] = [
+      [t("joined"), context?.joinedOn ? fullDay(context.joinedOn, locale) : null],
+      [t("job"), report.jobTitle],
+      [t("unit"), context?.unit ?? null],
+    ];
+    return (
+      <section className="grid gap-2.5 rounded-surface bg-card px-5 py-[18px]">
+        <h2 className="type-section-title text-foreground">{t("about", { name: firstName(other.displayName) })}</h2>
+        <dl className="grid gap-2">
+          {props.filter(([, v]) => v).map(([k, v]) => (
+            <div key={k} className="flex items-baseline justify-between gap-3 text-sm">
+              <dt className="text-muted-foreground">{k}</dt>
+              <dd className="text-end font-medium text-foreground">{v}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+    );
+  }
+  if (!praise) return null;
   return (
-    <div>
-      <p className="type-metric text-foreground">
-        {value}
-        {of !== undefined ? <span className="type-meta text-muted-foreground"> / {of}</span> : null}
-      </p>
-      <p className="type-meta text-muted-foreground">{label}</p>
-    </div>
+    <section className="grid gap-2.5 rounded-surface bg-card px-5 py-[18px]">
+      <h2 className="type-section-title text-foreground">{t("lately")}</h2>
+      <Link href={appHref(`/performance/feedback?tab=praise&praise=${praise.id}`)} className="flex items-start gap-3">
+        <PersonInitials name={praise.authorName} size="sm" />
+        <span className="grid gap-0.5">
+          <span className="text-sm text-muted-foreground">
+            {t("praised", { author: firstName(praise.authorName), name: firstName(report.displayName), day: dayMonth(praise.at, locale) })}
+          </span>
+          <Said className="text-[14.5px]">{praise.message}</Said>
+        </span>
+      </Link>
+    </section>
   );
 }
 
-function RescheduleDialog({
-  meeting,
-  pending,
-  onClose,
-  onSave,
-}: {
+// ── Moving the meeting ─────────────────────────────────────────────────────────
+
+/** Move this meeting, or change how often you meet; both calendars follow. */
+function MoveDialog({ meeting, cadence, pending, onClose, onSave }: {
   meeting: OneOnOneMeetingDto;
+  cadence: OneOnOneCadence;
   pending: boolean;
   onClose: () => void;
-  onSave: (scheduledAt: string) => Promise<void>;
+  onSave: (scheduledAt: string, cadence: OneOnOneCadence) => Promise<void>;
 }) {
-  const t = useTranslations("oneOnOnes.RescheduleDialog");
+  const t = useTranslations("oneOnOnes.Meeting");
+  const w = useOneOnOneWords();
   const current = new Date(meeting.scheduledAt);
   const [date, setDate] = useState(localDate(current));
   const [time, setTime] = useState(TIME_SLOTS.includes(localTime(current)) ? localTime(current) : "10:00");
+  const [rhythm, setRhythm] = useState(cadence);
   return (
-    <Dialog open onOpenChange={(open) => { if (!open && !pending) onClose(); }}>
-      <DialogContent className="w-[min(26rem,calc(100vw-2rem))] max-w-none sm:max-w-none">
+    <Dialog open onOpenChange={(next) => { if (!next && !pending) onClose(); }}>
+      <DialogContent className="w-[min(28rem,calc(100vw-2rem))] max-w-none sm:max-w-none">
         <DialogHeader>
-          <DialogTitle>{t("moveTheNextMeeting")}</DialogTitle>
+          <DialogTitle>{t("moveTitle")}</DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-[minmax(0,1fr)_8rem] gap-3">
           <div className="space-y-1.5">
-            <Label htmlFor="reschedule-date">{t("date")}</Label>
-            <DatePicker id="reschedule-date" value={date} min={localDate(new Date())} onChange={setDate} />
+            <Label htmlFor="move-date">{t("date")}</Label>
+            <DatePicker id="move-date" value={date} min={localDate(new Date())} onChange={setDate} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="reschedule-time">{t("time")}</Label>
+            <Label htmlFor="move-time">{t("time")}</Label>
             <Select value={time} onValueChange={setTime}>
-              <SelectTrigger id="reschedule-time" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {TIME_SLOTS.map((slot) => <SelectItem key={slot} value={slot}>{slot}</SelectItem>)}
-              </SelectContent>
+              <SelectTrigger id="move-time" className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>{TIME_SLOTS.map((slot) => <SelectItem key={slot} value={slot}>{slot}</SelectItem>)}</SelectContent>
             </Select>
           </div>
         </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="move-rhythm">{t("howOften")}</Label>
+          <Select value={rhythm} onValueChange={(value) => setRhythm(value as OneOnOneCadence)}>
+            <SelectTrigger id="move-rhythm" className="w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>{CADENCES.map((c) => <SelectItem key={c} value={c}>{w.cadence[c]}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={pending}>{t("cancel")}</Button>
-          <AsyncButton pending={pending} onClick={() => onSave(toInstant(date, time)).catch(() => undefined)}>{t("moveMeeting")}</AsyncButton>
+          <AsyncButton pending={pending} onClick={() => onSave(toInstant(date, time), rhythm).catch(() => undefined)}>{t("move")}</AsyncButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

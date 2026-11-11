@@ -18,7 +18,7 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-424.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-428.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
@@ -27,6 +27,8 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In review
 
+- [ ] **B-424** Slice 6 of B-407, 1:1s, built 2026-11-11: the meeting as the page as drawn · Performance
+      Look at: `plans/B-424-screens/meeting.png` (Mariam Gharbi, the manager, in her 1:1 with Aicha Bouazizi on the `midyear` preset), or live at `/performance/one-on-ones` as `mariam.gharbi@midyear-5.example.test` (password `FUSION_LOCAL_PASSWORD`): the agenda from Aicha's year with each line's source, a note on a line marks it Noted (the rest carries to the next meeting), Action for Aicha / for you under an open line, Move it, the In both calendars mark (your calendar link) and Aicha's goals, actions and latest praise beside it.
 - [ ] **B-405** slice 3, the Year page, built 2026-11-10; the employee's half added the same day after the user's "it's just mostly nothing" (her goals with their line up, read as weights until approved and as state and progress after, then the latest praise) · Performance
           Look at `http://localhost:3000/performance` on the `planning` preset (password in `FUSION_LOCAL_PASSWORD`), as three people: Amira Khelifi, the administrator (`amira.khelifi@planning-8.example.test`): the year, the timeline with today, her next step with Nudge them, the company's step with faces, then Move to Execution to see the preview in place and Cancel; Mariam Gharbi, a manager (`mariam.gharbi@planning-8.example.test`): her next step and her team by name; Aicha Bouazizi, an employee (`aicha.bouazizi@planning-8.example.test`): Waiting on Mariam with Nudge Mariam. Compare with the style frame's Year page (`archive/plans/B-412-style-frame.html`). Screens taken 2026-11-10 (`plans/B-405-screens/`), shown on the [screens page](https://claude.ai/artifact/BY7faok5JPSVTHHTisqYjb); `node .local-docs/agents/data/screens-b405-year.cjs` retakes them.
 - [ ] **B-422** Fusion's frame for Performance's rebuild (slice 1 of B-390): Hugeicons in the shell, Core HR and DS chrome; tabs with icons; the state word with its glyph; striped empty bars; your menu top right; modules folding in one sidebar; the panel and dialog shells; the line of a flow's steps; the in-place preview · `@repo/ds`, shell, Core HR, Performance · 2026-11-10
@@ -78,6 +80,7 @@ From B-331's walk (2026-11-09; the user's words, step by step, in `design/walkth
     - [ ] **B-406** Goals' pages, left from slice 5 part 2: the empty plan's AI starters (D-59; the coach doesn't offer them yet); units with no goal under a company goal as outlines with a nudge (needs the unit list beside the map's data); the plan page a manager approves on keeps its older layout (only "Changed since you asked" is new); Home's Needs you shows a waiting plan as one line with Approve and Ask for a change, not its goals in place (slice 10); raw text sizes in `goals-you.tsx`, `goals-company.tsx`, `plan-changes.tsx` flagged by the design-role lint (with B-405's); wording keys of the deleted My plan page and Organization-direction list still in `plan.json` and `goals.json` · Performance · 2026-11-10
   - [ ] **B-407** Conversations: 1:1s where the meeting is the page (agenda with each item's source, starter agenda, notes, actions), calendar invites and a feed (D-39), a monthly reminder to update goals, feedback from wherever a person appears with the request lifecycle, praise with starter values, reactions and the company wall (D-36), growth goals on the person page and in 1:1s and reviews · Performance · 2026-11-10
           Scope: D2, D3, D5 at 2; D1 at 1; D4 at 3; N7 pulled back. Calendar feed: `security-review` in its slice. Folds in B-392's praise and notification items (D-37).
+  - [ ] **B-425** 1:1s, left from slice 6: an update request's agenda line reads "Update requested: {goal}" from the server's label, not the drawing's "Your update request on {goal}" with the goal in the serif; the 1:1s list page keeps its older layout (only the calendar link is new) · Performance · 2026-11-11
   - [ ] **B-408** Reviews written from the year (hero H3): rounds launched and followed from the Year page, the form with the year beside it, the draft and reflection starter citing each sentence's source, grades prefilled, peers nominated without waiting and answering from Home, results read like a document and acknowledged in place · Performance · 2026-11-10
           Scope: V2 at 3; V1, V3, V5 at 2; D-18 change per D-40.
   - [ ] **B-409** Calibration by exception (hero H4, D-35): only flagged reviews to look at, each with why; keep in one click or adjust with a reason; finalize and release what's ready; nothing flagged goes straight to release; the full view with the nine-box and drag one click away · Performance · 2026-11-10
@@ -221,6 +224,9 @@ Each is a project of its own: a decision page first, then sessions.
         2026-10-26, user: skip for now ("skin b116 for now"); French and Arabic screens are done (B-114, B-115 closed). Not next.
       User 2026-10-30: B-116 is low priority for now.
 ### Before hosting
+
+- [ ] **B-426** Gateway logs at `Yarp: Information` write each forwarded path, so a 1:1 calendar feed's secret lands in the gateway's log; turn `Yarp.ReverseProxy.Forwarder` down to Warning in hosted config (security review of B-424) · Gateway · 2026-11-11
+- [ ] **B-427** A leaver's 1:1 calendar link keeps listing their last 90 days of meetings until revoked; drop the person's feed when their account is deactivated (security review of B-424) · Performance · 2026-11-11
 
 Security and scale that must hold once Fusion is online; nothing changes in the demo.
 

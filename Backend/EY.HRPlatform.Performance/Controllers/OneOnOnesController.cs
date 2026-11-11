@@ -64,33 +64,56 @@ public sealed class OneOnOnesController(IMediator mediator, IPerformanceAccessPo
         CancellationToken cancellationToken)
         => Allowed ? MapResult(await mediator.Send(new RescheduleOneOnOneCommand(meetingId, request, Viewer), cancellationToken)) : CapabilityForbidden();
 
-    [HttpPost("meetings/{meetingId:guid}/complete")]
-    public async Task<ActionResult<ApiResponse<OneOnOneSeriesDto>>> Complete(Guid meetingId, [FromBody] CompleteOneOnOneRequest request,
-        CancellationToken cancellationToken)
-        => Allowed ? MapResult(await mediator.Send(new CompleteOneOnOneCommand(meetingId, request, Viewer), cancellationToken)) : CapabilityForbidden();
-
     [HttpPost("meetings/{meetingId:guid}/agenda")]
     public async Task<ActionResult<ApiResponse<OneOnOneSeriesDto>>> AddAgendaItem(Guid meetingId, [FromBody] AddAgendaItemRequest request,
         CancellationToken cancellationToken)
         => Allowed ? MapResult(await mediator.Send(new AddAgendaItemCommand(meetingId, request, Viewer), cancellationToken)) : CapabilityForbidden();
 
-    [HttpPut("meetings/{meetingId:guid}/agenda/{itemId:guid}/discussed")]
-    public async Task<ActionResult<ApiResponse<OneOnOneSeriesDto>>> SetDiscussed(Guid meetingId, Guid itemId, [FromBody] SetDiscussedRequest request,
+    /// <summary>The note both people see on an agenda item; a note marks it talked about.</summary>
+    [HttpPut("meetings/{meetingId:guid}/agenda/{itemId:guid}/note")]
+    public async Task<ActionResult<ApiResponse<OneOnOneSeriesDto>>> AgendaNote(Guid meetingId, Guid itemId, [FromBody] SetNotesRequest request,
         CancellationToken cancellationToken)
-        => Allowed ? MapResult(await mediator.Send(new SetAgendaItemDiscussedCommand(meetingId, itemId, request.Discussed, Viewer), cancellationToken))
-            : CapabilityForbidden();
+        => Allowed ? MapResult(await mediator.Send(new SetAgendaNoteCommand(meetingId, itemId, request, Viewer), cancellationToken)) : CapabilityForbidden();
 
     [HttpDelete("meetings/{meetingId:guid}/agenda/{itemId:guid}")]
     public async Task<ActionResult<ApiResponse<OneOnOneSeriesDto>>> RemoveAgendaItem(Guid meetingId, Guid itemId, CancellationToken cancellationToken)
         => Allowed ? MapResult(await mediator.Send(new RemoveAgendaItemCommand(meetingId, itemId, Viewer), cancellationToken)) : CapabilityForbidden();
 
-    [HttpPut("meetings/{meetingId:guid}/notes/shared")]
-    public async Task<ActionResult<ApiResponse<OneOnOneSeriesDto>>> SharedNotes(Guid meetingId, [FromBody] SetNotesRequest request,
-        CancellationToken cancellationToken)
-        => Allowed ? MapResult(await mediator.Send(new SetSharedNotesCommand(meetingId, request, Viewer), cancellationToken)) : CapabilityForbidden();
-
     [HttpPut("meetings/{meetingId:guid}/notes/private")]
     public async Task<ActionResult<ApiResponse<OneOnOneSeriesDto>>> PrivateNotes(Guid meetingId, [FromBody] SetNotesRequest request,
         CancellationToken cancellationToken)
         => Allowed ? MapResult(await mediator.Send(new SetPrivateNotesCommand(meetingId, request, Viewer), cancellationToken)) : CapabilityForbidden();
+
+    /// <summary>Whether the caller has a calendar feed link; the link itself shows only when it's made.</summary>
+    [HttpGet("calendar-feed")]
+    public async Task<ActionResult<ApiResponse<CalendarFeedDto>>> CalendarFeed(CancellationToken cancellationToken)
+        => Allowed ? MapResult(await mediator.Send(new GetCalendarFeedQuery(Viewer.EmployeeId), cancellationToken)) : CapabilityForbidden();
+
+    /// <summary>Makes a new feed link; any earlier link stops working.</summary>
+    [HttpPost("calendar-feed")]
+    public async Task<ActionResult<ApiResponse<CalendarFeedDto>>> CreateCalendarFeed(CancellationToken cancellationToken)
+        => Allowed ? MapResult(await mediator.Send(new CreateCalendarFeedCommand(Viewer.EmployeeId), cancellationToken)) : CapabilityForbidden();
+
+    [HttpDelete("calendar-feed")]
+    public async Task<ActionResult<ApiResponse<CalendarFeedDto>>> RevokeCalendarFeed(CancellationToken cancellationToken)
+        => Allowed ? MapResult(await mediator.Send(new RevokeCalendarFeedCommand(Viewer.EmployeeId), cancellationToken)) : CapabilityForbidden();
+}
+
+/// <summary>
+/// A person's 1:1s as a calendar feed (D-39), read by calendar apps without a session: the token in the path is the
+/// credential. Anything that isn't a live feed reads as not found.
+/// </summary>
+[ApiController]
+[AllowAnonymous]
+[Route("api/performance/calendar")]
+public sealed class CalendarFeedController(IMediator mediator) : ControllerBase
+{
+    [HttpGet("{token}.ics")]
+    public async Task<IActionResult> Feed(string token, CancellationToken cancellationToken)
+    {
+        var ics = await mediator.Send(new ReadCalendarFeedQuery(token), cancellationToken);
+        if (ics is null) return NotFound();
+        Response.Headers.CacheControl = "private, max-age=300";
+        return Content(ics, "text/calendar; charset=utf-8");
+    }
 }

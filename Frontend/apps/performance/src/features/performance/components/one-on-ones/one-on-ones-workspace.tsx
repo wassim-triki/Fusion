@@ -11,11 +11,12 @@ import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { PageContainer, PageHeader, StatusBadge } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { PersonInitials } from "@repo/performance-ui";
-import { ArrowRight, ChevronRight, Flag, MessageSquare, Plus, RefreshCw, Star, Target } from "@repo/ds/icons";
+import { ArrowRight, CalendarCheck, Check, ChevronRight, Flag, MessageSquare, Plus, RefreshCw, Sparkles, Star, Target } from "@repo/ds/icons";
 import { useOneOnOne, useOneOnOnes } from "../../api/use-conversations";
 import { ContentUnavailable } from "../content-unavailable";
 import { PlanDocument, SidebarSection } from "../plan/plan-layout";
-import { formatDay, shortDay, useOneOnOneWords } from "./one-on-one-lib";
+import { CalendarLink } from "./calendar-link";
+import { formatDay, shortDay, useAgendaText, useOneOnOneWords } from "./one-on-one-lib";
 import { RhythmScale, RhythmStrip, SourceWell, TimeBlock } from "./one-on-one-parts";
 import { StartOneOnOnesDialog, StartWithManager } from "./start-one-on-ones";
 import { useTranslations } from "next-intl";
@@ -124,7 +125,13 @@ function Workspace({ data }: { data: OneOnOnesDto }) {
 
   return (
     <PageContainer width="wide">
-      <PageHeader className="mb-4" title={t("n11s")} />
+      <PageHeader
+        className="mb-4"
+        title={t("n11s")}
+        actions={active.length > 0 ? (
+          <CalendarLink trigger={<Button variant="outline"><CalendarCheck className="size-4" data-icon="inline-start" />{t("inYourCalendar")}</Button>} />
+        ) : undefined}
+      />
       <div className="mt-6">
         <PlanDocument main={main} sidebar={data.startWithManager && !hasTeam && !data.withManager ? undefined : sidebar} />
       </div>
@@ -135,7 +142,9 @@ function Workspace({ data }: { data: OneOnOnesDto }) {
 
 // ── Next up ────────────────────────────────────────────────────────────────────
 
-const SINCE_ICON: Record<AgendaSourceKind, typeof Target> = { Objective: Target, UpdateRequest: RefreshCw, Feedback: MessageSquare, Praise: Star };
+const SINCE_ICON: Record<AgendaSourceKind, typeof Target> = {
+  Objective: Target, UpdateRequest: RefreshCw, Feedback: MessageSquare, Praise: Star, Action: Check, Starter: Sparkles,
+};
 
 
 /** The one conversation that matters now: when, with whom, what's on the agenda and what changed since last time. */
@@ -149,6 +158,7 @@ function NextUp({ row, isManager }: { row: OneOnOneRowDto; isManager: boolean })
   const counts = new Map<AgendaSourceKind, number>();
   for (const s of meeting?.suggestions ?? []) counts.set(s.kind, (counts.get(s.kind) ?? 0) + 1);
   const href = `/one-on-ones/${row.seriesId}`;
+  const agendaText = useAgendaText();
   const names = series.data ? new Map([[series.data.manager.employeeId, series.data.manager.displayName], [series.data.report.employeeId, series.data.report.displayName]]) : new Map<string, string>();
 
   return (
@@ -186,7 +196,7 @@ function NextUp({ row, isManager }: { row: OneOnOneRowDto; isManager: boolean })
               {agenda.slice(0, 3).map((item) => (
                 <li key={item.id} className="flex items-center gap-2.5">
                   {item.sourceKind ? <SourceWell kind={item.sourceKind} size="sm" /> : <PersonInitials name={names.get(item.authorEmployeeId)} size="xs" className="mx-0.5" />}
-                  <span className={cn("min-w-0 truncate type-body", item.discussed ? "text-muted-foreground line-through" : "text-foreground")}>{item.text}</span>
+                  <span className={cn("min-w-0 truncate type-body", item.discussed ? "text-muted-foreground line-through" : "text-foreground")}>{agendaText(item)}</span>
                 </li>
               ))}
               {agenda.length > 3 ? <li className="ps-9 type-meta text-muted-foreground">{t("more", { value: agenda.length - 3 })}</li> : null}

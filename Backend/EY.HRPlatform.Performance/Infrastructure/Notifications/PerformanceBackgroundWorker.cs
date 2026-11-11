@@ -39,6 +39,20 @@ public sealed class PerformanceNotificationDispatcher(PerformanceDbContext db, I
     public const string RecipientOptedOut = "RecipientOptedOut";
     /// <summary>The in-app record the email is worded from is gone (purged, or never staged).</summary>
     public const string NoNotification = "no-notification";
+    /// <summary>A 1:1 started or moved: its calendar invite is the email.</summary>
+    public const string InviteCarriesIt = "invite-carries-it";
+
+    private async Task DispatchInviteAsync(PerformanceOutboxMessage message, string? email, NotificationDefaults? defaults,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(email)) { message.Skip("no-work-email"); return; }
+        var reader = await audience.ReadAsync([message.RecipientEmployeeId], cancellationToken);
+        var invite = await EY.HRPlatform.Performance.Features.OneOnOnes.OneOnOneCalendar.InviteAsync(db, workforce, message, email, reader,
+            options.Value, defaults, cancellationToken);
+        if (invite is null) { message.Skip("no-meeting"); return; }
+        await sender.SendAsync(invite, cancellationToken);
+        message.MarkDispatched(PerformanceClock.UtcNow);
+    }
 
     /// <summary>The kind's group follows the company's mode and the recipient's choice against it (B-002 N7).</summary>
     private async Task<bool> OptedOutAsync(PerformanceOutboxMessage message, NotificationDefaults? defaults, CancellationToken cancellationToken)
@@ -63,6 +77,19 @@ public sealed class PerformanceNotificationDispatcher(PerformanceDbContext db, I
             {
                 var recipients = await workforce.ResolveAsync(now, [message.RecipientEmployeeId], cancellationToken);
                 var email = recipients.SingleOrDefault(r => r.EmployeeId == message.RecipientEmployeeId)?.WorkEmail;
+                if (message.Kind == PerformanceNotificationKind.OneOnOneInvite)
+                {
+                    await DispatchInviteAsync(message, email, defaults, cancellationToken);
+                    await db.SaveChangesAsync(cancellationToken);
+                    return;
+                }
+                // A 1:1 starting or moving reaches both people as a calendar invite; the bell carries the rest.
+                if (message.Kind is PerformanceNotificationKind.OneOnOneStarted or PerformanceNotificationKind.OneOnOneRescheduled)
+                {
+                    message.Skip(InviteCarriesIt);
+                    await db.SaveChangesAsync(cancellationToken);
+                    return;
+                }
                 // The email says what the bell says: it's worded from the paired in-app record.
                 var notification = await db.Notifications.AsNoTracking()
                     .FirstOrDefaultAsync(n => n.DedupeKey == message.DedupeKey, cancellationToken);
@@ -93,7 +120,8 @@ public sealed class PerformanceNotificationDispatcher(PerformanceDbContext db, I
 public sealed class PerformanceBackgroundWorker(IServiceScopeFactory scopeFactory, ILogger<PerformanceBackgroundWorker> logger,
     EvidenceUploadSweeper sweeper, PerformanceNotificationRetention retention,
     EY.HRPlatform.Performance.Features.OneOnOnes.OneOnOneReconciler oneOnOnes,
-    EY.HRPlatform.Performance.Features.Reviews.ReviewReminderScanner reminders)
+    EY.HRPlatform.Performance.Features.Reviews.ReviewReminderScanner reminders,
+    EY.HRPlatform.Performance.Features.Goals.GoalUpdateReminderScanner goalReminders)
     : BackgroundService
 {
     private DateTime _nextReminderScan = PerformanceClock.UtcNow;
@@ -125,6 +153,7 @@ public sealed class PerformanceBackgroundWorker(IServiceScopeFactory scopeFactor
                     // Hourly; the dedupe key keeps reruns and restarts to one reminder per task per day.
                     _nextReminderScan = PerformanceClock.UtcNow.AddHours(1);
                     await reminders.ScanAsync(PerformanceClock.UtcNow, stoppingToken);
+                    await goalReminders.ScanAsync(PerformanceClock.UtcNow, stoppingToken);
                 }
                 if (PerformanceClock.UtcNow >= _nextNotificationPurge)
                 {

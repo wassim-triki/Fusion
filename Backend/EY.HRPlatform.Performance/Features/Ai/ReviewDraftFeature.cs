@@ -110,12 +110,19 @@ internal static class ReviewDraftSources
         sources.AddRange(praise.Select(item => ("praise", $"{FirstName(item.AuthorName)} · praise {item.GivenAt:d MMM}",
             (string?)PerformanceNotificationTemplates.PraisePath(item.Id), true, $"Praise from {item.AuthorName}: {item.Message}", item.GivenAt)));
 
-        var meetings = await (from meeting in db.OneOnOneMeetings.AsNoTracking()
-                              join series in db.OneOnOneSeries.AsNoTracking() on meeting.SeriesId equals series.Id
-                              where series.ReportEmployeeId == subject && series.ManagerEmployeeId == manager
-                                    && meeting.ScheduledAt >= periodStart && meeting.ScheduledAt <= now
-                              orderby meeting.ScheduledAt descending
-                              select new { meeting.Id, meeting.SeriesId, meeting.ScheduledAt, meeting.SharedNotes }).Take(10).ToListAsync(token);
+        var meetings = (await (from meeting in db.OneOnOneMeetings.AsNoTracking()
+                               join series in db.OneOnOneSeries.AsNoTracking() on meeting.SeriesId equals series.Id
+                               where series.ReportEmployeeId == subject && series.ManagerEmployeeId == manager
+                                     && meeting.ScheduledAt >= periodStart && meeting.ScheduledAt <= now
+                               orderby meeting.ScheduledAt descending
+                               select meeting).Take(10).ToListAsync(token))
+            .Select(meeting => new
+            {
+                meeting.Id, meeting.SeriesId, meeting.ScheduledAt,
+                // The notes both people wrote on the agenda, each under what it was about.
+                SharedNotes = string.Join("\n", meeting.Agenda.Where(item => item.HasNote).OrderBy(item => item.Order)
+                    .Select(item => item.SourceKind == AgendaSourceKind.Starter ? item.Note : $"{item.Text}: {item.Note}")),
+            }).ToList();
         sources.AddRange(meetings.Where(item => !string.IsNullOrWhiteSpace(item.SharedNotes))
             .Select(item => ("one-on-one", $"1:1 · {item.ScheduledAt:d MMM}", (string?)PerformanceNotificationTemplates.OneOnOnePath(item.SeriesId), true,
                 $"Shared 1:1 notes, {item.ScheduledAt:d MMM yyyy}: {item.SharedNotes}", item.ScheduledAt)));

@@ -35,11 +35,12 @@ public static class NotificationGroups
             or PerformanceNotificationKind.PeerInputRequested or PerformanceNotificationKind.PeerDeclined
             or PerformanceNotificationKind.ReviewDueDateMoved or PerformanceNotificationKind.ReviewAcknowledged => ReviewsAndCalibration,
         PerformanceNotificationKind.OneOnOneStarted or PerformanceNotificationKind.OneOnOneRescheduled
-            or PerformanceNotificationKind.OneOnOneActionAssigned => OneOnOnes,
+            or PerformanceNotificationKind.OneOnOneActionAssigned or PerformanceNotificationKind.OneOnOneInvite => OneOnOnes,
         PerformanceNotificationKind.FeedbackReceived or PerformanceNotificationKind.FeedbackForReport
             or PerformanceNotificationKind.FeedbackRequested or PerformanceNotificationKind.FeedbackRequestResponded
             or PerformanceNotificationKind.PraiseReceived or PerformanceNotificationKind.PraiseForReport => FeedbackAndPraise,
-        PerformanceNotificationKind.ReviewReminder or PerformanceNotificationKind.YearNudge => DeadlineReminders,
+        PerformanceNotificationKind.ReviewReminder or PerformanceNotificationKind.YearNudge
+            or PerformanceNotificationKind.GoalUpdateReminder => DeadlineReminders,
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Assign the notification kind to a group."),
     };
 }

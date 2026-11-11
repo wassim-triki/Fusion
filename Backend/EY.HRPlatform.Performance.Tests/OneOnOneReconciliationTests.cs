@@ -42,9 +42,32 @@ public sealed class OneOnOneReconciliationTests
         Assert.Null((await check.OneOnOneSeries.SingleAsync(s => s.Id == intact)).EndedAt);
         Assert.Equal(OneOnOneMeetingState.Upcoming, (await check.OneOnOneMeetings.SingleAsync(m => m.SeriesId == intact)).State);
         Assert.Single(await check.AuditEntries.Where(e => e.Action == PerformanceAuditActions.OneOnOneEnded).ToListAsync());
+        // Both people's calendars drop the meeting that won't happen.
+        var cancelled = await check.OutboxMessages.Where(m => m.Kind == Domain.Notifications.PerformanceNotificationKind.OneOnOneInvite).ToListAsync();
+        Assert.Equal(new[] { karim, nour }.OrderBy(x => x), cancelled.Select(m => m.RecipientEmployeeId).OrderBy(x => x));
 
         // A second pass finds nothing more to end.
         await using var again = store.NewContext();
         Assert.Equal(0, await OneOnOneReconciler.ReconcileTenantAsync(again, workforce, now, CancellationToken.None));
+    }
+
+    [Fact]
+    public void An_invite_is_a_request_a_cancellation_cancels_and_long_lines_fold()
+    {
+        var meetingId = Guid.NewGuid();
+        var at = new DateTime(2026, 11, 10, 10, 0, 0, DateTimeKind.Utc);
+        var e = new CalendarEvent(meetingId, at, at.AddMinutes(30), "1:1 with Aicha Bouazizi, Engineering; A Core",
+            "http://localhost:3000/performance/one-on-ones/" + new string('a', 80), 3, false);
+        var invite = ICalendar.Invite(e, "fusion@example.test");
+        Assert.Contains("METHOD:REQUEST\r\n", invite);
+        Assert.Contains($"UID:{meetingId:N}@fusion-performance", invite);
+        Assert.Contains("DTSTART:20261110T100000Z", invite);
+        Assert.Contains("DTEND:20261110T103000Z", invite);
+        Assert.Contains("SUMMARY:1:1 with Aicha Bouazizi\\, Engineering\\; A Core", invite);
+        Assert.All(invite.Split("\r\n"), line => Assert.True(System.Text.Encoding.UTF8.GetByteCount(line) <= 75, line));
+        var cancel = ICalendar.Invite(e with { Cancelled = true, Sequence = 4 }, "fusion@example.test");
+        Assert.Contains("METHOD:CANCEL", cancel);
+        Assert.Contains("STATUS:CANCELLED", cancel);
+        Assert.DoesNotContain("BEGIN:VEVENT", ICalendar.Feed("Fusion 1:1s", [e with { Cancelled = true }]));
     }
 }

@@ -1,4 +1,4 @@
-using EY.HRPlatform.Performance.Domain.Calibration;
+using EY.HRPlatform.Performance.Features.Calibration;
 using EY.HRPlatform.Performance.Domain.Common;
 using EY.HRPlatform.Performance.Domain.Cycles;
 using EY.HRPlatform.Performance.Domain.Objectives;
@@ -58,8 +58,7 @@ public sealed class GetWorkItemsHandler(PerformanceDbContext db)
             await FeedbackRequestsAsync(actor.EmployeeId, items, token);
             await OneOnOneActionsAsync(actor.EmployeeId, today, items, token);
         }
-        if (actor.Calibrates && actor.UserId != Guid.Empty) await CalibrationAsync(actor.UserId, items, token);
-        if (actor.Administers) await FinalizationAsync(items, token);
+        if (actor.Calibrates || actor.Administers) await RoundsAsync(actor, items, token);
         return Result.Success<IReadOnlyList<FusionWorkItemDto>>(items
             .Select(item => ActionLabels.TryGetValue(item.Kind, out var label) ? item with { ActionLabel = label } : item).ToList());
     }
@@ -78,9 +77,8 @@ public sealed class GetWorkItemsHandler(PerformanceDbContext db)
         ["manager-assessment"] = "Write the review",
         ["peer-input"] = "Answer",
         ["acknowledge-result"] = "Read your result",
-        ["check-review-summary"] = "Check the summary",
-        ["calibration"] = "Open calibration",
-        ["round-finalize"] = "Finalize",
+        ["calibration"] = "Look at them",
+        ["round-release"] = "Release results",
     };
 
     private static string Id(string kind, Guid resourceId) => $"{Module}:{kind}:{resourceId}";
@@ -245,19 +243,6 @@ public sealed class GetWorkItemsHandler(PerformanceDbContext db)
             items.AddRange(unacknowledged.Select(r => new FusionWorkItemDto(Id("acknowledge-result", r.Id), Module, "acknowledge-result",
                 "Read and acknowledge your review", r.RoundName, null, PerformanceNotificationTemplates.ReviewPath(r.Id), Section: Sections.Reviews)));
         }
-        if (actor.ReviewsReports)
-        {
-            // Calibration changed the rating: the reviewer checks the summary still reads right before release.
-            var summaries = await (from review in db.PerformanceReviews.AsNoTracking()
-                                   join round in db.ReviewRounds.AsNoTracking() on review.ReviewRoundId equals round.Id
-                                   where review.ReviewerEmployeeId == me && review.State == PerformanceReviewState.ReadyToFinalize
-                                         && review.CalibrationChangedRating && review.SummaryRevisedAt == null && review.SummaryCheckedAt == null
-                                   orderby review.SubjectDisplayName
-                                   select new { review.Id, review.SubjectDisplayName, RoundName = round.Name }).ToListAsync(token);
-            items.AddRange(summaries.Select(r => new FusionWorkItemDto(Id("check-review-summary", r.Id), Module, "check-review-summary",
-                $"Check your summary for {r.SubjectDisplayName}", r.RoundName, null,
-                PerformanceNotificationTemplates.ReviewPath(r.Id), new FusionWorkSubjectDto(r.SubjectDisplayName), Sections.Reviews)));
-        }
     }
 
     /// <summary>The review work queue's own rule: the subject in self-assessment, the reviewer in manager assessment.</summary>
@@ -297,40 +282,28 @@ public sealed class GetWorkItemsHandler(PerformanceDbContext db)
         }
     }
 
-    /// <summary>Open calibration sessions the caller facilitates.</summary>
-    private async Task CalibrationAsync(Guid userId, List<FusionWorkItemDto> items, CancellationToken token)
+    /// <summary>
+    /// HR's part of a running round (D-35): a calibrator hears of flagged reviews to look at (never their own); an
+    /// administrator of results to release once nothing is still being written or waiting on a look.
+    /// </summary>
+    private async Task RoundsAsync(WorkActor actor, List<FusionWorkItemDto> items, CancellationToken token)
     {
-        var sessions = await (from session in db.CalibrationSessions.AsNoTracking()
-                              join round in db.ReviewRounds.AsNoTracking() on session.ReviewRoundId equals round.Id
-                              where session.State == CalibrationSessionState.Open && round.State == ReviewRoundState.Active
-                                 && session.Facilitators.Any(f => f.UserId == userId)
-                              orderby session.OpenedAt descending
-                              select new { session.Id, session.ReviewRoundId, RoundName = round.Name })
-            .ToListAsync(token);
-        items.AddRange(sessions.Select(s => new FusionWorkItemDto(Id("calibration", s.Id), Module, "calibration",
-            $"Calibrate {s.RoundName}", "Calibration session open", null,
-            PerformanceNotificationTemplates.CalibrationPath(s.ReviewRoundId), Section: Sections.Reviews)));
-    }
-
-    /// <summary>Active rounds whose remaining reviews are all ready to finalize.</summary>
-    private async Task FinalizationAsync(List<FusionWorkItemDto> items, CancellationToken token)
-    {
-        var rounds = await db.ReviewRounds.AsNoTracking()
-            .Where(round => round.State == ReviewRoundState.Active)
-            .Select(round => new
-            {
-                round.Id,
-                round.Name,
-                round.CalibrationEnabled,
-                Ready = db.PerformanceReviews.Count(r => r.ReviewRoundId == round.Id && r.State == PerformanceReviewState.ReadyToFinalize),
-                Pending = db.PerformanceReviews.Count(r => r.ReviewRoundId == round.Id
-                    && r.State != PerformanceReviewState.ReadyToFinalize && r.State != PerformanceReviewState.Finalized
-                    && r.State != PerformanceReviewState.Closed),
-            })
-            .ToListAsync(token);
-        items.AddRange(rounds.Where(r => r.Ready > 0 && r.Pending == 0).Select(r => new FusionWorkItemDto(
-            Id("round-finalize", r.Id), Module, "round-finalize", $"Finalize {r.Name}",
-            r.Ready == 1 ? "1 review is ready to finalize" : $"{r.Ready} reviews are ready to finalize", null,
-            PerformanceNotificationTemplates.RoundPath(r.Id), Section: Sections.Reviews, Steps: WorkSteps.RoundRelease(r.CalibrationEnabled))));
+        var rounds = await db.ReviewRounds.AsNoTracking().Where(round => round.State == ReviewRoundState.Active)
+            .OrderBy(round => round.Name).ToListAsync(token);
+        foreach (var round in rounds)
+        {
+            var state = await CalibrationState.LoadAsync(db, round, null, token);
+            var toLookAt = state.Reviews.Count(r => state.ToLookAt(r) && r.SubjectEmployeeId != actor.EmployeeId);
+            if (actor.Calibrates && toLookAt > 0)
+                items.Add(new(Id("calibration", round.Id), Module, "calibration",
+                    toLookAt == 1 ? "1 review to look at" : $"{toLookAt} reviews to look at", round.Name, null,
+                    PerformanceNotificationTemplates.CalibrationPath(round.Id), Section: Sections.Reviews));
+            var ready = state.Reviews.Count(state.Ready);
+            var waiting = state.Reviews.Count(r => CalibrationState.Writing(r) || state.ToLookAt(r));
+            if (actor.Administers && ready > 0 && waiting == 0)
+                items.Add(new(Id("round-release", round.Id), Module, "round-release",
+                    ready == 1 ? "1 result to release" : $"{ready} results to release", round.Name, null,
+                    PerformanceNotificationTemplates.YearPath, Section: Sections.Reviews, Steps: WorkSteps.RoundRelease(round.CalibrationEnabled)));
+        }
     }
 }

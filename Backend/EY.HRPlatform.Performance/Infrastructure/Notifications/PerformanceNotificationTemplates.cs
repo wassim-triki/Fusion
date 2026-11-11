@@ -114,17 +114,13 @@ public static class PerformanceNotificationTemplates
     public static PerformanceNotificationMessage ForAcknowledged(string subjectName, string roundName, Guid reviewId)
         => Message("ReviewAcknowledged", "Context.round", subjectName, ReviewPath(reviewId), ("subject", subjectName), ("round", roundName));
 
-    public static PerformanceNotificationMessage ForCalibrationReady(CalibrationSession session, string roundName)
-        => Message("CalibrationReady", "CalibrationReady.context", null, CalibrationPath(session.ReviewRoundId), ("round", roundName));
-
-    /// <summary>Counts only: who changed and why stay in the app.</summary>
-    public static PerformanceNotificationMessage ForCalibrationFinalized(string roundName, int changed, int total)
-        => Message(changed == 0 ? "CalibrationFinalized.none" : "CalibrationFinalized.changed",
-            changed == 0 ? "CalibrationFinalized.context.none" : "CalibrationFinalized.context.changed", null, ReviewsPath,
-            ("round", roundName), ("count", changed.ToString(CultureInfo.InvariantCulture)),
-            ("total", total.ToString(CultureInfo.InvariantCulture)));
+    /// <summary>The level only: the reason is read in the review.</summary>
+    public static PerformanceNotificationMessage ForCalibrationDecided(string subjectName, string level, bool changed, string roundName, Guid reviewId)
+        => Message(changed ? "CalibrationDecided.changed" : "CalibrationDecided.kept", "Context.round", null, ReviewPath(reviewId),
+            ("subject", subjectName), ("rating", level), ("round", roundName));
 
     public const string ReviewsPath = "/performance/reviews";
+    public const string YearPath = "/performance";
     public const string TeamPath = "/performance/team";
 
     public static string OneOnOnePath(Guid seriesId) => $"/performance/one-on-ones/{seriesId}";

@@ -13,12 +13,16 @@ const m = vi.hoisted(() => ({
   refetch: vi.fn(),
   plan: null as unknown,
   praise: [] as unknown[],
+  search: "",
+  release: vi.fn(),
 }));
+vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(m.search) }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("../content-unavailable", () => ({ ContentUnavailable: () => <div>Unavailable</div> }));
-vi.mock("@repo/api/query", () => ({ useFusionWork: () => ({ items: m.work }), useCompanyValues: () => ({ data: [] }) }));
+vi.mock("@repo/api/query", () => ({ useFusionWork: () => ({ items: m.work }), useCompanyValues: () => ({ data: [] }), useApiQueryClient: () => ({ invalidateQueries: vi.fn() }) }));
 vi.mock("../../api/use-performance", () => ({
   useMyPlan: () => ({ isLoading: false, data: { participatesInCycle: true, hasPlan: true, preview: null, plan: m.plan } }),
+  useApis: () => ({ performance: { finalizeReviewRound: m.release } }),
 }));
 vi.mock("../../api/use-conversations", () => ({ usePraisePage: () => ({ data: { items: m.praise, next: null } }) }));
 vi.mock("../../api/use-workspace", () => ({
@@ -49,7 +53,7 @@ function year(overrides: Partial<YearDto> & { planning?: YearGroupDto[]; executi
     ],
     nextMove: {
       from: "Planning", to: "Execution", kind: "closePlanning", canMove: true, blocker: null, roundId: null,
-      planningDeadline: "2026-05-07", affected: 57, people: [person("Mehdi Kacem", "drafting")], opensOn: null, opens: null,
+      planningDeadline: "2026-05-07", affected: 57, people: [person("Mehdi Kacem", "drafting")], opensOn: null, opens: null, release: null,
     },
     me: null, version: 4, review: null, ...rest,
   };
@@ -61,6 +65,8 @@ beforeEach(() => {
   m.nudge.mockReset().mockResolvedValue({ nudged: 36, skipped: [] });
   m.move.mockReset().mockResolvedValue({});
   m.refetch.mockReset().mockResolvedValue({});
+  m.search = "";
+  m.release.mockReset();
 });
 
 describe("The Year page", () => {
@@ -143,6 +149,7 @@ describe("The Year page", () => {
         affected: 99, people: [], opensOn: "2027-03-01",
         opens: { people: 99, peopleFaces: ["Aicha Bouazizi"], peers: 297, managers: 14, managerFaces: ["Mariam Gharbi"], goals: 297,
           selfReview: true, peerInput: true, selfDue: "2027-03-15", managerDue: "2027-03-29" },
+        release: null,
       },
     });
     render(<YearPage />);
@@ -161,9 +168,9 @@ describe("The Year page", () => {
     const face = (name: string) => person(name, "withManager");
     m.year = year({
       phase: "Review", today: "2027-03-24",
-      nextMove: { from: "Review", to: "ResultsOut", kind: "release", canMove: false, blocker: "nothingReady", roundId: "round-1", planningDeadline: null, affected: 0, people: [], opensOn: null, opens: null },
+      nextMove: { from: "Review", to: "ResultsOut", kind: "release", canMove: false, blocker: "nothingReady", roundId: "round-1", planningDeadline: null, affected: 0, people: [], opensOn: null, opens: null, release: null },
       review: {
-        roundId: "round-1", openedOn: "2027-03-01", selfDue: "2027-03-15", managerDue: "2027-03-29", reviewed: 41, total: 99,
+        roundId: "round-1", openedOn: "2027-03-01", selfDue: "2027-03-15", managerDue: "2027-03-29", reviewed: 41, total: 99, toLookAt: 0, toLookAtFaces: [],
         reviewers: [
           { employeeId: "mariam", name: "Mariam Gharbi", unitName: "Engineering A Core", people: 6, written: 2, toWrite: 3, waitingOnSelf: 1, onPace: false,
             writtenPeople: [], toWritePeople: [face("Aicha"), face("Fares"), face("Sofiene")], waitingPeople: [] },
@@ -179,5 +186,43 @@ describe("The Year page", () => {
     fireEvent.click(screen.getByRole("button", { name: "Nudge" }));
     await waitFor(() => expect(m.nudge).toHaveBeenCalledWith({ employeeIds: ["Aicha", "Fares", "Sofiene"] }));
     expect(await screen.findByText("Nudged today")).toBeTruthy();
+  });
+  it("HR looks at the flagged reviews before anything else in the round (D-35)", () => {
+    m.year = year({
+      phase: "Review", today: "2027-03-31",
+      nextMove: { from: "Review", to: "ResultsOut", kind: "release", canMove: true, blocker: null, roundId: "round-1", planningDeadline: null, affected: 92, people: [], opensOn: null, opens: null, release: null },
+      review: { roundId: "round-1", openedOn: "2027-03-01", selfDue: "2027-03-15", managerDue: "2027-03-29", reviewed: 95, total: 99, reviewers: [],
+        toLookAt: 3, toLookAtFaces: [person("Rim Mahjoub", "flagged")] },
+    });
+    render(<YearPage />);
+    expect(screen.getByText("3 reviews to look at")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Look at them" }).getAttribute("href")).toBe("/reviews/rounds/round-1/calibration");
+  });
+
+  it("releases what is ready from a preview in place, in batches with a live count (D-72)", async () => {
+    const ids = Array.from({ length: 10 }, (_, i) => `r${i}`);
+    m.release.mockImplementation(async (_round: string, version: number, batch: string[]) =>
+      ({ reviewRoundId: "round-1", finalized: batch.map((reviewId) => ({ reviewId })), skipped: [], state: "Active", version: version + 1 }));
+    m.year = year({
+      phase: "Review", today: "2027-04-02",
+      nextMove: {
+        from: "Review", to: "ResultsOut", kind: "release", canMove: true, blocker: null, roundId: "round-1", planningDeadline: null, affected: 10, people: [], opensOn: null, opens: null,
+        release: { asRated: 9, asRatedFaces: [person("Salah Ben Hassine", "reviewed")], toLookAt: 0, stillWriting: 4, stillWritingFaces: [], reviewIds: ids, roundVersion: 7,
+          lookedAt: [{ employeeId: "mouna", name: "Mouna Trabelsi", from: "Developing", to: "Effective", kept: false }] },
+      },
+      review: { roundId: "round-1", openedOn: "2027-03-01", selfDue: "2027-03-15", managerDue: "2027-03-29", reviewed: 95, total: 99, reviewers: [], toLookAt: 0, toLookAtFaces: [] },
+    });
+    render(<YearPage />);
+    expect(screen.getByRole("heading", { name: "Release results" })).toBeTruthy();
+    expect(screen.getByText("Developing to Effective")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Release 10 results" }));
+    expect(await screen.findByText("Released now; each person and their manager told")).toBeTruthy();
+    expect(screen.getByText("Released when their manager submits")).toBeTruthy();
+    expect(screen.getByText("Released results can't be taken back")).toBeTruthy();
+    fireEvent.click(screen.getAllByRole("button", { name: "Release 10 results" }).at(-1)!);
+    await waitFor(() => expect(m.release).toHaveBeenCalledTimes(2));
+    expect(m.release).toHaveBeenNthCalledWith(1, "round-1", 7, ids.slice(0, 8));
+    expect(m.release).toHaveBeenNthCalledWith(2, "round-1", 8, ids.slice(8));
+    expect(m.move).not.toHaveBeenCalled();
   });
 });

@@ -1,4 +1,3 @@
-using EY.HRPlatform.Performance.Domain.Calibration;
 using EY.HRPlatform.Performance.Domain.Common;
 using EY.HRPlatform.Performance.Domain.Conversations;
 using EY.HRPlatform.Performance.Domain.Notifications;
@@ -7,7 +6,6 @@ using EY.HRPlatform.Performance.Domain.Settings;
 using EY.HRPlatform.Performance.Domain.Plans;
 using EY.HRPlatform.Performance.Domain.Objectives;
 using EY.HRPlatform.Performance.Domain.Progress;
-using EY.HRPlatform.Performance.Features;
 using EY.HRPlatform.Performance.Features.Failures;
 using EY.HRPlatform.Performance.Features.Security.Policies;
 using EY.HRPlatform.Performance.Infrastructure.Persistence;
@@ -107,17 +105,11 @@ public sealed record ReviewYearContextDto(Guid SubjectEmployeeId, int Feedback, 
 public sealed record ReviewLastResultDto(Guid ReviewId, string RoundName, int? Rating, string? Label, DateTime? FinalizedAt);
 public sealed record ReviewActivityDto(string Kind, DateTime At, string Text, string? Detail = null);
 
-/// <summary>Why a rating or potential changed in calibration, and who changed it. Never projected to the review's subject.</summary>
-public sealed record ReviewCalibrationDto(bool SessionFinalized, int OriginalRating, int? CalibratedRating, string? Rationale)
+/// <summary>A calibration decision on the rating: kept or changed, why, and who decided. Never projected to the review's subject.</summary>
+public sealed record ReviewCalibrationDto(bool Decided, int OriginalRating, int? CalibratedRating, string? Rationale)
 {
-    public ReviewPotential? OriginalPotential { get; init; }
-    public ReviewPotential? CalibratedPotential { get; init; }
     public string? ChangedBy { get; init; }
     public DateTime? ChangedAt { get; init; }
-    /// <summary>The reviewer may rewrite the summary until release because calibration changed the rating.</summary>
-    public bool CanReviseSummary { get; init; }
-    public DateTime? SummaryRevisedAt { get; init; }
-    public DateTime? SummaryCheckedAt { get; init; }
 }
 
 /// <summary>The live questions, potential and peer list before visibility; finalization freezes them.</summary>
@@ -129,7 +121,7 @@ public static class ReviewComposer
         bool hasApprovedPlan, IReadOnlyList<ReviewItemAssessmentDto> items, ReviewCalibrationDto? calibration = null,
         int ratingScaleVersion = 0, ReviewExtras? extras = null)
     {
-        var visibility = ReviewPolicy.Visibility(actor, review, calibration?.SessionFinalized == true);
+        var visibility = ReviewPolicy.Visibility(actor, review, calibration?.Decided == true);
         if (!visibility.CanRead) throw new UnauthorizedAccessException("This review is not available to this user.");
         var released = review.State == PerformanceReviewState.Finalized;
         var frozen = released ? ReadFinalizedSnapshot(review.FinalizedSnapshotJson) : null;
@@ -290,30 +282,26 @@ public sealed class GetPerformanceReviewHandler(PerformanceDbContext db)
             .FirstOrDefaultAsync(item => item.SessionId == session.Id && item.ReviewId == review.Id, token);
         var lastChange = calibrationSubject is null ? null : await db.CalibrationAdjustments.AsNoTracking()
             .Where(item => item.SubjectId == calibrationSubject.Id).OrderByDescending(item => item.At).FirstOrDefaultAsync(token);
-        var calibration = calibrationSubject is null ? null : new ReviewCalibrationDto(session!.State == CalibrationSessionState.Finalized,
+        var decided = calibrationSubject is not null && (calibrationSubject.IsDecided || review.State == PerformanceReviewState.Finalized);
+        // A review in calibration that nobody has decided on yet reads as the manager's rating, waiting.
+        var calibration = calibrationSubject is null
+            ? review.State == PerformanceReviewState.Calibration && review.ManagerAssessment.OverallRating is int rated
+                ? new ReviewCalibrationDto(false, rated, null, null) : null
+            : new ReviewCalibrationDto(decided,
             calibrationSubject.OriginalRating, calibrationSubject.CalibratedRating, calibrationSubject.Rationale)
         {
-            OriginalPotential = calibrationSubject.OriginalPotential,
-            CalibratedPotential = calibrationSubject.CalibratedPotential,
-            ChangedBy = calibrationSubject.IsAdjusted || calibrationSubject.IsPotentialAdjusted ? lastChange?.ActorDisplayName : null,
-            ChangedAt = calibrationSubject.IsAdjusted || calibrationSubject.IsPotentialAdjusted ? lastChange?.At : null,
-            SummaryRevisedAt = review.SummaryRevisedAt,
-            SummaryCheckedAt = review.SummaryCheckedAt,
+            ChangedBy = calibrationSubject.IsAdjusted ? lastChange?.ActorDisplayName : null,
+            ChangedAt = calibrationSubject.IsAdjusted ? lastChange?.At : null,
         };
-        // Facilitation is a seat on this round's open session with this review as a subject, plus the grant.
-        var actor = query.Actor.CalibratorUserId is Guid calibrator && calibrationSubject is not null
-            && session!.State == CalibrationSessionState.Open
-            && CalibrationPolicy.CanView(query.Actor.CalibratorUserId is not null, session, calibrator)
-            ? query.Actor with { IsCalibrationFacilitator = true } : query.Actor with { IsCalibrationFacilitator = false };
-        var visibility = ReviewPolicy.Visibility(actor, review, calibration?.SessionFinalized == true);
+        // A calibrator reads a review in calibration with the grant alone (D-35); no seat.
+        var actor = query.Actor with
+        {
+            IsCalibrationFacilitator = query.Actor.CalibratorUserId is not null && review.State == PerformanceReviewState.Calibration,
+        };
+        var visibility = ReviewPolicy.Visibility(actor, review, calibration?.Decided == true);
         if (!visibility.CanRead)
             return Result.Failure<PerformanceReviewDto>(PerformanceErrors.Forbidden(PerformanceErrors.Codes.ReviewAssessmentForbidden,
                 "You do not have a relationship to this review."));
-        if (calibration is not null)
-            calibration = calibration with
-            {
-                CanReviseSummary = visibility.IsReviewer && review.State == PerformanceReviewState.ReadyToFinalize && review.CalibrationChangedRating,
-            };
 
         var plan = await db.EmployeePlans.AsNoTracking().FirstOrDefaultAsync(item => item.CycleId == review.CycleId
             && item.EmployeeId == review.SubjectEmployeeId && item.State == PlanLifecycleState.Approved, token);

@@ -64,7 +64,12 @@
     "selfReviewsDue": "Self-reviews due {day}",
     "managersBehind": "{count, plural, one {# manager is} other {# managers are}} behind on reviews",
     "nudgeTheCount": "{count, plural, one {Nudge them} other {Nudge the #}}",
-    "nudgedManagers": "{count, plural, one {Nudged # manager} other {Nudged # managers}}"
+    "nudgedManagers": "{count, plural, one {Nudged # manager} other {Nudged # managers}}",
+    "toLookAt": "{count, plural, one {# review to look at} other {# reviews to look at}}",
+    "lookAtThem": "Look at them",
+    "releaseResults": "Release results",
+    "resultsDueOut": "Results due out {day}",
+    "releaseCount": "{count, plural, one {Release # result} other {Release # results}}"
   },
   "MovePreview": {
     "preview": "Preview",
@@ -97,18 +102,17 @@
     "stillWriting": "Still writing or with a manager",
     "everyoneInTheRound": "Everyone in the round",
     "managers": "Managers",
-    "ready": "Ready",
-    "stillBeingWritten": "Still being written",
     "rows": {
       "updatesOpen": "Progress updates open on approved goals",
       "locked": "Locked; changes go through the manager",
       "keepGoing": "Keep going; nothing they wrote is lost",
       "selfReviewOpens": "Their self-review opens",
-      "reviewsOpen": "Reviews to write open as self-reviews come in",
-      "releasedNow": "Released now",
-      "releasedWhenDone": "Released when done"
+      "reviewsOpen": "Reviews to write open as self-reviews come in"
     },
-    "oneNotificationEach": "One notification each, opening where to act"
+    "oneNotificationEach": "One notification each, opening where to act",
+    "released": "{count, plural, one {# result released} other {# results released}}",
+    "releasing": "Releasing",
+    "releasedOf": "{done} of {total} released"
   },
   "PhaseSteps": {
     "yourTeam": "Your team",
@@ -138,7 +142,8 @@
     "notReadYet": "Not read yet",
     "acknowledged": "Acknowledged",
     "closedWithoutResult": "Closed without a result",
-    "andMore": "and {count} more"
+    "andMore": "and {count} more",
+    "flaggedForALook": "Flagged for a look"
   },
   "YearYou": {
     "yourGoals": "Your goals",
@@ -182,5 +187,22 @@
     "written": "{written} of {count} written",
     "openItToday": "Open it today",
     "people": "{count, plural, one {# person} other {# people}}"
+  },
+  "Release": {
+    "asRated": "Ready as rated",
+    "lookedAt": "Looked at",
+    "toLookAt": "To look at",
+    "stillWriting": "Still being written",
+    "rows": {
+      "asRated": "Released now; each person and their manager told",
+      "lookedAt": "Released with the decision",
+      "toLookAt": "Released once looked at",
+      "stillWriting": "Released when their manager submits"
+    },
+    "final": "Released results can't be taken back",
+    "oneEach": "One notification each, opening the result",
+    "kept": "Kept {level}",
+    "changed": "{from} to {to}",
+    "outToday": "{count, plural, one {# result out today} other {# results out today}}, each person and their manager told"
   }
 }

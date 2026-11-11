@@ -576,25 +576,18 @@ function reviewRound(t, ctx, cycle) {
   }
   if (!r.release) return;
 
-  // Calibration: Amira opens the session, brings two of Omar's top ratings down with a reason, marks some discussed,
-  // finalizes; then releases every review, people acknowledge over a week, and the round closes.
+  // Calibration by exception (D-35): Amira looks only at the flagged reviews, brings Omar's flagged top ratings down
+  // with a reason and keeps the rest; then releases every review, people acknowledge over a week, and the round closes.
   const R = r.release;
   const calibration = () => `/api/performance/review-rounds/${r.id}/calibration`;
-  t.add(moment(addDays(R, -5), 10), "Amira opens calibration", async () => { await amira().post(calibration()); });
-  t.add(moment(addDays(R, -4), 14), "Amira calibrates", async () => {
-    const everyone = (await amira().get(`${calibration()}/people`)).groups.flatMap((g) => g.people);
-    const omars = everyone.filter((p) => p.reviewerName === ctx.byIndex(P.OMAR).name && p.originalRating === 5).slice(0, 2);
-    for (const p of omars) await amira().put(`${calibration()}/subjects/${p.reviewId}`, {
-      rating: 4, rationale: "Strong delivery, but the year's main objective is behind; the group agreed 4 reflects it.",
-      discussionState: "Discussed", expectedVersion: p.version,
-    });
-    for (const p of everyone.filter((x) => x.reviewerName === ctx.byIndex(P.AMIRA).name).slice(0, 2)) await amira().put(`${calibration()}/subjects/${p.reviewId}`, {
-      rating: p.currentRating, rationale: null, discussionState: "Discussed", expectedVersion: p.version,
-    });
-  });
-  t.add(moment(addDays(R, -3), 16), "Amira finalizes calibration", async () => {
-    const session = await amira().get(calibration());
-    await amira().post(`${calibration()}/finalize`, { expectedVersion: session.version });
+  t.add(moment(addDays(R, -4), 14), "Amira looks at the flagged reviews", async () => {
+    const { flagged } = await amira().get(calibration());
+    for (const card of flagged.filter((c) => !c.decision)) {
+      const generous = card.reviewerEmployeeId === ctx.byIndex(P.OMAR).employeeId && card.rating === 5;
+      await amira().put(`${calibration()}/subjects/${card.reviewId}/decision`, generous
+        ? { rating: 4, reason: "Strong delivery, but the year's main goal is behind; 4 reflects it.", expectedVersion: card.version }
+        : { rating: card.rating, reason: null, expectedVersion: card.version });
+    }
   });
   t.add(moment(R, 9), "Amira releases the results", async () => {
     const round = await amira().get(`/api/performance/review-rounds/${r.id}`);

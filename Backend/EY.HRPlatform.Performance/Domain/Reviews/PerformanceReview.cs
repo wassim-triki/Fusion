@@ -57,11 +57,8 @@ public sealed class PerformanceReview : PerformanceAggregate
     public string? FinalRatingSource { get; private set; }
     /// <summary>The potential calibration settled on (the manager's when unchanged). <see cref="Potential"/> stays the manager's.</summary>
     public ReviewPotential? FinalPotential { get; private set; }
-    /// <summary>Calibration finalized with a rating other than the manager's: the reviewer may revise the summary until release.</summary>
+    /// <summary>Calibration released a rating other than the manager's.</summary>
     public bool CalibrationChangedRating { get; private set; }
-    public DateTime? SummaryRevisedAt { get; private set; }
-    public Guid? SummaryRevisedByEmployeeId { get; private set; }
-    public DateTime? SummaryCheckedAt { get; private set; }
     public DateTime? ClosedAt { get; private set; }
     public string? CloseReason { get; private set; }
     public IReadOnlyList<ReviewItemResponse> ItemResponses => _itemResponses;
@@ -188,11 +185,8 @@ public sealed class PerformanceReview : PerformanceAggregate
         return true;
     }
 
-    /// <summary>
-    /// Calibration finalization sets the outcome: the calibrated rating and potential when they exist,
-    /// otherwise the manager's. The result stays unreleased until the review is finalized.
-    /// </summary>
-    public bool CompleteCalibration(int finalRating, bool calibrated, ReviewPotential? finalPotential = null)
+    /// <summary>Calibration sets the outcome as the result goes out: the calibrated rating when there is one, otherwise the manager's.</summary>
+    public bool CompleteCalibration(int finalRating, bool calibrated)
     {
         if (State == PerformanceReviewState.ReadyToFinalize && FinalRating == finalRating) return false;
         if (State != PerformanceReviewState.Calibration)
@@ -200,45 +194,11 @@ public sealed class PerformanceReview : PerformanceAggregate
         ValidateRating(finalRating, required: true);
         FinalRating = finalRating;
         FinalRatingSource = calibrated ? FinalRatingSources.Calibration : FinalRatingSources.Manager;
-        FinalPotential = PotentialEnabled ? finalPotential ?? Potential : null;
+        FinalPotential = PotentialEnabled ? Potential : null;
         CalibrationChangedRating = calibrated && finalRating != ManagerAssessment.OverallRating;
         State = PerformanceReviewState.ReadyToFinalize;
         MarkUpdated();
         return true;
-    }
-
-    /// <summary>
-    /// After calibration changed the rating, the reviewer may rewrite the overall summary, and nothing else,
-    /// until release, so the words match the outcome. Returns false when the text is unchanged.
-    /// </summary>
-    public bool ReviseSummaryAfterCalibration(Guid actorEmployeeId, string summary, DateTime at)
-    {
-        RequireActor(actorEmployeeId, ReviewerEmployeeId, "Only the reviewer of record can revise the summary.");
-        RequireCalibratedChangeOpen();
-        var normalized = NormalizeSummary(summary);
-        if (ManagerAssessment.Summary == normalized) return false;
-        ManagerAssessment.Revise(normalized);
-        SummaryRevisedAt = at;
-        SummaryRevisedByEmployeeId = actorEmployeeId;
-        MarkUpdated();
-        return true;
-    }
-
-    /// <summary>The reviewer keeps the summary as written. Idempotent.</summary>
-    public bool MarkSummaryChecked(Guid actorEmployeeId, DateTime at)
-    {
-        RequireActor(actorEmployeeId, ReviewerEmployeeId, "Only the reviewer of record can check the summary.");
-        RequireCalibratedChangeOpen();
-        if (SummaryCheckedAt is not null) return false;
-        SummaryCheckedAt = at;
-        MarkUpdated();
-        return true;
-    }
-
-    private void RequireCalibratedChangeOpen()
-    {
-        if (State != PerformanceReviewState.ReadyToFinalize || !CalibrationChangedRating)
-            throw new InvalidOperationException("The summary can only be revised after calibration changed the rating, until release.");
     }
 
     public bool Finalize(string snapshotJson, int finalRating, string ratingSource, DateTime finalizedAt)
@@ -506,7 +466,6 @@ public sealed class ReviewAssessment
         SubmittedAt = submittedAt;
     }
     /// <summary>Replaces only the text of a submitted assessment; its rating and submission stand.</summary>
-    internal void Revise(string normalizedSummary) => Summary = normalizedSummary;
     /// <summary>Taken back by its author: editable again, everything written kept.</summary>
     internal void Reopen() => SubmittedAt = null;
 }

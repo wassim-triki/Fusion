@@ -62,7 +62,7 @@
         "selfAssessmentSubmitted": "Someone submitted their self-assessment",
         "peersToApprove": "Peers to approve",
         "reviewAcknowledged": "Someone acknowledged their review",
-        "calibration": "Calibration ready, calibration finalized",
+        "calibration": "A rating you gave kept or changed in calibration",
         "ownReview": "Your self-assessment opens, your peers approved, your review released",
         "peerInput": "Peer input asked of you, a peer declined, a due date moved",
         "oneOnOneMoved": "A 1:1 started or moved",

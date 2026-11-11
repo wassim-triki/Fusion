@@ -80,13 +80,9 @@ public static class PerformanceAuditActions
     public const string UpdateRequestWithdrawn = "UpdateRequest.Withdrawn";
     public const string UpdateRequestSatisfied = "UpdateRequest.Satisfied";
     public const string UpdateRequestUnresolved = "UpdateRequest.Unresolved";
-    public const string CalibrationOpened = "Calibration.Opened";
-    public const string CalibrationFacilitatorsChanged = "Calibration.FacilitatorsChanged";
-    public const string CalibrationSubjectChanged = "Calibration.SubjectChanged";
-    public const string CalibrationFinalized = "Calibration.Finalized";
-    /// <summary>The reviewer rewrote the summary after calibration changed the rating. Never the text.</summary>
-    public const string ReviewSummaryRevised = "Review.SummaryRevised";
-    public const string ReviewSummaryChecked = "Review.SummaryChecked";
+    /// <summary>A calibrator kept a flagged rating or changed it with a reason (D-35).</summary>
+    public const string CalibrationDecided = "Calibration.Decided";
+    public const string CalibrationUndone = "Calibration.Undone";
     /// <summary>One AI generation attempt. Counts and outcome only; never prompt, input or output text.</summary>
     public const string AiGenerated = "Ai.Generated";
 }

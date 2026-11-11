@@ -1,210 +1,83 @@
 {
-  "AdjustDrawer": {
-    "loading": "جارٍ التحميل",
-    "evidenceAndCalibration": "الأدلة والمعايرة"
-  },
-  "DrawerBody": {
-    "saved": "حُفظ {first}.",
-    "openReview": "فتح التقييم",
-    "rates": "يقدّر {reviewerFirst} {delta}",
-    "someone": "شخص ما",
-    "changed": "غيّر {first}",
-    "now": "الآن {currentRating} · {currentRating2}",
-    "closeAndReload": "إغلاق وإعادة التحميل",
-    "objectives": "الأهداف",
-    "weighted": "· موزون {weighted}%",
-    "noEarlierResult": "لا نتيجة سابقة",
-    "noApprovedObjectivesThisCycle": "لا أهداف معتمدة في هذه الدورة",
-    "sSummary": "ملخص {reviewerFirst}",
-    "rating": "التقدير",
-    "rated": "قدّر {reviewerFirst}",
-    "calibratedRating": "التقدير بعد المعايرة",
-    "potential": "الإمكانات",
-    "whyThisChanges": "سبب التغيير",
-    "andHrSeeThisReason": "يرى {reviewerFirst} والموارد البشرية هذا السبب، ولا يراه {first} أبدًا",
-    "history": "السجل",
-    "discussed": "نوقش",
-    "backToS": "العودة إلى تقييم {reviewerFirst}",
-    "cancel": "إلغاء",
-    "save": "حفظ {currentRating} ← {rating}",
-    "save2": "حفظ",
-    "reviewedBy": "قيّمه {reviewerName}",
-    "thisChangeCouldntBeSaved": "تعذّر حفظ هذا التغيير."
-  },
-  "SessionTitle": {
-    "calibration": "المعايرة",
-    "finalized": "مكتملة",
-    "open": "مفتوحة",
-    "facilitators": "الميسّرون",
-    "finalized2": "اكتملت {dayLabel}",
-    "opened": "فُتحت {dayLabel}",
-    "people": "{count, plural, one {شخص واحد} two {شخصان} other {# أشخاص}}"
-  },
-  "SessionAction": {
-    "openTheRoundToRelease": "افتح الجولة للنشر",
-    "finalizeCalibration": "اعتماد المعايرة",
-    "reviewIs": "تقييم",
-    "reviewsAre": "تقييمات",
-    "stillWithManagers": "لا تزال لدى المديرين"
-  },
-  "SessionStats": {
-    "discussed": "نوقش",
-    "ratingsChanged": "تقديرات تغيّرت",
-    "potentialChanged": "إمكانات تغيّرت",
-    "flags": "تنبيهات",
-    "withManagers": "لدى المديرين",
-    "session": "الجلسة",
-    "of": "من {total}",
-    "notDiscussed": "{count} لم يُناقش"
-  },
-  "SessionToolbar": {
+  "Page": {
+    "loading": "جارٍ تحميل المعايرة",
+    "title": "المعايرة",
+    "round": "{cycle} {round}",
     "views": "العروض",
-    "unit": "الوحدة",
-    "manager": "المدير",
-    "flagged": "منبّه عليهم",
-    "notDiscussed": "لم يُناقش",
-    "tabs": {
-      "distribution": "التوزيع",
-      "nine-box": "المصفوفة التساعية",
-      "people": "الأشخاص"
+    "toLookAt": "للمراجعة",
+    "toLookAtCount": "للمراجعة {count}",
+    "everyone": "الجميع",
+    "yourNextStep": "خطوتك التالية",
+    "allReadyAsRated": "{count, plural, one {التقييم الوارد جاهز كما قُيّم} other {كل التقييمات الواردة (#) جاهزة كما قُيّمت}}",
+    "allReady": "{count, plural, one {التقييم الوارد جاهز} other {كل التقييمات الواردة (#) جاهزة}}",
+    "nothingInYet": "لم يصل أي تقييم من المديرين بعد",
+    "resultsOut": "النتائج في {day}",
+    "lookAtEveryone": "عرض الجميع",
+    "release": "{count, plural, one {نشر نتيجة واحدة} other {نشر # نتائج}}",
+    "checkedAsTheyCame": "فُحصت وفق إشارات الجولة عند وصول كل منها",
+    "stillWritingGoOut": "{count, plural, one {التقييم قيد الكتابة يُنشر} other {# قيد الكتابة تُنشر}} عندما يرسلها المدير",
+    "reviews": "التقييمات",
+    "inOf": "وصل {count} من {total}",
+    "kept": "أُبقيت {level}",
+    "fromTo": "من {from} إلى {to}",
+    "managerTold": "أُبلغ {name}",
+    "undo": "تراجع",
+    "keptToast": "أُبقيت {level} لـ{name}؛ وأُبلغ {manager}",
+    "changedToast": "{name} الآن {level}؛ وأُبلغ {manager}",
+    "couldntSave": "تعذّر حفظ هذا القرار.",
+    "couldntUndo": "تعذّر التراجع.",
+    "flow": {
+      "writing": "قيد الكتابة",
+      "ready": "جاهزة كما قُيّمت",
+      "toLookAt": "للمراجعة"
     }
   },
-  "OptionFilter": {
-    "clear": "مسح {toLowerCase}"
-  },
-  "SearchBox": {
-    "findAPerson": "البحث عن شخص"
-  },
-  "RatingChange": {
-    "to": "{original} إلى {current}"
-  },
-  "DistributionView": {
-    "ratingsAcrossTheSession": "التقديرات عبر الجلسة",
-    "managersRatings": "تقديرات المديرين",
-    "now": "الآن",
-    "average": "المتوسط",
-    "was": "· كان {sessionAverage}",
-    "byManager": "حسب المدير",
-    "furthestFromTheSessionAverage": "الأبعد عن متوسط الجلسة أولًا",
-    "noOneMatchesTheseFilters": "لا أحد يطابق عوامل التصفية هذه",
-    "manager": "المدير",
-    "people": "الأشخاص",
-    "theirRatingsNow": "تقديراتهم الآن",
-    "flag": "تنبيه",
-    "more": "{hidden} آخرون",
-    "manager2": "مدير",
-    "managers": "مديرين",
-    "within02OfThe": "ضمن 0.2 من متوسط الجلسة",
-    "showAll": "عرض الكل"
-  },
-  "LevelBar": {
-    "nowFromManagers": "{label}: {current} الآن، {original} من المديرين"
-  },
-  "PeopleView": {
-    "noOneMatchesTheseFilters": "لا أحد يطابق عوامل التصفية هذه",
-    "person": "الشخص",
-    "manager": "المدير",
-    "rating": "التقدير",
-    "potential": "الإمكانات",
-    "objectives": "الأهداف",
-    "lastCycle": "الدورة السابقة",
-    "flags": "التنبيهات"
-  },
-  "Group": {
-    "was": "· كان {originalCount}",
-    "moreAt": "{value} آخرون عند {label}",
-    "show": "عرض"
-  },
-  "PersonRow": {
-    "managerFlagged": "نبّه عليه المدير"
-  },
-  "ChangesView": {
-    "whereRatingsLanded": "أين استقرت التقديرات",
-    "changes": "التغييرات",
-    "everyRatingStayedAsManagers": "بقي كل تقدير كما وضعه المديرون"
-  },
-  "CalibrationWorkspacePage": {
-    "loadingCalibration": "جارٍ تحميل المعايرة",
-    "calibration": "المعايرة"
-  },
-  "SessionBody": {
-    "moved": "نُقل {name}."
-  },
-  "StillWithManagers": {
-    "stillWithManagers": "لا تزال لدى المديرين"
-  },
-  "OpenSession": {
-    "reviewRound": "جولة التقييم",
-    "openCalibration": "فتح المعايرة",
-    "managerReviewsIn": "تقييمات المديرين الواردة",
-    "of": "من {total}",
-    "toSubmit": "{value} للإرسال",
-    "managerReviews": "تقييمات المديرين",
-    "facilitators": "الميسّرون",
-    "openTheSession": "فتح الجلسة",
-    "you": "أنت"
-  },
-  "FacilitatorDialog": {
-    "facilitators": "الميسّرون",
+  "FlagCard": {
+    "roleReviewedBy": "{role}، يقيّمه {name}",
+    "reviewedBy": "يقيّمه {name}",
+    "why": {
+      "goals": "الدرجة والأهداف لا تتفقان",
+      "down": "{count, plural, one {مستوى واحد} other {# مستويات}} أقل من العام الماضي",
+      "up": "{count, plural, one {مستوى واحد} other {# مستويات}} أعلى من العام الماضي",
+      "ratesHigh": "{name} يقيّم أعلى من معظم المديرين",
+      "ratesLow": "{name} يقيّم أدنى من معظم المديرين",
+      "label": "السبب"
+    },
+    "mark": {
+      "rating": "درجة {name}",
+      "goals": "الأهداف {grade}",
+      "lastYear": "العام الماضي",
+      "thisYear": "هذا العام",
+      "average": "متوسط {name}، {count, plural, one {شخص واحد} other {# أشخاص}}",
+      "everyone": "الجميع، {count}"
+    },
+    "words": "كلمات {name}",
+    "ratingFor": "درجة {name}",
+    "whyPlaceholder": "السبب، سيقرؤه {name}",
     "cancel": "إلغاء",
-    "saveFacilitators": "حفظ الميسّرين",
-    "you": "أنت"
+    "changeTo": "تغيير إلى {level}",
+    "readTheReview": "قراءة التقييم",
+    "keep": "إبقاء {level}"
   },
-  "FinalizeDialog": {
-    "finalizeCalibration": "اعتماد المعايرة",
-    "people": "· {people} أشخاص",
-    "loading": "جارٍ التحميل",
-    "ratingsChanged": "تقديرات تغيّرت",
-    "downUp": "{ratingsDown} للأسفل · {ratingsUp} للأعلى",
-    "potentialChanged": "إمكانات تغيّرت",
-    "upDown": "{potentialUp} للأعلى · {potentialDown} للأسفل",
-    "notDiscussed": "لم يُناقش",
-    "flagged": "{length} منبّه عليهم",
-    "notDiscussed2": "{join} · لم يُناقش",
-    "open": "فتح",
-    "whenYouFinalize": "عند الاعتماد",
-    "ratingsAndPotentialLockThe": "تُقفل التقديرات والإمكانات. لا يمكن إعادة فتح الجلسة.",
-    "reviewsMoveTo": "تنتقل {people} تقييمات إلى",
-    "readyToRelease": "جاهزة للنشر",
-    "theManagersSeeTheirPeoples": "يرى المديرون ({reviewers}) التقديرات النهائية لفرقهم، وسبب كل تغيير من التغييرات ({changed}).",
-    "employeesSeeNothingUntilYou": "لا يرى الموظفون شيئًا حتى تنشر النتائج من الجولة.",
-    "keepDiscussing": "متابعة النقاش",
-    "finalize": "اعتماد",
-    "calibrationFinalized": "اعتُمدت المعايرة."
-  },
-  "NineBoxView": {
-    "movingChooseACellOr": "نقل {name}: اختر خانة، أو اضغط Escape",
-    "moved": "نُقل",
-    "moveHere": "النقل هنا",
-    "potential": "الإمكانات",
-    "nineBox": "المصفوفة التساعية",
-    "people": "{count, plural, one {شخص واحد} two {شخصان} other {# أشخاص}}",
-    "peopleDrag": "{count, plural, one {شخص واحد · اسحب شخصًا لتغيير تقديره أو إمكاناته} other {# أشخاص · اسحب شخصًا لتغيير تقديره أو إمكاناته}}"
-  },
-  "DropForm": {
-    "move": "نقل {name}",
-    "noChange": "بلا تغيير",
-    "rating": "التقدير",
-    "whyThisChanges": "سبب التغيير",
-    "whatTheGroupAgreedAbout": "ما اتفقت عليه المجموعة بشأن {first}",
-    "discussed": "نوقش",
+  "Grid": {
+    "spread": "التوزيع",
+    "rated": "{count} مقيَّمون",
+    "ratingAgainstGrade": "الدرجة مقابل درجة الأهداف",
+    "gradeFromMeasures": "درجة الأهداف مأخوذة من مقاييسها",
+    "below": "أدنى من {level}",
+    "above": "أعلى من {level}",
+    "rows": {
+      "0": "0.8 فأكثر",
+      "1": "من 0.5 إلى 0.8",
+      "2": "أقل من 0.5"
+    },
+    "fromTo": "من {from} إلى {to}",
+    "whyPlaceholder": "السبب، سيقرؤه {name}",
+    "why": "السبب",
     "cancel": "إلغاء",
-    "move2": "نقل",
-    "rating2": "التقدير {currentRating} ← {rating}",
-    "potential": "الإمكانات {potential} ← {potential2}",
-    "theMoveCouldntBeSaved": "تعذّر حفظ النقل."
-  },
-  "ManagerRow": {
-    "at": "{count} عند {value}"
-  },
-  "format": {
-    "up": "{count, plural, one {أعلى بمستوى} two {أعلى بمستويين} other {أعلى بـ# مستويات}}",
-    "down": "{count, plural, one {أدنى بمستوى} two {أدنى بمستويين} other {أدنى بـ# مستويات}}",
-    "upSince": "{count, plural, one {أعلى بمستوى منذ {cycle}} two {أعلى بمستويين منذ {cycle}} other {أعلى بـ# مستويات منذ {cycle}}}",
-    "downSince": "{count, plural, one {أدنى بمستوى منذ {cycle}} two {أدنى بمستويين منذ {cycle}} other {أدنى بـ# مستويات منذ {cycle}}}",
-    "top": "أعلى تقدير، {share}% من الأهداف",
-    "bottom": "أدنى تقدير، {share}% من الأهداف",
-    "above": "{delta} فوق الجلسة",
-    "below": "{delta} تحت الجلسة"
+    "change": "تغيير",
+    "andMore": "و{count} آخرون",
+    "dragHint": "اسحب وجهًا إلى عمود آخر لتغيير الدرجة",
+    "ungraded": "{count, plural, one {شخص واحد} other {# أشخاص}} بلا أهداف لتقييمها"
   }
 }

@@ -21,23 +21,10 @@
     "afterCalibration": "بعد المعايرة",
     "youGave": "قدّرتَ {originalRating} · {originalRating2}",
     "asYouRated": "كما قدّرت",
-    "potential": "الإمكانات",
     "willSee": "سيرى {subject}",
-    "theFinalRatingAndYour": "التقدير النهائي وملخصك",
+    "theFinalRatingAndYour": "الدرجة النهائية وإجاباتك",
     "wontSee": "لن يرى {subject}",
-    "yourRatingTheReason": "تقديرك، والسبب",
-    "orPotential": "أو الإمكانات"
-  },
-  "SummaryRevision": {
-    "yourSummary": "ملخصك",
-    "revisedEditableUntilResultsAre": "عُدّل {dayLabel} · قابل للتعديل حتى نشر النتائج",
-    "keptEditableUntilResultsAre": "أُبقي {dayLabel} · قابل للتعديل حتى نشر النتائج",
-    "readsThisBesideTheFinal": "يقرأ {subject} هذا بجانب التقدير النهائي",
-    "keepAsIs": "الإبقاء كما هو",
-    "summaryKept": "أُبقي الملخص.",
-    "saveSummary": "حفظ الملخص",
-    "summarySaved": "حُفظ الملخص.",
-    "undoChanges": "التراجع عن التغييرات"
+    "yourRatingTheReason": "تقديرك، والسبب"
   },
   "PeerListDrawer": {
     "colleagueAskedForInput": "طُلبت مساهمة {length} زميل.",
@@ -430,19 +417,13 @@
     "readyToWrite": "جاهز للكتابة",
     "closed": "مغلق",
     "released": "منشور",
-    "checkSummary": "مراجعة الملخص",
     "writeReview": "كتابة التقييم",
     "openSReview": "فتح تقييم {subjectDisplayName}",
     "asked": "سُئل {peerCount}"
   },
   "SessionLead": {
-    "calibration": "المعايرة",
-    "openTheSession": "فتح الجلسة",
-    "discussed": "نوقش",
-    "of": "من {people}",
-    "people": "الأشخاص",
-    "flags": "التنبيهات",
-    "withManagers": "لدى المديرين"
+    "toLookAt": "{count, plural, one {تقييم واحد للمراجعة} other {# تقييمات للمراجعة}}",
+    "lookAtThem": "مراجعتها"
   },
   "RunningRoundCard": {
     "launched": "أُطلقت",

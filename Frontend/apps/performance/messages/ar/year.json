@@ -64,7 +64,12 @@
     "selfReviewsDue": "التقييمات الذاتية مستحقة في {day}",
     "managersBehind": "{count, plural, one {مدير واحد متأخر} two {مديران متأخران} few {# مديرين متأخرون} other {# مديرًا متأخرون}} في المراجعات",
     "nudgeTheCount": "{count, plural, one {تذكيره} other {تذكير الـ #}}",
-    "nudgedManagers": "{count, plural, one {تم تذكير مدير واحد} other {تم تذكير # مديرين}}"
+    "nudgedManagers": "{count, plural, one {تم تذكير مدير واحد} other {تم تذكير # مديرين}}",
+    "toLookAt": "{count, plural, one {تقييم واحد للمراجعة} other {# تقييمات للمراجعة}}",
+    "lookAtThem": "مراجعتها",
+    "releaseResults": "نشر النتائج",
+    "resultsDueOut": "موعد نشر النتائج {day}",
+    "releaseCount": "{count, plural, one {نشر نتيجة واحدة} other {نشر # نتائج}}"
   },
   "MovePreview": {
     "preview": "معاينة",
@@ -97,18 +102,17 @@
     "stillWriting": "ما زالوا يكتبون أو لدى المدير",
     "everyoneInTheRound": "كل من في الجولة",
     "managers": "المديرون",
-    "ready": "جاهزة",
-    "stillBeingWritten": "ما زالت قيد الكتابة",
     "rows": {
       "updatesOpen": "تُفتح تحديثات التقدم على الأهداف المعتمدة",
       "locked": "مقفلة؛ تمر التغييرات عبر المدير",
       "keepGoing": "يواصلون؛ لا يضيع شيء مما كتبوه",
       "selfReviewOpens": "يُفتح تقييمهم الذاتي",
-      "reviewsOpen": "تُفتح التقييمات المطلوبة مع وصول التقييمات الذاتية",
-      "releasedNow": "تصدر الآن",
-      "releasedWhenDone": "تصدر عند اكتمالها"
+      "reviewsOpen": "تُفتح التقييمات المطلوبة مع وصول التقييمات الذاتية"
     },
-    "oneNotificationEach": "إشعار واحد لكل شخص، يفتح حيث يجب التصرف"
+    "oneNotificationEach": "إشعار واحد لكل شخص، يفتح حيث يجب التصرف",
+    "released": "{count, plural, one {نُشرت نتيجة واحدة} other {نُشرت # نتائج}}",
+    "releasing": "جارٍ النشر",
+    "releasedOf": "نُشر {done} من {total}"
   },
   "PhaseSteps": {
     "yourTeam": "فريقك",
@@ -138,7 +142,8 @@
     "notReadYet": "لم تُقرأ بعد",
     "acknowledged": "تم تأكيدها",
     "closedWithoutResult": "أُغلقت دون نتيجة",
-    "andMore": "و{count} آخرون"
+    "andMore": "و{count} آخرون",
+    "flaggedForALook": "مُعلَّمة للمراجعة"
   },
   "YearYou": {
     "yourGoals": "أهدافك",
@@ -182,5 +187,22 @@
     "written": "{written} من {count} مكتوبة",
     "openItToday": "افتحها اليوم",
     "people": "{count, plural, one {شخص واحد} two {شخصان} few {# أشخاص} other {# شخصًا}}"
+  },
+  "Release": {
+    "asRated": "جاهزة كما قُيّمت",
+    "lookedAt": "تمت مراجعتها",
+    "toLookAt": "للمراجعة",
+    "stillWriting": "قيد الكتابة",
+    "rows": {
+      "asRated": "تُنشر الآن؛ ويُبلَّغ كل شخص ومديره",
+      "lookedAt": "تُنشر مع القرار",
+      "toLookAt": "تُنشر بعد مراجعتها",
+      "stillWriting": "تُنشر عندما يرسلها المدير"
+    },
+    "final": "لا يمكن التراجع عن النتائج المنشورة",
+    "oneEach": "إشعار واحد لكل شخص يفتح النتيجة",
+    "kept": "أُبقيت {level}",
+    "changed": "من {from} إلى {to}",
+    "outToday": "{count, plural, one {نُشرت نتيجة واحدة اليوم} other {نُشرت # نتائج اليوم}}، وأُبلغ كل شخص ومديره"
   }
 }

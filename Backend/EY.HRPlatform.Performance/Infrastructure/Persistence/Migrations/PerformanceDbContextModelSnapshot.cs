@@ -113,16 +113,8 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<string>("NewPotential")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
                     b.Property<int>("NewRating")
                         .HasColumnType("integer");
-
-                    b.Property<string>("PreviousPotential")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
 
                     b.Property<int>("PreviousRating")
                         .HasColumnType("integer");
@@ -158,56 +150,6 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                     b.ToTable("CalibrationAdjustments", "performance");
                 });
 
-            modelBuilder.Entity("EY.HRPlatform.Performance.Domain.Calibration.CalibrationFacilitator", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DisplayName")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<Guid?>("EmployeeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("NamedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("NamedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("SessionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TenantId");
-
-                    b.HasIndex("SessionId", "UserId")
-                        .IsUnique();
-
-                    b.ToTable("CalibrationFacilitators", "performance");
-                });
-
             modelBuilder.Entity("EY.HRPlatform.Performance.Domain.Calibration.CalibrationSession", b =>
                 {
                     b.Property<Guid>("Id")
@@ -229,28 +171,11 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("CycleId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("FinalizedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("FinalizedByUserId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("OpenedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("OpenedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("ReadyNotifiedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("ReviewRoundId")
                         .HasColumnType("uuid");
-
-                    b.Property<string>("State")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
@@ -285,10 +210,6 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("CalibratedPotential")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
                     b.Property<int?>("CalibratedRating")
                         .HasColumnType("integer");
 
@@ -298,14 +219,11 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<string>("DiscussionState")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                    b.Property<DateTime?>("DecidedAt")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("OriginalPotential")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                    b.Property<Guid?>("DecidedByUserId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("OriginalRating")
                         .HasColumnType("integer");
@@ -2915,15 +2833,6 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
 
-                    b.Property<DateTime?>("SummaryCheckedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("SummaryRevisedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("SummaryRevisedByEmployeeId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
 
@@ -3795,15 +3704,6 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("EY.HRPlatform.Performance.Domain.Calibration.CalibrationFacilitator", b =>
-                {
-                    b.HasOne("EY.HRPlatform.Performance.Domain.Calibration.CalibrationSession", null)
-                        .WithMany("Facilitators")
-                        .HasForeignKey("SessionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("EY.HRPlatform.Performance.Domain.Calibration.CalibrationSession", b =>
                 {
                     b.HasOne("EY.HRPlatform.Performance.Domain.Reviews.ReviewRound", null)
@@ -4292,11 +4192,6 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                         .HasForeignKey("RatingScaleId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("EY.HRPlatform.Performance.Domain.Calibration.CalibrationSession", b =>
-                {
-                    b.Navigation("Facilitators");
                 });
 
             modelBuilder.Entity("EY.HRPlatform.Performance.Domain.Conversations.FeedbackRequest", b =>

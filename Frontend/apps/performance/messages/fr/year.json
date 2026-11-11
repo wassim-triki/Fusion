@@ -64,7 +64,12 @@
     "selfReviewsDue": "Auto-évaluations attendues le {day}",
     "managersBehind": "{count, plural, one {# manager est} other {# managers sont}} en retard sur les revues",
     "nudgeTheCount": "{count, plural, one {Les relancer} other {Relancer les #}}",
-    "nudgedManagers": "{count, plural, one {# manager relancé} other {# managers relancés}}"
+    "nudgedManagers": "{count, plural, one {# manager relancé} other {# managers relancés}}",
+    "toLookAt": "{count, plural, one {# évaluation à regarder} other {# évaluations à regarder}}",
+    "lookAtThem": "Les regarder",
+    "releaseResults": "Publier les résultats",
+    "resultsDueOut": "Résultats attendus le {day}",
+    "releaseCount": "{count, plural, one {Publier # résultat} other {Publier # résultats}}"
   },
   "MovePreview": {
     "preview": "Aperçu",
@@ -97,18 +102,17 @@
     "stillWriting": "En rédaction ou chez un manager",
     "everyoneInTheRound": "Toute la campagne",
     "managers": "Managers",
-    "ready": "Prêtes",
-    "stillBeingWritten": "Encore en rédaction",
     "rows": {
       "updatesOpen": "Les mises à jour s’ouvrent sur les objectifs approuvés",
       "locked": "Verrouillés ; les changements passent par le manager",
       "keepGoing": "Ils continuent ; rien de ce qu’ils ont écrit n’est perdu",
       "selfReviewOpens": "Leur auto-évaluation s’ouvre",
-      "reviewsOpen": "Les évaluations à rédiger s’ouvrent au fil des auto-évaluations",
-      "releasedNow": "Publiées maintenant",
-      "releasedWhenDone": "Publiées une fois terminées"
+      "reviewsOpen": "Les évaluations à rédiger s’ouvrent au fil des auto-évaluations"
     },
-    "oneNotificationEach": "Une notification par personne, qui ouvre là où agir"
+    "oneNotificationEach": "Une notification par personne, qui ouvre là où agir",
+    "released": "{count, plural, one {# résultat publié} other {# résultats publiés}}",
+    "releasing": "Publication",
+    "releasedOf": "{done} sur {total} publiés"
   },
   "PhaseSteps": {
     "yourTeam": "Votre équipe",
@@ -138,7 +142,8 @@
     "notReadYet": "Pas encore lus",
     "acknowledged": "Confirmés",
     "closedWithoutResult": "Clôturés sans résultat",
-    "andMore": "et {count} de plus"
+    "andMore": "et {count} de plus",
+    "flaggedForALook": "Signalées pour un regard"
   },
   "YearYou": {
     "yourGoals": "Vos objectifs",
@@ -182,5 +187,22 @@
     "written": "{written} sur {count} rédigées",
     "openItToday": "L'ouvrir aujourd'hui",
     "people": "{count, plural, one {# personne} other {# personnes}}"
+  },
+  "Release": {
+    "asRated": "Prêtes telles que notées",
+    "lookedAt": "Regardées",
+    "toLookAt": "À regarder",
+    "stillWriting": "En cours de rédaction",
+    "rows": {
+      "asRated": "Publiées maintenant ; chaque personne et son manager prévenus",
+      "lookedAt": "Publiées avec la décision",
+      "toLookAt": "Publiées une fois regardées",
+      "stillWriting": "Publiées quand leur manager les envoie"
+    },
+    "final": "Les résultats publiés ne peuvent pas être repris",
+    "oneEach": "Une notification chacun, qui ouvre le résultat",
+    "kept": "{level} maintenu",
+    "changed": "{from} à {to}",
+    "outToday": "{count, plural, one {# résultat publié aujourd'hui} other {# résultats publiés aujourd'hui}}, chaque personne et son manager prévenus"
   }
 }

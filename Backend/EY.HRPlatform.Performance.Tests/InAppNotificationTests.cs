@@ -89,25 +89,6 @@ public sealed class InAppNotificationTests
     }
 
     [Fact]
-    public async Task Calibration_ready_reaches_a_facilitator_without_an_employee_record_by_account()
-    {
-        var store = TestStore.ForNewTenant();
-        var (round, _) = OpenReview(store.TenantId);
-        var facilitator = new FacilitatorIdentity(Guid.NewGuid(), null, "QA Admin");
-        var session = CalibrationSession.Open(store.TenantId, round, facilitator, new NineBoxBands(2, 3), DateTime.UtcNow);
-        await using (var db = store.NewContext())
-        {
-            new PerformanceNotifications(db).EnqueueCalibrationReady(session, "Year-end");
-            await db.SaveChangesAsync();
-        }
-        await using var verify = store.NewContext();
-        var notification = Assert.Single(await verify.Notifications.ToListAsync());
-        Assert.Null(notification.RecipientEmployeeId);
-        Assert.Equal(facilitator.UserId, notification.RecipientUserId);
-        Assert.Equal($"/performance/reviews/rounds/{round.Id}/calibration", notification.Href);
-    }
-
-    [Fact]
     public async Task An_objective_update_request_opens_the_objective_ready_to_record_progress()
     {
         var store = TestStore.ForNewTenant();

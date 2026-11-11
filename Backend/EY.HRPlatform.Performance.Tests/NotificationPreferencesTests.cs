@@ -88,8 +88,9 @@ public sealed class NotificationPreferencesTests
         using var mariam = factory.CreateAuthenticatedClient(employeeId: Guid.NewGuid(), permissions: Manager);
 
         var reviews = (await DataAsync(await mariam.GetAsync(Path))).GetProperty("groups")[1];
-        // Peers to approve and peers approved went with Fusion picking peers (D-40).
-        Assert.Equal(11, reviews.GetProperty("count").GetInt32());
+        // Peers to approve and peers approved went with Fusion picking peers (D-40); calibration ready and finalized
+        // became one decision each (D-35).
+        Assert.Equal(10, reviews.GetProperty("count").GetInt32());
         var items = reviews.GetProperty("items").EnumerateArray().ToList();
         Assert.True(items.Single(item => item.GetProperty("label").GetString() == "A review to write opens").GetProperty("team").GetBoolean());
         Assert.True(items.Single(item => item.GetProperty("label").GetString() == "A review of yours is due tomorrow or late").GetProperty("always").GetBoolean());

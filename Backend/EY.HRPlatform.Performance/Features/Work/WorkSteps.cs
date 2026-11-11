@@ -62,7 +62,7 @@ public static class WorkSteps
             Step("Self", "Done", FusionWorkStepDto.Done),
             Step("Managers", "Done", FusionWorkStepDto.Done),
         };
-        if (calibration) steps.Add(Step("Calibration", "Finalized", FusionWorkStepDto.Done));
+        if (calibration) steps.Add(Step("Calibration", "Looked at", FusionWorkStepDto.Done));
         steps.Add(Step("Release", "By you", FusionWorkStepDto.Current));
         return steps;
     }

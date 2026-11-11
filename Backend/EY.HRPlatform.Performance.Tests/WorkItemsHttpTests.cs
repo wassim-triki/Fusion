@@ -25,8 +25,6 @@ public sealed class WorkItemsHttpTests
         [new(PerformancePermissions.ObjectiveSelfManage, PermissionScopes.Self), new(PerformancePermissions.CycleView, PermissionScopes.DirectReports)];
     private static readonly EffectivePermissionGrant[] Admin =
         [new(PerformancePermissions.CycleView, PermissionScopes.Tenant), new(PerformancePermissions.CycleManage, PermissionScopes.Tenant)];
-    private static readonly EffectivePermissionGrant[] Facilitator =
-        [new(PerformancePermissions.CycleView, PermissionScopes.Tenant), new(PerformancePermissions.ReviewCalibrate, PermissionScopes.Tenant)];
 
     private sealed record World(PerformanceApiFactory Factory, PerformanceCycle Cycle, Guid Nour, Guid Sami, Guid Lina,
         EmployeePlan SamiPlan);
@@ -224,7 +222,7 @@ public sealed class WorkItemsHttpTests
         var manager = Assert.Single(await WorkAsync(lina), item => Kind(item) == "manager-assessment");
         Assert.Equal("Assess Nour", manager.GetProperty("title").GetString());
         Assert.Equal("/performance/reviews", manager.GetProperty("section").GetString());
-        Assert.DoesNotContain(await WorkAsync(admin), item => Kind(item) == "round-finalize");
+        Assert.DoesNotContain(await WorkAsync(admin), item => Kind(item) == "round-release");
 
         await using (var db = world.Factory.Store.NewContext())
         {
@@ -232,35 +230,10 @@ public sealed class WorkItemsHttpTests
             tracked.SubmitManagerAssessment(world.Lina, "Solid", 3, DateTime.UtcNow);
             await db.SaveChangesAsync();
         }
-        var finalize = Assert.Single(await WorkAsync(admin), item => Kind(item) == "round-finalize");
-        Assert.Equal("Finalize Mid-year", finalize.GetProperty("title").GetString());
-        Assert.Equal($"/performance/reviews/rounds/{round.Id}", finalize.GetProperty("href").GetString());
-        Assert.Equal("/performance/reviews", finalize.GetProperty("section").GetString());
-    }
-
-    [Fact]
-    public async Task A_facilitator_has_an_item_for_an_open_calibration_session()
-    {
-        var world = await PlanningAsync();
-        await using var _ = world.Factory;
-        var tenant = world.Factory.Store.TenantId;
-        var facilitator = new FacilitatorIdentity(Guid.NewGuid(), null, "QA Admin");
-        var round = ReviewRound.CreateDraft(tenant, world.Cycle, "Year-end", world.Cycle.StartDate, world.Cycle.EndDate, false, false, true);
-        var scale = RatingScale.CreateDefault(tenant);
-        var version = scale.CreateNextVersion(RatingScaleDefaults.Levels);
-        round.Launch("{\"competencies\":[]}", version.Id, DateTime.UtcNow);
-        var session = CalibrationSession.Open(tenant, round, facilitator, new NineBoxBands(2, 3), DateTime.UtcNow);
-        await using (var db = world.Factory.Store.NewContext())
-        {
-            db.RatingScales.Add(scale); db.RatingScaleVersions.Add(version);
-            db.ReviewRounds.Add(round); db.CalibrationSessions.Add(session);
-            await db.SaveChangesAsync();
-        }
-        var item = Assert.Single(await WorkAsync(world.Factory.CreateAuthenticatedClient(userId: facilitator.UserId, permissions: Facilitator)));
-        Assert.Equal("calibration", Kind(item));
-        Assert.Equal("/performance/reviews", item.GetProperty("section").GetString());
-        Assert.Equal($"/performance/reviews/rounds/{round.Id}/calibration", item.GetProperty("href").GetString());
-        Assert.Empty(await WorkAsync(world.Factory.CreateAuthenticatedClient(userId: Guid.NewGuid(), permissions: Facilitator)));
+        var release = Assert.Single(await WorkAsync(admin), item => Kind(item) == "round-release");
+        Assert.Equal("1 result to release", release.GetProperty("title").GetString());
+        Assert.Equal("/performance", release.GetProperty("href").GetString());
+        Assert.Equal("/performance/reviews", release.GetProperty("section").GetString());
     }
 
     [Fact]

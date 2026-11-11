@@ -109,14 +109,6 @@ export function useAcknowledge(reviewId: string) {
   return useReviewMutation((comment: string | null) => api.acknowledge(reviewId, comment));
 }
 
-/** After a calibrated rating change: rewrite the summary until release, or keep it as written. */
-export function useSummaryRevision(reviewId: string) {
-  const api = useReviewsApi();
-  const revise = useReviewMutation((input: { summary: string; expectedVersion: number }) => api.reviseSummary(reviewId, input.summary, input.expectedVersion));
-  const keep = useReviewMutation(() => api.markSummaryChecked(reviewId));
-  return { revise, keep };
-}
-
 /** Downloads the reader's copy of a released review as a file. */
 export function useDownloadReviewPdf() {
   const api = useReviewsApi();

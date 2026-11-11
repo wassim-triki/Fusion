@@ -18,7 +18,6 @@ public interface IPerformanceNotifications
 {
     void EnqueuePlan(EmployeePlan plan, PerformanceNotificationKind kind, string? actorDisplayName);
     void EnqueueReview(PerformanceReview review, PerformanceNotificationKind kind, string reviewRoundName);
-    void EnqueueCalibrationReady(CalibrationSession session, string reviewRoundName);
     void EnqueueUpdateRequested(UpdateRequest request, string? objectiveTitle);
     void EnqueueObjectiveAtRisk(EmployeePlan plan, Objective objective, ObjectiveStatus status, Guid progressUpdateId);
     void EnqueueUpdateRequestAnswered(UpdateRequest request, string ownerName, string? objectiveTitle);
@@ -69,16 +68,6 @@ public sealed class PerformanceNotifications(PerformanceDbContext db) : IPerform
             new ReviewNotificationPayload(review.CycleId, review.ReviewRoundId, review.Id, reviewRoundName));
         Stage(message, null, PerformanceNotificationTemplates.ForReview(review, kind, reviewRoundName)
             with { ActorEmployeeId = kind == PerformanceNotificationKind.SelfAssessmentSubmitted ? review.SubjectEmployeeId : null });
-    }
-
-    public void EnqueueCalibrationReady(CalibrationSession session, string reviewRoundName)
-    {
-        foreach (var facilitator in session.Facilitators)
-        {
-            var message = PerformanceOutboxMessage.ForCalibration(session.TenantId, facilitator.UserId, facilitator.EmployeeId,
-                new CalibrationNotificationPayload(session.CycleId, session.ReviewRoundId, session.Id, reviewRoundName));
-            Stage(message, facilitator.UserId, PerformanceNotificationTemplates.ForCalibrationReady(session, reviewRoundName));
-        }
     }
 
     public void EnqueueUpdateRequested(UpdateRequest request, string? objectiveTitle)

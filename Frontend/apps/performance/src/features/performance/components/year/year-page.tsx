@@ -2,11 +2,11 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 import type { CyclePhase, FusionWorkItem, YearDto, YearPersonDto, YearReviewerDto, YearStanding, YearStepDto } from "@repo/api";
 import { useFusionWork } from "@repo/api/query";
-import { cn } from "@repo/ds";
 import { Button } from "@repo/ds/components/ui/button";
 import { dateFormatter } from "@repo/ds/lib/dates";
 import { Bell, Clock, FastForward } from "@repo/ds/icons";
@@ -19,6 +19,9 @@ import { movedSteps, YearTimeline, yearPosition } from "./year-timeline";
 import { appHref, day, dayMonth, daysBetween, firstName } from "./year-words";
 import { YearYou } from "./year-you";
 import { OpenItToday, ReviewersBehind, RoundOpened, RoundOpens } from "./year-round";
+import { FlowSection, StepFlow, type FlowColumn, type FlowTone } from "./step-flow";
+import { LookedAt, ReleasedToday, ReleaseProgress, ReleaseRows, useReleaseRun } from "./year-release";
+import { calibrationHref } from "@/lib/performance-routes";
 
 const PERFORMANCE: ["performance"] = ["performance"];
 
@@ -61,8 +64,10 @@ export function YearPage() {
 function TheYear({ year, refetch }: { year: YearDto; refetch: () => Promise<unknown> }) {
   const t = useTranslations("year.YearPage");
   const locale = useLocale();
-  const [previewing, setPreviewing] = useState(false);
+  const params = useSearchParams();
   const move = year.nextMove;
+  // The Calibration page's Release opens the preview here (D-72).
+  const [previewing, setPreviewing] = useState(() => params.get("release") === "1" && move?.kind === "release" && move.canMove);
   const current = year.phase;
   const steps = previewing && move && current ? movedSteps(year.steps, current, year.today) : year.steps;
   const long = dateFormatter({ day: "numeric", month: "long", year: "numeric" }, locale);
@@ -96,7 +101,7 @@ function TheYear({ year, refetch }: { year: YearDto; refetch: () => Promise<unkn
         {previewing && move ? (
           <MovePreview year={year} caretAt={caretAt} onDone={() => setPreviewing(false)} />
         ) : (
-          <NextStep year={year} caretAt={caretAt} />
+          <NextStep year={year} caretAt={caretAt} onPreview={() => void openPreview()} />
         )}
         {year.scope !== "You" && current ? <PhaseSteps year={year} phase={current} /> : null}
         {year.scope === "You" && current && year.me ? <YearYou cycleId={year.cycleId} phase={current} employeeId={year.me.employeeId} /> : null}
@@ -125,8 +130,8 @@ function Caret({ at, preview = false }: { at: number; preview?: boolean }) {
   );
 }
 
-function NextStep({ year, caretAt }: { year: YearDto; caretAt: number }) {
-  const next = useNext(year);
+function NextStep({ year, caretAt, onPreview }: { year: YearDto; caretAt: number; onPreview: () => void }) {
+  const next = useNext(year, onPreview);
   return (
     <section aria-live="polite" className="relative grid gap-4 rounded-surface bg-card px-[26px] py-6 animate-in fade-in-0 slide-in-from-bottom-1 duration-300">
       <Caret at={caretAt} />
@@ -149,7 +154,7 @@ function NextStep({ year, caretAt }: { year: YearDto; caretAt: number }) {
 }
 
 /** What the viewer does next: HR's move through the year, else their own work, else who it waits on (D-49), else nothing. */
-function useNext(year: YearDto): Next {
+function useNext(year: YearDto, onPreview: () => void): Next {
   const t = useTranslations("year.NextStep");
   const locale = useLocale();
   const commands = useYearCommands(year.cycleId);
@@ -213,7 +218,24 @@ function useNext(year: YearDto): Next {
       const due = t("reviewsDue", { day: day(review.managerDue, locale), count: Math.max(0, daysBetween(year.today, review.managerDue)) });
       if (review.openedOn === year.today && review.reviewed === 0)
         return { ...nothing, due: review.selfDue ? t("selfReviewsDue", { day: day(review.selfDue, locale) }) : due, body: <RoundOpened review={review} /> };
+      // Flagged reviews wait on a look in calibration (D-35); the rest are ready as rated.
+      if (review.toLookAt > 0)
+        return {
+          eyebrow: t("yourNextStep"),
+          title: t("toLookAt", { count: review.toLookAt }),
+          due: t("resultsFrom", { day: day(resultsStart, locale) }),
+          action: <Button asChild><Link href={calibrationHref(review.roundId)}>{t("lookAtThem")}</Link></Button>,
+          body: <Faces people={review.toLookAtFaces} />,
+        };
       const behind = review.reviewers.filter((r) => !r.onPace && !nudgedManagers.has(r.employeeId));
+      if (!behind.length && move?.kind === "release" && move.canMove && move.release)
+        return {
+          eyebrow: t("yourNextStep"),
+          title: t("releaseResults"),
+          due: t("resultsDueOut", { day: day(resultsStart, locale) }),
+          action: <Button onClick={onPreview}>{t("releaseCount", { count: move.affected })}</Button>,
+          body: <LookedAt release={move.release} />,
+        };
       return {
         eyebrow: t("yourNextStep"),
         title: behind.length ? t("managersBehind", { count: behind.length }) : t("nothingForYou"),
@@ -249,6 +271,7 @@ function useNext(year: YearDto): Next {
         title: t("setUpNextYear"),
         due: t("endsByItself", { name: year.name, day: day(year.endDate, locale) }),
         action: <Button asChild><Link href="/cycle/setup">{t("setUpNextYear")}</Link></Button>,
+        body: resultsStart === year.today ? <ReleasedToday count={count("ResultsOut", "released", "acknowledged")} /> : undefined,
       };
     }
     return nothing;
@@ -320,14 +343,25 @@ function MovePreview({ year, caretAt, onDone }: { year: YearDto; caretAt: number
   const sum = (groups: YearStepDto["groups"]) => groups.reduce((n, g) => n + g.count, 0);
   const faces = (groups: YearStepDto["groups"]) => groups.flatMap((g) => g.people).slice(0, 3);
   const original = move.kind === "closePlanning" ? step("Planning").end : move.kind === "launchRound" ? step("Review").start : step("ResultsOut").start;
-  const stillWriting = Math.max(0, step("Review").count - move.affected);
+  const releasing = useReleaseRun(year);
 
-  const confirm = () => commands.move.mutateAsync({ expectedVersion: year.version, to: move.to })
-    .then(() => {
-      toast.success(t(`moved.${move.kind}`));
+  const confirm = () => (move.kind === "release" && move.release
+    ? releasing.start().then((count) => {
+      toast.success(t("released", { count }));
       onDone();
     })
+    : commands.move.mutateAsync({ expectedVersion: year.version, to: move.to }).then(() => {
+      toast.success(t(`moved.${move.kind}`));
+      onDone();
+    }))
     .catch((error) => reportPerformanceFailure(error, t("couldntMove")));
+
+  if (releasing.run) {
+    return (
+      <InPlacePreview eyebrow={t("releasing")} title={t("releasedOf", { done: releasing.run.done, total: releasing.run.total })}
+        progress={<><Caret at={caretAt} preview /><ReleaseProgress run={releasing.run} /></>} />
+    );
+  }
 
   return (
     <InPlacePreview
@@ -338,7 +372,7 @@ function MovePreview({ year, caretAt, onDone }: { year: YearDto; caretAt: number
         <>
           <Button variant="outline" onClick={onDone}>{t("cancel")}</Button>
           {move.canMove ? (
-            <AsyncButton pending={commands.move.isLoading} onClick={() => void confirm()}>
+            <AsyncButton pending={commands.move.isLoading || releasing.run !== null} onClick={() => void confirm()}>
               {t(`go.${move.kind}`, { count: move.affected })}
             </AsyncButton>
           ) : null}
@@ -372,19 +406,14 @@ function MovePreview({ year, caretAt, onDone }: { year: YearDto; caretAt: number
             </PreviewRow>
             <PreviewRow label={t("managers")}>{t("rows.reviewsOpen")}</PreviewRow>
           </>
-        ) : (
-          <>
-            <PreviewRow label={t("ready")} count={move.affected}>
-              <Faces people={move.people.slice(0, 3)} />{t("rows.releasedNow")}
-            </PreviewRow>
-            <PreviewRow label={t("stillBeingWritten")} count={stillWriting}>{t("rows.releasedWhenDone")}</PreviewRow>
-          </>
-        )}
+        ) : null}
       </div>
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Bell aria-hidden className="size-[15px]" />
-        {t("oneNotificationEach")}
-      </div>
+      {move.kind === "release" ? (move.release ? <ReleaseRows release={move.release} /> : null) : (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Bell aria-hidden className="size-[15px]" />
+          {t("oneNotificationEach")}
+        </div>
+      )}
     </InPlacePreview>
   );
 }
@@ -395,33 +424,18 @@ function Faces({ people }: { people: YearPersonDto[] }) {
 
 // ── The phase's steps with the people in each (D-55, D-56) ────────────────────────────────────────
 
-type Tone = "ok" | "pr" | "wa" | "mu";
-
-interface Column {
-  key: string;
-  label: string;
-  tone: Tone;
-  count: number;
-  people: YearPersonDto[];
-  here?: boolean;
-  /** Before anyone reached it (D-56): an outline of where people will go, this many places drawn. */
-  ghost?: number;
-}
-
-const SHARE: Record<Tone, string> = { ok: "bg-success", pr: "bg-primary", wa: "bg-primary", mu: "bg-muted-foreground/55" };
-
-function useColumns(year: YearDto, phase: CyclePhase): Column[] {
+function useColumns(year: YearDto, phase: CyclePhase): FlowColumn[] {
   const t = useTranslations("year.PhaseSteps");
   const team = year.scope === "Team";
   const step = (p: CyclePhase) => year.steps.find((s) => s.phase === p)!;
-  const of = (key: string, label: string, tone: Tone, groups: YearStepDto["groups"], here = false): Column => ({
+  const of = (key: string, label: string, tone: FlowTone, groups: YearStepDto["groups"], here = false): FlowColumn => ({
     key, label, tone, here,
     count: groups.reduce((n, g) => n + g.count, 0),
     people: groups.flatMap((g) => g.people),
   });
   const pick = (p: CyclePhase, ...standings: YearStanding[]) => step(p).groups.filter((g) => standings.includes(g.standing));
   const all = (...phases: CyclePhase[]) => phases.flatMap((p) => step(p).groups);
-  const notEmpty = (column: Column) => column.count > 0;
+  const notEmpty = (column: FlowColumn) => column.count > 0;
 
   if (phase === "Planning") {
     const columns = [
@@ -450,7 +464,8 @@ function useColumns(year: YearDto, phase: CyclePhase): Column[] {
       of("selfReview", t("selfReview"), "mu", pick("Review", "selfReview")),
       of("withManager", team ? t("yoursToWrite") : t("withTheirManager"), "pr", pick("Review", "withManager"), team),
       of("reviewed", t("reviewed"), "ok", [...pick("Review", "reviewed"), ...all("ResultsOut")]),
-    ].filter((column) => column.key !== "notInRound" || notEmpty(column));
+      { ...of("flagged", t("flaggedForALook"), "wa", pick("Review", "flagged")), stateHead: true },
+    ].filter((column) => !["notInRound", "flagged"].includes(column.key) || notEmpty(column));
   }
   return [
     of("notInRound", t("notInRound"), "mu", all("Planning", "Execution")),
@@ -476,67 +491,9 @@ function PhaseSteps({ year, phase }: { year: YearDto; phase: CyclePhase }) {
           : t("released", { day: dayMonth(step("ResultsOut").start, locale) });
 
   return (
-    <section className="grid gap-3.5 rounded-surface bg-card px-6 py-[22px]">
-      <div className="flex items-center">
-        <h2 className="type-section-title text-foreground">{title}</h2>
-        <span className="ms-auto text-sm text-muted-foreground">{right}</span>
-      </div>
-      <div className="grid auto-cols-[minmax(0,1fr)] grid-flow-col">
-        {columns.map((column, index) => (
-          <StepColumn key={column.key} column={column} total={year.total} first={index === 0} named={team} />
-        ))}
-      </div>
-    </section>
+    <FlowSection title={title} right={right}>
+      <StepFlow columns={columns} total={year.total} named={team} />
+    </FlowSection>
   );
 }
 
-function StepColumn({ column, total, first, named }: { column: Column; total: number; first: boolean; named: boolean }) {
-  const t = useTranslations("year.PhaseSteps");
-  const ghost = column.ghost !== undefined;
-  const share = ghost || !total ? 0 : (column.count / total) * 100;
-  const more = column.count - column.people.length;
-  return (
-    <div className={cn("relative grid content-start gap-3 px-[18px] pb-1 pt-0.5", !first && "shadow-[-1px_0_0_var(--border)]")}>
-      {!first ? (
-        <span aria-hidden className="absolute -start-[5px] top-3.5 size-2 rotate-45 border-e-[1.5px] border-t-[1.5px] border-muted-foreground bg-card opacity-80 rtl:-rotate-[135deg]" />
-      ) : null}
-      <div className="grid gap-0.5">
-        <span className={cn("text-[13px]", column.here ? "font-semibold text-primary-ink" : ghost ? "text-muted-foreground/70" : "text-muted-foreground")}>{column.label}</span>
-        <span className={cn("text-[30px] font-semibold leading-[1.1] tracking-[-0.02em] tabular-nums", column.here ? "text-primary-ink" : ghost ? "text-muted-foreground/70" : "text-foreground")}>
-          {column.count}
-        </span>
-      </div>
-      <div className="h-1 overflow-hidden rounded-full bg-inlay">
-        <i className={cn("block h-full rounded-full transition-[width] duration-500", SHARE[column.tone])} style={{ width: `${share}%` }} />
-      </div>
-      {ghost ? (
-        <div className="flex flex-wrap items-center gap-1.5" aria-hidden>
-          {Array.from({ length: column.ghost! }, (_, i) => (
-            <span key={i} className="size-[30px] rounded-full border-[1.5px] border-dashed border-muted-foreground/55" />
-          ))}
-        </div>
-      ) : named ? (
-        column.people.length ? (
-          <div className="grid">
-            {column.people.map((person) => (
-              <div key={person.employeeId} className="-mx-2 flex items-center gap-2.5 rounded-xl px-2 py-[7px]">
-                <PersonInitials name={person.name} size="md" />
-                <div className="grid min-w-0">
-                  <b className="truncate text-[13.5px] font-semibold text-foreground">{person.name}</b>
-                  {person.unitName ? <span className="truncate text-sm text-muted-foreground">{person.unitName}</span> : null}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : null
-      ) : column.people.length ? (
-        <>
-          <div className="flex flex-wrap items-center gap-1.5">
-            {column.people.map((person) => <PersonInitials key={person.employeeId} name={person.name} size="md" />)}
-          </div>
-          {more > 0 ? <span className="text-[12.5px] text-muted-foreground">{t("andMore", { count: more })}</span> : null}
-        </>
-      ) : null}
-    </div>
-  );
-}

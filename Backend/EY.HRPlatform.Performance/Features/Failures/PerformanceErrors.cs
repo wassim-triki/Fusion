@@ -148,14 +148,8 @@ public static class PerformanceErrors
         public const string CalibrationForbidden = "Calibration.Forbidden";
         public const string CalibrationInvalid = "Calibration.Invalid";
         public const string CalibrationNotAvailable = "Calibration.NotAvailable";
-        public const string CalibrationExists = "Calibration.Exists";
-        public const string CalibrationFacilitatorInvalid = "Calibration.FacilitatorInvalid";
-        public const string CalibrationOutstandingReviews = "Calibration.OutstandingReviews";
-        public const string CalibrationFinalized = "Calibration.Finalized";
-        /// <summary>Another facilitator changed the subject first; the failure carries their values, name and time.</summary>
+        /// <summary>Another calibrator decided on the person first.</summary>
         public const string CalibrationConflict = "Calibration.Conflict";
-        public const string CalibrationPotentialDisabled = "Calibration.PotentialDisabled";
-        public const string ReviewSummaryNotRevisable = "Review.SummaryNotRevisable";
         public const string StrategicObjectiveHasChildren = "StrategicObjective.HasChildren";
         public const string StrategicObjectiveInvalid = "StrategicObjective.Invalid";
         public const string StrategicObjectiveNotDraft = "StrategicObjective.NotDraft";

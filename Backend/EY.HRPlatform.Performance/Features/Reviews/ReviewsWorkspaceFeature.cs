@@ -30,11 +30,11 @@ public sealed record ReviewsWorkspaceDto(Guid? CycleId, string? CycleName, DateO
     IReadOnlyList<ReviewsWorkspacePeerRequestDto> AskedOfYou, IReadOnlyList<ReviewsWorkspaceRoundDto> Rounds,
     ReviewsWorkspaceCycleFactsDto? CycleFacts, IReadOnlyList<ReviewsWorkspacePastResultDto> PastResults)
 {
-    /// <summary>Open calibration sessions the viewer facilitates, counted without their own review (board 11).</summary>
+    /// <summary>Running rounds with flagged reviews for a calibrator to look at, never counting their own (D-35).</summary>
     public IReadOnlyList<ReviewsWorkspaceSessionDto> Sessions { get; init; } = [];
 }
 
-public sealed record ReviewsWorkspaceSessionDto(Guid RoundId, string RoundName, int People, int Discussed, int Flags, int Outstanding);
+public sealed record ReviewsWorkspaceSessionDto(Guid RoundId, string RoundName, int ToLookAt);
 
 public sealed record ReviewsWorkspaceOwnDto(Guid ReviewId, Guid RoundId, string RoundName, PerformanceReviewState State, string ReviewerName,
     DateOnly PeriodStart, DateOnly PeriodEnd, DateOnly? DueDate, int DaysLate, DateOnly? SelfAssessmentDue, DateOnly? ManagerAssessmentDue,
@@ -64,7 +64,6 @@ public sealed record ReviewsWorkspaceTeamRowDto(Guid ReviewId, Guid SubjectEmplo
     public int? FinalRating { get; init; }
     public ReviewPotential? FinalPotential { get; init; }
     public bool CalibrationChanged { get; init; }
-    public bool SummaryToCheck { get; init; }
 }
 public sealed record ReviewsWorkspacePeerRequestDto(Guid RequestId, string SubjectDisplayName, string RoundName, int Questions,
     DateOnly? DueDate, int DaysLate, PeerRequestState State, DateTime? RespondedAt);
@@ -105,7 +104,7 @@ public sealed class GetReviewsWorkspaceHandler(PerformanceDbContext db) : IQuery
         var requests = reviewIds.Length == 0 ? [] : await db.PeerRequests.AsNoTracking().Where(r => reviewIds.Contains(r.ReviewId)).ToListAsync(token);
         var nominations = reviewIds.Length == 0 ? [] : await db.PeerNominations.AsNoTracking().Where(n => reviewIds.Contains(n.ReviewId)).ToListAsync(token);
 
-        var sessions = viewer.Calibrates && viewer.UserId != Guid.Empty ? await SessionsAsync(launched.Keys.ToArray(), viewer, token) : [];
+        var sessions = viewer.Calibrates ? await SessionsAsync(launched.Values, viewer, token) : [];
         return Result.Success(new ReviewsWorkspaceDto(cycle?.Id, cycle?.Name, cycle?.EndDate, viewer.Administers,
             own is null ? null : await OwnAsync(own, launched[own.ReviewRoundId], nominations, today, token),
             own is null && cycle is not null && viewer.Participates ? await NotIncludedAsync(me, rounds, token) : null,
@@ -120,8 +119,6 @@ public sealed class GetReviewsWorkspaceHandler(PerformanceDbContext db) : IQuery
                     FinalRating = pair.Second.State == PerformanceReviewState.ReadyToFinalize ? pair.Second.FinalRating : null,
                     FinalPotential = pair.Second.State == PerformanceReviewState.ReadyToFinalize ? pair.Second.FinalPotential : null,
                     CalibrationChanged = pair.Second.CalibrationChangedRating,
-                    SummaryToCheck = pair.Second.State == PerformanceReviewState.ReadyToFinalize && pair.Second.CalibrationChangedRating
-                        && pair.Second.SummaryRevisedAt is null && pair.Second.SummaryCheckedAt is null,
                 })
                 .OrderBy(row => row.NextAction switch { "WriteReview" => 0, "Wait" => 1, _ => 2 })
                 .ThenBy(row => row.SubjectDisplayName, StringComparer.OrdinalIgnoreCase).ToArray(),
@@ -133,19 +130,15 @@ public sealed class GetReviewsWorkspaceHandler(PerformanceDbContext db) : IQuery
             me == Guid.Empty ? [] : await PastResultsAsync(me, token)) { Sessions = sessions });
     }
 
-    private async Task<IReadOnlyList<ReviewsWorkspaceSessionDto>> SessionsAsync(Guid[] roundIds, ReviewsWorkspaceViewer viewer, CancellationToken token)
+    private async Task<IReadOnlyList<ReviewsWorkspaceSessionDto>> SessionsAsync(IEnumerable<ReviewRound> rounds, ReviewsWorkspaceViewer viewer,
+        CancellationToken token)
     {
-        var open = await db.CalibrationSessions.AsNoTracking()
-            .Where(session => roundIds.Contains(session.ReviewRoundId) && session.State == Domain.Calibration.CalibrationSessionState.Open)
-            .ToListAsync(token);
-        var identity = new Domain.Calibration.FacilitatorIdentity(viewer.UserId, viewer.EmployeeId == Guid.Empty ? null : viewer.EmployeeId, string.Empty);
         var result = new List<ReviewsWorkspaceSessionDto>();
-        foreach (var session in open.Where(session => session.IsFacilitator(viewer.UserId)))
+        foreach (var round in rounds.Where(r => r.State == ReviewRoundState.Active && r.CalibrationEnabled))
         {
-            var model = await Calibration.CalibrationReadModel.LoadAsync(db, session.ReviewRoundId, identity, viewer.Calibrates, token);
-            if (model.IsFailure) continue;
-            var header = model.Value.Header();
-            result.Add(new(session.ReviewRoundId, model.Value.Round.Name, header.People, header.Discussed, header.Flags, header.Outstanding));
+            var state = await Calibration.CalibrationState.LoadAsync(db, round, null, token);
+            var toLookAt = state.Reviews.Count(r => state.ToLookAt(r) && r.SubjectEmployeeId != viewer.EmployeeId);
+            if (toLookAt > 0) result.Add(new(round.Id, round.Name, toLookAt));
         }
         return result;
     }

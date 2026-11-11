@@ -26,7 +26,7 @@ internal static class CalibrationWorld
         public PerformanceReview Of(string name) => Reviews.Single(review => review.SubjectDisplayName == name);
     }
 
-    public static readonly FacilitatorIdentity Hr = new(Guid.NewGuid(), null, "Amira Khelifi");
+    public static readonly CalibratorIdentity Hr = new(Guid.NewGuid(), null, "Amira Khelifi");
 
     /// <summary>One id per reviewer name, so a reviewer's reviews group together.</summary>
     public static async Task<World> SeedAsync(PerformanceDbContext db, TestStore store, IReadOnlyList<Person> people, bool potential = true,
@@ -111,25 +111,24 @@ internal static class CalibrationWorld
         await db.SaveChangesAsync();
     }
 
-    public static Task<Result<CalibrationSessionDto>> OpenAsync(PerformanceDbContext db, World world, FacilitatorIdentity? actor = null)
-        => new OpenCalibrationSessionHandler(db, new TestPerformanceAudit(db), new PerformanceNotifications(db))
-            .Handle(new(world.Round.Id, actor ?? Hr, true), default);
-
-    public static async Task<Result<CalibrationSubjectDto>> AdjustAsync(PerformanceDbContext db, World world, PerformanceReview review,
-        int rating, string? reason, ReviewPotential? potential = null,
-        CalibrationDiscussionState discussion = CalibrationDiscussionState.NotDiscussed, FacilitatorIdentity? actor = null, uint? version = null)
+    /// <summary>Keeps (the manager's level, no reason) or changes a rating, at the subject's current version.</summary>
+    public static async Task<Result<CalibrationSubjectDto>> DecideAsync(PerformanceDbContext db, World world, PerformanceReview review,
+        int rating, string? reason = null, CalibratorIdentity? actor = null)
     {
-        var expected = version ?? await db.CalibrationSubjects.AsNoTracking().Where(subject => subject.ReviewId == review.Id)
-            .Select(subject => subject.Version).SingleAsync();
-        return await new AdjustCalibrationSubjectHandler(db, new TestPerformanceAudit(db))
-            .Handle(new(world.Round.Id, review.Id, actor ?? Hr, rating, reason, discussion, expected, true, potential), default);
+        var version = await db.CalibrationSubjects.AsNoTracking().Where(subject => subject.ReviewId == review.Id)
+            .Select(subject => (uint?)subject.Version).SingleOrDefaultAsync() ?? 0;
+        return await new DecideCalibrationHandler(db, new TestPerformanceAudit(db), new PerformanceNotifications(db))
+            .Handle(new(world.Round.Id, review.Id, actor ?? Hr, rating, reason, version, true), default);
     }
 
-    public static async Task<Result<CalibrationSessionDto>> FinalizeAsync(PerformanceDbContext db, World world, FacilitatorIdentity? actor = null)
+    public static Task<Result<CalibrationDto>> ReadAsync(PerformanceDbContext db, World world, CalibratorIdentity? actor = null)
+        => new GetCalibrationHandler(db).Handle(new(world.Round.Id, actor ?? Hr, true, true), default);
+
+    /// <summary>Releases what is ready in the round, as the Year page does.</summary>
+    public static async Task<Result<ReviewRoundFinalizationDto>> ReleaseAsync(PerformanceDbContext db, World world)
     {
-        var version = await db.CalibrationSessions.AsNoTracking().Where(session => session.ReviewRoundId == world.Round.Id)
-            .Select(session => session.Version).SingleAsync();
-        return await new FinalizeCalibrationSessionHandler(db, new TestPerformanceAudit(db), new PerformanceNotifications(db))
-            .Handle(new(world.Round.Id, actor ?? Hr, version, true), default);
+        var version = await db.ReviewRounds.AsNoTracking().Where(round => round.Id == world.Round.Id).Select(round => round.Version).SingleAsync();
+        return await new FinalizeReviewRoundHandler(db, new TestPerformanceAudit(db), new PerformanceNotifications(db))
+            .Handle(new(world.Round.Id, version, null), default);
     }
 }

@@ -140,21 +140,6 @@ public sealed class PerformanceReviewsController(IMediator mediator, IPerformanc
         return MapResult(await mediator.Send(new CommentOnAcknowledgementCommand(reviewId, User.GetEmployeeId() ?? Guid.Empty, request.Comment), token));
     }
 
-    [HttpPut("{reviewId:guid}/manager-summary")]
-    public async Task<ActionResult<ApiResponse<ReviewSummaryStateDto>>> ReviseSummary(Guid reviewId,
-        [FromBody] ReviseReviewSummaryRequest request, CancellationToken token)
-    {
-        if (!policy.CanEnterPerformance(User)) return CapabilityForbidden();
-        return MapResult(await mediator.Send(new ReviseReviewSummaryCommand(reviewId, AssessmentActor(), request.Summary, request.ExpectedVersion), token));
-    }
-
-    [HttpPost("{reviewId:guid}/summary-checked")]
-    public async Task<ActionResult<ApiResponse<ReviewSummaryStateDto>>> SummaryChecked(Guid reviewId, CancellationToken token)
-    {
-        if (!policy.CanEnterPerformance(User)) return CapabilityForbidden();
-        return MapResult(await mediator.Send(new MarkReviewSummaryCheckedCommand(reviewId, AssessmentActor()), token));
-    }
-
     [HttpPost("{reviewId:guid}/finalize")]
     public async Task<ActionResult<ApiResponse<ReviewFinalizationDto>>> Finalize(Guid reviewId, [FromBody] FinalizeReviewRequest request, CancellationToken token)
     {

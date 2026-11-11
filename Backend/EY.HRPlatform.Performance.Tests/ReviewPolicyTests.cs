@@ -71,11 +71,11 @@ public sealed class ReviewPolicyTests
         Assert.Empty(ReviewPolicy.Readable(new[] { review }.AsQueryable(), reviewerWithoutGrant));
         Assert.Single(ReviewPolicy.Readable(new[] { review }.AsQueryable(), reviewer));
 
-        Assert.True(ReviewPolicy.Visibility(reviewer, review, calibrationFinalized: true).ShowCalibration);
-        Assert.True(ReviewPolicy.Visibility(admin, review, calibrationFinalized: true).ShowCalibration);
-        Assert.False(ReviewPolicy.Visibility(subjectActor, review, calibrationFinalized: true).ShowCalibration);
+        Assert.True(ReviewPolicy.Visibility(reviewer, review, calibrationDecided: true).ShowCalibration);
+        Assert.True(ReviewPolicy.Visibility(admin, review, calibrationDecided: true).ShowCalibration);
+        Assert.False(ReviewPolicy.Visibility(subjectActor, review, calibrationDecided: true).ShowCalibration);
         // Administering rounds does not lift the subject's own limits on their review.
-        var own = ReviewPolicy.Visibility(adminSubject, review, calibrationFinalized: true);
+        var own = ReviewPolicy.Visibility(adminSubject, review, calibrationDecided: true);
         Assert.False(own.ShowCalibration);
         Assert.False(own.ShowManagerAssessment);
         // Facilitating the round does not either: no pre-release manager content, no calibration detail.

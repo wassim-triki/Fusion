@@ -1,210 +1,83 @@
 {
-  "AdjustDrawer": {
-    "loading": "Chargement",
-    "evidenceAndCalibration": "Pièces justificatives et calibrage"
-  },
-  "DrawerBody": {
-    "saved": "{first} enregistré.",
-    "openReview": "Ouvrir l’évaluation",
-    "rates": "{reviewerFirst} note {delta}",
-    "someone": "Quelqu’un",
-    "changed": "a modifié {first}",
-    "now": "Actuellement {currentRating} · {currentRating2}",
-    "closeAndReload": "Fermer et recharger",
-    "objectives": "Objectifs",
-    "weighted": "· pondéré {weighted} %",
-    "noEarlierResult": "Aucun résultat antérieur",
-    "noApprovedObjectivesThisCycle": "Aucun objectif approuvé ce cycle",
-    "sSummary": "Synthèse de {reviewerFirst}",
-    "rating": "Note",
-    "rated": "Note de {reviewerFirst}",
-    "calibratedRating": "Note calibrée",
-    "potential": "Potentiel",
-    "whyThisChanges": "Pourquoi cela change",
-    "andHrSeeThisReason": "{reviewerFirst} et les RH voient cette raison, jamais {first}",
-    "history": "Historique",
-    "discussed": "Discuté",
-    "backToS": "Retour à {reviewerFirst}",
-    "cancel": "Annuler",
-    "save": "Enregistrer {currentRating} → {rating}",
-    "save2": "Enregistrer",
-    "reviewedBy": "évalué par {reviewerName}",
-    "thisChangeCouldntBeSaved": "Cette modification n’a pas pu être enregistrée."
-  },
-  "SessionTitle": {
-    "calibration": "Calibrage",
-    "finalized": "Finalisé",
-    "open": "Ouvrir",
-    "facilitators": "Animateurs",
-    "finalized2": "finalisé le {dayLabel}",
-    "opened": "ouvert le {dayLabel}",
-    "people": "{count, plural, one {# personne} other {# personnes}}"
-  },
-  "SessionAction": {
-    "openTheRoundToRelease": "Ouvrez la campagne pour publier",
-    "finalizeCalibration": "Finaliser le calibrage",
-    "reviewIs": "évaluation est",
-    "reviewsAre": "évaluations sont",
-    "stillWithManagers": "encore chez les managers"
-  },
-  "SessionStats": {
-    "discussed": "Discuté",
-    "ratingsChanged": "Notes modifiées",
-    "potentialChanged": "Potentiel modifié",
-    "flags": "Signalements",
-    "withManagers": "Chez les managers",
-    "session": "Session",
-    "of": "sur {total}",
-    "notDiscussed": "{count} non discutés"
-  },
-  "SessionToolbar": {
+  "Page": {
+    "loading": "Chargement de la calibration",
+    "title": "Calibration",
+    "round": "{cycle} {round}",
     "views": "Vues",
-    "unit": "Unité",
-    "manager": "Manager",
-    "flagged": "Signalés",
-    "notDiscussed": "Non discutés",
-    "tabs": {
-      "distribution": "Répartition",
-      "nine-box": "Matrice 9 cases",
-      "people": "Collaborateurs"
+    "toLookAt": "À regarder",
+    "toLookAtCount": "À regarder {count}",
+    "everyone": "Tout le monde",
+    "yourNextStep": "Votre prochaine étape",
+    "allReadyAsRated": "{count, plural, one {L'évaluation reçue est prête telle que notée} other {Les # évaluations reçues sont prêtes telles que notées}}",
+    "allReady": "{count, plural, one {L'évaluation reçue est prête} other {Les # évaluations reçues sont prêtes}}",
+    "nothingInYet": "Aucune évaluation de manager reçue",
+    "resultsOut": "Résultats le {day}",
+    "lookAtEveryone": "Voir tout le monde",
+    "release": "{count, plural, one {Publier # résultat} other {Publier # résultats}}",
+    "checkedAsTheyCame": "Vérifiées selon les signaux du cycle à mesure qu'elles arrivaient",
+    "stillWritingGoOut": "{count, plural, one {# en cours de rédaction sera publiée} other {# en cours de rédaction seront publiées}} quand leur manager les envoie",
+    "reviews": "Évaluations",
+    "inOf": "{count} sur {total} reçues",
+    "kept": "{level} maintenu",
+    "fromTo": "{from} à {to}",
+    "managerTold": "{name} prévenu(e)",
+    "undo": "Annuler",
+    "keptToast": "{level} maintenu pour {name} ; {manager} prévenu(e)",
+    "changedToast": "{name} passe à {level} ; {manager} prévenu(e)",
+    "couldntSave": "Cette décision n'a pas pu être enregistrée.",
+    "couldntUndo": "Impossible d'annuler.",
+    "flow": {
+      "writing": "En cours de rédaction",
+      "ready": "Prêtes telles que notées",
+      "toLookAt": "À regarder"
     }
   },
-  "OptionFilter": {
-    "clear": "Effacer {toLowerCase}"
-  },
-  "SearchBox": {
-    "findAPerson": "Trouver une personne"
-  },
-  "RatingChange": {
-    "to": "{original} à {current}"
-  },
-  "DistributionView": {
-    "ratingsAcrossTheSession": "Notes sur l’ensemble de la session",
-    "managersRatings": "Notes des managers",
-    "now": "Aujourd’hui",
-    "average": "Moyenne",
-    "was": "· était {sessionAverage}",
-    "byManager": "Par manager",
-    "furthestFromTheSessionAverage": "Les plus éloignés de la moyenne de la session d’abord",
-    "noOneMatchesTheseFilters": "Personne ne correspond à ces filtres",
-    "manager": "Manager",
-    "people": "Collaborateurs",
-    "theirRatingsNow": "Leurs notes, maintenant",
-    "flag": "Signalement",
-    "more": "{hidden} de plus",
-    "manager2": "manager",
-    "managers": "les managers",
-    "within02OfThe": "à moins de 0,2 de la moyenne de la session",
-    "showAll": "Tout afficher"
-  },
-  "LevelBar": {
-    "nowFromManagers": "{label} : {current} maintenant, {original} selon les managers"
-  },
-  "PeopleView": {
-    "noOneMatchesTheseFilters": "Personne ne correspond à ces filtres",
-    "person": "Auteur",
-    "manager": "Manager",
-    "rating": "Note",
-    "potential": "Potentiel",
-    "objectives": "Objectifs",
-    "lastCycle": "Cycle précédent",
-    "flags": "Signalements"
-  },
-  "Group": {
-    "was": "· était {originalCount}",
-    "moreAt": "{value} de plus à {label}",
-    "show": "Afficher"
-  },
-  "PersonRow": {
-    "managerFlagged": "Signalé par le manager"
-  },
-  "ChangesView": {
-    "whereRatingsLanded": "Où les notes ont atterri",
-    "changes": "Modifications",
-    "everyRatingStayedAsManagers": "Toutes les notes sont restées telles que les managers les ont données"
-  },
-  "CalibrationWorkspacePage": {
-    "loadingCalibration": "Chargement du calibrage",
-    "calibration": "Calibrage"
-  },
-  "SessionBody": {
-    "moved": "{name} déplacé."
-  },
-  "StillWithManagers": {
-    "stillWithManagers": "Encore chez les managers"
-  },
-  "OpenSession": {
-    "reviewRound": "Campagne d’évaluation",
-    "openCalibration": "Ouvrir le calibrage",
-    "managerReviewsIn": "Évaluations des managers reçues",
-    "of": "sur {total}",
-    "toSubmit": "{value} à soumettre",
-    "managerReviews": "Évaluations des managers",
-    "facilitators": "Animateurs",
-    "openTheSession": "Ouvrir la session",
-    "you": "vous"
-  },
-  "FacilitatorDialog": {
-    "facilitators": "Animateurs",
+  "FlagCard": {
+    "roleReviewedBy": "{role}, évalué(e) par {name}",
+    "reviewedBy": "Évalué(e) par {name}",
+    "why": {
+      "goals": "La note et les objectifs divergent",
+      "down": "{count, plural, one {Un niveau} other {# niveaux}} de moins que l'an dernier",
+      "up": "{count, plural, one {Un niveau} other {# niveaux}} de plus que l'an dernier",
+      "ratesHigh": "{name} note plus haut que la plupart",
+      "ratesLow": "{name} note plus bas que la plupart",
+      "label": "Pourquoi"
+    },
+    "mark": {
+      "rating": "Note de {name}",
+      "goals": "Objectifs {grade}",
+      "lastYear": "L'an dernier",
+      "thisYear": "Cette année",
+      "average": "Moyenne de {name}, {count, plural, one {# personne} other {# personnes}}",
+      "everyone": "Tout le monde, {count}"
+    },
+    "words": "Les mots de {name}",
+    "ratingFor": "Note de {name}",
+    "whyPlaceholder": "Pourquoi, {name} le lira",
     "cancel": "Annuler",
-    "saveFacilitators": "Enregistrer les animateurs",
-    "you": "vous"
+    "changeTo": "Passer à {level}",
+    "readTheReview": "Lire l'évaluation",
+    "keep": "Maintenir {level}"
   },
-  "FinalizeDialog": {
-    "finalizeCalibration": "Finaliser le calibrage",
-    "people": "· {people} personnes",
-    "loading": "Chargement",
-    "ratingsChanged": "Notes modifiées",
-    "downUp": "{ratingsDown} en baisse · {ratingsUp} en hausse",
-    "potentialChanged": "Potentiel modifié",
-    "upDown": "{potentialUp} en hausse · {potentialDown} en baisse",
-    "notDiscussed": "Non discutés",
-    "flagged": "{length} signalés",
-    "notDiscussed2": "{join} · non discuté",
-    "open": "Ouvrir",
-    "whenYouFinalize": "Quand vous finalisez",
-    "ratingsAndPotentialLockThe": "Les notes et le potentiel sont verrouillés. La session ne peut pas être rouverte.",
-    "reviewsMoveTo": "{people} évaluations passent à",
-    "readyToRelease": "Prêtes à publier",
-    "theManagersSeeTheirPeoples": "Les {reviewers} managers voient les notes finales de leurs collaborateurs, et la raison de chacune des {changed} modifications.",
-    "employeesSeeNothingUntilYou": "Les collaborateurs ne voient rien tant que vous n’avez pas publié les résultats de la campagne.",
-    "keepDiscussing": "Poursuivre la discussion",
-    "finalize": "Finaliser",
-    "calibrationFinalized": "Calibrage finalisé."
-  },
-  "NineBoxView": {
-    "movingChooseACellOr": "Déplacement de {name} : choisissez une case, ou appuyez sur Échap",
-    "moved": "Déplacement",
-    "moveHere": "Déplacer ici",
-    "potential": "Potentiel",
-    "nineBox": "Matrice 9 cases",
-    "people": "{count, plural, one {# personne} other {# personnes}}",
-    "peopleDrag": "{count, plural, one {# personne · faites glisser une personne pour changer sa note ou son potentiel} other {# personnes · faites glisser une personne pour changer sa note ou son potentiel}}"
-  },
-  "DropForm": {
-    "move": "Déplacer {name}",
-    "noChange": "Aucun changement",
-    "rating": "Note",
-    "whyThisChanges": "Pourquoi cela change",
-    "whatTheGroupAgreedAbout": "Ce que le groupe a convenu au sujet de {first}",
-    "discussed": "Discuté",
+  "Grid": {
+    "spread": "Répartition",
+    "rated": "{count} notées",
+    "ratingAgainstGrade": "Note face à la note des objectifs",
+    "gradeFromMeasures": "Note des objectifs lue dans les mesures",
+    "below": "Sous {level}",
+    "above": "Au-dessus de {level}",
+    "rows": {
+      "0": "0,8 et plus",
+      "1": "0,5 à 0,8",
+      "2": "Moins de 0,5"
+    },
+    "fromTo": "{from} à {to}",
+    "whyPlaceholder": "Pourquoi, {name} le lira",
+    "why": "Pourquoi",
     "cancel": "Annuler",
-    "move2": "Déplacer",
-    "rating2": "Note {currentRating} → {rating}",
-    "potential": "potentiel {potential} → {potential2}",
-    "theMoveCouldntBeSaved": "Le déplacement n’a pas pu être enregistré."
-  },
-  "ManagerRow": {
-    "at": "{count} à {value}"
-  },
-  "format": {
-    "up": "{count, plural, one {En hausse de # niveau} other {En hausse de # niveaux}}",
-    "down": "{count, plural, one {En baisse de # niveau} other {En baisse de # niveaux}}",
-    "upSince": "{count, plural, one {En hausse de # niveau depuis {cycle}} other {En hausse de # niveaux depuis {cycle}}}",
-    "downSince": "{count, plural, one {En baisse de # niveau depuis {cycle}} other {En baisse de # niveaux depuis {cycle}}}",
-    "top": "Note maximale, {share} % des objectifs",
-    "bottom": "Note minimale, {share} % des objectifs",
-    "above": "{delta} au-dessus de la session",
-    "below": "{delta} en dessous de la session"
+    "change": "Changer",
+    "andMore": "et {count} de plus",
+    "dragHint": "Glissez un visage dans une autre colonne pour changer une note",
+    "ungraded": "{count, plural, one {# personne} other {# personnes}} sans objectifs à noter"
   }
 }

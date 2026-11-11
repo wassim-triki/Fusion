@@ -368,9 +368,7 @@ function TeamRow({ row, cycleId, primary }: { row: ReviewsWorkspaceTeamRowDto; c
           : <StepCell state="done">{row.reviewStep === "Released" ? t("released") : t("submitted")}</StepCell>}
       </td>
       <td className="px-5 py-3.5 text-end">
-        {row.summaryToCheck ? (
-          <Button size="sm" asChild><Link href={href}>{t("checkSummary")}</Link></Button>
-        ) : row.nextAction === "WriteReview" ? (
+        {row.nextAction === "WriteReview" ? (
           <Button size="sm" variant={primary ? "default" : "outline"} asChild><Link href={href}>{t("writeReview")}</Link></Button>
         ) : (
           <Link href={href} aria-label={t("openSReview", { subjectDisplayName: row.subjectDisplayName })} className="inline-flex text-muted-foreground hover:text-foreground"><ChevronRight className="size-4" aria-hidden /></Link>
@@ -380,30 +378,17 @@ function TeamRow({ row, cycleId, primary }: { row: ReviewsWorkspaceTeamRowDto; c
   );
 }
 
-// ── Calibration a facilitator holds (board 11) ─────────────────────────────────────
+// ── Flagged reviews a calibrator has to look at (D-35) ─────────────────────────────
 
 function SessionLead({ session, cycleId }: { session: ReviewsWorkspaceSessionDto; cycleId: string | null }) {
   const t = useTranslations("reviews.SessionLead");
-  const discussed = session.people === 0 ? 0 : Math.round((session.discussed / session.people) * 100);
   return (
-    <section aria-labelledby={`session-${session.roundId}`} className="rounded-surface bg-card p-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="type-meta text-muted-foreground">{t("calibration")}</p>
-          <h2 id={`session-${session.roundId}`} className="mt-1 type-section-title text-foreground">{session.roundName}</h2>
-        </div>
-        <Button asChild><Link href={withCycle(calibrationHref(session.roundId), cycleId)}>{t("openTheSession")}<ArrowRight className="size-4" aria-hidden /></Link></Button>
+    <section aria-labelledby={`session-${session.roundId}`} className="flex flex-wrap items-center justify-between gap-4 rounded-surface bg-card p-6">
+      <div>
+        <p className="type-meta text-muted-foreground">{session.roundName}</p>
+        <h2 id={`session-${session.roundId}`} className="mt-1 type-section-title text-foreground">{t("toLookAt", { count: session.toLookAt })}</h2>
       </div>
-      <dl className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div>
-          <dt className="type-meta text-muted-foreground">{t("discussed")}</dt>
-          <dd className="mt-1 type-metric tabular-nums text-foreground">{session.discussed}<span className="ms-1.5 type-meta text-muted-foreground">{t("of", { people: session.people })}</span></dd>
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-inlay" aria-hidden><div className="h-full rounded-full bg-success" style={{ width: `${discussed}%` }} /></div>
-        </div>
-        <div><dt className="type-meta text-muted-foreground">{t("people")}</dt><dd className="mt-1 type-metric tabular-nums text-foreground">{session.people}</dd></div>
-        <div><dt className="type-meta text-muted-foreground">{t("flags")}</dt><dd className="mt-1 type-metric tabular-nums text-foreground">{session.flags}</dd></div>
-        <div><dt className="type-meta text-muted-foreground">{t("withManagers")}</dt><dd className="mt-1 type-metric tabular-nums text-foreground">{session.outstanding}</dd></div>
-      </dl>
+      <Button asChild><Link href={withCycle(calibrationHref(session.roundId), cycleId)}>{t("lookAtThem")}<ArrowRight className="size-4" aria-hidden /></Link></Button>
     </section>
   );
 }

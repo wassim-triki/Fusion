@@ -1,6 +1,5 @@
 using System.Text.Json;
 using EY.HRPlatform.Performance.Domain.Audit;
-using EY.HRPlatform.Performance.Domain.Calibration;
 using EY.HRPlatform.Performance.Domain.Common;
 using EY.HRPlatform.Performance.Domain.Notifications;
 using EY.HRPlatform.Performance.Domain.Reviews;
@@ -22,7 +21,9 @@ public sealed record CloseReviewCommand(Guid ReviewId, uint ExpectedVersion, str
 public sealed record SkippedReviewDto(Guid ReviewId, string Reason);
 /// <summary>The rating source is calibration detail: an administrator finalizing their own review gets it null.</summary>
 public sealed record ReviewFinalizationDto(Guid ReviewId, PerformanceReviewState State, int FinalRating, string? FinalRatingSource, DateTime FinalizedAt);
-public sealed record ReviewRoundFinalizationDto(Guid ReviewRoundId, IReadOnlyList<ReviewFinalizationDto> Finalized, IReadOnlyList<SkippedReviewDto> Skipped, ReviewRoundState State);
+/// <summary>What went out and what didn't; the round's version after it, so release can go on in batches (D-72).</summary>
+public sealed record ReviewRoundFinalizationDto(Guid ReviewRoundId, IReadOnlyList<ReviewFinalizationDto> Finalized, IReadOnlyList<SkippedReviewDto> Skipped,
+    ReviewRoundState State, uint Version = 0);
 
 internal static class ReviewFinalization
 {
@@ -76,6 +77,39 @@ internal static class ReviewFinalization
 }
 
 /// <summary>
+/// Releasing results (D-35): what's ready goes out, a calibration review with its rating as decided; flagged reviews
+/// still to look at and reviews still being written wait. Once a round has released, whatever becomes ready later
+/// (a manager's late review, a decision taken afterwards) goes out by itself.
+/// </summary>
+internal static class CalibrationRelease
+{
+    public static async Task<ReviewFinalizationDto?> ReleaseAsync(PerformanceDbContext db, CalibrationState state, PerformanceReview review,
+        ReviewRound round, IPerformanceAudit audit, IPerformanceNotifications notifications, CancellationToken token)
+    {
+        if (review.State == PerformanceReviewState.Calibration)
+            review.CompleteCalibration(state.Rating(review), state.Subject(review)?.IsAdjusted == true);
+        return await ReviewFinalization.FinalizeAsync(db, review, round, audit, notifications, token);
+    }
+
+    /// <summary>Releases one review now if its round already released and it is ready. Saves; returns whether it went out.</summary>
+    public static async Task<bool> ReleaseIfDueAsync(PerformanceDbContext db, Guid reviewId, IPerformanceAudit audit,
+        IPerformanceNotifications notifications, CancellationToken token)
+    {
+        var review = await db.PerformanceReviews.FirstAsync(r => r.Id == reviewId, token);
+        var round = await db.ReviewRounds.FirstAsync(r => r.Id == review.ReviewRoundId, token);
+        if (round.State != ReviewRoundState.Active) return false;
+        var reviews = await db.PerformanceReviews.Where(r => r.ReviewRoundId == round.Id).ToListAsync(token);
+        var state = await CalibrationState.LoadAsync(db, round, reviews, token);
+        if (!state.Released || !state.Ready(review) || review.State == PerformanceReviewState.Finalized) return false;
+        try { await ReleaseAsync(db, state, review, round, audit, notifications, token); }
+        catch (InvalidOperationException) { return false; }
+        await db.SaveChangesAsync(token);
+        await ReviewRoundSettlement.CloseWhenSettledAsync(db, round, audit, token);
+        return true;
+    }
+}
+
+/// <summary>
 /// A round closes itself (D-34): once nothing in it is still open, it is over and nobody presses Close.
 /// Called after the finalization or closure that may have settled it is saved; saves the closure itself.
 /// </summary>
@@ -110,9 +144,13 @@ public sealed class FinalizeReviewHandler(PerformanceDbContext db, IPerformanceA
         if (round is null) return Result.Failure<ReviewFinalizationDto>(PerformanceErrors.NotFound("ReviewRound", review.ReviewRoundId));
         if (round.State != ReviewRoundState.Active)
             return Result.Failure<ReviewFinalizationDto>(PerformanceErrors.InvalidState(PerformanceErrors.Codes.ReviewFinalizationNotReady, "Only an Active review round can be finalized."));
+        var state = await CalibrationState.LoadAsync(db, round, await db.PerformanceReviews.Where(r => r.ReviewRoundId == round.Id).ToListAsync(token), token);
+        if (!state.Ready(review))
+            return Result.Failure<ReviewFinalizationDto>(PerformanceErrors.InvalidState(PerformanceErrors.Codes.ReviewFinalizationNotReady,
+                state.ToLookAt(review) ? "This review is flagged for a look in calibration first." : "The review is not ready for finalization."));
         try
         {
-            var result = await ReviewFinalization.FinalizeAsync(db, review, round, audit, notifications, token);
+            var result = await CalibrationRelease.ReleaseAsync(db, state, review, round, audit, notifications, token);
             await db.SaveChangesAsync(token);
             await ReviewRoundSettlement.CloseWhenSettledAsync(db, round, audit, token);
             return Result.Success(ReviewFinalization.ForViewer(result!, review, command.ViewerEmployeeId));
@@ -129,27 +167,28 @@ public sealed class FinalizeReviewRoundHandler(PerformanceDbContext db, IPerform
         var round = await db.ReviewRounds.FirstOrDefaultAsync(r => r.Id == command.RoundId, token);
         if (round is null) return Result.Failure<ReviewRoundFinalizationDto>(PerformanceErrors.NotFound("ReviewRound", command.RoundId));
         if (round.State == ReviewRoundState.Closed)
-            return Result.Success<ReviewRoundFinalizationDto>(new(round.Id, [], [], round.State));
+            return Result.Success<ReviewRoundFinalizationDto>(new(round.Id, [], [], round.State, round.Version));
         if (round.State != ReviewRoundState.Active)
             return Result.Failure<ReviewRoundFinalizationDto>(PerformanceErrors.InvalidState(PerformanceErrors.Codes.ReviewFinalizationNotReady, "Only an Active review round can be finalized."));
-        var query = db.PerformanceReviews.Where(r => r.ReviewRoundId == round.Id);
+        var all = await db.PerformanceReviews.Where(r => r.ReviewRoundId == round.Id).OrderBy(r => r.SubjectDisplayName).ToListAsync(token);
+        var reviews = all;
         if (command.ReviewIds is not null)
         {
             if (command.ReviewIds.Distinct().Count() != command.ReviewIds.Count)
                 return Result.Failure<ReviewRoundFinalizationDto>(PerformanceErrors.Validation(PerformanceErrors.Codes.ReviewFinalizationInvalid, "Review IDs must be unique."));
-            var found = await query.CountAsync(r => command.ReviewIds.Contains(r.Id), token);
-            if (found != command.ReviewIds.Count)
+            reviews = all.Where(r => command.ReviewIds.Contains(r.Id)).ToList();
+            if (reviews.Count != command.ReviewIds.Count)
                 return Result.Failure<ReviewRoundFinalizationDto>(PerformanceErrors.Validation(PerformanceErrors.Codes.ReviewFinalizationInvalid, "Every review ID must belong to this round."));
-            query = query.Where(r => command.ReviewIds.Contains(r.Id));
         }
-        var reviews = await query.OrderBy(r => r.SubjectDisplayName).ToListAsync(token);
-        var ready = reviews.Any(review => review.State == PerformanceReviewState.ReadyToFinalize
-            && review.ManagerAssessment.IsSubmitted && review.ManagerAssessment.OverallRating is not null);
+        var state = await CalibrationState.LoadAsync(db, round, all, token);
+        bool Releasable(PerformanceReview review) => state.Ready(review)
+            && review.ManagerAssessment.IsSubmitted && review.ManagerAssessment.OverallRating is not null;
+        var ready = reviews.Any(Releasable);
         if (!ready)
         {
             var skippedCurrent = reviews.Select(review => new SkippedReviewDto(review.Id,
                 review.State == PerformanceReviewState.Finalized ? "Already finalized." : "Review is not ready for finalization.")).ToArray();
-            return Result.Success(new ReviewRoundFinalizationDto(round.Id, [], skippedCurrent, round.State));
+            return Result.Success(new ReviewRoundFinalizationDto(round.Id, [], skippedCurrent, round.State, round.Version));
         }
         if (VersionGuard.Check(round, command.ExpectedVersion) is { } stale)
             return Result.Failure<ReviewRoundFinalizationDto>(stale);
@@ -158,9 +197,9 @@ public sealed class FinalizeReviewRoundHandler(PerformanceDbContext db, IPerform
         foreach (var review in reviews)
         {
             if (review.State == PerformanceReviewState.Finalized) { skipped.Add(new(review.Id, "Already finalized.")); continue; }
-            if (review.State != PerformanceReviewState.ReadyToFinalize || !review.ManagerAssessment.IsSubmitted || review.ManagerAssessment.OverallRating is null)
-            { skipped.Add(new(review.Id, "Review is not ready for finalization.")); continue; }
-            var value = await ReviewFinalization.FinalizeAsync(db, review, round, audit, notifications, token);
+            if (!Releasable(review))
+            { skipped.Add(new(review.Id, state.ToLookAt(review) ? "Flagged for a look in calibration." : "Review is not ready for finalization.")); continue; }
+            var value = await CalibrationRelease.ReleaseAsync(db, state, review, round, audit, notifications, token);
             if (value is not null) finalized.Add(ReviewFinalization.ForViewer(value, review, command.ViewerEmployeeId));
         }
         if (finalized.Count > 0)
@@ -171,7 +210,7 @@ public sealed class FinalizeReviewRoundHandler(PerformanceDbContext db, IPerform
         }
         await db.SaveChangesAsync(token);
         await ReviewRoundSettlement.CloseWhenSettledAsync(db, round, audit, token);
-        return Result.Success<ReviewRoundFinalizationDto>(new(round.Id, finalized, skipped, round.State));
+        return Result.Success<ReviewRoundFinalizationDto>(new(round.Id, finalized, skipped, round.State, round.Version));
     }
 }
 
@@ -195,11 +234,7 @@ public sealed class CloseReviewHandler(PerformanceDbContext db, IPerformanceAudi
         catch (ArgumentException ex) { return Result.Failure<PerformanceReviewMutationDto>(PerformanceErrors.Validation(PerformanceErrors.Codes.ReviewFinalizationInvalid, ex.Message)); }
         audit.Record(review.TenantId, "PerformanceReview", review.Id, review.CycleId, PerformanceAuditActions.ReviewAdministrativelyClosed,
             new { before = before.ToString(), after = review.State.ToString(), reason = review.CloseReason });
-        // Closing the last outstanding review can be what brings the round to calibration.
-        if (await CalibrationSessions.FindAsync(db, review.ReviewRoundId, token) is { State: CalibrationSessionState.Open } session)
-            await CalibrationSessions.NotifyIfReadyAsync(db, session, notifications, token);
         await db.SaveChangesAsync(token);
-        await CalibrationSessions.ConfirmReadyAfterCommitAsync(db, review.ReviewRoundId, notifications, token);
         // Closing the last open review can also be what settles the round.
         if (await db.ReviewRounds.FirstOrDefaultAsync(r => r.Id == review.ReviewRoundId, token) is { } round)
             await ReviewRoundSettlement.CloseWhenSettledAsync(db, round, audit, token);

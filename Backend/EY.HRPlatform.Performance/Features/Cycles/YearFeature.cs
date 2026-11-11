@@ -4,6 +4,7 @@ using EY.HRPlatform.Performance.Domain.Cycles;
 using EY.HRPlatform.Performance.Domain.Objectives;
 using EY.HRPlatform.Performance.Domain.Plans;
 using EY.HRPlatform.Performance.Domain.Reviews;
+using EY.HRPlatform.Performance.Features.Calibration;
 using EY.HRPlatform.Performance.Features.Failures;
 using EY.HRPlatform.Performance.Features.Reviews;
 using EY.HRPlatform.Performance.Features.Security.Policies;
@@ -39,8 +40,10 @@ public static class YearStandings
     public const string Quiet = "quiet";
     public const string SelfReview = "selfReview";
     public const string WithManager = "withManager";
-    /// <summary>The manager's review is in (calibrated or ready to release).</summary>
+    /// <summary>The manager's review is in and ready to release (as rated, or looked at in calibration).</summary>
     public const string Reviewed = "reviewed";
+    /// <summary>The manager's review is in and flagged for a look in calibration (D-35). Shown to HR only.</summary>
+    public const string Flagged = "flagged";
     public const string Released = "released";
     public const string Acknowledged = "acknowledged";
     public const string Closed = "closed";
@@ -71,8 +74,15 @@ public static class YearStandings
             .Select(g => new { EmployeeId = g.Key, Last = g.Max(u => u.RecordedAt) })
             .ToDictionaryAsync(g => g.EmployeeId, g => g.Last, token);
         var reviews = await db.PerformanceReviews.AsNoTracking().Where(r => r.CycleId == cycleId)
-            .Select(r => new { r.Id, r.SubjectEmployeeId, r.State, r.UpdatedAt, r.FinalizedAt, r.AcknowledgedAt, r.OpenedAt })
+            .Select(r => new { r.Id, r.ReviewRoundId, r.SubjectEmployeeId, r.State, r.UpdatedAt, r.FinalizedAt, r.AcknowledgedAt, r.OpenedAt })
             .ToListAsync(token);
+        var flagged = new HashSet<Guid>();
+        foreach (var roundId in reviews.Where(r => r.State == PerformanceReviewState.Calibration).Select(r => r.ReviewRoundId).Distinct())
+        {
+            var round = await db.ReviewRounds.AsNoTracking().SingleAsync(r => r.Id == roundId, token);
+            var state = await CalibrationState.LoadAsync(db, round, null, token);
+            flagged.UnionWith(state.Reviews.Where(state.ToLookAt).Select(r => r.Id));
+        }
         var reviewBySubject = reviews.GroupBy(r => r.SubjectEmployeeId)
             .ToDictionary(g => g.Key, g => g.OrderByDescending(r => r.OpenedAt).First());
 
@@ -97,7 +107,7 @@ public static class YearStandings
                     case PerformanceReviewState.ManagerAssessment:
                         step = CyclePhase.Review; standing = WithManager; since = review.UpdatedAt; break;
                     default:
-                        step = CyclePhase.Review; standing = Reviewed; since = review.UpdatedAt; break;
+                        step = CyclePhase.Review; standing = flagged.Contains(review.Id) ? Flagged : Reviewed; since = review.UpdatedAt; break;
                 }
             }
             else if (plans.TryGetValue(p.EmployeeId, out var plan) && plan.State == PlanLifecycleState.Approved)
@@ -147,10 +157,13 @@ public static class YearComposer
         var phase = YearPhase.Of(cycle, today, evidence);
         var everyone = await YearStandings.LoadAsync(db, cycle.Id, now, token);
 
-        var (scope, people) = actor.IsAdministrator ? (ScopeCompany, everyone)
-            : everyone.Any(p => p.ManagerEmployeeId == actor.EmployeeId)
-                ? (ScopeTeam, everyone.Where(p => p.ManagerEmployeeId == actor.EmployeeId).ToList())
-                : (ScopeYou, everyone.Where(p => p.EmployeeId == actor.EmployeeId).ToList());
+        // A flag is calibration detail: outside HR's company view it reads as reviewed.
+        var seen = actor.IsAdministrator ? everyone
+            : everyone.Select(p => p.Standing == YearStandings.Flagged ? p with { Standing = YearStandings.Reviewed } : p).ToList();
+        var (scope, people) = actor.IsAdministrator ? (ScopeCompany, seen)
+            : seen.Any(p => p.ManagerEmployeeId == actor.EmployeeId)
+                ? (ScopeTeam, seen.Where(p => p.ManagerEmployeeId == actor.EmployeeId).ToList())
+                : (ScopeYou, seen.Where(p => p.EmployeeId == actor.EmployeeId).ToList());
 
         var rounds = await db.ReviewRounds.AsNoTracking().Where(r => r.CycleId == cycle.Id && r.LaunchedAt != null)
             .Select(r => r.LaunchedAt!.Value).ToListAsync(token);
@@ -165,7 +178,7 @@ public static class YearComposer
 
         var move = actor.IsAdministrator && phase is not null ? await NextMoveAsync(db, cycle, phase.Value, today, everyone, token) : null;
         var review = actor.IsAdministrator && phase == CyclePhase.Review ? await ReviewRoundAsync(db, cycle, today, token) : null;
-        var me = everyone.FirstOrDefault(p => p.EmployeeId == actor.EmployeeId) is { } self
+        var me = seen.FirstOrDefault(p => p.EmployeeId == actor.EmployeeId) is { } self
             ? new YearMeDto(self.EmployeeId, self.Step, self.Standing, self.Since, self.ManagerEmployeeId, self.ManagerName) : null;
         return new YearDto(cycle.Id, cycle.Name, cycle.StartDate, cycle.EndDate, today, cycle.State, phase, cycle.PlanningClosedOn,
             scope, people.Count, steps, move, me, cycle.Version) { Review = review };
@@ -208,8 +221,15 @@ public static class YearComposer
         })
         .OrderBy(r => r.Dto.OnPace).ThenByDescending(r => r.Deficit).ThenBy(r => r.Dto.Name, StringComparer.OrdinalIgnoreCase)
         .Select(r => r.Dto).ToList();
+        var state = await CalibrationState.LoadAsync(db, round, null, token);
+        var toLookAt = state.Reviews.Where(state.ToLookAt).OrderBy(r => r.SubjectDisplayName, StringComparer.OrdinalIgnoreCase).ToList();
         return new YearReviewRoundDto(round.Id, openedOn, round.SelfAssessmentDueDate, managerDue,
-            reviews.Count(r => r.Written), reviews.Count, reviewers);
+            reviews.Count(r => r.Written), reviews.Count, reviewers)
+        {
+            ToLookAt = toLookAt.Count,
+            ToLookAtFaces = toLookAt.Take(YearStandings.CompanyFaces)
+                .Select(r => Face(r.SubjectEmployeeId, r.SubjectDisplayName, r.SubjectOrgUnitName, YearStandings.Flagged)).ToList(),
+        };
     }
 
     /// <summary>
@@ -245,6 +265,24 @@ public static class YearComposer
     }
 
     private static DateOnly Clamp(DateOnly value, DateOnly min, DateOnly max) => value < min ? min : value > max ? max : value;
+
+    /// <summary>What releasing the round's results does today, from calibration's own idea of ready (D-35).</summary>
+    private static async Task<YearReleaseDto> ReleaseAsync(PerformanceDbContext db, ReviewRound round, CancellationToken token)
+    {
+        var state = await CalibrationState.LoadAsync(db, round, null, token);
+        static YearPersonDto Face(PerformanceReview r) => new(r.SubjectEmployeeId, r.SubjectDisplayName, r.SubjectOrgUnitName, YearStandings.Reviewed, null);
+        var label = state.Levels.ToDictionary(l => l.Value, l => l.Label);
+        string Level(int value) => label.GetValueOrDefault(value) ?? value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var ready = state.Reviews.Where(state.Ready).OrderBy(r => r.SubjectDisplayName, StringComparer.OrdinalIgnoreCase).ToList();
+        var lookedAt = ready.Where(r => state.Flagged(r) && state.Decided(r)).ToList();
+        var asRated = ready.Except(lookedAt).ToList();
+        var writing = state.Reviews.Where(CalibrationState.Writing).OrderBy(r => r.SubjectDisplayName, StringComparer.OrdinalIgnoreCase).ToList();
+        return new YearReleaseDto(asRated.Count, asRated.Take(YearStandings.CompanyFaces).Select(Face).ToList(),
+            lookedAt.Select(r => new YearDecisionDto(r.SubjectEmployeeId, r.SubjectDisplayName, Level(state.Original(r)), Level(state.Rating(r)),
+                state.Original(r) == state.Rating(r))).ToList(),
+            state.Reviews.Count(state.ToLookAt), writing.Count, writing.Take(YearStandings.CompanyFaces).Select(Face).ToList(),
+            ready.Select(r => r.Id).ToList(), round.Version);
+    }
 
     /// <summary>What the drafted round opens, read the day HR looks (the goals' grades are read again on the day it opens).</summary>
     private static async Task<YearRoundOpensDto> OpensAsync(PerformanceDbContext db, PerformanceCycle cycle, ReviewRound draft, DateOnly today,
@@ -297,17 +335,18 @@ public static class YearComposer
             }
             case CyclePhase.Review:
             {
-                // Results go out for whatever is ready (D-35); reviews still being written are left for later.
+                // Results go out for whatever is ready (D-35); flagged reviews still to look at and reviews still being
+                // written go out by themselves once they are.
                 var round = await db.ReviewRounds.AsNoTracking()
                     .FirstOrDefaultAsync(r => r.CycleId == cycle.Id && r.State == ReviewRoundState.Active, token);
-                var readyIds = round is null ? []
-                    : await db.PerformanceReviews.AsNoTracking()
-                        .Where(r => r.ReviewRoundId == round.Id && r.State == PerformanceReviewState.ReadyToFinalize)
-                        .Select(r => r.SubjectEmployeeId).ToListAsync(token);
-                var affected = everyone.Where(p => readyIds.Contains(p.EmployeeId)).Select(YearStandings.ToDto).ToList();
-                var canMove = round is not null && affected.Count > 0;
+                if (round is null)
+                    return new YearMoveDto(phase, CyclePhase.ResultsOut, MoveRelease, false, BlockerNothingReady, null, null, 0, []);
+                var release = await ReleaseAsync(db, round, token);
+                var readyIds = release.ReviewIds.ToHashSet();
+                var affected = everyone.Where(p => p.ReviewId is Guid id && readyIds.Contains(id)).Select(YearStandings.ToDto).ToList();
+                var canMove = affected.Count > 0;
                 return new YearMoveDto(phase, CyclePhase.ResultsOut, MoveRelease, canMove, canMove ? null : BlockerNothingReady,
-                    round?.Id, null, affected.Count, affected);
+                    round.Id, null, affected.Count, affected) { Release = release };
             }
             default:
                 return null;

@@ -78,7 +78,6 @@ public sealed class PerformanceDbContext : DbContext
     public DbSet<ReviewDueDateMove> ReviewDueDateMoves => Set<ReviewDueDateMove>();
     public DbSet<UpdateRequest> UpdateRequests => Set<UpdateRequest>();
     public DbSet<CalibrationSession> CalibrationSessions => Set<CalibrationSession>();
-    public DbSet<CalibrationFacilitator> CalibrationFacilitators => Set<CalibrationFacilitator>();
     public DbSet<CalibrationSubject> CalibrationSubjects => Set<CalibrationSubject>();
     public DbSet<CalibrationAdjustment> CalibrationAdjustments => Set<CalibrationAdjustment>();
     public DbSet<OneOnOneSeries> OneOnOneSeries => Set<OneOnOneSeries>();
@@ -191,8 +190,6 @@ public sealed class PerformanceDbContext : DbContext
         modelBuilder.Entity<UpdateRequest>()
             .HasQueryFilter(e => CurrentTenantId != Guid.Empty && e.TenantId == CurrentTenantId);
         modelBuilder.Entity<CalibrationSession>()
-            .HasQueryFilter(e => CurrentTenantId != Guid.Empty && e.TenantId == CurrentTenantId);
-        modelBuilder.Entity<CalibrationFacilitator>()
             .HasQueryFilter(e => CurrentTenantId != Guid.Empty && e.TenantId == CurrentTenantId);
         modelBuilder.Entity<CalibrationSubject>()
             .HasQueryFilter(e => CurrentTenantId != Guid.Empty && e.TenantId == CurrentTenantId);

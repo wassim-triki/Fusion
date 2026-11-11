@@ -4,7 +4,7 @@ namespace EY.HRPlatform.Performance.Features.Security.Policies;
 
 /// <summary>
 /// Who is reading. <see cref="CalibratorUserId"/> is set only when the caller holds the calibrate
-/// grant; the review query then resolves <see cref="IsCalibrationFacilitator"/> from the session.
+/// grant; the review query then makes them a calibrator of a review in calibration (D-35).
 /// </summary>
 public sealed record ReviewActor(Guid EmployeeId, bool IsAdministrator, bool IsCalibrationFacilitator = false,
     Guid? CalibratorUserId = null, bool CanParticipate = false, bool CanReviewReports = false);
@@ -41,19 +41,19 @@ public static class ReviewPolicy
             && (review.State is PerformanceReviewState.SelfAssessment or PerformanceReviewState.ManagerAssessment && !review.ManagerAssessment.IsSubmitted
                 || allowSubmittedRetry && review.ManagerAssessment.IsSubmitted);
 
-    public static ReviewVisibility Visibility(ReviewActor actor, PerformanceReview review, bool calibrationFinalized = false)
+    public static ReviewVisibility Visibility(ReviewActor actor, PerformanceReview review, bool calibrationDecided = false)
     {
         var isSubject = actor.EmployeeId != Guid.Empty && actor.EmployeeId == review.SubjectEmployeeId;
         var isReviewer = actor.CanReviewReports && actor.EmployeeId != Guid.Empty
             && actor.EmployeeId == review.ReviewerEmployeeId;
-        // Facilitating a round never extends to one's own review: the subject boundary wins.
+        // Calibrating never extends to one's own review: the subject boundary wins.
         var facilitator = actor.IsCalibrationFacilitator && !isSubject && review.State == PerformanceReviewState.Calibration;
         var canRead = actor.IsAdministrator || isSubject || isReviewer || facilitator;
         if (!canRead) return new(false, false, false, false, false);
-        // Calibration detail: facilitators while they calibrate; reviewers and round administrators
-        // once the session is finalized; never the subject, even one who also administers rounds.
+        // Calibration detail: calibrators while they calibrate; reviewers and round administrators
+        // once a decision is taken; never the subject, even one who also administers rounds.
         var showCalibration = !isSubject && (facilitator
-            || ((isReviewer || actor.IsAdministrator) && calibrationFinalized));
+            || ((isReviewer || actor.IsAdministrator) && calibrationDecided));
         // A subject sees their own reflection throughout the workflow, but manager content only
         // after the administrative release boundary. A reviewer sees self content only once sent.
         var showSelf = isSubject || (actor.IsAdministrator && !isSubject) || (isReviewer && review.SelfAssessment.IsSubmitted)

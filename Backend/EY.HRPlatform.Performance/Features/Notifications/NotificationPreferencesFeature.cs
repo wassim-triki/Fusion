@@ -69,7 +69,7 @@ public static class NotificationPreferenceCatalog
                 new("A review to write opens", Reader.Leader, [Kind.ManagerAssessmentOpened]),
                 new("Someone submitted their self-assessment", Reader.Leader, [Kind.SelfAssessmentSubmitted]),
                 new("Someone acknowledged their review", Reader.Leader, [Kind.ReviewAcknowledged]),
-                new("Calibration ready, calibration finalized", Reader.Calibrator, [Kind.CalibrationReady, Kind.CalibrationFinalized]),
+                new("A rating you gave kept or changed in calibration", Reader.Leader, [Kind.CalibrationDecided]),
                 new("Your self-assessment opens, your review released", Reader.Everyone,
                     [Kind.SelfAssessmentOpened, Kind.ReviewFinalized]),
                 new("Peer input asked of you, a peer declined, a due date moved", Reader.Everyone,

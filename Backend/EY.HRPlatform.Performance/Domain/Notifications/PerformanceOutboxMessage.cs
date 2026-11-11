@@ -7,14 +7,14 @@ public enum PerformanceNotificationKind
 {
     PlanSubmitted, PlanReturned, PlanApproved,
     SelfAssessmentOpened, ManagerAssessmentOpened, SelfAssessmentSubmitted, ReviewFinalized,
-    CalibrationReady,
     UpdateRequested,
     ObjectiveAtRisk, UpdateRequestAnswered, DevelopmentGoalAdded,
     OneOnOneStarted, OneOnOneRescheduled, OneOnOneActionAssigned,
     FeedbackReceived, FeedbackForReport, FeedbackRequested, FeedbackRequestResponded,
     PraiseReceived, PraiseForReport,
     PeerInputRequested, PeerDeclined, ReviewDueDateMoved, ReviewReminder, ReviewAcknowledged,
-    CalibrationFinalized,
+    /// <summary>A calibrator kept or changed a rating the manager gave (D-35); the manager hears which.</summary>
+    CalibrationDecided,
     /// <summary>Someone nudged the person toward their next step in the year (D-49).</summary>
     YearNudge,
     /// <summary>A 1:1's calendar invite (or cancellation) by email to each of the two people (D-39); no bell.</summary>
@@ -39,7 +39,6 @@ public sealed record ConversationNotificationPayload(Guid ResourceId, string? Ac
 
 public sealed record PlanNotificationPayload(Guid CycleId, Guid PlanId, string? ActorDisplayName);
 public sealed record ReviewNotificationPayload(Guid CycleId, Guid ReviewRoundId, Guid ReviewId, string ReviewRoundName);
-public sealed record CalibrationNotificationPayload(Guid CycleId, Guid ReviewRoundId, Guid SessionId, string ReviewRoundName);
 /// <summary>A notification that opens one in-app place: an objective, a plan, or a person's development.</summary>
 public sealed record PathNotificationPayload(Guid CycleId, Guid ResourceId, string? ActorDisplayName, string Path);
 
@@ -171,7 +170,7 @@ public sealed class PerformanceOutboxMessage : PerformanceChildEntity
     public static bool IsReviewWorkKind(PerformanceNotificationKind kind) => kind is PerformanceNotificationKind.PeerInputRequested
         or PerformanceNotificationKind.PeerDeclined or PerformanceNotificationKind.ReviewDueDateMoved
         or PerformanceNotificationKind.ReviewReminder or PerformanceNotificationKind.ReviewAcknowledged
-        or PerformanceNotificationKind.CalibrationFinalized;
+        or PerformanceNotificationKind.CalibrationDecided;
 
     /// <summary>
     /// A review-work notification. The caller gives the dedupe key: per transition for events,
@@ -193,29 +192,6 @@ public sealed class PerformanceOutboxMessage : PerformanceChildEntity
             DedupeKey = dedupeKey,
             NextAttemptAt = PerformanceClock.UtcNow,
         };
-    }
-
-    /// <summary>
-    /// Tells a facilitator that every review reached calibration. A facilitator without an
-    /// employee record has no Core work email, so the message is recorded as skipped.
-    /// </summary>
-    public static PerformanceOutboxMessage ForCalibration(Guid tenantId, Guid recipientUserId, Guid? recipientEmployeeId,
-        CalibrationNotificationPayload payload)
-    {
-        if (tenantId == Guid.Empty || recipientUserId == Guid.Empty || payload.SessionId == Guid.Empty
-            || payload.CycleId == Guid.Empty || payload.ReviewRoundId == Guid.Empty || string.IsNullOrWhiteSpace(payload.ReviewRoundName))
-            throw new ArgumentException("Calibration notification tenant, recipient and session context are required.");
-        var message = new PerformanceOutboxMessage
-        {
-            TenantId = tenantId, Kind = PerformanceNotificationKind.CalibrationReady,
-            RecipientEmployeeId = recipientEmployeeId ?? Guid.Empty,
-            ResourceType = "CalibrationSession", ResourceId = payload.SessionId,
-            Payload = JsonSerializer.Serialize(payload),
-            DedupeKey = $"{PerformanceNotificationKind.CalibrationReady}:{payload.SessionId:N}:{recipientUserId:N}",
-            NextAttemptAt = PerformanceClock.UtcNow,
-        };
-        if (recipientEmployeeId is null || recipientEmployeeId == Guid.Empty) message.Skip("no-work-email");
-        return message;
     }
 
     public void MarkDispatched(DateTime now)

@@ -11,7 +11,10 @@ using EY.HRPlatform.SharedKernel.Auth;
 
 namespace EY.HRPlatform.Performance.Tests;
 
-/// <summary>Calibration needs the calibrate grant and a seat on the session; round administration is not enough.</summary>
+/// <summary>
+/// Calibration needs the calibrate grant alone (D-35); round administration confers nothing there, and releasing results
+/// stays with round administration. A calibrator never sees or decides their own review; another tenant's round is not found.
+/// </summary>
 public sealed class CalibrationHttpTests
 {
     private static readonly DateOnly Start = new(2026, 1, 1);
@@ -23,109 +26,72 @@ public sealed class CalibrationHttpTests
         [new(PerformancePermissions.CycleView, PermissionScopes.Self), new(PerformancePermissions.ObjectiveSelfManage, PermissionScopes.Self)];
 
     [Fact]
-    public async Task Each_role_gets_only_what_calibration_authority_allows()
-    {
-        using var factory = new PerformanceApiFactory();
-        var roundId = await ArrangeAsync(factory);
-        var hr = Guid.NewGuid();
-        var otherHolder = Guid.NewGuid();
-        var path = $"/api/performance/review-rounds/{roundId}/calibration";
-
-        var admin = factory.CreateAuthenticatedClient(permissions: RoundAdmin);
-        Assert.Equal(HttpStatusCode.Forbidden, (await admin.PostAsync(path, null)).StatusCode);
-        var employee = factory.CreateAuthenticatedClient(employeeId: Guid.NewGuid(), permissions: Employee);
-        Assert.Equal(HttpStatusCode.Forbidden, (await employee.GetAsync(path)).StatusCode);
-
-        var facilitator = factory.CreateAuthenticatedClient(permissions: Calibrator, userId: hr);
-        Assert.Equal(HttpStatusCode.OK, (await facilitator.PostAsync(path, null)).StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await facilitator.GetAsync(path)).StatusCode);
-
-        // Holding the grant is not a seat on the session.
-        var unnamed = factory.CreateAuthenticatedClient(permissions: Calibrator, userId: otherHolder);
-        Assert.Equal(HttpStatusCode.Forbidden, (await unnamed.GetAsync(path)).StatusCode);
-
-        // Naming someone Identity does not list as a holder is rejected.
-        factory.Holders.Holders.Add(new PermissionHolder(hr, null, "QA Admin", "qa@example.test"));
-        var session = await facilitator.GetFromJsonAsync<System.Text.Json.JsonElement>(path);
-        var version = session.GetProperty("data").GetProperty("version").GetUInt32();
-        var naming = await facilitator.PutAsJsonAsync($"{path}/facilitators", new { userIds = new[] { hr, otherHolder }, expectedVersion = version });
-        Assert.Equal(HttpStatusCode.BadRequest, naming.StatusCode);
-    }
-
-    [Fact]
-    public async Task After_calibration_the_reviewer_sees_why_the_rating_changed_and_the_subject_sees_only_the_result()
+    public async Task Only_the_calibrate_grant_reads_or_decides_and_only_round_administration_releases()
     {
         using var factory = new PerformanceApiFactory();
         var world = await ArrangeReviewAsync(factory);
-        var hr = Guid.NewGuid();
         var calibration = $"/api/performance/review-rounds/{world.RoundId}/calibration";
-        var reviewPath = $"/api/performance/reviews/{world.ReviewId}";
-        var facilitator = factory.CreateAuthenticatedClient(permissions: [.. Calibrator, .. RoundAdmin], userId: hr);
-        var reviewer = factory.CreateAuthenticatedClient(employeeId: world.ReviewerId,
-            permissions: [new(PerformancePermissions.CycleView, PermissionScopes.DirectReports)]);
-        var subject = factory.CreateAuthenticatedClient(employeeId: world.SubjectId, permissions: Employee);
-        var unnamed = factory.CreateAuthenticatedClient(permissions: Calibrator, userId: Guid.NewGuid());
+        var decision = $"{calibration}/subjects/{world.ReviewId}/decision";
+        var release = $"/api/performance/review-rounds/{world.RoundId}/finalize";
 
-        var opened = await Data(await facilitator.PostAsync(calibration, null));
-        var subjectVersion = (await People(facilitator, calibration)).Single().GetProperty("version").GetUInt32();
-        // A named facilitator reads the review while it is in calibration; an unnamed holder cannot.
-        var during = await Data(await facilitator.GetAsync(reviewPath));
-        Assert.Equal(4, during.GetProperty("calibration").GetProperty("originalRating").GetInt32());
-        Assert.Equal(HttpStatusCode.Forbidden, (await unnamed.GetAsync(reviewPath)).StatusCode);
-        Assert.Equal(JsonValueKind.Null, (await Data(await reviewer.GetAsync(reviewPath))).GetProperty("calibration").ValueKind);
+        var admin = factory.CreateAuthenticatedClient(permissions: RoundAdmin);
+        var employee = factory.CreateAuthenticatedClient(employeeId: Guid.NewGuid(), permissions: Employee);
+        foreach (var client in new[] { admin, employee })
+        {
+            Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync(calibration)).StatusCode);
+            Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync($"{calibration}/everyone")).StatusCode);
+            Assert.Equal(HttpStatusCode.Forbidden, (await client.PutAsJsonAsync(decision, new { rating = 4, expectedVersion = 0 })).StatusCode);
+        }
 
-        Assert.Equal(HttpStatusCode.OK, (await facilitator.PutAsJsonAsync($"{calibration}/subjects/{world.ReviewId}",
-            new { rating = 3, rationale = "Peer outcomes were stronger", discussionState = "Discussed", expectedVersion = subjectVersion })).StatusCode);
-        var session = await Data(await facilitator.GetAsync(calibration));
-        Assert.Equal(HttpStatusCode.OK, (await facilitator.PostAsJsonAsync($"{calibration}/finalize",
-            new { expectedVersion = session.GetProperty("version").GetUInt32() })).StatusCode);
-        var readyReview = await Data(await facilitator.GetAsync(reviewPath));
-        Assert.Equal(HttpStatusCode.OK, (await facilitator.PostAsJsonAsync($"{reviewPath}/finalize",
-            new { expectedVersion = readyReview.GetProperty("version").GetUInt32() })).StatusCode);
+        // Any holder of the grant calibrates; no one opens or staffs a session first.
+        var calibrator = factory.CreateAuthenticatedClient(permissions: Calibrator, userId: Guid.NewGuid());
+        var read = await Data(await calibrator.GetAsync(calibration));
+        Assert.Equal(1, read.GetProperty("ready").GetProperty("count").GetInt32());
+        Assert.False(read.GetProperty("canRelease").GetBoolean());
+        Assert.Equal(HttpStatusCode.OK, (await calibrator.PutAsJsonAsync(decision, new { rating = 4, expectedVersion = 0 })).StatusCode);
 
-        var reviewerView = (await Data(await reviewer.GetAsync(reviewPath))).GetProperty("calibration");
-        Assert.Equal((4, 3, "Peer outcomes were stronger"), (reviewerView.GetProperty("originalRating").GetInt32(),
-            reviewerView.GetProperty("calibratedRating").GetInt32(), reviewerView.GetProperty("rationale").GetString()));
-        var adminView = await Data(await facilitator.GetAsync(reviewPath));
-        Assert.Equal("Calibration", adminView.GetProperty("finalRatingSource").GetString());
-        Assert.Equal(4, adminView.GetProperty("managerAssessment").GetProperty("overallRating").GetInt32());
-        var reviewerReview = await Data(await reviewer.GetAsync(reviewPath));
-        Assert.Equal(4, reviewerReview.GetProperty("managerAssessment").GetProperty("overallRating").GetInt32());
-
-        var subjectView = await Data(await subject.GetAsync(reviewPath));
-        Assert.Equal(3, subjectView.GetProperty("finalRating").GetInt32());
-        Assert.Equal(JsonValueKind.Null, subjectView.GetProperty("managerAssessment").GetProperty("overallRating").ValueKind);
-        Assert.Equal(JsonValueKind.Null, subjectView.GetProperty("calibration").ValueKind);
-        Assert.Equal(JsonValueKind.Null, subjectView.GetProperty("finalRatingSource").ValueKind);
-        var raw = await (await subject.GetAsync(reviewPath)).Content.ReadAsStringAsync();
-        Assert.DoesNotContain("Peer outcomes were stronger", raw);
-        Assert.Equal(HttpStatusCode.Forbidden, (await subject.GetAsync(calibration)).StatusCode);
+        // Releasing is the year's move: a calibrator alone can't, an administrator can.
+        var version = (await Data(await admin.GetAsync($"/api/performance/review-rounds/{world.RoundId}"))).GetProperty("version").GetUInt32();
+        Assert.Equal(HttpStatusCode.Forbidden, (await calibrator.PostAsJsonAsync(release, new { expectedVersion = version })).StatusCode);
+        var released = await Data(await admin.PostAsJsonAsync(release, new { expectedVersion = version }));
+        Assert.Equal(world.ReviewId.ToString(), released.GetProperty("finalized")[0].GetProperty("reviewId").GetString());
     }
 
     [Fact]
-    public async Task Calibrators_find_calibration_rounds_from_Reviews()
+    public async Task A_changed_rating_reaches_the_reviewer_with_its_reason_and_the_subject_sees_only_the_result()
     {
         using var factory = new PerformanceApiFactory();
-        var roundId = await ArrangeAsync(factory);
-        var hr = Guid.NewGuid();
-        var calibrator = factory.CreateAuthenticatedClient(permissions: Calibrator, userId: hr);
-        var context = await Data(await calibrator.GetAsync("/api/performance/context"));
-        Assert.True(context.GetProperty("destinations").GetProperty("reviews").GetBoolean());
-        var cycleId = context.GetProperty("selected").GetProperty("id").GetString();
+        var world = await ArrangeReviewAsync(factory);
+        var calibration = $"/api/performance/review-rounds/{world.RoundId}/calibration";
+        var reviewPath = $"/api/performance/reviews/{world.ReviewId}";
+        var hr = factory.CreateAuthenticatedClient(permissions: [.. Calibrator, .. RoundAdmin], userId: Guid.NewGuid());
+        var reviewer = factory.CreateAuthenticatedClient(employeeId: world.ReviewerId,
+            permissions: [new(PerformancePermissions.CycleView, PermissionScopes.DirectReports)]);
+        var subject = factory.CreateAuthenticatedClient(employeeId: world.SubjectId, permissions: Employee);
+        var outsider = factory.CreateAuthenticatedClient(permissions: [new(PerformancePermissions.CycleView, PermissionScopes.Tenant)]);
 
-        var before = (await Data(await calibrator.GetAsync($"/api/performance/cycles/{cycleId}/calibration")))[0];
-        Assert.Equal(JsonValueKind.Null, before.GetProperty("sessionState").ValueKind);
-        await calibrator.PostAsync($"/api/performance/review-rounds/{roundId}/calibration", null);
-        var after = (await Data(await calibrator.GetAsync($"/api/performance/cycles/{cycleId}/calibration")))[0];
-        Assert.True(after.GetProperty("isFacilitator").GetBoolean());
-        Assert.Equal(1, after.GetProperty("subjects").GetInt32());
+        // A calibrator reads the review while it is in calibration; someone without the grant cannot.
+        var during = await Data(await hr.GetAsync(reviewPath));
+        Assert.Equal(4, during.GetProperty("calibration").GetProperty("originalRating").GetInt32());
+        Assert.Equal(HttpStatusCode.Forbidden, (await outsider.GetAsync(reviewPath)).StatusCode);
+        Assert.Equal(JsonValueKind.Null, (await Data(await reviewer.GetAsync(reviewPath))).GetProperty("calibration").ValueKind);
 
-        var other = (await Data(await factory.CreateAuthenticatedClient(permissions: Calibrator, userId: Guid.NewGuid())
-            .GetAsync($"/api/performance/cycles/{cycleId}/calibration")))[0];
-        Assert.False(other.GetProperty("isFacilitator").GetBoolean());
-        Assert.Equal(JsonValueKind.Null, other.GetProperty("subjects").ValueKind);
-        Assert.Equal(HttpStatusCode.Forbidden, (await factory.CreateAuthenticatedClient(permissions: RoundAdmin)
-            .GetAsync($"/api/performance/cycles/{cycleId}/calibration")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await hr.PutAsJsonAsync($"{calibration}/subjects/{world.ReviewId}/decision",
+            new { rating = 3, reason = "Peer outcomes were stronger", expectedVersion = 0 })).StatusCode);
+        var reviewerView = (await Data(await reviewer.GetAsync(reviewPath))).GetProperty("calibration");
+        Assert.Equal((4, 3, "Peer outcomes were stronger"), (reviewerView.GetProperty("originalRating").GetInt32(),
+            reviewerView.GetProperty("calibratedRating").GetInt32(), reviewerView.GetProperty("rationale").GetString()));
+
+        var round = await Data(await hr.GetAsync($"/api/performance/review-rounds/{world.RoundId}"));
+        Assert.Equal(HttpStatusCode.OK, (await hr.PostAsJsonAsync($"/api/performance/review-rounds/{world.RoundId}/finalize",
+            new { expectedVersion = round.GetProperty("version").GetUInt32() })).StatusCode);
+        var subjectRaw = await (await subject.GetAsync(reviewPath)).Content.ReadAsStringAsync();
+        var subjectView = JsonDocument.Parse(subjectRaw).RootElement.GetProperty("data");
+        Assert.Equal(3, subjectView.GetProperty("finalRating").GetInt32());
+        Assert.Equal(JsonValueKind.Null, subjectView.GetProperty("calibration").ValueKind);
+        Assert.Equal(JsonValueKind.Null, subjectView.GetProperty("finalRatingSource").ValueKind);
+        Assert.DoesNotContain("Peer outcomes were stronger", subjectRaw);
+        Assert.Equal(HttpStatusCode.Forbidden, (await subject.GetAsync(calibration)).StatusCode);
     }
 
     [Fact]
@@ -155,93 +121,46 @@ public sealed class CalibrationHttpTests
     }
 
     [Fact]
-    public async Task A_facilitator_who_is_also_a_subject_calibrates_others_but_never_sees_their_own_review()
+    public async Task A_calibrator_who_is_also_in_the_round_calibrates_others_but_never_sees_their_own_review()
     {
         using var factory = new PerformanceApiFactory();
         var world = await ArrangeTwoSubjectsAsync(factory);
-        var hr = Guid.NewGuid();
         var calibration = $"/api/performance/review-rounds/{world.RoundId}/calibration";
         var ownId = world.Own.ToString();
-        // The facilitator also administers rounds and is one of the round's subjects.
-        var selfFacilitator = factory.CreateAuthenticatedClient(employeeId: world.SelfEmployeeId, permissions: [.. Calibrator, .. RoundAdmin], userId: hr);
+        var self = factory.CreateAuthenticatedClient(employeeId: world.SelfEmployeeId, permissions: Calibrator, userId: Guid.NewGuid());
 
-        var openedResponse = await selfFacilitator.PostAsync(calibration, null);
-        var openedRaw = await openedResponse.Content.ReadAsStringAsync();
-        var opened = await Data(openedResponse);
-        Assert.DoesNotContain(ownId, openedRaw, StringComparison.OrdinalIgnoreCase);
-        AssertOnlyOther(opened, world);
-
-        var readRaw = await (await selfFacilitator.GetAsync(calibration)).Content.ReadAsStringAsync();
-        Assert.DoesNotContain(ownId, readRaw, StringComparison.OrdinalIgnoreCase);
-
-        // The own review stays a subject's view: no manager content before release, no calibration detail.
-        var ownRaw = await (await selfFacilitator.GetAsync($"/api/performance/reviews/{world.Own}")).Content.ReadAsStringAsync();
-        var ownReview = JsonDocument.Parse(ownRaw).RootElement.GetProperty("data");
-        Assert.Equal(JsonValueKind.Null, ownReview.GetProperty("managerAssessment").ValueKind);
-        Assert.Equal(JsonValueKind.Null, ownReview.GetProperty("calibration").ValueKind);
-        Assert.DoesNotContain("Own manager note", ownRaw);
-
-        // Adjusting their own review is refused whatever version is sent; others' reviews still adjust.
-        Assert.Equal(HttpStatusCode.Forbidden, (await selfFacilitator.PutAsJsonAsync($"{calibration}/subjects/{world.Own}",
-            new { rating = 5, rationale = "Self", discussionState = "Discussed", expectedVersion = 0 })).StatusCode);
-        var otherVersion = (await People(selfFacilitator, calibration)).Single().GetProperty("version").GetUInt32();
-        Assert.Equal(HttpStatusCode.OK, (await selfFacilitator.PutAsJsonAsync($"{calibration}/subjects/{world.Other}",
-            new { rating = 3, rationale = "Peer outcomes", discussionState = "Discussed", expectedVersion = otherVersion })).StatusCode);
-
-        // Round list counts and the administrator's round distribution leave the own review out too.
-        var cycleRounds = (await Data(await selfFacilitator.GetAsync($"/api/performance/cycles/{world.CycleId}/calibration")))[0];
-        Assert.Equal(1, cycleRounds.GetProperty("subjects").GetInt32());
-        var statusResponse = await selfFacilitator.GetAsync($"/api/performance/review-rounds/{world.RoundId}/status");
-        var statusRaw = await statusResponse.Content.ReadAsStringAsync();
-        var status = await Data(statusResponse);
-        Assert.DoesNotContain(ownId, statusRaw, StringComparison.OrdinalIgnoreCase);
-        Assert.Equal(1, status.GetProperty("ratingDistribution").EnumerateArray().Sum(level => level.GetProperty("count").GetInt32()));
-
-        // Another named facilitator still sees the whole round.
-        var session = await Data(await selfFacilitator.GetAsync(calibration));
-        var plainId = Guid.NewGuid();
-        factory.Holders.Holders.Add(new PermissionHolder(hr, world.SelfEmployeeId, "Hana", "hana@example.test"));
-        factory.Holders.Holders.Add(new PermissionHolder(plainId, null, "Plain", "plain@example.test"));
-        Assert.Equal(HttpStatusCode.OK, (await selfFacilitator.PutAsJsonAsync($"{calibration}/facilitators",
-            new { userIds = new[] { hr, plainId }, expectedVersion = session.GetProperty("version").GetUInt32() })).StatusCode);
-        var plainFacilitator = factory.CreateAuthenticatedClient(permissions: Calibrator, userId: plainId);
-        Assert.Equal(2, (await People(plainFacilitator, calibration)).Length);
-
-        // Finalizing seals every subject, but the response still omits the caller's own review.
-        session = await Data(await selfFacilitator.GetAsync(calibration));
-        var finalized = await selfFacilitator.PostAsJsonAsync($"{calibration}/finalize", new { expectedVersion = session.GetProperty("version").GetUInt32() });
-        Assert.Equal(HttpStatusCode.OK, finalized.StatusCode);
-        Assert.DoesNotContain(ownId, await finalized.Content.ReadAsStringAsync(), StringComparison.OrdinalIgnoreCase);
-        // Releasing results: the administrator learns where others' ratings came from, never their own.
-        foreach (var (reviewId, expected) in new[] { (world.Own, (string?)null), (world.Other, "Calibration") })
+        foreach (var path in new[] { calibration, $"{calibration}/everyone" })
         {
-            var review = await Data(await selfFacilitator.GetAsync($"/api/performance/reviews/{reviewId}"));
-            var release = await Data(await selfFacilitator.PostAsJsonAsync($"/api/performance/reviews/{reviewId}/finalize",
-                new { expectedVersion = review.GetProperty("version").GetUInt32() }));
-            Assert.Equal(expected, release.GetProperty("finalRatingSource").GetString());
+            var raw = await (await self.GetAsync(path)).Content.ReadAsStringAsync();
+            Assert.DoesNotContain(ownId, raw, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("Hana", raw);
         }
-    }
+        var everyone = await Data(await self.GetAsync($"{calibration}/everyone"));
+        Assert.Equal(world.Other.ToString(), Assert.Single(everyone.GetProperty("people").EnumerateArray()).GetProperty("reviewId").GetString());
+        Assert.Equal(1, everyone.GetProperty("spread").EnumerateArray().Sum(level => level.GetProperty("count").GetInt32()));
 
-    private static void AssertOnlyOther(JsonElement session, TwoSubjects world)
-    {
-        Assert.Equal(1, session.GetProperty("counts").GetProperty("subjects").GetInt32());
-        var distribution = session.GetProperty("distribution").EnumerateArray().ToArray();
-        Assert.Equal(1, distribution.Sum(level => level.GetProperty("original").GetInt32()));
-        Assert.Equal(0, distribution.Single(level => level.GetProperty("value").GetInt32() == 2).GetProperty("original").GetInt32());
+        // Their own review stays a subject's view, and deciding on it is refused; others' still decide.
+        var ownRaw = await (await self.GetAsync($"/api/performance/reviews/{world.Own}")).Content.ReadAsStringAsync();
+        Assert.Equal(JsonValueKind.Null, JsonDocument.Parse(ownRaw).RootElement.GetProperty("data").GetProperty("calibration").ValueKind);
+        Assert.DoesNotContain("Own manager note", ownRaw);
+        Assert.Equal(HttpStatusCode.Forbidden, (await self.PutAsJsonAsync($"{calibration}/subjects/{world.Own}/decision",
+            new { rating = 5, reason = "Self", expectedVersion = 0 })).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await self.PutAsJsonAsync($"{calibration}/subjects/{world.Other}/decision",
+            new { rating = 4, expectedVersion = 0 })).StatusCode);
     }
 
     [Fact]
     public async Task Another_tenants_calibration_is_not_found()
     {
         using var factory = new PerformanceApiFactory();
-        var roundId = await ArrangeAsync(factory);
-        var hr = Guid.NewGuid();
-        var path = $"/api/performance/review-rounds/{roundId}/calibration";
-        Assert.Equal(HttpStatusCode.OK, (await factory.CreateAuthenticatedClient(permissions: Calibrator, userId: hr).PostAsync(path, null)).StatusCode);
-
-        var outsider = factory.CreateAuthenticatedClient(tenantId: Guid.NewGuid(), permissions: Calibrator, userId: hr);
+        var world = await ArrangeReviewAsync(factory);
+        var path = $"/api/performance/review-rounds/{world.RoundId}/calibration";
+        var outsider = factory.CreateAuthenticatedClient(tenantId: Guid.NewGuid(), permissions: Calibrator, userId: Guid.NewGuid());
         Assert.Equal(HttpStatusCode.NotFound, (await outsider.GetAsync(path)).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await outsider.PostAsync(path, null)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await outsider.GetAsync($"{path}/everyone")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await outsider.PutAsJsonAsync($"{path}/subjects/{world.ReviewId}/decision",
+            new { rating = 3, reason = "Elsewhere", expectedVersion = 0 })).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await outsider.DeleteAsync($"{path}/subjects/{world.ReviewId}/decision?expectedVersion=0")).StatusCode);
     }
 
     private sealed record TwoSubjects(Guid CycleId, Guid RoundId, Guid Other, Guid Own, Guid SelfEmployeeId);
@@ -276,18 +195,11 @@ public sealed class CalibrationHttpTests
         return new(cycle.Id, round.Id, otherReview.Id, ownReview.Id, selfEmployee);
     }
 
-    /// <summary>Everyone the caller sees in the session's People view.</summary>
-    private static async Task<JsonElement[]> People(HttpClient client, string calibration)
-        => (await Data(await client.GetAsync($"{calibration}/people"))).GetProperty("groups").EnumerateArray()
-            .SelectMany(group => group.GetProperty("people").EnumerateArray()).ToArray();
-
     private static async Task<JsonElement> Data(HttpResponseMessage response)
     {
         Assert.True(response.IsSuccessStatusCode, await response.Content.ReadAsStringAsync());
         return (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("data");
     }
-
-    private static async Task<Guid> ArrangeAsync(PerformanceApiFactory factory) => (await ArrangeReviewAsync(factory)).RoundId;
 
     private sealed record Arranged(Guid RoundId, Guid ReviewId, Guid SubjectId, Guid ReviewerId);
 

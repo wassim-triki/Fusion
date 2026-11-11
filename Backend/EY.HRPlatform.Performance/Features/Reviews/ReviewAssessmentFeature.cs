@@ -125,12 +125,11 @@ internal static class ReviewAssessmentCommands
             {
                 // Peer input closes with the manager assessment, in the same transaction (D3).
                 await PeerRequestClosure.CloseOpenAsync(db, review.Id, PerformanceClock.UtcNow, token);
-                if (review.State == PerformanceReviewState.Calibration)
-                    await CalibrationSessions.JoinAsync(db, review, notifications, token);
+                await CalibrationSessions.JoinAsync(db, review, token);
             }
             await db.SaveChangesAsync(token);
-            if (review.State == PerformanceReviewState.Calibration)
-                await CalibrationSessions.ConfirmReadyAfterCommitAsync(db, review.ReviewRoundId, notifications, token);
+            // Once the round's results are out, a review that arrives ready goes out by itself (D-35).
+            if (!self) await CalibrationRelease.ReleaseIfDueAsync(db, review.Id, audit, notifications, token);
             return Result.Success(ToDto(review));
         }
         catch (ArgumentException ex) { return Invalid(ex.Message); }

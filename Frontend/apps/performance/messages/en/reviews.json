@@ -21,23 +21,10 @@
     "afterCalibration": "After calibration",
     "youGave": "You gave {originalRating} · {originalRating2}",
     "asYouRated": "As you rated",
-    "potential": "Potential",
     "willSee": "{subject} will see",
-    "theFinalRatingAndYour": "The final rating and your summary",
+    "theFinalRatingAndYour": "The final rating and your answers",
     "wontSee": "{subject} won't see",
-    "yourRatingTheReason": "Your rating, the reason",
-    "orPotential": "or potential"
-  },
-  "SummaryRevision": {
-    "yourSummary": "Your summary",
-    "revisedEditableUntilResultsAre": "Revised {dayLabel} · editable until results are released",
-    "keptEditableUntilResultsAre": "Kept {dayLabel} · editable until results are released",
-    "readsThisBesideTheFinal": "{subject} reads this beside the final rating",
-    "keepAsIs": "Keep as is",
-    "summaryKept": "Summary kept.",
-    "saveSummary": "Save summary",
-    "summarySaved": "Summary saved.",
-    "undoChanges": "Undo changes"
+    "yourRatingTheReason": "Your rating, the reason"
   },
   "PeerListDrawer": {
     "colleagueAskedForInput": "{length} colleague asked for input.",
@@ -430,19 +417,13 @@
     "readyToWrite": "Ready to write",
     "closed": "Closed",
     "released": "Released",
-    "checkSummary": "Check summary",
     "writeReview": "Write review",
     "openSReview": "Open {subjectDisplayName}'s review",
     "asked": "{peerCount} asked"
   },
   "SessionLead": {
-    "calibration": "Calibration",
-    "openTheSession": "Open the session",
-    "discussed": "Discussed",
-    "of": "of {people}",
-    "people": "People",
-    "flags": "Flags",
-    "withManagers": "With managers"
+    "toLookAt": "{count, plural, one {# review to look at} other {# reviews to look at}}",
+    "lookAtThem": "Look at them"
   },
   "RunningRoundCard": {
     "launched": "Launched",

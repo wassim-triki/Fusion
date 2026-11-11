@@ -427,7 +427,6 @@ export interface ReviewsWorkspaceTeamRowDto {
   finalRating: number | null;
   finalPotential: ReviewPotential | null;
   calibrationChanged: boolean;
-  summaryToCheck: boolean;
 }
 export interface ReviewsWorkspaceRoundDto {
   roundId: string;
@@ -477,13 +476,10 @@ export interface ReviewsWorkspaceDto {
     finalizedAt: string | null;
     acknowledgedAt: string | null;
   }[];
-  /** Open calibration sessions the viewer facilitates, counted without their own review. */
+  /** Running rounds with flagged reviews for a calibrator to look at, never counting their own (D-35). */
   sessions: ReviewsWorkspaceSessionDto[];
 }
-export interface ReviewsWorkspaceSessionDto { roundId: string; roundName: string; people: number; discussed: number; flags: number; outstanding: number }
-
-/** After a calibrated rating change: the reviewer's summary and whether they revised it or kept it. */
-export interface ReviewSummaryStateDto { reviewId: string; summary: string; summaryRevisedAt: string | null; summaryCheckedAt: string | null; version: number }
+export interface ReviewsWorkspaceSessionDto { roundId: string; roundName: string; toLookAt: number }
 
 export type ReviewDraftKind = "Summary" | "Question";
 export interface ReviewDraftSourceDto { kind: string; key: string; label: string; path: string | null; subjectVisible: boolean; excerpt: string }
@@ -527,8 +523,6 @@ export const reviewPaths = {
   acknowledgementComment: (reviewId: string) => `/performance/reviews/${reviewId}/acknowledgement-comment`,
   peerSuggestions: (reviewId: string) => `/performance/reviews/${reviewId}/peer-suggestions`,
   peerRequest: (requestId: string) => `/performance/peer-requests/${requestId}`,
-  managerSummary: (reviewId: string) => `/performance/reviews/${reviewId}/manager-summary`,
-  summaryChecked: (reviewId: string) => `/performance/reviews/${reviewId}/summary-checked`,
   draft: (reviewId: string) => `/performance/reviews/${reviewId}/draft`,
 } as const;
 
@@ -594,10 +588,6 @@ export function createReviewsApi(client: ApiClient) {
     declinePeerRequest: (requestId: string, note: string | null) =>
       client.post<PeerRequestDto>(`${reviewPaths.peerRequest(requestId)}/decline`, { note }),
 
-    // After calibration
-    reviseSummary: (reviewId: string, summary: string, expectedVersion: number) =>
-      client.put<ReviewSummaryStateDto>(reviewPaths.managerSummary(reviewId), { summary, expectedVersion }),
-    markSummaryChecked: (reviewId: string) => client.post<ReviewSummaryStateDto>(reviewPaths.summaryChecked(reviewId), {}),
 
     // AI draft: the summary, or one of the writer's questions
     draft: (reviewId: string, kind: ReviewDraftKind, questionId?: string | null) =>

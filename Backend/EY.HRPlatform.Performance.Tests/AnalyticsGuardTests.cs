@@ -11,8 +11,8 @@ public sealed class AnalyticsGuardTests
 {
     private static readonly Regex AverageLike = new("average|avg|mean(?!ing)", RegexOptions.IgnoreCase);
 
-    /// <summary>Calibration insights (D-25), facilitators only: a reviewer's average rating against the session's.</summary>
-    private static readonly HashSet<string> CalibrationInsights = ["CalibrationDistributionViewDto", "CalibrationManagerDto"];
+    /// <summary>A flag for a manager who rates far from everyone (D-35), calibrators only: their average rating against everyone's.</summary>
+    private static readonly HashSet<string> CalibrationInsights = ["CalibrationFlagDto"];
 
     [Fact]
     public void No_Performance_projection_exposes_an_averaged_figure()

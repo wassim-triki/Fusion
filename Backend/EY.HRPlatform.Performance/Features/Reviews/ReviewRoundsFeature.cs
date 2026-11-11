@@ -487,6 +487,8 @@ public sealed class LaunchReviewRoundHandler(PerformanceDbContext db, ITenantCon
                 round.SelfAssessmentEnabled ? PerformanceNotificationKind.SelfAssessmentOpened : PerformanceNotificationKind.ManagerAssessmentOpened,
                 round.Name);
         if (round.PeerInputEnabled) await AskPeersAsync(round, reviews, now, cancellationToken);
+        // Calibration opens with the round (D-35), so reviews arriving together never race to open it.
+        if (round.CalibrationEnabled) await Calibration.CalibrationSessions.EnsureAsync(db, round, cancellationToken, version.Levels.Select(l => l.Value).ToArray());
         audit.Record(tenant.TenantId, "ReviewRound", round.Id, round.CycleId, PerformanceAuditActions.ReviewRoundLaunched,
             new { before = new { state = beforeState }, after = new { state = round.State, reviewCount = reviews.Count, ratingScaleVersion = version.Number,
                 questionCount = snapshots.Count } });

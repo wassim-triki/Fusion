@@ -34,7 +34,7 @@ const row = (name: string, overrides: Partial<ReviewsWorkspaceDto["toWrite"][num
   peerStep: "Asked", peerCount: 3, selfStep: "Writing", selfSubmittedAt: null, peerAnswered: 1, peerTotal: 3, peerDeclined: 0,
   reviewStep: "Waiting", dueDate: "2099-09-15", daysLate: 0, nextAction: "Wait", selfOverallRating: null, selfOverallLabel: null,
   peerNames: [], planProgress: 74, atRisk: 1, feedback: 7, praise: 3,
-  managerRating: null, managerPotential: null, finalRating: null, finalPotential: null, calibrationChanged: false, summaryToCheck: false, ...overrides,
+  managerRating: null, managerPotential: null, finalRating: null, finalPotential: null, calibrationChanged: false, ...overrides,
 });
 
 beforeEach(() => {
@@ -43,20 +43,20 @@ beforeEach(() => {
 });
 
 describe("Reviews workspace", () => {
-  it("leads a facilitator's page with the open session, and shows reviews in and out of calibration", () => {
+  it("leads a calibrator's page with the reviews to look at, and shows reviews in and out of calibration", () => {
     state.data = workspace({
-      sessions: [{ roundId: "round-1", roundName: "Year-end review", people: 141, discussed: 64, flags: 7, outstanding: 0 }],
+      sessions: [{ roundId: "round-1", roundName: "Year-end review", toLookAt: 3 }],
       toWrite: [
-        row("Tarek Ayari", { state: "ReadyToFinalize", reviewStep: "Submitted", nextAction: "None" as never, managerRating: 4, finalRating: 3, calibrationChanged: true, summaryToCheck: true }),
+        row("Tarek Ayari", { state: "ReadyToFinalize", reviewStep: "Submitted", nextAction: "None" as never, managerRating: 4, finalRating: 3, calibrationChanged: true }),
         row("Fares Lachheb", { state: "Calibration", reviewStep: "Submitted", nextAction: "None" as never, managerRating: 4 }),
       ],
     });
     render(<ReviewsWorkspace />);
-    expect(screen.getByRole("link", { name: /Open the session/ }).getAttribute("href")).toContain("/reviews/rounds/round-1/calibration");
+    expect(screen.getByText("3 reviews to look at")).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Look at them/ }).getAttribute("href")).toContain("/reviews/rounds/round-1/calibration");
     expect(screen.getByText("In calibration")).toBeTruthy();
     expect(screen.getByText("You rated 4")).toBeTruthy();
     expect(screen.getByText("Changed in calibration")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Check summary" }).getAttribute("href")).toContain("/reviews/r-Tarek%20Ayari");
   });
 
   it("leads an employee's page with their own review, their year, input asked of them and past results", () => {

@@ -38,7 +38,7 @@ const LINES: Record<string, string> = {
   "Someone submitted their self-assessment": "selfAssessmentSubmitted",
   "Peers to approve": "peersToApprove",
   "Someone acknowledged their review": "reviewAcknowledged",
-  "Calibration ready, calibration finalized": "calibration",
+  "A rating you gave kept or changed in calibration": "calibration",
   "Your self-assessment opens, your peers approved, your review released": "ownReview",
   "Peer input asked of you, a peer declined, a due date moved": "peerInput",
   "A 1:1 started or moved": "oneOnOneMoved",

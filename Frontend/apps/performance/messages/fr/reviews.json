@@ -21,23 +21,10 @@
     "afterCalibration": "Après calibrage",
     "youGave": "Vous avez donné {originalRating} · {originalRating2}",
     "asYouRated": "Comme vous l’avez noté",
-    "potential": "Potentiel",
     "willSee": "{subject} verra",
-    "theFinalRatingAndYour": "La note finale et votre synthèse",
+    "theFinalRatingAndYour": "La note finale et vos réponses",
     "wontSee": "{subject} ne verra pas",
-    "yourRatingTheReason": "Votre note, la raison",
-    "orPotential": "ni le potentiel"
-  },
-  "SummaryRevision": {
-    "yourSummary": "Votre synthèse",
-    "revisedEditableUntilResultsAre": "Révisée le {dayLabel} · modifiable jusqu’à la publication des résultats",
-    "keptEditableUntilResultsAre": "Conservée le {dayLabel} · modifiable jusqu’à la publication des résultats",
-    "readsThisBesideTheFinal": "{subject} lit ceci à côté de la note finale",
-    "keepAsIs": "Garder tel quel",
-    "summaryKept": "Synthèse conservée.",
-    "saveSummary": "Enregistrer la synthèse",
-    "summarySaved": "Synthèse enregistrée.",
-    "undoChanges": "Annuler les modifications"
+    "yourRatingTheReason": "Votre note, la raison"
   },
   "PeerListDrawer": {
     "colleagueAskedForInput": "{length} collègue sollicité pour son avis.",
@@ -430,19 +417,13 @@
     "readyToWrite": "Prête à rédiger",
     "closed": "Clôturé",
     "released": "Publiée",
-    "checkSummary": "Vérifier la synthèse",
     "writeReview": "Rédiger l’évaluation",
     "openSReview": "Ouvrir l’évaluation de {subjectDisplayName}",
     "asked": "{peerCount} sollicités"
   },
   "SessionLead": {
-    "calibration": "Calibrage",
-    "openTheSession": "Ouvrir la session",
-    "discussed": "Discuté",
-    "of": "sur {people}",
-    "people": "Collaborateurs",
-    "flags": "Signalements",
-    "withManagers": "Chez les managers"
+    "toLookAt": "{count, plural, one {# évaluation à regarder} other {# évaluations à regarder}}",
+    "lookAtThem": "Les regarder"
   },
   "RunningRoundCard": {
     "launched": "Lancée",

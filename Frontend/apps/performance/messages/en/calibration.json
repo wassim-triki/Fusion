@@ -1,210 +1,83 @@
 {
-  "AdjustDrawer": {
-    "loading": "Loading",
-    "evidenceAndCalibration": "Evidence and calibration"
-  },
-  "DrawerBody": {
-    "saved": "{first} saved.",
-    "openReview": "Open review",
-    "rates": "{reviewerFirst} rates {delta}",
-    "someone": "Someone",
-    "changed": "changed {first}",
-    "now": "Now {currentRating} · {currentRating2}",
-    "closeAndReload": "Close and reload",
-    "objectives": "Objectives",
-    "weighted": "· weighted {weighted}%",
-    "noEarlierResult": "No earlier result",
-    "noApprovedObjectivesThisCycle": "No approved objectives this cycle",
-    "sSummary": "{reviewerFirst}'s summary",
-    "rating": "Rating",
-    "rated": "{reviewerFirst} rated",
-    "calibratedRating": "Calibrated rating",
-    "potential": "Potential",
-    "whyThisChanges": "Why this changes",
-    "andHrSeeThisReason": "{reviewerFirst} and HR see this reason, never {first}",
-    "history": "History",
-    "discussed": "Discussed",
-    "backToS": "Back to {reviewerFirst}'s",
-    "cancel": "Cancel",
-    "save": "Save {currentRating} → {rating}",
-    "save2": "Save",
-    "reviewedBy": "reviewed by {reviewerName}",
-    "thisChangeCouldntBeSaved": "This change couldn't be saved."
-  },
-  "SessionTitle": {
-    "calibration": "Calibration",
-    "finalized": "Finalized",
-    "open": "Open",
-    "facilitators": "Facilitators",
-    "finalized2": "finalized {dayLabel}",
-    "opened": "opened {dayLabel}",
-    "people": "{count, plural, one {# person} other {# people}}"
-  },
-  "SessionAction": {
-    "openTheRoundToRelease": "Open the round to release",
-    "finalizeCalibration": "Finalize calibration",
-    "reviewIs": "review is",
-    "reviewsAre": "reviews are",
-    "stillWithManagers": "still with managers"
-  },
-  "SessionStats": {
-    "discussed": "Discussed",
-    "ratingsChanged": "Ratings changed",
-    "potentialChanged": "Potential changed",
-    "flags": "Flags",
-    "withManagers": "With managers",
-    "session": "Session",
-    "of": "of {total}",
-    "notDiscussed": "{count} not discussed"
-  },
-  "SessionToolbar": {
+  "Page": {
+    "loading": "Loading calibration",
+    "title": "Calibration",
+    "round": "{cycle} {round}",
     "views": "Views",
-    "unit": "Unit",
-    "manager": "Manager",
-    "flagged": "Flagged",
-    "notDiscussed": "Not discussed",
-    "tabs": {
-      "distribution": "Distribution",
-      "nine-box": "Nine-box",
-      "people": "People"
+    "toLookAt": "To look at",
+    "toLookAtCount": "To look at {count}",
+    "everyone": "Everyone",
+    "yourNextStep": "Your next step",
+    "allReadyAsRated": "{count, plural, one {The # review in is ready as rated} other {All # reviews in are ready as rated}}",
+    "allReady": "{count, plural, one {The # review in is ready} other {All # reviews in are ready}}",
+    "nothingInYet": "No manager reviews in yet",
+    "resultsOut": "Results out {day}",
+    "lookAtEveryone": "Look at everyone",
+    "release": "{count, plural, one {Release # result} other {Release # results}}",
+    "checkedAsTheyCame": "Checked against the round's flags as each came in",
+    "stillWritingGoOut": "{count, plural, one {# still being written goes out} other {# still being written go out}} when their manager submits",
+    "reviews": "Reviews",
+    "inOf": "{count} of {total} in",
+    "kept": "Kept {level}",
+    "fromTo": "{from} to {to}",
+    "managerTold": "{name} told",
+    "undo": "Undo",
+    "keptToast": "Kept {level} for {name}; {manager} told",
+    "changedToast": "{name} now {level}; {manager} told",
+    "couldntSave": "That decision couldn't be saved.",
+    "couldntUndo": "That couldn't be undone.",
+    "flow": {
+      "writing": "Still being written",
+      "ready": "Ready as rated",
+      "toLookAt": "To look at"
     }
   },
-  "OptionFilter": {
-    "clear": "Clear {toLowerCase}"
-  },
-  "SearchBox": {
-    "findAPerson": "Find a person"
-  },
-  "RatingChange": {
-    "to": "{original} to {current}"
-  },
-  "DistributionView": {
-    "ratingsAcrossTheSession": "Ratings across the session",
-    "managersRatings": "Managers' ratings",
-    "now": "Now",
-    "average": "Average",
-    "was": "· was {sessionAverage}",
-    "byManager": "By manager",
-    "furthestFromTheSessionAverage": "Furthest from the session average first",
-    "noOneMatchesTheseFilters": "No one matches these filters",
-    "manager": "Manager",
-    "people": "People",
-    "theirRatingsNow": "Their ratings, now",
-    "flag": "Flag",
-    "more": "{hidden} more",
-    "manager2": "manager",
-    "managers": "managers",
-    "within02OfThe": "within 0.2 of the session average",
-    "showAll": "Show all"
-  },
-  "LevelBar": {
-    "nowFromManagers": "{label}: {current} now, {original} from managers"
-  },
-  "PeopleView": {
-    "noOneMatchesTheseFilters": "No one matches these filters",
-    "person": "Person",
-    "manager": "Manager",
-    "rating": "Rating",
-    "potential": "Potential",
-    "objectives": "Objectives",
-    "lastCycle": "Last cycle",
-    "flags": "Flags"
-  },
-  "Group": {
-    "was": "· was {originalCount}",
-    "moreAt": "{value} more at {label}",
-    "show": "Show"
-  },
-  "PersonRow": {
-    "managerFlagged": "Manager flagged"
-  },
-  "ChangesView": {
-    "whereRatingsLanded": "Where ratings landed",
-    "changes": "Changes",
-    "everyRatingStayedAsManagers": "Every rating stayed as managers gave it"
-  },
-  "CalibrationWorkspacePage": {
-    "loadingCalibration": "Loading calibration",
-    "calibration": "Calibration"
-  },
-  "SessionBody": {
-    "moved": "{name} moved."
-  },
-  "StillWithManagers": {
-    "stillWithManagers": "Still with managers"
-  },
-  "OpenSession": {
-    "reviewRound": "Review round",
-    "openCalibration": "Open calibration",
-    "managerReviewsIn": "Manager reviews in",
-    "of": "of {total}",
-    "toSubmit": "{value} to submit",
-    "managerReviews": "Manager reviews",
-    "facilitators": "Facilitators",
-    "openTheSession": "Open the session",
-    "you": "you"
-  },
-  "FacilitatorDialog": {
-    "facilitators": "Facilitators",
+  "FlagCard": {
+    "roleReviewedBy": "{role}, reviewed by {name}",
+    "reviewedBy": "Reviewed by {name}",
+    "why": {
+      "goals": "Rating and goals disagree",
+      "down": "{count, plural, one {One level} other {# levels}} down since last year",
+      "up": "{count, plural, one {One level} other {# levels}} up since last year",
+      "ratesHigh": "{name} rates higher than most",
+      "ratesLow": "{name} rates lower than most",
+      "label": "Why"
+    },
+    "mark": {
+      "rating": "{name}'s rating",
+      "goals": "Goals {grade}",
+      "lastYear": "Last year",
+      "thisYear": "This year",
+      "average": "{name}'s average, {count, plural, one {# person} other {# people}}",
+      "everyone": "Everyone's, {count}"
+    },
+    "words": "{name}'s words",
+    "ratingFor": "Rating for {name}",
+    "whyPlaceholder": "Why, {name} reads this",
     "cancel": "Cancel",
-    "saveFacilitators": "Save facilitators",
-    "you": "you"
+    "changeTo": "Change to {level}",
+    "readTheReview": "Read the review",
+    "keep": "Keep {level}"
   },
-  "FinalizeDialog": {
-    "finalizeCalibration": "Finalize calibration",
-    "people": "· {people} people",
-    "loading": "Loading",
-    "ratingsChanged": "Ratings changed",
-    "downUp": "{ratingsDown} down · {ratingsUp} up",
-    "potentialChanged": "Potential changed",
-    "upDown": "{potentialUp} up · {potentialDown} down",
-    "notDiscussed": "Not discussed",
-    "flagged": "{length} flagged",
-    "notDiscussed2": "{join} · not discussed",
-    "open": "Open",
-    "whenYouFinalize": "When you finalize",
-    "ratingsAndPotentialLockThe": "Ratings and potential lock. The session can't be reopened.",
-    "reviewsMoveTo": "{people} reviews move to",
-    "readyToRelease": "Ready to release",
-    "theManagersSeeTheirPeoples": "The {reviewers} managers see their people's final ratings, and the reason for each of the {changed} changes.",
-    "employeesSeeNothingUntilYou": "Employees see nothing until you release results from the round.",
-    "keepDiscussing": "Keep discussing",
-    "finalize": "Finalize",
-    "calibrationFinalized": "Calibration finalized."
-  },
-  "NineBoxView": {
-    "movingChooseACellOr": "Moving {name}: choose a cell, or press Escape",
-    "moved": "Moved",
-    "moveHere": "Move here",
-    "potential": "Potential",
-    "nineBox": "Nine-box",
-    "people": "{count, plural, one {# person} other {# people}}",
-    "peopleDrag": "{count, plural, one {# person · drag a person to change their rating or potential} other {# people · drag a person to change their rating or potential}}"
-  },
-  "DropForm": {
-    "move": "Move {name}",
-    "noChange": "No change",
-    "rating": "Rating",
-    "whyThisChanges": "Why this changes",
-    "whatTheGroupAgreedAbout": "What the group agreed about {first}",
-    "discussed": "Discussed",
+  "Grid": {
+    "spread": "Spread",
+    "rated": "{count} rated",
+    "ratingAgainstGrade": "Rating against goals' grade",
+    "gradeFromMeasures": "Goals' grade read from the measures",
+    "below": "Below {level}",
+    "above": "Above {level}",
+    "rows": {
+      "0": "0.8 and up",
+      "1": "0.5 to 0.8",
+      "2": "Below 0.5"
+    },
+    "fromTo": "{from} to {to}",
+    "whyPlaceholder": "Why, {name} reads this",
+    "why": "Why",
     "cancel": "Cancel",
-    "move2": "Move",
-    "rating2": "Rating {currentRating} → {rating}",
-    "potential": "potential {potential} → {potential2}",
-    "theMoveCouldntBeSaved": "The move couldn't be saved."
-  },
-  "ManagerRow": {
-    "at": "{count} at {value}"
-  },
-  "format": {
-    "up": "{count, plural, one {Up # level} other {Up # levels}}",
-    "down": "{count, plural, one {Down # level} other {Down # levels}}",
-    "upSince": "{count, plural, one {Up # level since {cycle}} other {Up # levels since {cycle}}}",
-    "downSince": "{count, plural, one {Down # level since {cycle}} other {Down # levels since {cycle}}}",
-    "top": "Top rating, {share}% of objectives",
-    "bottom": "Bottom rating, {share}% of objectives",
-    "above": "{delta} above the session",
-    "below": "{delta} below the session"
+    "change": "Change",
+    "andMore": "and {count} more",
+    "dragHint": "Drag a face to another column to change a rating",
+    "ungraded": "{count, plural, one {# person} other {# people}} without goals to grade"
   }
 }

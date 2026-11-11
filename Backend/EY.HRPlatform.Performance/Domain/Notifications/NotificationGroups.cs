@@ -30,7 +30,7 @@ public static class NotificationGroups
             or PerformanceNotificationKind.DevelopmentGoalAdded => PlansAndGoals,
         PerformanceNotificationKind.SelfAssessmentOpened or PerformanceNotificationKind.ManagerAssessmentOpened
             or PerformanceNotificationKind.SelfAssessmentSubmitted or PerformanceNotificationKind.ReviewFinalized
-            or PerformanceNotificationKind.CalibrationReady or PerformanceNotificationKind.CalibrationFinalized
+            or PerformanceNotificationKind.CalibrationDecided
             or PerformanceNotificationKind.PeerInputRequested or PerformanceNotificationKind.PeerDeclined
             or PerformanceNotificationKind.ReviewDueDateMoved or PerformanceNotificationKind.ReviewAcknowledged => ReviewsAndCalibration,
         PerformanceNotificationKind.OneOnOneStarted or PerformanceNotificationKind.OneOnOneRescheduled

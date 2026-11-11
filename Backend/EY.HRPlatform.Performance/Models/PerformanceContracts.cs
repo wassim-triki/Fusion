@@ -192,7 +192,19 @@ public sealed record YearMoveDto(CyclePhase From, CyclePhase To, string Kind, bo
     /// <summary>The drafted round's own day to open by itself (D-74), and what opens with it.</summary>
     public DateOnly? OpensOn { get; init; }
     public YearRoundOpensDto? Opens { get; init; }
+    /// <summary>Releasing results (D-72): who goes out now and how, who waits, and the reviews to release in batches.</summary>
+    public YearReleaseDto? Release { get; init; }
 }
+
+/// <summary>
+/// What releasing does today (D-35, D-72): ready as rated go out now; flagged ones looked at go out with their decision;
+/// flagged ones still to look at and reviews still being written go out once they are ready.
+/// </summary>
+public sealed record YearReleaseDto(int AsRated, IReadOnlyList<YearPersonDto> AsRatedFaces, IReadOnlyList<YearDecisionDto> LookedAt,
+    int ToLookAt, int StillWriting, IReadOnlyList<YearPersonDto> StillWritingFaces, IReadOnlyList<Guid> ReviewIds, uint RoundVersion);
+
+/// <summary>A flagged review looked at: the manager's level and the one it goes out with.</summary>
+public sealed record YearDecisionDto(Guid EmployeeId, string Name, string From, string To, bool Kept);
 
 /// <summary>
 /// What a drafted round opens: a self-review for everyone in it, three peers asked for each, each manager's reviews drafted
@@ -206,7 +218,12 @@ public sealed record YearRoundOpensDto(int People, IReadOnlyList<string> PeopleF
 /// and each manager's reviews (written, theirs to write, waiting on a self-review), furthest behind first.
 /// </summary>
 public sealed record YearReviewRoundDto(Guid RoundId, DateOnly OpenedOn, DateOnly? SelfDue, DateOnly ManagerDue, int Reviewed, int Total,
-    IReadOnlyList<YearReviewerDto> Reviewers);
+    IReadOnlyList<YearReviewerDto> Reviewers)
+{
+    /// <summary>Flagged reviews waiting on a look in calibration (D-35), with a few faces.</summary>
+    public int ToLookAt { get; init; }
+    public IReadOnlyList<YearPersonDto> ToLookAtFaces { get; init; } = [];
+}
 
 /// <summary>One manager's reviews in the round; <c>OnPace</c> when what they've written keeps up with the days gone.</summary>
 public sealed record YearReviewerDto(Guid EmployeeId, string Name, string? UnitName, int People, int Written, int ToWrite, int WaitingOnSelf,

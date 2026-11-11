@@ -2,13 +2,13 @@
 
 import { Suspense } from "react";
 import { useParams } from "next/navigation";
-import { CalibrationWorkspacePage } from "@/features/performance/components/calibration/calibration-workspace";
+import { CalibrationPage } from "@/features/performance/components/calibration/calibration-page";
 
-export default function CalibrationPage() {
+export default function CalibrationRoute() {
   const params = useParams<{ roundId: string }>();
   return (
     <Suspense>
-      <CalibrationWorkspacePage roundId={params.roundId} />
+      <CalibrationPage roundId={params.roundId} />
     </Suspense>
   );
 }

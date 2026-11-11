@@ -138,11 +138,6 @@
     "lately": "Récemment",
     "under": "sous {goal}",
     "updated": "Mis à jour le {day}",
-    "noUpdateYet": "Pas encore de mise à jour",
-    "status": {
-      "OnTrack": "En bonne voie",
-      "AtRisk": "À risque",
-      "OffTrack": "Hors trajectoire"
-    }
+    "noUpdateYet": "Pas encore de mise à jour"
   }
 }

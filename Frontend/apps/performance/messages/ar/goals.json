@@ -287,36 +287,25 @@
     "milestonesDone": "أُنجز {done} من {count}",
     "valueOn": "{value}، {day}",
     "noUpdateYet": "لا تحديث بعد",
-    "askedOn": "طُلب {day}",
-    "status": {
-      "OnTrack": "على المسار",
-      "AtRisk": "في خطر",
-      "OffTrack": "خارج المسار"
-    }
+    "askedOn": "طُلب {day}"
   },
   "Company": {
     "noUpdateYet": "لا تحديث بعد",
     "you": "أنت",
     "yourUnit": "وحدتك",
-    "hide": "إخفاء",
-    "fromYourTeam": "{count, plural, one {هدف واحد من فريقك} two {هدفان من فريقك} few {# أهداف من فريقك} other {# هدفًا من فريقك}}",
-    "peoplesGoals": "{count, plural, one {هدف فردي واحد} two {هدفان فرديان} few {# أهداف فردية} other {# هدفًا فرديًا}}",
     "noCompanyGoals": "لا أهداف للشركة بعد",
-    "ownerCompany": "{name}، الشركة",
     "company": "الشركة",
     "addAUnitGoal": "إضافة هدف للوحدة",
-    "fewer": "أقل",
-    "under": "{units, plural, =0 {لا أهداف للوحدات} one {هدف وحدة واحد} two {هدفا وحدتين} few {# أهداف وحدات} other {# هدف وحدة}}، {people, plural, =0 {لا أهداف فردية} one {هدف فردي واحد} two {هدفان فرديان} few {# أهداف فردية} other {# هدفًا فرديًا}}",
-    "noUnitGoalsYet": "لا أهداف وحدات تحته بعد",
     "drafts": "لم تُنشر بعد",
     "notPublished": "مسودة",
     "noUnitGoals": "لا أهداف لهذه الوحدة بعد",
     "noOnesGoalsYet": "لا أهداف فردية تدعمه بعد",
-    "status": {
-      "OnTrack": "على المسار",
-      "AtRisk": "في خطر",
-      "OffTrack": "خارج المسار"
-    },
-    "straightUnder": "{count, plural, one {هدف واحد تحته مباشرة} two {هدفان تحته مباشرة} few {# أهداف تحته مباشرة} other {# هدفًا تحته مباشرة}}"
+    "straightUnder": "{name}، مرتبط به مباشرة",
+    "goals": "{count, plural, one {هدف واحد} other {# أهداف}}",
+    "yours": "{name}، أنت",
+    "yourTeamUnder": "أهداف فريقك المرتبطة به",
+    "goalsUnder": "الأهداف المرتبطة به",
+    "people": "{count, plural, one {شخص واحد} other {# أشخاص}}",
+    "othersGoals": "{count, plural, one {هدف آخر لا يمكنك فتحه} other {# أهداف أخرى لا يمكنك فتحها}}"
   }
 }

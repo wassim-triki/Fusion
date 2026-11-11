@@ -175,5 +175,11 @@
     "whatsInTheWay": "Ce qui bloque",
     "cancel": "Annuler",
     "save": "Enregistrer"
+  },
+  "GoalState": {
+    "OnTrack": "En bonne voie",
+    "AtRisk": "À risque",
+    "OffTrack": "Hors trajectoire",
+    "since": "depuis le {day}"
   }
 }

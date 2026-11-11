@@ -4,6 +4,7 @@ using EY.HRPlatform.Performance.Domain.Progress;
 using EY.HRPlatform.Performance.Features.Failures;
 using EY.HRPlatform.Performance.Features.Progress;
 using EY.HRPlatform.Performance.Features.Security;
+using EY.HRPlatform.Performance.Features.Security.Policies;
 using EY.HRPlatform.Performance.Infrastructure.Core;
 using EY.HRPlatform.Performance.Infrastructure.Persistence;
 using EY.HRPlatform.Performance.Models;
@@ -64,6 +65,25 @@ public sealed class GetAlignmentMapHandler(PerformanceDbContext db, ICoreWorkfor
             .ToDictionary(group => group.Key, group => group.Count());
         var countsByParent = counts.GroupBy(row => row.Parent).ToDictionary(group => group.Key, group => group.ToList());
 
+        // A company goal reads as the mean of the goals straight under it: its units' goals on the map and every
+        // put-forward personal goal under it, whoever may read them (only the figure leaves the server).
+        var companyIds = direction.Where(o => o.OwnershipScope == ObjectiveOwnershipScope.Company).Select(o => o.Id).ToHashSet();
+        var personalUnderCompany = companyIds.Count == 0 ? [] : await db.Objectives.AsNoTracking()
+            .Where(objective => objective.CycleId == cycle.Id
+                && objective.OwnershipScope == ObjectiveOwnershipScope.Employee
+                && objective.State != ObjectiveLifecycleState.Archived
+                && objective.ParentObjectiveId != null
+                && companyIds.Contains(objective.ParentObjectiveId.Value)
+                && db.EmployeePlans.Any(plan => plan.Id == objective.EmployeePlanId
+                    && (plan.State == PlanLifecycleState.Submitted || plan.State == PlanLifecycleState.Approved)))
+            .ToListAsync(cancellationToken);
+        var underCompany = direction.Where(o => o.ParentObjectiveId is Guid p && companyIds.Contains(p))
+            .Concat(personalUnderCompany)
+            .ToLookup(o => o.ParentObjectiveId!.Value);
+
+        var lined = direction.Concat(personal).Concat(personalUnderCompany).DistinctBy(o => o.Id).ToList();
+        var lines = await ProgressComposer.LinesAsync(db, lined, cancellationToken);
+
         var nodes = new List<AlignmentMapNodeDto>(direction.Count + personal.Count);
         foreach (var objective in direction
             .OrderBy(o => o.OwnershipScope)
@@ -71,6 +91,14 @@ public sealed class GetAlignmentMapHandler(PerformanceDbContext db, ICoreWorkfor
             .ThenBy(o => o.Title))
         {
             var reported = ProgressCalc.For(objective, graph);
+            var line = lines[objective.Id];
+            var children = underCompany[objective.Id].ToList();
+            if (children.Count > 0)
+            {
+                var progress = children.Select(child => Math.Min(ProgressCalc.For(child, graph).Progress, 100m)).Average();
+                reported = new ProgressCalc.Reported(children.Any(child => ProgressCalc.For(child, graph).HasProgress), decimal.Round(progress, 2), null);
+                line = MeanLine(children.Select(child => lines[child.Id]).ToList());
+            }
             var rows = countsByParent.GetValueOrDefault(objective.Id) ?? [];
             int Count(ObjectiveStatus? status) => rows.Where(row => row.CurrentStatus == status).Sum(row => row.Count);
             var total = rows.Sum(row => row.Count);
@@ -94,12 +122,13 @@ public sealed class GetAlignmentMapHandler(PerformanceDbContext db, ICoreWorkfor
                     Count(null),
                     Math.Min(total, readableByParent.GetValueOrDefault(objective.Id))),
                 PerformanceMappers.MeasurementSummary(objective),
-                objective.OrgUnitId));
+                objective.OrgUnitId) { Line = line });
         }
 
         foreach (var objective in personal.OrderByDescending(o => IsOwn(o, request.Actor)).ThenBy(o => o.Title))
         {
             var reported = ProgressCalc.For(objective, graph);
+            var plan = objective.EmployeePlanId is Guid planId ? graph.EmployeePlansById.GetValueOrDefault(planId) : null;
             nodes.Add(new AlignmentMapNodeDto(
                 objective.Id,
                 AlignmentMapNodeKind.Personal,
@@ -113,10 +142,24 @@ public sealed class GetAlignmentMapHandler(PerformanceDbContext db, ICoreWorkfor
                 reported.HasProgress,
                 reported.Progress,
                 null,
-                PerformanceMappers.MeasurementSummary(objective)));
+                PerformanceMappers.MeasurementSummary(objective))
+            {
+                // Someone's history is theirs, their reviewer's and administrators' (named detail).
+                Line = ObjectivePolicy.CanReadProgressHistory(viewer, objective, plan) ? lines[objective.Id] : [],
+            });
         }
 
         return Result.Success(new AlignmentMapDto(cycle.Id, nodes));
+    }
+
+    /// <summary>The mean of several lines: at each of their updates, every line's latest value so far (0 before its first).</summary>
+    private static IReadOnlyList<ProgressPointDto> MeanLine(IReadOnlyList<IReadOnlyList<ProgressPointDto>> children)
+    {
+        var at = children.SelectMany(line => line).Select(point => point.At).Distinct().Order().ToList();
+        return at.Select(day => new ProgressPointDto(day, decimal.Round(children
+                .Select(line => Math.Min(line.LastOrDefault(point => point.At <= day)?.Progress ?? 0m, 100m))
+                .Average(), 2)))
+            .ToList();
     }
 
     /// <summary>Published, and every ancestor up to a company root is Published and on the map too.</summary>

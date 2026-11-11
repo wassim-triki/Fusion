@@ -175,5 +175,11 @@
     "whatsInTheWay": "ما الذي يعيقه",
     "cancel": "إلغاء",
     "save": "حفظ"
+  },
+  "GoalState": {
+    "OnTrack": "على المسار",
+    "AtRisk": "في خطر",
+    "OffTrack": "خارج المسار",
+    "since": "منذ {day}"
   }
 }

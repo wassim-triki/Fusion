@@ -138,11 +138,6 @@
     "lately": "مؤخرًا",
     "under": "ضمن {goal}",
     "updated": "حُدّث في {day}",
-    "noUpdateYet": "لا تحديث بعد",
-    "status": {
-      "OnTrack": "على المسار",
-      "AtRisk": "في خطر",
-      "OffTrack": "خارج المسار"
-    }
+    "noUpdateYet": "لا تحديث بعد"
   }
 }

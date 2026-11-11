@@ -43,6 +43,8 @@ export function GoalLine({
   status,
   height = 168,
   ghost = false,
+  dots = true,
+  pace = true,
   className,
 }: {
   start: string;
@@ -55,6 +57,10 @@ export function GoalLine({
   height?: number;
   /** Before anything is measured: the pace alone, faint (D-48). */
   ghost?: boolean;
+  /** A dot on each update; off in small rows. */
+  dots?: boolean;
+  /** Where it should be by now, marked on today's rule. */
+  pace?: boolean;
   className?: string;
 }) {
   const x = (iso: string) => positionIn(start, end, iso) * 100;
@@ -75,7 +81,7 @@ export function GoalLine({
             strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
         ) : null}
       </svg>
-      {!ghost
+      {!ghost && dots
         ? points.slice(1).map((p, i, all) => (
             <span
               key={`${p.at}-${i}`}
@@ -85,7 +91,7 @@ export function GoalLine({
             />
           ))
         : null}
-      {!ghost && today < end ? (
+      {!ghost && pace && today < end ? (
         <span
           aria-hidden
           className="absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-muted-foreground bg-card"

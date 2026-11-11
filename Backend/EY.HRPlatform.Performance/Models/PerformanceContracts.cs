@@ -452,7 +452,17 @@ public sealed record AlignmentMapNodeDto(
     decimal Progress,
     PersonalAlignmentDto? Personal,
     string? Measure = null,
-    Guid? OrgUnitId = null);
+    Guid? OrgUnitId = null)
+{
+    /// <summary>
+    /// Progress after each update, oldest first: the goal's year as a line. A company goal's is the mean of the goals
+    /// straight under it. Empty for a personal goal whose history the viewer may not read.
+    /// </summary>
+    public IReadOnlyList<ProgressPointDto> Line { get; init; } = [];
+}
+
+/// <summary>A goal's progress (0–100) as it stood after an update.</summary>
+public sealed record ProgressPointDto(DateTime At, decimal Progress);
 
 /// <summary>The cycle's published direction as a tree, shaped for the alignment map (D-06, S-15).</summary>
 public sealed record AlignmentMapDto(Guid CycleId, IReadOnlyList<AlignmentMapNodeDto> Nodes);
@@ -634,6 +644,8 @@ public sealed record PlanObjectiveDto(
     /// <summary>The owner's latest reported status; null until the first check-in that carries one.</summary>
     public ObjectiveStatus? Status { get; init; }
     public DateTime? StatusReportedAt { get; init; }
+    /// <summary>When the current status value began; repeats keep it (D-97).</summary>
+    public DateTime? StatusSince { get; init; }
 
     /// <summary>Whether someone chose <see cref="PlanWeight"/>; otherwise it is the goal's even share (D-40).</summary>
     public bool PlanWeightIsSet { get; init; }

@@ -287,36 +287,25 @@
     "milestonesDone": "{done} of {count} done",
     "valueOn": "{value}, {day}",
     "noUpdateYet": "No update yet",
-    "askedOn": "Asked {day}",
-    "status": {
-      "OnTrack": "On track",
-      "AtRisk": "At risk",
-      "OffTrack": "Off track"
-    }
+    "askedOn": "Asked {day}"
   },
   "Company": {
     "noUpdateYet": "No update yet",
     "you": "You",
     "yourUnit": "your unit",
-    "hide": "Hide",
-    "fromYourTeam": "{count, plural, one {# goal from your team} other {# goals from your team}}",
-    "peoplesGoals": "{count, plural, one {# person's goal} other {# people's goals}}",
     "noCompanyGoals": "No company goals yet",
-    "ownerCompany": "{name}, company",
     "company": "Company",
     "addAUnitGoal": "Add a unit goal",
-    "fewer": "Fewer",
-    "under": "{units, plural, =0 {No unit goals} one {# unit goal} other {# unit goals}}, {people, plural, =0 {no people's goals} one {# person's goal} other {# people's goals}}",
-    "noUnitGoalsYet": "No unit goals under it yet",
     "drafts": "Not published yet",
     "notPublished": "Draft",
     "noUnitGoals": "No goals for this unit yet",
     "noOnesGoalsYet": "Nobody's goals support it yet",
-    "status": {
-      "OnTrack": "On track",
-      "AtRisk": "At risk",
-      "OffTrack": "Off track"
-    },
-    "straightUnder": "{count, plural, one {# goal straight under it} other {# goals straight under it}}"
+    "straightUnder": "{name}, straight under it",
+    "goals": "{count, plural, one {# goal} other {# goals}}",
+    "yours": "{name}, yours",
+    "yourTeamUnder": "Your team’s goals under it",
+    "goalsUnder": "Goals under it",
+    "people": "{count, plural, one {# person} other {# people}}",
+    "othersGoals": "{count, plural, one {# more goal you can’t open} other {# more goals you can’t open}}"
   }
 }

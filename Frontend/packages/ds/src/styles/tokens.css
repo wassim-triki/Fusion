@@ -29,13 +29,14 @@
     /* Surface tone ladder (DESIGN.md §5): page = band (section) → card → inlay. */
     --section: var(--background);
     --inlay: oklch(0.958 0.002 286.375);
-    --primary: oklch(0.852 0.199 91.936);
+    /* D-100: the same amber as dark mode, so the brand reads alike in both themes. */
+    --primary: oklch(0.795 0.184 86.047);
     /* D-95: ink on the yellow, never brown. */
     --primary-foreground: oklch(0.21 0.006 285.885);
     /* Amber icon tiles: light amber is pale on white, so its tint and ring sit a step firmer; the ink is the same amber hue, slightly deeper. */
     --primary-tint: color-mix(in oklab, var(--primary) 22%, transparent);
     --primary-ring: color-mix(in oklab, var(--primary) 42%, transparent);
-    --primary-ink: oklch(0.78 0.18 91.936); /* the brand amber, a step deeper for contrast on white */
+    --primary-ink: var(--primary); /* D-100: no deeper light-mode amber */
     --secondary: oklch(0.955 0.002 286.375);
     --secondary-foreground: oklch(0.21 0.006 285.885);
     --muted: oklch(0.955 0.002 286.375);

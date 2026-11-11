@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { AlignmentMapNodeDto } from "@repo/api";
-import { goalTree } from "./goals-company";
+import { byState, goalTree } from "./goals-company";
 import { goalsTab } from "./goals-place";
 import { nextToUpdate, planShares } from "./goals-you";
 
 function node(id: string, kind: AlignmentMapNodeDto["kind"], parentId: string | null, orgUnitId: string | null = null): AlignmentMapNodeDto {
   return {
     id, kind, parentId, title: id, orgUnitName: null, ownerName: null, isOwn: false, status: null, statusSince: null,
-    hasProgress: false, progress: 0, personal: null, measure: null, orgUnitId,
+    hasProgress: false, progress: 0, personal: null, measure: null, orgUnitId, line: [],
   };
 }
 
@@ -29,6 +29,11 @@ describe("Goals", () => {
     expect(tree.unitsUnder.get("c1")!.map((u) => u.id)).toEqual(["u2", "u1"]);
     expect(tree.peopleUnder.get("u2")!.map((p) => p.id)).toEqual(["p1"]);
     expect(tree.peopleUnder.get("c1")!.map((p) => p.id)).toEqual(["p2"]);
+  });
+
+  it("lists a unit's people off track first, then at risk, on track and not yet reported", () => {
+    const people = (["OnTrack", null, "OffTrack", "AtRisk"] as const).map((status, i) => ({ ...node(`p${i}`, "Personal", "u1"), status }));
+    expect([...people].sort(byState).map((p) => p.status)).toEqual(["OffTrack", "AtRisk", "OnTrack", null]);
   });
 
   it("shares the plan's bar by weight, evenly before any weight exists", () => {

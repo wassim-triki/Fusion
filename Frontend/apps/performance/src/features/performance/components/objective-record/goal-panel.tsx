@@ -5,17 +5,17 @@ import type { MeasurementDto, ObjectiveProgressDto, ObjectiveStatus, ProgressUpd
 import { cn } from "@repo/ds";
 import { Button } from "@repo/ds/components/ui/button";
 import { ArrowRight, ArrowUp, FileText, Link2, Paperclip, TrendingUp } from "@repo/ds/icons";
-import { Bar, Said, StateWord, type StateTone } from "@repo/ds/shell";
+import { Bar, Said } from "@repo/ds/shell";
 import { PersonInitials } from "@repo/performance-ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useEvidenceOpener, useObjectiveProgress, useProgressHistoryPager } from "../../api/use-performance";
 import { reportPerformanceFailure } from "../../api/performance-failure";
 import { dayMonth } from "../year/year-words";
 import { GoalLine, GoalMonths, paceOn, STATUS_STROKE } from "./goal-line";
+import { GoalState } from "./goal-state";
 import type { ObjectiveRecord } from "./objective-record-model";
 import type { ObjectiveRef } from "./objective-ref";
 
-export const STATUS_TONE: Record<ObjectiveStatus, StateTone> = { OnTrack: "ok", AtRisk: "warn", OffTrack: "bad" };
 
 const todayIso = () => {
   const now = new Date();
@@ -81,7 +81,7 @@ export function GoalHead({ record, onOpen, titleAs: Title = "h2" }: { record: Ob
             <b className="font-semibold text-foreground">{owner}</b>
           )}
         </span>
-        {status ? <StateWord tone={STATUS_TONE[status]}>{t(`status.${status}`)}</StateWord> : null}
+        {status ? <GoalState status={status} since={record.source.status?.since} /> : null}
         {record.kind === "plan" && record.planWeight !== null ? (
           <span>{t("ofThePlan", { weight: Math.round(record.planWeight) })}</span>
         ) : null}
@@ -244,7 +244,7 @@ function StoryItem({ update, measurement, first, locale, onOpenEvidence }: {
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <b className="type-label tabular-nums text-foreground">{value}</b>
           {delta !== 0 ? <span className={cn("type-meta tabular-nums", delta > 0 ? "text-success" : "text-destructive")}>{delta > 0 ? `+${delta}` : delta}</span> : null}
-          {update.status ? <StateWord tone={STATUS_TONE[update.status]}>{t(`status.${update.status}`)}</StateWord> : null}
+          {update.status ? <GoalState status={update.status} /> : null}
           {update.isCorrection ? <span className="type-meta text-muted-foreground">{t("correction")}</span> : null}
         </div>
         {update.contextNote ? <Said>{update.contextNote}</Said> : null}

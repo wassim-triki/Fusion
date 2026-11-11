@@ -1,14 +1,15 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { AlignmentMapNodeDto, GoalNodeDto } from "@repo/api";
 import { cn } from "@repo/ds";
 import { ArrowUp, Plus } from "@repo/ds/icons";
-import { Bar, StateWord, type BarTone } from "@repo/ds/shell";
-import { PersonInitials } from "@repo/performance-ui";
-import { STATUS_TONE } from "../objective-record/goal-panel";
+import { AvatarStack, PersonInitials } from "@repo/performance-ui";
+import { GoalLine, GoalMonths } from "../objective-record/goal-line";
+import { GoalState } from "../objective-record/goal-state";
 import { firstName } from "../year/year-words";
+import { Axis, todayIso } from "./goals-you";
 
 /** The map's nodes as the list reads them: company goals, the unit goals under each, people's goals under either. */
 export interface GoalTree {
@@ -38,155 +39,139 @@ function unitsBelow(tree: GoalTree, id: string): AlignmentMapNodeDto[] {
   return (tree.unitsUnder.get(id) ?? []).flatMap((unit) => [unit, ...unitsBelow(tree, unit.id)]);
 }
 
-const BAR: Record<string, BarTone> = { ok: "ok", warn: "warn", bad: "bad" };
+/** Off track first, then at risk, on track, and those with no state yet (D-99). */
+const ORDER = { OffTrack: 0, AtRisk: 1, OnTrack: 2 } as const;
+export const byState = (a: AlignmentMapNodeDto, b: AlignmentMapNodeDto) => (a.status ? ORDER[a.status] : 3) - (b.status ? ORDER[b.status] : 3);
 
-/** A goal's state word, percent and bar, as one column. */
-function Progress({ node, className }: { node: AlignmentMapNodeDto; className?: string }) {
-  const t = useTranslations("goals.Company");
-  const tone = node.status ? STATUS_TONE[node.status] : null;
-  const progress = Math.round(node.progress);
+/** The grid every Company and unit lane shares, so each line sits on the same months. */
+const WIDE = "grid grid-cols-[400px_minmax(0,1fr)_170px] items-center gap-[26px]";
+const row = "-mx-3.5 w-[calc(100%+1.75rem)] rounded-inset px-3.5 text-start outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
+interface Year { start: string; end: string; today: string }
+
+/** A goal's line over the year, from the map's points. */
+function Line({ node, year, height, small = false, dots = !small }: { node: AlignmentMapNodeDto; year: Year; height: number; small?: boolean; dots?: boolean }) {
   return (
-    <div className={cn("grid gap-[7px]", className)}>
-      <div className="flex items-center justify-between">
-        {tone ? <StateWord tone={tone}>{t(`status.${node.status!}`)}</StateWord> : <span className="text-[13px] text-muted-foreground">{node.hasProgress ? "" : t("noUpdateYet")}</span>}
-        <span className="text-[13px] tabular-nums">{progress}%</span>
-      </div>
-      <Bar value={node.hasProgress ? progress : 0} tone={tone ? BAR[tone] ?? "primary" : "primary"} label={node.title} />
+    <GoalLine
+      start={year.start}
+      end={year.end}
+      today={year.today}
+      updates={node.line.map((point) => ({ recordedAt: point.at, resultingProgress: point.progress, status: null }))}
+      status={node.status}
+      height={height}
+      dots={dots}
+      pace={!small}
+    />
+  );
+}
+
+/** Where a goal stands: its figure, then its state and since when. */
+function Standing({ node, big = false }: { node: AlignmentMapNodeDto; big?: boolean }) {
+  const t = useTranslations("goals.Company");
+  return (
+    <div className="grid justify-items-end gap-[3px] text-end">
+      {node.hasProgress ? (
+        <span className={cn("tabular-nums", big ? "type-metric" : "text-[15px] font-semibold")}>{Math.round(node.progress)}%</span>
+      ) : (
+        <span className="type-control text-muted-foreground">{t("noUpdateYet")}</span>
+      )}
+      {node.status ? <GoalState status={node.status} since={node.statusSince} /> : null}
     </div>
   );
 }
 
-/** People's goals under a goal, as small cards. */
-function People({ goals, onOpen }: { goals: AlignmentMapNodeDto[]; onOpen: (id: string) => void }) {
+/** A goal straight under a company goal: a unit's, or a person's. Your own unit's is marked and leads to its tab. */
+function SubLane({ node, mine, faces, year, onOpen }: { node: AlignmentMapNodeDto; mine: boolean; faces: (string | null)[]; year: Year; onOpen: () => void }) {
   const t = useTranslations("goals.Company");
+  const total = node.personal?.total ?? 0;
   return (
-    <div className="grid grid-cols-2 gap-2 py-1 ps-12 lg:grid-cols-4">
-      {goals.map((goal) => (
-        <button key={goal.id} type="button" onClick={() => onOpen(goal.id)}
-          className="grid content-start gap-1.5 rounded-xl bg-inlay px-3 py-2.5 text-start outline-none hover:bg-foreground/[0.06] focus-visible:ring-2 focus-visible:ring-ring">
-          <span className="flex items-center gap-1.5 text-[13px]">
-            <PersonInitials name={goal.ownerName} size="xs" />
-            {goal.isOwn ? t("you") : firstName(goal.ownerName)}
-          </span>
-          <span className="type-narrative text-[13.5px] leading-[1.3] text-foreground">{goal.title}</span>
-          <span className="flex items-center justify-between">
-            {goal.status ? <StateWord tone={STATUS_TONE[goal.status]}>{t(`status.${goal.status}`)}</StateWord> : <span />}
-            <span className="text-[13px] tabular-nums">{Math.round(goal.progress)}%</span>
-          </span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-const quiet = "justify-self-start rounded-control px-0.5 text-[13px] font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring";
-
-/** A unit's goal under a company goal; its people's goals one click deeper (D-62). */
-function UnitRow({ unit, mine, people, onOpen }: { unit: AlignmentMapNodeDto; mine: boolean; people: AlignmentMapNodeDto[]; onOpen: (id: string) => void }) {
-  const t = useTranslations("goals.Company");
-  const [open, setOpen] = useState(false);
-  const hidden = (unit.personal?.total ?? 0) - people.length;
-  return (
-    <>
-      <button type="button" onClick={() => onOpen(unit.id)}
-        className={cn("grid w-full grid-cols-[34px_minmax(0,1fr)_200px] items-center gap-3.5 rounded-inset px-3 py-[11px] text-start outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          mine ? "bg-primary/[0.07] ring-1 ring-inset ring-primary/30" : "hover:bg-foreground/[0.035]")}>
-        <PersonInitials name={unit.ownerName} size="sm" />
+    <button type="button" onClick={onOpen} className={cn(WIDE, row, "py-[9px]", mine ? "bg-primary/[0.09]" : "hover:bg-foreground/[0.035]")}>
+      <div className="relative flex min-w-0 items-center gap-[11px] ps-6">
+        <span aria-hidden className="absolute start-[5px] -top-3.5 bottom-1/2 w-3 rounded-es-lg border-b-[1.5px] border-s-[1.5px] border-foreground/10" />
+        <PersonInitials name={node.ownerName} size="sm" />
         <div className="grid min-w-0 gap-0.5">
-          <span className="type-narrative truncate text-[15px] text-foreground">{unit.title}</span>
-          <span className="truncate text-[13px] text-muted-foreground">
-            {[unit.orgUnitName, unit.ownerName, mine ? t("yourUnit") : null].filter(Boolean).join(", ")}
+          <span className="type-narrative truncate text-[14.5px] font-medium leading-[1.3] text-foreground">{node.title}</span>
+          <span className="flex min-w-0 items-center gap-2 type-control text-muted-foreground">
+            <span className="truncate">
+              {node.kind === "Personal" ? t("straightUnder", { name: node.ownerName ?? "" }) : [node.orgUnitName, firstName(node.ownerName)].filter(Boolean).join(", ")}
+            </span>
+            {mine ? <span className="shrink-0 whitespace-nowrap font-semibold text-primary-ink">{t("yourUnit")}</span> : null}
+            {total > 0 ? (
+              <span className="flex shrink-0 items-center gap-[5px] whitespace-nowrap">
+                {faces.length ? <AvatarStack names={faces.slice(0, 4)} size="xs" max={4} /> : null}
+                {t("goals", { count: total })}
+              </span>
+            ) : null}
           </span>
         </div>
-        <Progress node={unit} />
-      </button>
-      {people.length > 0 ? (
-        <div className="grid gap-1 ps-[60px]">
-          <button type="button" className={quiet} aria-expanded={open} onClick={() => setOpen(!open)}>
-            {open ? t("hide") : mine ? t("fromYourTeam", { count: people.length }) : t("peoplesGoals", { count: people.length })}
-          </button>
-        </div>
-      ) : hidden > 0 ? (
-        <span className="ps-[60px] text-[13px] text-muted-foreground">{t("peoplesGoals", { count: hidden })}</span>
-      ) : null}
-      {open ? <People goals={people} onOpen={onOpen} /> : null}
-    </>
+      </div>
+      <Line node={node} year={year} height={34} small />
+      <Standing node={node} />
+    </button>
   );
 }
 
 /**
- * Goals, Company (D-62): each company goal with its units' goals under it, your own unit's marked and its team's
- * goals one click deeper. People who set direction see what is still a draft below, and add from here.
+ * Goals, Company (D-98): each company goal as a line over the year, its figure the mean of the goals under it, and
+ * those goals indented under it on the same months: the units' (yours marked) and anyone's straight under it, people's
+ * goals as faces and a count. People who set direction see what is still a draft below, and add from here.
  */
-export function CompanyGoals({ tree, myUnitId, drafts, onOpen, onAddUnitGoal }: {
+export function CompanyGoals({ tree, myUnitId, drafts, cycle, onOpen, onOpenUnit, onAddUnitGoal }: {
   tree: GoalTree;
   myUnitId: string | null;
   /** Goals not yet published, for the people who can publish them. */
   drafts: GoalNodeDto[];
+  cycle: { startDate: string; endDate: string };
   onOpen: (id: string) => void;
+  /** Your own unit's goal leads to its tab. */
+  onOpenUnit: () => void;
   /** Offered to people who may set a unit's goals. */
   onAddUnitGoal?: (parentId: string) => void;
 }) {
   const t = useTranslations("goals.Company");
-  const mineUnder = (id: string) => unitsBelow(tree, id).some((unit) => unit.orgUnitId === myUnitId);
-  const [open, setOpen] = useState<string | null>(() => (tree.companies.find((c) => mineUnder(c.id)) ?? tree.companies[0])?.id ?? null);
+  const year: Year = { start: cycle.startDate, end: cycle.endDate, today: todayIso() };
+  const faces = (id: string) => (tree.peopleUnder.get(id) ?? []).map((goal) => goal.ownerName);
 
   return (
     <>
-      {tree.companies.length === 0 ? <Outline label={t("noCompanyGoals")} /> : null}
-      {tree.companies.map((company) => {
-        const units = unitsBelow(tree, company.id);
-        const people = tree.peopleUnder.get(company.id) ?? [];
-        const peopleCount = (company.personal?.total ?? 0) + units.reduce((sum, unit) => sum + (unit.personal?.total ?? 0), 0);
-        const expanded = open === company.id;
-        return (
-          <section key={company.id} className="grid gap-4 rounded-surface bg-card px-6 py-[22px]">
-            <div className="grid grid-cols-[minmax(0,1fr)_240px] items-center gap-[22px]">
-              <button type="button" onClick={() => onOpen(company.id)} className="-m-1 grid gap-1 rounded-xl p-1 text-start outline-none hover:bg-foreground/[0.035] focus-visible:ring-2 focus-visible:ring-ring">
-                <span className="type-narrative text-[20px] font-medium leading-[1.25] text-foreground">{company.title}</span>
-                {company.measure ? <span className="text-[13px] text-muted-foreground">{company.measure}</span> : null}
-                <span className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
-                  <PersonInitials name={company.ownerName} size="xs" />
-                  {company.ownerName ? t("ownerCompany", { name: company.ownerName }) : t("company")}
-                </span>
+      {tree.companies.length === 0 ? (
+        <Outline label={t("noCompanyGoals")} />
+      ) : (
+        <section className="grid gap-1 rounded-surface bg-card px-6 pt-[18px] pb-[22px]">
+          <Axis start={year.start} end={year.end} today={year.today} lane={WIDE} />
+          {tree.companies.map((company, index) => (
+            <div key={company.id} className={cn("grid", index > 0 && "mt-2 border-t border-border pt-2")}>
+              <button type="button" onClick={() => onOpen(company.id)} className={cn(WIDE, row, "py-4 hover:bg-foreground/[0.035]")}>
+                <div className="grid min-w-0 gap-1">
+                  <span className="type-narrative text-[17px] font-medium leading-[1.3] text-foreground">{company.title}</span>
+                  {company.measure ? <span className="type-control text-muted-foreground">{company.measure}</span> : null}
+                  <span className="flex items-center gap-[7px] type-control text-muted-foreground">
+                    <PersonInitials name={company.ownerName} size="xs" />
+                    {company.ownerName ?? t("company")}
+                  </span>
+                </div>
+                {/* A roll-up moves at every update under it: the line alone, no dot per point. */}
+                <Line node={company} year={year} height={56} dots={false} />
+                <Standing node={company} big />
               </button>
-              <Progress node={company} />
-            </div>
-            <div className="grid gap-0">
-              {expanded ? (
-                <>
-                  {units.map((unit, index) => (
-                    <div key={unit.id} className={cn("grid gap-1", index > 0 && unit.orgUnitId !== myUnitId && units[index - 1]!.orgUnitId !== myUnitId && "border-t border-border")}>
-                      <UnitRow unit={unit} mine={Boolean(myUnitId) && unit.orgUnitId === myUnitId} people={tree.peopleUnder.get(unit.id) ?? []} onOpen={onOpen} />
-                    </div>
-                  ))}
-                  {people.length > 0 ? (
-                    <div className="mt-2 grid gap-1 border-t border-border pt-3">
-                      <span className="ps-12 text-[13px] text-muted-foreground">{t("straightUnder", { count: people.length })}</span>
-                      <People goals={people} onOpen={onOpen} />
-                    </div>
-                  ) : null}
-                  {onAddUnitGoal ? (
-                    <button type="button" onClick={() => onAddUnitGoal(company.id)} className={cn(quiet, "mt-1 inline-flex items-center gap-1.5 px-3 py-2")}>
-                      <Plus aria-hidden className="size-4" />
-                      {t("addAUnitGoal")}
-                    </button>
-                  ) : null}
-                </>
-              ) : null}
-              {units.length + peopleCount > 0 || expanded ? (
-                <button type="button" className={cn(quiet, expanded && "mt-1")} aria-expanded={expanded} onClick={() => setOpen(expanded ? null : company.id)}>
-                  {expanded ? t("fewer") : t("under", { units: units.length, people: peopleCount })}
+              {unitsBelow(tree, company.id).map((unit) => {
+                const mine = Boolean(myUnitId) && unit.orgUnitId === myUnitId;
+                return <SubLane key={unit.id} node={unit} mine={mine} faces={faces(unit.id)} year={year} onOpen={mine ? onOpenUnit : () => onOpen(unit.id)} />;
+              })}
+              {(tree.peopleUnder.get(company.id) ?? []).map((goal) => (
+                <SubLane key={goal.id} node={goal} mine={false} faces={[]} year={year} onOpen={() => onOpen(goal.id)} />
+              ))}
+              {onAddUnitGoal ? (
+                <button type="button" onClick={() => onAddUnitGoal(company.id)}
+                  className="ms-6 mt-1 inline-flex items-center gap-1.5 justify-self-start rounded-control px-2 py-1.5 type-control-label text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
+                  <Plus aria-hidden className="size-4" />
+                  {t("addAUnitGoal")}
                 </button>
-              ) : onAddUnitGoal ? (
-                <button type="button" className={quiet} onClick={() => setOpen(company.id)}>{t("noUnitGoalsYet")}</button>
-              ) : (
-                <span className="text-[13px] text-muted-foreground">{t("noUnitGoalsYet")}</span>
-              )}
+              ) : null}
             </div>
-          </section>
-        );
-      })}
+          ))}
+        </section>
+      )}
       {drafts.length > 0 ? (
         <section className="grid gap-2 rounded-surface bg-card px-6 py-[22px]">
           <h2 className="type-section-title text-foreground">{t("drafts")}</h2>
@@ -196,11 +181,11 @@ export function CompanyGoals({ tree, myUnitId, drafts, onOpen, onAddUnitGoal }: 
                 className="-mx-3 flex items-center gap-3 rounded-inset px-3 py-3 text-start outline-none hover:bg-foreground/[0.035] focus-visible:ring-2 focus-visible:ring-ring">
                 <div className="grid min-w-0 gap-0.5">
                   <span className="type-narrative truncate text-[15px] text-foreground">{draft.title}</span>
-                  <span className="truncate text-[13px] text-muted-foreground">
+                  <span className="truncate type-control text-muted-foreground">
                     {[draft.ownershipScope === "Company" ? t("company") : draft.orgUnitName, draft.accountablePersonName].filter(Boolean).join(", ")}
                   </span>
                 </div>
-                <span className="ms-auto text-[13px] text-muted-foreground">{t("notPublished")}</span>
+                <span className="ms-auto type-control text-muted-foreground">{t("notPublished")}</span>
               </button>
             ))}
           </div>
@@ -211,49 +196,87 @@ export function CompanyGoals({ tree, myUnitId, drafts, onOpen, onAddUnitGoal }: 
 }
 
 /**
- * Goals, your unit: the unit's goals, each with the company goal it supports above it and its people's goals under it.
+ * Goals, your unit (D-99): each of the unit's goals leads, large, with its line over the year and its path up to the
+ * company's; under it each person's goal on the same months, off track first.
  */
-export function UnitGoals({ tree, unitId, onOpen, add }: {
+export function UnitGoals({ tree, unitId, cycle, onOpen, onOpenCompany, add }: {
   tree: GoalTree;
   unitId: string;
+  cycle: { startDate: string; endDate: string };
   onOpen: (id: string) => void;
+  onOpenCompany: () => void;
   /** The way to add a unit goal, for people who may. */
   add?: ReactNode;
 }) {
   const t = useTranslations("goals.Company");
+  const year: Year = { start: cycle.startDate, end: cycle.endDate, today: todayIso() };
   const goals = useMemo(() => [...tree.byId.values()].filter((node) => node.kind === "OrgUnit" && node.orgUnitId === unitId), [tree, unitId]);
   if (goals.length === 0) return <Outline label={t("noUnitGoals")} action={add} />;
   return (
     <>
       {goals.map((goal) => {
         const parent = goal.parentId ? tree.byId.get(goal.parentId) : null;
-        const people = tree.peopleUnder.get(goal.id) ?? [];
+        const people = [...(tree.peopleUnder.get(goal.id) ?? [])].sort(byState);
         const hidden = (goal.personal?.total ?? 0) - people.length;
         return (
-          <section key={goal.id} className="grid gap-4 rounded-surface bg-card px-6 py-[22px]">
-            <div className="grid grid-cols-[minmax(0,1fr)_240px] items-center gap-[22px]">
-              <button type="button" onClick={() => onOpen(goal.id)} className="-m-1 grid gap-1 rounded-xl p-1 text-start outline-none hover:bg-foreground/[0.035] focus-visible:ring-2 focus-visible:ring-ring">
-                <span className="type-narrative text-[20px] font-medium leading-[1.25] text-foreground">{goal.title}</span>
-                {goal.measure ? <span className="text-[13px] text-muted-foreground">{goal.measure}</span> : null}
-                <span className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
-                  <PersonInitials name={goal.ownerName} size="xs" />
-                  {goal.ownerName}
-                </span>
+          <div key={goal.id} className="grid gap-[18px]">
+            <section className="grid grid-cols-[minmax(0,1fr)_440px] items-end gap-[34px] rounded-surface bg-card px-6 py-[22px]">
+              <div className="grid min-w-0 gap-2.5">
+                <button type="button" onClick={() => onOpen(goal.id)} className="justify-self-start rounded-xl text-start outline-none hover:underline hover:decoration-foreground/30 hover:underline-offset-4 focus-visible:ring-2 focus-visible:ring-ring">
+                  <span className="type-display text-foreground">{goal.title}</span>
+                </button>
+                {goal.measure ? <span className="text-muted-foreground">{goal.measure}</span> : null}
                 {parent ? (
                   <span className="flex min-w-0 items-center gap-1.5 text-[12.5px] text-muted-foreground">
                     <ArrowUp aria-hidden className="size-3.5 shrink-0" />
-                    <b className="truncate font-medium text-foreground">{parent.title}</b>
+                    <button type="button" onClick={onOpenCompany} className="truncate rounded-detail font-medium text-foreground outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring">
+                      {parent.title}
+                    </button>
                   </span>
                 ) : null}
-              </button>
-              <Progress node={goal} />
-            </div>
-            {people.length > 0 ? (
-              <div className="-ms-12"><People goals={people} onOpen={onOpen} /></div>
-            ) : (
-              <span className="text-[13px] text-muted-foreground">{hidden > 0 ? t("peoplesGoals", { count: hidden }) : t("noOnesGoalsYet")}</span>
-            )}
-          </section>
+                <div className="mt-1.5 flex flex-wrap items-center gap-[18px]">
+                  {goal.hasProgress ? <span className="type-figure">{Math.round(goal.progress)}%</span> : <span className="text-muted-foreground">{t("noUpdateYet")}</span>}
+                  {goal.status ? <GoalState status={goal.status} since={goal.statusSince} /> : null}
+                  <span className="ms-2 flex items-center gap-[7px] type-control text-muted-foreground">
+                    <PersonInitials name={goal.ownerName} size="xs" />
+                    {goal.isOwn ? t("yours", { name: goal.ownerName ?? "" }) : goal.ownerName}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <Line node={goal} year={year} height={92} />
+                <GoalMonths start={year.start} end={year.end} />
+              </div>
+            </section>
+            <section className="grid gap-1 rounded-surface bg-card px-6 pt-[18px] pb-[22px]">
+              <div className="flex items-center pb-1.5">
+                <h2 className="type-section-title text-foreground">{goal.isOwn ? t("yourTeamUnder") : t("goalsUnder")}</h2>
+                <span className="ms-auto text-muted-foreground">{t("people", { count: goal.personal?.total ?? people.length })}</span>
+              </div>
+              {people.length > 0 ? (
+                <>
+                  <Axis start={year.start} end={year.end} today={year.today} lane={WIDE} />
+                  {people.map((person, index) => (
+                    <button key={person.id} type="button" onClick={() => onOpen(person.id)}
+                      className={cn(WIDE, row, "py-4 hover:bg-foreground/[0.035]", index > 0 && "shadow-[0_-1px_0_var(--border)]")}>
+                      <div className="flex min-w-0 items-center gap-3">
+                        <PersonInitials name={person.ownerName} size="md" />
+                        <div className="grid min-w-0 gap-px">
+                          <span className="type-narrative truncate text-[15px] font-medium leading-[1.3] text-foreground">{person.title}</span>
+                          <span className="truncate type-control text-muted-foreground">{person.isOwn ? t("you") : person.ownerName}</span>
+                        </div>
+                      </div>
+                      <Line node={person} year={year} height={40} small />
+                      <Standing node={person} />
+                    </button>
+                  ))}
+                </>
+              ) : null}
+              {hidden > 0 || people.length === 0 ? (
+                <span className="type-control text-muted-foreground">{people.length === 0 && hidden <= 0 ? t("noOnesGoalsYet") : t("othersGoals", { count: hidden })}</span>
+              ) : null}
+            </section>
+          </div>
         );
       })}
     </>

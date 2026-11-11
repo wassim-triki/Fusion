@@ -175,5 +175,11 @@
     "whatsInTheWay": "What's in the way",
     "cancel": "Cancel",
     "save": "Save"
+  },
+  "GoalState": {
+    "OnTrack": "On track",
+    "AtRisk": "At risk",
+    "OffTrack": "Off track",
+    "since": "since {day}"
   }
 }

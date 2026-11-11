@@ -62,6 +62,7 @@ public sealed class AlignmentMapHttpTests
         var lina = workforce.Add("Lina Member", orgUnitId: talentPod, orgUnitName: "Talent Pod");
         var omar = workforce.Add("Omar Member", orgUnitId: talentPod, orgUnitName: "Talent Pod");
         var dina = workforce.Add("Dina Member", orgUnitId: talentPod, orgUnitName: "Talent Pod");
+        var hana = workforce.Add("Hana Strategist");
         workforce.OrgUnits[talentPod] = new WorkforceOrgUnitContext(talentPod, "Talent Pod", null, true, []);
         var at = new DateTime(2026, 3, 1, 9, 0, 0, DateTimeKind.Utc);
 
@@ -105,11 +106,33 @@ public sealed class AlignmentMapHttpTests
         var dinaPlan = Plan(dina.EmployeeId, "Dina Member");
         var dinaObjective = Personal(dinaPlan, dina.EmployeeId, "Still drafting");
 
+        // Straight under the company goal, in a plan Sami and Nour may not read.
+        var hanaPlan = EmployeePlan.Create(tenant, cycle.Id, Guid.NewGuid(), hana.EmployeeId, "Hana Strategist", null, coo.EmployeeId, "Coralie Ops");
+        var hanaObjective = Objective.CreateEmployee(tenant, cycle.Id, hanaPlan.Id, hana.EmployeeId, "Map the market", null, strategy.Id, Start, End,
+            ObjectiveMeasurement.ManualPercentage(), 100m, Start, End, Start, End);
+        hanaPlan.Submit(hana.EmployeeId, Ready);
+        hanaPlan.Approve(coo.EmployeeId);
+        hanaObjective.ApplyManualPercentage(80m);
+
+        // Talent's year: 20% on 1 March, 40% on 1 April; Hana's 80% on 15 March.
+        ProgressUpdate Update(Objective objective, Guid author, decimal value, DateTime when)
+        {
+            using var _ = EY.HRPlatform.Performance.Domain.Common.PerformanceClock.Travel(when);
+            return ProgressUpdate.RecordPercentage(tenant, cycle.Id, objective.Id, author, value, ObjectiveStatus.OnTrack, null, false, false);
+        }
+        var updates = new[]
+        {
+            Update(talent, nour.EmployeeId, 20m, at),
+            Update(hanaObjective, hana.EmployeeId, 80m, at.AddDays(14)),
+            Update(talent, nour.EmployeeId, 40m, at.AddDays(31)),
+        };
+
         await using (var db = factory.Store.NewContext())
         {
             db.Cycles.Add(cycle);
-            db.Objectives.AddRange(strategy, talent, deep, draft, disconnected, samiObjective, linaObjective, omarObjective, dinaObjective);
-            db.EmployeePlans.AddRange(samiPlan, linaPlan, omarPlan, dinaPlan);
+            db.Objectives.AddRange(strategy, talent, deep, draft, disconnected, samiObjective, linaObjective, omarObjective, dinaObjective, hanaObjective);
+            db.EmployeePlans.AddRange(samiPlan, linaPlan, omarPlan, dinaPlan, hanaPlan);
+            db.ProgressUpdates.AddRange(updates);
             await db.SaveChangesAsync();
         }
 
@@ -141,9 +164,9 @@ public sealed class AlignmentMapHttpTests
         Assert.Equal("AtRisk", talent.GetProperty("status").GetString());
         Assert.True(talent.GetProperty("hasProgress").GetBoolean());
         Assert.Equal(40m, talent.GetProperty("progress").GetDecimal());
+        Assert.Equal([20m, 40m], Line(talent));
         var strategy = nodes[w.StrategyId];
         Assert.Equal(JsonValueKind.Null, strategy.GetProperty("status").ValueKind);
-        Assert.False(strategy.GetProperty("hasProgress").GetBoolean());
 
         // Sami, Lina (Approved) and Omar (Submitted) count; Dina's Draft plan does not.
         var personal = talent.GetProperty("personal");
@@ -158,8 +181,23 @@ public sealed class AlignmentMapHttpTests
         var own = nodes[w.SamiObjectiveId];
         Assert.Equal("Personal", own.GetProperty("kind").GetString());
         Assert.True(own.GetProperty("isOwn").GetBoolean());
-        foreach (var hidden in new object[] { w.LinaObjectiveId, w.OmarObjectiveId, w.DinaObjectiveId, "Coach three juniors", "Write the guide", "Still drafting", "Lina", "Omar", "Dina" })
+        foreach (var hidden in new object[] { w.LinaObjectiveId, w.OmarObjectiveId, w.DinaObjectiveId, "Coach three juniors", "Write the guide", "Still drafting", "Lina", "Omar", "Dina", "Map the market", "Hana" })
             Assert.DoesNotContain(hidden.ToString()!, raw, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task A_company_goal_reads_as_the_mean_of_the_goals_straight_under_it()
+    {
+        await using var w = await ArrangeAsync();
+        using var sami = w.Employee(w.SamiId);
+
+        var (_, nodes) = await MapAsync(sami, w.Url);
+
+        // Talent's 40% and Hana's 80%, though Sami can't read Hana's goal; the line moves at each of their updates.
+        var strategy = nodes[w.StrategyId];
+        Assert.True(strategy.GetProperty("hasProgress").GetBoolean());
+        Assert.Equal(60m, strategy.GetProperty("progress").GetDecimal());
+        Assert.Equal([10m, 50m, 60m], Line(strategy));
     }
 
     [Fact]
@@ -187,7 +225,7 @@ public sealed class AlignmentMapHttpTests
 
         var (_, nodes) = await MapAsync(admin, w.Url);
 
-        Assert.Equal(3, nodes.Values.Count(node => node.GetProperty("kind").GetString() == "Personal"));
+        Assert.Equal(4, nodes.Values.Count(node => node.GetProperty("kind").GetString() == "Personal"));
         Assert.False(nodes.ContainsKey(w.DinaObjectiveId));
         // Administrators read Drafts in List; the map still shows published direction only.
         Assert.False(nodes.ContainsKey(w.DraftId));
@@ -215,6 +253,9 @@ public sealed class AlignmentMapHttpTests
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
+
+    private static decimal[] Line(JsonElement node)
+        => node.GetProperty("line").EnumerateArray().Select(point => point.GetProperty("progress").GetDecimal()).ToArray();
 
     private static async Task<(string Raw, Dictionary<Guid, JsonElement> Nodes)> MapAsync(HttpClient client, string url)
     {

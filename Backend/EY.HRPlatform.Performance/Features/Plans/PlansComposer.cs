@@ -361,6 +361,7 @@ public static class PlansComposer
             Version = objective.Version,
             Status = objective.CurrentStatus,
             StatusReportedAt = objective.StatusReportedAt,
+            StatusSince = objective.StatusSince,
             PlanWeightIsSet = objective.PlanWeightIsSet,
             Grade = GoalGrades.Of(objective),
         };

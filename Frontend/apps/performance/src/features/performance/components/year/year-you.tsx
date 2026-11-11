@@ -4,18 +4,15 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import type { CyclePhase, ObjectiveStatus, PlanObjectiveDto } from "@repo/api";
 import { CornerLeftUp } from "@repo/ds/icons";
-import { Bar, StateWord, type BarTone, type StateTone } from "@repo/ds/shell";
+import { Bar, type BarTone } from "@repo/ds/shell";
 import { PraiseCard } from "@repo/performance-ui";
 import { useMyPlan } from "../../api/use-performance";
 import { usePraisePage } from "../../api/use-conversations";
 import { REACTION_ICONS } from "../conversations/reaction-icons";
+import { GoalState } from "../objective-record/goal-state";
 import { dayMonth } from "./year-words";
 
-const STATE: Record<ObjectiveStatus, { tone: StateTone; bar: BarTone }> = {
-  OnTrack: { tone: "ok", bar: "ok" },
-  AtRisk: { tone: "warn", bar: "warn" },
-  OffTrack: { tone: "bad", bar: "bad" },
-};
+const BAR: Record<ObjectiveStatus, BarTone> = { OnTrack: "ok", AtRisk: "warn", OffTrack: "bad" };
 
 /**
  * The employee's half of the Year page (the style frame's `yearSecond` for Aicha): their goals with each one's line up
@@ -75,7 +72,7 @@ export function YearYou({ cycleId, phase, employeeId }: { cycleId: string; phase
 function GoalRow({ goal, cycleId, weighting }: { goal: PlanObjectiveDto; cycleId: string; weighting: boolean }) {
   const t = useTranslations("year.YearYou");
   const locale = useLocale();
-  const status = goal.status ? STATE[goal.status] : null;
+  const status = goal.status ? { bar: BAR[goal.status] } : null;
   const progress = Math.round(goal.derivedProgress);
   return (
     <Link
@@ -99,7 +96,7 @@ function GoalRow({ goal, cycleId, weighting }: { goal: PlanObjectiveDto; cycleId
         <div className="grid gap-[7px]">
           <div className="flex items-center justify-between">
             {status ? (
-              <StateWord tone={status.tone}>{t(`status.${goal.status!}`)}</StateWord>
+              <GoalState status={goal.status!} since={goal.statusSince} />
             ) : (
               <span className="text-[13px] text-muted-foreground">{goal.lastProgressAt ? t("updated", { day: dayMonth(goal.lastProgressAt, locale) }) : t("noUpdateYet")}</span>
             )}

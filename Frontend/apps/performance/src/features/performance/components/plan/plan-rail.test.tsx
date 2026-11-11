@@ -13,7 +13,7 @@ const objective = (overrides: Partial<PlanObjectiveDto> = {}): PlanObjectiveDto 
   version: 1, id: "o1", title: "Integrate the vendor API", description: null, parentObjectiveId: null, directionPath: [], isAligned: false,
   startDate: "2026-10-01", endDate: "2027-09-30", progressSource: "Direct", measurementSummary: "", measurement: null, planWeight: 100,
   hasProgress: false, derivedProgress: 0, currentPercentage: null, currentActual: null, lastProgressAt: null, canUpdateProgress: false,
-  status: null, statusReportedAt: null, planWeightIsSet: true, grade: 0, ...overrides,
+  status: null, statusReportedAt: null, statusSince: null, planWeightIsSet: true, grade: 0, ...overrides,
 });
 
 const decision = (kind: PlanDecisionDto["kind"], overrides: Partial<PlanDecisionDto> = {}): PlanDecisionDto => ({

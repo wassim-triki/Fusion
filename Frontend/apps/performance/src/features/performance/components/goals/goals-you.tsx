@@ -9,13 +9,14 @@ import { cn } from "@repo/ds";
 import { Button } from "@repo/ds/components/ui/button";
 import { dateFormatter } from "@repo/ds/lib/dates";
 import { ArrowUp, Clock, Plus, Send, TrendingUp } from "@repo/ds/icons";
-import { AsyncButton, Said, StateWord } from "@repo/ds/shell";
+import { AsyncButton, Said } from "@repo/ds/shell";
 import { PersonInitials } from "@repo/performance-ui";
 import { useAlignmentTargets, useMyPlan, useObjectiveProgress, usePlanMutations } from "../../api/use-performance";
 import { useUpdateRequests } from "../../api/use-update-requests";
 import { reportPerformanceFailure } from "../../api/performance-failure";
 import { GoalLine, positionIn, STATUS_STROKE } from "../objective-record/goal-line";
-import { STATUS_TONE, valueIn } from "../objective-record/goal-panel";
+import { valueIn } from "../objective-record/goal-panel";
+import { GoalState } from "../objective-record/goal-state";
 import { useObjectiveRecord } from "../objective-record/use-objective-record";
 import { OwnerChangeRequest } from "../plan/change-requests";
 import { DevelopmentSection } from "../plan/development-section";
@@ -24,7 +25,7 @@ import { activeReturn } from "../plan/plan-rail";
 import { openRequestsFor } from "../update-requests/update-requests";
 import { dayMonth, firstName, fullDay } from "../year/year-words";
 
-const todayIso = () => {
+export const todayIso = () => {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 };
@@ -304,8 +305,8 @@ function PlanTop({ plan, cycle, even, reviewer, today }: {
   );
 }
 
-/** The year's months over the lanes, with today marked. */
-function Axis({ start, end, today }: { start: string; end: string; today: string }) {
+/** The year's months over the lanes, with today marked; `lane` is the lanes' grid so the months sit over their lines. */
+export function Axis({ start, end, today, lane = LANE }: { start: string; end: string; today: string; lane?: string }) {
   const t = useTranslations("goals.You");
   const locale = useLocale();
   const name = dateFormatter({ month: "short" }, locale);
@@ -321,7 +322,7 @@ function Axis({ start, end, today }: { start: string; end: string; today: string
   }
   const now = positionIn(start, end, today) * 100;
   return (
-    <div aria-hidden className={cn(LANE, "pb-0.5")}>
+    <div aria-hidden className={cn(lane, "pb-0.5")}>
       <span />
       <div className="relative h-[18px]">
         {months.map((m) => {
@@ -375,7 +376,7 @@ function Lane({ goal, cycleId, share, even, running, today, open, requests, onOp
     const done = goal.measurement?.milestones.filter((m) => m.isCompleted).length ?? 0;
     right = (
       <>
-        {goal.status ? <StateWord tone={STATUS_TONE[goal.status as ObjectiveStatus]}>{t(`status.${goal.status}`)}</StateWord> : null}
+        {goal.status ? <GoalState status={goal.status} since={goal.statusSince} /> : null}
         <span className="text-[13px] text-muted-foreground">
           {milestones
             ? t("milestonesDone", { done, count: goal.measurement!.milestones.length })

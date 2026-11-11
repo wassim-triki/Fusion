@@ -287,36 +287,25 @@
     "milestonesDone": "{done} sur {count} faits",
     "valueOn": "{value}, {day}",
     "noUpdateYet": "Pas encore de mise à jour",
-    "askedOn": "Demandé le {day}",
-    "status": {
-      "OnTrack": "En bonne voie",
-      "AtRisk": "À risque",
-      "OffTrack": "Hors trajectoire"
-    }
+    "askedOn": "Demandé le {day}"
   },
   "Company": {
     "noUpdateYet": "Pas encore de mise à jour",
     "you": "Vous",
     "yourUnit": "votre unité",
-    "hide": "Masquer",
-    "fromYourTeam": "{count, plural, one {# objectif de votre équipe} other {# objectifs de votre équipe}}",
-    "peoplesGoals": "{count, plural, one {# objectif individuel} other {# objectifs individuels}}",
     "noCompanyGoals": "Pas encore d'objectifs d'entreprise",
-    "ownerCompany": "{name}, entreprise",
     "company": "Entreprise",
     "addAUnitGoal": "Ajouter un objectif d'unité",
-    "fewer": "Moins",
-    "under": "{units, plural, =0 {Aucun objectif d'unité} one {# objectif d'unité} other {# objectifs d'unité}}, {people, plural, =0 {aucun objectif individuel} one {# objectif individuel} other {# objectifs individuels}}",
-    "noUnitGoalsYet": "Pas encore d'objectifs d'unité",
     "drafts": "Pas encore publiés",
     "notPublished": "Brouillon",
     "noUnitGoals": "Pas encore d'objectifs pour cette unité",
     "noOnesGoalsYet": "Aucun objectif individuel ne le soutient encore",
-    "status": {
-      "OnTrack": "En bonne voie",
-      "AtRisk": "À risque",
-      "OffTrack": "Hors trajectoire"
-    },
-    "straightUnder": "{count, plural, one {# objectif directement dessous} other {# objectifs directement dessous}}"
+    "straightUnder": "{name}, directement rattaché",
+    "goals": "{count, plural, one {# objectif} other {# objectifs}}",
+    "yours": "{name}, vous",
+    "yourTeamUnder": "Les objectifs de votre équipe",
+    "goalsUnder": "Objectifs rattachés",
+    "people": "{count, plural, one {# personne} other {# personnes}}",
+    "othersGoals": "{count, plural, one {# autre objectif que vous ne pouvez pas ouvrir} other {# autres objectifs que vous ne pouvez pas ouvrir}}"
   }
 }

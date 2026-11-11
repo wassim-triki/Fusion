@@ -1118,6 +1118,8 @@ export interface PlanObjectiveDto {
   /** The owner's latest reported status; null until the first check-in that carries one. */
   status: ObjectiveStatus | null;
   statusReportedAt: string | null;
+  /** When the current status value began; repeats keep it (D-97). */
+  statusSince: string | null;
   /** Whether someone chose planWeight; otherwise it is the goal's even share of what the chosen ones leave (D-40). */
   planWeightIsSet: boolean;
   /** The goal's grade from its measure, 0 to 1 (D-38). */
@@ -1294,6 +1296,14 @@ export interface AlignmentMapNodeDto {
   measure: string | null;
   /** The unit a unit goal belongs to. */
   orgUnitId: string | null;
+  /** Progress after each update, oldest first; a company goal's is the mean of the goals straight under it. Empty for a personal goal whose history you may not read. */
+  line: ProgressPointDto[];
+}
+
+/** A goal's progress (0–100) as it stood after an update. */
+export interface ProgressPointDto {
+  at: string;
+  progress: number;
 }
 
 export interface AlignmentMapDto {

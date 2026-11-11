@@ -117,20 +117,50 @@ public static class ProgressComposer
     private static async Task<Dictionary<Guid, (decimal Resulting, decimal Delta)>> BuildTrailAsync(
         PerformanceDbContext db, Objective objective, CancellationToken cancellationToken)
     {
-        var ascending = await db.ProgressUpdates.AsNoTracking()
-            .Where(u => u.ObjectiveId == objective.Id)
-            .OrderBy(u => u.RecordedAt)
-            .Select(u => new { u.Id, u.Kind, u.Value, Changes = u.MilestoneChanges.Select(c => new { c.MilestoneId, c.Completed }).ToList() })
+        var ascending = await TrailRows(db.ProgressUpdates.AsNoTracking().Where(u => u.ObjectiveId == objective.Id))
             .ToListAsync(cancellationToken);
 
-        var measurement = objective.Measurement;
+        var trail = new Dictionary<Guid, (decimal, decimal)>(ascending.Count);
+        var previous = 0m;
+        foreach (var (row, resulting) in Replay(objective.Measurement, ascending))
+        {
+            trail[row.Id] = (resulting, decimal.Round(resulting - previous, 2));
+            previous = resulting;
+        }
+        return trail;
+    }
+
+    /// <summary>
+    /// Each objective's progress after every update, oldest first, in one query for all of them: the line its year is
+    /// drawn with. Objectives with no update have an empty line.
+    /// </summary>
+    public static async Task<Dictionary<Guid, IReadOnlyList<ProgressPointDto>>> LinesAsync(
+        PerformanceDbContext db, IReadOnlyCollection<Objective> objectives, CancellationToken cancellationToken)
+    {
+        var ids = objectives.Select(o => o.Id).ToList();
+        var rows = ids.Count == 0 ? [] : await TrailRows(db.ProgressUpdates.AsNoTracking().Where(u => ids.Contains(u.ObjectiveId)))
+            .ToListAsync(cancellationToken);
+        var byObjective = rows.ToLookup(row => row.ObjectiveId);
+        return objectives.ToDictionary(o => o.Id, o => (IReadOnlyList<ProgressPointDto>)Replay(o.Measurement, byObjective[o.Id].ToList())
+            .Select(step => new ProgressPointDto(step.Row.RecordedAt, step.Resulting))
+            .ToList());
+    }
+
+    private sealed record TrailRow(Guid Id, Guid ObjectiveId, DateTime RecordedAt, ProgressEventKind Kind, decimal? Value, List<TrailChange> Changes);
+    private sealed record TrailChange(Guid MilestoneId, bool Completed);
+
+    private static IQueryable<TrailRow> TrailRows(IQueryable<ProgressUpdate> updates)
+        => updates.OrderBy(u => u.RecordedAt)
+            .Select(u => new TrailRow(u.Id, u.ObjectiveId, u.RecordedAt, u.Kind, u.Value,
+                u.MilestoneChanges.Select(c => new TrailChange(c.MilestoneId, c.Completed)).ToList()));
+
+    /// <summary>Folds the updates forward, oldest first, yielding the objective's progress after each.</summary>
+    private static IEnumerable<(TrailRow Row, decimal Resulting)> Replay(ObjectiveMeasurement? measurement, IReadOnlyList<TrailRow> ascending)
+    {
         var weights = (measurement?.Milestones ?? []).ToDictionary(m => m.Id, m => m.Weight);
         var completed = new HashSet<Guid>();
         decimal? percentage = null;
         decimal? actual = null;
-        var previous = 0m;
-
-        var trail = new Dictionary<Guid, (decimal, decimal)>(ascending.Count);
         foreach (var u in ascending)
         {
             switch (u.Kind)
@@ -138,10 +168,10 @@ public static class ProgressComposer
                 case ProgressEventKind.PercentageSet: percentage = u.Value; break;
                 case ProgressEventKind.NumericActual: actual = u.Value; break;
                 case ProgressEventKind.MilestonesChanged:
-                    foreach (var change in u.Changes)
+                    foreach (var (milestoneId, done) in u.Changes)
                     {
-                        if (change.Completed) completed.Add(change.MilestoneId);
-                        else completed.Remove(change.MilestoneId);
+                        if (done) completed.Add(milestoneId);
+                        else completed.Remove(milestoneId);
                     }
                     break;
             }
@@ -150,12 +180,8 @@ public static class ProgressComposer
                 : measurement.Method == MeasurementMethod.WeightedMilestones
                     ? completed.Sum(id => weights.GetValueOrDefault(id))
                     : measurement.DerivedProgress(percentage, actual);
-            resulting = decimal.Round(resulting, 2);
-            trail[u.Id] = (resulting, decimal.Round(resulting - previous, 2));
-            previous = resulting;
+            yield return (u, decimal.Round(resulting, 2));
         }
-
-        return trail;
     }
 
     private static string EncodeCursor(DateTime recordedAt) => recordedAt.ToString("O");

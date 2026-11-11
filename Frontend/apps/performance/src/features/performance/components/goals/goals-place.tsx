@@ -153,7 +153,8 @@ export function GoalsPlace() {
         ) : map.error || !map.data ? (
           <PageFailure error={map.error} onRetry={map.refetch} />
         ) : tab === "unit" && unit ? (
-          <UnitGoals tree={tree} unitId={unit.orgUnitId} onOpen={open} />
+          <UnitGoals tree={tree} unitId={unit.orgUnitId} cycle={running} onOpen={open}
+            onOpenCompany={() => router.push(address({ tab: "company" }), { scroll: false })} />
         ) : mapView && tree.companies.length > 0 ? (
           <div className="h-[calc(100dvh-15rem)] min-h-[420px]">
             <AlignmentMap map={map.data} focusId={params.get("focus")} nearId={params.get("near")} onOpen={open} />
@@ -163,7 +164,9 @@ export function GoalsPlace() {
             tree={tree}
             myUnitId={unit?.orgUnitId ?? null}
             drafts={(overview.data?.nodes ?? []).filter((node) => node.state === "Draft")}
+            cycle={running}
             onOpen={open}
+            onOpenUnit={() => router.push(address({ tab: "unit" }), { scroll: false })}
             onAddUnitGoal={canAddUnitGoal ? addUnitGoal : undefined}
           />
         )}

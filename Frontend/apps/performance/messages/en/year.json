@@ -138,11 +138,6 @@
     "lately": "Lately",
     "under": "under {goal}",
     "updated": "Updated {day}",
-    "noUpdateYet": "No update yet",
-    "status": {
-      "OnTrack": "On track",
-      "AtRisk": "At risk",
-      "OffTrack": "Off track"
-    }
+    "noUpdateYet": "No update yet"
   }
 }

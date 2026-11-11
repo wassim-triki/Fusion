@@ -31,6 +31,8 @@ public sealed record UpdateReviewRoundRequest(
     public bool PeerInputDueDateSet { get; init; }
     /// <summary>Library question ids in order within each audience; omitted keeps the current picks.</summary>
     public IReadOnlyList<Guid>? QuestionIds { get; init; }
+    /// <summary>The day the round opens by itself; omitted keeps the current day.</summary>
+    public DateOnly? OpensOn { get; init; }
 }
 
 public sealed record ReviewRoundSummaryDto(
@@ -59,6 +61,7 @@ public sealed record ReviewRoundDto(
     public DateOnly CycleStart { get; init; }
     public DateOnly CycleEnd { get; init; }
     public DateTime? LaunchedAt { get; init; }
+    public DateOnly? OpensOn { get; init; }
     /// <summary>The dates each task is due on: computed from today while Draft, fixed at launch.</summary>
     public ReviewRoundScheduleDto Schedule { get; init; } = null!;
     /// <summary>Draft: library picks. Launched: the frozen snapshot.</summary>
@@ -92,8 +95,8 @@ public sealed record ReviewStageProgressDto(string Stage, int Done, int Total, D
 public sealed record ReviewRatioDto(int Done, int Total);
 /// <summary>One reviewer's reviews: a "team" for monitoring.</summary>
 public sealed record ReviewTeamProgressDto(Guid ReviewerEmployeeId, string ReviewerDisplayName, string? OrgUnitName, int People,
-    ReviewRatioDto Self, ReviewRatioDto Peers, ReviewRatioDto Manager, int ListsToApprove);
-public sealed record ReviewReminderForecastDto(DateOnly Date, int SelfAssessments, int PeerLists, int PeerInputs, int ManagerAssessments);
+    ReviewRatioDto Self, ReviewRatioDto Peers, ReviewRatioDto Manager);
+public sealed record ReviewReminderForecastDto(DateOnly Date, int SelfAssessments, int PeerInputs, int ManagerAssessments);
 public sealed record ReviewRoundProgressDto(IReadOnlyList<ReviewStageProgressDto> Stages, IReadOnlyList<ReviewTeamProgressDto> Teams,
     ReviewReminderForecastDto? NextReminder, int ReadyToFinalize, int Finalized, int Closed);
 

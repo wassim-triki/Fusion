@@ -95,6 +95,18 @@ public sealed class PeerRequest : PerformanceAggregate
         return true;
     }
 
+    /// <summary>Asked again after the manager left them off: the closed request opens again, answers cleared.</summary>
+    public void Reopen(DateOnly? dueDate, DateTime at)
+    {
+        if (State != PeerRequestState.Closed) throw new InvalidOperationException("Only a closed request opens again.");
+        _answers.Clear();
+        State = PeerRequestState.Open;
+        DueDate = dueDate;
+        RequestedAt = at;
+        ClosedAt = null;
+        MarkUpdated();
+    }
+
     public bool MoveDueDate(DateOnly to)
     {
         if (State != PeerRequestState.Open || DueDate == to) return false;

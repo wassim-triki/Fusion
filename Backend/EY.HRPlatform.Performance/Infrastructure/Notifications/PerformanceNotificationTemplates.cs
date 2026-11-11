@@ -82,16 +82,8 @@ public static class PerformanceNotificationTemplates
         };
     }
 
+    /// <summary>A peer answers on Home, in place (D-74): this Performance link hands over to Home with the request open.</summary>
     public static string PeerRequestPath(Guid requestId) => $"/performance/reviews/peer-requests/{requestId}";
-    public static string PeerListPath(Guid reviewId) => $"/performance/reviews?peers={reviewId}";
-
-    public static PerformanceNotificationMessage ForPeersNominated(string subjectName, string roundName, Guid reviewId)
-        => Message("PeersNominated", "PeersNominated.context", subjectName, PeerListPath(reviewId),
-            ("subject", subjectName), ("round", roundName));
-
-    public static PerformanceNotificationMessage ForPeerListApproved(string reviewerName, string roundName, Guid reviewId)
-        => Message("PeerListApproved", "PeerListApproved.context", reviewerName, ReviewPath(reviewId),
-            ("reviewer", reviewerName), ("round", roundName));
 
     public static PerformanceNotificationMessage ForPeerInputRequested(string subjectName, string roundName, DateOnly? due, Guid requestId)
         => Message("PeerInputRequested", due is null ? "Context.round" : "PeerInputRequested.context.due", subjectName,

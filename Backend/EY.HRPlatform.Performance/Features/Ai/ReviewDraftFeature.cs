@@ -25,7 +25,20 @@ namespace EY.HRPlatform.Performance.Features.Ai;
 public enum ReviewDraftKind { Summary, Question }
 
 public sealed record ReviewDraftRequest(ReviewDraftKind Kind, Guid? QuestionId = null);
-public sealed record ReviewDraftSourceDto(string Kind, string Label, string? Path, bool SubjectVisible, string Excerpt);
+public sealed record ReviewDraftSourceDto(string Kind, string Label, string? Path, bool SubjectVisible, string Excerpt)
+{
+    /// <summary>The source's key in the review's year (<c>kind:id</c>), what a saved answer cites.</summary>
+    public string Key { get; init; } = string.Empty;
+}
+
+/// <summary>
+/// One thing from the person's year, numbered as the review's year lists it beside the form (H3): a goal, praise, feedback,
+/// a 1:1, a peer's answer. <c>Private</c> marks what the person never sees (the manager's own notes, peers' answers).
+/// </summary>
+public sealed record ReviewYearItemDto(int Number, string Key, string Kind, DateTime At, string? Who, string? Title, string? Body,
+    string? Path, bool Private);
+
+public sealed record GetReviewYearQuery(Guid ReviewId, ReviewActor Actor) : IQuery<Result<IReadOnlyList<ReviewYearItemDto>>>;
 public sealed record ReviewDraftSentenceDto(string Text, IReadOnlyList<ReviewDraftSourceDto> Sources);
 /// <summary>
 /// A draft for the person writing (D-27, D-28). Outcome is Drafted or Abstained ("too little to draft from").
@@ -52,7 +65,14 @@ public static class ReviewDraftVersions
 }
 
 /// <summary>One numbered source the model may cite. Private sources are the ones the review's subject can't see.</summary>
-internal sealed record DraftSource(int Number, string Kind, string Label, string? Path, bool SubjectVisible, string Text);
+internal sealed record DraftSource(int Number, string Kind, string Label, string? Path, bool SubjectVisible, string Text)
+{
+    public string Key { get; init; } = string.Empty;
+    public DateTime At { get; init; }
+    public string? Who { get; init; }
+    public string? Title { get; init; }
+    public string? Body { get; init; }
+}
 
 internal enum DraftLens { Manager, Self }
 
@@ -69,7 +89,7 @@ internal static class ReviewDraftSources
         var periodStart = round.PeriodStart.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
         var subject = review.SubjectEmployeeId;
         var manager = review.ReviewerEmployeeId;
-        var sources = new List<(string Kind, string Label, string? Path, bool Visible, string Text, DateTime At)>();
+        var sources = new List<Item>();
 
         var plan = await db.EmployeePlans.AsNoTracking().FirstOrDefaultAsync(item => item.CycleId == review.CycleId
             && item.EmployeeId == subject && item.State == PlanLifecycleState.Approved, token);
@@ -84,13 +104,15 @@ internal static class ReviewDraftSources
             var progress = objective.HasProgress ? $"{Math.Min(objective.DerivedProgress, 100m):0}%" : "no progress recorded";
             var reason = updates.FirstOrDefault(item => item.ObjectiveId == objective.Id && !string.IsNullOrWhiteSpace(item.ContextNote))?.ContextNote;
             var status = objective.CurrentStatus?.ToString() ?? "no status";
-            sources.Add(("objective", $"{objective.Title} · {progress}", PerformanceNotificationTemplates.ObjectivePath(objective.CycleId, objective.Id),
+            sources.Add(new("objective", $"objective:{objective.Id:N}", $"{objective.Title} · {progress}",
+                PerformanceNotificationTemplates.ObjectivePath(objective.CycleId, objective.Id),
                 true, $"Objective: {objective.Title}. Weight {objective.PlanWeight ?? 0:0}%. Progress {progress}. Status {status}."
-                    + (reason is null ? "" : $" Note: {reason}"), objective.LastProgressAt ?? periodStart));
+                    + (reason is null ? "" : $" Note: {reason}"), objective.LastProgressAt ?? periodStart, null, objective.Title, reason ?? progress));
             foreach (var file in updates.Where(item => item.ObjectiveId == objective.Id).SelectMany(item => item.Evidence)
                          .Where(item => !item.IsRemovedUnderRetention && !string.IsNullOrWhiteSpace(item.FileName)).Take(3))
-                sources.Add(("evidence", file.FileName!, PerformanceNotificationTemplates.ObjectivePath(objective.CycleId, objective.Id, record: true),
-                    true, $"Evidence file attached to {objective.Title}: {file.FileName}", periodStart));
+                sources.Add(new("evidence", $"evidence:{file.Id:N}", file.FileName!,
+                    PerformanceNotificationTemplates.ObjectivePath(objective.CycleId, objective.Id, record: true),
+                    true, $"Evidence file attached to {objective.Title}: {file.FileName}", periodStart, null, objective.Title, file.FileName));
         }
 
         var feedback = await db.Feedback.AsNoTracking()
@@ -98,17 +120,19 @@ internal static class ReviewDraftSources
                 && (item.Visibility == FeedbackVisibility.Shared
                     || lens == DraftLens.Manager && item.Visibility == FeedbackVisibility.ManagerOnly && item.AddressedManagerEmployeeId == manager))
             .OrderByDescending(item => item.SentAt).Take(12).ToListAsync(token);
-        sources.AddRange(feedback.Select(item => ("feedback", $"{FirstName(item.AuthorName)} · feedback {item.SentAt:d MMM}",
-            (string?)PerformanceNotificationTemplates.FeedbackPath(item.Id), item.Visibility == FeedbackVisibility.Shared,
-            $"Feedback from {item.AuthorName}" + (item.ObjectiveTitle is null ? "" : $" about {item.ObjectiveTitle}") + $": {item.Message}", item.SentAt)));
+        sources.AddRange(feedback.Select(item => new Item("feedback", $"feedback:{item.Id:N}", $"{FirstName(item.AuthorName)} · feedback {item.SentAt:d MMM}",
+            PerformanceNotificationTemplates.FeedbackPath(item.Id), item.Visibility == FeedbackVisibility.Shared,
+            $"Feedback from {item.AuthorName}" + (item.ObjectiveTitle is null ? "" : $" about {item.ObjectiveTitle}") + $": {item.Message}", item.SentAt,
+            item.AuthorName, item.ObjectiveTitle, item.Message)));
 
         var praise = await (from recipient in db.PraiseRecipients.AsNoTracking()
                             join item in db.Praise.AsNoTracking() on recipient.PraiseId equals item.Id
                             where recipient.EmployeeId == subject && item.DeletedAt == null && item.GivenAt >= periodStart
                             orderby item.GivenAt descending
                             select item).Take(8).ToListAsync(token);
-        sources.AddRange(praise.Select(item => ("praise", $"{FirstName(item.AuthorName)} · praise {item.GivenAt:d MMM}",
-            (string?)PerformanceNotificationTemplates.PraisePath(item.Id), true, $"Praise from {item.AuthorName}: {item.Message}", item.GivenAt)));
+        sources.AddRange(praise.Select(item => new Item("praise", $"praise:{item.Id:N}", $"{FirstName(item.AuthorName)} · praise {item.GivenAt:d MMM}",
+            PerformanceNotificationTemplates.PraisePath(item.Id), true, $"Praise from {item.AuthorName}: {item.Message}", item.GivenAt,
+            item.AuthorName, null, item.Message)));
 
         var meetings = (await (from meeting in db.OneOnOneMeetings.AsNoTracking()
                                join series in db.OneOnOneSeries.AsNoTracking() on meeting.SeriesId equals series.Id
@@ -124,8 +148,9 @@ internal static class ReviewDraftSources
                     .Select(item => item.SourceKind == AgendaSourceKind.Starter ? item.Note : $"{item.Text}: {item.Note}")),
             }).ToList();
         sources.AddRange(meetings.Where(item => !string.IsNullOrWhiteSpace(item.SharedNotes))
-            .Select(item => ("one-on-one", $"1:1 · {item.ScheduledAt:d MMM}", (string?)PerformanceNotificationTemplates.OneOnOnePath(item.SeriesId), true,
-                $"Shared 1:1 notes, {item.ScheduledAt:d MMM yyyy}: {item.SharedNotes}", item.ScheduledAt)));
+            .Select(item => new Item("one-on-one", $"one-on-one:{item.Id:N}", $"1:1 · {item.ScheduledAt:d MMM}",
+                PerformanceNotificationTemplates.OneOnOnePath(item.SeriesId), true,
+                $"Shared 1:1 notes, {item.ScheduledAt:d MMM yyyy}: {item.SharedNotes}", item.ScheduledAt, null, null, item.SharedNotes)));
 
         if (lens == DraftLens.Manager)
         {
@@ -135,25 +160,33 @@ internal static class ReviewDraftSources
             sources.AddRange(privateNotes.Where(item => !string.IsNullOrWhiteSpace(item.Text)).Select(item =>
             {
                 var meeting = meetings.Single(entry => entry.Id == item.MeetingId);
-                return ("private-note", $"Your note · {meeting.ScheduledAt:d MMM}", (string?)PerformanceNotificationTemplates.OneOnOnePath(meeting.SeriesId),
-                    false, $"The manager's private 1:1 note, {meeting.ScheduledAt:d MMM yyyy}: {item.Text}", meeting.ScheduledAt);
+                return new Item("private-note", $"private-note:{item.Id:N}", $"Your note · {meeting.ScheduledAt:d MMM}",
+                    PerformanceNotificationTemplates.OneOnOnePath(meeting.SeriesId),
+                    false, $"The manager's private 1:1 note, {meeting.ScheduledAt:d MMM yyyy}: {item.Text}", meeting.ScheduledAt, null, null, item.Text);
             }));
             var requests = await db.PeerRequests.AsNoTracking().Include(item => item.Answers)
                 .Where(item => item.ReviewId == review.Id && item.State == PeerRequestState.Answered).ToListAsync(token);
             var questionTexts = await db.ReviewQuestionSnapshots.AsNoTracking().Where(item => item.ReviewRoundId == round.Id)
                 .ToDictionaryAsync(item => item.Id, item => item.Text, token);
-            sources.AddRange(requests.Select(item => ("peer", $"{FirstName(item.PeerDisplayName)} · peer input",
-                (string?)PerformanceNotificationTemplates.ReviewPath(review.Id), false,
+            sources.AddRange(requests.Select(item => new Item("peer", $"peer:{item.Id:N}", $"{FirstName(item.PeerDisplayName)} · peer input",
+                PerformanceNotificationTemplates.ReviewPath(review.Id), false,
                 $"Peer input from {item.PeerDisplayName}: " + string.Join(" ", item.Answers.Select(answer =>
-                    $"{questionTexts.GetValueOrDefault(answer.QuestionSnapshotId, "Question")} — {answer.Text}")), item.RespondedAt ?? now)));
+                    $"{questionTexts.GetValueOrDefault(answer.QuestionSnapshotId, "Question")} — {answer.Text}")), item.RespondedAt ?? now,
+                item.PeerDisplayName, null, string.Join(" ", item.Answers.Select(answer => answer.Text)))));
         }
 
         // Objectives first, then the most recent of everything else, numbered as the model will cite them.
         return sources.OrderBy(item => item.Kind is "objective" or "evidence" ? 0 : 1).ThenByDescending(item => item.At)
             .Take(ReviewDraftVersions.MaxSources)
-            .Select((item, index) => new DraftSource(index + 1, item.Kind, item.Label, item.Path, item.Visible, Clip(item.Text)))
+            .Select((item, index) => new DraftSource(index + 1, item.Kind, item.Label, item.Path, item.Visible, Clip(item.Text))
+            {
+                Key = item.Key, At = item.At, Who = item.Who, Title = item.Title, Body = item.Body,
+            })
             .ToArray();
     }
+
+    private sealed record Item(string Kind, string Key, string Label, string? Path, bool Visible, string Text, DateTime At,
+        string? Who, string? Title, string? Body);
 
     private static string FirstName(string name) => name.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? name;
 
@@ -179,7 +212,7 @@ internal static partial class ReviewDraftValidation
             .Where(item => item.Text.Length is > 0 and <= 400 && item.Cited.Length > 0 && !NamesARating(item.Text, ratingLabels))
             .Select(item => new ReviewDraftSentenceDto(item.Text,
                 item.Cited.Select(source => new ReviewDraftSourceDto(source.Kind, source.Label, source.Path, source.SubjectVisible,
-                    source.Text.Length <= 280 ? source.Text : source.Text[..280] + "…")).ToArray()))
+                    source.Text.Length <= 280 ? source.Text : source.Text[..280] + "…") { Key = source.Key }).ToArray()))
             .ToArray();
     }
 
@@ -224,9 +257,10 @@ public sealed class RunReviewDraftHandler(
         // Only the two writers of a review may draft for it; for anyone else it doesn't exist (HR and facilitators included).
         if (!isReviewer && !isSubject) return Result.Failure<ReviewDraftDto>(PerformanceErrors.NotFound("PerformanceReview", command.ReviewId));
         DraftLens lens;
-        if (isReviewer && review.State == PerformanceReviewState.ManagerAssessment && !review.ManagerAssessment.IsSubmitted) lens = DraftLens.Manager;
-        else if (isSubject && review.SelfAssessmentEnabled && review.State == PerformanceReviewState.SelfAssessment && !review.SelfAssessment.IsSubmitted
-                 && command.Request.Kind == ReviewDraftKind.Summary) lens = DraftLens.Self;
+        if (isReviewer && review.State is PerformanceReviewState.SelfAssessment or PerformanceReviewState.ManagerAssessment
+            && !review.ManagerAssessment.IsSubmitted) lens = DraftLens.Manager;
+        else if (isSubject && review.SelfAssessmentEnabled && review.State == PerformanceReviewState.SelfAssessment && !review.SelfAssessment.IsSubmitted)
+            lens = DraftLens.Self;
         else return Result.Failure<ReviewDraftDto>(PerformanceErrors.InvalidState(PerformanceErrors.Codes.ReviewNotOpen,
             "A draft is offered only while you are writing this review."));
 
@@ -236,7 +270,8 @@ public sealed class RunReviewDraftHandler(
         {
             var snapshot = command.Request.QuestionId is Guid questionId
                 ? await db.ReviewQuestionSnapshots.AsNoTracking().FirstOrDefaultAsync(item => item.Id == questionId
-                    && item.ReviewRoundId == round.Id && item.Audience == ReviewQuestionAudience.Manager, token)
+                    && item.ReviewRoundId == round.Id
+                    && item.Audience == (lens == DraftLens.Manager ? ReviewQuestionAudience.Manager : ReviewQuestionAudience.Person), token)
                 : null;
             if (snapshot is null) return Result.Failure<ReviewDraftDto>(PerformanceErrors.NotFound("ReviewQuestion", command.Request.QuestionId ?? Guid.Empty));
             question = snapshot.Text;
@@ -352,6 +387,30 @@ public sealed class RunReviewDraftHandler(
             promptVersion = ReviewDraftVersions.Prompt,
         });
         await db.SaveChangesAsync(token);
+    }
+}
+
+/// <summary>
+/// The review's year beside the form (H3), numbered as drafts cite it: the person reads it through their own lens, the
+/// reviewer of record through the manager's. Anyone else gets not found.
+/// </summary>
+public sealed class GetReviewYearHandler(PerformanceDbContext db) : IQueryHandler<GetReviewYearQuery, Result<IReadOnlyList<ReviewYearItemDto>>>
+{
+    public async Task<Result<IReadOnlyList<ReviewYearItemDto>>> Handle(GetReviewYearQuery query, CancellationToken token)
+    {
+        var review = await db.PerformanceReviews.AsNoTracking().FirstOrDefaultAsync(item => item.Id == query.ReviewId, token);
+        if (review is null) return Result.Failure<IReadOnlyList<ReviewYearItemDto>>(PerformanceErrors.NotFound("PerformanceReview", query.ReviewId));
+        var actor = query.Actor;
+        var isReviewer = actor.CanReviewReports && actor.EmployeeId != Guid.Empty && actor.EmployeeId == review.ReviewerEmployeeId;
+        var isSubject = actor.EmployeeId != Guid.Empty && actor.EmployeeId == review.SubjectEmployeeId;
+        if (!isReviewer && !isSubject) return Result.Failure<IReadOnlyList<ReviewYearItemDto>>(PerformanceErrors.NotFound("PerformanceReview", query.ReviewId));
+        var round = await db.ReviewRounds.AsNoTracking().SingleAsync(item => item.Id == review.ReviewRoundId, token);
+        var sources = await ReviewDraftSources.CompileAsync(db, review, round, isSubject ? DraftLens.Self : DraftLens.Manager,
+            PerformanceClock.UtcNow, token);
+        return Result.Success<IReadOnlyList<ReviewYearItemDto>>(sources
+            .Select(source => new ReviewYearItemDto(source.Number, source.Key, source.Kind, source.At, source.Who, source.Title, source.Body,
+                source.Path, !source.SubjectVisible))
+            .ToArray());
     }
 }
 

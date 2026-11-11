@@ -54,7 +54,17 @@
     "nudgedOne": "{name} a été relancé·e",
     "waitingOn": "En attente de {name}",
     "planWith": "Votre plan est chez {name}",
-    "reviewWith": "{name} rédige votre évaluation"
+    "reviewWith": "{name} rédige votre évaluation",
+    "comingUp": "À venir",
+    "roundOpensOn": "La campagne de revues s'ouvre d'elle-même le {day}",
+    "inDays": "{count, plural, =0 {Aujourd'hui} one {Dans # jour} other {Dans # jours}}",
+    "roundOpened": "La campagne est ouverte ; chacun a été prévenu",
+    "couldntOpen": "La campagne n'a pas pu s'ouvrir.",
+    "reviewsDue": "Revues attendues le {day}, {count, plural, =0 {aujourd'hui} one {dans # jour} other {dans # jours}}",
+    "selfReviewsDue": "Auto-évaluations attendues le {day}",
+    "managersBehind": "{count, plural, one {# manager est} other {# managers sont}} en retard sur les revues",
+    "nudgeTheCount": "{count, plural, one {Les relancer} other {Relancer les #}}",
+    "nudgedManagers": "{count, plural, one {# manager relancé} other {# managers relancés}}"
   },
   "MovePreview": {
     "preview": "Aperçu",
@@ -139,5 +149,38 @@
     "under": "sous {goal}",
     "updated": "Mis à jour le {day}",
     "noUpdateYet": "Pas encore de mise à jour"
+  },
+  "Round": {
+    "selfReviewDue": "Une auto-évaluation, attendue le {day}",
+    "peersAsked": "Trois sollicités pour chacun, parmi ceux qui ont travaillé avec lui ; son manager peut changer qui",
+    "managersDue": "Revues attendues le {day}, chacune rédigée à partir de l'année de la personne",
+    "goalsGraded": "Notés à partir de leur mesure",
+    "readOnTheDay": "Lu le jour de l'ouverture",
+    "opens": {
+      "everyone": "Tout le monde",
+      "peers": "Pairs",
+      "managers": "Managers",
+      "goals": "Objectifs"
+    },
+    "oneNotificationEach": "Une notification chacun, qui ouvre là où agir",
+    "toldToday": "{count, plural, one {# personne prévenue aujourd'hui, avec par où commencer} other {# personnes prévenues aujourd'hui, chacune avec par où commencer}}",
+    "key": {
+      "written": "Rédigées",
+      "toWrite": "À rédiger par eux",
+      "waiting": "En attente d'une auto-évaluation"
+    },
+    "moreOnPace": "{count, plural, one {et # autre manager dans les temps} other {et # autres managers dans les temps}}",
+    "nudgedToday": "Relancé aujourd'hui",
+    "nudge": "Relancer",
+    "allWritten": "Toutes rédigées",
+    "onPace": "Dans les temps",
+    "parts": {
+      "written": "Rédigées",
+      "toWrite": "Auto-évaluation reçue, à rédiger par {name}",
+      "waiting": "Auto-évaluation pas encore reçue"
+    },
+    "written": "{written} sur {count} rédigées",
+    "openItToday": "L'ouvrir aujourd'hui",
+    "people": "{count, plural, one {# personne} other {# personnes}}"
   }
 }

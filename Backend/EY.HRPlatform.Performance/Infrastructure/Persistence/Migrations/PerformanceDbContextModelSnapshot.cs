@@ -2846,12 +2846,6 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                     b.Property<bool>("PeerInputEnabled")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime?>("PeerListApprovedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("PeerListApprovedByEmployeeId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime?>("PeersNominatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -3061,6 +3055,14 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                         .HasMaxLength(4000)
                         .HasColumnType("character varying(4000)");
 
+                    b.Property<decimal?>("ManagerGrade")
+                        .HasPrecision(3, 2)
+                        .HasColumnType("numeric(3,2)");
+
+                    b.Property<string>("ManagerGradeReason")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
                     b.Property<int?>("ManagerRating")
                         .HasColumnType("integer");
 
@@ -3070,6 +3072,14 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                     b.Property<string>("SelfComment")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
+
+                    b.Property<decimal?>("SelfGrade")
+                        .HasPrecision(3, 2)
+                        .HasColumnType("numeric(3,2)");
+
+                    b.Property<string>("SelfGradeReason")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
 
                     b.Property<int?>("SelfRating")
                         .HasColumnType("integer");
@@ -3109,6 +3119,9 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
+
+                    b.Property<string>("CitationsJson")
+                        .HasColumnType("jsonb");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -3253,6 +3266,9 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
 
                     b.Property<bool>("ObjectiveRatingsEnabled")
                         .HasColumnType("boolean");
+
+                    b.Property<DateOnly?>("OpensOn")
+                        .HasColumnType("date");
 
                     b.Property<DateOnly?>("PeerInputDueDate")
                         .HasColumnType("date");

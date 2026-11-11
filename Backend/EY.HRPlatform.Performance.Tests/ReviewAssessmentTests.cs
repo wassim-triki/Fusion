@@ -23,7 +23,9 @@ public sealed class ReviewAssessmentTests
     {
         var (review, subjectId, reviewerId) = CreateReview(selfEnabled: true, calibration: false);
         Assert.Throws<UnauthorizedAccessException>(() => review.SaveSelfAssessment(reviewerId, "reflection", DateTime.UtcNow));
-        Assert.Throws<InvalidOperationException>(() => review.SaveManagerAssessment(reviewerId, "manager view", 3, DateTime.UtcNow));
+        // The manager may start while the self-review is open (D-60); sending waits for it.
+        Assert.True(review.SaveManagerAssessment(reviewerId, "manager view", 3, DateTime.UtcNow));
+        Assert.Throws<InvalidOperationException>(() => review.SubmitManagerAssessment(reviewerId, "manager view", 3, DateTime.UtcNow));
 
         review.SaveSelfAssessment(subjectId, "  Progress was strong.  ", DateTime.UtcNow);
         Assert.Equal("Progress was strong.", review.SelfAssessment.Summary);

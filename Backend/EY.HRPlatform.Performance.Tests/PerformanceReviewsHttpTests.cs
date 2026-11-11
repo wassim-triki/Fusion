@@ -130,7 +130,8 @@ public sealed class PerformanceReviewsHttpTests
             var data = json.RootElement.GetProperty("data");
             Assert.Equal(JsonValueKind.Null, data.GetProperty("selfAssessment").ValueKind);
             Assert.Equal(JsonValueKind.Object, data.GetProperty("managerAssessment").ValueKind);
-            Assert.False(data.GetProperty("canEditManagerAssessment").GetBoolean());
+            // The manager may start while the self-review is being written (D-60).
+            Assert.True(data.GetProperty("canEditManagerAssessment").GetBoolean());
             Assert.Equal(5, data.GetProperty("ratingScale").GetArrayLength());
             Assert.Equal("Mid-year", data.GetProperty("reviewRoundName").GetString());
         }
@@ -157,9 +158,10 @@ public sealed class PerformanceReviewsHttpTests
         using (var unrelated = await stranger.GetAsync($"/api/performance/reviews/{review.Id}"))
             Assert.Equal(HttpStatusCode.Forbidden, unrelated.StatusCode);
 
-        using (var prematureManagerSave = await reviewer.PutAsJsonAsync($"/api/performance/reviews/{review.Id}/manager-assessment",
+        // The manager may start writing early (D-60), but can't send before the self-review is in.
+        using (var prematureManagerSubmit = await reviewer.PostAsJsonAsync($"/api/performance/reviews/{review.Id}/manager-assessment",
             new { expectedVersion = review.Version, summary = "Too early", overallRating = 3 }))
-            Assert.Equal(HttpStatusCode.Forbidden, prematureManagerSave.StatusCode);
+            Assert.Contains(prematureManagerSubmit.StatusCode, new[] { HttpStatusCode.BadRequest, HttpStatusCode.Conflict });
 
         using (var selfSubmit = await subject.PostAsJsonAsync($"/api/performance/reviews/{review.Id}/self-assessment",
             new { expectedVersion = review.Version, summary = "I delivered the plan.", overallRating = 4 }))

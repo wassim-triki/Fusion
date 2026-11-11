@@ -45,9 +45,8 @@ public sealed class PerformanceReview : PerformanceAggregate
     public bool QuestionsEnabled { get; private set; }
     public bool PotentialEnabled { get; private set; }
     public ReviewPotential? Potential { get; private set; }
+    /// <summary>When peers were first asked: picked by Fusion at launch, or added by the manager later.</summary>
     public DateTime? PeersNominatedAt { get; private set; }
-    public DateTime? PeerListApprovedAt { get; private set; }
-    public Guid? PeerListApprovedByEmployeeId { get; private set; }
     public DateTime? AcknowledgedAt { get; private set; }
     public string? AcknowledgementComment { get; private set; }
     public ReviewAssessment SelfAssessment { get; private set; } = new();
@@ -158,7 +157,8 @@ public sealed class PerformanceReview : PerformanceAggregate
         ReviewPotential? potential = null)
     {
         RequireActor(actorEmployeeId, ReviewerEmployeeId, "Only the reviewer of record can save a manager assessment.");
-        if (State != PerformanceReviewState.ManagerAssessment || ManagerAssessment.IsSubmitted)
+        // The manager may start while the self-review is still being written (D-60); sending waits for it.
+        if (State is not (PerformanceReviewState.SelfAssessment or PerformanceReviewState.ManagerAssessment) || ManagerAssessment.IsSubmitted)
             throw new InvalidOperationException("The manager assessment is not editable at this stage.");
         ValidateRating(overallRating, required: false);
         ValidatePotential(potential, required: false);
@@ -278,69 +278,77 @@ public sealed class PerformanceReview : PerformanceAggregate
     }
 
     /// <summary>Saves or clears one answer on the side that is still being written; answers lock with that side's submit.</summary>
-    public void SetAnswer(ReviewQuestionAuthor author, Guid questionSnapshotId, string? text)
+    public void SetAnswer(ReviewQuestionAuthor author, Guid questionSnapshotId, string? text, IReadOnlyList<ReviewCitation>? citations = null)
     {
         if (!QuestionsEnabled) throw new InvalidOperationException("This round asks no questions.");
         var open = author == ReviewQuestionAuthor.Self
             ? SelfAssessmentEnabled && State == PerformanceReviewState.SelfAssessment && !SelfAssessment.IsSubmitted
-            : State == PerformanceReviewState.ManagerAssessment && !ManagerAssessment.IsSubmitted;
+            : State is PerformanceReviewState.SelfAssessment or PerformanceReviewState.ManagerAssessment && !ManagerAssessment.IsSubmitted;
         if (!open) throw new InvalidOperationException("These answers are no longer editable.");
         var existing = _answers.FirstOrDefault(item => item.Author == author && item.QuestionSnapshotId == questionSnapshotId);
         if (existing is null)
         {
             if (string.IsNullOrWhiteSpace(text)) return;
-            _answers.Add(ReviewQuestionAnswer.Create(TenantId, Id, questionSnapshotId, author, text));
+            _answers.Add(ReviewQuestionAnswer.Create(TenantId, Id, questionSnapshotId, author, text, citations));
             return;
         }
         if (string.IsNullOrWhiteSpace(text)) _answers.Remove(existing);
-        else existing.Change(text);
+        else existing.Change(text, citations);
     }
 
     /// <summary>
-    /// The person's list of 1–5 colleagues while self-assessing, editable until the reviewer approves it.
-    /// Returns true the first time a list is given (the reviewer is told once).
+    /// The colleagues Fusion picked when the round opened, from who worked with the person (D-40): asked at once, with
+    /// nobody's approval first. Up to <see cref="MaxPeers"/>; none when nobody worked with them.
     /// </summary>
-    public bool NominatePeers(Guid actorEmployeeId, IReadOnlyList<(Guid EmployeeId, string DisplayName)> peers, DateTime at)
+    public void PickPeers(IReadOnlyList<(Guid EmployeeId, string DisplayName)> peers, DateTime at)
     {
-        RequireActor(actorEmployeeId, SubjectEmployeeId, "Only the person reviewed nominates their peers.");
         if (!PeerInputEnabled) throw new InvalidOperationException("This round does not ask for peer input.");
-        if (State != PerformanceReviewState.SelfAssessment || SelfAssessment.IsSubmitted)
-            throw new InvalidOperationException("Peers are nominated while the self-assessment is open.");
-        if (PeerListApprovedAt is not null) throw new InvalidOperationException("The peer list was already approved.");
+        if (_peerNominations.Count > 0) throw new InvalidOperationException("Peers were already picked for this review.");
         ValidatePeers(peers);
-        var first = PeersNominatedAt is null;
-        _peerNominations.RemoveAll(item => peers.All(peer => peer.EmployeeId != item.EmployeeId));
-        foreach (var peer in peers.Where(peer => _peerNominations.All(item => item.EmployeeId != peer.EmployeeId)))
-            _peerNominations.Add(PeerNomination.Create(TenantId, Id, peer.EmployeeId, peer.DisplayName, PeerNominationSource.Subject, at));
+        foreach (var peer in peers)
+            _peerNominations.Add(PeerNomination.Create(TenantId, Id, peer.EmployeeId, peer.DisplayName, PeerNominationSource.Fusion, at));
+        PeersNominatedAt = at;
+        MarkUpdated();
+    }
+
+    /// <summary>
+    /// The manager changes who is asked (D-40), any time until their review is in: colleagues left off stop being asked,
+    /// new ones are asked. Returns who was removed and who was added.
+    /// </summary>
+    public PeerListDecision ChangePeers(Guid actorEmployeeId, IReadOnlyList<(Guid EmployeeId, string DisplayName)> peers, DateTime at)
+    {
+        RequireActor(actorEmployeeId, ReviewerEmployeeId, "Only the reviewer changes who is asked.");
+        if (!PeerInputEnabled) throw new InvalidOperationException("This round does not ask for peer input.");
+        if (State is not (PerformanceReviewState.SelfAssessment or PerformanceReviewState.ManagerAssessment) || ManagerAssessment.IsSubmitted)
+            throw new InvalidOperationException("Who is asked can change until the manager's review is in.");
+        ValidatePeers(peers);
+        var asked = _peerNominations.Select(item => item.EmployeeId).ToHashSet();
+        var wanted = peers.Select(item => item.EmployeeId).ToHashSet();
+        var decision = new PeerListDecision(asked.Where(id => !wanted.Contains(id)).ToArray(), wanted.Where(id => !asked.Contains(id)).ToArray());
+        if (decision.Removed.Count == 0 && decision.Added.Count == 0) return decision;
+        _peerNominations.RemoveAll(item => !wanted.Contains(item.EmployeeId));
+        foreach (var peer in peers.Where(peer => !asked.Contains(peer.EmployeeId)))
+            _peerNominations.Add(PeerNomination.Create(TenantId, Id, peer.EmployeeId, peer.DisplayName, PeerNominationSource.Reviewer, at));
         PeersNominatedAt ??= at;
         MarkUpdated();
-        return first;
+        return decision;
     }
 
     /// <summary>
-    /// The reviewer approves the final list (as nominated, or with colleagues removed, swapped or added).
-    /// Approval happens once, before the manager assessment is submitted. Returns the change against the nominations.
+    /// The person takes their sent self-review back while the manager hasn't sent theirs ("Take it back"): it reopens
+    /// as it was, due on its own date again.
     /// </summary>
-    public PeerListDecision ApprovePeerList(Guid actorEmployeeId, IReadOnlyList<(Guid EmployeeId, string DisplayName)> peers, DateTime at)
+    public bool TakeBackSelfAssessment(Guid actorEmployeeId)
     {
-        RequireActor(actorEmployeeId, ReviewerEmployeeId, "Only the reviewer approves the peer list.");
-        if (!PeerInputEnabled) throw new InvalidOperationException("This round does not ask for peer input.");
-        if (PeerListApprovedAt is not null) throw new InvalidOperationException("The peer list was already approved.");
-        if (State is not (PerformanceReviewState.SelfAssessment or PerformanceReviewState.ManagerAssessment) || ManagerAssessment.IsSubmitted)
-            throw new InvalidOperationException("The peer list can be approved until the manager assessment is submitted.");
-        ValidatePeers(peers);
-        var nominated = _peerNominations.Select(item => item.EmployeeId).ToHashSet();
-        var approved = peers.Select(item => item.EmployeeId).ToHashSet();
-        var decision = new PeerListDecision(
-            nominated.Where(id => !approved.Contains(id)).ToArray(),
-            approved.Where(id => !nominated.Contains(id)).ToArray());
-        _peerNominations.RemoveAll(item => !approved.Contains(item.EmployeeId));
-        foreach (var peer in peers.Where(peer => !nominated.Contains(peer.EmployeeId)))
-            _peerNominations.Add(PeerNomination.Create(TenantId, Id, peer.EmployeeId, peer.DisplayName, PeerNominationSource.Reviewer, at));
-        PeerListApprovedAt = at;
-        PeerListApprovedByEmployeeId = actorEmployeeId;
+        RequireActor(actorEmployeeId, SubjectEmployeeId, "Only the person reviewed takes their self-review back.");
+        if (!SelfAssessment.IsSubmitted) return false;
+        if (State != PerformanceReviewState.ManagerAssessment || ManagerAssessment.IsSubmitted)
+            throw new InvalidOperationException("The self-review can be taken back until the manager's review is in.");
+        SelfAssessment.Reopen();
+        State = PerformanceReviewState.SelfAssessment;
+        CurrentStageDueDate = SelfAssessmentDueDate;
         MarkUpdated();
-        return decision;
+        return true;
     }
 
     /// <summary>
@@ -411,10 +419,24 @@ public sealed class PerformanceReview : PerformanceAggregate
         return true;
     }
 
+    /// <summary>A comment for the manager after acknowledging ("Add a comment for Mariam"); replaces an earlier one.</summary>
+    public bool CommentOnAcknowledgement(Guid actorEmployeeId, string? comment)
+    {
+        RequireActor(actorEmployeeId, SubjectEmployeeId, "Only the person reviewed comments on their result.");
+        if (AcknowledgedAt is null) throw new InvalidOperationException("Acknowledge the review first.");
+        var cleaned = string.IsNullOrWhiteSpace(comment) ? throw new ArgumentException("Write a comment.", nameof(comment)) : comment.Trim();
+        if (cleaned.Length > MaxAcknowledgementComment)
+            throw new ArgumentException($"A comment can be up to {MaxAcknowledgementComment:N0} characters.", nameof(comment));
+        if (AcknowledgementComment == cleaned) return false;
+        AcknowledgementComment = cleaned;
+        MarkUpdated();
+        return true;
+    }
+
     private void ValidatePeers(IReadOnlyList<(Guid EmployeeId, string DisplayName)> peers)
     {
         ArgumentNullException.ThrowIfNull(peers);
-        if (peers.Count is < 1 or > MaxPeers) throw new ArgumentException($"Choose 1 to {MaxPeers} colleagues.", nameof(peers));
+        if (peers.Count > MaxPeers) throw new ArgumentException($"Ask up to {MaxPeers} colleagues.", nameof(peers));
         if (peers.Select(item => item.EmployeeId).Distinct().Count() != peers.Count)
             throw new ArgumentException("Choose each colleague once.", nameof(peers));
         if (peers.Any(item => item.EmployeeId == Guid.Empty || string.IsNullOrWhiteSpace(item.DisplayName)))
@@ -443,10 +465,10 @@ public sealed class PerformanceReview : PerformanceAggregate
             throw new ArgumentException("The overall rating must be a level on this review's snapshotted scale.", nameof(rating));
     }
 
-    internal static string NormalizeSummary(string summary)
+    /// <summary>The words live in the round's questions now; a summary is optional and may be empty.</summary>
+    internal static string NormalizeSummary(string? summary)
     {
-        if (string.IsNullOrWhiteSpace(summary)) throw new ArgumentException("A summary is required.", nameof(summary));
-        var normalized = summary.Trim();
+        var normalized = summary?.Trim() ?? string.Empty;
         if (normalized.Length > 4000) throw new ArgumentException("A summary cannot exceed 4,000 characters.", nameof(summary));
         return normalized;
     }
@@ -485,4 +507,6 @@ public sealed class ReviewAssessment
     }
     /// <summary>Replaces only the text of a submitted assessment; its rating and submission stand.</summary>
     internal void Revise(string normalizedSummary) => Summary = normalizedSummary;
+    /// <summary>Taken back by its author: editable again, everything written kept.</summary>
+    internal void Reopen() => SubmittedAt = null;
 }

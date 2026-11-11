@@ -26,8 +26,9 @@ public sealed class ReviewWorkTests
         var round = await world.CreateRoundAsync();
         await world.LaunchAsync(round);
         var aicha = world.ReviewOf(round, world.Aicha);
-        await Data(await world.As(world.Aicha).PutAsJsonAsync($"/api/performance/reviews/{aicha}/peers",
-            new { expectedVersion = Version(world, aicha), employeeIds = new[] { world.Leila.EmployeeId, world.Khaled.EmployeeId } }));
+        await world.AskAsync(round, world.Aicha, world.Leila, world.Khaled);
+        await world.AskAsync(round, world.Fares);
+        await world.AskAsync(round, world.Tarek);
         return (world, round, aicha);
     }
 
@@ -51,21 +52,17 @@ public sealed class ReviewWorkTests
         var manager = await Data(await world.As(world.Mariam).GetAsync("/api/performance/reviews/workspace"));
         var rows = manager.GetProperty("toWrite").EnumerateArray().ToList();
         Assert.Equal(3, rows.Count);
-        Assert.Equal("ApprovePeers", rows[0].GetProperty("nextAction").GetString());
+        Assert.Equal("Wait", rows[0].GetProperty("nextAction").GetString());
         Assert.Equal("Aicha Ben Ali", rows[0].GetProperty("subjectDisplayName").GetString());
-        Assert.Equal("ToNominate", rows.Single(r => r.GetProperty("subjectDisplayName").GetString() == "Fares Jaziri").GetProperty("peerStep").GetString());
-        Assert.Equal(aicha, Assert.Single(manager.GetProperty("peerLists").EnumerateArray()).GetProperty("reviewId").GetGuid());
+        Assert.Equal("Asked", rows.Single(r => r.GetProperty("subjectDisplayName").GetString() == "Fares Jaziri").GetProperty("peerStep").GetString());
         Assert.Equal("Amira Khelifi", manager.GetProperty("own").GetProperty("reviewerName").GetString());
 
         var hr = await Data(await world.Admin.GetAsync("/api/performance/reviews/workspace"));
         var running = Assert.Single(hr.GetProperty("rounds").EnumerateArray());
         Assert.Equal("Active", running.GetProperty("state").GetString());
-        Assert.Equal(1, running.GetProperty("listsToApprove").GetInt32());
         Assert.Equal(4, hr.GetProperty("cycleFacts").GetProperty("participants").GetInt32());
         Assert.Single(hr.GetProperty("toWrite").EnumerateArray());
 
-        await Data(await world.As(world.Mariam).PostAsJsonAsync($"/api/performance/reviews/{aicha}/peers/approve",
-            new { expectedVersion = Version(world, aicha), employeeIds = new[] { world.Leila.EmployeeId, world.Khaled.EmployeeId } }));
         var peer = await Data(await world.As(world.Leila).GetAsync($"/api/performance/reviews/workspace?cycle={world.Cycle.Id}"));
         var asked = Assert.Single(peer.GetProperty("askedOfYou").EnumerateArray());
         Assert.Equal("Aicha Ben Ali", asked.GetProperty("subjectDisplayName").GetString());
@@ -99,22 +96,15 @@ public sealed class ReviewWorkTests
         await world.LaunchAsync(round);
         var aicha = world.ReviewOf(round, world.Aicha);
 
-        Assert.Contains(await WorkAsync(world.As(world.Aicha)), i => i.GetProperty("kind").GetString() == "nominate-peers"
-            && i.GetProperty("section").GetString() == "/performance/reviews");
-        await Data(await world.As(world.Aicha).PutAsJsonAsync($"/api/performance/reviews/{aicha}/peers",
-            new { expectedVersion = Version(world, aicha), employeeIds = new[] { world.Leila.EmployeeId } }));
-        Assert.DoesNotContain(await WorkAsync(world.As(world.Aicha)), i => i.GetProperty("kind").GetString() == "nominate-peers");
-        var approve = Assert.Single(await WorkAsync(world.As(world.Mariam)), i => i.GetProperty("kind").GetString() == "approve-peer-list");
-        Assert.Equal("/performance/reviews", approve.GetProperty("section").GetString());
-        Assert.Equal("Review Aicha Ben Ali's peer list", approve.GetProperty("title").GetString());
-        Assert.Equal(DateTime.UtcNow, approve.GetProperty("waitingSince").GetDateTime().ToUniversalTime(), TimeSpan.FromMinutes(1));
-
-        await Data(await world.As(world.Mariam).PostAsJsonAsync($"/api/performance/reviews/{aicha}/peers/approve",
-            new { expectedVersion = Version(world, aicha), employeeIds = new[] { world.Leila.EmployeeId } }));
+        // Nobody nominates or approves a list any more (D-40): no such work for the person or the manager.
+        Assert.DoesNotContain(await WorkAsync(world.As(world.Aicha)), i => i.GetProperty("kind").GetString() is "nominate-peers" or "approve-peer-list");
+        Assert.DoesNotContain(await WorkAsync(world.As(world.Mariam)), i => i.GetProperty("kind").GetString() is "nominate-peers" or "approve-peer-list");
+        await world.AskAsync(round, world.Aicha, world.Leila);
         var input = Assert.Single(await WorkAsync(world.As(world.Leila)), i => i.GetProperty("kind").GetString() == "peer-input");
         Assert.Equal("/performance/reviews", input.GetProperty("section").GetString());
-        Assert.Equal("Peer input for Aicha Ben Ali", input.GetProperty("title").GetString());
+        Assert.Equal("Your view on Aicha Ben Ali", input.GetProperty("title").GetString());
         Assert.Equal(Today.AddDays(14).ToString("yyyy-MM-dd"), input.GetProperty("dueOn").GetString());
+        // The link hands over to Home, where it is answered in place (D-74).
         Assert.StartsWith("/performance/reviews/peer-requests/", input.GetProperty("href").GetString());
         Assert.Equal(DateTime.UtcNow, input.GetProperty("waitingSince").GetDateTime().ToUniversalTime(), TimeSpan.FromMinutes(1));
 
@@ -163,8 +153,6 @@ public sealed class ReviewWorkTests
     {
         var (world, round, aicha) = await WithPeersAsync();
         await using var _ = world;
-        await Data(await world.As(world.Mariam).PostAsJsonAsync($"/api/performance/reviews/{aicha}/peers/approve",
-            new { expectedVersion = Version(world, aicha), employeeIds = new[] { world.Leila.EmployeeId, world.Khaled.EmployeeId } }));
         var due = Today.AddDays(14);
         // Close Fares's review: no reminders for it.
         var fares = world.ReviewOf(round, world.Fares);

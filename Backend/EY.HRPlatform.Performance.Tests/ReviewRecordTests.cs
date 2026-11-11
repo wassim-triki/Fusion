@@ -5,6 +5,7 @@ using EY.HRPlatform.Performance.Domain.Notifications;
 using EY.HRPlatform.Performance.Domain.Reviews;
 using EY.HRPlatform.Performance.Infrastructure.Notifications;
 using EY.HRPlatform.Performance.Tests.TestHelpers;
+using Microsoft.EntityFrameworkCore;
 using static EY.HRPlatform.Performance.Tests.TestHelpers.ReviewWorld;
 
 namespace EY.HRPlatform.Performance.Tests;
@@ -27,15 +28,17 @@ public sealed class ReviewRecordTests
         => review.GetProperty("questions").EnumerateArray().Where(q => q.GetProperty("audience").GetString() == audience)
             .Select(q => (object)new { questionId = q.GetProperty("questionId").GetGuid(), text }).ToArray();
 
-    /// <summary>Approves Leila and Khaled for Aicha's review; Leila answers, Khaled stays open.</summary>
+    /// <summary>Mariam asks Leila and Khaled instead of Fusion's picks for Aicha's review; Leila answers, Khaled stays open.</summary>
     private static async Task<(Guid Answered, Guid Open)> PeersAsync(ReviewWorld world, Guid reviewId)
     {
         await using var db = world.Factory.Store.NewContext();
-        var review = db.PerformanceReviews.Single(r => r.Id == reviewId);
+        var review = db.PerformanceReviews.Include(r => r.PeerNominations).Single(r => r.Id == reviewId);
         var peers = new[] { (world.Leila.EmployeeId, world.Leila.DisplayName), (world.Khaled.EmployeeId, world.Khaled.DisplayName) };
-        review.NominatePeers(world.Aicha.EmployeeId, peers, DateTime.UtcNow);
-        db.PeerNominations.AddRange(review.PeerNominations);
-        review.ApprovePeerList(world.Mariam.EmployeeId, peers, DateTime.UtcNow);
+        var before = review.PeerNominations.ToList();
+        review.ChangePeers(world.Mariam.EmployeeId, peers, DateTime.UtcNow);
+        db.PeerNominations.RemoveRange(before.Except(review.PeerNominations));
+        db.PeerNominations.AddRange(review.PeerNominations.Except(before));
+        foreach (var picked in db.PeerRequests.Where(r => r.ReviewId == reviewId)) picked.Close(DateTime.UtcNow);
         var leila = PeerRequest.Create(review, world.Leila.EmployeeId, world.Leila.DisplayName, Today.AddDays(14), DateTime.UtcNow);
         var khaled = PeerRequest.Create(review, world.Khaled.EmployeeId, world.Khaled.DisplayName, Today.AddDays(14), DateTime.UtcNow);
         var questions = db.ReviewQuestionSnapshots.Where(q => q.ReviewRoundId == review.ReviewRoundId && q.Audience == Domain.Settings.ReviewQuestionAudience.Peer)
@@ -147,7 +150,7 @@ public sealed class ReviewRecordTests
     }
 
     [Fact]
-    public async Task The_released_result_is_frozen_and_the_person_sees_answers_but_never_potential_or_peer_answers()
+    public async Task The_released_result_is_frozen_and_the_person_reads_answers_and_peers_words_with_names_but_never_potential()
     {
         var (world, round, reviewId) = await LaunchedAsync();
         await using var _ = world;
@@ -169,10 +172,12 @@ public sealed class ReviewRecordTests
         Assert.Equal(original, subject.GetProperty("questions")[0].GetProperty("text").GetString());
         Assert.Contains(subject.GetProperty("questions").EnumerateArray(), q => q.GetProperty("managerAnswer").GetString() == "Keep mentoring the new joiners");
         Assert.Equal(JsonValueKind.Null, subject.GetProperty("potential").ValueKind);
-        var asked = subject.GetProperty("peers").GetProperty("people").EnumerateArray().ToList();
-        Assert.Equal(2, asked.Count);
-        Assert.All(asked, p => Assert.Equal(JsonValueKind.Null, p.GetProperty("state").ValueKind));
-        Assert.DoesNotContain("unblocks everyone", subject.GetRawText());
+        // Once results are out the person reads what each peer who answered said, with their name (D-69).
+        var answered = Assert.Single(subject.GetProperty("peers").GetProperty("people").EnumerateArray().ToList());
+        Assert.Equal("Leila Ben Salah", answered.GetProperty("displayName").GetString());
+        Assert.Contains("unblocks everyone", answered.GetProperty("answers").GetRawText());
+        Assert.Equal(JsonValueKind.Null, answered.GetProperty("state").ValueKind);
+        Assert.DoesNotContain("Khaled", subject.GetProperty("peers").GetRawText());
         Assert.True(subject.GetProperty("canAcknowledge").GetBoolean());
         Assert.True(subject.GetProperty("canDownloadPdf").GetBoolean());
 
@@ -248,7 +253,7 @@ public sealed class ReviewRecordTests
         Assert.Equal("Administrator", admin.GetProperty("lens").GetString());
         Assert.True(admin.GetProperty("canMoveDueDate").GetBoolean());
         Assert.True(admin.GetProperty("canClose").GetBoolean());
-        Assert.Contains(admin.GetProperty("activity").EnumerateArray(), a => a.GetProperty("kind").GetString() == "PeerListApproved");
+        Assert.Contains(admin.GetProperty("activity").EnumerateArray(), a => a.GetProperty("kind").GetString() == "PeersAsked");
         Assert.Contains("unblocks everyone", admin.GetProperty("peers").GetRawText());
 
         // A peer holding a request is not a reader of the review.

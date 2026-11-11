@@ -11,7 +11,7 @@ using static EY.HRPlatform.Performance.Tests.TestHelpers.ReviewWorld;
 
 namespace EY.HRPlatform.Performance.Tests;
 
-/// <summary>Peer input (D-18, D-R4, D-R5): nominations, approval with a swap, the peer's own page, closure and suggestions.</summary>
+/// <summary>Peer input (D-40, D-69, D-74): Fusion asks at launch, the manager changes who, the peer's own request, closure and suggestions.</summary>
 public sealed class PeerInputTests
 {
     private static uint Version(ReviewWorld world, Guid reviewId)
@@ -20,11 +20,8 @@ public sealed class PeerInputTests
         return db.PerformanceReviews.Single(r => r.Id == reviewId).Version;
     }
 
-    private static Task<HttpResponseMessage> Nominate(ReviewWorld world, HttpClient client, Guid reviewId, params Guid[] ids)
+    private static Task<HttpResponseMessage> Change(ReviewWorld world, HttpClient client, Guid reviewId, params Guid[] ids)
         => client.PutAsJsonAsync($"/api/performance/reviews/{reviewId}/peers", new { expectedVersion = Version(world, reviewId), employeeIds = ids });
-
-    private static Task<HttpResponseMessage> Approve(ReviewWorld world, HttpClient client, Guid reviewId, params Guid[] ids)
-        => client.PostAsJsonAsync($"/api/performance/reviews/{reviewId}/peers/approve", new { expectedVersion = Version(world, reviewId), employeeIds = ids });
 
     private static async Task<(ReviewWorld World, Guid Review)> LaunchedAsync(bool peers = true)
     {
@@ -35,64 +32,109 @@ public sealed class PeerInputTests
     }
 
     [Fact]
-    public async Task The_person_nominates_one_to_five_active_colleagues_who_are_not_themselves_or_their_reviewer()
+    public async Task Fusion_asks_the_closest_colleagues_in_the_year_when_the_round_opens_and_tells_each_why()
     {
-        var (world, reviewId) = await LaunchedAsync();
+        var world = await CreateAsync();
         await using var _ = world;
-        var aicha = world.As(world.Aicha);
-        Assert.Equal(HttpStatusCode.BadRequest, (await Failure(await Nominate(world, aicha, reviewId, world.Mariam.EmployeeId))).Status);
-        Assert.Equal(HttpStatusCode.BadRequest, (await Failure(await Nominate(world, aicha, reviewId, world.Aicha.EmployeeId))).Status);
-        var others = Enumerable.Range(0, 6).Select(i => world.Factory.Core.Add($"Colleague {i}").EmployeeId).ToArray();
-        Assert.Equal(HttpStatusCode.BadRequest, (await Failure(await Nominate(world, aicha, reviewId, others))).Status);
-        var gone = world.Factory.Core.Add("Gone Colleague", isActive: false);
-        Assert.Equal(HttpStatusCode.BadRequest, (await Failure(await Nominate(world, aicha, reviewId, gone.EmployeeId))).Status);
-        Assert.Equal(HttpStatusCode.Forbidden, (await Failure(await Nominate(world, world.As(world.Fares), reviewId, world.Leila.EmployeeId))).Status);
+        var tenant = world.Factory.Store.TenantId;
+        var earlier = DateTime.UtcNow.AddDays(-20);
+        await using (var db = world.Factory.Store.NewContext())
+        {
+            // Leila and Khaled are in the year too: Leila gave Aicha shared feedback twice, Khaled only manager-only words.
+            foreach (var person in new[] { world.Leila, world.Khaled })
+                db.Participants.Add(Domain.Population.Participant.Create(tenant, world.Cycle.Id, person.EmployeeId, person.DisplayName, null, null, null,
+                    world.Amira.EmployeeId, world.Amira.DisplayName, false, world.Cycle.StartDate));
+            for (var i = 0; i < 2; i++)
+                db.Add(Feedback.Give(Guid.NewGuid(), tenant, world.Leila.EmployeeId, world.Leila.DisplayName, world.Aicha.EmployeeId,
+                    world.Aicha.DisplayName, FeedbackVisibility.Shared, null, null, FeedbackSubject.None,
+                    "Share plans earlier; we heard about the vendor delay from the release notes.", earlier.AddDays(i)));
+            db.Add(Feedback.Give(Guid.NewGuid(), tenant, world.Khaled.EmployeeId, world.Khaled.DisplayName, world.Aicha.EmployeeId,
+                world.Aicha.DisplayName, FeedbackVisibility.ManagerOnly, world.Mariam.EmployeeId, world.Mariam.DisplayName, FeedbackSubject.None,
+                "KHALEDPRIVATE for Mariam only", earlier));
+            await db.SaveChangesAsync();
+        }
+        var round = await world.CreateRoundAsync();
+        await world.LaunchAsync(round);
+        var reviewId = world.ReviewOf(round, world.Aicha);
 
-        var peers = await Data(await Nominate(world, aicha, reviewId, world.Fares.EmployeeId, world.Khaled.EmployeeId, world.Leila.EmployeeId));
-        Assert.Equal(3, peers.GetProperty("people").GetArrayLength());
-        Assert.False(peers.GetProperty("approved").GetBoolean());
-        // Changing the list before approval doesn't tell the reviewer again.
-        await Data(await Nominate(world, aicha, reviewId, world.Fares.EmployeeId, world.Khaled.EmployeeId));
-        await using var db = world.Factory.Store.NewContext();
-        Assert.Equal(2, db.PeerNominations.Count(n => n.ReviewId == reviewId));
-        var notice = Assert.Single(db.Notifications.Where(n => n.Kind == PerformanceNotificationKind.PeersNominated).ToList());
-        Assert.Equal(world.Mariam.EmployeeId, notice.RecipientEmployeeId);
-        Assert.Contains(db.AuditEntries, a => a.Action == "Review.PeersNominated");
+        await using (var db = world.Factory.Store.NewContext())
+        {
+            var asked = db.PeerRequests.Where(r => r.ReviewId == reviewId).ToList();
+            // Leila (feedback) and her teammates Fares and Tarek; never Mariam (the reviewer) or Khaled (manager-only words don't count).
+            Assert.Equal(new[] { world.Fares.EmployeeId, world.Leila.EmployeeId, world.Tarek.EmployeeId }.ToHashSet(),
+                asked.Select(r => r.PeerEmployeeId).ToHashSet());
+            Assert.All(asked, r => Assert.Equal(PeerRequestState.Open, r.State));
+            Assert.All(db.PeerNominations.Where(n => n.ReviewId == reviewId).ToList(), n => Assert.Equal(PeerNominationSource.Fusion, n.Source));
+            var told = db.Notifications.First(n => n.Kind == PerformanceNotificationKind.PeerInputRequested && n.RecipientEmployeeId == world.Leila.EmployeeId);
+            Assert.StartsWith("/performance/reviews/peer-requests/", told.Href);
+        }
+
+        Guid leilaRequest;
+        await using (var db = world.Factory.Store.NewContext())
+            leilaRequest = db.PeerRequests.Single(r => r.ReviewId == reviewId && r.PeerEmployeeId == world.Leila.EmployeeId).Id;
+        var page = await Data(await world.As(world.Leila).GetAsync($"/api/performance/peer-requests/{leilaRequest}"));
+        Assert.Equal("Mariam Gharbi", page.GetProperty("reviewerDisplayName").GetString());
+        var reason = Assert.Single(page.GetProperty("reasons").EnumerateArray().ToList());
+        Assert.Equal("feedbackGiven", reason.GetProperty("kind").GetString());
+        Assert.StartsWith("Share plans earlier", reason.GetProperty("excerpt").GetString());
+        Assert.DoesNotContain("KHALEDPRIVATE", page.GetRawText());
     }
 
     [Fact]
-    public async Task Nominating_is_refused_when_the_round_does_not_ask_for_peer_input()
+    public async Task Only_the_reviewer_changes_who_is_asked_until_their_review_is_in()
+    {
+        var (world, reviewId) = await LaunchedAsync();
+        await using var _ = world;
+        // The person, a colleague and another tenant can't change the list.
+        Assert.Equal(HttpStatusCode.Forbidden, (await Failure(await Change(world, world.As(world.Aicha), reviewId, world.Leila.EmployeeId))).Status);
+        Assert.Equal(HttpStatusCode.Forbidden, (await Failure(await Change(world, world.As(world.Fares), reviewId, world.Leila.EmployeeId))).Status);
+        using (var foreign = world.Factory.CreateAuthenticatedClient(tenantId: Guid.NewGuid(), employeeId: world.Mariam.EmployeeId,
+            permissions: [new(PerformancePermissions.CycleView, PermissionScopes.Self), new(PerformancePermissions.CycleView, PermissionScopes.DirectReports)]))
+            Assert.Equal(HttpStatusCode.NotFound, (await Failure(await Change(world, foreign, reviewId, world.Leila.EmployeeId))).Status);
+        var mariam = world.As(world.Mariam);
+        Assert.Equal(HttpStatusCode.BadRequest, (await Failure(await Change(world, mariam, reviewId, world.Aicha.EmployeeId))).Status);
+        Assert.Equal(HttpStatusCode.BadRequest, (await Failure(await Change(world, mariam, reviewId, world.Mariam.EmployeeId))).Status);
+        var gone = world.Factory.Core.Add("Gone Colleague", isActive: false);
+        Assert.Equal(HttpStatusCode.BadRequest, (await Failure(await Change(world, mariam, reviewId, gone.EmployeeId))).Status);
+
+        // Fusion asked Fares and Tarek; Mariam keeps Fares, drops Tarek and adds Khaled.
+        var peers = await Data(await Change(world, mariam, reviewId, world.Fares.EmployeeId, world.Khaled.EmployeeId));
+        Assert.Equal(2, peers.GetProperty("people").GetArrayLength());
+        Guid tarekRequest;
+        await using (var db = world.Factory.Store.NewContext())
+        {
+            var requests = db.PeerRequests.Where(r => r.ReviewId == reviewId).ToList();
+            tarekRequest = requests.Single(r => r.PeerEmployeeId == world.Tarek.EmployeeId).Id;
+            Assert.Equal(PeerRequestState.Closed, requests.Single(r => r.Id == tarekRequest).State);
+            Assert.Equal(PeerRequestState.Open, requests.Single(r => r.PeerEmployeeId == world.Khaled.EmployeeId).State);
+            Assert.Single(db.Notifications.Where(n => n.Kind == PerformanceNotificationKind.PeerInputRequested && n.RecipientEmployeeId == world.Khaled.EmployeeId));
+            Assert.Contains(db.AuditEntries, a => a.Action == "Review.PeersChanged" && a.Summary.Contains(world.Tarek.EmployeeId.ToString()));
+        }
+
+        // Fares answers: he stays. Asked again, Tarek's request opens again.
+        var questions = (await Data(await world.As(world.Fares).GetAsync($"/api/performance/peer-requests/{RequestOf(world, reviewId, world.Fares)}")))
+            .GetProperty("questions").EnumerateArray().Select(q => q.GetProperty("questionId").GetGuid()).ToArray();
+        await Data(await world.As(world.Fares).PostAsJsonAsync($"/api/performance/peer-requests/{RequestOf(world, reviewId, world.Fares)}/send",
+            new { answers = questions.Select(id => new { questionId = id, text = "Steady under pressure." }).ToArray() }));
+        Assert.Equal(HttpStatusCode.BadRequest, (await Failure(await Change(world, mariam, reviewId, world.Khaled.EmployeeId))).Status);
+        await Data(await Change(world, mariam, reviewId, world.Fares.EmployeeId, world.Khaled.EmployeeId, world.Tarek.EmployeeId));
+        await using (var db = world.Factory.Store.NewContext())
+            Assert.Equal(PeerRequestState.Open, db.PeerRequests.Single(r => r.Id == tarekRequest).State);
+    }
+
+    [Fact]
+    public async Task Changing_who_is_asked_is_refused_when_the_round_does_not_ask_for_peer_input()
     {
         var (world, reviewId) = await LaunchedAsync(peers: false);
         await using var _ = world;
-        var refused = await Failure(await Nominate(world, world.As(world.Aicha), reviewId, world.Leila.EmployeeId));
+        var refused = await Failure(await Change(world, world.As(world.Mariam), reviewId, world.Leila.EmployeeId));
         Assert.Equal(HttpStatusCode.Conflict, refused.Status);
     }
 
-    [Fact]
-    public async Task The_reviewer_approves_with_a_swap_and_each_approved_peer_gets_a_request()
+    private static Guid RequestOf(ReviewWorld world, Guid reviewId, WorkforceSnapshot peer)
     {
-        var (world, reviewId) = await LaunchedAsync();
-        await using var _ = world;
-        await Data(await Nominate(world, world.As(world.Aicha), reviewId, world.Fares.EmployeeId, world.Khaled.EmployeeId, world.Leila.EmployeeId));
-        Assert.Equal(HttpStatusCode.Forbidden,
-            (await Failure(await Approve(world, world.As(world.Fares), reviewId, world.Fares.EmployeeId))).Status);
-        var approved = await Data(await Approve(world, world.As(world.Mariam), reviewId,
-            world.Fares.EmployeeId, world.Khaled.EmployeeId, world.Tarek.EmployeeId));
-        Assert.True(approved.GetProperty("approved").GetBoolean());
-        Assert.Equal(HttpStatusCode.Conflict,
-            (await Failure(await Approve(world, world.As(world.Mariam), reviewId, world.Fares.EmployeeId))).Status);
-
-        await using var db = world.Factory.Store.NewContext();
-        var requested = db.PeerRequests.Where(r => r.ReviewId == reviewId).Select(r => r.PeerEmployeeId).ToHashSet();
-        Assert.Equal(new[] { world.Fares.EmployeeId, world.Khaled.EmployeeId, world.Tarek.EmployeeId }.ToHashSet(), requested);
-        Assert.All(db.PeerRequests.Where(r => r.ReviewId == reviewId).ToList(), r => Assert.Equal(Today.AddDays(14), r.DueDate));
-        var audit = db.AuditEntries.Single(a => a.Action == "Review.PeerListApproved");
-        Assert.Contains(world.Leila.EmployeeId.ToString(), audit.Summary);
-        Assert.Contains(world.Tarek.EmployeeId.ToString(), audit.Summary);
-        Assert.Single(db.Notifications.Where(n => n.Kind == PerformanceNotificationKind.PeerListApproved && n.RecipientEmployeeId == world.Aicha.EmployeeId));
-        Assert.Equal(3, db.Notifications.Count(n => n.Kind == PerformanceNotificationKind.PeerInputRequested));
-        Assert.DoesNotContain(db.Notifications.ToList(), n => n.RecipientEmployeeId == world.Leila.EmployeeId);
+        using var db = world.Factory.Store.NewContext();
+        return db.PeerRequests.Single(r => r.ReviewId == reviewId && r.PeerEmployeeId == peer.EmployeeId).Id;
     }
 
     [Fact]
@@ -100,9 +142,8 @@ public sealed class PeerInputTests
     {
         var (world, reviewId) = await LaunchedAsync();
         await using var _ = world;
-        await Data(await Nominate(world, world.As(world.Aicha), reviewId, world.Fares.EmployeeId, world.Khaled.EmployeeId, world.Leila.EmployeeId));
-        await Data(await Approve(world, world.As(world.Mariam), reviewId, world.Fares.EmployeeId, world.Khaled.EmployeeId, world.Leila.EmployeeId));
-        Guid RequestOf(WorkforceSnapshot peer) { using var db = world.Factory.Store.NewContext(); return db.PeerRequests.Single(r => r.ReviewId == reviewId && r.PeerEmployeeId == peer.EmployeeId).Id; }
+        await Data(await Change(world, world.As(world.Mariam), reviewId, world.Fares.EmployeeId, world.Khaled.EmployeeId, world.Leila.EmployeeId));
+        Guid RequestOf(WorkforceSnapshot peer) => PeerInputTests.RequestOf(world, reviewId, peer);
         var faresRequest = RequestOf(world.Fares);
         var fares = world.As(world.Fares);
 
@@ -216,12 +257,12 @@ public sealed class PeerInputTests
         }
         Assert.Equal(HttpStatusCode.Forbidden, (await Failure(await world.As(world.Fares).GetAsync($"/api/performance/reviews/{reviewId}/peer-suggestions"))).Status);
         var suggestions = (await Data(await world.As(world.Mariam).GetAsync($"/api/performance/reviews/{reviewId}/peer-suggestions"))).EnumerateArray().ToList();
-        Assert.Equal(new[] { "Leila Ben Salah", "Khaled Sassi", "Tarek Ayari" }, suggestions.Select(s => s.GetProperty("displayName").GetString()));
+        // Fares and Tarek are already asked (Fusion's picks at launch), so they don't come up again.
+        Assert.Equal(new[] { "Leila Ben Salah", "Khaled Sassi" }, suggestions.Select(s => s.GetProperty("displayName").GetString()));
         Assert.Equal(6, suggestions[0].GetProperty("feedbackExchanged").GetInt32());
-        Assert.Equal(1, suggestions[2].GetProperty("praiseExchanged").GetInt32());
         Assert.DoesNotContain(suggestions, s => s.GetProperty("employeeId").GetGuid() == world.Fares.EmployeeId);
 
-        await Data(await Nominate(world, world.As(world.Aicha), reviewId, world.Leila.EmployeeId));
+        await Data(await Change(world, world.As(world.Mariam), reviewId, world.Fares.EmployeeId, world.Tarek.EmployeeId, world.Leila.EmployeeId));
         var after = (await Data(await world.As(world.Mariam).GetAsync($"/api/performance/reviews/{reviewId}/peer-suggestions"))).EnumerateArray();
         Assert.DoesNotContain(after, s => s.GetProperty("employeeId").GetGuid() == world.Leila.EmployeeId);
     }

@@ -22,11 +22,11 @@ public sealed record GetReviewsWorkspaceQuery(Guid? CycleId, ReviewsWorkspaceVie
 
 /// <summary>
 /// The Reviews landing (boards 01–03, 18), composed per viewer from what they hold: their own review, reviews they write
-/// as a run of steps, peer lists to approve, input asked of them, rounds they run and past results.
+/// as a run of steps, input asked of them, rounds they run and past results.
 /// </summary>
 public sealed record ReviewsWorkspaceDto(Guid? CycleId, string? CycleName, DateOnly? CycleEnd, bool CanAdminister,
     ReviewsWorkspaceOwnDto? Own, ReviewsWorkspaceNotIncludedDto? NotIncluded, ReviewsWorkspaceYearDto? Year,
-    IReadOnlyList<ReviewsWorkspaceTeamRowDto> ToWrite, IReadOnlyList<ReviewsWorkspacePeerListDto> PeerLists,
+    IReadOnlyList<ReviewsWorkspaceTeamRowDto> ToWrite,
     IReadOnlyList<ReviewsWorkspacePeerRequestDto> AskedOfYou, IReadOnlyList<ReviewsWorkspaceRoundDto> Rounds,
     ReviewsWorkspaceCycleFactsDto? CycleFacts, IReadOnlyList<ReviewsWorkspacePastResultDto> PastResults)
 {
@@ -42,7 +42,7 @@ public sealed record ReviewsWorkspaceOwnDto(Guid ReviewId, Guid RoundId, string 
     ReviewsWorkspaceOwnPeersDto? Peers, int? FinalRating, string? FinalRatingLabel, DateTime? FinalizedAt, DateTime? AcknowledgedAt);
 public sealed record ReviewsWorkspaceSectionsDto(int ObjectivesDone, int Objectives, int CompetenciesDone, int Competencies,
     int QuestionsDone, int Questions);
-public sealed record ReviewsWorkspaceOwnPeersDto(IReadOnlyList<string> Asked, bool Approved, DateTime? ApprovedAt, bool CanNominate);
+public sealed record ReviewsWorkspaceOwnPeersDto(IReadOnlyList<string> Asked);
 public sealed record ReviewsWorkspaceNotIncludedDto(Guid RoundId, string RoundName, string? Reason);
 public sealed record ReviewsWorkspaceYearDto(decimal? PlanProgress, int Objectives, int Feedback, int Praise, int OneOnOnes);
 
@@ -66,12 +66,11 @@ public sealed record ReviewsWorkspaceTeamRowDto(Guid ReviewId, Guid SubjectEmplo
     public bool CalibrationChanged { get; init; }
     public bool SummaryToCheck { get; init; }
 }
-public sealed record ReviewsWorkspacePeerListDto(Guid ReviewId, string SubjectDisplayName, int Count, DateTime? NominatedAt, DateOnly? DueDate);
 public sealed record ReviewsWorkspacePeerRequestDto(Guid RequestId, string SubjectDisplayName, string RoundName, int Questions,
     DateOnly? DueDate, int DaysLate, PeerRequestState State, DateTime? RespondedAt);
 public sealed record ReviewsWorkspaceRoundDto(Guid RoundId, string Name, ReviewRoundState State, DateTime? LaunchedAt, DateOnly PeriodStart,
     DateOnly PeriodEnd, int People, int Components, bool CalibrationEnabled, DateOnly? SelfAssessmentDue, DateOnly? PeerInputDue,
-    DateOnly? ManagerAssessmentDue, IReadOnlyList<ReviewStageProgressDto> Stages, int ListsToApprove, int Released, int Acknowledged,
+    DateOnly? ManagerAssessmentDue, IReadOnlyList<ReviewStageProgressDto> Stages, int Released, int Acknowledged,
     DateTime? ClosedAt);
 public sealed record ReviewsWorkspaceCycleFactsDto(int Participants, int ApprovedPlans);
 public sealed record ReviewsWorkspacePastResultDto(Guid ReviewId, string CycleName, string RoundName, int? FinalRating, string? Label,
@@ -124,11 +123,8 @@ public sealed class GetReviewsWorkspaceHandler(PerformanceDbContext db) : IQuery
                     SummaryToCheck = pair.Second.State == PerformanceReviewState.ReadyToFinalize && pair.Second.CalibrationChangedRating
                         && pair.Second.SummaryRevisedAt is null && pair.Second.SummaryCheckedAt is null,
                 })
-                .OrderBy(row => row.NextAction switch { "WriteReview" => 0, "ApprovePeers" => 1, "Wait" => 2, _ => 3 })
+                .OrderBy(row => row.NextAction switch { "WriteReview" => 0, "Wait" => 1, _ => 2 })
                 .ThenBy(row => row.SubjectDisplayName, StringComparer.OrdinalIgnoreCase).ToArray(),
-            toWrite.Where(r => r.PeerInputEnabled && r.PeerListApprovedAt is null && r.PeersNominatedAt is not null && !r.ManagerAssessment.IsSubmitted)
-                .Select(r => new ReviewsWorkspacePeerListDto(r.Id, r.SubjectDisplayName, nominations.Count(n => n.ReviewId == r.Id), r.PeersNominatedAt,
-                    r.SelfAssessmentDueDate ?? launched[r.ReviewRoundId].SelfAssessmentDueDate)).ToArray(),
             cycle is null || me == Guid.Empty || !viewer.Participates ? [] : await AskedOfYouAsync(cycle.Id, me, today, token),
             viewer.Administers ? await RoundsAsync(rounds, cycleReviews, today, token) : [],
             viewer.Administers && cycle is not null ? new ReviewsWorkspaceCycleFactsDto(
@@ -176,9 +172,7 @@ public sealed class GetReviewsWorkspaceHandler(PerformanceDbContext db) : IQuery
                 responses.Count(r => r.Kind == ReviewItemKind.Objective && (r.SelfReflection is not null || r.SelfRating is not null)), objectives,
                 responses.Count(r => r.Kind == ReviewItemKind.Competency && r.SelfRating is not null), competencies, answered, questions),
             review.PeerInputEnabled ? new ReviewsWorkspaceOwnPeersDto(
-                nominations.Where(n => n.ReviewId == review.Id).OrderBy(n => n.NominatedAt).Select(n => n.DisplayName).ToArray(),
-                review.PeerListApprovedAt is not null, review.PeerListApprovedAt,
-                review.PeerListApprovedAt is null && open) : null,
+                nominations.Where(n => n.ReviewId == review.Id).OrderBy(n => n.NominatedAt).Select(n => n.DisplayName).ToArray()) : null,
             released ? review.FinalRating : null,
             released ? ReviewHistoryRating.Label(review.FinalizedSnapshotJson, review.FinalRating) : null,
             review.FinalizedAt, review.AcknowledgedAt);
@@ -259,9 +253,7 @@ public sealed class GetReviewsWorkspaceHandler(PerformanceDbContext db) : IQuery
     {
         var mine = requests.Where(r => r.ReviewId == review.Id).ToList();
         var peerCount = nominations.Count(n => n.ReviewId == review.Id);
-        var peerStep = !review.PeerInputEnabled ? "Off"
-            : review.PeerListApprovedAt is not null ? "Approved"
-            : review.PeersNominatedAt is not null ? "ToApprove" : "ToNominate";
+        var peerStep = !review.PeerInputEnabled ? "Off" : "Asked";
         var selfStep = !review.SelfAssessmentEnabled ? "Off"
             : review.SelfAssessment.IsSubmitted ? "Submitted"
             : review.SelfAssessment.SavedAt is not null ? "Writing" : "NotStarted";
@@ -273,8 +265,7 @@ public sealed class GetReviewsWorkspaceHandler(PerformanceDbContext db) : IQuery
             PerformanceReviewState.Closed => "Closed",
             _ => "Submitted",
         };
-        var next = peerStep == "ToApprove" && !review.ManagerAssessment.IsSubmitted ? "ApprovePeers"
-            : review.State == PerformanceReviewState.ManagerAssessment ? "WriteReview"
+        var next = review.State == PerformanceReviewState.ManagerAssessment ? "WriteReview"
             : review.State == PerformanceReviewState.SelfAssessment ? "Wait" : "Done";
         var levels = System.Text.Json.JsonSerializer.Deserialize<RatingScaleLevel[]>(review.RatingScaleSnapshotJson) ?? [];
         var selfRating = review.SelfAssessment.IsSubmitted ? review.SelfAssessment.OverallRating : null;
@@ -320,7 +311,7 @@ public sealed class GetReviewsWorkspaceHandler(PerformanceDbContext db) : IQuery
             return new ReviewsWorkspaceRoundDto(round.Id, round.Name, round.State, round.LaunchedAt, round.PeriodStart, round.PeriodEnd,
                 round.State == ReviewRoundState.Draft ? subjects.GetValueOrDefault(round.Id) : mine.Count, components, round.CalibrationEnabled,
                 round.SelfAssessmentEnabled ? schedule.SelfAssessment : null, round.PeerInputEnabled ? schedule.PeerInput : null, schedule.ManagerAssessment,
-                progress?.Stages ?? [], progress?.Teams.Sum(t => t.ListsToApprove) ?? 0,
+                progress?.Stages ?? [],
                 mine.Count(r => r.State == PerformanceReviewState.Finalized),
                 mine.Count(r => r.State == PerformanceReviewState.Finalized && r.AcknowledgedAt is not null),
                 round.State == ReviewRoundState.Closed ? round.UpdatedAt : null);

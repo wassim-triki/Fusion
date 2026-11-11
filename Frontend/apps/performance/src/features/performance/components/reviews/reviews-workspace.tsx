@@ -3,7 +3,6 @@
 import { WorkspaceSkeleton } from "@/shell/workspace-skeletons";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 import type { ReviewsWorkspaceDto, ReviewsWorkspaceOwnDto, ReviewsWorkspaceRoundDto, ReviewsWorkspaceSessionDto, ReviewsWorkspaceTeamRowDto } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
@@ -17,7 +16,6 @@ import { ContentUnavailable } from "../content-unavailable";
 import { formatDate } from "../../lib";
 import { calibrationHref, newReviewRoundHref, peerRequestHref, reviewHref, roundHref, withCycle } from "@/lib/performance-routes";
 import { CountTile, DueChip, ReviewSection, StageTrack, dayLabel, dueIn, type Step } from "./review-parts";
-import { PeerListDrawer } from "./peer-list-drawer";
 import { useTranslations } from "next-intl";
 import { useFormat } from "@repo/ds/lib/use-format";
 import { useSay } from "@repo/ds/lib/say";
@@ -31,22 +29,9 @@ export function ReviewsWorkspace() {
   const t = useTranslations("reviews.ReviewsWorkspace");
   const cycleId = useSelectedCycleId();
   const query = useReviewsWorkspace(cycleId);
-  const params = useSearchParams();
-  const router = useRouter();
-  const peers = params.get("peers");
   if (query.error) return <ContentUnavailable error={query.error} onRetry={query.refetch} />;
   if (!query.data) return <WorkspaceSkeleton />;
-  const close = () => {
-    const next = new URLSearchParams(params.toString());
-    next.delete("peers");
-    router.replace(`/reviews${next.size ? `?${next.toString()}` : ""}`, { scroll: false });
-  };
-  return (
-    <>
-      <Workspace data={query.data} />
-      {peers ? <PeerListDrawer reviewId={peers} open onOpenChange={(open) => !open && close()} /> : null}
-    </>
-  );
+  return <Workspace data={query.data} />;
 }
 
 function Workspace({ data }: { data: ReviewsWorkspaceDto }) {
@@ -98,11 +83,7 @@ function headline(data: ReviewsWorkspaceDto, running: ReviewsWorkspaceRoundDto |
     const count = data.rounds.filter((r) => r.state === "Active").length;
     return (count ? say("running", { count, cycle: data.cycleName ?? "" }) : data.cycleName ?? "").trim() || undefined;
   }
-  const lists = data.peerLists.length;
-  if (data.toWrite.length > 0) {
-    const round = data.toWrite[0]!.roundName;
-    return lists ? say("lists", { count: lists, round }) : round;
-  }
+  if (data.toWrite.length > 0) return data.toWrite[0]!.roundName;
   if (data.own && data.own.state === "SelfAssessment" && data.own.selfAssessmentEnabled)
     return say("selfDue", { round: data.own.roundName, day: dayLabel(data.own.selfAssessmentDue, locale) });
   if (data.own) return data.own.roundName;
@@ -187,9 +168,8 @@ function OwnReviewCard({ own, cycleName, cycleId }: { own: ReviewsWorkspaceOwnDt
               {own.peers.asked.length ? (
                 <>
                   <p className="mt-2 flex items-center gap-2"><AvatarStack names={own.peers.asked} size="xs" /><span className="type-label tabular-nums">{own.peers.asked.length}</span></p>
-                  <p className="mt-1.5 type-meta text-muted-foreground">{own.peers.approved ? t("approvedBy", { reviewerName: firstName(own.reviewerName), dayLabel: dayLabel(own.peers.approvedAt?.slice(0, 10), format.locale) }) : t("waitingForApproval")}</p>
                 </>
-              ) : <p className="mt-2 type-meta text-muted-foreground">{t("choose1To5Colleagues")}</p>}
+              ) : <p className="mt-2 type-meta text-muted-foreground">{t("nobodyAsked", { reviewerName: firstName(own.reviewerName) })}</p>}
             </div>
           ) : null}
         </div>
@@ -351,9 +331,7 @@ function TeamRow({ row, cycleId, primary }: { row: ReviewsWorkspaceTeamRowDto; c
       </td>
       <td className="px-3 py-3.5">
         {row.peerStep === "Off" ? <span className="type-meta text-muted-foreground">{t("notAsked")}</span>
-          : row.peerStep === "Approved" ? <StepCell state="done">{t("approved", { peerCount: row.peerCount })}</StepCell>
-          : row.peerStep === "ToApprove" ? <StepCell state="current"><span className="font-medium text-primary">{t("toApprove", { peerCount: row.peerCount })}</span></StepCell>
-          : <StepCell state="todo"><span className="text-muted-foreground">{t("notChosenYet")}</span></StepCell>}
+          : <StepCell state="done">{t("asked", { peerCount: row.peerCount })}</StepCell>}
       </td>
       <td className="px-3 py-3.5">
         {row.selfStep === "Off" ? <span className="type-meta text-muted-foreground">{t("notAsked")}</span>
@@ -365,7 +343,7 @@ function TeamRow({ row, cycleId, primary }: { row: ReviewsWorkspaceTeamRowDto; c
       </td>
       <td className="px-3 py-3.5">
         {row.peerStep === "Off" ? <span className="type-meta text-muted-foreground">–</span>
-          : row.peerTotal === 0 ? <span className="type-body-secondary text-muted-foreground">{row.peerStep === "ToApprove" ? t("afterYourApproval") : "–"}</span>
+          : row.peerTotal === 0 ? <span className="type-body-secondary text-muted-foreground">–</span>
           : <StepCell state={row.peerAnswered + row.peerDeclined === row.peerTotal ? "done" : "current"}>
               <span className="tabular-nums">{t("of", { peerAnswered: row.peerAnswered, peerTotal: row.peerTotal })}</span>
               {row.peerDeclined ? <p className="type-meta text-muted-foreground">{t("declined", { peerDeclined: row.peerDeclined })}</p> : null}
@@ -394,8 +372,6 @@ function TeamRow({ row, cycleId, primary }: { row: ReviewsWorkspaceTeamRowDto; c
           <Button size="sm" asChild><Link href={href}>{t("checkSummary")}</Link></Button>
         ) : row.nextAction === "WriteReview" ? (
           <Button size="sm" variant={primary ? "default" : "outline"} asChild><Link href={href}>{t("writeReview")}</Link></Button>
-        ) : row.nextAction === "ApprovePeers" ? (
-          <Button size="sm" variant="outline" asChild><Link href={`/reviews?${new URLSearchParams({ ...(cycleId ? { cycle: cycleId } : {}), peers: row.reviewId }).toString()}`} scroll={false}>{t("reviewList")}</Link></Button>
         ) : (
           <Link href={href} aria-label={t("openSReview", { subjectDisplayName: row.subjectDisplayName })} className="inline-flex text-muted-foreground hover:text-foreground"><ChevronRight className="size-4" aria-hidden /></Link>
         )}
@@ -469,7 +445,7 @@ function RunningRoundCard({ round, cycleId, cycleEnd }: { round: ReviewsWorkspac
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {self ? <CountTile label={t("selfAssessments")} value={self.done} total={self.total} foot={t("stillOpen", { open: self.open })} /> : null}
-        {peers ? <CountTile label={t("peerInput")} value={peers.done} total={peers.total} foot={round.listsToApprove ? t("listsWait", { count: round.listsToApprove }) : t("declined", { count: peers.declined })} /> : null}
+        {peers ? <CountTile label={t("peerInput")} value={peers.done} total={peers.total} foot={t("declined", { count: peers.declined })} /> : null}
         {manager ? <CountTile label={t("managerReviews")} value={manager.done} total={manager.total} tone="primary" foot={t("readyToWrite", { readyToWrite: manager.readyToWrite })} /> : null}
         {released ? <CountTile label={t("released")} value={released.done} total={released.total} foot={round.calibrationEnabled ? t("afterCalibration") : t("afterManagerReviews")} /> : null}
       </div>

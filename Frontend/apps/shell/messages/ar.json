@@ -317,6 +317,27 @@
       "openProfile": "فتح الملف الشخصي",
       "alsoReporting": "يتبعون أيضًا {name}",
       "more": "و{count} آخرون"
+    },
+    "peerInput": {
+      "asked": "طلبه {name} في {day}",
+      "due": "مستحق في {day}",
+      "answer": "إجابة",
+      "loading": "جارٍ تحميل الطلب",
+      "failed": "تعذّر الإرسال. حاول مجددًا.",
+      "whyYou": "لماذا أنت",
+      "picked": "اختير ممن عملوا مع {name}",
+      "yourWords": "كلماتك",
+      "whoReads": "سيقرأها {manager} و{name} باسمك",
+      "didntWorkEnough": "لم أعمل مع {name} بما يكفي",
+      "sendTo": "إرسال إلى {name}",
+      "reasons": {
+        "goal": "أهدافكما تدعم كلاهما",
+        "feedbackGiven": "أعطيت {name} ملاحظة في {day}",
+        "feedbackReceived": "أعطاك {name} ملاحظة في {day}",
+        "praiseGiven": "أثنيت على {name} في {day}",
+        "praiseReceived": "أثنى عليك {name} في {day}",
+        "teammate": "أنت و{name} لديكما المدير نفسه"
+      }
     }
   },
   "app": {

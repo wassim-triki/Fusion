@@ -5,20 +5,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ReviewsWorkspaceDto } from "@repo/api";
 import { ReviewsWorkspace } from "./reviews-workspace";
 
-const state = vi.hoisted(() => ({ data: null as ReviewsWorkspaceDto | null, error: null as Error | null, params: new URLSearchParams() }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn() }), useSearchParams: () => state.params }));
+const state = vi.hoisted(() => ({ data: null as ReviewsWorkspaceDto | null, error: null as Error | null }));
 vi.mock("../../api/use-workspace", () => ({ useSelectedCycleId: () => "cycle-1" }));
 vi.mock("../../api/use-review-work", () => ({
   useReviewsWorkspace: () => ({ data: state.data, error: state.error, refetch: vi.fn() }),
   useDownloadReviewPdf: () => vi.fn(),
 }));
-vi.mock("./peer-list-drawer", () => ({ PeerListDrawer: ({ reviewId }: { reviewId: string }) => <div>Peer list {reviewId}</div> }));
 vi.mock("../content-unavailable", () => ({ ContentUnavailable: () => <div>Unavailable</div> }));
 
 function workspace(overrides: Partial<ReviewsWorkspaceDto>): ReviewsWorkspaceDto {
   return {
     cycleId: "cycle-1", cycleName: "FY2027", cycleEnd: "2099-09-30", canAdminister: false, own: null, notIncluded: null, year: null,
-    toWrite: [], peerLists: [], askedOfYou: [], rounds: [], cycleFacts: null, pastResults: [], sessions: [], ...overrides,
+    toWrite: [], askedOfYou: [], rounds: [], cycleFacts: null, pastResults: [], sessions: [], ...overrides,
   };
 }
 
@@ -27,13 +25,13 @@ const own: NonNullable<ReviewsWorkspaceDto["own"]> = {
   periodStart: "2098-10-01", periodEnd: "2099-08-31", dueDate: "2099-09-15", daysLate: 0, selfAssessmentDue: "2099-09-15", managerAssessmentDue: "2099-09-22",
   selfAssessmentEnabled: true, calibrationEnabled: true, selfSubmittedAt: null,
   sections: { objectivesDone: 2, objectives: 2, competenciesDone: 1, competencies: 4, questionsDone: 0, questions: 3 },
-  peers: { asked: ["Fares Lachheb", "Khaled Sassi", "Leila Ben Salah"], approved: true, approvedAt: "2099-09-03T10:00:00Z", canNominate: false },
+  peers: { asked: ["Fares Lachheb", "Khaled Sassi", "Leila Ben Salah"] },
   finalRating: null, finalRatingLabel: null, finalizedAt: null, acknowledgedAt: null,
 };
 
 const row = (name: string, overrides: Partial<ReviewsWorkspaceDto["toWrite"][number]> = {}): ReviewsWorkspaceDto["toWrite"][number] => ({
   reviewId: `r-${name}`, subjectEmployeeId: name, subjectDisplayName: name, jobTitle: "Engineer", roundName: "Year-end review", state: "SelfAssessment",
-  peerStep: "Approved", peerCount: 3, selfStep: "Writing", selfSubmittedAt: null, peerAnswered: 1, peerTotal: 3, peerDeclined: 0,
+  peerStep: "Asked", peerCount: 3, selfStep: "Writing", selfSubmittedAt: null, peerAnswered: 1, peerTotal: 3, peerDeclined: 0,
   reviewStep: "Waiting", dueDate: "2099-09-15", daysLate: 0, nextAction: "Wait", selfOverallRating: null, selfOverallLabel: null,
   peerNames: [], planProgress: 74, atRisk: 1, feedback: 7, praise: 3,
   managerRating: null, managerPotential: null, finalRating: null, finalPotential: null, calibrationChanged: false, summaryToCheck: false, ...overrides,
@@ -42,7 +40,6 @@ const row = (name: string, overrides: Partial<ReviewsWorkspaceDto["toWrite"][num
 beforeEach(() => {
   state.data = null;
   state.error = null;
-  state.params = new URLSearchParams();
 });
 
 describe("Reviews workspace", () => {
@@ -81,15 +78,14 @@ describe("Reviews workspace", () => {
       own: { ...own, reviewerName: "Amira Khelifi" },
       toWrite: [
         row("Aicha Bouazizi", { state: "ManagerAssessment", selfStep: "Submitted", selfSubmittedAt: "2099-09-08T10:00:00Z", reviewStep: "ReadyToWrite", nextAction: "WriteReview", selfOverallLabel: "Exceeds", peerAnswered: 3 }),
-        row("Tarek Ayari", { peerStep: "ToApprove", peerTotal: 0, peerAnswered: 0, nextAction: "ApprovePeers" }),
+        row("Tarek Ayari", { peerTotal: 3, peerAnswered: 0, nextAction: "Wait" }),
       ],
-      peerLists: [{ reviewId: "r-Tarek Ayari", subjectDisplayName: "Tarek Ayari", count: 3, nominatedAt: null, dueDate: "2099-09-15" }],
     });
     render(<ReviewsWorkspace />);
     expect(screen.getByText("Ready for you")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Aicha Bouazizi" })).toBeTruthy();
-    expect(screen.getByText("3 to approve")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Review list" }).getAttribute("href")).toContain("peers=r-Tarek+Ayari");
+    // Fusion asked the peers at launch (D-40): nothing to approve.
+    expect(screen.getAllByText("3 asked").length).toBe(2);
     expect(screen.getByText("Amira Khelifi reviews you")).toBeTruthy();
   });
 
@@ -105,13 +101,12 @@ describe("Reviews workspace", () => {
           { stage: "ManagerAssessment", done: 11, total: 142, dueDate: "2099-09-22", open: 131, late: 0, declined: 0, readyToWrite: 38 },
           { stage: "Released", done: 0, total: 142, dueDate: null, open: 142, late: 0, declined: 0, readyToWrite: 0 },
         ],
-        listsToApprove: 4, released: 0, acknowledged: 0, closedAt: null,
+        released: 0, acknowledged: 0, closedAt: null,
       }],
     });
     render(<ReviewsWorkspace />);
     expect(screen.getByRole("heading", { name: "Year-end review" })).toBeTruthy();
     expect(screen.getByText("54 still open")).toBeTruthy();
-    expect(screen.getByText("4 lists wait for approval")).toBeTruthy();
     expect(screen.getByText("38 ready to write")).toBeTruthy();
     expect(screen.getByRole("link", { name: /New round/ })).toBeTruthy();
   });
@@ -134,13 +129,6 @@ describe("Reviews workspace", () => {
     render(<ReviewsWorkspace />);
     expect(screen.getByText("Set up the FY2027 review")).toBeTruthy();
     expect(screen.getByText(/145 in the cycle · 138 approved plans/)).toBeTruthy();
-  });
-
-  it("opens the peer list from the address", () => {
-    state.params = new URLSearchParams("peers=r-1");
-    state.data = workspace({});
-    render(<ReviewsWorkspace />);
-    expect(screen.getByText("Peer list r-1")).toBeTruthy();
   });
 
   it("says what failed when the workspace can't load", () => {

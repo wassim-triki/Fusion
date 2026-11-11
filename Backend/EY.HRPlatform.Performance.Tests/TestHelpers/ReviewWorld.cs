@@ -127,6 +127,22 @@ public sealed class ReviewWorld : IAsyncDisposable
             new { expectedVersion = current.GetProperty("version").GetUInt32() }));
     }
 
+    /// <summary>The manager sets exactly who is asked about <paramref name="subject"/> (replacing Fusion's picks at launch).</summary>
+    public async Task AskAsync(JsonElement round, WorkforceSnapshot subject, params WorkforceSnapshot[] peers)
+    {
+        var reviewId = ReviewOf(round, subject);
+        uint version;
+        Guid reviewer;
+        await using (var db = Factory.Store.NewContext())
+        {
+            var review = db.PerformanceReviews.Single(r => r.Id == reviewId);
+            (version, reviewer) = (review.Version, review.ReviewerEmployeeId);
+        }
+        var manager = new[] { Amira, Mariam }.Single(m => m.EmployeeId == reviewer);
+        await Data(await As(manager).PutAsJsonAsync($"/api/performance/reviews/{reviewId}/peers",
+            new { expectedVersion = version, employeeIds = peers.Select(p => p.EmployeeId).ToArray() }));
+    }
+
     /// <summary>The review of <paramref name="subject"/> in the round, by id from the store.</summary>
     public Guid ReviewOf(JsonElement round, WorkforceSnapshot subject)
     {

@@ -51,6 +51,8 @@ public sealed class ReviewRound : PerformanceAggregate
     public string? ConfigSnapshotJson { get; private set; }
     public Guid? RatingScaleVersionId { get; private set; }
     public DateTime? LaunchedAt { get; private set; }
+    /// <summary>The day a Draft opens by itself (D-74); "Open it today" launches it sooner. Null waits for HR.</summary>
+    public DateOnly? OpensOn { get; private set; }
     public ReviewRoundState State { get; private set; }
 
     /// <summary>Questions picked while Draft; launch freezes their text into <see cref="ReviewQuestionSnapshot"/> rows.</summary>
@@ -137,6 +139,18 @@ public sealed class ReviewRound : PerformanceAggregate
         ManagerAssessmentDueDate = dueDates.ManagerAssessment;
         CompetencyIdsJson = competencyIdsJson;
         MarkUpdated();
+    }
+
+    /// <summary>The day the Draft opens by itself, within the year. Returns false when unchanged.</summary>
+    public bool SetOpensOn(PerformanceCycle cycle, DateOnly on)
+    {
+        RequireDraft();
+        if (cycle.Id != CycleId) throw new ArgumentException("The cycle does not own this round.", nameof(cycle));
+        if (on < cycle.StartDate || on > cycle.EndDate) throw new ArgumentException("The round opens within its year.", nameof(on));
+        if (OpensOn == on) return false;
+        OpensOn = on;
+        MarkUpdated();
+        return true;
     }
 
     /// <summary>

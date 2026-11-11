@@ -49,9 +49,9 @@ function year(overrides: Partial<YearDto> & { planning?: YearGroupDto[]; executi
     ],
     nextMove: {
       from: "Planning", to: "Execution", kind: "closePlanning", canMove: true, blocker: null, roundId: null,
-      planningDeadline: "2026-05-07", affected: 57, people: [person("Mehdi Kacem", "drafting")],
+      planningDeadline: "2026-05-07", affected: 57, people: [person("Mehdi Kacem", "drafting")], opensOn: null, opens: null,
     },
-    me: null, version: 4, ...rest,
+    me: null, version: 4, review: null, ...rest,
   };
 }
 
@@ -132,5 +132,52 @@ describe("The Year page", () => {
     expect(screen.getByText("Your plan is with Mariam")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Nudge Mariam" }));
     await waitFor(() => expect(m.nudge).toHaveBeenCalledWith({ employeeIds: ["aicha"] }));
+  });
+
+  it("a round coming up opens by itself on its day, with what opens; Open it today launches it (D-74)", async () => {
+    m.move.mockResolvedValue(undefined);
+    m.year = year({
+      phase: "Execution", today: "2027-02-22",
+      nextMove: {
+        from: "Execution", to: "Review", kind: "launchRound", canMove: true, blocker: null, roundId: "round-1", planningDeadline: null,
+        affected: 99, people: [], opensOn: "2027-03-01",
+        opens: { people: 99, peopleFaces: ["Aicha Bouazizi"], peers: 297, managers: 14, managerFaces: ["Mariam Gharbi"], goals: 297,
+          selfReview: true, peerInput: true, selfDue: "2027-03-15", managerDue: "2027-03-29" },
+      },
+    });
+    render(<YearPage />);
+    expect(screen.getByText(/The review round opens by itself on/)).toBeTruthy();
+    expect(screen.getByText("In 7 days")).toBeTruthy();
+    expect(screen.getAllByText("297")).toHaveLength(2);
+    expect(screen.getByText("Read on the day it opens")).toBeTruthy();
+    // The header's own move button gives way to the card.
+    expect(screen.queryByRole("button", { name: /Open the review round|Launch/ })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Open it today" }));
+    await waitFor(() => expect(m.move).toHaveBeenCalledWith({ expectedVersion: 4, to: "Review" }));
+  });
+
+  it("HR follows the round by manager, furthest behind first, and nudges one manager once (D-74)", async () => {
+    m.nudge.mockResolvedValue({ nudged: 3, skipped: [] });
+    const face = (name: string) => person(name, "withManager");
+    m.year = year({
+      phase: "Review", today: "2027-03-24",
+      nextMove: { from: "Review", to: "ResultsOut", kind: "release", canMove: false, blocker: "nothingReady", roundId: "round-1", planningDeadline: null, affected: 0, people: [], opensOn: null, opens: null },
+      review: {
+        roundId: "round-1", openedOn: "2027-03-01", selfDue: "2027-03-15", managerDue: "2027-03-29", reviewed: 41, total: 99,
+        reviewers: [
+          { employeeId: "mariam", name: "Mariam Gharbi", unitName: "Engineering A Core", people: 6, written: 2, toWrite: 3, waitingOnSelf: 1, onPace: false,
+            writtenPeople: [], toWritePeople: [face("Aicha"), face("Fares"), face("Sofiene")], waitingPeople: [] },
+          { employeeId: "omar", name: "Omar Mansour", unitName: "Platform", people: 18, written: 15, toWrite: 3, waitingOnSelf: 0, onPace: true,
+            writtenPeople: [], toWritePeople: [], waitingPeople: [] },
+        ],
+      },
+    });
+    render(<YearPage />);
+    expect(screen.getByText("1 manager is behind on reviews")).toBeTruthy();
+    expect(screen.getByText("2 of 6 written")).toBeTruthy();
+    expect(screen.getByText("On pace")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Nudge" }));
+    await waitFor(() => expect(m.nudge).toHaveBeenCalledWith({ employeeIds: ["Aicha", "Fares", "Sofiene"] }));
+    expect(await screen.findByText("Nudged today")).toBeTruthy();
   });
 });

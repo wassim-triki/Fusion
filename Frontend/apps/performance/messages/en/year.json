@@ -54,7 +54,17 @@
     "nudgedOne": "Nudged {name}",
     "waitingOn": "Waiting on {name}",
     "planWith": "Your plan is with {name}",
-    "reviewWith": "{name} is writing your review"
+    "reviewWith": "{name} is writing your review",
+    "comingUp": "Coming up",
+    "roundOpensOn": "The review round opens by itself on {day}",
+    "inDays": "{count, plural, =0 {Today} one {In # day} other {In # days}}",
+    "roundOpened": "The review round is open; everyone's been told",
+    "couldntOpen": "The round couldn't open.",
+    "reviewsDue": "Reviews due {day}, {count, plural, =0 {today} one {in # day} other {in # days}}",
+    "selfReviewsDue": "Self-reviews due {day}",
+    "managersBehind": "{count, plural, one {# manager is} other {# managers are}} behind on reviews",
+    "nudgeTheCount": "{count, plural, one {Nudge them} other {Nudge the #}}",
+    "nudgedManagers": "{count, plural, one {Nudged # manager} other {Nudged # managers}}"
   },
   "MovePreview": {
     "preview": "Preview",
@@ -139,5 +149,38 @@
     "under": "under {goal}",
     "updated": "Updated {day}",
     "noUpdateYet": "No update yet"
+  },
+  "Round": {
+    "selfReviewDue": "A self-review, due {day}",
+    "peersAsked": "Three asked for each person, from who they worked with; their manager can change who",
+    "managersDue": "Reviews due {day}, each drafted from the person's year",
+    "goalsGraded": "Graded from their measures",
+    "readOnTheDay": "Read on the day it opens",
+    "opens": {
+      "everyone": "Everyone",
+      "peers": "Peers",
+      "managers": "Managers",
+      "goals": "Goals"
+    },
+    "oneNotificationEach": "One notification each, opening where to act",
+    "toldToday": "{count, plural, one {# person told today, with where to start} other {# people told today, each with where to start}}",
+    "key": {
+      "written": "Written",
+      "toWrite": "Theirs to write",
+      "waiting": "Waiting on a self-review"
+    },
+    "moreOnPace": "{count, plural, one {and # more manager on pace} other {and # more managers on pace}}",
+    "nudgedToday": "Nudged today",
+    "nudge": "Nudge",
+    "allWritten": "All written",
+    "onPace": "On pace",
+    "parts": {
+      "written": "Written",
+      "toWrite": "Self-review in, {name}'s to write",
+      "waiting": "Self-review not in yet"
+    },
+    "written": "{written} of {count} written",
+    "openItToday": "Open it today",
+    "people": "{count, plural, one {# person} other {# people}}"
   }
 }

@@ -52,8 +52,11 @@ public static class PerformanceAuditActions
     public const string ReviewQuestionArchived = "ReviewQuestion.Archived";
     public const string ReviewQuestionDeleted = "ReviewQuestion.Deleted";
     public const string ReviewQuestionsReordered = "ReviewQuestion.Reordered";
-    public const string ReviewPeersNominated = "Review.PeersNominated";
-    public const string ReviewPeerListApproved = "Review.PeerListApproved";
+    public const string ReviewPeersChanged = "Review.PeersChanged";
+    public const string ReviewSelfAssessmentTakenBack = "Review.SelfAssessmentTakenBack";
+    public const string ReviewTalkedOver = "Review.TalkedOver";
+    public const string ReviewNudged = "Review.Nudged";
+    public const string ReviewAcknowledgementCommented = "Review.AcknowledgementCommented";
     public const string ReviewPeerDeclined = "Review.PeerDeclined";
     public const string ReviewPeerAnswered = "Review.PeerAnswered";
     public const string ReviewDueDateMoved = "Review.DueDateMoved";

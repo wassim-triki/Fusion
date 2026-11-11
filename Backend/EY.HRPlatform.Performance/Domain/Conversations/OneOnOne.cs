@@ -10,7 +10,7 @@ public enum OneOnOneMeetingState { Upcoming = 0, Completed = 1, NotHeld = 2 }
 /// Where an agenda item came from; the item keeps a link to it. A starter is one of Fusion's opening points for a
 /// first 1:1 (<see cref="OneOnOneStarters"/>): its text is the starter's key, worded by the client.
 /// </summary>
-public enum AgendaSourceKind { Objective = 0, UpdateRequest = 1, Feedback = 2, Praise = 3, Action = 4, Starter = 5 }
+public enum AgendaSourceKind { Objective = 0, UpdateRequest = 1, Feedback = 2, Praise = 3, Action = 4, Starter = 5, Review = 6 }
 
 /// <summary>The starter agenda a first 1:1 opens with (D-66); each is a key the client words.</summary>
 public static class OneOnOneStarters

@@ -251,6 +251,7 @@ public sealed class UpdateReviewRoundHandler(PerformanceDbContext db, IPerforman
                     request.PeerInputDueDate is not null || request.PeerInputDueDateSet ? request.PeerInputDueDate : round.PeerInputDueDate,
                     request.ManagerAssessmentDueDate),
                 JsonSerializer.Serialize(competencies), PerformanceClock.Today);
+            if (request.OpensOn is DateOnly opensOn) round.SetOpensOn(cycle, opensOn);
             if (request.QuestionIds is { } questionIds)
             {
                 var unique = questionIds.Distinct().ToArray();
@@ -485,11 +486,36 @@ public sealed class LaunchReviewRoundHandler(PerformanceDbContext db, ITenantCon
             notifications.EnqueueReview(review,
                 round.SelfAssessmentEnabled ? PerformanceNotificationKind.SelfAssessmentOpened : PerformanceNotificationKind.ManagerAssessmentOpened,
                 round.Name);
+        if (round.PeerInputEnabled) await AskPeersAsync(round, reviews, now, cancellationToken);
         audit.Record(tenant.TenantId, "ReviewRound", round.Id, round.CycleId, PerformanceAuditActions.ReviewRoundLaunched,
             new { before = new { state = beforeState }, after = new { state = round.State, reviewCount = reviews.Count, ratingScaleVersion = version.Number,
                 questionCount = snapshots.Count } });
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success(new ReviewRoundLaunchDto(round.Id, round.State, reviews.Count, reviews.Select(r => r.Id).ToArray()));
+    }
+
+    /// <summary>
+    /// Fusion asks each person's three closest colleagues in the year at once (D-40), nobody's approval first; each is
+    /// told, opening on Home. Someone nobody worked with gets no peers; their manager may add some.
+    /// </summary>
+    private async Task AskPeersAsync(ReviewRound round, IReadOnlyList<PerformanceReview> reviews, DateTime now, CancellationToken token)
+    {
+        var affinity = await PeerAffinity.LoadAsync(db, round.CycleId, round.PeriodStart, round.PeriodEnd, null, token);
+        var names = await db.Participants.AsNoTracking().Where(p => p.CycleId == round.CycleId)
+            .ToDictionaryAsync(p => p.EmployeeId, p => p.DisplayName, token);
+        foreach (var review in reviews)
+        {
+            var picks = affinity.Pick(review.SubjectEmployeeId, review.ReviewerEmployeeId, names.Keys);
+            if (picks.Count == 0) continue;
+            review.PickPeers(picks.Select(id => (id, names[id])).ToArray(), now);
+            db.PeerNominations.AddRange(review.PeerNominations);
+            foreach (var peer in picks)
+            {
+                var request = PeerRequest.Create(review, peer, names[peer], round.PeerInputDueDate, now);
+                db.PeerRequests.Add(request);
+                PeerInput.Tell(notifications, review, round, request);
+            }
+        }
     }
 }
 

@@ -38,7 +38,7 @@ public static class ReviewPolicy
 
     public static bool CanManagerAssess(ReviewActor actor, PerformanceReview review, bool allowSubmittedRetry = false)
         => actor.CanReviewReports && actor.EmployeeId != Guid.Empty && actor.EmployeeId == review.ReviewerEmployeeId
-            && (review.State == PerformanceReviewState.ManagerAssessment && !review.ManagerAssessment.IsSubmitted
+            && (review.State is PerformanceReviewState.SelfAssessment or PerformanceReviewState.ManagerAssessment && !review.ManagerAssessment.IsSubmitted
                 || allowSubmittedRetry && review.ManagerAssessment.IsSubmitted);
 
     public static ReviewVisibility Visibility(ReviewActor actor, PerformanceReview review, bool calibrationFinalized = false)

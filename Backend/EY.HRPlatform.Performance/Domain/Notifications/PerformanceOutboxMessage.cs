@@ -13,7 +13,7 @@ public enum PerformanceNotificationKind
     OneOnOneStarted, OneOnOneRescheduled, OneOnOneActionAssigned,
     FeedbackReceived, FeedbackForReport, FeedbackRequested, FeedbackRequestResponded,
     PraiseReceived, PraiseForReport,
-    PeersNominated, PeerListApproved, PeerInputRequested, PeerDeclined, ReviewDueDateMoved, ReviewReminder, ReviewAcknowledged,
+    PeerInputRequested, PeerDeclined, ReviewDueDateMoved, ReviewReminder, ReviewAcknowledged,
     CalibrationFinalized,
     /// <summary>Someone nudged the person toward their next step in the year (D-49).</summary>
     YearNudge,
@@ -168,8 +168,7 @@ public sealed class PerformanceOutboxMessage : PerformanceChildEntity
         };
     }
 
-    public static bool IsReviewWorkKind(PerformanceNotificationKind kind) => kind is PerformanceNotificationKind.PeersNominated
-        or PerformanceNotificationKind.PeerListApproved or PerformanceNotificationKind.PeerInputRequested
+    public static bool IsReviewWorkKind(PerformanceNotificationKind kind) => kind is PerformanceNotificationKind.PeerInputRequested
         or PerformanceNotificationKind.PeerDeclined or PerformanceNotificationKind.ReviewDueDateMoved
         or PerformanceNotificationKind.ReviewReminder or PerformanceNotificationKind.ReviewAcknowledged
         or PerformanceNotificationKind.CalibrationFinalized;

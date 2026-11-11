@@ -8,24 +8,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EY.HRPlatform.Performance.Controllers;
 
-/// <summary>Peer input (D-18): the person's nominations, the reviewer's approval and suggestions, and the peer's own request.</summary>
+/// <summary>Peer input: who the manager asks (Fusion picks first, D-40), suggestions, and the peer's own request.</summary>
 [ApiController]
 [Authorize]
 [Route("api/performance")]
 public sealed class PeerInputController(IMediator mediator, IPerformanceAccessPolicyService policy) : PerformanceControllerBase
 {
+    /// <summary>The manager changes who is asked (D-40): the whole list as it should stand.</summary>
     [HttpPut("reviews/{reviewId:guid}/peers")]
-    public async Task<ActionResult<ApiResponse<ReviewPeersDto>>> Nominate(Guid reviewId, [FromBody] NominatePeersRequest request, CancellationToken token)
-    {
-        if (!policy.CanManageOwnParticipation(User)) return CapabilityForbidden();
-        return MapResult(await mediator.Send(new NominatePeersCommand(reviewId, Employee(), request), token));
-    }
-
-    [HttpPost("reviews/{reviewId:guid}/peers/approve")]
-    public async Task<ActionResult<ApiResponse<ReviewPeersDto>>> Approve(Guid reviewId, [FromBody] NominatePeersRequest request, CancellationToken token)
+    public async Task<ActionResult<ApiResponse<ReviewPeersDto>>> Change(Guid reviewId, [FromBody] ChangePeersRequest request, CancellationToken token)
     {
         if (!policy.CanEnterPerformance(User)) return CapabilityForbidden();
-        return MapResult(await mediator.Send(new ApprovePeerListCommand(reviewId, Employee(), policy.CanReviewDirectReports(User), request), token));
+        return MapResult(await mediator.Send(new ChangePeersCommand(reviewId, Employee(), policy.CanReviewDirectReports(User), request), token));
     }
 
     [HttpGet("reviews/{reviewId:guid}/peer-suggestions")]

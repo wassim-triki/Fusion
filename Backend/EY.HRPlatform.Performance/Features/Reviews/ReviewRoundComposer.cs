@@ -36,6 +36,7 @@ internal static class ReviewRoundComposer
             CycleStart = cycle.StartDate,
             CycleEnd = cycle.EndDate,
             LaunchedAt = round.LaunchedAt,
+            OpensOn = round.OpensOn,
             Schedule = new ReviewRoundScheduleDto(launchDay,
                 new(schedule.SelfAssessment, draft && round.SelfAssessmentDueDate is null, round.SelfAssessmentDueDays),
                 new(schedule.PeerInput, draft && round.PeerInputDueDate is null, round.PeerInputDueDays),
@@ -167,8 +168,7 @@ internal static class ReviewRoundComposer
             return new ReviewTeamProgressDto(team.Key, team.First().ReviewerDisplayName, unit, team.Count(),
                 new(team.Count(r => r.SelfAssessmentEnabled && r.SelfAssessment.IsSubmitted), team.Count(r => r.SelfAssessmentEnabled)),
                 new(teamRequests.Count(r => r.State == PeerRequestState.Answered), teamRequests.Count),
-                new(team.Count(r => r.ManagerAssessment.IsSubmitted), team.Count()),
-                team.Count(r => r.PeerInputEnabled && r.PeersNominatedAt is not null && r.PeerListApprovedAt is null));
+                new(team.Count(r => r.ManagerAssessment.IsSubmitted), team.Count()));
         })
         // Furthest behind first: the earliest stage decides, then the next.
         .OrderBy(t => Fraction(t.Self)).ThenBy(t => Fraction(t.Peers)).ThenBy(t => Fraction(t.Manager))
@@ -189,7 +189,7 @@ internal static class ReviewRoundComposer
         if (tasks.Count == 0) return null;
         var next = tasks.Min(task => ReviewReminderSchedule.NextTaskReminder(task.Due, today));
         var due = tasks.Where(task => ReviewReminderSchedule.IsTaskReminderDay(task.Due, next)).ToList();
-        return new(next, due.Count(t => t.Kind == ReviewReminderKind.SelfAssessment), due.Count(t => t.Kind == ReviewReminderKind.PeerList),
+        return new(next, due.Count(t => t.Kind == ReviewReminderKind.SelfAssessment),
             due.Count(t => t.Kind == ReviewReminderKind.PeerInput), due.Count(t => t.Kind == ReviewReminderKind.ManagerAssessment));
     }
 
@@ -257,7 +257,7 @@ internal static class ReviewRoundComposer
     }
 }
 
-public enum ReviewReminderKind { SelfAssessment, PeerList, PeerInput, ManagerAssessment }
+public enum ReviewReminderKind { SelfAssessment, PeerInput, ManagerAssessment }
 
 /// <summary>One open review task that reminders are about: who acts, by when, and where.</summary>
 public sealed record ReviewReminderTask(ReviewReminderKind Kind, Guid ResourceId, Guid RecipientEmployeeId, DateOnly Due,
@@ -276,11 +276,6 @@ public static class ReviewReminderTasks
             if (review.State == PerformanceReviewState.SelfAssessment && review.SelfAssessmentEnabled && !review.SelfAssessment.IsSubmitted
                 && review.SelfAssessmentDueDate is DateOnly selfDue)
                 yield return new(ReviewReminderKind.SelfAssessment, review.Id, review.SubjectEmployeeId, selfDue, review);
-            // The peer list is approved by the self-assessment date: peers need the time to answer.
-            if (review.PeerInputEnabled && review.PeerListApprovedAt is null && review.PeersNominatedAt is not null
-                && review.State is PerformanceReviewState.SelfAssessment or PerformanceReviewState.ManagerAssessment
-                && !review.ManagerAssessment.IsSubmitted && (review.SelfAssessmentDueDate ?? round.SelfAssessmentDueDate) is DateOnly listDue)
-                yield return new(ReviewReminderKind.PeerList, review.Id, review.ReviewerEmployeeId, listDue, review);
             if (review.State == PerformanceReviewState.ManagerAssessment && !review.ManagerAssessment.IsSubmitted
                 && review.ManagerAssessmentDueDate is DateOnly managerDue)
                 yield return new(ReviewReminderKind.ManagerAssessment, review.Id, review.ReviewerEmployeeId, managerDue, review);

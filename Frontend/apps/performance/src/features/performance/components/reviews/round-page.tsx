@@ -173,7 +173,6 @@ function RoundRunning({ round }: { round: ReviewRoundDto }) {
   const peers = stage("PeerInput");
   const manager = stage("ManagerAssessment");
   const released = stage("Released");
-  const lists = progress.teams.reduce((sum, t) => sum + t.listsToApprove, 0);
   const tile = (s: ReviewStageProgressDto | undefined, label: string, foot: string, tone: "success" | "primary" = "success") => s ? (
     <CountTile label={label} value={s.done} total={s.total} tone={tone} foot={foot}
       aside={s.dueDate ? <DueChip date={s.dueDate} late={s.dueDate < today && s.open > 0} label={tr("due", { dueDate: dayLabel(s.dueDate, format.locale) })} /> : null} />
@@ -183,7 +182,7 @@ function RoundRunning({ round }: { round: ReviewRoundDto }) {
     <div className="space-y-10">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {tile(self, tr("selfTile"), self?.late ? tr("openLate", { open: self.open, late: self.late }) : tr("open", { open: self?.open ?? 0 }))}
-        {tile(peers, tr("peerTile"), lists ? tr("declinedLists", { declined: peers?.declined ?? 0, count: lists }) : tr("declined", { declined: peers?.declined ?? 0 }))}
+        {tile(peers, tr("peerTile"), tr("declined", { declined: peers?.declined ?? 0 }))}
         {tile(manager, tr("managerTile"), tr("readyToWrite", { count: manager?.readyToWrite ?? 0 }), "primary")}
         {released ? <CountTile label={tr("released")} value={released.done} total={released.total} foot={round.calibrationEnabled ? tr("afterCalibration") : tr("readyToRelease", { count: progress.readyToFinalize })} /> : null}
       </div>
@@ -216,7 +215,6 @@ function RoundRunning({ round }: { round: ReviewRoundDto }) {
                   {round.peerInputEnabled ? <td className="px-3 py-3.5"><RatioBar done={team.peers.done} total={team.peers.total} /></td> : null}
                   <td className="px-3 py-3.5"><span className="type-body tabular-nums text-foreground">{team.manager.done}/{team.manager.total}</span></td>
                   <td className="px-5 py-3.5 text-end">
-                    {team.listsToApprove ? <StatusBadge tone="warning" dot>{team.listsToApprove} {team.listsToApprove === 1 ? tr("list") : tr("lists")} {tr("toApprove")}</StatusBadge> : null}
                   </td>
                 </tr>
               ))}
@@ -257,7 +255,6 @@ function RoundRunning({ round }: { round: ReviewRoundDto }) {
 function reminderCounts(next: NonNullable<NonNullable<ReviewRoundDto["progress"]>["nextReminder"]>, say: Say) {
   return [
     next.selfAssessments ? say("self", { count: next.selfAssessments }) : null,
-    next.peerLists ? say("peerLists", { count: next.peerLists }) : null,
     next.peerInputs ? say("peerInputs", { count: next.peerInputs }) : null,
     next.managerAssessments ? say("managers", { count: next.managerAssessments }) : null,
   ].filter(Boolean).join(" · ");

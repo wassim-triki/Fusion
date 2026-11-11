@@ -15,6 +15,7 @@ import { HomeSkeleton } from "./home-skeleton";
 import { FirstWeekCard, YourManagerCard, YourTeamCard } from "./home-cards";
 import { CompanyCard, SetupGuideCard, useHomeSetup } from "./setup-guide";
 import { HomeDecision } from "./home-decision";
+import { HomePeerInput, peerRequestId } from "./home-peer-input";
 import { HomePraise } from "./home-praise";
 import { YourYear } from "./your-year";
 import { dateFormatter } from "@repo/ds/lib/dates";
@@ -66,7 +67,14 @@ function HomeWork({ quietWhenEmpty = false, work, upcoming }: {
   return (
     <div className="space-y-6">
       <Section id="home-needs" title={t("needsYou")} meta={workBusy ? undefined : work.items.length} flush>
-        <WorkList items={orderWork(work.items, today)} modules={work.modules} today={today} renderDecision={(item) => <HomeDecision item={item} />} />
+        <WorkList items={orderWork(work.items, today)} modules={work.modules} today={today} renderDecision={(item) => <HomeDecision item={item} />}
+          renderInPlace={(item) => {
+            const id = peerRequestId(item);
+            if (!id) return null;
+            // Opened from its notification (`/?peer={id}`), the request starts open.
+            const asked = typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("peer");
+            return <HomePeerInput item={item} initiallyOpen={asked === id} />;
+          }} />
       </Section>
       <Section id="home-coming" title={t("comingUp")} meta={t("nextTwoWeeks")} flush>
         {datesBusy && upcoming.items.length === 0 ? (

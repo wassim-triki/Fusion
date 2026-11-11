@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using EY.HRPlatform.Performance.Domain.Reviews;
 using EY.HRPlatform.Performance.Domain.Settings;
 using EY.HRPlatform.Performance.Tests.TestHelpers;
+using Microsoft.EntityFrameworkCore;
 using UglyToad.PdfPig;
 using static EY.HRPlatform.Performance.Tests.TestHelpers.ReviewWorld;
 
@@ -36,11 +37,12 @@ public sealed class ReviewPdfTests
         // Peers: Leila answers.
         await using (var db = world.Factory.Store.NewContext())
         {
-            var review = db.PerformanceReviews.Single(r => r.Id == reviewId);
+            var review = db.PerformanceReviews.Include(r => r.PeerNominations).Single(r => r.Id == reviewId);
             var peers = new[] { (world.Leila.EmployeeId, world.Leila.DisplayName) };
-            review.NominatePeers(world.Aicha.EmployeeId, peers, DateTime.UtcNow);
-            db.PeerNominations.AddRange(review.PeerNominations);
-            review.ApprovePeerList(world.Mariam.EmployeeId, peers, DateTime.UtcNow);
+            var before = review.PeerNominations.ToList();
+            review.ChangePeers(world.Mariam.EmployeeId, peers, DateTime.UtcNow);
+            db.PeerNominations.RemoveRange(before.Except(review.PeerNominations));
+            db.PeerNominations.AddRange(review.PeerNominations.Except(before));
             var request = PeerRequest.Create(review, world.Leila.EmployeeId, world.Leila.DisplayName, Today.AddDays(14), DateTime.UtcNow);
             var questions = db.ReviewQuestionSnapshots.Where(q => q.ReviewRoundId == review.ReviewRoundId && q.Audience == ReviewQuestionAudience.Peer)
                 .Select(q => q.Id).ToList();
@@ -80,7 +82,8 @@ public sealed class ReviewPdfTests
         Assert.Contains("Pairing with other teams", subjectText);
         Assert.Contains("Getting payments to run our suite nightly", subjectText);
         Assert.Contains("Agreed on the dependency point.", subjectText);
-        Assert.DoesNotContain("PEERSECRET", subjectText);
+        // The person reads peers' words with their names once results are out (D-69).
+        Assert.Contains("PEERSECRET", subjectText);
         Assert.DoesNotContain("Potential", subjectText);
         Assert.DoesNotContain("High", subjectText);
         // A second download of the same copy carries the same content.

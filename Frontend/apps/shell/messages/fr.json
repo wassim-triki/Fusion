@@ -317,6 +317,27 @@
       "openProfile": "Voir le profil",
       "alsoReporting": "Rattachés aussi à {name}",
       "more": "et {count} de plus"
+    },
+    "peerInput": {
+      "asked": "Demandé par {name} le {day}",
+      "due": "Pour le {day}",
+      "answer": "Répondre",
+      "loading": "Chargement de la demande",
+      "failed": "L'envoi a échoué. Réessayez.",
+      "whyYou": "Pourquoi vous",
+      "picked": "Choisi parmi ceux qui ont travaillé avec {name}",
+      "yourWords": "Vos mots",
+      "whoReads": "{manager} et {name} le liront avec votre nom",
+      "didntWorkEnough": "Je n'ai pas assez travaillé avec {name}",
+      "sendTo": "Envoyer à {name}",
+      "reasons": {
+        "goal": "Vos objectifs soutiennent tous deux",
+        "feedbackGiven": "Vous avez fait un feedback à {name} le {day}",
+        "feedbackReceived": "{name} vous a fait un feedback le {day}",
+        "praiseGiven": "Vous avez félicité {name} le {day}",
+        "praiseReceived": "{name} vous a félicité le {day}",
+        "teammate": "Vous et {name} avez le même manager"
+      }
     }
   },
   "app": {

@@ -67,11 +67,11 @@ export function usePeerSuggestions(reviewId: string | null, enabled = true) {
   });
 }
 
+/** The manager changes who is asked (Fusion picks at launch, D-40). */
 export function usePeerCommands(reviewId: string) {
   const api = useReviewsApi();
   return {
-    nominate: useReviewMutation((input: { ids: string[]; version: number }) => api.nominatePeers(reviewId, input.ids, input.version)),
-    approve: useReviewMutation((input: { ids: string[]; version: number }) => api.approvePeers(reviewId, input.ids, input.version)),
+    change: useReviewMutation((input: { ids: string[]; version: number }) => api.changePeers(reviewId, input.ids, input.version)),
   };
 }
 
@@ -128,5 +128,24 @@ export function useDownloadReviewPdf() {
     link.download = fileName;
     link.click();
     URL.revokeObjectURL(url);
+  };
+}
+
+/** The person's year beside the review, numbered as drafts cite it (H3), through the reader's own lens. */
+export function useReviewYear(reviewId: string | null, enabled = true) {
+  const api = useReviewsApi();
+  return useApiQuery(reviewQueryKeys.year(reviewId ?? "none"), (signal) => api.getYear(reviewId as string, signal), {
+    enabled: Boolean(reviewId) && enabled,
+  });
+}
+
+/** What a review's people do from its page: take a self-review back, nudge, talk it over in a 1:1, comment after reading. */
+export function useReviewActions(reviewId: string) {
+  const api = useReviewsApi();
+  return {
+    takeBack: useReviewMutation(() => api.takeBack(reviewId)),
+    nudge: useReviewMutation((who: "self" | "peers") => api.nudge(reviewId, who)),
+    talkItOver: useReviewMutation(() => api.talkItOver(reviewId)),
+    comment: useReviewMutation((comment: string) => api.commentOnAcknowledgement(reviewId, comment)),
   };
 }

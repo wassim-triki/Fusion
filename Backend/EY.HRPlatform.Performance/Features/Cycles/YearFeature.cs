@@ -1,6 +1,7 @@
 using EY.HRPlatform.Performance.Domain.Audit;
 using EY.HRPlatform.Performance.Domain.Common;
 using EY.HRPlatform.Performance.Domain.Cycles;
+using EY.HRPlatform.Performance.Domain.Objectives;
 using EY.HRPlatform.Performance.Domain.Plans;
 using EY.HRPlatform.Performance.Domain.Reviews;
 using EY.HRPlatform.Performance.Features.Failures;
@@ -38,7 +39,8 @@ public static class YearStandings
     public const string Quiet = "quiet";
     public const string SelfReview = "selfReview";
     public const string WithManager = "withManager";
-    public const string Calibration = "calibration";
+    /// <summary>The manager's review is in (calibrated or ready to release).</summary>
+    public const string Reviewed = "reviewed";
     public const string Released = "released";
     public const string Acknowledged = "acknowledged";
     public const string Closed = "closed";
@@ -95,7 +97,7 @@ public static class YearStandings
                     case PerformanceReviewState.ManagerAssessment:
                         step = CyclePhase.Review; standing = WithManager; since = review.UpdatedAt; break;
                     default:
-                        step = CyclePhase.Review; standing = Calibration; since = review.UpdatedAt; break;
+                        step = CyclePhase.Review; standing = Reviewed; since = review.UpdatedAt; break;
                 }
             }
             else if (plans.TryGetValue(p.EmployeeId, out var plan) && plan.State == PlanLifecycleState.Approved)
@@ -155,14 +157,59 @@ public static class YearComposer
         var firstRelease = await db.PerformanceReviews.AsNoTracking()
             .Where(r => r.CycleId == cycle.Id && r.State == PerformanceReviewState.Finalized)
             .MinAsync(r => (DateTime?)r.FinalizedAt, token);
+        var opensOn = rounds.Count > 0 ? null : await db.ReviewRounds.AsNoTracking()
+            .Where(r => r.CycleId == cycle.Id && r.State == ReviewRoundState.Draft && r.OpensOn != null)
+            .OrderByDescending(r => r.CreatedAt).Select(r => r.OpensOn).FirstOrDefaultAsync(token);
         var steps = Steps(cycle, phase, today, rounds.Count == 0 ? null : DateOnly.FromDateTime(rounds.Min()),
-            firstRelease is null ? null : DateOnly.FromDateTime(firstRelease.Value), people, scope == ScopeCompany);
+            firstRelease is null ? null : DateOnly.FromDateTime(firstRelease.Value), people, scope == ScopeCompany, opensOn);
 
         var move = actor.IsAdministrator && phase is not null ? await NextMoveAsync(db, cycle, phase.Value, today, everyone, token) : null;
+        var review = actor.IsAdministrator && phase == CyclePhase.Review ? await ReviewRoundAsync(db, cycle, today, token) : null;
         var me = everyone.FirstOrDefault(p => p.EmployeeId == actor.EmployeeId) is { } self
             ? new YearMeDto(self.EmployeeId, self.Step, self.Standing, self.Since, self.ManagerEmployeeId, self.ManagerName) : null;
         return new YearDto(cycle.Id, cycle.Name, cycle.StartDate, cycle.EndDate, today, cycle.State, phase, cycle.PlanningClosedOn,
-            scope, people.Count, steps, move, me, cycle.Version);
+            scope, people.Count, steps, move, me, cycle.Version) { Review = review };
+    }
+
+    /// <summary>
+    /// The running round by manager (D-74). A manager is on pace when the share they've written keeps up with the share of
+    /// days gone from the self-review date to theirs; those furthest behind come first.
+    /// </summary>
+    public static async Task<YearReviewRoundDto?> ReviewRoundAsync(PerformanceDbContext db, PerformanceCycle cycle, DateOnly today, CancellationToken token)
+    {
+        var round = await db.ReviewRounds.AsNoTracking()
+            .FirstOrDefaultAsync(r => r.CycleId == cycle.Id && r.State == ReviewRoundState.Active, token);
+        if (round?.LaunchedAt is not DateTime launched || round.ManagerAssessmentDueDate is not DateOnly managerDue) return null;
+        var reviews = await db.PerformanceReviews.AsNoTracking()
+            .Where(r => r.ReviewRoundId == round.Id && r.State != PerformanceReviewState.Closed)
+            .Select(r => new
+            {
+                r.SubjectEmployeeId, r.SubjectDisplayName, r.SubjectOrgUnitName, r.ReviewerEmployeeId, r.ReviewerDisplayName, r.State,
+                Written = r.ManagerAssessment.SubmittedAt != null, r.UpdatedAt,
+            }).ToListAsync(token);
+        var openedOn = DateOnly.FromDateTime(launched);
+        var from = round.SelfAssessmentDueDate ?? openedOn;
+        var window = Math.Max(1, managerDue.DayNumber - from.DayNumber);
+        var expected = Math.Clamp((today.DayNumber - from.DayNumber) / (double)window, 0d, 1d);
+        static YearPersonDto Face(Guid id, string name, string? unit, string standing) => new(id, name, unit, standing, null);
+        var reviewers = reviews.GroupBy(r => r.ReviewerEmployeeId).Select(team =>
+        {
+            var written = team.Where(r => r.Written).ToList();
+            var toWrite = team.Where(r => !r.Written && r.State == PerformanceReviewState.ManagerAssessment).ToList();
+            var waiting = team.Where(r => r.State == PerformanceReviewState.SelfAssessment).ToList();
+            var share = written.Count / (double)team.Count();
+            var unit = team.Where(r => r.SubjectOrgUnitName is not null).GroupBy(r => r.SubjectOrgUnitName)
+                .OrderByDescending(g => g.Count()).Select(g => g.Key).FirstOrDefault();
+            return (Deficit: expected - share, Dto: new YearReviewerDto(team.Key, team.First().ReviewerDisplayName, unit, team.Count(),
+                written.Count, toWrite.Count, waiting.Count, toWrite.Count == 0 || share + 1e-9 >= expected,
+                written.Select(r => Face(r.SubjectEmployeeId, r.SubjectDisplayName, r.SubjectOrgUnitName, YearStandings.Reviewed)).ToList(),
+                toWrite.Select(r => Face(r.SubjectEmployeeId, r.SubjectDisplayName, r.SubjectOrgUnitName, YearStandings.WithManager)).ToList(),
+                waiting.Select(r => Face(r.SubjectEmployeeId, r.SubjectDisplayName, r.SubjectOrgUnitName, YearStandings.SelfReview)).ToList()));
+        })
+        .OrderBy(r => r.Dto.OnPace).ThenByDescending(r => r.Deficit).ThenBy(r => r.Dto.Name, StringComparer.OrdinalIgnoreCase)
+        .Select(r => r.Dto).ToList();
+        return new YearReviewRoundDto(round.Id, openedOn, round.SelfAssessmentDueDate, managerDue,
+            reviews.Count(r => r.Written), reviews.Count, reviewers);
     }
 
     /// <summary>
@@ -171,10 +218,11 @@ public static class YearComposer
     /// Results out to the year's end.
     /// </summary>
     public static IReadOnlyList<YearStepDto> Steps(PerformanceCycle cycle, CyclePhase? phase, DateOnly today, DateOnly? launched,
-        DateOnly? released, IReadOnlyList<YearStandings.Person> people, bool capFaces)
+        DateOnly? released, IReadOnlyList<YearStandings.Person> people, bool capFaces, DateOnly? opensOn = null)
     {
         var planningEnd = Clamp(cycle.PlanningDeadline, cycle.StartDate, cycle.EndDate);
-        var reviewStart = Clamp(launched ?? cycle.EndDate.AddDays(-29), planningEnd.AddDays(1), cycle.EndDate);
+        // Review starts when the round launched, else on the day the drafted round opens by itself, else the last month.
+        var reviewStart = Clamp(launched ?? opensOn ?? cycle.EndDate.AddDays(-29), planningEnd.AddDays(1), cycle.EndDate);
         var resultsStart = Clamp(released ?? cycle.EndDate.AddDays(-6), reviewStart.AddDays(1), cycle.EndDate);
         var spans = new (CyclePhase Phase, DateOnly Start, DateOnly End, bool Estimated)[]
         {
@@ -198,6 +246,27 @@ public static class YearComposer
 
     private static DateOnly Clamp(DateOnly value, DateOnly min, DateOnly max) => value < min ? min : value > max ? max : value;
 
+    /// <summary>What the drafted round opens, read the day HR looks (the goals' grades are read again on the day it opens).</summary>
+    private static async Task<YearRoundOpensDto> OpensAsync(PerformanceDbContext db, PerformanceCycle cycle, ReviewRound draft, DateOnly today,
+        CancellationToken token)
+    {
+        var subjects = await db.ReviewRoundSubjects.AsNoTracking().Where(s => s.ReviewRoundId == draft.Id && !s.IsExcluded)
+            .OrderBy(s => s.SubjectDisplayName)
+            .Select(s => new { s.SubjectEmployeeId, s.SubjectDisplayName, s.ReviewerEmployeeId, s.ReviewerDisplayName }).ToListAsync(token);
+        var ids = subjects.Select(s => s.SubjectEmployeeId).ToList();
+        var goals = await (from objective in db.Objectives.AsNoTracking()
+                           join plan in db.EmployeePlans.AsNoTracking() on objective.EmployeePlanId equals plan.Id
+                           where plan.CycleId == cycle.Id && plan.State == PlanLifecycleState.Approved && ids.Contains(plan.EmployeeId)
+                                 && objective.State != ObjectiveLifecycleState.Archived
+                           select objective.Id).CountAsync(token);
+        var managers = subjects.Where(s => s.ReviewerEmployeeId != null).GroupBy(s => s.ReviewerEmployeeId)
+            .Select(g => g.First().ReviewerDisplayName ?? string.Empty).ToList();
+        var schedule = draft.ScheduleFor(draft.OpensOn is DateOnly on && on > today ? on : today);
+        return new YearRoundOpensDto(subjects.Count, subjects.Take(3).Select(s => s.SubjectDisplayName).ToList(),
+            draft.PeerInputEnabled ? subjects.Count * Reviews.PeerAffinity.Picks : 0, managers.Count, managers.Take(3).ToList(), goals,
+            draft.SelfAssessmentEnabled, draft.PeerInputEnabled, draft.SelfAssessmentEnabled ? schedule.SelfAssessment : null, schedule.ManagerAssessment);
+    }
+
     /// <summary>What HR's next move is from this phase, and who it changes for.</summary>
     public static async Task<YearMoveDto?> NextMoveAsync(PerformanceDbContext db, PerformanceCycle cycle, CyclePhase phase, DateOnly today,
         IReadOnlyList<YearStandings.Person> everyone, CancellationToken token)
@@ -220,7 +289,11 @@ public static class YearComposer
                     .OrderByDescending(r => r.CreatedAt).FirstOrDefaultAsync(token);
                 var affected = everyone.Where(p => p.Step <= CyclePhase.Execution).Select(YearStandings.ToDto).ToList();
                 return new YearMoveDto(phase, CyclePhase.Review, MoveLaunchRound, draft is not null, draft is null ? BlockerNoDraftRound : null,
-                    draft?.Id, null, affected.Count, affected);
+                    draft?.Id, null, affected.Count, affected)
+                {
+                    OpensOn = draft?.OpensOn,
+                    Opens = draft is null ? null : await OpensAsync(db, cycle, draft, today, token),
+                };
             }
             case CyclePhase.Review:
             {

@@ -514,19 +514,13 @@ function reviewRound(t, ctx, cycle) {
 
   const reviewOf = async (person) => (r.reviews[person.index] ??= (await as(person.email).get(`/api/performance/reviews/workspace?cycle=${cycle.id}`)).own?.reviewId);
 
-  // Peers for the personas: nominated the day after launch, approved the next day, answered over the following days.
+  // Peers: Fusion asks three at launch (D-40); for the personas the manager sets who the story needs the day after.
   for (const [subjectIndex, peers] of Object.entries(PEERS)) {
     const subject = ctx.byIndex(Number(subjectIndex));
-    t.add(moment(addDays(r.launch, 1), 10), `${subject.name} nominates peers`, async () => {
-      const id = await reviewOf(subject);
-      const review = await as(subject.email).get(`/api/performance/reviews/${id}`);
-      if (review.canNominatePeers) await as(subject.email).put(`/api/performance/reviews/${id}/peers`,
-        { expectedVersion: review.version, employeeIds: peers.map((p) => ctx.byIndex(p).employeeId) });
-    });
-    t.add(moment(addDays(r.launch, 2), 10), `${ctx.reviewerOf(subject).name} approves ${subject.name}'s peers`, async () => {
+    t.add(moment(addDays(r.launch, 1), 10), `${ctx.reviewerOf(subject).name} sets ${subject.name}'s peers`, async () => {
       const reviewer = as(ctx.reviewerOf(subject).email);
       const review = await reviewer.get(`/api/performance/reviews/${await reviewOf(subject)}`);
-      if (review.canApprovePeers) await reviewer.post(`/api/performance/reviews/${review.id}/peers/approve`,
+      if (review.canChangePeers) await reviewer.put(`/api/performance/reviews/${review.id}/peers`,
         { expectedVersion: review.version, employeeIds: peers.map((p) => ctx.byIndex(p).employeeId) });
     });
     peers.forEach((peerIndex, n) => {

@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
-import type { CyclePhase, FusionWorkItem, YearDto, YearPersonDto, YearStanding, YearStepDto } from "@repo/api";
+import type { CyclePhase, FusionWorkItem, YearDto, YearPersonDto, YearReviewerDto, YearStanding, YearStepDto } from "@repo/api";
 import { useFusionWork } from "@repo/api/query";
 import { cn } from "@repo/ds";
 import { Button } from "@repo/ds/components/ui/button";
@@ -18,6 +18,7 @@ import { ContentUnavailable } from "../content-unavailable";
 import { movedSteps, YearTimeline, yearPosition } from "./year-timeline";
 import { appHref, day, dayMonth, daysBetween, firstName } from "./year-words";
 import { YearYou } from "./year-you";
+import { OpenItToday, ReviewersBehind, RoundOpened, RoundOpens } from "./year-round";
 
 const PERFORMANCE: ["performance"] = ["performance"];
 
@@ -81,7 +82,8 @@ function TheYear({ year, refetch }: { year: YearDto; refetch: () => Promise<unkn
             <h1 className="type-display text-foreground">{year.name}</h1>
             <span className="text-sm text-muted-foreground">{t("dates", { start: longDay(year.startDate), end: longDay(year.endDate) })}</span>
           </div>
-          {move && !previewing ? (
+          {/* A round coming up opens from its own card ("Open it today"), not from the header. */}
+          {move && !previewing && !(move.kind === "launchRound" && move.canMove && move.opensOn) ? (
             <Button variant="outline" className="ms-auto" onClick={() => void openPreview()}>
               <FastForward aria-hidden className="size-4" />
               {t(`move.${move.kind}`)}
@@ -153,6 +155,7 @@ function useNext(year: YearDto): Next {
   const commands = useYearCommands(year.cycleId);
   const work = useFusionWork(PERFORMANCE);
   const [nudged, setNudged] = useState<{ phase: CyclePhase | null; count: number } | null>(null);
+  const [nudgedManagers, setNudgedManagers] = useState<ReadonlySet<string>>(new Set());
   const phase = year.phase;
   const step = (p: CyclePhase) => year.steps.find((s) => s.phase === p)!;
   const count = (p: CyclePhase, ...standings: YearStanding[]) =>
@@ -181,7 +184,46 @@ function useNext(year: YearDto): Next {
     </AsyncButton>
   );
 
+  // A manager's reviews waiting on them: one nudge each, reaching the manager once (D-74).
+  const nudgeManagers = (reviewers: YearReviewerDto[]) => commands.nudge.mutateAsync({ employeeIds: reviewers.flatMap((r) => r.toWritePeople.map((p) => p.employeeId)) })
+    .then(() => {
+      setNudgedManagers((before) => new Set([...before, ...reviewers.map((r) => r.employeeId)]));
+      toast.success(reviewers.length === 1 ? t("nudgedOne", { name: firstName(reviewers[0]!.name) }) : t("nudgedManagers", { count: reviewers.length }));
+    })
+    .catch((error) => reportPerformanceFailure(error, t("nudgeFailed")));
+
   if (year.scope === "Company") {
+    const move = year.nextMove;
+    // The drafted round opens by itself on its day (D-74); "Open it today" launches it now.
+    if (phase === "Execution" && move?.kind === "launchRound" && move.canMove && move.opensOn && move.opens) {
+      const days = Math.max(0, daysBetween(year.today, move.opensOn));
+      return {
+        eyebrow: t("comingUp"),
+        title: t("roundOpensOn", { day: day(move.opensOn, locale) }),
+        due: t("inDays", { count: days }),
+        action: <OpenItToday pending={commands.move.isLoading}
+          onOpen={() => commands.move.mutateAsync({ expectedVersion: year.version, to: "Review" })
+            .then(() => toast.success(t("roundOpened")))
+            .catch((error) => reportPerformanceFailure(error, t("couldntOpen")))} />,
+        body: <RoundOpens move={move} />,
+      };
+    }
+    if (phase === "Review" && year.review) {
+      const review = year.review;
+      const due = t("reviewsDue", { day: day(review.managerDue, locale), count: Math.max(0, daysBetween(year.today, review.managerDue)) });
+      if (review.openedOn === year.today && review.reviewed === 0)
+        return { ...nothing, due: review.selfDue ? t("selfReviewsDue", { day: day(review.selfDue, locale) }) : due, body: <RoundOpened review={review} /> };
+      const behind = review.reviewers.filter((r) => !r.onPace && !nudgedManagers.has(r.employeeId));
+      return {
+        eyebrow: t("yourNextStep"),
+        title: behind.length ? t("managersBehind", { count: behind.length }) : t("nothingForYou"),
+        due,
+        action: behind.length ? (
+          <AsyncButton pending={commands.nudge.isLoading} onClick={() => void nudgeManagers(behind)}>{t("nudgeTheCount", { count: behind.length })}</AsyncButton>
+        ) : undefined,
+        body: <ReviewersBehind review={review} nudged={nudgedManagers} pending={commands.nudge.isLoading} onNudge={(r) => nudgeManagers([r])} />,
+      };
+    }
     if (nudged && nudged.phase === phase)
       return { ...nothing, body: <span className="text-sm text-muted-foreground">{t("nudgedPeople", { count: nudged.count, day: dayMonth(year.today, locale) })}</span> };
     if (phase === "Planning") {
@@ -407,7 +449,7 @@ function useColumns(year: YearDto, phase: CyclePhase): Column[] {
       of("notInRound", t("notInRound"), "mu", all("Planning", "Execution")),
       of("selfReview", t("selfReview"), "mu", pick("Review", "selfReview")),
       of("withManager", team ? t("yoursToWrite") : t("withTheirManager"), "pr", pick("Review", "withManager"), team),
-      of("reviewed", t("reviewed"), "ok", [...pick("Review", "calibration"), ...all("ResultsOut")]),
+      of("reviewed", t("reviewed"), "ok", [...pick("Review", "reviewed"), ...all("ResultsOut")]),
     ].filter((column) => column.key !== "notInRound" || notEmpty(column));
   }
   return [

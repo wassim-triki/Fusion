@@ -100,6 +100,46 @@ public sealed class PerformanceReviewsController(IMediator mediator, IPerformanc
         return MapResult(await mediator.Send(new RunReviewDraftCommand(reviewId, request, AssessmentActor()), token));
     }
 
+    /// <summary>The person's year beside the review, numbered as drafts cite it (H3); the person's lens or the reviewer's.</summary>
+    [HttpGet("{reviewId:guid}/year")]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<ReviewYearItemDto>>>> Year(Guid reviewId, CancellationToken token)
+    {
+        if (!policy.CanEnterPerformance(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new GetReviewYearQuery(reviewId, AssessmentActor()), token));
+    }
+
+    [HttpPost("{reviewId:guid}/self-assessment/take-back")]
+    public async Task<ActionResult<ApiResponse<PerformanceReviewMutationDto>>> TakeBack(Guid reviewId, CancellationToken token)
+    {
+        if (!policy.CanManageOwnParticipation(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new TakeBackSelfAssessmentCommand(reviewId, User.GetEmployeeId() ?? Guid.Empty), token));
+    }
+
+    /// <summary>The reviewer nudges the person (<c>self</c>) or the colleagues who haven't answered (<c>peers</c>), D-60.</summary>
+    [HttpPost("{reviewId:guid}/nudge")]
+    public async Task<ActionResult<ApiResponse<ReviewNudgeDto>>> Nudge(Guid reviewId, [FromBody] ReviewNudgeRequest request, CancellationToken token)
+    {
+        if (!policy.CanEnterPerformance(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new NudgeForReviewCommand(reviewId, User.GetEmployeeId() ?? Guid.Empty,
+            policy.CanReviewDirectReports(User), User.GetFullName(), request.Who), token));
+    }
+
+    /// <summary>"Talk it over in our 1:1": the released review goes on the next 1:1's agenda with the manager.</summary>
+    [HttpPost("{reviewId:guid}/talk-it-over")]
+    public async Task<ActionResult<ApiResponse<ReviewTalkDto>>> TalkItOver(Guid reviewId, CancellationToken token)
+    {
+        if (!policy.CanEnterPerformance(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new TalkItOverCommand(reviewId, User.GetEmployeeId() ?? Guid.Empty), token));
+    }
+
+    [HttpPost("{reviewId:guid}/acknowledgement-comment")]
+    public async Task<ActionResult<ApiResponse<ReviewAcknowledgementDto>>> AcknowledgementComment(Guid reviewId,
+        [FromBody] AcknowledgementCommentRequest request, CancellationToken token)
+    {
+        if (!policy.CanEnterPerformance(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new CommentOnAcknowledgementCommand(reviewId, User.GetEmployeeId() ?? Guid.Empty, request.Comment), token));
+    }
+
     [HttpPut("{reviewId:guid}/manager-summary")]
     public async Task<ActionResult<ApiResponse<ReviewSummaryStateDto>>> ReviseSummary(Guid reviewId,
         [FromBody] ReviseReviewSummaryRequest request, CancellationToken token)

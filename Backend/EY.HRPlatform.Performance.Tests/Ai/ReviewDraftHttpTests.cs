@@ -119,9 +119,9 @@ public sealed class ReviewDraftHttpTests
         var input = JsonSerializer.Serialize(factory.Ai.Requests.Single().Input);
         Assert.DoesNotContain("MANAGER-ONLY", input);
         Assert.Contains("\"lens\":\"self\"", input);
-        // The person never drafts a manager question.
+        // The person drafts only their own questions (D-68); any other question isn't there for them.
         using var question = await self.PostAsJsonAsync($"/api/performance/reviews/{aicha.Id}/draft", new { kind = "question", questionId = Guid.NewGuid() });
-        Assert.Equal(HttpStatusCode.Conflict, question.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, question.StatusCode);
     }
 
     [Theory]

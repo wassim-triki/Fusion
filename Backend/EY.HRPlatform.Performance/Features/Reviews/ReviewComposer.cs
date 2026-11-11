@@ -30,6 +30,16 @@ public sealed record ReviewItemAssessmentDto(ReviewItemKind Kind, Guid ItemId, s
     public ObjectiveStatus? Status { get; init; }
     /// <summary>Recent feedback about the objective the reader may see (shared, or addressed to them as manager).</summary>
     public IReadOnlyList<ReviewObjectiveFeedbackDto> Feedback { get; init; } = [];
+    /// <summary>A goal's grade read from its measure (D-38) and its plan weight; each side may change the grade with a reason.</summary>
+    public decimal? Grade { get; init; }
+    public decimal? Weight { get; init; }
+    /// <summary>The measure in one line ("20 → 85 %") and its current value, for the grade's words (D-51).</summary>
+    public string? MeasurementSummary { get; init; }
+    public decimal? CurrentActual { get; init; }
+    public decimal? SelfGrade { get; init; }
+    public string? SelfGradeReason { get; init; }
+    public decimal? ManagerGrade { get; init; }
+    public string? ManagerGradeReason { get; init; }
 }
 public sealed record ReviewEvidenceRefDto(Guid? EvidenceId, EvidenceKind? Kind, string Label, DateTime? RecordedAt);
 public sealed record ReviewObjectiveFeedbackDto(string AuthorName, string Message, DateTime SentAt);
@@ -66,20 +76,28 @@ public sealed record PerformanceReviewDto(Guid Id, Guid ReviewRoundId, Guid Cycl
     public string? CloseReason { get; init; }
     public bool CanAcknowledge { get; init; }
     public bool CanDownloadPdf { get; init; }
-    public bool CanNominatePeers { get; init; }
-    public bool CanApprovePeers { get; init; }
+    /// <summary>The manager may change who is asked until their review is in (D-40).</summary>
+    public bool CanChangePeers { get; init; }
+    /// <summary>The person may take their sent self-review back while the manager hasn't sent theirs.</summary>
+    public bool CanTakeBack { get; init; }
+    /// <summary>When the released review is on the agenda of the person's next 1:1 with their manager.</summary>
+    public DateTime? TalkItOverAt { get; init; }
     public bool CanMoveDueDate { get; init; }
     public bool CanClose { get; init; }
 }
 
 public sealed record ReviewQuestionAnswerDto(Guid QuestionId, ReviewQuestionAudience Audience, int SortOrder, string Text,
-    string? SelfAnswer, string? ManagerAnswer);
+    string? SelfAnswer, string? ManagerAnswer)
+{
+    /// <summary>Each drafted sentence and the key of its source in the review's year (H3), while the answer is the draft as written.</summary>
+    public IReadOnlyList<ReviewCitation> SelfCitations { get; init; } = [];
+    public IReadOnlyList<ReviewCitation> ManagerCitations { get; init; } = [];
+}
 public sealed record ReviewPeerAnswerDto(Guid QuestionId, string Question, string Text);
-/// <summary>A colleague on the peer list. For the person, only who they are: no request, state or answer.</summary>
+/// <summary>A colleague asked. Before results the person sees only who; after, the answers with the name (D-69).</summary>
 public sealed record ReviewPeerDto(Guid EmployeeId, string DisplayName, string? Source = null, Guid? RequestId = null,
     PeerRequestState? State = null, string? DeclineNote = null, DateTime? RespondedAt = null, IReadOnlyList<ReviewPeerAnswerDto>? Answers = null);
-public sealed record ReviewPeersDto(bool Approved, DateTime? ApprovedAt, DateTime? NominatedAt, IReadOnlyList<ReviewPeerDto> People,
-    IReadOnlyList<string> Questions);
+public sealed record ReviewPeersDto(DateTime? NominatedAt, IReadOnlyList<ReviewPeerDto> People, IReadOnlyList<string> Questions);
 public sealed record ReviewAcknowledgementDto(DateTime At, string? Comment);
 public sealed record ReviewScheduleStateDto(DateOnly? SelfAssessmentDue, DateOnly? PeerInputDue, DateOnly? ManagerAssessmentDue, int DaysLate,
     bool SelfOverridden, bool ManagerOverridden, DateOnly? NextReminder, IReadOnlyList<DateTime> RemindersSent);
@@ -139,6 +157,10 @@ public static class ReviewComposer
                 SelfComment = frozen is not null || visibility.ShowSelfAssessment ? item.SelfComment : null,
                 ManagerAssessment = frozen is not null || visibility.ShowManagerAssessment ? item.ManagerAssessment : null,
                 ManagerRating = frozen is not null || visibility.ShowManagerAssessment ? item.ManagerRating : null,
+                SelfGrade = frozen is not null || visibility.ShowSelfAssessment ? item.SelfGrade : null,
+                SelfGradeReason = frozen is not null || visibility.ShowSelfAssessment ? item.SelfGradeReason : null,
+                ManagerGrade = frozen is not null || visibility.ShowManagerAssessment ? item.ManagerGrade : null,
+                ManagerGradeReason = frozen is not null || visibility.ShowManagerAssessment ? item.ManagerGradeReason : null,
                 // Feedback shown live is filtered to the reader; frozen feedback was the administrator's view, so it stays out.
                 Feedback = frozen is not null ? [] : item.Feedback,
             }).ToArray(),
@@ -160,10 +182,19 @@ public static class ReviewComposer
             {
                 SelfAnswer = frozen is not null || visibility.ShowSelfAssessment ? question.SelfAnswer : null,
                 ManagerAnswer = frozen is not null || visibility.ShowManagerAssessment ? question.ManagerAnswer : null,
+                // Citations point into the writer's year; the person reads the manager's words without them.
+                SelfCitations = frozen is null && visibility.ShowSelfAssessment ? question.SelfCitations : [],
+                ManagerCitations = frozen is null && visibility.ShowManagerAssessment && !visibility.IsSubject ? question.ManagerCitations : [],
             }).ToArray(),
             Potential = showInput ? frozen?.Potential ?? extras?.Potential : null,
             Peers = peers is null ? null
                 : showInput ? peers
+                // Once results are out the person reads what peers answered, with their names (D-69); before, only who was asked.
+                : visibility.IsSubject && released ? peers with
+                {
+                    People = peers.People.Where(peer => peer.Answers is { Count: > 0 })
+                        .Select(peer => new ReviewPeerDto(peer.EmployeeId, peer.DisplayName, Answers: peer.Answers)).ToArray(),
+                }
                 : visibility.IsSubject ? peers with
                 {
                     People = peers.People.Select(peer => new ReviewPeerDto(peer.EmployeeId, peer.DisplayName)).ToArray(),
@@ -175,10 +206,10 @@ public static class ReviewComposer
             CloseReason = review.State == PerformanceReviewState.Closed && !visibility.IsSubject ? review.CloseReason : null,
             CanAcknowledge = visibility.IsSubject && released && review.AcknowledgedAt is null,
             CanDownloadPdf = released && (visibility.IsSubject || visibility.IsReviewer || visibility.IsAdministrator),
-            CanNominatePeers = visibility.IsSubject && review.PeerInputEnabled && review.PeerListApprovedAt is null
-                && review.State == PerformanceReviewState.SelfAssessment && !review.SelfAssessment.IsSubmitted,
-            CanApprovePeers = visibility.IsReviewer && review.PeerInputEnabled && review.PeerListApprovedAt is null
+            CanChangePeers = visibility.IsReviewer && review.PeerInputEnabled
                 && review.State is PerformanceReviewState.SelfAssessment or PerformanceReviewState.ManagerAssessment
+                && !review.ManagerAssessment.IsSubmitted,
+            CanTakeBack = visibility.IsSubject && review.SelfAssessment.IsSubmitted && review.State == PerformanceReviewState.ManagerAssessment
                 && !review.ManagerAssessment.IsSubmitted,
             CanMoveDueDate = actor.IsAdministrator && !visibility.IsSubject && round.State == ReviewRoundState.Active
                 && (review.State == PerformanceReviewState.SelfAssessment && review.SelfAssessmentEnabled
@@ -315,6 +346,14 @@ public sealed class GetPerformanceReviewHandler(PerformanceDbContext db)
                 response?.ManagerAssessment, response?.ManagerRating)
             {
                 Status = objective.CurrentStatus,
+                Grade = GoalGrades.Of(objective),
+                Weight = objective.PlanWeight,
+                MeasurementSummary = PerformanceMappers.MeasurementSummary(objective),
+                CurrentActual = objective.CurrentActual,
+                SelfGrade = response?.SelfGrade,
+                SelfGradeReason = response?.SelfGradeReason,
+                ManagerGrade = response?.ManagerGrade,
+                ManagerGradeReason = response?.ManagerGradeReason,
                 Feedback = objectiveFeedback.Where(item => item.ObjectiveId == objective.Id).Take(2)
                     .Select(item => new ReviewObjectiveFeedbackDto(item.AuthorName, item.Message, item.SentAt)).ToArray(),
             };
@@ -332,6 +371,7 @@ public sealed class GetPerformanceReviewHandler(PerformanceDbContext db)
         {
             Schedule = await ScheduleAsync(review, round, visibility.IsAdministrator, token),
             Year = await YearAsync(review, round, viewer, token),
+            TalkItOverAt = visibility.IsSubject && review.State == PerformanceReviewState.Finalized ? await TalkItOverAsync(review, token) : null,
             Activity = visibility.IsAdministrator || actor.IsAdministrator && visibility.IsReviewer ? await ActivityAsync(review, token) : [],
         });
     }
@@ -344,9 +384,16 @@ public sealed class GetPerformanceReviewHandler(PerformanceDbContext db)
         var answers = await db.ReviewQuestionAnswers.AsNoTracking().Where(a => a.ReviewId == review.Id).ToListAsync(token);
         var questions = !review.QuestionsEnabled ? Array.Empty<ReviewQuestionAnswerDto>() : snapshots
             .Where(q => q.Audience != ReviewQuestionAudience.Peer && (q.Audience == ReviewQuestionAudience.Manager || review.SelfAssessmentEnabled))
-            .Select(q => new ReviewQuestionAnswerDto(q.Id, q.Audience, q.SortOrder, q.Text,
-                answers.FirstOrDefault(a => a.QuestionSnapshotId == q.Id && a.Author == ReviewQuestionAuthor.Self)?.Text,
-                answers.FirstOrDefault(a => a.QuestionSnapshotId == q.Id && a.Author == ReviewQuestionAuthor.Manager)?.Text)).ToArray();
+            .Select(q =>
+            {
+                var self = answers.FirstOrDefault(a => a.QuestionSnapshotId == q.Id && a.Author == ReviewQuestionAuthor.Self);
+                var manager = answers.FirstOrDefault(a => a.QuestionSnapshotId == q.Id && a.Author == ReviewQuestionAuthor.Manager);
+                return new ReviewQuestionAnswerDto(q.Id, q.Audience, q.SortOrder, q.Text, self?.Text, manager?.Text)
+                {
+                    SelfCitations = self?.Citations ?? [],
+                    ManagerCitations = manager?.Citations ?? [],
+                };
+            }).ToArray();
         ReviewPeersDto? peers = null;
         if (review.PeerInputEnabled)
         {
@@ -354,7 +401,7 @@ public sealed class GetPerformanceReviewHandler(PerformanceDbContext db)
             var nominations = await db.PeerNominations.AsNoTracking().Where(n => n.ReviewId == review.Id).OrderBy(n => n.NominatedAt)
                 .ThenBy(n => n.DisplayName).ToListAsync(token);
             var requests = await db.PeerRequests.AsNoTracking().Include(r => r.Answers).Where(r => r.ReviewId == review.Id).ToListAsync(token);
-            peers = new ReviewPeersDto(review.PeerListApprovedAt is not null, review.PeerListApprovedAt, review.PeersNominatedAt,
+            peers = new ReviewPeersDto(review.PeersNominatedAt,
                 nominations.Select(nomination =>
                 {
                     var request = requests.FirstOrDefault(r => r.PeerEmployeeId == nomination.EmployeeId);
@@ -425,11 +472,19 @@ public sealed class GetPerformanceReviewHandler(PerformanceDbContext db)
             : new ReviewLastResultDto(last.Id, last.Name, last.FinalRating, ReviewHistoryRating.Label(last.FinalizedSnapshotJson, last.FinalRating), last.FinalizedAt));
     }
 
+    /// <summary>The upcoming 1:1 whose agenda carries this review, if the person asked to talk it over.</summary>
+    private async Task<DateTime?> TalkItOverAsync(PerformanceReview review, CancellationToken token)
+        => await (from item in db.OneOnOneAgendaItems.AsNoTracking()
+                  join meeting in db.OneOnOneMeetings.AsNoTracking() on item.MeetingId equals meeting.Id
+                  where item.SourceKind == AgendaSourceKind.Review && item.SourceId == review.Id
+                        && meeting.State == OneOnOneMeetingState.Upcoming
+                  orderby meeting.ScheduledAt
+                  select (DateTime?)meeting.ScheduledAt).FirstOrDefaultAsync(token);
+
     private async Task<IReadOnlyList<ReviewActivityDto>> ActivityAsync(PerformanceReview review, CancellationToken token)
     {
         var activity = new List<ReviewActivityDto> { new("Opened", review.OpenedAt, "Review opened") };
-        if (review.PeersNominatedAt is DateTime nominated) activity.Add(new("PeersNominated", nominated, "Peers nominated"));
-        if (review.PeerListApprovedAt is DateTime approved) activity.Add(new("PeerListApproved", approved, "Peer list approved"));
+        if (review.PeersNominatedAt is DateTime asked) activity.Add(new("PeersAsked", asked, "Peers asked"));
         if (review.SelfAssessment.SubmittedAt is DateTime self) activity.Add(new("SelfSubmitted", self, "Self-assessment submitted"));
         if (review.ManagerAssessment.SubmittedAt is DateTime manager) activity.Add(new("ManagerSubmitted", manager, "Manager assessment submitted"));
         foreach (var move in await db.ReviewDueDateMoves.AsNoTracking().Where(m => m.ReviewId == review.Id).ToListAsync(token))

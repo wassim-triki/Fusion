@@ -1,5 +1,5 @@
-import { ReviewRecordPage } from "@/features/performance/components/reviews/review-record-page";
+import { ReviewPage as Review } from "@/features/performance/components/reviews/review-page";
 
 export default function ReviewPage() {
-  return <ReviewRecordPage />;
+  return <Review />;
 }

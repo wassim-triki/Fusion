@@ -4,9 +4,18 @@ using EY.HRPlatform.Performance.Domain.Reviews;
 namespace EY.HRPlatform.Performance.Models;
 
 public sealed record ReviewItemResponseInput(ReviewItemKind Kind, Guid ItemId, string? Reflection, int? Rating,
-    string? Comment, string? Assessment);
+    string? Comment, string? Assessment)
+{
+    /// <summary>A goal's grade changed from the measure's (D-38), with <see cref="GradeReason"/>; null keeps the measure's.</summary>
+    public decimal? Grade { get; init; }
+    public string? GradeReason { get; init; }
+}
 /// <summary>An answer to one of the round's frozen questions (the question snapshot id).</summary>
-public sealed record ReviewAnswerInput(Guid QuestionId, string? Text);
+public sealed record ReviewAnswerInput(Guid QuestionId, string? Text)
+{
+    /// <summary>The draft's sentences and their sources, sent while the text is the draft as written (H3).</summary>
+    public IReadOnlyList<ReviewCitation>? Citations { get; init; }
+}
 public sealed record SaveSelfAssessmentRequest([property: JsonRequired] uint ExpectedVersion, string Summary,
     IReadOnlyList<ReviewItemResponseInput>? Items = null)
 {

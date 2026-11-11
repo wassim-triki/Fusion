@@ -99,6 +99,11 @@ export interface WorkListProps {
   emptyLabel?: string;
   /** The in-place answer for an item with a `decision` (Approve, Decline); the row still opens its path. */
   renderDecision?: (item: WorkListItem) => ReactNode;
+  /**
+   * Work answered right in the row (a peer's input, D-74): when it returns something for an item, that replaces the
+   * row's link, header and all; null keeps the plain row.
+   */
+  renderInPlace?: (item: WorkListItem) => ReactNode;
   className?: string;
 }
 
@@ -113,6 +118,7 @@ export function WorkList({
   renderLink = defaultLink,
   emptyLabel,
   renderDecision,
+  renderInPlace,
   className,
 }: WorkListProps) {
   const t = useTranslations("ds.work");
@@ -136,6 +142,8 @@ export function WorkList({
             const moduleLabel = labels.get(item.module) ?? item.module;
             const decides = Boolean(item.decision && renderDecision);
             const Icon = FUSION_MODULE_ICONS[item.module];
+            const inPlace = renderInPlace?.(item);
+            if (inPlace) return <li key={item.id}>{inPlace}</li>;
             return (
               <li key={item.id} className={cn(decides && "flex items-center pe-5")}>
                 {renderLink({

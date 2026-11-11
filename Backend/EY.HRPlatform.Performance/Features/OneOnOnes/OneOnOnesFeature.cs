@@ -509,6 +509,7 @@ public abstract class OneOnOneHandlerBase(PerformanceDbContext db, ICoreWorkforc
         (AgendaSourceKind.Objective, Guid id, Guid cycle) => PerformanceNotificationTemplates.ObjectivePath(cycle, id),
         (AgendaSourceKind.Feedback, Guid id, _) => PerformanceNotificationTemplates.FeedbackPath(id),
         (AgendaSourceKind.Praise, Guid id, _) => PerformanceNotificationTemplates.PraisePath(id),
+        (AgendaSourceKind.Review, Guid id, _) => PerformanceNotificationTemplates.ReviewPath(id),
         _ => null,
     };
 

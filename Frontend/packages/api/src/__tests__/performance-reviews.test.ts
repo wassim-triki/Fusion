@@ -51,18 +51,30 @@ describe("schedule, release and peer input", () => {
     expect(calls.get).toHaveBeenCalledWith("/performance/reviews/v1/pdf", { responseType: "blob" });
   });
 
-  it("nominates, approves, answers and declines peer input", async () => {
+  it("changes who is asked, answers and declines peer input", async () => {
     const { calls, api } = client();
-    await api.nominatePeers("v1", ["e1", "e2"], 5);
-    await api.approvePeers("v1", ["e1", "e3"], 6);
+    await api.changePeers("v1", ["e1", "e2"], 5);
     await api.savePeerAnswers("p1", [{ questionId: "q1", text: "Kind and direct" }]);
     await api.sendPeerAnswers("p1", [{ questionId: "q1", text: "Kind and direct" }]);
     await api.declinePeerRequest("p2", "Haven't worked together");
     expect(calls.put).toHaveBeenCalledWith("/performance/reviews/v1/peers", { employeeIds: ["e1", "e2"], expectedVersion: 5 });
-    expect(calls.post).toHaveBeenCalledWith("/performance/reviews/v1/peers/approve", { employeeIds: ["e1", "e3"], expectedVersion: 6 });
     expect(calls.put).toHaveBeenCalledWith("/performance/peer-requests/p1", { answers: [{ questionId: "q1", text: "Kind and direct" }] });
     expect(calls.post).toHaveBeenCalledWith("/performance/peer-requests/p1/send", { answers: [{ questionId: "q1", text: "Kind and direct" }] });
     expect(calls.post).toHaveBeenCalledWith("/performance/peer-requests/p2/decline", { note: "Haven't worked together" });
+  });
+
+  it("reads the review's year and acts on it: take back, nudge, talk it over, comment", async () => {
+    const { calls, api } = client();
+    await api.getYear("v1");
+    await api.takeBack("v1");
+    await api.nudge("v1", "peers");
+    await api.talkItOver("v1");
+    await api.commentOnAcknowledgement("v1", "Thanks");
+    expect(calls.get).toHaveBeenCalledWith("/performance/reviews/v1/year", { signal: undefined });
+    expect(calls.post).toHaveBeenCalledWith("/performance/reviews/v1/self-assessment/take-back", {});
+    expect(calls.post).toHaveBeenCalledWith("/performance/reviews/v1/nudge", { who: "peers" });
+    expect(calls.post).toHaveBeenCalledWith("/performance/reviews/v1/talk-it-over", {});
+    expect(calls.post).toHaveBeenCalledWith("/performance/reviews/v1/acknowledgement-comment", { comment: "Thanks" });
   });
 
   it("sends the self overall rating, answers and potential with the assessments", async () => {

@@ -127,7 +127,7 @@ public sealed class GetUpcomingHandler(PerformanceDbContext db)
                 .ToListAsync(token);
             items.AddRange(self.Where(r => InRange(r.Due, today, horizon)).Select(r => new FusionUpcomingDto(
                 Id("self-assessment-due", r.Id), Module, "self-assessment-due", "Your self-assessment due", r.RoundName,
-                r.Due!.Value, null, PerformanceNotificationTemplates.ReviewPath(r.Id), ["self-assessment", "nominate-peers"])));
+                r.Due!.Value, null, PerformanceNotificationTemplates.ReviewPath(r.Id), ["self-assessment"])));
 
             var peers = await (from request in db.PeerRequests.AsNoTracking()
                                join round in db.ReviewRounds.AsNoTracking() on request.ReviewRoundId equals round.Id

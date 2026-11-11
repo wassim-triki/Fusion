@@ -193,7 +193,7 @@ internal static class ReviewAssessmentCommands
         if (inputs.Any(item => !expected.Contains((item.Kind, item.ItemId))))
             return PerformanceErrors.Validation(PerformanceErrors.Codes.ReviewAssessmentInvalid, "An assessment contains an item that is not part of this review.");
         var levels = System.Text.Json.JsonSerializer.Deserialize<RatingScaleLevel[]>(review.RatingScaleSnapshotJson) ?? [];
-        if (inputs.Any(item => item.Rating is int value && !levels.Any(level => level.Value == value)))
+        if (inputs.Any(item => item.Kind == ReviewItemKind.Competency && item.Rating is int value && !levels.Any(level => level.Value == value)))
             return PerformanceErrors.Validation(PerformanceErrors.Codes.ReviewAssessmentInvalid, "Every item rating must be a level on this review's snapshotted scale.");
 
         foreach (var key in expected)
@@ -206,6 +206,12 @@ internal static class ReviewAssessmentCommands
         foreach (var input in inputs)
         {
             var response = review.ItemResponses.Single(item => item.Kind == input.Kind && item.ItemId == input.ItemId);
+            // A goal is graded from its measure, never rated by hand (D-38); only a changed grade and its reason are kept.
+            if (input.Kind == ReviewItemKind.Objective)
+            {
+                response.SetGrade(self, input.Grade, input.GradeReason);
+                continue;
+            }
             if (self) response.SaveSelf(input.Reflection, input.Rating, input.Comment);
             else response.SaveManager(input.Assessment, input.Rating);
         }
@@ -235,7 +241,7 @@ internal static class ReviewAssessmentCommands
         foreach (var answer in answers)
         {
             var before = review.Answers.Select(a => a.Id).ToHashSet();
-            review.SetAnswer(author, answer.QuestionId, answer.Text);
+            review.SetAnswer(author, answer.QuestionId, answer.Text, answer.Citations);
             foreach (var added in review.Answers.Where(a => !before.Contains(a.Id))) db.ReviewQuestionAnswers.Add(added);
         }
         // Answers the person cleared are removed from the review; delete their rows too.
@@ -253,14 +259,14 @@ internal static class ReviewAssessmentCommands
         var items = expected.Where(key =>
         {
             var response = review.ItemResponses.FirstOrDefault(item => item.Kind == key.Kind && item.ItemId == key.Id);
-            var ratingRequired = key.Kind == ReviewItemKind.Competency || review.ObjectiveRatingsEnabled;
             var rating = self ? response?.SelfRating : response?.ManagerRating;
-            return ratingRequired && rating is null;
+            return key.Kind == ReviewItemKind.Competency && rating is null;
         }).Select(key => new ReviewMissingItemDto(key.Kind, key.Id)).ToArray();
         var author = self ? ReviewQuestionAuthor.Self : ReviewQuestionAuthor.Manager;
         var questions = (await QuestionsAsync(db, review, self, token))
             .Where(q => !review.Answers.Any(a => a.Author == author && a.QuestionSnapshotId == q.Id)).Select(q => q.Id).ToArray();
-        var summary = string.IsNullOrWhiteSpace(input.Summary);
+        // The words are the round's questions; a round without questions still asks for a summary.
+        var summary = string.IsNullOrWhiteSpace(input.Summary) && (await QuestionsAsync(db, review, self, token)).Count == 0;
         var overall = input.OverallRating is null;
         var potential = !self && review.PotentialEnabled && input.Potential is null;
         return items.Length == 0 && questions.Length == 0 && !summary && !overall && !potential

@@ -14,6 +14,10 @@ public sealed class ReviewItemResponseConfiguration : IEntityTypeConfiguration<R
         builder.Property(item => item.SelfReflection).HasMaxLength(4000);
         builder.Property(item => item.SelfComment).HasMaxLength(2000);
         builder.Property(item => item.ManagerAssessment).HasMaxLength(4000);
+        builder.Property(item => item.SelfGrade).HasPrecision(3, 2);
+        builder.Property(item => item.ManagerGrade).HasPrecision(3, 2);
+        builder.Property(item => item.SelfGradeReason).HasMaxLength(ReviewItemResponse.MaxGradeReason);
+        builder.Property(item => item.ManagerGradeReason).HasMaxLength(ReviewItemResponse.MaxGradeReason);
         builder.HasIndex(item => item.TenantId);
         builder.HasIndex(item => new { item.TenantId, item.ReviewId, item.Kind, item.ItemId }).IsUnique();
         builder.HasOne<PerformanceReview>().WithMany(review => review.ItemResponses)

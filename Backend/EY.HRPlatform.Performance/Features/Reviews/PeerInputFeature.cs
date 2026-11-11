@@ -18,29 +18,36 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EY.HRPlatform.Performance.Features.Reviews;
 
-public sealed record NominatePeersRequest([property: System.Text.Json.Serialization.JsonRequired] uint ExpectedVersion, IReadOnlyList<Guid> EmployeeIds);
+/// <summary>Who the manager wants asked: the whole list, as it should stand.</summary>
+public sealed record ChangePeersRequest([property: System.Text.Json.Serialization.JsonRequired] uint ExpectedVersion, IReadOnlyList<Guid> EmployeeIds);
 public sealed record PeerAnswersRequest(IReadOnlyList<Models.ReviewAnswerInput>? Answers);
 public sealed record DeclinePeerRequestRequest(string? Note);
 
-public sealed record NominatePeersCommand(Guid ReviewId, Guid ActorEmployeeId, NominatePeersRequest Request) : ICommand<Result<ReviewPeersDto>>;
-public sealed record ApprovePeerListCommand(Guid ReviewId, Guid ActorEmployeeId, bool ReviewsReports, NominatePeersRequest Request) : ICommand<Result<ReviewPeersDto>>;
+public sealed record ChangePeersCommand(Guid ReviewId, Guid ActorEmployeeId, bool ReviewsReports, ChangePeersRequest Request) : ICommand<Result<ReviewPeersDto>>;
 public sealed record GetPeerSuggestionsQuery(Guid ReviewId, Guid ActorEmployeeId, bool ReviewsReports) : IQuery<Result<IReadOnlyList<PeerSuggestionDto>>>;
 public sealed record GetPeerRequestQuery(Guid RequestId, Guid ActorEmployeeId) : IQuery<Result<PeerRequestDto>>;
 public sealed record SavePeerAnswersCommand(Guid RequestId, Guid ActorEmployeeId, PeerAnswersRequest Request) : ICommand<Result<PeerRequestDto>>;
 public sealed record SendPeerAnswersCommand(Guid RequestId, Guid ActorEmployeeId, PeerAnswersRequest Request) : ICommand<Result<PeerRequestDto>>;
 public sealed record DeclinePeerRequestCommand(Guid RequestId, Guid ActorEmployeeId, DeclinePeerRequestRequest Request) : ICommand<Result<PeerRequestDto>>;
 
-/// <summary>A colleague worth asking, with the facts that suggest them (D4).</summary>
+/// <summary>A colleague the manager might add, with the facts that suggest them (D4).</summary>
 public sealed record PeerSuggestionDto(Guid EmployeeId, string DisplayName, string? JobTitle, string? OrgUnitName,
     bool SharedObjective, int FeedbackExchanged, int PraiseExchanged);
 
 /// <summary>
-/// What a peer sees (board 11): whose review, the round's peer questions with their own answers, the due date.
+/// What a peer sees (board 11): whose review, who asked and why them, the round's peer questions with their own answers,
+/// the due date. Their words reach the manager and, once results are out, the person, both with their name (D-69).
 /// Never the review's assessments, ratings, other peers or who else was asked.
 /// </summary>
 public sealed record PeerRequestDto(Guid Id, Guid SubjectEmployeeId, string SubjectDisplayName, string ReviewRoundName, DateOnly? DueDate,
     int DaysLate, PeerRequestState State, IReadOnlyList<PeerRequestQuestionDto> Questions, string? DeclineNote, DateTime? RespondedAt,
-    bool CanAnswer, uint Version);
+    bool CanAnswer, uint Version)
+{
+    public Guid ReviewerEmployeeId { get; init; }
+    public string ReviewerDisplayName { get; init; } = string.Empty;
+    public DateTime RequestedAt { get; init; }
+    public IReadOnlyList<PeerReasonDto> Reasons { get; init; } = [];
+}
 public sealed record PeerRequestQuestionDto(Guid QuestionId, int SortOrder, string Text, string? Answer);
 
 /// <summary>Only the request's peer reads and acts on it; to anyone else it doesn't exist (D10).</summary>
@@ -72,9 +79,22 @@ internal static class PeerInput
     public static async Task<ReviewPeersDto> PeersAsync(PerformanceDbContext db, PerformanceReview review, CancellationToken token)
         => (await new GetPerformanceReviewHandler(db).ExtrasAsync(review, token)).Peers!;
 
+    /// <summary>The peer is told once, opening on Home where they answer (D-74).</summary>
+    public static void Tell(IPerformanceNotifications notifications, PerformanceReview review, ReviewRound round, PeerRequest request)
+        => notifications.EnqueueReviewWork(review, PerformanceNotificationKind.PeerInputRequested, request.PeerEmployeeId, "PeerRequest", request.Id,
+            $"{PerformanceNotificationKind.PeerInputRequested}:{request.Id:N}:{request.PeerEmployeeId:N}:{request.RequestedAt:yyyyMMddHHmmss}",
+            new ReviewWorkNotificationPayload(review.CycleId, round.Id, review.Id, round.Name, PerformanceNotificationTemplates.PeerRequestPath(request.Id),
+                null, review.SubjectDisplayName, "peer input", request.DueDate),
+            PerformanceNotificationTemplates.ForPeerInputRequested(review.SubjectDisplayName, round.Name, request.DueDate, request.Id)
+                with { ActorEmployeeId = review.ReviewerEmployeeId });
+
     public static async Task<PeerRequestDto> ProjectAsync(PerformanceDbContext db, PeerRequest request, CancellationToken token)
     {
         var round = await db.ReviewRounds.AsNoTracking().SingleAsync(r => r.Id == request.ReviewRoundId, token);
+        var review = await db.PerformanceReviews.AsNoTracking().Where(r => r.Id == request.ReviewId)
+            .Select(r => new { r.ReviewerEmployeeId, r.ReviewerDisplayName }).SingleAsync(token);
+        var affinity = await PeerAffinity.LoadAsync(db, request.CycleId, round.PeriodStart, round.PeriodEnd,
+            [request.SubjectEmployeeId, request.PeerEmployeeId], token);
         var questions = await db.ReviewQuestionSnapshots.AsNoTracking()
             .Where(q => q.ReviewRoundId == request.ReviewRoundId && q.Audience == ReviewQuestionAudience.Peer)
             .OrderBy(q => q.SortOrder).ToListAsync(token);
@@ -83,7 +103,13 @@ internal static class PeerInput
             request.State == PeerRequestState.Open ? ReviewReminderSchedule.DaysLate(request.DueDate, today) : 0, request.State,
             questions.Select(q => new PeerRequestQuestionDto(q.Id, q.SortOrder, q.Text,
                 request.Answers.FirstOrDefault(a => a.QuestionSnapshotId == q.Id)?.Text)).ToArray(),
-            request.DeclineNote, request.RespondedAt, request.State == PeerRequestState.Open, request.Version);
+            request.DeclineNote, request.RespondedAt, request.State == PeerRequestState.Open, request.Version)
+        {
+            ReviewerEmployeeId = review.ReviewerEmployeeId,
+            ReviewerDisplayName = review.ReviewerDisplayName,
+            RequestedAt = request.RequestedAt,
+            Reasons = affinity.Reasons(request.SubjectEmployeeId, request.PeerEmployeeId),
+        };
     }
 
     public static async Task<IReadOnlyCollection<Guid>> QuestionIdsAsync(PerformanceDbContext db, PeerRequest request, CancellationToken token)
@@ -95,96 +121,59 @@ internal static class PeerInput
         => (request.Answers ?? []).GroupBy(a => a.QuestionId).ToDictionary(g => g.Key, g => g.Last().Text);
 }
 
-/// <summary>The person's list of 1–5 colleagues while self-assessing (D-18); the reviewer is told the first time.</summary>
-public sealed class NominatePeersHandler(PerformanceDbContext db, ICoreWorkforceClient workforce, IPerformanceAudit audit,
-    IPerformanceNotifications notifications) : ICommandHandler<NominatePeersCommand, Result<ReviewPeersDto>>
-{
-    public async Task<Result<ReviewPeersDto>> Handle(NominatePeersCommand command, CancellationToken token)
-    {
-        var review = await db.PerformanceReviews.Include(r => r.PeerNominations).FirstOrDefaultAsync(r => r.Id == command.ReviewId, token);
-        if (review is null) return Result.Failure<ReviewPeersDto>(PerformanceErrors.NotFound("PerformanceReview", command.ReviewId));
-        if (review.SubjectEmployeeId != command.ActorEmployeeId)
-            return Result.Failure<ReviewPeersDto>(PerformanceErrors.Forbidden(PerformanceErrors.Codes.PeerInputForbidden, "Only the person reviewed nominates their peers."));
-        if (VersionGuard.Check(review, command.Request.ExpectedVersion) is { } stale) return Result.Failure<ReviewPeersDto>(stale);
-        var resolved = await PeerInput.ResolvePeersAsync(workforce, command.Request.EmployeeIds, token);
-        if (resolved.IsFailure) return Result.Failure<ReviewPeersDto>(resolved.Error);
-        var before = review.PeerNominations.ToList();
-        bool first;
-        try { first = review.NominatePeers(command.ActorEmployeeId, resolved.Value, PerformanceClock.UtcNow); }
-        catch (ArgumentException ex) { return Result.Failure<ReviewPeersDto>(PerformanceErrors.Validation(PerformanceErrors.Codes.PeerInputInvalid, ex.Message)); }
-        catch (InvalidOperationException ex) { return Result.Failure<ReviewPeersDto>(PerformanceErrors.InvalidState(PerformanceErrors.Codes.PeerInputNotOpen, ex.Message)); }
-        db.PeerNominations.RemoveRange(before.Where(item => !review.PeerNominations.Contains(item)));
-        db.PeerNominations.AddRange(review.PeerNominations.Where(item => !before.Contains(item)));
-        var round = await db.ReviewRounds.AsNoTracking().SingleAsync(r => r.Id == review.ReviewRoundId, token);
-        if (first)
-        {
-            var href = PerformanceNotificationTemplates.PeerListPath(review.Id);
-            notifications.EnqueueReviewWork(review, PerformanceNotificationKind.PeersNominated, review.ReviewerEmployeeId, "PerformanceReview",
-                review.Id, $"{PerformanceNotificationKind.PeersNominated}:{review.Id:N}:{review.ReviewerEmployeeId:N}",
-                new ReviewWorkNotificationPayload(review.CycleId, round.Id, review.Id, round.Name, href, review.SubjectDisplayName, review.SubjectDisplayName),
-                PerformanceNotificationTemplates.ForPeersNominated(review.SubjectDisplayName, round.Name, review.Id)
-                    with { ActorEmployeeId = review.SubjectEmployeeId });
-        }
-        audit.Record(review.TenantId, "PerformanceReview", review.Id, review.CycleId, PerformanceAuditActions.ReviewPeersNominated,
-            new { peers = resolved.Value.Select(p => p.EmployeeId).ToArray() });
-        await db.SaveChangesAsync(token);
-        return Result.Success(await PeerInput.PeersAsync(db, review, token));
-    }
-}
-
 /// <summary>
-/// The reviewer approves the list as is or edited (remove, swap, add); each approved colleague gets a peer request with the
-/// round's peer due date, and the person and each peer are told (D3).
+/// The manager changes who is asked (D-40) until their review is in: a colleague left off stops being asked, a new one is
+/// asked and told at once. Someone who already answered or declined stays: their part is done.
 /// </summary>
-public sealed class ApprovePeerListHandler(PerformanceDbContext db, ICoreWorkforceClient workforce, IPerformanceAudit audit,
-    IPerformanceNotifications notifications) : ICommandHandler<ApprovePeerListCommand, Result<ReviewPeersDto>>
+public sealed class ChangePeersHandler(PerformanceDbContext db, ICoreWorkforceClient workforce, IPerformanceAudit audit,
+    IPerformanceNotifications notifications) : ICommandHandler<ChangePeersCommand, Result<ReviewPeersDto>>
 {
-    public async Task<Result<ReviewPeersDto>> Handle(ApprovePeerListCommand command, CancellationToken token)
+    public async Task<Result<ReviewPeersDto>> Handle(ChangePeersCommand command, CancellationToken token)
     {
         var review = await db.PerformanceReviews.Include(r => r.PeerNominations).FirstOrDefaultAsync(r => r.Id == command.ReviewId, token);
         if (review is null) return Result.Failure<ReviewPeersDto>(PerformanceErrors.NotFound("PerformanceReview", command.ReviewId));
         if (!command.ReviewsReports || review.ReviewerEmployeeId != command.ActorEmployeeId)
-            return Result.Failure<ReviewPeersDto>(PerformanceErrors.Forbidden(PerformanceErrors.Codes.PeerInputForbidden, "Only the reviewer approves the peer list."));
+            return Result.Failure<ReviewPeersDto>(PerformanceErrors.Forbidden(PerformanceErrors.Codes.PeerInputForbidden, "Only the reviewer changes who is asked."));
         if (VersionGuard.Check(review, command.Request.ExpectedVersion) is { } stale) return Result.Failure<ReviewPeersDto>(stale);
+        var requests = await db.PeerRequests.Include(r => r.Answers).Where(r => r.ReviewId == review.Id).ToListAsync(token);
+        var done = requests.Where(r => r.State is PeerRequestState.Answered or PeerRequestState.Declined).ToList();
+        if (done.FirstOrDefault(r => !command.Request.EmployeeIds.Contains(r.PeerEmployeeId)) is { } answered)
+            return Result.Failure<ReviewPeersDto>(PerformanceErrors.Validation(PerformanceErrors.Codes.PeerInputInvalid,
+                $"{answered.PeerDisplayName} already answered; their part stays."));
         var resolved = await PeerInput.ResolvePeersAsync(workforce, command.Request.EmployeeIds, token);
         if (resolved.IsFailure) return Result.Failure<ReviewPeersDto>(resolved.Error);
         var before = review.PeerNominations.ToList();
         var now = PerformanceClock.UtcNow;
         PeerListDecision decision;
-        try { decision = review.ApprovePeerList(command.ActorEmployeeId, resolved.Value, now); }
+        try { decision = review.ChangePeers(command.ActorEmployeeId, resolved.Value, now); }
         catch (ArgumentException ex) { return Result.Failure<ReviewPeersDto>(PerformanceErrors.Validation(PerformanceErrors.Codes.PeerInputInvalid, ex.Message)); }
         catch (InvalidOperationException ex) { return Result.Failure<ReviewPeersDto>(PerformanceErrors.InvalidState(PerformanceErrors.Codes.PeerInputNotOpen, ex.Message)); }
+        if (decision.Removed.Count == 0 && decision.Added.Count == 0) return Result.Success(await PeerInput.PeersAsync(db, review, token));
         db.PeerNominations.RemoveRange(before.Where(item => !review.PeerNominations.Contains(item)));
         db.PeerNominations.AddRange(review.PeerNominations.Where(item => !before.Contains(item)));
-
+        foreach (var request in requests.Where(r => decision.Removed.Contains(r.PeerEmployeeId))) request.Close(now);
         var round = await db.ReviewRounds.AsNoTracking().SingleAsync(r => r.Id == review.ReviewRoundId, token);
-        var requests = resolved.Value.Select(peer => PeerRequest.Create(review, peer.EmployeeId, peer.DisplayName, round.PeerInputDueDate, now)).ToList();
-        db.PeerRequests.AddRange(requests);
-        var reviewHref = PerformanceNotificationTemplates.ReviewPath(review.Id);
-        notifications.EnqueueReviewWork(review, PerformanceNotificationKind.PeerListApproved, review.SubjectEmployeeId, "PerformanceReview", review.Id,
-            $"{PerformanceNotificationKind.PeerListApproved}:{review.Id:N}:{review.SubjectEmployeeId:N}",
-            new ReviewWorkNotificationPayload(review.CycleId, round.Id, review.Id, round.Name, reviewHref, review.ReviewerDisplayName, review.SubjectDisplayName),
-            PerformanceNotificationTemplates.ForPeerListApproved(review.ReviewerDisplayName, round.Name, review.Id)
-                with { ActorEmployeeId = review.ReviewerEmployeeId });
-        foreach (var request in requests)
+        foreach (var peer in resolved.Value.Where(p => decision.Added.Contains(p.EmployeeId)))
         {
-            var href = PerformanceNotificationTemplates.PeerRequestPath(request.Id);
-            notifications.EnqueueReviewWork(review, PerformanceNotificationKind.PeerInputRequested, request.PeerEmployeeId, "PeerRequest", request.Id,
-                $"{PerformanceNotificationKind.PeerInputRequested}:{request.Id:N}:{request.PeerEmployeeId:N}",
-                new ReviewWorkNotificationPayload(review.CycleId, round.Id, review.Id, round.Name, href, null, review.SubjectDisplayName,
-                    "peer input", request.DueDate),
-                PerformanceNotificationTemplates.ForPeerInputRequested(review.SubjectDisplayName, round.Name, request.DueDate, request.Id)
-                    with { ActorEmployeeId = review.SubjectEmployeeId });
+            // Asked again after being left off: their closed request opens again; anyone else gets a new one.
+            var request = requests.FirstOrDefault(r => r.PeerEmployeeId == peer.EmployeeId);
+            if (request is null)
+            {
+                request = PeerRequest.Create(review, peer.EmployeeId, peer.DisplayName, round.PeerInputDueDate, now);
+                db.PeerRequests.Add(request);
+            }
+            else request.Reopen(round.PeerInputDueDate, now);
+            PeerInput.Tell(notifications, review, round, request);
         }
-        audit.Record(review.TenantId, "PerformanceReview", review.Id, review.CycleId, PerformanceAuditActions.ReviewPeerListApproved,
-            new { approved = resolved.Value.Select(p => p.EmployeeId).ToArray(), removed = decision.Removed, added = decision.Added });
+        audit.Record(review.TenantId, "PerformanceReview", review.Id, review.CycleId, PerformanceAuditActions.ReviewPeersChanged,
+            new { asked = resolved.Value.Select(p => p.EmployeeId).ToArray(), removed = decision.Removed, added = decision.Added });
         await db.SaveChangesAsync(token);
         return Result.Success(await PeerInput.PeersAsync(db, review, token));
     }
 }
 
 /// <summary>
-/// Colleagues the reviewer might ask (D4): ranked by feedback and praise exchanged with the person in the review period and by
+/// Colleagues the reviewer might add (D4): ranked by feedback and praise exchanged with the person in the review period and by
 /// approved objectives aligned to the same parent. Top three; never the person, the reviewer, someone already listed or inactive.
 /// </summary>
 public sealed class GetPeerSuggestionsHandler(PerformanceDbContext db, ICoreWorkforceClient workforce)

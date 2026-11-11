@@ -179,7 +179,7 @@ export type YearStepState = "Done" | "Current" | "Ahead";
 export type YearStanding =
   | "notStarted" | "drafting" | "submitted" | "returned"
   | "updated" | "quiet"
-  | "selfReview" | "withManager" | "calibration"
+  | "selfReview" | "withManager" | "reviewed"
   | "released" | "acknowledged" | "closed";
 
 /** A person in a step of the year: their standing in it and since when. */
@@ -234,6 +234,49 @@ export interface YearMoveDto {
   planningDeadline: string | null;
   affected: number;
   people: YearPersonDto[];
+  /** A drafted round's own day to open by itself (D-74), and what opens with it. */
+  opensOn: string | null;
+  opens: YearRoundOpensDto | null;
+}
+
+/** What a drafted round opens: a self-review each, three peers asked each, managers' reviews, goals graded. */
+export interface YearRoundOpensDto {
+  people: number;
+  peopleFaces: string[];
+  peers: number;
+  managers: number;
+  managerFaces: string[];
+  goals: number;
+  selfReview: boolean;
+  peerInput: boolean;
+  selfDue: string | null;
+  managerDue: string;
+}
+
+/** One manager's reviews in the running round (D-74); on pace when what's written keeps up with the days gone. */
+export interface YearReviewerDto {
+  employeeId: string;
+  name: string;
+  unitName: string | null;
+  people: number;
+  written: number;
+  toWrite: number;
+  waitingOnSelf: number;
+  onPace: boolean;
+  writtenPeople: YearPersonDto[];
+  toWritePeople: YearPersonDto[];
+  waitingPeople: YearPersonDto[];
+}
+
+/** The running round as HR follows it from the Year page, managers furthest behind first. */
+export interface YearReviewRoundDto {
+  roundId: string;
+  openedOn: string;
+  selfDue: string | null;
+  managerDue: string;
+  reviewed: number;
+  total: number;
+  reviewers: YearReviewerDto[];
 }
 
 /** The year as one object: its phase, its steps with the people in each, and HR's next move. */
@@ -252,6 +295,8 @@ export interface YearDto {
   nextMove: YearMoveDto | null;
   me: YearMeDto | null;
   version: number;
+  /** The running review round, for administrators while the year is in Review. */
+  review: YearReviewRoundDto | null;
 }
 
 export interface NudgeResultDto {
@@ -373,6 +418,8 @@ export interface ReviewRoundDto {
   cycleStart: string;
   cycleEnd: string;
   launchedAt: string | null;
+  /** The day a Draft opens by itself (D-74). */
+  opensOn: string | null;
   /** Computed from today while Draft; fixed at launch. */
   schedule: ReviewRoundScheduleDto;
   /** Draft: the library picks. Launched: the frozen snapshot. */
@@ -800,6 +847,9 @@ export interface ReviewItemResponseInput {
   rating?: number | null;
   comment?: string | null;
   assessment?: string | null;
+  /** A goal's grade changed from the measure's (D-38), with `gradeReason`; null keeps the measure's. */
+  grade?: number | null;
+  gradeReason?: string | null;
 }
 export interface SaveSelfAssessmentRequest {
   expectedVersion: number;

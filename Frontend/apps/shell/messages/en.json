@@ -317,6 +317,27 @@
       "openProfile": "Open profile",
       "alsoReporting": "Also reporting to {name}",
       "more": "and {count} more"
+    },
+    "peerInput": {
+      "asked": "{name} asked {day}",
+      "due": "Due {day}",
+      "answer": "Answer",
+      "loading": "Loading the request",
+      "failed": "It couldn't be sent. Try again.",
+      "whyYou": "Why you",
+      "picked": "Picked from who worked with {name}",
+      "yourWords": "Your words",
+      "whoReads": "{manager} and {name} both read it with your name",
+      "didntWorkEnough": "I didn't work with {name} enough",
+      "sendTo": "Send to {name}",
+      "reasons": {
+        "goal": "Your goals both support",
+        "feedbackGiven": "You gave {name} feedback {day}",
+        "feedbackReceived": "{name} gave you feedback {day}",
+        "praiseGiven": "You praised {name} {day}",
+        "praiseReceived": "{name} praised you {day}",
+        "teammate": "You and {name} share a manager"
+      }
     }
   },
   "app": {

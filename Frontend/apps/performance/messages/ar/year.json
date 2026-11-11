@@ -54,7 +54,17 @@
     "nudgedOne": "تم تذكير {name}",
     "waitingOn": "بانتظار {name}",
     "planWith": "خطتك لدى {name}",
-    "reviewWith": "{name} يكتب تقييمك"
+    "reviewWith": "{name} يكتب تقييمك",
+    "comingUp": "قريبًا",
+    "roundOpensOn": "تُفتح جولة المراجعات تلقائيًا في {day}",
+    "inDays": "{count, plural, =0 {اليوم} one {بعد يوم} two {بعد يومين} few {بعد # أيام} other {بعد # يومًا}}",
+    "roundOpened": "الجولة مفتوحة؛ أُبلغ الجميع",
+    "couldntOpen": "تعذّر فتح الجولة.",
+    "reviewsDue": "المراجعات مستحقة في {day}، {count, plural, =0 {اليوم} one {بعد يوم} two {بعد يومين} few {بعد # أيام} other {بعد # يومًا}}",
+    "selfReviewsDue": "التقييمات الذاتية مستحقة في {day}",
+    "managersBehind": "{count, plural, one {مدير واحد متأخر} two {مديران متأخران} few {# مديرين متأخرون} other {# مديرًا متأخرون}} في المراجعات",
+    "nudgeTheCount": "{count, plural, one {تذكيره} other {تذكير الـ #}}",
+    "nudgedManagers": "{count, plural, one {تم تذكير مدير واحد} other {تم تذكير # مديرين}}"
   },
   "MovePreview": {
     "preview": "معاينة",
@@ -139,5 +149,38 @@
     "under": "ضمن {goal}",
     "updated": "حُدّث في {day}",
     "noUpdateYet": "لا تحديث بعد"
+  },
+  "Round": {
+    "selfReviewDue": "تقييم ذاتي، مستحق في {day}",
+    "peersAsked": "ثلاثة زملاء لكل شخص ممن عملوا معه؛ يمكن لمديره تغييرهم",
+    "managersDue": "المراجعات مستحقة في {day}، كل منها مسودة من سنة الشخص",
+    "goalsGraded": "تُقيَّم من مقاييسها",
+    "readOnTheDay": "تُقرأ يوم الفتح",
+    "opens": {
+      "everyone": "الجميع",
+      "peers": "الزملاء",
+      "managers": "المديرون",
+      "goals": "الأهداف"
+    },
+    "oneNotificationEach": "إشعار واحد لكل شخص، يفتح حيث يجب التصرف",
+    "toldToday": "{count, plural, one {أُبلغ شخص واحد اليوم} other {أُبلغ # أشخاص اليوم، كلٌّ بما يبدأ به}}",
+    "key": {
+      "written": "مكتوبة",
+      "toWrite": "عليهم كتابتها",
+      "waiting": "بانتظار تقييم ذاتي"
+    },
+    "moreOnPace": "{count, plural, one {ومدير آخر في الموعد} other {و# مديرين آخرين في الموعد}}",
+    "nudgedToday": "تم التذكير اليوم",
+    "nudge": "تذكير",
+    "allWritten": "كلها مكتوبة",
+    "onPace": "في الموعد",
+    "parts": {
+      "written": "مكتوبة",
+      "toWrite": "وصل التقييم الذاتي، على {name} كتابتها",
+      "waiting": "لم يصل التقييم الذاتي بعد"
+    },
+    "written": "{written} من {count} مكتوبة",
+    "openItToday": "افتحها اليوم",
+    "people": "{count, plural, one {شخص واحد} two {شخصان} few {# أشخاص} other {# شخصًا}}"
   }
 }

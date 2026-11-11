@@ -56,6 +56,8 @@ public sealed class ReviewQuestionAnswerConfiguration : IEntityTypeConfiguration
         builder.HasKey(item => item.Id);
         builder.Property(item => item.Author).HasConversion<string>().HasMaxLength(20).IsRequired();
         builder.Property(item => item.Text).HasMaxLength(ReviewQuestionAnswer.MaxLength).IsRequired();
+        builder.Property(item => item.CitationsJson).HasColumnType("jsonb");
+        builder.Ignore(item => item.Citations);
         builder.HasIndex(item => item.TenantId);
         builder.HasIndex(item => new { item.TenantId, item.ReviewId, item.QuestionSnapshotId, item.Author }).IsUnique();
         builder.HasOne<PerformanceReview>().WithMany(review => review.Answers).HasForeignKey(item => item.ReviewId).OnDelete(DeleteBehavior.Cascade);

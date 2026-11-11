@@ -187,12 +187,39 @@ public sealed record YearMeDto(Guid EmployeeId, CyclePhase Step, string Standing
 /// happen now and why not, the planning deadline it would set, and who it changes for.
 /// </summary>
 public sealed record YearMoveDto(CyclePhase From, CyclePhase To, string Kind, bool CanMove, string? Blocker,
-    Guid? RoundId, DateOnly? PlanningDeadline, int Affected, IReadOnlyList<YearPersonDto> People);
+    Guid? RoundId, DateOnly? PlanningDeadline, int Affected, IReadOnlyList<YearPersonDto> People)
+{
+    /// <summary>The drafted round's own day to open by itself (D-74), and what opens with it.</summary>
+    public DateOnly? OpensOn { get; init; }
+    public YearRoundOpensDto? Opens { get; init; }
+}
+
+/// <summary>
+/// What a drafted round opens: a self-review for everyone in it, three peers asked for each, each manager's reviews drafted
+/// from the person's year, and the goals graded from their measures; with a few faces of each and the due dates.
+/// </summary>
+public sealed record YearRoundOpensDto(int People, IReadOnlyList<string> PeopleFaces, int Peers, int Managers, IReadOnlyList<string> ManagerFaces,
+    int Goals, bool SelfReview, bool PeerInput, DateOnly? SelfDue, DateOnly ManagerDue);
+
+/// <summary>
+/// The running round as HR follows it from the Year page (D-74): when it opened, its due dates, how many are reviewed,
+/// and each manager's reviews (written, theirs to write, waiting on a self-review), furthest behind first.
+/// </summary>
+public sealed record YearReviewRoundDto(Guid RoundId, DateOnly OpenedOn, DateOnly? SelfDue, DateOnly ManagerDue, int Reviewed, int Total,
+    IReadOnlyList<YearReviewerDto> Reviewers);
+
+/// <summary>One manager's reviews in the round; <c>OnPace</c> when what they've written keeps up with the days gone.</summary>
+public sealed record YearReviewerDto(Guid EmployeeId, string Name, string? UnitName, int People, int Written, int ToWrite, int WaitingOnSelf,
+    bool OnPace, IReadOnlyList<YearPersonDto> WrittenPeople, IReadOnlyList<YearPersonDto> ToWritePeople, IReadOnlyList<YearPersonDto> WaitingPeople);
 
 /// <summary>The year as one object: its phase, its steps with the people in each, and HR's next move.</summary>
 public sealed record YearDto(Guid CycleId, string Name, DateOnly StartDate, DateOnly EndDate, DateOnly Today,
     CycleLifecycleState State, CyclePhase? Phase, DateOnly? PlanningClosedOn, string Scope, int Total,
-    IReadOnlyList<YearStepDto> Steps, YearMoveDto? NextMove, YearMeDto? Me, uint Version);
+    IReadOnlyList<YearStepDto> Steps, YearMoveDto? NextMove, YearMeDto? Me, uint Version)
+{
+    /// <summary>The running review round, for administrators while the year is in Review.</summary>
+    public YearReviewRoundDto? Review { get; init; }
+}
 
 public sealed record MoveYearOnRequest([property: System.Text.Json.Serialization.JsonRequired] uint ExpectedVersion, CyclePhase To);
 
@@ -871,7 +898,7 @@ public sealed record RosterPlanningFactsDto(int Objectives, int AlignedToTeam);
 public sealed record RosterExecutionFactsDto(StatusMixDto Status, RosterAttentionDto? Attention, DateTime? LastUpdateAt);
 
 /// <summary>Peer input of one review: asked and answered, or a proposed list waiting for the manager, or none chosen yet.</summary>
-public sealed record RosterPeersDto(bool Enabled, int Asked, int Answered, int Proposed, bool WaitingForYou);
+public sealed record RosterPeersDto(bool Enabled, int Asked, int Answered);
 
 /// <summary>Review facts: the person's self-assessment (`submitted`, `writing`, `notStarted`, `off`), peers, and the manager's own review (`submitted`, `draftSaved`, `notStarted`).</summary>
 public sealed record RosterReviewFactsDto(string SelfState, DateTime? SelfSubmittedAt, DateOnly? SelfDue, RosterPeersDto Peers,
@@ -947,7 +974,6 @@ public sealed record TeamPhaseSummaryDto(
     int SelfSubmitted,
     int SelfTotal,
     DateOnly? SelfDue,
-    IReadOnlyList<string> PeerListsToApprove,
     int ReviewsSubmitted,
     int ReviewsReady,
     int ReviewsTotal,

@@ -99,12 +99,10 @@ export interface ReviewTeamProgressDto {
   self: ReviewRatioDto;
   peers: ReviewRatioDto;
   manager: ReviewRatioDto;
-  listsToApprove: number;
 }
 export interface ReviewReminderForecastDto {
   date: string;
   selfAssessments: number;
-  peerLists: number;
   peerInputs: number;
   managerAssessments: number;
 }
@@ -190,6 +188,11 @@ export interface ReviewObjectiveFeedbackDto {
   message: string;
   sentAt: string;
 }
+/** One drafted sentence and the key (`kind:id`) of its source in the review's year (H3). */
+export interface ReviewCitation {
+  text: string;
+  key: string;
+}
 export interface ReviewQuestionAnswerDto {
   questionId: string;
   audience: ReviewQuestionAudience;
@@ -197,17 +200,20 @@ export interface ReviewQuestionAnswerDto {
   text: string;
   selfAnswer: string | null;
   managerAnswer: string | null;
+  /** Present while the answer is the draft as written; an edit drops them. */
+  selfCitations: ReviewCitation[];
+  managerCitations: ReviewCitation[];
 }
 export interface ReviewPeerAnswerDto {
   questionId: string;
   question: string;
   text: string;
 }
-/** A colleague on the peer list. The person sees only who: no source, request, state or answers. */
+/** A colleague asked. Before results the person sees only who; after, each answer with the name (D-69). */
 export interface ReviewPeerDto {
   employeeId: string;
   displayName: string;
-  source: "Subject" | "Reviewer" | null;
+  source: "Fusion" | "Reviewer" | null;
   requestId: string | null;
   state: PeerRequestState | null;
   declineNote: string | null;
@@ -215,8 +221,6 @@ export interface ReviewPeerDto {
   answers: ReviewPeerAnswerDto[] | null;
 }
 export interface ReviewPeersDto {
-  approved: boolean;
-  approvedAt: string | null;
   nominatedAt: string | null;
   people: ReviewPeerDto[];
   questions: string[];
@@ -273,19 +277,48 @@ export interface PerformanceReviewRecordFields {
   closeReason: string | null;
   canAcknowledge: boolean;
   canDownloadPdf: boolean;
-  canNominatePeers: boolean;
-  canApprovePeers: boolean;
+  /** The manager may change who is asked until their review is in (D-40). */
+  canChangePeers: boolean;
+  /** The person may take their sent self-review back while the manager hasn't sent theirs. */
+  canTakeBack: boolean;
+  /** When the released review is on the agenda of the next 1:1 with the manager. */
+  talkItOverAt: string | null;
   canMoveDueDate: boolean;
   canClose: boolean;
 }
 export interface ReviewItemRecordFields {
   status?: ObjectiveStatus | null;
   feedback?: ReviewObjectiveFeedbackDto[];
+  /** A goal's grade from its measure (D-38), 0 to 1, and its plan weight. */
+  grade?: number | null;
+  weight?: number | null;
+  measurementSummary?: string | null;
+  currentActual?: number | null;
+  /** A grade changed by hand, with why; null keeps the measure's. */
+  selfGrade?: number | null;
+  selfGradeReason?: string | null;
+  managerGrade?: number | null;
+  managerGradeReason?: string | null;
 }
 export interface ReviewAnswerInput {
   questionId: string;
   text: string | null;
+  citations?: ReviewCitation[] | null;
 }
+
+/** One thing from the person's year, numbered as drafts cite it (H3). `private`: the person never sees it. */
+export interface ReviewYearItemDto {
+  number: number;
+  key: string;
+  kind: "objective" | "evidence" | "feedback" | "praise" | "one-on-one" | "private-note" | "peer" | string;
+  at: string;
+  who: string | null;
+  title: string | null;
+  body: string | null;
+  path: string | null;
+  private: boolean;
+}
+export interface ReviewTalkDto { meetingId: string; at: string }
 /** What a submit lacks: the failure `extra` of a rejected self or manager submit. */
 export interface ReviewMissingDto {
   items: { kind: "Objective" | "Competency"; itemId: string }[];
@@ -306,7 +339,14 @@ export interface PeerSuggestionDto {
   feedbackExchanged: number;
   praiseExchanged: number;
 }
-/** What a peer sees (board 11): whose review, the peer questions with their own answers. Never the review. */
+/** Why a colleague was asked, as they read it ("Why you", D-74). */
+export interface PeerReasonDto {
+  kind: "goal" | "feedbackGiven" | "feedbackReceived" | "praiseGiven" | "praiseReceived" | "teammate";
+  title: string | null;
+  at: string | null;
+  excerpt: string | null;
+}
+/** What a peer sees (board 11): whose review, who asked and why them, the peer questions with their own answers. */
 export interface PeerRequestDto {
   id: string;
   subjectEmployeeId: string;
@@ -320,14 +360,18 @@ export interface PeerRequestDto {
   respondedAt: string | null;
   canAnswer: boolean;
   version: number;
+  reviewerEmployeeId: string;
+  reviewerDisplayName: string;
+  requestedAt: string;
+  reasons: PeerReasonDto[];
 }
 
 // ── Workspace (boards 01–03, 18) ─────────────────────────────────────────────────
 
-export type ReviewPeerStep = "Off" | "ToNominate" | "ToApprove" | "Approved";
+export type ReviewPeerStep = "Off" | "Asked";
 export type ReviewSelfStep = "Off" | "NotStarted" | "Writing" | "Submitted";
 export type ReviewWriteStep = "Waiting" | "ReadyToWrite" | "Writing" | "Submitted" | "Released" | "Closed";
-export type ReviewNextAction = "ApprovePeers" | "WriteReview" | "Wait" | "Done";
+export type ReviewNextAction = "WriteReview" | "Wait" | "Done";
 
 export interface ReviewsWorkspaceOwnDto {
   reviewId: string;
@@ -345,7 +389,7 @@ export interface ReviewsWorkspaceOwnDto {
   calibrationEnabled: boolean;
   selfSubmittedAt: string | null;
   sections: { objectivesDone: number; objectives: number; competenciesDone: number; competencies: number; questionsDone: number; questions: number };
-  peers: { asked: string[]; approved: boolean; approvedAt: string | null; canNominate: boolean } | null;
+  peers: { asked: string[] } | null;
   finalRating: number | null;
   finalRatingLabel: string | null;
   finalizedAt: string | null;
@@ -399,7 +443,6 @@ export interface ReviewsWorkspaceRoundDto {
   peerInputDue: string | null;
   managerAssessmentDue: string | null;
   stages: ReviewStageProgressDto[];
-  listsToApprove: number;
   released: number;
   acknowledged: number;
   closedAt: string | null;
@@ -413,7 +456,6 @@ export interface ReviewsWorkspaceDto {
   notIncluded: { roundId: string; roundName: string; reason: string | null } | null;
   year: { planProgress: number | null; objectives: number; feedback: number; praise: number; oneOnOnes: number } | null;
   toWrite: ReviewsWorkspaceTeamRowDto[];
-  peerLists: { reviewId: string; subjectDisplayName: string; count: number; nominatedAt: string | null; dueDate: string | null }[];
   askedOfYou: {
     requestId: string;
     subjectDisplayName: string;
@@ -444,7 +486,7 @@ export interface ReviewsWorkspaceSessionDto { roundId: string; roundName: string
 export interface ReviewSummaryStateDto { reviewId: string; summary: string; summaryRevisedAt: string | null; summaryCheckedAt: string | null; version: number }
 
 export type ReviewDraftKind = "Summary" | "Question";
-export interface ReviewDraftSourceDto { kind: string; label: string; path: string | null; subjectVisible: boolean; excerpt: string }
+export interface ReviewDraftSourceDto { kind: string; key: string; label: string; path: string | null; subjectVisible: boolean; excerpt: string }
 export interface ReviewDraftSentenceDto { text: string; sources: ReviewDraftSourceDto[] }
 /** An AI draft (W4, W5). Abstained means too little to draft from. Nothing is stored. */
 export interface ReviewDraftDto {
@@ -478,7 +520,11 @@ export const reviewPaths = {
   acknowledge: (reviewId: string) => `/performance/reviews/${reviewId}/acknowledge`,
   pdf: (reviewId: string) => `/performance/reviews/${reviewId}/pdf`,
   peers: (reviewId: string) => `/performance/reviews/${reviewId}/peers`,
-  approvePeers: (reviewId: string) => `/performance/reviews/${reviewId}/peers/approve`,
+  year: (reviewId: string) => `/performance/reviews/${reviewId}/year`,
+  takeBack: (reviewId: string) => `/performance/reviews/${reviewId}/self-assessment/take-back`,
+  nudge: (reviewId: string) => `/performance/reviews/${reviewId}/nudge`,
+  talkItOver: (reviewId: string) => `/performance/reviews/${reviewId}/talk-it-over`,
+  acknowledgementComment: (reviewId: string) => `/performance/reviews/${reviewId}/acknowledgement-comment`,
   peerSuggestions: (reviewId: string) => `/performance/reviews/${reviewId}/peer-suggestions`,
   peerRequest: (requestId: string) => `/performance/peer-requests/${requestId}`,
   managerSummary: (reviewId: string) => `/performance/reviews/${reviewId}/manager-summary`,
@@ -493,6 +539,7 @@ export const reviewQueryKeys = {
   questions: () => ["performance", "settings", "review-questions"] as const,
   peerSuggestions: (reviewId: string) => [...reviewQueryKeys.all(), "peer-suggestions", reviewId] as const,
   peerRequest: (requestId: string) => [...reviewQueryKeys.all(), "peer-request", requestId] as const,
+  year: (reviewId: string) => [...reviewQueryKeys.all(), "year", reviewId] as const,
 } as const;
 
 export function createReviewsApi(client: ApiClient) {
@@ -525,11 +572,17 @@ export function createReviewsApi(client: ApiClient) {
       client.post<ReviewAcknowledgementDto>(reviewPaths.acknowledge(reviewId), { comment }),
     downloadPdf: (reviewId: string) => client.get<Blob>(reviewPaths.pdf(reviewId), { responseType: "blob" }),
 
-    // Peer input
-    nominatePeers: (reviewId: string, employeeIds: string[], expectedVersion: number) =>
+    // The review beside the year
+    getYear: (reviewId: string, signal?: AbortSignal) => client.get<ReviewYearItemDto[]>(reviewPaths.year(reviewId), { signal }),
+    takeBack: (reviewId: string) => client.post<{ id: string; state: PerformanceReviewState; dueDate: string | null; version: number }>(reviewPaths.takeBack(reviewId), {}),
+    nudge: (reviewId: string, who: "self" | "peers") => client.post<{ nudged: number }>(reviewPaths.nudge(reviewId), { who }),
+    talkItOver: (reviewId: string) => client.post<ReviewTalkDto>(reviewPaths.talkItOver(reviewId), {}),
+    commentOnAcknowledgement: (reviewId: string, comment: string) =>
+      client.post<ReviewAcknowledgementDto>(reviewPaths.acknowledgementComment(reviewId), { comment }),
+
+    // Peer input: the manager changes who is asked (Fusion picks first, D-40)
+    changePeers: (reviewId: string, employeeIds: string[], expectedVersion: number) =>
       client.put<ReviewPeersDto>(reviewPaths.peers(reviewId), { employeeIds, expectedVersion }),
-    approvePeers: (reviewId: string, employeeIds: string[], expectedVersion: number) =>
-      client.post<ReviewPeersDto>(reviewPaths.approvePeers(reviewId), { employeeIds, expectedVersion }),
     getPeerSuggestions: (reviewId: string, signal?: AbortSignal) =>
       client.get<PeerSuggestionDto[]>(reviewPaths.peerSuggestions(reviewId), { signal }),
     getPeerRequest: (requestId: string, signal?: AbortSignal) =>
@@ -546,7 +599,7 @@ export function createReviewsApi(client: ApiClient) {
       client.put<ReviewSummaryStateDto>(reviewPaths.managerSummary(reviewId), { summary, expectedVersion }),
     markSummaryChecked: (reviewId: string) => client.post<ReviewSummaryStateDto>(reviewPaths.summaryChecked(reviewId), {}),
 
-    // AI draft: the summary, or one manager question
+    // AI draft: the summary, or one of the writer's questions
     draft: (reviewId: string, kind: ReviewDraftKind, questionId?: string | null) =>
       client.post<ReviewDraftDto>(reviewPaths.draft(reviewId), { kind, questionId: questionId ?? null }),
   };

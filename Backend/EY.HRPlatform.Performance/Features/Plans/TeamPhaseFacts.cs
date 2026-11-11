@@ -66,10 +66,10 @@ public static class TeamPhaseFacts
     }
 
     private static TeamPhaseSummaryDto Summary(StatusMixDto? status = null, int updated = 0, int approved = 0, string? round = null,
-        int selfSubmitted = 0, int selfTotal = 0, DateOnly? selfDue = null, IReadOnlyList<string>? peerLists = null,
+        int selfSubmitted = 0, int selfTotal = 0, DateOnly? selfDue = null,
         int reviewsSubmitted = 0, int reviewsReady = 0, int reviewsTotal = 0, DateOnly? reviewsDue = null,
         string? firstReadyName = null, Guid? firstReadyReviewId = null, DateTime? releasedAt = null)
-        => new(status, updated, approved, round, selfSubmitted, selfTotal, selfDue, peerLists ?? [], reviewsSubmitted, reviewsReady,
+        => new(status, updated, approved, round, selfSubmitted, selfTotal, selfDue, reviewsSubmitted, reviewsReady,
             reviewsTotal, reviewsDue, firstReadyName, firstReadyReviewId, releasedAt);
 
     // ── Planning ─────────────────────────────────────────────────────────────────────────────────────────────────
@@ -186,7 +186,7 @@ public static class TeamPhaseFacts
             .Where(r => r.ReviewRoundId == round.Id && r.ReviewerEmployeeId == me && r.SubjectEmployeeId != me && r.State != PerformanceReviewState.Closed)
             .Select(r => new
             {
-                r.Id, r.SubjectEmployeeId, r.SubjectDisplayName, r.State, r.SelfAssessmentEnabled, r.PeerInputEnabled, r.PeersNominatedAt, r.PeerListApprovedAt,
+                r.Id, r.SubjectEmployeeId, r.SubjectDisplayName, r.State, r.SelfAssessmentEnabled, r.PeerInputEnabled,
                 SelfSubmitted = r.SelfAssessment.SubmittedAt, SelfSaved = r.SelfAssessment.SavedAt,
                 ManagerSubmitted = r.ManagerAssessment.SubmittedAt, ManagerSaved = r.ManagerAssessment.SavedAt,
                 SelfDue = r.SelfAssessmentDueDate ?? round.SelfAssessmentDueDate,
@@ -203,17 +203,16 @@ public static class TeamPhaseFacts
         {
             if (!bySubject.TryGetValue(m.EmployeeId, out var r)) return m with { Group = "notInRound" };
             var asked = peersByReview.GetValueOrDefault(r.Id) ?? [];
-            var proposed = r.PeerInputEnabled && r.PeersNominatedAt != null && r.PeerListApprovedAt == null && r.ManagerSubmitted == null;
             var ready = r.State == PerformanceReviewState.ManagerAssessment && r.ManagerSubmitted == null;
             var self = !r.SelfAssessmentEnabled ? "off" : r.SelfSubmitted != null ? "submitted" : r.SelfSaved != null ? "writing" : "notStarted";
             var yours = r.ManagerSubmitted != null ? "submitted" : r.ManagerSaved != null ? "draftSaved" : "notStarted";
             return m with
             {
-                Group = r.ManagerSubmitted != null ? "submitted" : ready || proposed ? "ready" : "waiting",
+                Group = r.ManagerSubmitted != null ? "submitted" : ready ? "ready" : "waiting",
                 Facts = new RosterPhaseFactsDto(null, null,
                     new RosterReviewFactsDto(self, r.SelfSubmitted, r.SelfDue,
                         new RosterPeersDto(r.PeerInputEnabled, asked.Count(p => p.State != PeerRequestState.Closed),
-                            asked.Count(p => p.State == PeerRequestState.Answered), proposed ? asked.Count : 0, proposed),
+                            asked.Count(p => p.State == PeerRequestState.Answered)),
                         yours, r.ManagerSubmitted == null ? r.ManagerSaved : null),
                     null),
             };
@@ -226,8 +225,6 @@ public static class TeamPhaseFacts
             selfSubmitted: reviews.Count(r => r.SelfAssessmentEnabled && r.SelfSubmitted != null),
             selfTotal: reviews.Count(r => r.SelfAssessmentEnabled),
             selfDue: reviews.Select(r => r.SelfDue).Where(d => d is not null).Min(),
-            peerLists: reviews.Where(r => r.PeerInputEnabled && r.PeersNominatedAt != null && r.PeerListApprovedAt == null && r.ManagerSubmitted == null)
-                .Select(r => r.SubjectDisplayName).OrderBy(n => n).ToList(),
             reviewsSubmitted: reviews.Count(r => r.ManagerSubmitted != null),
             reviewsReady: reviews.Count(r => r.State == PerformanceReviewState.ManagerAssessment && r.ManagerSubmitted == null),
             reviewsTotal: reviews.Count,

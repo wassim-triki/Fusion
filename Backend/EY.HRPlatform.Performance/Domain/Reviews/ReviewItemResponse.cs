@@ -18,6 +18,14 @@ public sealed class ReviewItemResponse : PerformanceChildEntity
     public string? SelfComment { get; private set; }
     public string? ManagerAssessment { get; private set; }
     public int? ManagerRating { get; private set; }
+    /// <summary>A goal's grade changed from the measure's by the person (D-38), with why; null keeps the measure's.</summary>
+    public decimal? SelfGrade { get; private set; }
+    public string? SelfGradeReason { get; private set; }
+    /// <summary>A goal's grade changed from the measure's by the manager, with why; null keeps the measure's.</summary>
+    public decimal? ManagerGrade { get; private set; }
+    public string? ManagerGradeReason { get; private set; }
+
+    public const int MaxGradeReason = 300;
 
     public static ReviewItemResponse Create(Guid tenantId, Guid reviewId, ReviewItemKind kind, Guid itemId)
     {
@@ -38,6 +46,22 @@ public sealed class ReviewItemResponse : PerformanceChildEntity
     {
         ManagerAssessment = Normalize(assessment, 4000, nameof(assessment));
         ManagerRating = rating;
+        MarkUpdated();
+    }
+
+    /// <summary>Changes a goal's grade from its measure's with a short reason (D-38); a null grade goes back to the measure's.</summary>
+    public void SetGrade(bool self, decimal? grade, string? reason)
+    {
+        if (Kind != ReviewItemKind.Objective) throw new InvalidOperationException("Only a goal has a grade.");
+        string? why = null;
+        if (grade is decimal value)
+        {
+            if (value is < 0m or > 1m) throw new ArgumentException("A grade is between 0.00 and 1.00.", nameof(grade));
+            why = Normalize(reason, MaxGradeReason, nameof(reason)) ?? throw new ArgumentException("Say why the grade changed.", nameof(reason));
+            grade = decimal.Round(value, 2);
+        }
+        if (self) { SelfGrade = grade; SelfGradeReason = why; }
+        else { ManagerGrade = grade; ManagerGradeReason = why; }
         MarkUpdated();
     }
 

@@ -73,7 +73,6 @@ public sealed class ReviewReminderScanner(IServiceScopeFactory scopes)
                     task.Kind switch
                     {
                         ReviewReminderKind.PeerInput => PerformanceNotificationTemplates.PeerRequestPath(task.ResourceId),
-                        ReviewReminderKind.PeerList => PerformanceNotificationTemplates.PeerListPath(task.Review.Id),
                         _ => PerformanceNotificationTemplates.ReviewPath(task.Review.Id),
                     }, day));
             }
@@ -125,7 +124,6 @@ public sealed class ReviewReminderScanner(IServiceScopeFactory scopes)
     private static string TaskKey(ReviewReminderKind? kind) => kind switch
     {
         ReviewReminderKind.SelfAssessment => "selfAssessment",
-        ReviewReminderKind.PeerList => "peerList",
         ReviewReminderKind.PeerInput => "peerInput",
         _ => "review",
     };

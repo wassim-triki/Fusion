@@ -121,7 +121,8 @@ public sealed class PerformanceBackgroundWorker(IServiceScopeFactory scopeFactor
     EvidenceUploadSweeper sweeper, PerformanceNotificationRetention retention,
     EY.HRPlatform.Performance.Features.OneOnOnes.OneOnOneReconciler oneOnOnes,
     EY.HRPlatform.Performance.Features.Reviews.ReviewReminderScanner reminders,
-    EY.HRPlatform.Performance.Features.Goals.GoalUpdateReminderScanner goalReminders)
+    EY.HRPlatform.Performance.Features.Goals.GoalUpdateReminderScanner goalReminders,
+    EY.HRPlatform.Performance.Features.Reviews.ReviewRoundOpeningScanner openings)
     : BackgroundService
 {
     private DateTime _nextReminderScan = PerformanceClock.UtcNow;
@@ -152,6 +153,7 @@ public sealed class PerformanceBackgroundWorker(IServiceScopeFactory scopeFactor
                 {
                     // Hourly; the dedupe key keeps reruns and restarts to one reminder per task per day.
                     _nextReminderScan = PerformanceClock.UtcNow.AddHours(1);
+                    await openings.ScanAsync(PerformanceClock.Today, stoppingToken);
                     await reminders.ScanAsync(PerformanceClock.UtcNow, stoppingToken);
                     await goalReminders.ScanAsync(PerformanceClock.UtcNow, stoppingToken);
                 }

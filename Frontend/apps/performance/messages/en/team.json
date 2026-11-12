@@ -1,277 +1,47 @@
 {
-  "MyTeamPage": {
-    "yourPeople": "Your people"
-  },
-  "NoReports": {
-    "noOneReportsToYou": "No one reports to you in {cycleName}",
-    "noOneReportsToYou2": "No one reports to you",
-    "goToOverview": "Go to Overview"
-  },
-  "TeamPageSkeleton": {
-    "loadingMyTeam": "Loading My Team"
-  },
-  "TeamDirection": {
-    "upstreamDirection": "Upstream direction",
-    "teamObjectivesCouldNotBe": "Team objectives could not be loaded.",
-    "tryAgain": "Try again",
-    "draftObjectiveDeleted": "Draft objective deleted.",
-    "theObjectiveCouldNotBe": "The objective could not be deleted."
-  },
-  "StrategicDirection": {
-    "upstreamDirection": "Upstream direction",
-    "openOrganizationDirection": "Open organization direction",
-    "nextTeamObjective": "Next team objective",
-    "createATeamObjective": "Create a team objective",
-    "chooseWhatItSupportsBefore": "Choose what it supports before defining its result and measure.",
-    "alignTo": "Align to",
-    "createTeamObjective": "Create team objective",
-    "noActiveTeamMemberCan": "No active team member can own an objective in this cycle.",
-    "thisCycleIsClosed": "This cycle is closed."
-  },
-  "DirectionCard": {
-    "companyObjective": "Company objective",
-    "selectedDirection": "Selected direction",
-    "accountableOwner": "Accountable owner",
-    "measurement": "Measurement",
-    "objectiveType": "Objective type",
-    "progressTowardTarget": "Progress toward target",
-    "ofTarget": "of target",
-    "objective": "{value} objective"
-  },
-  "EligibleRow": {
-    "eligibleObjective": "{count} eligible objective",
-    "s": "s"
-  },
-  "StandaloneCard": {
-    "noUpstreamObjectiveSelected": "No upstream objective selected",
-    "theNextTeamObjectiveWill": "The next team objective will be standalone and won't be aligned to an objective from a team above yours.",
-    "standaloneObjectivesStayInMy": "Standalone objectives stay in My Team",
-    "theyAppearInOrganizationGoals": "They appear in Organization direction once aligned.",
-    "chooseOne": "choose one"
-  },
-  "EmptyDirectionCard": {
-    "noDirectionSelected": "No direction selected",
-    "noPublishedDirectionYet": "No published direction yet",
-    "chooseOneOfTheEligible": "Choose one of the eligible objectives for this team, or continue without alignment for a standalone team objective.",
-    "nothingAboveYourTeamIs": "Nothing above your team is published yet. You can still create a standalone team objective.",
-    "eligibleObjective": "{targetCount} eligible objective",
-    "s": "s",
-    "standaloneAllowed": "Standalone allowed"
-  },
-  "TeamObjectives": {
-    "teamObjectives": "Team objectives",
-    "filterByLifecycle": "Filter by lifecycle",
-    "allStates": "All states",
-    "draft": "Draft",
-    "published": "Published",
-    "filterByAlignment": "Filter by alignment",
-    "allAlignment": "All alignment",
-    "aligned": "Aligned",
-    "standalone": "Standalone",
-    "sortObjectives": "Sort objectives",
-    "priorityOrder": "Priority order",
-    "dueDate": "Due date",
-    "recentlyEdited": "Recently edited",
-    "title": "Title",
-    "noObjectivesMatchTheseFilters": "No objectives match these filters.",
-    "clearFilters": "Clear filters"
-  },
-  "TeamObjectivesEmpty": {
-    "noTeamObjectivesYet": "No team objectives yet",
-    "createAnObjectiveToDefine": "Create an objective to define what the team will deliver this cycle.",
-    "createYourTeamObjective": "Create your team objective"
-  },
-  "TeamObjectiveRow": {
-    "noOwner": "No owner",
-    "accountableOwner": "Accountable owner",
-    "notSet": "Not set",
-    "measurement": "Measurement",
-    "progress": "Progress",
-    "dueDate": "Due date",
-    "actionsFor": "Actions for {title}",
-    "viewDetails": "View details",
-    "updateProgress": "Update progress",
-    "editObjective": "Edit objective",
-    "deleteDraft": "Delete draft",
-    "viewDirection": "View direction",
-    "alignedTo": "Aligned to",
-    "standaloneTeamObjective": "Standalone team objective"
-  },
-  "TeamSummary": {
-    "plans": "Plans",
-    "waitingForYou": "waiting for you",
-    "notStarted": "not started",
-    "objectives": "Objectives",
-    "ofUpdatedInTheLast": "of {approved} updated in the last 30 days",
-    "yourReviews": "Your reviews",
-    "readyToWrite": "ready to write",
-    "waitingOnThem": "waiting on them",
-    "ofSelfAssessmentsIn": "of {selfTotal} self-assessments in",
-    "due": "· due {selfDue}",
-    "peerListToApprove": "· {length} peer list to approve",
-    "peerListsToApprove": "· {length} peer lists to approve",
-    "submitted": "submitted"
-  },
-  "TeamResultsPanel": {
-    "yourTeamsResults": "Your team's results",
-    "yourTeamOnly": "Your team only",
-    "peopleAtEachLevel": "People at each level",
-    "acknowledged": "Acknowledged",
-    "ofAcknowledged": "of {released} acknowledged",
-    "notYet": "Not yet: {join}",
-    "changedInCalibration": "Changed in calibration",
-    "changedInCalibration2": "changed in calibration",
-    "openGrowthGoals": "Open development goals",
-    "openGrowth": "open development",
-    "goal": "goal",
-    "goals": "goals"
-  },
-  "PlanStateCell": {
-    "resubmitted": "Resubmitted"
-  },
-  "ObjectivesCell": {
-    "weights": "{objectives} · weights {weight}%"
-  },
-  "AlignedCell": {
-    "of": "{alignedToTeam} of {objectives}"
-  },
-  "StatusMixCell": {
-    "onTrackAtRiskOff": "{onTrack} on track, {atRisk} at risk, {offTrack} off track, {noStatus} no status yet"
-  },
-  "UpdateRequestCell": {
-    "n1Open": "1 open",
-    "asked": "· asked {requestedAt}",
-    "askForAnUpdate": "Ask for an update"
-  },
-  "SelfCell": {
-    "submitted": "Submitted",
-    "writing": "Writing",
-    "notStarted": "Not started"
-  },
-  "PeersCell": {
-    "proposedWaitingForYou": "{proposed} proposed, waiting for you",
-    "ofAnswered": "{answered} of {asked} answered",
-    "notChosenYet": "Not chosen yet"
-  },
-  "YourReviewCell": {
-    "submitted": "Submitted",
-    "draftSaved": "Draft saved",
-    "notStarted": "Not started"
-  },
-  "PdfButton": {
-    "pdf": "PDF"
-  },
-  "RosterSection": {
-    "findAPerson": "Find a person",
-    "noPeopleMatchThisView": "No people match this view",
-    "yourPeople": "Your people",
-    "person": "person",
-    "people": "people"
-  },
-  "EmptyRoster": {
-    "noOneReportsToYou": "No one reports to you this cycle"
-  },
-  "people": {
-    "status": {
-      "NotStarted": "Not started",
-      "Draft": "Drafting",
-      "ReturnedForChanges": "Returned",
-      "Submitted": "Submitted",
-      "Approved": "Approved"
+  "TeamYear": {
+    "treeOne": "Your goal and the team's under it",
+    "treeMany": "Your goals and the team's under them",
+    "yourGoal": "Your goal",
+    "yourGoalUnder": "Your goal, under {goal}",
+    "measureNow": "{measure}, {current} now",
+    "elsewhere": "{names}: their goals support other goals",
+    "noUpdateYet": "No update yet",
+    "state": {
+      "OnTrack": "On track",
+      "AtRisk": "At risk",
+      "OffTrack": "Off track"
     },
-    "group": {
-      "Planning": {
-        "waiting": "Waiting for you",
-        "planning": "Still planning",
-        "approved": "Approved"
-      },
-      "Execution": {
-        "needsYou": "Needs you",
-        "rest": "The rest"
-      },
-      "Review": {
-        "ready": "Ready for you",
-        "waiting": "Waiting on them",
-        "submitted": "Submitted",
-        "notInRound": "Not in this round"
-      },
-      "Closed": {
-        "notAcknowledged": "Not acknowledged yet",
-        "acknowledged": "Acknowledged",
-        "noResult": "No result"
-      }
+    "count": {
+      "OnTrack": "{count} on track",
+      "AtRisk": "{count} at risk",
+      "OffTrack": "{count} off track"
     },
-    "view": {
-      "NeedsReview": "Needs review",
-      "Planning": "Planning",
-      "Approved": "Approved",
-      "NoProgress": "No updates"
+    "plan": {
+      "NotStarted": "No plan yet",
+      "Draft": "Writing their plan",
+      "ReturnedForChanges": "Changing their plan",
+      "Submitted": "Plan waiting for you",
+      "Approved": "No update yet"
     },
-    "show": "Show",
-    "employee": "Employee",
-    "since": "since {day}",
-    "anObjective": "An objective",
-    "offTrack": "{title} · off track",
-    "atRisk": "{title} · at risk",
-    "noUpdate": "No update in 30 days",
-    "noStatus": "{count, plural, one {# objective has no status yet} other {# objectives have no status yet}}",
-    "updateRequested": "Update requested",
-    "planWaiting": "Plan waiting for your decision",
-    "notApproved": "Plan not approved yet",
-    "col": {
-      "person": "Person",
-      "open": "Open",
-      "plan": "Plan",
-      "objectives": "Objectives",
-      "aligned": "Aligned to your team",
-      "activity": "Last activity",
-      "attention": "Needs attention",
-      "progress": "Plan progress",
-      "lastUpdate": "Last update",
-      "requests": "Update requests",
-      "self": "Self-assessment",
-      "peers": "Peers",
-      "yours": "Your review",
-      "result": "Result",
-      "yourRating": "Your rating",
-      "acknowledged": "Acknowledged",
-      "development": "Development"
-    },
-    "reviewPlan": "Review plan",
-    "approvePeers": "Approve peers",
-    "review": "Review",
-    "inCalibration": "in calibration",
-    "withComment": "with a comment",
-    "notYet": "Not yet",
-    "openGoals": "{count, plural, one {# open goal} other {# open goals}}",
-    "noneOpen": "None open",
-    "reviewPersonPlan": "Review {name}’s plan",
-    "reviewPerson": "Review {name}",
-    "theNextOne": "the next one",
-    "leave": {
-      "now": "On leave · back {day}",
-      "open": "On leave",
-      "from": "Leave from {day}"
-    }
-  },
-  "activity": {
-    "DraftUpdated": "Draft updated",
-    "Returned": "Returned for changes",
-    "Submitted": "Plan submitted",
-    "Resubmitted": "Resubmitted",
-    "Approved": "Plan approved",
-    "ProgressUpdated": "Progress updated",
-    "requested": "Update requested",
-    "received": "Update received"
-  },
-  "summary": {
-    "people": "{count, plural, one {# person} other {# people}}",
-    "objectives": "{count, plural, one {# objective} other {# objectives}}",
-    "reviewsDue": "your reviews due {day}",
-    "released": "released {day}",
-    "onTrack": "on track",
-    "atRisk": "at risk",
-    "offTrack": "off track",
-    "noStatus": "no status yet"
+    "eachPersonsYear": "Each person's year",
+    "needYou": "{count, plural, one {1 needs you} other {# need you}}",
+    "nothingDue": "Nothing due",
+    "offTrack": "{count, plural, one {1 goal off track} other {# goals off track}}",
+    "atRisk": "{count, plural, one {1 goal at risk} other {# goals at risk}}",
+    "offAndRisk": "{off} off track, {risk} at risk",
+    "noOneOnOnes": "No 1:1s yet",
+    "bothFree": "You're both free then",
+    "planWaiting": "Plan waiting for you",
+    "book": "Book {time}",
+    "booked": "1:1 with {name} booked, {time}",
+    "askForUpdate": "Ask for an update",
+    "asked": "Asked {name} for an update",
+    "lookAtIt": "Look at it",
+    "open": "Open",
+    "nextOneOnOne": "1:1 {day}",
+    "noReports": "No one reports to you",
+    "noYear": "No year is running yet",
+    "failed": "That didn't go through. Try again."
   }
 }

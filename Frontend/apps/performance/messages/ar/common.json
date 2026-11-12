@@ -63,11 +63,6 @@
       "ResultsOut": "النتائج صدرت"
     }
   },
-  "PersonPage": {
-    "person": "الشخص",
-    "openCoreHrRecord": "فتح السجل في الموارد البشرية الأساسية",
-    "giveFeedback": "تقديم ملاحظات"
-  },
   "PerformanceCycleContext": {
     "switchCycle": "تبديل الدورة",
     "state": {

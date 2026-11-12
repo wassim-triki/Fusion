@@ -11,7 +11,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEvidenceOpener, useObjectiveProgress, useProgressHistoryPager } from "../../api/use-performance";
 import { reportPerformanceFailure } from "../../api/performance-failure";
 import { dayMonth } from "../year/year-words";
-import { GoalLine, GoalMonths, paceOn, STATUS_STROKE } from "./goal-line";
+import { GoalLine, GoalMonths, paceOn, STATUS_STROKE } from "@repo/performance-ui";
 import { GoalState } from "./goal-state";
 import type { ObjectiveRecord } from "./objective-record-model";
 import type { ObjectiveRef } from "./objective-ref";

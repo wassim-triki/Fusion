@@ -35,6 +35,8 @@ export interface TeamBandPerson {
   /** On leave today: a mark on the photo (B-229). */
   away?: boolean;
   href?: string;
+  /** The href is another app's (`/core/…` from Performance): a full navigation. */
+  external?: boolean;
 }
 
 export type TeamNext =
@@ -203,7 +205,11 @@ export function TeamBand({ manager, people, tabs, current, praiseHref, actions }
                   "relative grid w-[138px] shrink-0 justify-items-center gap-2.5 rounded-control border border-border bg-card px-2.5 pt-4 text-center before:absolute before:-top-5 before:left-1/2 before:h-5 before:w-px before:bg-input";
                 return (
                   <li key={person.employeeKey} className="flex">
-                    {person.href ? (
+                    {person.href && person.external ? (
+                      <a href={person.href} className={cn(className, "outline-none transition-colors hover:border-input focus-visible:ring-2 focus-visible:ring-ring")}>
+                        {card}
+                      </a>
+                    ) : person.href ? (
                       <Link href={person.href} className={cn(className, "outline-none transition-colors hover:border-input focus-visible:ring-2 focus-visible:ring-ring")}>
                         {card}
                       </Link>

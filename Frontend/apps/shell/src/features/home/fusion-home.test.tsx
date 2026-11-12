@@ -287,7 +287,7 @@ describe("FusionHome", () => {
         reviewerName: "Mariam Gharbi", weightTotal: 70, lastUpdateAt: null,
       },
       reviews: null, development: null, praise: null, feedback: null, oneOnOne: null,
-    } as PersonPerformanceSummaryDto;
+    } as unknown as PersonPerformanceSummaryDto;
     render(<FusionHome />);
     expect(await screen.findByText("Your plan is a draft")).toBeTruthy();
     expect(screen.getByText(/2 objectives · weights at 70% · Mariam Gharbi approves it/)).toBeTruthy();
@@ -302,7 +302,7 @@ describe("FusionHome", () => {
         planId: null, planStatus: "NotStarted", overallProgress: null, planHref: null, objectives: [], reviewerName: "Sami Ben Youssef",
         weightTotal: null, lastUpdateAt: null },
       reviews: null, development: null, praise: null, feedback: null, oneOnOne: null,
-    } as PersonPerformanceSummaryDto;
+    } as unknown as PersonPerformanceSummaryDto;
     render(<FusionHome />);
     expect(await screen.findByText("No plan yet")).toBeTruthy();
     expect(screen.getByText("FY2027 Cycle · Review")).toBeTruthy();
@@ -322,7 +322,7 @@ describe("FusionHome", () => {
         ],
         reviewerName: null, weightTotal: 100, lastUpdateAt: null },
       reviews: null, development: null, praise: null, feedback: null, oneOnOne: null,
-    } as PersonPerformanceSummaryDto;
+    } as unknown as PersonPerformanceSummaryDto;
     render(<FusionHome />);
     expect(await screen.findByText("39%")).toBeTruthy();
     expect(screen.getByText("1 on track")).toBeTruthy();
@@ -336,7 +336,7 @@ describe("FusionHome", () => {
       currentCycle: { cycleId: "c", cycleName: "FY2027 Cycle", cycleState: "Active", phase: "Planning", isParticipant: false,
         planId: null, planStatus: null, overallProgress: null, planHref: null, objectives: [] },
       reviews: null, development: null, praise: null, feedback: null, oneOnOne: null,
-    } as PersonPerformanceSummaryDto;
+    } as unknown as PersonPerformanceSummaryDto;
     render(<FusionHome />);
     await screen.findByRole("heading", { name: "Praise" });
     await new Promise((resolve) => setTimeout(resolve, 0));

@@ -3,8 +3,26 @@ namespace EY.HRPlatform.SharedKernel.Api;
 // The cross-module attention contract (D-29, D-30), mirrored by `@repo/api` fusion-attention.ts.
 // Each module serves its own items at `GET /api/{module}/work`, composing display text in English.
 
-/// <summary>The person a work item concerns, when it isn't the viewer.</summary>
-public sealed record FusionWorkSubjectDto(string DisplayName);
+/// <summary>The person a work item concerns, when it isn't the viewer; <paramref name="EmployeeId"/> when the module knows it.</summary>
+public sealed record FusionWorkSubjectDto(string DisplayName, Guid? EmployeeId = null);
+
+/// <summary>
+/// One line of what the work is about, shown in the row (a plan's goals, the goals off track). <paramref name="Tone"/> is
+/// `ok`, `warn` or `bad` when the meta is a state.
+/// </summary>
+public sealed record FusionWorkLineDto(string Text, string? Meta = null, string? Tone = null);
+
+/// <summary>
+/// Something the home does in place with one click (B-434): posts <c>{}</c> to <paramref name="Path"/> below the module's
+/// gateway prefix; the item leaves once its module says the work is done. <paramref name="Primary"/> marks the main one.
+/// </summary>
+public sealed record FusionWorkActionDto(string Label, string Path, bool Primary = false);
+
+/// <summary>
+/// A time to book in place (B-434): <paramref name="Slots"/> are UTC instants both people are free, earliest first;
+/// booking posts <c>{ "at": "…" }</c> to <paramref name="Path"/> below the module's gateway prefix.
+/// </summary>
+public sealed record FusionWorkBookingDto(IReadOnlyList<DateTime> Slots, string Path);
 
 /// <summary>One step of the path a work item belongs to. <paramref name="State"/> is `done`, `current` or `upcoming`.</summary>
 public sealed record FusionWorkStepDto(string Label, string? Detail, string State)
@@ -37,7 +55,17 @@ public sealed record FusionWorkItemDto(
     IReadOnlyList<FusionWorkStepDto>? Steps = null,
     string? ActionLabel = null,
     DateTime? WaitingSince = null,
-    FusionWorkDecisionDto? Decision = null);
+    FusionWorkDecisionDto? Decision = null)
+{
+    /// <summary>What the work is about, line by line, under the title.</summary>
+    public IReadOnlyList<FusionWorkLineDto>? Lines { get; init; }
+    /// <summary>The subject's own latest words on it, quoted under the lines.</summary>
+    public string? Quote { get; init; }
+    /// <summary>One-click answers given in place, in the order shown.</summary>
+    public IReadOnlyList<FusionWorkActionDto>? Actions { get; init; }
+    /// <summary>A time to book in place.</summary>
+    public FusionWorkBookingDto? Booking { get; init; }
+}
 
 /// <summary>
 /// A yes or no the home can give in place (B-179): paths below the module's gateway prefix for approving and declining;

@@ -1,277 +1,47 @@
 {
-  "MyTeamPage": {
-    "yourPeople": "Vos collaborateurs"
-  },
-  "NoReports": {
-    "noOneReportsToYou": "Personne ne vous est rattaché dans {cycleName}",
-    "noOneReportsToYou2": "Personne ne vous est rattaché",
-    "goToOverview": "Aller à la vue d’ensemble"
-  },
-  "TeamPageSkeleton": {
-    "loadingMyTeam": "Chargement de Mon équipe"
-  },
-  "TeamDirection": {
-    "upstreamDirection": "Orientation en amont",
-    "teamObjectivesCouldNotBe": "Les objectifs de l’équipe n’ont pas pu être chargés.",
-    "tryAgain": "Réessayer",
-    "draftObjectiveDeleted": "Objectif en brouillon supprimé.",
-    "theObjectiveCouldNotBe": "L’objectif n’a pas pu être supprimé."
-  },
-  "StrategicDirection": {
-    "upstreamDirection": "Orientation en amont",
-    "openOrganizationDirection": "Ouvrir l’orientation de l’organisation",
-    "nextTeamObjective": "Prochain objectif d’équipe",
-    "createATeamObjective": "Créer un objectif d’équipe",
-    "chooseWhatItSupportsBefore": "Choisissez ce qu’il soutient avant de définir son résultat et sa mesure.",
-    "alignTo": "Aligner sur",
-    "createTeamObjective": "Créer un objectif d’équipe",
-    "noActiveTeamMemberCan": "Aucun membre actif de l’équipe ne peut porter un objectif dans ce cycle.",
-    "thisCycleIsClosed": "Ce cycle est clôturé."
-  },
-  "DirectionCard": {
-    "companyObjective": "Objectif de l’entreprise",
-    "selectedDirection": "Orientation sélectionnée",
-    "accountableOwner": "Responsable",
-    "measurement": "Mesure",
-    "objectiveType": "Type d’objectif",
-    "progressTowardTarget": "Avancement vers la cible",
-    "ofTarget": "de la cible",
-    "objective": "Objectif {value}"
-  },
-  "EligibleRow": {
-    "eligibleObjective": "{count} objectif éligible",
-    "s": "s"
-  },
-  "StandaloneCard": {
-    "noUpstreamObjectiveSelected": "Aucun objectif amont sélectionné",
-    "theNextTeamObjectiveWill": "Le prochain objectif d’équipe sera autonome et ne sera pas aligné sur un objectif d’une équipe au-dessus de la vôtre.",
-    "standaloneObjectivesStayInMy": "Les objectifs autonomes restent dans Mon équipe",
-    "theyAppearInOrganizationGoals": "Ils apparaissent dans les objectifs de l’organisation une fois alignés.",
-    "chooseOne": "choisissez-en un"
-  },
-  "EmptyDirectionCard": {
-    "noDirectionSelected": "Aucune orientation sélectionnée",
-    "noPublishedDirectionYet": "Aucune orientation publiée pour l’instant",
-    "chooseOneOfTheEligible": "Choisissez l’un des objectifs éligibles pour cette équipe, ou continuez sans alignement pour un objectif d’équipe autonome.",
-    "nothingAboveYourTeamIs": "Rien n’est encore publié au-dessus de votre équipe. Vous pouvez tout de même créer un objectif d’équipe autonome.",
-    "eligibleObjective": "{targetCount} objectif(s) éligible(s)",
-    "s": "s",
-    "standaloneAllowed": "Autonome autorisé"
-  },
-  "TeamObjectives": {
-    "teamObjectives": "Objectifs de l’équipe",
-    "filterByLifecycle": "Filtrer par cycle de vie",
-    "allStates": "Tous les statuts",
-    "draft": "Brouillon",
-    "published": "Publié",
-    "filterByAlignment": "Filtrer par alignement",
-    "allAlignment": "Tout alignement",
-    "aligned": "Alignés",
-    "standalone": "Autonome",
-    "sortObjectives": "Trier les objectifs",
-    "priorityOrder": "Ordre de priorité",
-    "dueDate": "Échéance",
-    "recentlyEdited": "Modifiés récemment",
-    "title": "Intitulé",
-    "noObjectivesMatchTheseFilters": "Aucun objectif ne correspond à ces filtres.",
-    "clearFilters": "Effacer les filtres"
-  },
-  "TeamObjectivesEmpty": {
-    "noTeamObjectivesYet": "Pas encore d’objectifs d’équipe",
-    "createAnObjectiveToDefine": "Créez un objectif pour définir ce que l’équipe livrera dans ce cycle.",
-    "createYourTeamObjective": "Créer votre objectif d’équipe"
-  },
-  "TeamObjectiveRow": {
-    "noOwner": "Aucun responsable",
-    "accountableOwner": "Responsable",
-    "notSet": "Non renseigné",
-    "measurement": "Mesure",
-    "progress": "Avancement",
-    "dueDate": "Échéance",
-    "actionsFor": "Actions pour {title}",
-    "viewDetails": "Voir le détail",
-    "updateProgress": "Mettre à jour l’avancement",
-    "editObjective": "Modifier l’objectif",
-    "deleteDraft": "Supprimer le brouillon",
-    "viewDirection": "Voir l’orientation",
-    "alignedTo": "Aligné sur",
-    "standaloneTeamObjective": "Objectif d’équipe autonome"
-  },
-  "TeamSummary": {
-    "plans": "Plans",
-    "waitingForYou": "vous attendent",
-    "notStarted": "non commencés",
-    "objectives": "Objectifs",
-    "ofUpdatedInTheLast": "sur {approved} mis à jour ces 30 derniers jours",
-    "yourReviews": "Vos évaluations",
-    "readyToWrite": "prêtes à rédiger",
-    "waitingOnThem": "attendent les collaborateurs",
-    "ofSelfAssessmentsIn": "auto-évaluations reçues sur {selfTotal}",
-    "due": "· échéance le {selfDue}",
-    "peerListToApprove": "· {length} liste de pairs à approuver",
-    "peerListsToApprove": "· {length} listes de pairs à approuver",
-    "submitted": "soumises"
-  },
-  "TeamResultsPanel": {
-    "yourTeamsResults": "Les résultats de votre équipe",
-    "yourTeamOnly": "Votre équipe uniquement",
-    "peopleAtEachLevel": "Personnes à chaque niveau",
-    "acknowledged": "Pris connaissance",
-    "ofAcknowledged": "sur {released} ont pris connaissance",
-    "notYet": "Pas encore : {join}",
-    "changedInCalibration": "Modifiées en calibrage",
-    "changedInCalibration2": "modifiées en calibrage",
-    "openGrowthGoals": "Objectifs de développement ouverts",
-    "openGrowth": "développement ouverts",
-    "goal": "objectif",
-    "goals": "objectifs"
-  },
-  "PlanStateCell": {
-    "resubmitted": "Soumis à nouveau"
-  },
-  "ObjectivesCell": {
-    "weights": "{objectives} · poids {weight} %"
-  },
-  "AlignedCell": {
-    "of": "{alignedToTeam} sur {objectives}"
-  },
-  "StatusMixCell": {
-    "onTrackAtRiskOff": "{onTrack} en bonne voie, {atRisk} à risque, {offTrack} hors trajectoire, {noStatus} sans statut pour l’instant"
-  },
-  "UpdateRequestCell": {
-    "n1Open": "1 ouverte",
-    "asked": "· demandée le {requestedAt}",
-    "askForAnUpdate": "Demander une mise à jour"
-  },
-  "SelfCell": {
-    "submitted": "Soumis",
-    "writing": "En rédaction",
-    "notStarted": "Non commencé"
-  },
-  "PeersCell": {
-    "proposedWaitingForYou": "{proposed} proposés, en attente de vous",
-    "ofAnswered": "{answered} sur {asked} ont répondu",
-    "notChosenYet": "Pas encore choisis"
-  },
-  "YourReviewCell": {
-    "submitted": "Soumis",
-    "draftSaved": "Brouillon enregistré",
-    "notStarted": "Non commencé"
-  },
-  "PdfButton": {
-    "pdf": "PDF"
-  },
-  "RosterSection": {
-    "findAPerson": "Trouver une personne",
-    "noPeopleMatchThisView": "Personne ne correspond à cette vue",
-    "yourPeople": "Vos collaborateurs",
-    "person": "personne",
-    "people": "personnes"
-  },
-  "EmptyRoster": {
-    "noOneReportsToYou": "Personne ne vous est rattaché dans ce cycle"
-  },
-  "people": {
-    "status": {
-      "NotStarted": "Non commencé",
-      "Draft": "En rédaction",
-      "ReturnedForChanges": "Renvoyé",
-      "Submitted": "Soumis",
-      "Approved": "Approuvé"
+  "TeamYear": {
+    "treeOne": "Votre objectif et ceux de l’équipe en dessous",
+    "treeMany": "Vos objectifs et ceux de l’équipe en dessous",
+    "yourGoal": "Votre objectif",
+    "yourGoalUnder": "Votre objectif, sous {goal}",
+    "measureNow": "{measure}, {current} aujourd’hui",
+    "elsewhere": "{names} : leurs objectifs soutiennent d’autres objectifs",
+    "noUpdateYet": "Pas encore de mise à jour",
+    "state": {
+      "OnTrack": "En bonne voie",
+      "AtRisk": "À risque",
+      "OffTrack": "En retard"
     },
-    "group": {
-      "Planning": {
-        "waiting": "En attente de vous",
-        "planning": "Encore en planification",
-        "approved": "Approuvé"
-      },
-      "Execution": {
-        "needsYou": "Vous concernent",
-        "rest": "Les autres"
-      },
-      "Review": {
-        "ready": "Prêtes pour vous",
-        "waiting": "En attente des collaborateurs",
-        "submitted": "Soumis",
-        "notInRound": "Hors de cette campagne"
-      },
-      "Closed": {
-        "notAcknowledged": "Pas encore de prise de connaissance",
-        "acknowledged": "Pris connaissance",
-        "noResult": "Aucun résultat"
-      }
+    "count": {
+      "OnTrack": "{count} en bonne voie",
+      "AtRisk": "{count} à risque",
+      "OffTrack": "{count} en retard"
     },
-    "view": {
-      "NeedsReview": "À vérifier",
-      "Planning": "Planification",
-      "Approved": "Approuvé",
-      "NoProgress": "Aucune mise à jour"
+    "plan": {
+      "NotStarted": "Pas encore de plan",
+      "Draft": "Rédige son plan",
+      "ReturnedForChanges": "Modifie son plan",
+      "Submitted": "Plan en attente de vous",
+      "Approved": "Pas encore de mise à jour"
     },
-    "show": "Afficher",
-    "employee": "Collaborateur",
-    "since": "depuis le {day}",
-    "anObjective": "Un objectif",
-    "offTrack": "{title} · hors trajectoire",
-    "atRisk": "{title} · à risque",
-    "noUpdate": "Aucune mise à jour depuis 30 jours",
-    "noStatus": "{count, plural, one {# objectif n’a pas encore de statut} other {# objectifs n’ont pas encore de statut}}",
-    "updateRequested": "Mise à jour demandée",
-    "planWaiting": "Plan en attente de votre décision",
-    "notApproved": "Plan pas encore approuvé",
-    "col": {
-      "person": "Auteur",
-      "open": "Ouvrir",
-      "plan": "Plan",
-      "objectives": "Objectifs",
-      "aligned": "Alignés sur votre équipe",
-      "activity": "Dernière activité",
-      "attention": "À traiter",
-      "progress": "Avancement du plan",
-      "lastUpdate": "Dernière mise à jour",
-      "requests": "Demandes de mise à jour",
-      "self": "Auto-évaluation",
-      "peers": "Pairs",
-      "yours": "Votre évaluation",
-      "result": "Résultat",
-      "yourRating": "Votre note",
-      "acknowledged": "Pris connaissance",
-      "development": "Développement"
-    },
-    "reviewPlan": "Revoir le plan",
-    "approvePeers": "Approuver les pairs",
-    "review": "Vérification",
-    "inCalibration": "en calibrage",
-    "withComment": "avec un commentaire",
-    "notYet": "Pas encore",
-    "openGoals": "{count, plural, one {# objectif ouvert} other {# objectifs ouverts}}",
-    "noneOpen": "Aucun ouvert",
-    "reviewPersonPlan": "Revoir le plan de {name}",
-    "reviewPerson": "Évaluer {name}",
-    "theNextOne": "la suivante",
-    "leave": {
-      "now": "Absent · retour {day}",
-      "open": "Absent",
-      "from": "Absent à partir de {day}"
-    }
-  },
-  "activity": {
-    "DraftUpdated": "Brouillon mis à jour",
-    "Returned": "Renvoyé pour modifications",
-    "Submitted": "Plan soumis",
-    "Resubmitted": "Soumis à nouveau",
-    "Approved": "Plan approuvé",
-    "ProgressUpdated": "Avancement mis à jour",
-    "requested": "Mise à jour demandée",
-    "received": "Mise à jour reçue"
-  },
-  "summary": {
-    "people": "{count, plural, one {# personne} other {# personnes}}",
-    "objectives": "{count, plural, one {# objectif} other {# objectifs}}",
-    "reviewsDue": "vos évaluations attendues le {day}",
-    "released": "publiée le {day}",
-    "onTrack": "en bonne voie",
-    "atRisk": "à risque",
-    "offTrack": "hors trajectoire",
-    "noStatus": "sans statut pour l’instant"
+    "eachPersonsYear": "L’année de chacun",
+    "needYou": "{count, plural, one {1 a besoin de vous} other {# ont besoin de vous}}",
+    "nothingDue": "Rien à faire",
+    "offTrack": "{count, plural, one {1 objectif en retard} other {# objectifs en retard}}",
+    "atRisk": "{count, plural, one {1 objectif à risque} other {# objectifs à risque}}",
+    "offAndRisk": "{off} en retard, {risk} à risque",
+    "noOneOnOnes": "Pas encore de tête-à-tête",
+    "bothFree": "Vous êtes tous deux libres",
+    "planWaiting": "Plan en attente de vous",
+    "book": "Réserver {time}",
+    "booked": "Tête-à-tête avec {name} réservé, {time}",
+    "askForUpdate": "Demander une mise à jour",
+    "asked": "Mise à jour demandée à {name}",
+    "lookAtIt": "Voir",
+    "open": "Ouvrir",
+    "nextOneOnOne": "Tête-à-tête le {day}",
+    "noReports": "Personne ne vous est rattaché",
+    "noYear": "Aucune année en cours",
+    "failed": "Ça n’a pas abouti. Réessayez."
   }
 }

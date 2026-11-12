@@ -1,12 +1,8 @@
-import type { PersonPerformanceSummaryDto, PraiseDto, PraiseReactionKind } from "@repo/api";
+import type { PersonPerformanceSummaryDto } from "@repo/api";
 import { Button, Skeleton } from "@repo/ds";
 import { SummaryGlance } from "./summary-glance";
 import { SummaryObjectives } from "./summary-objectives";
-import { SummaryDevelopment } from "./summary-development";
-import { SummaryReviews } from "./summary-reviews";
 import type { RenderSummaryLink } from "./summary-lib";
-import { SummaryFeedback, SummaryOneOnOne, SummaryPraise } from "./summary-conversations";
-import type { PraiseReactionIcons } from "./praise";
 import { useTranslations } from "next-intl";
 
 export type PersonPerformanceSummaryState =
@@ -17,12 +13,6 @@ export type PersonPerformanceSummaryState =
 export interface PersonPerformanceSummaryProps {
   state: PersonPerformanceSummaryState;
   renderLink: RenderSummaryLink;
-  /** The host's reaction glyphs; the package carries no icon set. */
-  reactionIcons: PraiseReactionIcons;
-  onReact?: (praise: PraiseDto, kind: PraiseReactionKind, add: boolean) => void;
-  onOpenPraise?: (praise: PraiseDto) => void;
-  /** The person page's Overview (B-180): the glance and the plan only; the next 1:1 is in its Coming up. */
-  compact?: boolean;
 }
 
 function SummarySkeleton() {
@@ -39,11 +29,11 @@ function SummarySkeleton() {
 }
 
 /**
- * One person's performance as the viewer may see it: the glance, the current cycle's objectives and
- * the reviews. Only the sections the server returned are rendered; when it returned none, one line
- * says so. Loading and failure stay in place, so the surrounding record never waits on Performance.
+ * The person page's Overview (B-180): their plan at a glance and its goals, as the viewer may see them. The whole year
+ * is the Performance tab (`PersonPerformanceTab`). Loading and failure stay in place, so the page never waits on
+ * Performance; with nothing visible, nothing is drawn.
  */
-export function PersonPerformanceSummary({ state, renderLink, reactionIcons, onReact, onOpenPraise, compact = false }: PersonPerformanceSummaryProps) {
+export function PersonPerformanceSummary({ state, renderLink }: PersonPerformanceSummaryProps) {
   const t = useTranslations("performanceUi.PersonPerformanceSummary");
   if (state.status === "loading") return <SummarySkeleton />;
   if (state.status === "error") {
@@ -60,22 +50,11 @@ export function PersonPerformanceSummary({ state, renderLink, reactionIcons, onR
   const { summary } = state;
   const cycle = summary.currentCycle;
   const reviews = summary.reviews;
-  const development = summary.development;
-  if (!cycle && !reviews && !development && !summary.praise && !summary.feedback) {
-    return <p className="type-body-secondary text-muted-foreground">{t("theresNothingYouCanSee")}</p>;
-  }
-
+  if (!cycle && !reviews) return null;
   return (
-    <div className={compact ? "space-y-3" : "space-y-8"}>
-      {cycle || reviews ? <SummaryGlance cycle={cycle} reviews={reviews} /> : null}
-      {!compact && summary.oneOnOne ? <SummaryOneOnOne oneOnOne={summary.oneOnOne} renderLink={renderLink} /> : null}
+    <div className="space-y-3">
+      <SummaryGlance cycle={cycle} reviews={reviews} />
       {cycle ? <SummaryObjectives cycle={cycle} renderLink={renderLink} /> : null}
-      {compact ? null : reviews ? <SummaryReviews reviews={reviews} renderLink={renderLink} /> : null}
-      {!compact && development ? <SummaryDevelopment development={development} renderLink={renderLink} /> : null}
-      {!compact && summary.feedback ? <SummaryFeedback feedback={summary.feedback} renderLink={renderLink} /> : null}
-      {!compact && summary.praise ? (
-        <SummaryPraise praise={summary.praise} renderLink={renderLink} reactionIcons={reactionIcons} onReact={onReact} onOpen={onOpenPraise} />
-      ) : null}
     </div>
   );
 }

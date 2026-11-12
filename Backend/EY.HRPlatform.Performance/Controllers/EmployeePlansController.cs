@@ -99,26 +99,14 @@ public sealed class EmployeePlansController(IMediator mediator, IPerformanceAcce
         return MapResult(await mediator.Send(new AddressChangeRequestCommand(cycleId, requestId, request, Actor), cancellationToken));
     }
 
-    [HttpGet("team/people")]
-    public async Task<ActionResult<ApiResponse<YourPeoplePageDto>>> YourPeople(
-        Guid cycleId,
-        [FromQuery] YourPeopleFilter filter = YourPeopleFilter.All,
-        [FromQuery] string? search = null,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = Features.Plans.YourPeople.DefaultPageSize,
-        CancellationToken cancellationToken = default)
+    /// <summary>The Team page's Performance tab (D-79): the caller's goals with the team's under each, then each report's year.</summary>
+    [HttpGet("team/year")]
+    public async Task<ActionResult<ApiResponse<TeamYearDto>>> TeamYear(Guid cycleId, CancellationToken cancellationToken)
     {
-        if (!policy.CanReviewDirectReports(User) && !policy.CanAdministerCycles(User)) return CapabilityForbidden();
-        return MapResult(await mediator.Send(
-            new GetYourPeopleQuery(cycleId, Actor, filter, search, page, pageSize), cancellationToken));
-    }
-
-    /// <summary>The released results of the caller's own recorded team in this cycle; empty before release.</summary>
-    [HttpGet("team/results")]
-    public async Task<ActionResult<ApiResponse<TeamResultsDto>>> TeamResults(Guid cycleId, CancellationToken cancellationToken)
-    {
-        if (!policy.CanReviewDirectReports(User) && !policy.CanAdministerCycles(User)) return CapabilityForbidden();
-        return MapResult(await mediator.Send(new GetTeamResultsQuery(cycleId, Actor), cancellationToken));
+        if (!policy.CanReviewDirectReports(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new GetTeamYearQuery(cycleId, new Features.Work.WorkActor(
+            User.GetEmployeeId() ?? Guid.Empty, User.GetUserId(), policy.CanManageOwnParticipation(User), true,
+            policy.CanAdministerCycles(User), policy.CanCalibrateReviews(User))), cancellationToken));
     }
 
     [HttpGet("plans/{planId:guid}")]
@@ -181,6 +169,22 @@ public sealed class EmployeePlansController(IMediator mediator, IPerformanceAcce
     {
         if (!policy.CanEnterPerformance(User)) return CapabilityForbidden();
         return MapResult(await mediator.Send(new CreateUpdateRequestCommand(cycleId, planId, request.ObjectiveId, request.Note, Actor, User.GetFullName()), cancellationToken));
+    }
+
+    /// <summary>Goals at risk or off track, answered in place from Home or Team (B-434): ask for an update, or talk it over.</summary>
+    [HttpPost("plans/{planId:guid}/attention/ask-for-update")]
+    public Task<ActionResult<ApiResponse<OffTrackAnsweredDto>>> AskForUpdate(Guid cycleId, Guid planId, CancellationToken cancellationToken)
+        => AnswerOffTrack(cycleId, planId, OffTrackAnswer.AskForUpdate, cancellationToken);
+
+    [HttpPost("plans/{planId:guid}/attention/talk-it-over")]
+    public Task<ActionResult<ApiResponse<OffTrackAnsweredDto>>> TalkItOver(Guid cycleId, Guid planId, CancellationToken cancellationToken)
+        => AnswerOffTrack(cycleId, planId, OffTrackAnswer.TalkItOver, cancellationToken);
+
+    private async Task<ActionResult<ApiResponse<OffTrackAnsweredDto>>> AnswerOffTrack(Guid cycleId, Guid planId, OffTrackAnswer answer,
+        CancellationToken cancellationToken)
+    {
+        if (!policy.CanReviewDirectReports(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new AnswerOffTrackCommand(cycleId, planId, answer, Actor, User.GetFullName()), cancellationToken));
     }
 
     [HttpGet("plans/{planId:guid}/update-requests")]

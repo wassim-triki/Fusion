@@ -15,6 +15,10 @@ using EY.HRPlatform.Performance.Infrastructure.Core;
 using EY.HRPlatform.Performance.Infrastructure.Notifications;
 using EY.HRPlatform.Performance.Infrastructure.Persistence;
 using EY.HRPlatform.Performance.Models;
+using EY.HRPlatform.Performance.Domain.Conversations;
+using EY.HRPlatform.Performance.Features.OneOnOnes;
+using EY.HRPlatform.Performance.Infrastructure.Identity;
+using EY.HRPlatform.SharedKernel.Api;
 using EY.HRPlatform.SharedKernel.CQRS;
 using EY.HRPlatform.SharedKernel.Results;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +41,15 @@ public sealed record PersonSummaryObjectiveDto(Guid ObjectiveId, int Number, str
 
     /// <summary>An update asked for and not yet given (the person page's Coming up, B-180).</summary>
     public PersonSummaryUpdateRequestDto? OpenRequest { get; init; }
+
+    // The goal on its year (D-76, B-434): its dates, measure and every update's resulting progress, oldest first.
+    public DateOnly StartDate { get; init; }
+    public DateOnly EndDate { get; init; }
+    public string? Measure { get; init; }
+    public decimal? Current { get; init; }
+    public DateTime? LastProgressAt { get; init; }
+    public DateTime? StatusSince { get; init; }
+    public IReadOnlyList<ProgressPointDto> Line { get; init; } = [];
 }
 
 public sealed record PersonSummaryUpdateRequestDto(string RequestedByName, DateTime RequestedAt);
@@ -50,6 +63,10 @@ public sealed record PersonSummaryCycleDto(Guid CycleId, string CycleName, Cycle
     public decimal? WeightTotal { get; init; }
     /// <summary>The latest check-in on an approved objective.</summary>
     public DateTime? LastUpdateAt { get; init; }
+    public DateOnly StartDate { get; init; }
+    public DateOnly EndDate { get; init; }
+    /// <summary>When the plan reached its state: approved, else put forward.</summary>
+    public DateTime? PlanSince { get; init; }
 }
 public sealed record PersonSummaryCurrentReviewDto(Guid ReviewId, string ReviewRoundName, PerformanceReviewState State,
     DateOnly? DueDate, bool SelfAssessmentEnabled, bool CalibrationEnabled, string Href)
@@ -58,7 +75,11 @@ public sealed record PersonSummaryCurrentReviewDto(Guid ReviewId, string ReviewR
     public string? ReviewerName { get; init; }
 }
 public sealed record PersonSummaryReviewResultDto(Guid ReviewId, string CycleName, string ReviewRoundName,
-    string? FinalRatingLabel, DateTime? FinalizedAt, string Href);
+    string? FinalRatingLabel, DateTime? FinalizedAt, string Href)
+{
+    public string? ReviewerName { get; init; }
+    public DateTime? AcknowledgedAt { get; init; }
+}
 public sealed record PersonSummaryDevelopmentGoalDto(string Title, string? CompetencyName,
     EY.HRPlatform.Performance.Domain.Development.DevelopmentGoalStatus Status, DateOnly? TargetDate);
 /// <summary>The person's development goals for the summary's cycle, linking to the plan's Development section.</summary>
@@ -71,8 +92,15 @@ public sealed record PersonSummaryPraiseDto(IReadOnlyList<EY.HRPlatform.Performa
 /// <summary>Feedback the person received that the viewer may read: never manager-only feedback addressed to someone else.</summary>
 public sealed record PersonSummaryFeedbackDto(IReadOnlyList<EY.HRPlatform.Performance.Features.Conversations.FeedbackDto> Items, int Total, string Href);
 
-/// <summary>The viewer's active 1:1 series with the person; only ever present for the two people.</summary>
-public sealed record PersonSummaryOneOnOneDto(Guid SeriesId, DateTime? NextMeetingAt, string Href);
+/// <summary>
+/// The viewer's active 1:1 series with the person; only ever present for the two people. <see cref="Waiting"/> is what's
+/// on the next meeting's agenda, <see cref="LastMeetingAt"/> the last one held.
+/// </summary>
+public sealed record PersonSummaryOneOnOneDto(Guid SeriesId, DateTime? NextMeetingAt, string Href)
+{
+    public DateTime? LastMeetingAt { get; init; }
+    public IReadOnlyList<string> Waiting { get; init; } = [];
+}
 
 /// <summary>
 /// One person's performance as the caller may see it (D-32). Sections are null when hidden. An unknown
@@ -89,6 +117,8 @@ public sealed record PersonPerformanceSummaryDto(Guid EmployeeId, string? Displa
     public PersonSummaryFeedbackDto? Feedback { get; init; }
     /// <summary>Only for the two people in an active series.</summary>
     public PersonSummaryOneOnOneDto? OneOnOne { get; init; }
+    /// <summary>For the person's Core HR manager with no 1:1s together yet: times both are free, booked in place (D-84).</summary>
+    public FusionWorkBookingDto? OneOnOneBooking { get; init; }
 }
 
 public sealed record PersonSummaryViewer(Guid EmployeeId, bool ReviewsReports, bool Administers)
@@ -103,7 +133,8 @@ public sealed record PersonSummaryViewer(Guid EmployeeId, bool ReviewsReports, b
 public sealed record GetPersonSummaryQuery(Guid EmployeeId, Guid? CycleId, PersonSummaryViewer Viewer)
     : IQuery<Result<PersonPerformanceSummaryDto>>;
 
-public sealed class GetPersonSummaryHandler(PerformanceDbContext db, ICoreWorkforceClient workforce)
+public sealed class GetPersonSummaryHandler(PerformanceDbContext db, ICoreWorkforceClient workforce,
+    INotificationAudienceClient? audience = null)
     : IQueryHandler<GetPersonSummaryQuery, Result<PersonPerformanceSummaryDto>>
 {
     public async Task<Result<PersonPerformanceSummaryDto>> Handle(GetPersonSummaryQuery query, CancellationToken token)
@@ -142,6 +173,8 @@ public sealed class GetPersonSummaryHandler(PerformanceDbContext db, ICoreWorkfo
             Feedback = await FeedbackAsync(query.EmployeeId, query.Viewer, person, token),
             OneOnOne = await OneOnOneAsync(query.EmployeeId, query.Viewer.EmployeeId, token),
         };
+        if (identity.OneOnOne is null && query.Viewer.ReviewsReports && person.IsActive && person.Manager?.EmployeeId == query.Viewer.EmployeeId)
+            identity = identity with { OneOnOneBooking = await BookingAsync(person, query.Viewer.EmployeeId, token) };
         if (relation == PersonRelation.Other) return Result.Success(identity with { Development = development });
 
         return Result.Success(identity with
@@ -190,7 +223,36 @@ public sealed class GetPersonSummaryHandler(PerformanceDbContext db, ICoreWorkfo
         var next = await db.OneOnOneMeetings.AsNoTracking()
             .Where(m => m.SeriesId == series.Id && m.State == EY.HRPlatform.Performance.Domain.Conversations.OneOnOneMeetingState.Upcoming)
             .Select(m => (DateTime?)m.ScheduledAt).FirstOrDefaultAsync(token);
-        return new PersonSummaryOneOnOneDto(series.Id, next, PerformanceNotificationTemplates.OneOnOnePath(series.Id));
+        var nextMeeting = await db.OneOnOneMeetings.AsNoTracking().Include(m => m.Agenda)
+            .Where(m => m.SeriesId == series.Id && m.State == OneOnOneMeetingState.Upcoming)
+            .OrderBy(m => m.ScheduledAt).FirstOrDefaultAsync(token);
+        var last = await db.OneOnOneMeetings.AsNoTracking()
+            .Where(m => m.SeriesId == series.Id && m.State == OneOnOneMeetingState.Completed)
+            .MaxAsync(m => (DateTime?)m.ScheduledAt, token);
+        return new PersonSummaryOneOnOneDto(series.Id, nextMeeting?.ScheduledAt ?? next, PerformanceNotificationTemplates.OneOnOnePath(series.Id))
+        {
+            LastMeetingAt = last,
+            // A starter prompt is a key the 1:1 page words; only what someone put there is said here.
+            Waiting = nextMeeting?.Agenda.Where(i => i.DiscussedAt == null && i.SourceKind != AgendaSourceKind.Starter)
+                .OrderBy(i => i.Order).Select(i => i.Text).ToList() ?? [],
+        };
+    }
+
+    /// <summary>Times the manager and the person are both free, when Identity names the company's time zone.</summary>
+    private async Task<FusionWorkBookingDto?> BookingAsync(WorkforceSnapshot person, Guid me, CancellationToken token)
+    {
+        if (audience is null) return null;
+        string zone;
+        WorkforceSnapshot? manager;
+        try
+        {
+            zone = (await audience.ReadAsync([], token)).TimeZone;
+            manager = (await workforce.ResolveAsync(PerformanceClock.UtcNow, [me], token)).SingleOrDefault(p => p.EmployeeId == me);
+        }
+        catch (HttpRequestException) { return null; }
+        if (manager is null) return null;
+        var slots = await OneOnOneFreeTimes.ForAsync(db, OneOnOneFreeTimes.Zone(zone), manager, person, PerformanceClock.UtcNow, token);
+        return slots.Count == 0 ? null : new(slots, $"/one-on-ones/with/{person.EmployeeId}/book");
     }
 
     /// <summary>The cycle's development goals, under the development plan's own read rule.</summary>
@@ -294,6 +356,7 @@ public sealed class GetPersonSummaryHandler(PerformanceDbContext db, ICoreWorkfo
                 .GroupBy(u => u.ObjectiveId!.Value)
                 .ToDictionary(g => g.Key, g => g.OrderByDescending(u => u.RequestedAt).First())
             : [];
+        var lines = approved ? await ProgressComposer.LinesAsync(db, objectives, token) : [];
         return new(cycle.Id, cycle.Name, cycle.State, phase, true, privateDraft ? null : plan?.Id, standing.Status,
             // Missing is not 0%: no figure until some objective has recorded progress.
             approved && objectives.Any(o => o.HasProgress) ? ProgressCalc.PlanProgress(objectives) : null,
@@ -306,11 +369,21 @@ public sealed class GetPersonSummaryHandler(PerformanceDbContext db, ICoreWorkfo
                 {
                     Status = approved ? o.CurrentStatus : null,
                     OpenRequest = openRequests.TryGetValue(o.Id, out var asked) ? new(asked.RequestedByName, asked.RequestedAt) : null,
+                    StartDate = o.StartDate,
+                    EndDate = o.EndDate,
+                    Measure = PerformanceMappers.MeasurementSummary(o),
+                    Current = approved ? o.CurrentActual : null,
+                    LastProgressAt = approved ? o.LastProgressAt : null,
+                    StatusSince = approved ? o.StatusSince : null,
+                    Line = lines.GetValueOrDefault(o.Id) ?? [],
                 }).ToList())
         {
             ReviewerName = plan?.ResponsibleManagerName ?? participant!.ManagerDisplayName,
             WeightTotal = plan is null || privateDraft ? null : objectives.Sum(o => o.PlanWeight ?? 0m),
             LastUpdateAt = approved ? objectives.Select(o => o.LastCheckInAt).Where(d => d is not null).Max() : null,
+            StartDate = cycle.StartDate,
+            EndDate = cycle.EndDate,
+            PlanSince = privateDraft ? null : plan?.ApprovedAt ?? plan?.SubmittedAt,
         };
     }
 
@@ -334,7 +407,7 @@ public sealed class GetPersonSummaryHandler(PerformanceDbContext db, ICoreWorkfo
                              where review.SubjectEmployeeId == employeeId && review.State == PerformanceReviewState.Finalized
                              orderby review.FinalizedAt descending
                              select new { review.Id, CycleName = cycle.Name, RoundName = round.Name, review.FinalRating,
-                                 review.FinalizedSnapshotJson, review.FinalizedAt })
+                                 review.FinalizedSnapshotJson, review.FinalizedAt, review.ReviewerDisplayName, review.AcknowledgedAt })
             .ToListAsync(token);
         return new(
             current is null ? null : new(current.Id, current.RoundName, current.State, current.CurrentStageDueDate,
@@ -342,6 +415,6 @@ public sealed class GetPersonSummaryHandler(PerformanceDbContext db, ICoreWorkfo
                 { ReviewerName = current.ReviewerDisplayName },
             history.Select(r => new PersonSummaryReviewResultDto(r.Id, r.CycleName, r.RoundName,
                 ReviewHistoryRating.Label(r.FinalizedSnapshotJson, r.FinalRating), r.FinalizedAt,
-                PerformanceNotificationTemplates.ReviewPath(r.Id))).ToList());
+                PerformanceNotificationTemplates.ReviewPath(r.Id)) { ReviewerName = r.ReviewerDisplayName, AcknowledgedAt = r.AcknowledgedAt }).ToList());
     }
 }

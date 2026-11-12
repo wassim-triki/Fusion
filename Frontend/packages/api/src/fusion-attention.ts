@@ -22,7 +22,7 @@ export interface FusionWorkItem {
   /** Absolute in-app path where the work is done, e.g. `/performance/reviews/{id}`. */
   href: string;
   /** The person the work concerns, when it isn't the viewer. */
-  subject?: { displayName: string } | null;
+  subject?: { displayName: string; employeeId?: string | null } | null;
   /** Module navigation path the item is counted under in the sidebar, e.g. `/performance/team`. */
   section?: string | null;
   /** The path the work belongs to, so the home can show where it stands. */
@@ -33,6 +33,33 @@ export interface FusionWorkItem {
   waitingSince?: string | null;
   /** A yes or no the home gives in place: paths below the module's `apiBase`; declining posts `{ reason }`. */
   decision?: FusionWorkDecision | null;
+  /** What the work is about, line by line (a plan's goals, the goals off track). */
+  lines?: FusionWorkLine[] | null;
+  /** The subject's own latest words on it. */
+  quote?: string | null;
+  /** One-click answers given in place: each posts `{}` to its path below the module's `apiBase`. */
+  actions?: FusionWorkAction[] | null;
+  /** A time to book in place. */
+  booking?: FusionWorkBooking | null;
+}
+
+export interface FusionWorkLine {
+  text: string;
+  meta?: string | null;
+  /** `ok`, `warn` or `bad` when the meta is a state. */
+  tone?: "ok" | "warn" | "bad" | null;
+}
+
+export interface FusionWorkAction {
+  label: string;
+  path: string;
+  primary?: boolean;
+}
+
+/** UTC instants both people are free, earliest first; booking posts `{ at }` to `path` below the module's `apiBase`. */
+export interface FusionWorkBooking {
+  slots: string[];
+  path: string;
 }
 
 export interface FusionWorkDecision {

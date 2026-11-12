@@ -6,7 +6,7 @@ import type { AlignmentMapNodeDto, GoalNodeDto } from "@repo/api";
 import { cn } from "@repo/ds";
 import { ArrowUp, Plus } from "@repo/ds/icons";
 import { AvatarStack, PersonInitials } from "@repo/performance-ui";
-import { GoalLine, GoalMonths } from "../objective-record/goal-line";
+import { GoalLine, GoalMonths } from "@repo/performance-ui";
 import { GoalState } from "../objective-record/goal-state";
 import { firstName } from "../year/year-words";
 import { Axis, todayIso } from "./goals-you";

@@ -12,6 +12,7 @@ import type {
   ReviewRoundReadinessDto,
   ReviewRoundScheduleDto,
 } from "./performance-reviews";
+import type { FusionWorkBooking, FusionWorkItem } from "./fusion-attention";
 import type { ApiClient } from "./types";
 
 // ── Enumerations (mirror the Performance service contracts) ──────────────────
@@ -41,14 +42,6 @@ export type RosterPlanStatus =
   | "ReturnedForChanges"
   | "Submitted"
   | "Approved";
-export type RosterActivityKind =
-  | "None"
-  | "DraftUpdated"
-  | "Returned"
-  | "Submitted"
-  | "ProgressUpdated"
-  | "Approved"
-  | "Resubmitted";
 export type ProgressEventKind =
   | "PercentageSet"
   | "NumericActual"
@@ -1246,164 +1239,58 @@ export interface AlignmentTargetDto {
   directionPath: string[];
 }
 
-/** One objective's slice of an approved plan: its plan weight and reported progress (capped at 100). */
-export interface RosterObjectiveProgressDto {
+/** A goal on the Team page's tree (D-79): whose it is, how it's measured, where it stands. */
+export interface TeamYearGoalDto {
+  objectiveId: string;
+  ownerEmployeeId: string;
+  ownerName: string;
+  title: string;
+  measure: string;
+  current: number | null;
+  progress: number;
+  status: ObjectiveStatus | null;
+}
+
+/** One of the manager's goals with the team's goals under it, and the goal it supports in turn. */
+export interface TeamYearBranchDto {
+  goal: TeamYearGoalDto;
+  supports: string | null;
+  team: TeamYearGoalDto[];
+}
+
+/** One goal of a report's plan as their bar draws it. */
+export interface TeamYearPersonGoalDto {
   weight: number;
   progress: number;
-  hasProgress: boolean;
-  /** Aligned to upstream direction (accent) rather than standalone (info) — the objective's colour identity. */
-  isAligned: boolean;
-  /** A milestone objective's milestones, in order; empty for other measurement methods. */
-  milestones: RosterMilestoneSliceDto[];
+  status: ObjectiveStatus | null;
 }
 
-/** One milestone inside a roster objective slice: its share of the objective and whether it is done. */
-export interface RosterMilestoneSliceDto {
-  weight: number;
-  isCompleted: boolean;
-  /** Open and past its due date. */
-  isOverdue: boolean;
-}
-
-export interface TeamRosterMemberDto {
+/** One report's year: their goals once put forward, the one thing they need from the viewer, their next 1:1. */
+export interface TeamYearPersonDto {
   employeeId: string;
-  employeeName: string | null;
+  name: string;
   jobTitle: string | null;
-  orgUnitName: string | null;
-  planId: string | null;
-  status: RosterPlanStatus;
-  hasProgress: boolean;
-  planProgress: number;
-  /** Each objective's slice of an Approved plan, in plan order; empty before approval. */
-  objectiveProgress: RosterObjectiveProgressDto[];
-  /** Objectives on an Approved plan that are incomplete past their end date or an open milestone's due date, counted once each — a fact, never a rating. */
-  overdueObjectiveCount: number;
-  activityKind: RosterActivityKind;
-  activityAt: string | null;
-  /** The strong "Review plan" action: a Submitted plan the caller may actually decide. */
-  canReview: boolean;
-  /** The quiet inspection action: an existing plan the caller may open. */
-  canView: boolean;
-  /** Planning only (Draft, Returned, Submitted): share of plan weight allocated so far; null once Approved. */
-  allocatedWeight?: number | null;
-  /** Approved only: incomplete objectives with no update in the last 30 days. */
-  objectivesWithoutRecentUpdate?: number;
-  /** The caller's latest update request on this plan, open or resolved. */
-  updateRequest?: RosterUpdateRequestDto | null;
-  /** The caller is this Approved plan's responsible reviewer in an Active Cycle. */
-  canRequestUpdate?: boolean;
-  /** The review assigned to the caller during this Cycle's Active round, if any. */
-  review?: RosterReviewDto | null;
-  /** What needs the manager in this phase: one of the page's `groups`. */
-  group?: string | null;
-  facts?: RosterPhaseFactsDto | null;
-  /** Leave they are on (`now`), or their next, from Core HR; Performance pauses nothing for it. */
-  leave?: { from: string; until: string | null; back: string | null; now: boolean } | null;
+  stableEmployeeKey: string;
+  photoUrl: string | null;
+  planStatus: RosterPlanStatus;
+  goals: TeamYearPersonGoalDto[];
+  /** The viewer's own Home work item about them, answered the same way. */
+  due: FusionWorkItem | null;
+  nextOneOnOneAt: string | null;
+  /** The latest progress update on any of their goals once the plan runs. */
+  lastUpdateAt: string | null;
 }
 
-export type RosterAttentionKind = "planWaiting" | "offTrack" | "atRisk" | "noUpdate" | "openRequest" | "notApproved";
-
-export interface RosterAttentionDto {
-  kind: RosterAttentionKind;
-  objectiveId: string | null;
-  objectiveTitle: string | null;
-  reason: string | null;
-  since: string | null;
-  days: number | null;
-}
-
-export interface RosterPeersDto {
-  enabled: boolean;
-  asked: number;
-  answered: number;
-  proposed: number;
-  waitingForYou: boolean;
-}
-
-/** One person's facts for the phase; only the phase's member is set. */
-export interface RosterPhaseFactsDto {
-  planning: { objectives: number; alignedToTeam: number } | null;
-  execution: { status: StatusMixDto; attention: RosterAttentionDto | null; lastUpdateAt: string | null } | null;
-  review: {
-    selfState: "submitted" | "writing" | "notStarted" | "off";
-    selfSubmittedAt: string | null;
-    selfDue: string | null;
-    peers: RosterPeersDto;
-    yourReview: "submitted" | "draftSaved" | "notStarted";
-    yourDraftSavedAt: string | null;
-  } | null;
-  closed: {
-    reviewId: string;
-    level: number;
-    label: string;
-    yourLevel: number | null;
-    acknowledgedAt: string | null;
-    acknowledgedWithComment: boolean;
-    openGrowthGoals: number;
-  } | null;
-}
-
-export type TeamPhase = "Planning" | "Execution" | "Review" | "Closed";
-
-export interface RosterGroupCountDto {
-  key: string;
-  count: number;
-}
-
-/** My Team's header facts for the phase, over the whole responsibility. */
-export interface TeamPhaseSummaryDto {
-  status: StatusMixDto | null;
-  updatedIn30Days: number;
-  approved: number;
-  roundName: string | null;
-  selfSubmitted: number;
-  selfTotal: number;
-  selfDue: string | null;
-  peerListsToApprove: string[];
-  reviewsSubmitted: number;
-  reviewsReady: number;
-  reviewsTotal: number;
-  reviewsDue: string | null;
-  firstReadyName: string | null;
-  firstReadyReviewId: string | null;
-  releasedAt: string | null;
-}
-
-export interface TeamResultLevelDto {
-  value: number;
-  label: string;
-  count: number;
-  people: { employeeId: string; name: string }[];
-}
-
-/** The released results of the caller's own recorded team (D-R2). Empty before release; no averages. */
-export interface TeamResultsDto {
+/** The Team page's Performance tab: the manager's goals with the team's under each, then each person's year. */
+export interface TeamYearDto {
   cycleId: string;
-  released: number;
-  releasedAt: string | null;
-  levels: TeamResultLevelDto[];
-  acknowledged: number;
-  notAcknowledged: string[];
-  calibrationChanges: { employeeId: string; name: string; from: number; to: number }[];
-  openGrowthGoals: number;
-}
-
-export interface RosterReviewDto {
-  reviewId: string;
-  state: PerformanceReviewState;
-  dueDate: string | null;
+  branches: TeamYearBranchDto[];
+  /** People whose goals support other goals than the manager's. */
+  elsewhere: string[];
+  people: TeamYearPersonDto[];
 }
 
 export type UpdateRequestState = "Open" | "Satisfied" | "Withdrawn" | "Unresolved";
-
-export interface RosterUpdateRequestDto {
-  id: string;
-  state: UpdateRequestState;
-  objectiveTitle: string | null;
-  requestedAt: string;
-  satisfiedAt: string | null;
-  version: number;
-}
 
 export interface UpdateRequestDto {
   id: string;
@@ -1418,43 +1305,6 @@ export interface UpdateRequestDto {
   satisfiedAt: string | null;
   closedAt: string | null;
   version: number;
-}
-
-/** The server-owned views of Your People. */
-export type YourPeopleFilter = "All" | "NeedsReview" | "Planning" | "Approved" | "NoProgress";
-
-export interface YourPeopleQuery {
-  filter: YourPeopleFilter;
-  search: string;
-  page: number;
-  pageSize: number;
-}
-
-export interface YourPeopleCountsDto {
-  needsReview: number;
-  planning: number;
-  approved: number;
-  noProgress: number;
-}
-
-/** One server page of Your People, action required first. */
-export interface YourPeoplePageDto {
-  cycleId: string;
-  hasActiveReviewRound: boolean;
-  items: TeamRosterMemberDto[];
-  page: number;
-  pageSize: number;
-  /** What the current view and search match. */
-  matchCount: number;
-  /** Everyone before search and view: what "empty" means. */
-  totalCount: number;
-  counts: YourPeopleCountsDto;
-  /** The caller's whole responsibility, unaffected by search or view. */
-  standing: TeamStandingDto;
-  phase: TeamPhase;
-  /** The phase's groups in page order, with how many people each holds. */
-  groups: RosterGroupCountDto[];
-  summary: TeamPhaseSummaryDto | null;
 }
 
 // ── Cycle › Insights (performance-hr-insights): cycle administrators only ──
@@ -1584,19 +1434,6 @@ export interface InsightsPeoplePageDto {
   items: InsightsPersonDto[];
 }
 
-/** Plan states as a distribution, then execution attention as counts of people. No averages. */
-export interface TeamStandingDto {
-  people: number;
-  notStarted: number;
-  draft: number;
-  returned: number;
-  submitted: number;
-  approved: number;
-  approvedReporting: number;
-  peopleWithOverdue: number;
-  peopleWithoutRecentUpdate: number;
-  activeLastSevenDays: number;
-}
 
 
 /**
@@ -1859,6 +1696,14 @@ export interface PersonSummaryObjectiveDto {
   status: ObjectiveStatus | null;
   /** An update asked for and not yet given (the person page's Coming up). */
   openRequest?: { requestedByName: string; requestedAt: string } | null;
+  /** The goal on its year (B-434): dates, measure, each update's progress oldest first. */
+  startDate: string;
+  endDate: string;
+  measure: string | null;
+  current: number | null;
+  lastProgressAt: string | null;
+  statusSince: string | null;
+  line: ProgressPointDto[];
 }
 
 export interface PersonSummaryCycleDto {
@@ -1880,6 +1725,10 @@ export interface PersonSummaryCycleDto {
   weightTotal?: number | null;
   /** The latest check-in on an approved objective. */
   lastUpdateAt?: string | null;
+  startDate: string;
+  endDate: string;
+  /** When the plan reached its state: approved, else put forward. */
+  planSince: string | null;
 }
 
 export interface PersonSummaryCurrentReviewDto {
@@ -1903,6 +1752,8 @@ export interface PersonSummaryReviewResultDto {
   finalRatingLabel: string | null;
   finalizedAt: string | null;
   href: string;
+  reviewerName: string | null;
+  acknowledgedAt: string | null;
 }
 
 export interface PersonSummaryReviewsDto {
@@ -1933,6 +1784,8 @@ export interface PersonPerformanceSummaryDto {
   feedback: PersonSummaryFeedbackDto | null;
   /** The viewer's active 1:1 with the person; only for the two people. */
   oneOnOne: PersonSummaryOneOnOneDto | null;
+  /** For the person's manager with no 1:1s together yet: times both are free, booked in place. */
+  oneOnOneBooking: FusionWorkBooking | null;
 }
 
 export interface PersonSummaryPraiseDto {
@@ -1951,6 +1804,9 @@ export interface PersonSummaryOneOnOneDto {
   seriesId: string;
   nextMeetingAt: string | null;
   href: string;
+  lastMeetingAt: string | null;
+  /** What's on the next meeting's agenda. */
+  waiting: string[];
 }
 
 export interface PersonSummaryDevelopmentGoalDto {
@@ -2071,9 +1927,10 @@ export const performancePaths = {
   planWeights: (cycleId: string) =>
     `/performance/cycles/${cycleId}/plan/weights`,
   submitPlan: (cycleId: string) => `/performance/cycles/${cycleId}/plan/submit`,
-  yourPeople: (cycleId: string) =>
-    `/performance/cycles/${cycleId}/team/people`,
-  teamResults: (cycleId: string) => `/performance/cycles/${cycleId}/team/results`,
+  teamYear: (cycleId: string) => `/performance/cycles/${cycleId}/team/year`,
+  answerOffTrack: (cycleId: string, planId: string, answer: "ask-for-update" | "talk-it-over") =>
+    `/performance/cycles/${cycleId}/plans/${planId}/attention/${answer}`,
+  roundResults: (roundId: string) => `/api/performance/review-rounds/${roundId}/results.csv`,
   insights: (cycleId: string) => `/performance/cycles/${cycleId}/insights`,
   insightsPeople: (cycleId: string) => `/performance/cycles/${cycleId}/insights/people`,
   planDetail: (cycleId: string, planId: string) =>
@@ -2157,11 +2014,7 @@ export const performanceQueryKeys = {
     [...performanceQueryKeys.all(), "my-plan", cycleId] as const,
   alignmentTargets: (cycleId: string) =>
     [...performanceQueryKeys.all(), "alignment-targets", cycleId] as const,
-  yourPeople: (cycleId: string, query?: YourPeopleQuery) =>
-    query
-      ? ([...performanceQueryKeys.all(), "your-people", cycleId, query] as const)
-      : ([...performanceQueryKeys.all(), "your-people", cycleId] as const),
-  teamResults: (cycleId: string) => [...performanceQueryKeys.all(), "team-results", cycleId] as const,
+  teamYear: (cycleId: string) => [...performanceQueryKeys.all(), "team-year", cycleId] as const,
   insights: (cycleId: string, unitId?: string | null) =>
     [...performanceQueryKeys.all(), "insights", cycleId, unitId ?? "all"] as const,
   insightsPeople: (cycleId: string, query: InsightsPeopleQuery) =>
@@ -2415,13 +2268,8 @@ export function createPerformanceApi(client: ApiClient) {
       ),
     submitPlan: (cycleId: string, expectedVersion: number) =>
       client.post<EmployeePlanDto>(performancePaths.submitPlan(cycleId), { expectedVersion }),
-    getYourPeople: (cycleId: string, query: YourPeopleQuery, signal?: AbortSignal) =>
-      client.get<YourPeoplePageDto>(performancePaths.yourPeople(cycleId), {
-        signal,
-        params: { ...query },
-      }),
-    getTeamResults: (cycleId: string, signal?: AbortSignal) =>
-      client.get<TeamResultsDto>(performancePaths.teamResults(cycleId), { signal }),
+    getTeamYear: (cycleId: string, signal?: AbortSignal) =>
+      client.get<TeamYearDto>(performancePaths.teamYear(cycleId), { signal }),
     getInsights: (cycleId: string, unitId?: string | null, signal?: AbortSignal) =>
       client.get<InsightsDto>(performancePaths.insights(cycleId), { signal, params: { unitId: unitId ?? undefined } }),
     getInsightsPeople: (cycleId: string, query: InsightsPeopleQuery, signal?: AbortSignal) =>

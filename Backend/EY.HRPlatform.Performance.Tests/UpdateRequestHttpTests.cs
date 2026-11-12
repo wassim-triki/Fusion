@@ -29,8 +29,6 @@ public sealed class UpdateRequestHttpTests
         var nourClient = factory.CreateAuthenticatedClient(employeeId: nour, permissions: Employee);
         var requests = $"/api/performance/cycles/{cycleId}/plans/{planId}/update-requests";
 
-        var before = await Data(await linaClient.GetAsync($"/api/performance/cycles/{cycleId}/team/people?filter=All&page=1&pageSize=25"));
-        Assert.True(before.GetProperty("items")[0].GetProperty("canRequestUpdate").GetBoolean());
         var created = await Data(await linaClient.PostAsJsonAsync(requests, new { objectiveId, note = "Please add this week's numbers." }));
         Assert.Equal("Open", created.GetProperty("state").GetString());
         Assert.Equal(HttpStatusCode.Forbidden, (await nourClient.PostAsJsonAsync(requests, new { objectiveId })).StatusCode);
@@ -48,9 +46,8 @@ public sealed class UpdateRequestHttpTests
         });
         Assert.True(recorded.IsSuccessStatusCode, await recorded.Content.ReadAsStringAsync());
 
-        var roster = await Data(await linaClient.GetAsync($"/api/performance/cycles/{cycleId}/team/people?filter=All&page=1&pageSize=25"));
-        var row = roster.GetProperty("items").EnumerateArray().Single();
-        Assert.Equal("Satisfied", row.GetProperty("updateRequest").GetProperty("state").GetString());
+        var listed = await Data(await linaClient.GetAsync(requests));
+        Assert.Equal("Satisfied", listed.EnumerateArray().Single().GetProperty("state").GetString());
         var workAfter = await Data(await nourClient.GetAsync("/api/performance/work"));
         Assert.DoesNotContain(workAfter.EnumerateArray(), item => item.GetProperty("kind").GetString() == "update-request");
     }

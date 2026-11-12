@@ -503,7 +503,8 @@
       "draft": "{cycle} · تُحفظ أثناء العمل",
       "active": "{count, plural, one {أُطلقت {day} · شخص واحد · {period}} other {أُطلقت {day} · # أشخاص · {period}}}",
       "released": "{period} · نُشرت {day}"
-    }
+    },
+    "exportResults": "تصدير النتائج"
   },
   "RoundBadge": {
     "running": "جارية",

@@ -338,6 +338,11 @@
         "praiseReceived": "{name} vous a félicité le {day}",
         "teammate": "Vous et {name} avez le même manager"
       }
+    },
+    "inPlace": {
+      "times": "Créneaux où vous êtes tous deux libres",
+      "bookIt": "Réserver",
+      "failed": "Ça n’a pas abouti. Réessayez."
     }
   },
   "app": {

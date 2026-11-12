@@ -503,7 +503,8 @@
       "draft": "{cycle} · enregistré au fil de l’eau",
       "active": "{count, plural, one {Lancée le {day} · # personne · {period}} other {Lancée le {day} · # personnes · {period}}}",
       "released": "{period} · publiée le {day}"
-    }
+    },
+    "exportResults": "Exporter les résultats"
   },
   "RoundBadge": {
     "running": "En cours",

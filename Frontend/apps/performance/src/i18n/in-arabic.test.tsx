@@ -6,7 +6,6 @@ import { ObjectiveStatusBadge } from "@repo/performance-ui";
 import { renderInArabic, sayInArabic } from "@/test/intl";
 import { NotStartedBadge } from "@/features/performance/components/plan/plan-header";
 import { planChecks } from "@/features/performance/components/plan/plan-lib";
-import { groupLabel } from "@/features/performance/components/team/your-people";
 import { dueIn } from "@/features/performance/components/reviews/review-parts";
 
 
@@ -18,10 +17,9 @@ describe("Performance in Arabic", () => {
     expect(say("nudgedToast", { count: 2 })).toBe("تم تذكير شخصين");
   });
 
-  it("words plan checks, roster groups and review due dates in Arabic", () => {
+  it("words plan checks and review due dates in Arabic", () => {
     const checks = planChecks({ objectiveCount: 0, weightTotal: 0, weightRemaining: 100, everyObjectiveHasWeight: false, openChangeRequests: 0 } as never, sayInArabic("plan.checks"));
     expect(checks[0]!.label).toBe("تحتوي الخطة على هدف واحد على الأقل");
-    expect(groupLabel("Planning", "waiting", sayInArabic("team.people"))).toBe("بانتظارك");
     const now = new Date();
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
     expect(dueIn(today, sayInArabic("reviews.parts"))).toBe("مستحق اليوم");

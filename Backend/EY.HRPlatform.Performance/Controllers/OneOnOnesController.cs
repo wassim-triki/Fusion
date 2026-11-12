@@ -30,6 +30,13 @@ public sealed class OneOnOnesController(IMediator mediator, IPerformanceAccessPo
     public async Task<ActionResult<ApiResponse<OneOnOneSeriesDto>>> Start([FromBody] StartOneOnOneRequest request, CancellationToken cancellationToken)
         => Allowed ? MapResult(await mediator.Send(new StartOneOnOneCommand(request, Viewer), cancellationToken)) : CapabilityForbidden();
 
+    /// <summary>Starts 1:1s at a time both are free, booked in place from Home or the person's page (B-434).</summary>
+    [HttpPost("with/{employeeId:guid}/book")]
+    public async Task<ActionResult<ApiResponse<OneOnOneSeriesDto>>> Book(Guid employeeId, [FromBody] BookOneOnOneRequest request, CancellationToken cancellationToken)
+        => Allowed
+            ? MapResult(await mediator.Send(new StartOneOnOneCommand(new StartOneOnOneRequest(employeeId, null, request.At), Viewer), cancellationToken))
+            : CapabilityForbidden();
+
     /// <summary>Starting 1:1s with someone: the default rhythm and the talking points ready for the first meeting.</summary>
     [HttpGet("start")]
     public async Task<ActionResult<ApiResponse<OneOnOneStartDto>>> StartOptions([FromQuery] Guid with, CancellationToken cancellationToken)

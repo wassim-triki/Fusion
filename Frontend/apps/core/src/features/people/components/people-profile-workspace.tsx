@@ -51,7 +51,7 @@ import {
 } from "../api/use-people";
 import { useWorkforceDate } from "./workforce-ui";
 import { WorkerProfile } from "./worker-profile/worker-profile";
-import { PerformanceRecordView, usePerformanceSummary } from "./record-views";
+import { PerformanceRecordView, PerformanceTabView, usePerformanceSummary } from "./record-views";
 import { WorkerProfileSkeleton } from "./worker-profile/worker-profile-skeleton";
 import { fromPeopleProfile } from "./worker-profile/worker-profile-view";
 import { PersonRoles } from "@/features/settings/roles/person-roles";
@@ -289,7 +289,7 @@ export default function PeopleProfileWorkspace({
       {isSelf && !isAsOf ? <BirthdaySharing /> : null}
     </div>
   ) : tab === "performance" ? (
-    <PerformanceRecordView employeeId={employee.identity.employeeId} />
+    <PerformanceTabView employeeId={employee.identity.employeeId} />
   ) : tab === "documents" ? (
     <DocumentsTab employeeKey={employeeKey} audience={seenBy?.full} />
   ) : tab === "access" ? (
@@ -344,7 +344,7 @@ export default function PeopleProfileWorkspace({
         time: (iso) => format.time(iso),
         date: (iso) => format.date(iso, { weekday: true }),
       }) : []}
-      performance={showPerformance ? <PerformanceRecordView employeeId={employee.identity.employeeId} compact /> : undefined}
+      performance={showPerformance ? <PerformanceRecordView employeeId={employee.identity.employeeId} /> : undefined}
       performanceHref={showPerformance ? tabHref("performance") : undefined}
       timeline={explores && !timelineForbidden ? { isLoading: timeline.isLoading } : undefined}
       jobHref={tabHref("job")}

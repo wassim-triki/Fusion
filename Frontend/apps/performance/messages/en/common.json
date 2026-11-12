@@ -63,11 +63,6 @@
       "ResultsOut": "Results out"
     }
   },
-  "PersonPage": {
-    "person": "Person",
-    "openCoreHrRecord": "Open Core HR record",
-    "giveFeedback": "Give feedback"
-  },
   "PerformanceCycleContext": {
     "switchCycle": "Switch cycle",
     "state": {

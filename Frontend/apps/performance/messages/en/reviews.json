@@ -503,7 +503,8 @@
       "draft": "{cycle} · saved as you go",
       "active": "{count, plural, one {Launched {day} · # person · {period}} other {Launched {day} · # people · {period}}}",
       "released": "{period} · released {day}"
-    }
+    },
+    "exportResults": "Export results"
   },
   "RoundBadge": {
     "running": "Running",

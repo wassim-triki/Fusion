@@ -29,7 +29,7 @@ import {
 import { useApiMutation, useApiQuery, useApiQueryClient, type UseApiMutationOptions } from "@repo/api/query";
 import { recoverPerformanceFailure } from "./performance-failure";
 import { useSelectedCycleId, useWorkspaceContext } from "./use-workspace";
-import type { InsightsPeopleQuery, YourPeopleQuery } from "@repo/api";
+import type { InsightsPeopleQuery } from "@repo/api";
 import type { CycleDetailDto } from "@repo/api";
 
 type RequestDraft<T> = Omit<T, "expectedVersion">;
@@ -268,29 +268,6 @@ export function useAlignmentTargets(cycleId: string | null, enabled = true) {
 }
 
 
-/**
- * Your People: one server page of the caller's recorded responsibility. The previous page stays on screen
- * while the next view or page loads, so the table never collapses to a skeleton between pages.
- */
-export function useYourPeople(cycleId: string | null, query: YourPeopleQuery, enabled = true) {
-  const { performance } = useApis();
-  return useApiQuery(
-    performanceQueryKeys.yourPeople(cycleId ?? "none", query),
-    (signal) => performance.getYourPeople(cycleId as string, query, signal),
-    { enabled: Boolean(cycleId) && enabled, placeholderData: (previous) => previous }
-  );
-}
-
-
-/** The released results of the caller's own team; empty until a round's results are released. */
-export function useTeamResults(cycleId: string | null, enabled = true) {
-  const { performance } = useApis();
-  return useApiQuery(
-    performanceQueryKeys.teamResults(cycleId ?? "none"),
-    (signal) => performance.getTeamResults(cycleId as string, signal),
-    { enabled: Boolean(cycleId) && enabled }
-  );
-}
 
 
 /** Cycle › Insights for cycle administrators, scoped to one org unit and its sub-units when given. */
@@ -359,7 +336,7 @@ export function usePlanReviewMutations(cycleId: string, planId: string) {
   const { performance } = useApis();
   const invalidate = [
     { queryKey: performanceQueryKeys.planDetail(cycleId, planId) },
-    { queryKey: performanceQueryKeys.yourPeople(cycleId) },
+    { queryKey: performanceQueryKeys.teamYear(cycleId) },
     { queryKey: performanceQueryKeys.years() },
     { queryKey: performanceQueryKeys.cycle(cycleId) },
   ];
@@ -421,7 +398,7 @@ export function useAcknowledgeStatus(cycleId: string, objectiveId: string) {
       invalidateQueries: [
         { queryKey: performanceQueryKeys.goal(cycleId, objectiveId) },
         { queryKey: [...performanceQueryKeys.all(), "plan", cycleId] },
-        { queryKey: performanceQueryKeys.yourPeople(cycleId) },
+        { queryKey: performanceQueryKeys.teamYear(cycleId) },
       ],
     }
   );

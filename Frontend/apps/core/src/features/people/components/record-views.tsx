@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { createPerformanceApi, createPlatformApiClient, performanceQueryKeys } from "@repo/api";
-import { useApiQuery, useReactToPraise } from "@repo/api/query";
-import { PersonPerformanceSummary, type PraiseReactionIcons, type RenderSummaryLink } from "@repo/performance-ui";
-import { HeartHandshake, Lightbulb, PartyPopper, ThumbsUp } from "@repo/ds/icons";
+import { useQueryClient } from "@tanstack/react-query";
+import { createPerformanceApi, createPlatformApiClient, fusionAttentionQueryKeys, performanceQueryKeys } from "@repo/api";
+import { useApiQuery } from "@repo/api/query";
+import { PersonPerformanceSummary, PersonPerformanceTab, type RenderSummaryLink } from "@repo/performance-ui";
 
 const BASE_PATH = "/core";
 
@@ -20,18 +20,6 @@ export const renderCoreLink: RenderSummaryLink = ({ href, className, children })
     </a>
   );
 
-/** Core HR's own icon set for praise reactions; the shared parts carry none. */
-const REACTION_ICONS: PraiseReactionIcons = {
-  Applause: <ThumbsUp />,
-  Celebrate: <PartyPopper />,
-  Insightful: <Lightbulb />,
-  ThankYou: <HeartHandshake />,
-};
-
-/**
- * The person's performance on their Core HR record, read from Performance's viewer-shaped summary.
- * It loads on its own, so the Profile view never waits on Performance and a failure stays in place.
- */
 /** The person's Performance summary as the viewer may see it; shared with the record view through its query key. */
 export function usePerformanceSummary(employeeId: string, enabled = true) {
   return useApiQuery(
@@ -41,27 +29,38 @@ export function usePerformanceSummary(employeeId: string, enabled = true) {
   );
 }
 
-export function PerformanceRecordView({ employeeId, compact = false }: { employeeId: string; compact?: boolean }) {
+function stateOf(summary: ReturnType<typeof usePerformanceSummary>) {
+  return summary.data
+    ? ({ status: "ready", summary: summary.data } as const)
+    : summary.error
+      ? ({ status: "error", onRetry: () => void summary.refetch() } as const)
+      : ({ status: "loading" } as const);
+}
+
+/**
+ * The person's performance on their Core HR record, read from Performance's viewer-shaped summary. It loads on its own,
+ * so the page never waits on Performance and a failure stays in place. The Overview shows the plan at a glance.
+ */
+export function PerformanceRecordView({ employeeId }: { employeeId: string }) {
   const summary = usePerformanceSummary(employeeId);
-  const react = useReactToPraise();
-  // The Overview's compact summary shows the plan and the review; with neither visible, nothing.
-  const data = summary.data;
-  if (compact && data && !data.currentCycle && !data.reviews) return null;
+  return <PersonPerformanceSummary renderLink={renderCoreLink} state={stateOf(summary)} />;
+}
+
+/** The Performance tab: the one place for the person's year (D-84), booking a first 1:1 in place. */
+export function PerformanceTabView({ employeeId }: { employeeId: string }) {
+  const summary = usePerformanceSummary(employeeId);
+  const cache = useQueryClient();
   return (
-    <PersonPerformanceSummary
-      compact={compact}
+    <PersonPerformanceTab
       renderLink={renderCoreLink}
-      reactionIcons={REACTION_ICONS}
-      onReact={(praise, kind, add) => react.mutate({ praiseId: praise.id, kind, add })}
-      // Praise opens in Performance's drawer; it's another app, so this is a full navigation.
-      onOpenPraise={(praise) => window.location.assign(`/performance/feedback?tab=praise&praise=${praise.id}`)}
-      state={
-        summary.data
-          ? { status: "ready", summary: summary.data }
-          : summary.error
-            ? { status: "error", onRetry: () => void summary.refetch() }
-            : { status: "loading" }
-      }
+      state={stateOf(summary)}
+      onBook={async (path, at) => {
+        await createPlatformApiClient().post(`/performance${path}`, { at });
+        await Promise.all([
+          cache.invalidateQueries({ queryKey: performanceQueryKeys.personSummary(employeeId) }),
+          cache.invalidateQueries({ queryKey: fusionAttentionQueryKeys.all() }),
+        ]);
+      }}
     />
   );
 }

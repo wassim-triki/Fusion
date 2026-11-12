@@ -338,6 +338,11 @@
         "praiseReceived": "{name} praised you {day}",
         "teammate": "You and {name} share a manager"
       }
+    },
+    "inPlace": {
+      "times": "Times you're both free",
+      "bookIt": "Book it",
+      "failed": "That didn't go through. Try again."
     }
   },
   "app": {

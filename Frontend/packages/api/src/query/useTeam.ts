@@ -3,12 +3,10 @@
 import { useMemo } from "react";
 import { coreTeamQueryKeys, createCoreTeamApi, type TeamEventKind } from "../core-team";
 import { conversationQueryKeys, createConversationsApi } from "../performance-conversations";
-import { createPerformanceApi, performanceQueryKeys, type YourPeopleQuery } from "../performance";
+import { createPerformanceApi, performanceQueryKeys } from "../performance";
 import { createPlatformApiClient } from "../platform";
 import { useApiQuery } from "./useApiQuery";
 import { usePhotos } from "./usePhoto";
-
-const WHOLE_TEAM: YourPeopleQuery = { filter: "All", search: "", page: 1, pageSize: 100 };
 
 /** The Team page's band, rail and Coming up from Core HR: the caller's own team (B-185), shared by Core HR and Performance. */
 export function useMyTeam(enabled = true) {
@@ -17,8 +15,8 @@ export function useMyTeam(enabled = true) {
 }
 
 /**
- * Performance's part of the Team page: the manager's 1:1s with their reports and the current cycle's roster (each
- * person's plan and what needs attention). Only for viewers who can enter Performance; each part loads on its own.
+ * Performance's part of the Team page: the manager's 1:1s with their reports and the current year's team (each person's
+ * goals and the one thing due, B-434). Only for viewers who can enter Performance; each part loads on its own.
  */
 export function useTeamPerformance(enabled = true) {
   const { performance, conversations } = useMemo(() => {
@@ -27,14 +25,14 @@ export function useTeamPerformance(enabled = true) {
   }, []);
   const context = useApiQuery(performanceQueryKeys.workspaceContext(null), (signal) => performance.getWorkspaceContext(null, signal), { enabled });
   const cycleId = context.data?.selected?.id ?? null;
-  const canReview = context.data?.destinations.team ?? false;
-  const roster = useApiQuery(
-    performanceQueryKeys.yourPeople(cycleId ?? "none", WHOLE_TEAM),
-    (signal) => performance.getYourPeople(cycleId as string, WHOLE_TEAM, signal),
-    { enabled: enabled && canReview && Boolean(cycleId) },
+  const leads = context.data?.destinations.team ?? false;
+  const year = useApiQuery(
+    performanceQueryKeys.teamYear(cycleId ?? "none"),
+    (signal) => performance.getTeamYear(cycleId as string, signal),
+    { enabled: enabled && leads && Boolean(cycleId) },
   );
   const oneOnOnes = useApiQuery(conversationQueryKeys.oneOnOnes(), (signal) => conversations.listOneOnOnes(signal), { enabled });
-  return { context, roster, oneOnOnes };
+  return { context, year, oneOnOnes };
 }
 
 /** One person on the Team page's band, with everything their "what's next" is chosen from (the band words it). */
@@ -63,9 +61,10 @@ export function useTeamBand({ performance = true }: { performance?: boolean } = 
   const members = useMemo<TeamBandMember[]>(() => {
     if (!team.data) return [];
     const meetings = new Map((perf.oneOnOnes.data?.reports ?? []).filter((row) => !row.ended).map((row) => [row.with.employeeId, row.nextMeetingAt]));
-    const roster = new Map((perf.roster.data?.items ?? []).map((item) => [item.employeeId, item]));
+    const year = new Map((perf.year.data?.people ?? []).map((person) => [person.employeeId, person]));
     return team.data.members.map((person) => {
-      const kind = roster.get(person.employeeId)?.facts?.execution?.attention?.kind;
+      const statuses = year.get(person.employeeId)?.goals.map((goal) => goal.status) ?? [];
+      const kind = statuses.includes("OffTrack") ? "offTrack" : statuses.includes("AtRisk") ? "atRisk" : null;
       return {
         employeeId: person.employeeId,
         employeeKey: person.employeeKey,
@@ -75,10 +74,10 @@ export function useTeamBand({ performance = true }: { performance?: boolean } = 
         joinsOn: person.joinsOn,
         events: team.data!.comingUp.filter((event) => event.employeeKey === person.employeeKey),
         oneOnOneAt: meetings.get(person.employeeId) ?? null,
-        attention: kind === "offTrack" || kind === "atRisk" ? kind : null,
+        attention: kind,
         away: Boolean(person.leave?.now),
       };
     });
-  }, [team.data, perf.oneOnOnes.data, perf.roster.data, photos]);
+  }, [team.data, perf.oneOnOnes.data, perf.year.data, photos]);
   return { team, perf, members, managerPhoto: (team.data?.manager.photoUrl && photos.get(team.data.manager.photoUrl)) || null, photos };
 }

@@ -325,20 +325,69 @@ public sealed class ObjectiveStatusTests
     // ── Attention work item (2.3) ─────────────────────────────────────────
 
     [Fact]
-    public async Task The_reviewer_has_an_attention_item_until_acknowledged()
+    public async Task The_reviewer_has_one_row_per_person_until_answered()
+    {
+        var w = await ArrangeAsync();
+        Assert.True((await SubmitAsync(w, w.ManualId, CheckIn(30m, ObjectiveStatus.OffTrack, "Blocked on the vendor"))).IsSuccess);
+        var item = Assert.Single(await WorkAsync(w, w.Lina), i => i.Kind == "goals-off-track");
+        Assert.Equal("/performance/team", item.Section);
+        Assert.Equal("Nour Trabelsi has 1 goal off track", item.Title);
+        Assert.Equal(w.Nour, item.Subject!.EmployeeId);
+        Assert.Equal("Blocked on the vendor", item.Quote);
+        Assert.Equal("Integrate the vendor API", Assert.Single(item.Lines!).Text);
+        // No 1:1s together yet: only asking for an update is offered.
+        var ask = Assert.Single(item.Actions!);
+        Assert.Equal($"/cycles/{w.CycleId}/plans/{w.PlanId}/attention/ask-for-update", ask.Path);
+        Assert.DoesNotContain(await WorkAsync(w, w.Nour), i => i.Kind == "goals-off-track");
+        Assert.DoesNotContain(await WorkAsync(w, Guid.NewGuid()), i => i.Kind == "goals-off-track");
+
+        Assert.True((await AcknowledgeAsync(w, w.Lina)).IsSuccess);
+        Assert.DoesNotContain(await WorkAsync(w, w.Lina), i => i.Kind == "goals-off-track");
+    }
+
+    private static async Task<Result<OffTrackAnsweredDto>> AnswerAsync(World w, Guid caller, OffTrackAnswer answer,
+        TestStore? store = null)
+    {
+        await using var db = (store ?? w.Store).NewContext();
+        return await new AnswerOffTrackHandler(db, new TestPerformanceAudit(db), new PerformanceNotifications(db))
+            .Handle(new AnswerOffTrackCommand(w.CycleId, w.PlanId, answer, new PlanActorContext(caller, false, true), "Lina Haddad"), default);
+    }
+
+    [Fact]
+    public async Task Asking_for_an_update_sends_one_request_and_clears_the_row()
     {
         var w = await ArrangeAsync();
         Assert.True((await SubmitAsync(w, w.ManualId, CheckIn(30m, ObjectiveStatus.OffTrack, "Blocked"))).IsSuccess);
-        var item = Assert.Single(await WorkAsync(w, w.Lina), i => i.Kind == "objective-status");
-        Assert.Equal("/performance/team", item.Section);
-        Assert.Equal("Nour Trabelsi's objective is off track", item.Title);
-        Assert.Equal("Integrate the vendor API", item.Context);
-        Assert.Equal($"/performance/cycles/{w.CycleId}/objectives/{w.ManualId}", item.Href);
-        Assert.DoesNotContain(await WorkAsync(w, w.Nour), i => i.Kind == "objective-status");
-        Assert.DoesNotContain(await WorkAsync(w, Guid.NewGuid()), i => i.Kind == "objective-status");
+        Assert.True((await SubmitAsync(w, w.MilestonesId, CheckIn(null, ObjectiveStatus.AtRisk, "Slipping"))).IsSuccess);
+        Assert.Equal("Nour Trabelsi has 1 off track and 1 at risk", Assert.Single(await WorkAsync(w, w.Lina), i => i.Kind == "goals-off-track").Title);
 
-        Assert.True((await AcknowledgeAsync(w, w.Lina)).IsSuccess);
-        Assert.DoesNotContain(await WorkAsync(w, w.Lina), i => i.Kind == "objective-status");
+        var answered = await AnswerAsync(w, w.Lina, OffTrackAnswer.AskForUpdate);
+        Assert.True(answered.IsSuccess, answered.IsFailure ? answered.Error.Message : null);
+        Assert.Equal(2, answered.Value.Seen);
+        Assert.True((await AnswerAsync(w, w.Lina, OffTrackAnswer.AskForUpdate)).IsSuccess);
+        await using (var db = w.Store.NewContext())
+        {
+            var request = Assert.Single(await db.UpdateRequests.ToListAsync());
+            Assert.Null(request.ObjectiveId);
+        }
+        Assert.Single(await NotificationsAsync(w, PerformanceNotificationKind.UpdateRequested));
+        Assert.DoesNotContain(await WorkAsync(w, w.Lina), i => i.Kind == "goals-off-track");
+        Assert.Contains(await WorkAsync(w, w.Nour), i => i.Kind == "update-request");
+    }
+
+    [Fact]
+    public async Task Only_the_reviewer_answers_and_never_across_tenants()
+    {
+        var w = await ArrangeAsync();
+        Assert.True((await SubmitAsync(w, w.ManualId, CheckIn(30m, ObjectiveStatus.OffTrack, "Blocked"))).IsSuccess);
+        Assert.True((await AnswerAsync(w, w.Nour, OffTrackAnswer.AskForUpdate)).IsFailure);
+        Assert.True((await AnswerAsync(w, Guid.NewGuid(), OffTrackAnswer.AskForUpdate)).IsFailure);
+        var elsewhere = TestStore.ForNewTenant();
+        var foreign = await AnswerAsync(w, w.Lina, OffTrackAnswer.AskForUpdate, elsewhere);
+        Assert.True(foreign.IsFailure);
+        // Talking it over needs 1:1s together; without them nothing is answered.
+        Assert.True((await AnswerAsync(w, w.Lina, OffTrackAnswer.TalkItOver)).IsFailure);
+        Assert.Single(await WorkAsync(w, w.Lina), i => i.Kind == "goals-off-track");
     }
 
     [Fact]
@@ -348,9 +397,9 @@ public sealed class ObjectiveStatusTests
         Assert.True((await SubmitAsync(w, w.ManualId, CheckIn(30m, ObjectiveStatus.AtRisk, "Slipping"))).IsSuccess);
         Assert.True((await AcknowledgeAsync(w, w.Lina)).IsSuccess);
         Assert.True((await SubmitAsync(w, w.ManualId, CheckIn(30m, ObjectiveStatus.OffTrack, "Blocked"))).IsSuccess);
-        Assert.Single(await WorkAsync(w, w.Lina), i => i.Kind == "objective-status");
+        Assert.Single(await WorkAsync(w, w.Lina), i => i.Kind == "goals-off-track");
         Assert.True((await SubmitAsync(w, w.ManualId, CheckIn(50m))).IsSuccess);
-        Assert.DoesNotContain(await WorkAsync(w, w.Lina), i => i.Kind == "objective-status");
+        Assert.DoesNotContain(await WorkAsync(w, w.Lina), i => i.Kind == "goals-off-track");
     }
 
     [Fact]
@@ -363,6 +412,6 @@ public sealed class ObjectiveStatusTests
             (await db.Cycles.SingleAsync()).Close();
             await db.SaveChangesAsync();
         }
-        Assert.DoesNotContain(await WorkAsync(w, w.Lina), i => i.Kind == "objective-status");
+        Assert.DoesNotContain(await WorkAsync(w, w.Lina), i => i.Kind == "goals-off-track");
     }
 }

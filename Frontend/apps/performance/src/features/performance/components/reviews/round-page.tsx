@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
-import type { ReviewRoundDto, ReviewStage, ReviewStageProgressDto } from "@repo/api";
+import { performancePaths, type ReviewRoundDto, type ReviewStage, type ReviewStageProgressDto } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
 import { DatePicker } from "@repo/ds/components/ui/date-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ds/components/ui/popover";
@@ -12,7 +12,7 @@ import { Textarea } from "@repo/ds/components/ui/textarea";
 import { AsyncButton, PageContainer, PageHeader, PageSkeleton, StatusBadge } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { AvatarStack, PersonInitials } from "@repo/performance-ui";
-import { Bell, CalendarDays, Check, FileText, Send } from "@repo/ds/icons";
+import { Bell, CalendarDays, Check, Download, FileText, Send } from "@repo/ds/icons";
 import { RecordCycleScope, useWorkspaceContext } from "../../api/use-workspace";
 import { useReviewRound, useReviewRoundFinalization } from "../../api/use-reviews";
 import { useScheduleCommands } from "../../api/use-review-work";
@@ -56,7 +56,15 @@ export function RoundPage() {
           back={{ href: withCycle("/reviews", round.cycleId), label: t("reviews") }}
           title={<span className="inline-flex flex-wrap items-center gap-3">{round.name}<RoundBadge round={round} /></span>}
           description={describe(round, (key, values) => t(`describe.${key}` as "describe.draft", values as never), format)}
-          actions={round.state === "Active" ? <RunningActions round={round} canCalibrate={canCalibrate} /> : null}
+          actions={round.state === "Draft" ? null : (
+            <>
+              {/* The round's results as a spreadsheet (B-434), released or not. */}
+              <Button variant="outline" asChild>
+                <a href={performancePaths.roundResults(round.id)} download><Download className="size-4" aria-hidden />{t("exportResults")}</a>
+              </Button>
+              {round.state === "Active" ? <RunningActions round={round} canCalibrate={canCalibrate} /> : null}
+            </>
+          )}
         />
         {round.state === "Draft" ? <RoundSetup round={round} /> : round.state === "Active" ? <RoundRunning round={round} /> : <RoundClosed round={round} />}
       </PageContainer>

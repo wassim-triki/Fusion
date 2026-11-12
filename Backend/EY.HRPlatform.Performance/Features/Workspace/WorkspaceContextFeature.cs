@@ -98,7 +98,8 @@ public sealed class GetWorkspaceContextHandler(PerformanceDbContext db, Performa
 
         var destinations = new WorkspaceDestinationsDto(
             MyPlan: participates,
-            Team: reviewer,
+            // Core HR's direct reports make the team too (B-383), not only the plans recorded as theirs to review.
+            Team: reviewer || (canReviewReports && await LeadsPeopleAsync(cancellationToken)),
             Reviews: hasReviews,
             Settings: grants.ViewsSettings)
         {
@@ -113,6 +114,13 @@ public sealed class GetWorkspaceContextHandler(PerformanceDbContext db, Performa
             phase,
             capabilities,
             destinations);
+    }
+
+    /// <summary>Direct reports in Core HR today; false while Core HR can't say.</summary>
+    private async Task<bool> LeadsPeopleAsync(CancellationToken cancellationToken)
+    {
+        try { return (await viewer.CurrentLineAsync(cancellationToken)).DirectReports.Count > 0; }
+        catch (HttpRequestException) { return false; }
     }
 
     /// <summary>

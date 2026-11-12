@@ -76,6 +76,7 @@ vi.mock("@repo/auth", () => ({
   canEnterPerformance: () => mockCanEnterPerformance(),
 }));
 
+vi.mock("@tanstack/react-query", async (original) => ({ ...(await original<object>()), useQueryClient: () => ({ invalidateQueries: vi.fn() }) }));
 vi.mock("@repo/api/query", () => ({
   useApiQuery: () => mockSummary(),
   usePhoto: () => null,
@@ -542,7 +543,7 @@ describe("PeopleProfileWorkspace", () => {
       render(<PeopleProfileWorkspace employeeKey="E-KEY-1" />);
       expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "Performance" })).toHaveAttribute("aria-current", "page");
-      expect(screen.getByText("Performance couldn't be loaded.")).toBeInTheDocument();
+      expect(screen.getByText("Their year couldn't be loaded.")).toBeInTheDocument();
       await userEvent.click(screen.getByRole("button", { name: "Try again" }));
       expect(refetch).toHaveBeenCalledOnce();
     });

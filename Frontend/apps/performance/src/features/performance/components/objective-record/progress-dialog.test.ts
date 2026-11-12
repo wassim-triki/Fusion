@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { paceOn, positionIn } from "./goal-line";
+import { paceOn, positionIn } from "@repo/performance-ui";
 import { shareOf, statusFromPace } from "./progress-dialog";
 
 describe("updating progress (D-63)", () => {

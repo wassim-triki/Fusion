@@ -1,277 +1,47 @@
 {
-  "MyTeamPage": {
-    "yourPeople": "فريقك"
-  },
-  "NoReports": {
-    "noOneReportsToYou": "لا أحد يتبعك في {cycleName}",
-    "noOneReportsToYou2": "لا أحد يتبعك",
-    "goToOverview": "الانتقال إلى النظرة العامة"
-  },
-  "TeamPageSkeleton": {
-    "loadingMyTeam": "جارٍ تحميل فريقي"
-  },
-  "TeamDirection": {
-    "upstreamDirection": "التوجه الأعلى",
-    "teamObjectivesCouldNotBe": "تعذّر تحميل أهداف الفريق.",
-    "tryAgain": "أعد المحاولة",
-    "draftObjectiveDeleted": "حُذف الهدف المسودة.",
-    "theObjectiveCouldNotBe": "تعذّر حذف الهدف."
-  },
-  "StrategicDirection": {
-    "upstreamDirection": "التوجه الأعلى",
-    "openOrganizationDirection": "فتح توجه المؤسسة",
-    "nextTeamObjective": "هدف الفريق التالي",
-    "createATeamObjective": "إنشاء هدف للفريق",
-    "chooseWhatItSupportsBefore": "اختر ما يدعمه قبل تحديد نتيجته ومقياسه.",
-    "alignTo": "الربط بـ",
-    "createTeamObjective": "إنشاء هدف للفريق",
-    "noActiveTeamMemberCan": "لا يمكن لأي عضو نشط في الفريق امتلاك هدف في هذه الدورة.",
-    "thisCycleIsClosed": "هذه الدورة مغلقة."
-  },
-  "DirectionCard": {
-    "companyObjective": "هدف الشركة",
-    "selectedDirection": "التوجه المختار",
-    "accountableOwner": "المالك المسؤول",
-    "measurement": "القياس",
-    "objectiveType": "نوع الهدف",
-    "progressTowardTarget": "التقدم نحو الهدف",
-    "ofTarget": "من الهدف",
-    "objective": "هدف {value}"
-  },
-  "EligibleRow": {
-    "eligibleObjective": "{count} أهداف مؤهلة",
-    "s": ""
-  },
-  "StandaloneCard": {
-    "noUpstreamObjectiveSelected": "لم يُختر هدف أعلى",
-    "theNextTeamObjectiveWill": "سيكون هدف الفريق التالي مستقلًا ولن يرتبط بهدف من فريق أعلى.",
-    "standaloneObjectivesStayInMy": "تبقى الأهداف المستقلة في فريقي",
-    "theyAppearInOrganizationGoals": "تظهر في أهداف المؤسسة بعد ربطها.",
-    "chooseOne": "اختر واحدًا"
-  },
-  "EmptyDirectionCard": {
-    "noDirectionSelected": "لم يُختر توجه",
-    "noPublishedDirectionYet": "لا توجه منشور بعد",
-    "chooseOneOfTheEligible": "اختر أحد الأهداف المؤهلة لهذا الفريق، أو تابع دون ارتباط لهدف فريق مستقل.",
-    "nothingAboveYourTeamIs": "لم يُنشر شيء فوق فريقك بعد. لا يزال بإمكانك إنشاء هدف فريق مستقل.",
-    "eligibleObjective": "{targetCount} أهداف مؤهلة",
-    "s": "",
-    "standaloneAllowed": "المستقل مسموح"
-  },
-  "TeamObjectives": {
-    "teamObjectives": "أهداف الفريق",
-    "filterByLifecycle": "التصفية حسب المرحلة",
-    "allStates": "كل الحالات",
-    "draft": "مسودة",
-    "published": "منشور",
-    "filterByAlignment": "التصفية حسب الارتباط",
-    "allAlignment": "كل الارتباطات",
-    "aligned": "مرتبط",
-    "standalone": "مستقل",
-    "sortObjectives": "ترتيب الأهداف",
-    "priorityOrder": "حسب الأولوية",
-    "dueDate": "تاريخ الاستحقاق",
-    "recentlyEdited": "المعدّلة مؤخرًا",
-    "title": "العنوان",
-    "noObjectivesMatchTheseFilters": "لا أهداف تطابق عوامل التصفية هذه.",
-    "clearFilters": "مسح عوامل التصفية"
-  },
-  "TeamObjectivesEmpty": {
-    "noTeamObjectivesYet": "لا أهداف للفريق بعد",
-    "createAnObjectiveToDefine": "أنشئ هدفًا لتحديد ما سيقدمه الفريق في هذه الدورة.",
-    "createYourTeamObjective": "أنشئ هدف فريقك"
-  },
-  "TeamObjectiveRow": {
-    "noOwner": "بلا مالك",
-    "accountableOwner": "المالك المسؤول",
-    "notSet": "غير محدد",
-    "measurement": "القياس",
-    "progress": "التقدم",
-    "dueDate": "تاريخ الاستحقاق",
-    "actionsFor": "إجراءات {title}",
-    "viewDetails": "عرض التفاصيل",
-    "updateProgress": "تحديث التقدم",
-    "editObjective": "تعديل الهدف",
-    "deleteDraft": "حذف المسودة",
-    "viewDirection": "عرض التوجه",
-    "alignedTo": "مرتبط بـ",
-    "standaloneTeamObjective": "هدف فريق مستقل"
-  },
-  "TeamSummary": {
-    "plans": "الخطط",
-    "waitingForYou": "بانتظارك",
-    "notStarted": "لم تبدأ",
-    "objectives": "الأهداف",
-    "ofUpdatedInTheLast": "من {approved} حُدّثت خلال آخر 30 يومًا",
-    "yourReviews": "تقييماتك",
-    "readyToWrite": "جاهزة للكتابة",
-    "waitingOnThem": "بانتظارهم",
-    "ofSelfAssessmentsIn": "من {selfTotal} تقييمات ذاتية وصلت",
-    "due": "· مستحقة في {selfDue}",
-    "peerListToApprove": "· {length} قائمة زملاء للموافقة",
-    "peerListsToApprove": "· {length} قوائم زملاء للموافقة",
-    "submitted": "مُرسلة"
-  },
-  "TeamResultsPanel": {
-    "yourTeamsResults": "نتائج فريقك",
-    "yourTeamOnly": "فريقك فقط",
-    "peopleAtEachLevel": "الأشخاص في كل مستوى",
-    "acknowledged": "اطّلعوا",
-    "ofAcknowledged": "من {released} اطّلعوا",
-    "notYet": "لم يطّلع بعد: {join}",
-    "changedInCalibration": "تغيّر في المعايرة",
-    "changedInCalibration2": "تغيّر في المعايرة",
-    "openGrowthGoals": "أهداف تطوير مفتوحة",
-    "openGrowth": "تطوير مفتوح",
-    "goal": "هدف",
-    "goals": "أهداف"
-  },
-  "PlanStateCell": {
-    "resubmitted": "أُعيد إرسالها"
-  },
-  "ObjectivesCell": {
-    "weights": "{objectives} · الأوزان {weight}%"
-  },
-  "AlignedCell": {
-    "of": "{alignedToTeam} من {objectives}"
-  },
-  "StatusMixCell": {
-    "onTrackAtRiskOff": "{onTrack} على المسار، {atRisk} في خطر، {offTrack} خارج المسار، {noStatus} بلا حالة بعد"
-  },
-  "UpdateRequestCell": {
-    "n1Open": "1 مفتوح",
-    "asked": "· طُلب {requestedAt}",
-    "askForAnUpdate": "طلب تحديث"
-  },
-  "SelfCell": {
-    "submitted": "مُرسل",
-    "writing": "قيد الكتابة",
-    "notStarted": "لم يبدأ"
-  },
-  "PeersCell": {
-    "proposedWaitingForYou": "{proposed} مقترحون، بانتظارك",
-    "ofAnswered": "ردّ {answered} من {asked}",
-    "notChosenYet": "لم يُختاروا بعد"
-  },
-  "YourReviewCell": {
-    "submitted": "مُرسل",
-    "draftSaved": "حُفظت المسودة",
-    "notStarted": "لم يبدأ"
-  },
-  "PdfButton": {
-    "pdf": "PDF"
-  },
-  "RosterSection": {
-    "findAPerson": "البحث عن شخص",
-    "noPeopleMatchThisView": "لا أشخاص يطابقون هذا العرض",
-    "yourPeople": "أفراد فريقك",
-    "person": "شخص",
-    "people": "أشخاص"
-  },
-  "EmptyRoster": {
-    "noOneReportsToYou": "لا أحد يتبعك في هذه الدورة"
-  },
-  "people": {
-    "status": {
-      "NotStarted": "لم تبدأ",
-      "Draft": "قيد الصياغة",
-      "ReturnedForChanges": "أُعيدت",
-      "Submitted": "مُرسلة",
-      "Approved": "معتمدة"
+  "TeamYear": {
+    "treeOne": "هدفك وأهداف الفريق تحته",
+    "treeMany": "أهدافك وأهداف الفريق تحتها",
+    "yourGoal": "هدفك",
+    "yourGoalUnder": "هدفك، تحت {goal}",
+    "measureNow": "{measure}، {current} الآن",
+    "elsewhere": "{names}: أهدافهم تدعم أهدافًا أخرى",
+    "noUpdateYet": "لا تحديث بعد",
+    "state": {
+      "OnTrack": "على المسار",
+      "AtRisk": "في خطر",
+      "OffTrack": "متأخر"
     },
-    "group": {
-      "Planning": {
-        "waiting": "بانتظارك",
-        "planning": "لا يزالون يخططون",
-        "approved": "معتمدة"
-      },
-      "Execution": {
-        "needsYou": "يحتاجونك",
-        "rest": "البقية"
-      },
-      "Review": {
-        "ready": "جاهزون لك",
-        "waiting": "بانتظارهم",
-        "submitted": "مُرسلة",
-        "notInRound": "خارج هذه الجولة"
-      },
-      "Closed": {
-        "notAcknowledged": "لم يطّلعوا بعد",
-        "acknowledged": "اطّلعوا",
-        "noResult": "بلا نتيجة"
-      }
+    "count": {
+      "OnTrack": "{count} على المسار",
+      "AtRisk": "{count} في خطر",
+      "OffTrack": "{count} متأخر"
     },
-    "view": {
-      "NeedsReview": "تحتاج إلى مراجعة",
-      "Planning": "التخطيط",
-      "Approved": "معتمدة",
-      "NoProgress": "بلا تحديثات"
+    "plan": {
+      "NotStarted": "لا خطة بعد",
+      "Draft": "يكتب خطته",
+      "ReturnedForChanges": "يعدّل خطته",
+      "Submitted": "خطة بانتظارك",
+      "Approved": "لا تحديث بعد"
     },
-    "show": "عرض",
-    "employee": "الموظف",
-    "since": "منذ {day}",
-    "anObjective": "هدف",
-    "offTrack": "{title} · خارج المسار",
-    "atRisk": "{title} · في خطر",
-    "noUpdate": "بلا تحديث منذ 30 يومًا",
-    "noStatus": "{count, plural, one {هدف واحد بلا حالة بعد} two {هدفان بلا حالة بعد} other {# أهداف بلا حالة بعد}}",
-    "updateRequested": "طُلب تحديث",
-    "planWaiting": "خطة بانتظار قرارك",
-    "notApproved": "الخطة لم تُعتمد بعد",
-    "col": {
-      "person": "الشخص",
-      "open": "فتح",
-      "plan": "الخطة",
-      "objectives": "الأهداف",
-      "aligned": "مرتبطة بفريقك",
-      "activity": "آخر نشاط",
-      "attention": "يحتاج إلى متابعة",
-      "progress": "تقدم الخطة",
-      "lastUpdate": "آخر تحديث",
-      "requests": "طلبات التحديث",
-      "self": "التقييم الذاتي",
-      "peers": "الزملاء",
-      "yours": "تقييمك",
-      "result": "النتيجة",
-      "yourRating": "تقديرك",
-      "acknowledged": "اطّلع",
-      "development": "التطوير"
-    },
-    "reviewPlan": "مراجعة الخطة",
-    "approvePeers": "الموافقة على الزملاء",
-    "review": "تقييم",
-    "inCalibration": "في المعايرة",
-    "withComment": "مع تعليق",
-    "notYet": "ليس بعد",
-    "openGoals": "{count, plural, one {هدف مفتوح واحد} two {هدفان مفتوحان} other {# أهداف مفتوحة}}",
-    "noneOpen": "لا شيء مفتوح",
-    "reviewPersonPlan": "مراجعة خطة {name}",
-    "reviewPerson": "تقييم {name}",
-    "theNextOne": "التالي",
-    "leave": {
-      "now": "في إجازة · العودة {day}",
-      "open": "في إجازة",
-      "from": "إجازة من {day}"
-    }
-  },
-  "activity": {
-    "DraftUpdated": "حُدّثت المسودة",
-    "Returned": "أُعيدت للتعديل",
-    "Submitted": "أُرسلت الخطة",
-    "Resubmitted": "أُعيد إرسالها",
-    "Approved": "اعتُمدت الخطة",
-    "ProgressUpdated": "حُدّث التقدم",
-    "requested": "طُلب تحديث",
-    "received": "وصل تحديث"
-  },
-  "summary": {
-    "people": "{count, plural, one {شخص واحد} two {شخصان} other {# أشخاص}}",
-    "objectives": "{count, plural, one {هدف واحد} two {هدفان} other {# أهداف}}",
-    "reviewsDue": "تقييماتك مستحقة في {day}",
-    "released": "نُشرت في {day}",
-    "onTrack": "على المسار",
-    "atRisk": "في خطر",
-    "offTrack": "خارج المسار",
-    "noStatus": "بلا حالة بعد"
+    "eachPersonsYear": "سنة كل شخص",
+    "needYou": "{count, plural, one {شخص واحد يحتاجك} other {# يحتاجونك}}",
+    "nothingDue": "لا شيء مطلوب",
+    "offTrack": "{count, plural, one {هدف واحد متأخر} other {# أهداف متأخرة}}",
+    "atRisk": "{count, plural, one {هدف واحد في خطر} other {# أهداف في خطر}}",
+    "offAndRisk": "{off} متأخر، {risk} في خطر",
+    "noOneOnOnes": "لا لقاءات فردية بعد",
+    "bothFree": "كلاكما متاح حينها",
+    "planWaiting": "خطة بانتظارك",
+    "book": "احجز {time}",
+    "booked": "تم حجز لقاء فردي مع {name}، {time}",
+    "askForUpdate": "اطلب تحديثًا",
+    "asked": "طُلب تحديث من {name}",
+    "lookAtIt": "اطّلع عليها",
+    "open": "افتح",
+    "nextOneOnOne": "لقاء فردي {day}",
+    "noReports": "لا أحد يتبعك",
+    "noYear": "لا سنة جارية بعد",
+    "failed": "لم يتم ذلك. أعد المحاولة."
   }
 }

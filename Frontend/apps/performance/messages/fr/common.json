@@ -63,11 +63,6 @@
       "ResultsOut": "Résultats publiés"
     }
   },
-  "PersonPage": {
-    "person": "Auteur",
-    "openCoreHrRecord": "Ouvrir la fiche Core HR",
-    "giveFeedback": "Donner un feedback"
-  },
   "PerformanceCycleContext": {
     "switchCycle": "Changer de cycle",
     "state": {

@@ -35,6 +35,16 @@ public sealed class ReviewRoundsController(IMediator mediator, IPerformanceAcces
         return MapResult(await mediator.Send(new GetReviewRoundQuery(roundId), cancellationToken));
     }
 
+    /// <summary>The round's results as a spreadsheet (B-434).</summary>
+    [HttpGet("review-rounds/{roundId:guid}/results.csv")]
+    public async Task<IActionResult> ExportResults(Guid roundId, CancellationToken cancellationToken)
+    {
+        if (!policy.CanAdministerCycles(User)) return CapabilityForbidden();
+        var result = await mediator.Send(new ExportRoundResultsQuery(roundId), cancellationToken);
+        if (result.IsFailure) return MapResult(result).Result!;
+        return File(result.Value.Content, "text/csv; charset=utf-8", result.Value.FileName);
+    }
+
     [HttpGet("review-rounds/{roundId:guid}/eligible-reviewers")]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<EligibleReviewerDto>>>> EligibleReviewers(Guid roundId, CancellationToken cancellationToken)
     {

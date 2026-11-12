@@ -16,6 +16,7 @@ import { FirstWeekCard, YourManagerCard, YourTeamCard } from "./home-cards";
 import { CompanyCard, SetupGuideCard, useHomeSetup } from "./setup-guide";
 import { HomeDecision } from "./home-decision";
 import { HomePeerInput, peerRequestId } from "./home-peer-input";
+import { HomeWorkInPlace, answersInPlace } from "./home-work-in-place";
 import { HomePraise } from "./home-praise";
 import { YourYear } from "./your-year";
 import { dateFormatter } from "@repo/ds/lib/dates";
@@ -69,6 +70,7 @@ function HomeWork({ quietWhenEmpty = false, work, upcoming }: {
       <Section id="home-needs" title={t("needsYou")} meta={workBusy ? undefined : work.items.length} flush>
         <WorkList items={orderWork(work.items, today)} modules={work.modules} today={today} renderDecision={(item) => <HomeDecision item={item} />}
           renderInPlace={(item) => {
+            if (answersInPlace(item)) return <HomeWorkInPlace item={item} />;
             const id = peerRequestId(item);
             if (!id) return null;
             // Opened from its notification (`/?peer={id}`), the request starts open.

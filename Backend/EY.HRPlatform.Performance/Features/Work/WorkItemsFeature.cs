@@ -6,7 +6,11 @@ using EY.HRPlatform.Performance.Domain.Plans;
 using EY.HRPlatform.Performance.Domain.Progress;
 using EY.HRPlatform.Performance.Domain.Reviews;
 using EY.HRPlatform.Performance.Features.Cycles;
+using EY.HRPlatform.Performance.Features.OneOnOnes;
+using EY.HRPlatform.Performance.Features.Plans;
 using EY.HRPlatform.Performance.Features.Security.Policies;
+using EY.HRPlatform.Performance.Infrastructure.Core;
+using EY.HRPlatform.Performance.Infrastructure.Identity;
 using EY.HRPlatform.Performance.Infrastructure.Notifications;
 using EY.HRPlatform.Performance.Infrastructure.Persistence;
 using EY.HRPlatform.SharedKernel.Api;
@@ -28,7 +32,8 @@ public sealed record GetWorkItemsQuery(WorkActor Actor) : IQuery<Result<IReadOnl
 /// and round finalization. Items carry absolute app paths and stable ids. Work another person is blocked on (a plan
 /// decision, a peer list, peer input, a feedback request, an update request) carries when they started waiting.
 /// </summary>
-public sealed class GetWorkItemsHandler(PerformanceDbContext db)
+public sealed class GetWorkItemsHandler(PerformanceDbContext db, ICoreWorkforceClient? workforce = null,
+    INotificationAudienceClient? audience = null)
     : IQueryHandler<GetWorkItemsQuery, Result<IReadOnlyList<FusionWorkItemDto>>>
 {
     private const string Module = "performance";
@@ -47,7 +52,7 @@ public sealed class GetWorkItemsHandler(PerformanceDbContext db)
             if (actor.ReviewsReports)
             {
                 await PlanDecisionsAsync(cycle, actor.EmployeeId, items, token);
-                await ObjectiveAttentionAsync(cycle, actor.EmployeeId, items, token);
+                await OffTrackAsync(cycle, actor.EmployeeId, items, token);
             }
             await UpdateRequestsAsync(cycle, actor.EmployeeId, items, token);
         }
@@ -57,6 +62,7 @@ public sealed class GetWorkItemsHandler(PerformanceDbContext db)
             await PeerWorkAsync(actor, today, items, token);
             await FeedbackRequestsAsync(actor.EmployeeId, items, token);
             await OneOnOneActionsAsync(actor.EmployeeId, today, items, token);
+            if (actor.ReviewsReports) await OneOnOnesToBookAsync(actor.EmployeeId, items, token);
         }
         if (actor.Calibrates || actor.Administers) await RoundsAsync(actor, items, token);
         return Result.Success<IReadOnlyList<FusionWorkItemDto>>(items
@@ -69,7 +75,8 @@ public sealed class GetWorkItemsHandler(PerformanceDbContext db)
         ["plan-write"] = "Continue your plan",
         ["plan-revise"] = "Revise your plan",
         ["plan-decision"] = "Read it",
-        ["objective-status"] = "Review status",
+        ["goals-off-track"] = "Open the plan",
+        ["one-on-one-book"] = "Open 1:1s",
         ["update-request"] = "Record progress",
         ["feedback-request"] = "Answer",
         ["one-on-one-action"] = "Open the 1:1",
@@ -117,49 +124,154 @@ public sealed class GetWorkItemsHandler(PerformanceDbContext db)
             Steps: WorkSteps.Plan(returned, open, reviewer)));
     }
 
-    /// <summary>Submitted plans waiting for the caller's decision as their responsible reviewer, longest waiting first.</summary>
+    /// <summary>
+    /// Submitted plans waiting for the caller's decision as their responsible reviewer, longest waiting first, with their
+    /// goals in place (D-84): each goal and its weight, or, put forward again after a return, only what changed since.
+    /// </summary>
     private async Task PlanDecisionsAsync(PerformanceCycle cycle, Guid employeeId, List<FusionWorkItemDto> items, CancellationToken token)
     {
-        var plans = await db.EmployeePlans.AsNoTracking()
+        var plans = await db.EmployeePlans.AsNoTracking().Include(p => p.Decisions)
             .Where(p => p.CycleId == cycle.Id && p.ResponsibleManagerId == employeeId && p.State == PlanLifecycleState.Submitted)
-            .OrderBy(p => p.SubmittedAt)
-            .Select(p => new
+            .OrderBy(p => p.SubmittedAt).ToListAsync(token);
+        if (plans.Count == 0) return;
+        var planIds = plans.Select(p => p.Id).ToList();
+        var goals = (await db.Objectives.AsNoTracking().Include(o => o.Measurement)
+                .Where(o => o.EmployeePlanId != null && planIds.Contains(o.EmployeePlanId.Value) && o.State != ObjectiveLifecycleState.Archived)
+                .ToListAsync(token))
+            .GroupBy(o => o.EmployeePlanId!.Value).ToDictionary(g => g.Key, g => g.OrderBy(o => o.CreatedAt).ToList());
+        foreach (var plan in plans)
+        {
+            var own = goals.GetValueOrDefault(plan.Id) ?? [];
+            var answered = plan.AnsweredReturn;
+            var lines = answered is null
+                ? own.Select(goal => new FusionWorkLineDto(goal.Title, goal.PlanWeight is decimal weight ? $"{weight:0.##}%" : null)).ToList()
+                : PlanChanges.Since(answered.GoalsSnapshot, own.Select(PlansComposer.Snapshot).ToList()).Select(ChangeLine).ToList();
+            // Answered in place on Home (D-66): approve, or ask for a change with a note.
+            items.Add(new FusionWorkItemDto(Id("plan-decision", plan.Id), Module, "plan-decision",
+                $"{plan.EmployeeDisplayName}'s plan",
+                (answered is not null ? "Changed as you asked, put forward again" : "Put forward") + (own.Count == 1 ? ", 1 goal" : $", {own.Count} goals"),
+                null,
+                PerformanceNotificationTemplates.PlanPath(cycle.Id, plan.Id), new FusionWorkSubjectDto(plan.EmployeeDisplayName, plan.EmployeeId), Sections.Team,
+                WaitingSince: plan.SubmittedAt,
+                Decision: new FusionWorkDecisionDto(
+                    $"/cycles/{cycle.Id}/plans/{plan.Id}/decision/approve", $"/cycles/{cycle.Id}/plans/{plan.Id}/decision/return", "Ask for a change"))
             {
-                p.Id, p.EmployeeDisplayName, p.SubmittedAt,
-                Goals = db.Objectives.Count(o => o.EmployeePlanId == p.Id && o.State != ObjectiveLifecycleState.Archived),
-                Returned = p.Decisions.Any(d => d.Kind == PlanDecisionKind.Returned),
-            })
-            .ToListAsync(token);
-        // Answered in place on Home (D-66): approve, or ask for a change with a note; what changed since a return reads on the plan.
-        items.AddRange(plans.Select(p => new FusionWorkItemDto(Id("plan-decision", p.Id), Module, "plan-decision",
-            $"{p.EmployeeDisplayName}'s plan",
-            (p.Returned ? "Changed as you asked, put forward again" : "Put forward") + (p.Goals == 1 ? ", 1 goal" : $", {p.Goals} goals"),
-            null,
-            PerformanceNotificationTemplates.PlanPath(cycle.Id, p.Id), new FusionWorkSubjectDto(p.EmployeeDisplayName), Sections.Team,
-            WaitingSince: p.SubmittedAt,
-            Decision: new FusionWorkDecisionDto(
-                $"/cycles/{cycle.Id}/plans/{p.Id}/decision/approve", $"/cycles/{cycle.Id}/plans/{p.Id}/decision/return", "Ask for a change"))));
+                Lines = lines,
+            });
+        }
     }
 
+    /// <summary>A goal changed since the return, said in a few words.</summary>
+    private static FusionWorkLineDto ChangeLine(PlanGoalChange change) => change.Kind switch
+    {
+        PlanChanges.Added => new(change.Title, "New"),
+        PlanChanges.Removed => new(change.Title, "Taken out"),
+        _ => new(change.Title, string.Join(", ", change.Fields.Select(field => field.Field switch
+        {
+            PlanChanges.Weight => $"Weight {field.Before ?? "even"} → {field.After ?? "even"}",
+            PlanChanges.Measure => $"Measure now {field.After}",
+            _ => "Renamed",
+        }))),
+    };
+
     /// <summary>
-    /// Objectives of approved plans the caller is responsible for, reported At risk or Off track and not yet
-    /// acknowledged (D-05). Each opens the objective, where the caller acknowledges it.
+    /// A person whose goals the caller reviews went at risk or off track and the caller hasn't answered yet (D-05, D-84):
+    /// one row per person, with the goals, their latest words, and the two answers in place. The row says when the person
+    /// last updated any of them.
     /// </summary>
-    private async Task ObjectiveAttentionAsync(PerformanceCycle cycle, Guid employeeId, List<FusionWorkItemDto> items, CancellationToken token)
+    private async Task OffTrackAsync(PerformanceCycle cycle, Guid employeeId, List<FusionWorkItemDto> items, CancellationToken token)
     {
         var flagged = await (from objective in db.Objectives.AsNoTracking()
                              join plan in db.EmployeePlans.AsNoTracking() on objective.EmployeePlanId equals plan.Id
                              where plan.CycleId == cycle.Id && plan.ResponsibleManagerId == employeeId
-                                && plan.State == PlanLifecycleState.Approved
+                                && plan.State == PlanLifecycleState.Approved && objective.State != ObjectiveLifecycleState.Archived
                                 && (objective.CurrentStatus == ObjectiveStatus.AtRisk || objective.CurrentStatus == ObjectiveStatus.OffTrack)
                                 && objective.StatusAcknowledgedAt == null
-                             orderby objective.StatusSince descending
-                             select new { objective.Id, objective.Title, objective.CurrentStatus, plan.EmployeeDisplayName })
+                             orderby objective.Title
+                             select new { objective.Id, objective.Title, objective.CurrentStatus, objective.LastProgressAt, objective.StatusSince,
+                                 PlanId = plan.Id, plan.EmployeeId, plan.EmployeeDisplayName })
             .ToListAsync(token);
-        items.AddRange(flagged.Select(o => new FusionWorkItemDto(Id("objective-status", o.Id), Module, "objective-status",
-            $"{o.EmployeeDisplayName}'s objective is {(o.CurrentStatus == ObjectiveStatus.OffTrack ? "off track" : "at risk")}",
-            o.Title, null, PerformanceNotificationTemplates.ObjectivePath(cycle.Id, o.Id),
-            new FusionWorkSubjectDto(o.EmployeeDisplayName), Sections.Team)));
+        if (flagged.Count == 0) return;
+        var ids = flagged.Select(o => o.Id).ToList();
+        var notes = (await db.ProgressUpdates.AsNoTracking()
+                .Where(u => ids.Contains(u.ObjectiveId) && u.ContextNote != null && u.ContextNote != "")
+                .Select(u => new { u.ObjectiveId, u.ContextNote, u.RecordedAt }).ToListAsync(token))
+            .ToLookup(u => u.ObjectiveId);
+        var people = flagged.Select(o => o.EmployeeId).Distinct().ToList();
+        var talking = (await db.OneOnOneSeries.AsNoTracking()
+            .Where(s => s.ManagerEmployeeId == employeeId && s.EndedAt == null && people.Contains(s.ReportEmployeeId))
+            .Select(s => s.ReportEmployeeId).ToListAsync(token)).ToHashSet();
+
+        foreach (var person in flagged.GroupBy(o => o.PlanId).OrderByDescending(g => g.Max(o => o.StatusSince)))
+        {
+            var first = person.First();
+            var off = person.Count(o => o.CurrentStatus == ObjectiveStatus.OffTrack);
+            var risk = person.Count() - off;
+            var title = off > 0 && risk > 0 ? $"{first.EmployeeDisplayName} has {off} off track and {risk} at risk"
+                : off > 0 ? $"{first.EmployeeDisplayName} has {Goals(off)} off track"
+                : $"{first.EmployeeDisplayName} has {Goals(risk)} at risk";
+            var updated = person.Max(o => o.LastProgressAt);
+            var quote = person.SelectMany(o => notes[o.Id]).OrderByDescending(n => n.RecordedAt).FirstOrDefault()?.ContextNote;
+            var actions = new List<FusionWorkActionDto>();
+            if (talking.Contains(first.EmployeeId))
+                actions.Add(new("Talk it over", $"/cycles/{cycle.Id}/plans/{first.PlanId}/attention/talk-it-over"));
+            actions.Add(new("Ask for an update", $"/cycles/{cycle.Id}/plans/{first.PlanId}/attention/ask-for-update", Primary: true));
+            items.Add(new FusionWorkItemDto(Id("goals-off-track", first.PlanId), Module, "goals-off-track", title,
+                updated is DateTime at ? $"Last updated {at.ToString("d MMM", System.Globalization.CultureInfo.InvariantCulture)}" : "No update yet",
+                null, PerformanceNotificationTemplates.PlanPath(cycle.Id, first.PlanId),
+                new FusionWorkSubjectDto(first.EmployeeDisplayName, first.EmployeeId), Sections.Team)
+            {
+                Lines = person.Select(o => new FusionWorkLineDto(o.Title, o.CurrentStatus == ObjectiveStatus.OffTrack ? "Off track" : "At risk",
+                    o.CurrentStatus == ObjectiveStatus.OffTrack ? "bad" : "warn")).ToList(),
+                Quote = quote,
+                Actions = actions,
+            });
+        }
+    }
+
+    private static string Goals(int count) => count == 1 ? "1 goal" : $"{count} goals";
+
+    /// <summary>
+    /// The caller's direct reports, by Core HR, with no 1:1s together yet (D-39, D-84): booked in place at a time both are
+    /// free. Without a time zone from Identity the row still shows and opens 1:1s, with no times offered.
+    /// </summary>
+    private async Task OneOnOnesToBookAsync(Guid employeeId, List<FusionWorkItemDto> items, CancellationToken token)
+    {
+        if (workforce is null) return;
+        var now = PerformanceClock.UtcNow;
+        IReadOnlyList<WorkforceSnapshot> reports;
+        WorkforceSnapshot? me;
+        try
+        {
+            reports = (await workforce.GetDirectReportsAsync(now, [employeeId], token)).Where(r => r.IsActive && r.EmployeeId != employeeId).ToList();
+            if (reports.Count == 0) return;
+            me = (await workforce.ResolveAsync(now, [employeeId], token)).SingleOrDefault(p => p.EmployeeId == employeeId);
+        }
+        catch (HttpRequestException) { return; }
+        if (me is null) return;
+        var reportIds = reports.Select(r => r.EmployeeId).ToList();
+        var meeting = (await db.OneOnOneSeries.AsNoTracking()
+            .Where(s => s.ManagerEmployeeId == employeeId && s.EndedAt == null && reportIds.Contains(s.ReportEmployeeId))
+            .Select(s => s.ReportEmployeeId).ToListAsync(token)).ToHashSet();
+        var unbooked = reports.Where(r => !meeting.Contains(r.EmployeeId)).OrderBy(r => r.DisplayName).ToList();
+        if (unbooked.Count == 0) return;
+        string? zoneId = null;
+        if (audience is not null)
+        {
+            try { zoneId = (await audience.ReadAsync([], token)).TimeZone; }
+            catch (HttpRequestException) { }
+        }
+        var zone = OneOnOneFreeTimes.Zone(zoneId);
+        foreach (var report in unbooked)
+        {
+            var slots = zoneId is null ? [] : await OneOnOneFreeTimes.ForAsync(db, zone, me, report, now, token);
+            items.Add(new FusionWorkItemDto(Id("one-on-one-book", report.EmployeeId), Module, "one-on-one-book",
+                $"No 1:1s with {report.DisplayName} yet", slots.Count > 0 ? "Times you're both free" : null, null,
+                PerformanceNotificationTemplates.OneOnOnesPath, new FusionWorkSubjectDto(report.DisplayName, report.EmployeeId), Sections.OneOnOnes)
+            {
+                Booking = slots.Count > 0 ? new FusionWorkBookingDto(slots, $"/one-on-ones/with/{report.EmployeeId}/book") : null,
+            });
+        }
     }
 
     /// <summary>Open update requests addressed to the caller: one objective opens in record mode, the plan opens the plan.</summary>

@@ -17,7 +17,7 @@ import { reportPerformanceFailure } from "../../api/performance-failure";
 import { useObjectiveProgress, useProgressMutations } from "../../api/use-performance";
 import { EvidenceUploader } from "../progress/evidence-uploader";
 import { dayMonth } from "../year/year-words";
-import { paceOn, positionIn } from "./goal-line";
+import { paceOn, positionIn } from "@repo/performance-ui";
 import { valueIn } from "./goal-panel";
 import type { ObjectiveRecord } from "./objective-record-model";
 

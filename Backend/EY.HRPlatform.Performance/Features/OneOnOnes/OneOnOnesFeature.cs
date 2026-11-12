@@ -153,6 +153,8 @@ public sealed record OneOnOneSeriesDto(
 /// <summary>Starts a series; <see cref="Agenda"/> puts talking points on the first meeting, the same way they're added later.</summary>
 public sealed record StartOneOnOneRequest(Guid WithEmployeeId, OneOnOneCadence? Cadence, DateTime FirstMeetingAt,
     IReadOnlyList<AddAgendaItemRequest>? Agenda = null);
+/// <summary>A time picked from the ones both people are free (B-434).</summary>
+public sealed record BookOneOnOneRequest(DateTime At);
 public sealed record ChangeOneOnOneCadenceRequest(OneOnOneCadence Cadence)
 {
     [System.Text.Json.Serialization.JsonRequired]

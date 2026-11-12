@@ -183,12 +183,23 @@ function eventWords(event: TeamEventDto, name: string, jobTitle: string | null, 
 /** The team's year (D-27): this cycle's objectives by status and how many people updated lately, from Performance. */
 function TeamYear({ band }: { band: TeamBandData }) {
   const t = useTranslations("team.year");
-  const { roster } = band.perf;
-  if (roster.isLoading && !roster.data) return <Skeleton className="h-36 w-full rounded-surface" />;
-  const summary = roster.data?.summary;
-  const status = summary?.status;
-  if (!roster.data || !summary || !status) return null;
-  const total = status.onTrack + status.atRisk + status.offTrack + status.noStatus;
+  const { year } = band.perf;
+  if (year.isLoading && !year.data) return <Skeleton className="h-36 w-full rounded-surface" />;
+  if (!year.data) return null;
+  const running = year.data.people.filter((person) => person.planStatus === "Approved");
+  const goals = running.flatMap((person) => person.goals);
+  const status = {
+    onTrack: goals.filter((goal) => goal.status === "OnTrack").length,
+    atRisk: goals.filter((goal) => goal.status === "AtRisk").length,
+    offTrack: goals.filter((goal) => goal.status === "OffTrack").length,
+    noStatus: goals.filter((goal) => goal.status === null).length,
+  };
+  const monthAgo = Date.now() - 30 * 24 * 3600 * 1000;
+  const summary = {
+    approved: running.length,
+    updatedIn30Days: running.filter((person) => person.lastUpdateAt && new Date(person.lastUpdateAt).getTime() >= monthAgo).length,
+  };
+  const total = goals.length;
   if (total === 0) return null;
   const parts = [
     { key: "onTrack", count: status.onTrack, bar: "bg-success", dot: "bg-success", text: "text-success" },

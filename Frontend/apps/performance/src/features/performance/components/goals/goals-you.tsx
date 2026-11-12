@@ -14,7 +14,7 @@ import { PersonInitials } from "@repo/performance-ui";
 import { useAlignmentTargets, useMyPlan, useObjectiveProgress, usePlanMutations } from "../../api/use-performance";
 import { useUpdateRequests } from "../../api/use-update-requests";
 import { reportPerformanceFailure } from "../../api/performance-failure";
-import { GoalLine, positionIn, STATUS_STROKE } from "../objective-record/goal-line";
+import { GoalLine, positionIn, STATUS_STROKE } from "@repo/performance-ui";
 import { valueIn } from "../objective-record/goal-panel";
 import { GoalState } from "../objective-record/goal-state";
 import { useObjectiveRecord } from "../objective-record/use-objective-record";

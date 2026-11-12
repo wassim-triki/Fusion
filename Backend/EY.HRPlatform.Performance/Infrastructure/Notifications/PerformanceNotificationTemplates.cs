@@ -64,7 +64,7 @@ public static class PerformanceNotificationTemplates
 
     public static string DevelopmentPath(Guid cycleId, Guid? planId, Guid employeeId, bool forOwner)
         => forOwner ? $"/performance/goals?cycle={cycleId}#development"
-            : planId is Guid id ? $"{PlanPath(cycleId, id)}#development" : $"/performance/people/{employeeId}";
+            : planId is Guid id ? $"{PlanPath(cycleId, id)}#development" : TeamPath;
 
     public static PerformanceNotificationMessage ForReview(PerformanceReview review, PerformanceNotificationKind kind, string roundName)
     {
@@ -122,6 +122,7 @@ public static class PerformanceNotificationTemplates
     public const string ReviewsPath = "/performance/reviews";
     public const string YearPath = "/performance";
     public const string TeamPath = "/performance/team";
+    public const string OneOnOnesPath = "/performance/one-on-ones";
 
     public static string OneOnOnePath(Guid seriesId) => $"/performance/one-on-ones/{seriesId}";
     public static string GoalsPath(Guid cycleId) => $"/performance/goals?cycle={cycleId}";

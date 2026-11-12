@@ -321,7 +321,6 @@ public sealed class ObjectiveAccessTests
     [InlineData("strategy")]
     [InlineData("goals")]
     [InlineData("plan")]
-    [InlineData("population")]
     [InlineData("settings")]
     public async Task Stale_commands_cannot_change_any_existing_family(string family)
     {
@@ -345,11 +344,6 @@ public sealed class ObjectiveAccessTests
             case "plan":
                 error = (await new EY.HRPlatform.Performance.Features.Plans.SubmitMyPlanHandler(db, f.Workforce, f.Store.Tenant, new TestPerformanceAudit(db), new EY.HRPlatform.Performance.Infrastructure.Notifications.PerformanceNotifications(db)).Handle(new(f.CycleId,
                     new(f.SamiId, false, false), 1), default)).Error;
-                break;
-            case "population":
-                error = (await new EY.HRPlatform.Performance.Features.Population.SetPopulationHandler(db, f.Store.Tenant,
-                    new(f.Workforce)).Handle(new(f.CycleId, new(EY.HRPlatform.Performance.Domain.Population.PopulationMode.AllActive, [], [], [])
-                    { ExpectedVersion = 1 }), default)).Error;
                 break;
             default:
                 error = (await new EY.HRPlatform.Performance.Features.Settings.UpdateCycleSettingsHandler(db, f.Store.Tenant, new TestPerformanceAudit(db)).Handle(new(

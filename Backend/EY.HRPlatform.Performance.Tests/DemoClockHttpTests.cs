@@ -159,24 +159,22 @@ public sealed class DemoClockHttpTests
             new { expectedVersion = await world.ReviewVersionAsync(mariamsReview), reason = "Reviewed separately this year" }, At(start.AddDays(351))));
         // Mariam's was the last open review: the round closed itself with it (D-34).
 
-        // The day before the end, closing without a reason is an early close, as it would have been then.
-        var cycleVersion = await world.CycleVersionAsync(cycleId);
-        // Mariam's own plan was never made, so both closes carry an exception reason.
-        const string exception = "Mariam was reviewed separately this year.";
-        using (var early = await world.Send(world.Amira, HttpMethod.Post, $"/api/performance/cycles/{cycleId}/close",
-            new { expectedVersion = cycleVersion, earlyCloseReason = (string?)null, exceptionReason = exception }, At(end.AddDays(-1))))
+        // Nobody closes the year (D-57): it ends the day the next one launches, on that day's clock.
+        var nextStart = end.AddDays(1);
+        var next = await Data(await world.Send(world.Amira, HttpMethod.Post, "/api/performance/cycles", new
         {
-            Assert.Equal(HttpStatusCode.BadRequest, early.StatusCode);
-            Assert.Equal("Cycle.EarlyCloseReason", await CodeOf(early));
-        }
-        await Data(await world.Send(world.Amira, HttpMethod.Post, $"/api/performance/cycles/{cycleId}/close",
-            new { expectedVersion = cycleVersion, earlyCloseReason = (string?)null, exceptionReason = exception }, At(end)));
+            name = "This year", startDate = nextStart, endDate = nextStart.AddDays(364), planningDeadline = nextStart.AddDays(30),
+            plan = new { reviewOpensOn = nextStart.AddDays(320), resultsOutOn = nextStart.AddDays(350), joinersJoin = true },
+        }, At(end.AddDays(-3))));
+        var nextId = next.GetProperty("id").GetGuid();
+        await Data(await world.Send(world.Amira, HttpMethod.Post, $"/api/performance/cycles/{nextId}/launch",
+            new { expectedVersion = await world.CycleVersionAsync(nextId) }, At(nextStart)));
 
         await using var db = world.Factory.Store.NewContext();
         var cycle = await db.Cycles.SingleAsync(c => c.Id == cycleId);
         Assert.Equal(CycleLifecycleState.Closed, cycle.State);
         Assert.Equal(Instant(start), cycle.ActivatedAt);
-        Assert.Equal(Instant(end), cycle.ClosedAt);
+        Assert.Equal(Instant(nextStart), cycle.ClosedAt);
         var plan = await db.EmployeePlans.SingleAsync(p => p.Id == planId);
         Assert.Equal(Instant(start.AddDays(10)), plan.SubmittedAt);
         Assert.Equal(Instant(approveDay), plan.ApprovedAt);
@@ -265,14 +263,18 @@ public sealed class DemoClockHttpTests
 
         /// <summary>
         /// Through the API, five days before <paramref name="start"/>: the cycle, a published company objective and the
-        /// population (Amira left out, no reviewer); on <paramref name="start"/> activation; then Aicha's plan, submitted at
+        /// the year's steps; on <paramref name="start"/> its launch (Amira left out, no reviewer); then Aicha's plan, submitted at
         /// <paramref name="submittedAt"/>.
         /// </summary>
         public async Task<(Guid CycleId, Guid PlanId)> PlanSubmittedAsync(DateOnly start, DateTime submittedAt)
         {
             var setup = At(start.AddDays(-5));
             var cycle = await Data(await Send(Amira, HttpMethod.Post, "/api/performance/cycles",
-                new { name = "Last year", startDate = start, endDate = start.AddDays(364), planningDeadline = start.AddDays(30) }, setup));
+                new
+                {
+                    name = "Last year", startDate = start, endDate = start.AddDays(364), planningDeadline = start.AddDays(30),
+                    plan = new { reviewOpensOn = start.AddDays(320), resultsOutOn = start.AddDays(350), joinersJoin = true },
+                }, setup));
             var cycleId = cycle.GetProperty("id").GetGuid();
             var direction = await Data(await Send(Amira, HttpMethod.Post, $"/api/performance/cycles/{cycleId}/strategy", new
             {
@@ -280,16 +282,8 @@ public sealed class DemoClockHttpTests
                 startDate = start, endDate = start.AddDays(364), publish = true, expectedVersion = await CycleVersionAsync(cycleId),
                 measurement = new { method = "NumericTarget", baseline = 0, target = 100, unit = "%", direction = "Increase", milestones = Array.Empty<object>() },
             }, setup));
-            var population = await Data(await Send(Amira, HttpMethod.Get, $"/api/performance/cycles/{cycleId}/population", null, setup));
-            population = await Data(await Send(Amira, HttpMethod.Put, $"/api/performance/cycles/{cycleId}/population", new
-            {
-                mode = "AllActive", orgUnitSelections = Array.Empty<object>(), inclusions = Array.Empty<Guid>(),
-                exclusions = new[] { new { employeeId = Amira.EmployeeId, reason = "Top role, no in-cycle reviewer." } },
-                expectedVersion = population.GetProperty("selection").GetProperty("version").GetUInt32(),
-            }, setup));
-            await Data(await Send(Amira, HttpMethod.Post, $"/api/performance/cycles/{cycleId}/population/confirm",
-                new { expectedVersion = population.GetProperty("selection").GetProperty("version").GetUInt32() }, setup));
-            await Data(await Send(Amira, HttpMethod.Post, $"/api/performance/cycles/{cycleId}/activate",
+            // Amira has no manager in Core HR, so she isn't in the year.
+            await Data(await Send(Amira, HttpMethod.Post, $"/api/performance/cycles/{cycleId}/launch",
                 new { expectedVersion = await CycleVersionAsync(cycleId) }, At(start)));
 
             var planning = submittedAt.ToString("O");

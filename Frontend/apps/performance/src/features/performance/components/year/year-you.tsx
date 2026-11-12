@@ -1,5 +1,6 @@
 "use client";
 
+import { objectiveHref } from "@/lib/performance-routes";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import type { CyclePhase, ObjectiveStatus, PlanObjectiveDto } from "@repo/api";
@@ -76,7 +77,7 @@ function GoalRow({ goal, cycleId, weighting }: { goal: PlanObjectiveDto; cycleId
   const progress = Math.round(goal.derivedProgress);
   return (
     <Link
-      href={`/cycles/${cycleId}/objectives/${goal.id}`}
+      href={objectiveHref({ cycleId, objectiveId: goal.id })}
       className="-mx-3 grid grid-cols-[minmax(0,1fr)_220px] items-center gap-6 rounded-xl px-3 py-2.5 hover:bg-inlay"
     >
       <div className="grid min-w-0 gap-1">

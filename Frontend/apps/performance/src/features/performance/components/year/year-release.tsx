@@ -139,7 +139,7 @@ export function ReleaseMoment({ release, affected, roundId, insteadOf, run, rele
         ) : (
           <div className="flex shrink-0 items-center gap-2.5">
             <Button variant="ghost" onClick={onDone}>{t("done")}</Button>
-            <Button asChild size="lg"><Link href="/cycle/setup">{t("setUpNextYear")}</Link></Button>
+            <Button asChild size="lg"><Link href="/year/setup">{t("setUpNextYear")}</Link></Button>
           </div>
         )}
       </div>

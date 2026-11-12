@@ -147,7 +147,11 @@ public sealed record CreateCycleRequest(
     DateOnly StartDate,
     DateOnly EndDate,
     DateOnly? PlanningDeadline,
-    string? Description = null);
+    string? Description = null)
+{
+    /// <summary>The year's steps and moments as set up (D-91); the setup page always sends them.</summary>
+    public YearPlanInput? Plan { get; init; }
+}
 
 public sealed record UpdateCycleRequest(
     string Name,
@@ -158,7 +162,61 @@ public sealed record UpdateCycleRequest(
 {
     [System.Text.Json.Serialization.JsonRequired]
     public uint ExpectedVersion { get; init; }
+
+    public YearPlanInput? Plan { get; init; }
 }
+
+/// <summary>When the review opens and results go out, the year's moments, who joins and which company goals stay behind.</summary>
+public sealed record YearPlanInput(
+    DateOnly ReviewOpensOn,
+    DateOnly ResultsOutOn,
+    DateOnly? MidYearCheckInOn,
+    DateOnly? SelfReviewsDueOn,
+    DateOnly? CalibrationOn,
+    bool JoinersJoin,
+    IReadOnlyList<Guid>? DroppedCompanyGoalIds);
+
+/// <summary>A year as set up: its name, dates, steps' ends and moments.</summary>
+public sealed record YearPlanDto(
+    string Name,
+    DateOnly StartDate,
+    DateOnly EndDate,
+    DateOnly PlanningEndsOn,
+    DateOnly ReviewOpensOn,
+    DateOnly ResultsOutOn,
+    DateOnly? MidYearCheckInOn,
+    DateOnly? SelfReviewsDueOn,
+    DateOnly? CalibrationOn,
+    bool JoinersJoin,
+    IReadOnlyList<Guid> DroppedCompanyGoalIds);
+
+/// <summary>Someone on the setup page: who's in, left out, or carrying goals over.</summary>
+public sealed record YearSetupPersonDto(Guid EmployeeId, string Name, string? UnitName);
+
+/// <summary>A goal coming along into the next year, with whose it is.</summary>
+public sealed record YearSetupGoalDto(Guid Id, string Title, Guid OwnerEmployeeId, string? OwnerName);
+
+/// <summary>
+/// Setting up a year (D-91): the draft or the year proposed from last year a year on, last year's steps to ghost under
+/// it, who's in from Core HR on its first day, what comes along, and whether it can launch now.
+/// </summary>
+public sealed record YearSetupDto(
+    Guid? DraftId,
+    uint DraftVersion,
+    YearPlanDto Year,
+    string? LastYearName,
+    YearPlanDto? LastYear,
+    CyclePhase? LastYearPhase,
+    string? LaunchBlocker,
+    int PeopleCount,
+    IReadOnlyList<YearSetupPersonDto> People,
+    IReadOnlyList<YearSetupPersonDto> LeftOut,
+    IReadOnlyList<YearSetupGoalDto> CompanyGoals,
+    int UnfinishedGoals,
+    IReadOnlyList<YearSetupPersonDto> UnfinishedOwners);
+
+/// <summary>A year launched: who's in, what came along and the year before, ended.</summary>
+public sealed record YearLaunchDto(Guid CycleId, int People, int CompanyGoals, int CarriedGoals, Guid? EndedCycleId);
 
 public sealed record MilestoneStateDto(OperationalMilestone Milestone, bool Reached);
 
@@ -279,32 +337,6 @@ public sealed record NudgeRequest(IReadOnlyList<Guid>? EmployeeIds, IReadOnlyLis
 public sealed record NudgeResultDto(int Nudged, IReadOnlyList<Guid> Skipped);
 
 /// <summary>What closing the Cycle would involve: whether the end is reached and who lacks an approved plan.</summary>
-public sealed record CycleClosureDto(
-    Guid CycleId,
-    uint Version,
-    CycleLifecycleState State,
-    DateOnly EndDate,
-    bool EndReached,
-    int ParticipantCount,
-    int ApprovedCount,
-    IReadOnlyList<ClosureParticipantDto> Unresolved,
-    string? EarlyCloseReason,
-    int RecordedExceptionCount);
-
-/// <summary>A participant without an approved plan, as closure would record them.</summary>
-public sealed record ClosureParticipantDto(
-    Guid EmployeeId,
-    string DisplayName,
-    string? OrgUnitName,
-    RosterPlanStatus Standing,
-    string? ExceptionReason);
-
-/// <summary>Closes an Active Cycle; reasons are required only when the end is not reached or plans are unresolved.</summary>
-public sealed record CloseCycleRequest(
-    [property: System.Text.Json.Serialization.JsonRequired] uint ExpectedVersion,
-    string? EarlyCloseReason,
-    string? ExceptionReason);
-
 // ----- Strategic direction -----
 
 public sealed record MilestoneInput(string Title, decimal Weight, DateOnly? DueDate);
@@ -401,62 +433,6 @@ public sealed record UpdateStrategicObjectiveRequest(
     [System.Text.Json.Serialization.JsonRequired]
     public uint ExpectedVersion { get; init; }
 }
-
-// ----- Population -----
-
-public sealed record OrgUnitSelectionInput(Guid OrgUnitId, bool IncludeDescendants);
-
-public sealed record ExclusionInput(Guid EmployeeId, string Reason);
-
-public sealed record SetPopulationRequest(
-    PopulationMode Mode,
-    IReadOnlyList<OrgUnitSelectionInput>? OrgUnitSelections,
-    IReadOnlyList<Guid>? Inclusions,
-    IReadOnlyList<ExclusionInput>? Exclusions)
-{
-    [System.Text.Json.Serialization.JsonRequired]
-    public uint ExpectedVersion { get; init; }
-}
-
-public sealed record ReadinessIssueDto(ReadinessIssueCode Code, string Label, bool IsHard);
-
-public sealed record PopulationCandidateDto(
-    Guid EmployeeId,
-    string DisplayName,
-    string? JobTitle,
-    Guid? OrgUnitId,
-    string? OrgUnitName,
-    Guid? ManagerEmployeeId,
-    string? ManagerDisplayName,
-    bool ManagerIsActive,
-    bool IsActive,
-    bool ByExplicitInclusion,
-    bool IsExcluded,
-    string? ExclusionReason,
-    bool IsEligible,
-    bool CountsToRoster,
-    bool HasValidReviewer,
-    IReadOnlyList<ReadinessIssueDto> Issues);
-
-public sealed record PopulationSelectionDto(
-    PopulationMode Mode,
-    DateOnly EligibilityDate,
-    bool IsConfirmed,
-    IReadOnlyList<OrgUnitSelectionInput> OrgUnitSelections,
-    IReadOnlyList<Guid> Inclusions,
-    IReadOnlyList<ExclusionInput> Exclusions)
-{
-    public uint Version { get; init; }
-}
-
-public sealed record PopulationDto(
-    PopulationSelectionDto Selection,
-    int ReadyCount,
-    int NeedsAttentionCount,
-    int ExcludedCount,
-    int ReviewerReadyCount,
-    int ReviewerRequiredCount,
-    IReadOnlyList<PopulationCandidateDto> Candidates);
 
 // ----- Organizational goals (Chunk B) -----
 

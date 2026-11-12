@@ -61,7 +61,8 @@ public static class NotificationFeed
         PerformanceNotificationKind.OneOnOneActionAssigned => "action",
         PerformanceNotificationKind.PlanSubmitted or PerformanceNotificationKind.PlanReturned or PerformanceNotificationKind.PlanApproved
             or PerformanceNotificationKind.UpdateRequested or PerformanceNotificationKind.ObjectiveAtRisk
-            or PerformanceNotificationKind.UpdateRequestAnswered or PerformanceNotificationKind.DevelopmentGoalAdded => "plan",
+            or PerformanceNotificationKind.UpdateRequestAnswered or PerformanceNotificationKind.DevelopmentGoalAdded
+            or PerformanceNotificationKind.YearLaunched => "plan",
         PerformanceNotificationKind.ReviewDueDateMoved or PerformanceNotificationKind.ReviewReminder
             or PerformanceNotificationKind.YearNudge or PerformanceNotificationKind.GoalUpdateReminder => "reminder",
         _ => "review",

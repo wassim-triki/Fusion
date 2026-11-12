@@ -65,7 +65,7 @@ public static class UpdateRequestSatisfaction
     }
 }
 
-internal static class UpdateRequests
+public static class UpdateRequests
 {
     public static async Task<UpdateRequestDto> ToDtoAsync(PerformanceDbContext db, UpdateRequest request, CancellationToken token)
     {

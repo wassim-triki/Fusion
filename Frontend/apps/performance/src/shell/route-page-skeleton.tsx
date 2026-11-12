@@ -10,9 +10,6 @@ import {
 } from "@/features/performance/components/one-on-ones/one-on-one-skeletons";
 import { PlanPageSkeleton } from "@/features/performance/components/plan/plan-skeleton";
 import {
-  SetupShellSkeleton,
-} from "@/features/performance/components/cycle-setup/setup-skeletons";
-import {
   FeedbackPageSkeleton,
   RequestSkeleton,
   TeamWorkspaceSkeleton,
@@ -31,14 +28,8 @@ export function PerformanceRouteSkeleton({ label }: { label?: string }) {
   else if (path === "/feedback") skeleton = <FeedbackPageSkeleton />;
   else if (/^\/cycles\/[^/]+\/plans\//.test(path))
     skeleton = <PlanPageSkeleton />;
-  else if (path === "/cycle/setup" || path.startsWith("/cycle/setup/")) {
-    const step = path.endsWith("/population")
-      ? "population"
-      : path.endsWith("/review")
-        ? "review"
-        : "details";
-    skeleton = <SetupShellSkeleton step={step} />;
-  } else if (path === "/reviews") skeleton = <WorkspaceSkeleton />;
+  else if (path === "/year/setup") skeleton = <PageSkeleton rows={5} width="wide" />;
+  else if (path === "/reviews") skeleton = <WorkspaceSkeleton />;
   else if (path.startsWith("/feedback/requests/"))
     skeleton = <RequestSkeleton />;
   else if (path.startsWith("/reviews/peer-requests/"))

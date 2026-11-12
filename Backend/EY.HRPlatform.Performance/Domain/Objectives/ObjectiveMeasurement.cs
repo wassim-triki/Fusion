@@ -66,6 +66,29 @@ public sealed class ObjectiveMeasurement
     }
 
     /// <summary>
+    /// The measure carried into next year (D-57), picking up where it stood: a number starts from where it reached, the
+    /// milestones keep what's done but lose last year's due dates. A percent measure starts again.
+    /// </summary>
+    public ObjectiveMeasurement CarriedOn(Guid tenantId, decimal? currentActual)
+    {
+        switch (Method)
+        {
+            case MeasurementMethod.NumericTarget:
+                var from = currentActual is decimal actual && actual != Target ? actual : Baseline!.Value;
+                return NumericTarget(from, Target!.Value, Unit!);
+            case MeasurementMethod.WeightedMilestones:
+                return WeightedMilestones(_milestones.Select(milestone =>
+                {
+                    var copy = ObjectiveMilestone.Create(tenantId, milestone.Title, milestone.Weight, null);
+                    if (milestone.IsCompleted) copy.SetCompleted(true);
+                    return copy;
+                }));
+            default:
+                return ManualPercentage();
+        }
+    }
+
+    /// <summary>
     /// Whether milestone weights total exactly 100%. A weighted-milestones objective may
     /// only lock (publish/approve) when this holds; other methods are always ready.
     /// </summary>

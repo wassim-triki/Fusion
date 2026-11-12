@@ -21,7 +21,7 @@ import { YearYou } from "./year-you";
 import { OpenItToday, ReviewersBehind, RoundOpened, RoundOpens } from "./year-round";
 import { FlowSection, StepFlow, type FlowColumn, type FlowTone } from "./step-flow";
 import { LookedAt, ReleasedToday, ReleaseMoment, useReleaseRun } from "./year-release";
-import { calibrationHref } from "@/lib/performance-routes";
+import { calibrationHref, newReviewRoundHref } from "@/lib/performance-routes";
 
 const PERFORMANCE: ["performance"] = ["performance"];
 
@@ -49,7 +49,7 @@ export function YearPage() {
           description={administers ? undefined : t("noYearYet")}
           action={administers ? (
             <Button asChild>
-              <Link href={selected ? `/cycle/setup?cycle=${encodeURIComponent(selected.id)}` : "/cycle/setup"}>{selected ? t("continueSetup") : t("setUpTheYear")}</Link>
+              <Link href="/year/setup">{selected ? t("continueSetup") : t("setUpTheYear")}</Link>
             </Button>
           ) : undefined}
         />
@@ -276,8 +276,8 @@ function useNext(year: YearDto, onPreview: () => void): Next {
       return {
         eyebrow: t("yourNextStep"),
         title: t("setUpNextYear"),
-        due: t("endsByItself", { name: year.name, day: day(year.endDate, locale) }),
-        action: <Button asChild><Link href="/cycle/setup">{t("setUpNextYear")}</Link></Button>,
+        due: t(year.today > year.endDate ? "ended" : "endsByItself", { name: year.name, day: day(year.endDate, locale) }),
+        action: <Button asChild><Link href="/year/setup">{t("setUpNextYear")}</Link></Button>,
         body: resultsStart === year.today ? <ReleasedToday count={count("ResultsOut", "released", "acknowledged")} /> : undefined,
       };
     }
@@ -399,7 +399,7 @@ function MovePreview({ year, caretAt, onDone, onReleased }: {
         <div className="flex items-center gap-3 rounded-inset bg-inlay px-3.5 py-3 text-sm">
           <span className="text-foreground">{t(`blocker.${move.blocker}`)}</span>
           {move.blocker === "noDraftRound" ? (
-            <Button asChild size="sm" variant="outline" className="ms-auto"><Link href="/reviews/rounds/new">{t("draftTheRound")}</Link></Button>
+            <Button asChild size="sm" variant="outline" className="ms-auto"><Link href={newReviewRoundHref()}>{t("draftTheRound")}</Link></Button>
           ) : null}
         </div>
       ) : null}

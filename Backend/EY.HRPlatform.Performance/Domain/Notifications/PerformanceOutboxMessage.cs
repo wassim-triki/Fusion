@@ -21,6 +21,8 @@ public enum PerformanceNotificationKind
     OneOnOneInvite,
     /// <summary>The monthly reminder to update goals nobody has touched in a month.</summary>
     GoalUpdateReminder,
+    /// <summary>A new year opened for the person, with what to do first (D-91: everyone is told when it launches).</summary>
+    YearLaunched,
 }
 
 /// <summary>The meeting an invite is about; the email is worded from its state when it's sent.</summary>
@@ -109,7 +111,7 @@ public sealed class PerformanceOutboxMessage : PerformanceChildEntity
             throw new ArgumentException("Notification tenant, recipient, resource, transition and path are required.");
         if (kind is not (PerformanceNotificationKind.ObjectiveAtRisk or PerformanceNotificationKind.UpdateRequestAnswered
             or PerformanceNotificationKind.DevelopmentGoalAdded or PerformanceNotificationKind.YearNudge
-            or PerformanceNotificationKind.GoalUpdateReminder))
+            or PerformanceNotificationKind.GoalUpdateReminder or PerformanceNotificationKind.YearLaunched))
             throw new ArgumentException("Choose a path notification kind.", nameof(kind));
         return new PerformanceOutboxMessage
         {

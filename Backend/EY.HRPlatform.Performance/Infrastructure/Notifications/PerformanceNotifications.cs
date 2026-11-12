@@ -25,6 +25,9 @@ public interface IPerformanceNotifications
     void EnqueueYearNudge(Guid tenantId, Guid cycleId, Guid recipientEmployeeId, Guid actorEmployeeId, string actorName,
         string stepKey, string path, Guid nudgeId);
 
+    void EnqueueYearLaunched(Guid tenantId, Guid cycleId, Guid recipientEmployeeId, Guid actorEmployeeId, string actorName,
+        string yearName, DateOnly planningEnds, int carried);
+
     void EnqueueDevelopmentGoalAdded(Guid tenantId, Guid cycleId, Guid developmentPlanId, Guid goalId, Guid recipientEmployeeId,
         Guid actorEmployeeId, string actorName, string goalTitle, string path);
 
@@ -110,6 +113,17 @@ public sealed class PerformanceNotifications(PerformanceDbContext db) : IPerform
         var message = PerformanceOutboxMessage.ForPath(tenantId, PerformanceNotificationKind.YearNudge, recipientEmployeeId,
             "Cycle", nudgeId, new PathNotificationPayload(cycleId, cycleId, actorName, path));
         Stage(message, null, PerformanceNotificationTemplates.ForYearNudge(actorName, stepKey, path) with { ActorEmployeeId = actorEmployeeId });
+    }
+
+    /// <summary>Everyone in a year hears it opened, with their first step; carried goals are already in their draft.</summary>
+    public void EnqueueYearLaunched(Guid tenantId, Guid cycleId, Guid recipientEmployeeId, Guid actorEmployeeId, string actorName,
+        string yearName, DateOnly planningEnds, int carried)
+    {
+        if (recipientEmployeeId == Guid.Empty || recipientEmployeeId == actorEmployeeId) return;
+        var path = $"/performance/goals?cycle={cycleId}";
+        var message = PerformanceOutboxMessage.ForPath(tenantId, PerformanceNotificationKind.YearLaunched, recipientEmployeeId,
+            "Cycle", cycleId, new PathNotificationPayload(cycleId, cycleId, actorName, path));
+        Stage(message, null, PerformanceNotificationTemplates.ForYearLaunched(yearName, planningEnds, carried, path) with { ActorEmployeeId = actorEmployeeId });
     }
 
     public void EnqueueDevelopmentGoalAdded(Guid tenantId, Guid cycleId, Guid developmentPlanId, Guid goalId, Guid recipientEmployeeId,

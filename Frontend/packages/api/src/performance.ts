@@ -24,7 +24,6 @@ export type MeasurementMethod =
 export type ImprovementDirection = "Increase" | "Decrease";
 export type CycleLifecycleState = "Draft" | "Active" | "Closed";
 export type ObjectiveLifecycleState = "Draft" | "Published" | "Archived";
-export type PopulationMode = "AllActive" | "ByScope";
 export type ObjectiveOwnershipScope = "Company" | "OrgUnit" | "Employee";
 export type ObjectiveProgressSource = "Direct" | "Calculated";
 export type PlanLifecycleState = "Draft" | "Submitted" | "Approved";
@@ -52,11 +51,6 @@ export type ObjectiveStatus = "OnTrack" | "AtRisk" | "OffTrack";
 export type PlanChangeRequestState = "Open" | "Addressed" | "ObjectiveRemoved";
 export type DevelopmentGoalStatus = "NotStarted" | "InProgress" | "Done";
 export type EvidenceKind = "File" | "Link" | "Reference";
-export type ReadinessIssueCode =
-  | "InactiveEmployment"
-  | "NoPrimaryAssignment"
-  | "MissingManager"
-  | "InactiveManager";
 export type OperationalMilestone =
   | "StrategicDirectionPublished"
   | "PopulationConfirmed"
@@ -348,29 +342,6 @@ export interface YearDto {
 export interface NudgeResultDto {
   nudged: number;
   skipped: string[];
-}
-
-/** A participant without an approved plan, as closing the Cycle would record them. */
-export interface ClosureParticipantDto {
-  employeeId: string;
-  displayName: string;
-  orgUnitName: string | null;
-  standing: RosterPlanStatus;
-  exceptionReason: string | null;
-}
-
-/** What closing a Cycle involves. */
-export interface CycleClosureDto {
-  cycleId: string;
-  version: number;
-  state: CycleLifecycleState;
-  endDate: string;
-  endReached: boolean;
-  participantCount: number;
-  approvedCount: number;
-  unresolved: ClosureParticipantDto[];
-  earlyCloseReason: string | null;
-  recordedExceptionCount: number;
 }
 
 /** What the caller can do in the selected Cycle, from capabilities plus recorded responsibility. */
@@ -763,11 +734,6 @@ export interface SaveManagerAssessmentRequest {
   potential?: ReviewPotential | null;
 }
 
-export interface CloseCycleRequest {
-  earlyCloseReason?: string | null;
-  exceptionReason?: string | null;
-}
-
 export interface MilestoneDto {
   id: string;
   title: string;
@@ -797,61 +763,6 @@ export interface StrategicObjectiveDto {
   state: ObjectiveLifecycleState;
   publishedAt: string | null;
   measurement: MeasurementDto;
-}
-
-export interface ReadinessIssueDto {
-  code: ReadinessIssueCode;
-  label: string;
-  isHard: boolean;
-}
-
-export interface PopulationCandidateDto {
-  employeeId: string;
-  displayName: string;
-  jobTitle: string | null;
-  orgUnitId: string | null;
-  orgUnitName: string | null;
-  managerEmployeeId: string | null;
-  managerDisplayName: string | null;
-  managerIsActive: boolean;
-  isActive: boolean;
-  byExplicitInclusion: boolean;
-  isExcluded: boolean;
-  exclusionReason: string | null;
-  isEligible: boolean;
-  countsToRoster: boolean;
-  hasValidReviewer: boolean;
-  issues: ReadinessIssueDto[];
-}
-
-export interface OrgUnitSelectionInput {
-  orgUnitId: string;
-  includeDescendants: boolean;
-}
-
-export interface ExclusionInput {
-  employeeId: string;
-  reason: string;
-}
-
-export interface PopulationSelectionDto {
-  version: number;
-  mode: PopulationMode;
-  eligibilityDate: string;
-  isConfirmed: boolean;
-  orgUnitSelections: OrgUnitSelectionInput[];
-  inclusions: string[];
-  exclusions: ExclusionInput[];
-}
-
-export interface PopulationDto {
-  selection: PopulationSelectionDto;
-  readyCount: number;
-  needsAttentionCount: number;
-  excludedCount: number;
-  reviewerReadyCount: number;
-  reviewerRequiredCount: number;
-  candidates: PopulationCandidateDto[];
 }
 
 // ── Organizational goals (Chunk B) ─────────────────────────────────────────────
@@ -1648,6 +1559,7 @@ export interface CreateCycleRequest {
   endDate: string;
   planningDeadline?: string | null;
   description?: string | null;
+  plan?: YearPlanInput | null;
 }
 
 export interface UpdateCycleRequest {
@@ -1657,6 +1569,72 @@ export interface UpdateCycleRequest {
   endDate: string;
   planningDeadline: string;
   description?: string | null;
+  plan?: YearPlanInput | null;
+}
+
+/** When the review opens and results go out, the year's moments, who joins and which company goals stay behind (D-91). */
+export interface YearPlanInput {
+  reviewOpensOn: string;
+  resultsOutOn: string;
+  midYearCheckInOn: string | null;
+  selfReviewsDueOn: string | null;
+  calibrationOn: string | null;
+  joinersJoin: boolean;
+  droppedCompanyGoalIds: string[];
+}
+
+/** A year as set up: its name, dates, the steps' ends and its moments. */
+export interface YearPlanDto {
+  name: string;
+  startDate: string;
+  endDate: string;
+  planningEndsOn: string;
+  reviewOpensOn: string;
+  resultsOutOn: string;
+  midYearCheckInOn: string | null;
+  selfReviewsDueOn: string | null;
+  calibrationOn: string | null;
+  joinersJoin: boolean;
+  droppedCompanyGoalIds: string[];
+}
+
+export interface YearSetupPersonDto {
+  employeeId: string;
+  name: string;
+  unitName: string | null;
+}
+
+export interface YearSetupGoalDto {
+  id: string;
+  title: string;
+  ownerEmployeeId: string;
+  ownerName: string | null;
+}
+
+/** Setting up a year: the draft or the year proposed from last year, last year's steps, who's in and what comes along. */
+export interface YearSetupDto {
+  draftId: string | null;
+  draftVersion: number;
+  year: YearPlanDto;
+  lastYearName: string | null;
+  lastYear: YearPlanDto | null;
+  lastYearPhase: CyclePhase | null;
+  /** "lastYearRunning" while last year's results aren't out and its end hasn't passed. */
+  launchBlocker: string | null;
+  peopleCount: number;
+  people: YearSetupPersonDto[];
+  leftOut: YearSetupPersonDto[];
+  companyGoals: YearSetupGoalDto[];
+  unfinishedGoals: number;
+  unfinishedOwners: YearSetupPersonDto[];
+}
+
+export interface YearLaunchDto {
+  cycleId: string;
+  people: number;
+  companyGoals: number;
+  carriedGoals: number;
+  endedCycleId: string | null;
 }
 
 /** A measure as written: a numeric one's direction is read from its baseline and target, never chosen. */
@@ -1692,14 +1670,6 @@ export interface UpdateStrategicObjectiveRequest {
   endDate: string;
   measurement: MeasurementInput;
   publish?: boolean;
-}
-
-export interface SetPopulationRequest {
-  expectedVersion: number;
-  mode: PopulationMode;
-  orgUnitSelections?: OrgUnitSelectionInput[];
-  inclusions?: string[];
-  exclusions?: ExclusionInput[];
 }
 
 // ── Person summary (D-32): one person's performance as the viewer may see it ──
@@ -1914,21 +1884,17 @@ export const performancePaths = {
   cycle: (id: string) => `/performance/cycles/${id}`,
   context: (cycleId?: string | null) =>
     cycleId ? `/performance/context?cycleId=${encodeURIComponent(cycleId)}` : "/performance/context",
-  activate: (id: string) => `/performance/cycles/${id}/activate`,
-  closure: (id: string) => `/performance/cycles/${id}/closure`,
+  yearSetup: () => "/performance/cycles/setup",
+  launch: (id: string) => `/performance/cycles/${id}/launch`,
   year: (id: string) => `/performance/cycles/${id}/year`,
   yearMove: (id: string) => `/performance/cycles/${id}/move-on`,
   nudges: (id: string) => `/performance/cycles/${id}/nudges`,
-  close: (id: string) => `/performance/cycles/${id}/close`,
   strategy: (cycleId: string) => `/performance/cycles/${cycleId}/strategy`,
   strategyItem: (cycleId: string, objectiveId: string) =>
     `/performance/cycles/${cycleId}/strategy/${objectiveId}`,
   archiveStrategy: (cycleId: string, objectiveId: string) => `/performance/cycles/${cycleId}/strategy/${objectiveId}/archive`,
   publishStrategy: (cycleId: string, objectiveId: string) =>
     `/performance/cycles/${cycleId}/strategy/${objectiveId}/publish`,
-  population: (cycleId: string) => `/performance/cycles/${cycleId}/population`,
-  confirmPopulation: (cycleId: string) =>
-    `/performance/cycles/${cycleId}/population/confirm`,
   goals: (cycleId: string) => `/performance/cycles/${cycleId}/goals`,
   alignmentMap: (cycleId: string) => `/performance/cycles/${cycleId}/goals/map`,
   objectiveCoach: (cycleId: string) => `/performance/cycles/${cycleId}/objective-coach`,
@@ -2020,7 +1986,7 @@ export const performanceQueryKeys = {
   competencies: () => [...performanceQueryKeys.all(), "competencies"] as const,
   competenciesByJob: () => [...performanceQueryKeys.all(), "competencies", "by-job"] as const,
   cycle: (id: string) => [...performanceQueryKeys.all(), "cycle", id] as const,
-  cycleClosure: (id: string) => [...performanceQueryKeys.all(), "cycle-closure", id] as const,
+  yearSetup: () => [...performanceQueryKeys.all(), "year-setup"] as const,
   /** Every year read and preview: what anything that moves someone through the year invalidates. */
   years: () => [...performanceQueryKeys.all(), "year"] as const,
   year: (id: string) => [...performanceQueryKeys.years(), id] as const,
@@ -2028,8 +1994,6 @@ export const performanceQueryKeys = {
     [...performanceQueryKeys.all(), "workspace-context", cycleId ?? "current"] as const,
   strategy: (cycleId: string) =>
     [...performanceQueryKeys.all(), "strategy", cycleId] as const,
-  population: (cycleId: string) =>
-    [...performanceQueryKeys.all(), "population", cycleId] as const,
   goals: (cycleId: string) =>
     [...performanceQueryKeys.all(), "goals", cycleId] as const,
   alignmentMap: (cycleId: string) =>
@@ -2155,17 +2119,15 @@ export function createPerformanceApi(client: ApiClient) {
       client.post<CycleSummaryDto>(performancePaths.createCycle(), request),
     updateCycle: (id: string, request: UpdateCycleRequest) =>
       client.put<CycleSummaryDto>(performancePaths.cycle(id), request),
-    activateCycle: (id: string, expectedVersion: number) =>
-      client.post<CycleDetailDto>(performancePaths.activate(id), { expectedVersion }),
-    cycleClosure: (id: string) => client.get<CycleClosureDto>(performancePaths.closure(id)),
+    yearSetup: (signal?: AbortSignal) => client.get<YearSetupDto>(performancePaths.yearSetup(), { signal }),
+    launchYear: (id: string, expectedVersion: number) =>
+      client.post<YearLaunchDto>(performancePaths.launch(id), { expectedVersion }),
     year: (id: string, signal?: AbortSignal) => client.get<YearDto>(performancePaths.year(id), { signal }),
     moveYearOn: (id: string, expectedVersion: number, to: CyclePhase) =>
       client.post<YearDto>(performancePaths.yearMove(id), { expectedVersion, to }),
     /** Nudges named people, or everyone at the caller's reach in these standings. */
     nudge: (id: string, who: { employeeIds?: string[]; standings?: YearStanding[] }) =>
       client.post<NudgeResultDto>(performancePaths.nudges(id), { employeeIds: who.employeeIds ?? [], standings: who.standings ?? [] }),
-    closeCycle: (id: string, request: CloseCycleRequest, expectedVersion: number) =>
-      client.post<CycleDetailDto>(performancePaths.close(id), { ...request, expectedVersion }),
     deleteDraftCycle: (id: string, expectedVersion: number) =>
       client.delete<boolean>(performancePaths.cycle(id), { body: { expectedVersion } }),
 
@@ -2199,18 +2161,6 @@ export function createPerformanceApi(client: ApiClient) {
     deleteStrategy: (cycleId: string, objectiveId: string, expectedVersion: number) =>
       client.delete<boolean>(
         performancePaths.strategyItem(cycleId, objectiveId), { body: { expectedVersion } }
-      ),
-
-    getPopulation: (cycleId: string, signal?: AbortSignal) =>
-      client.get<PopulationDto>(performancePaths.population(cycleId), {
-        signal,
-      }),
-    setPopulation: (cycleId: string, request: SetPopulationRequest) =>
-      client.put<PopulationDto>(performancePaths.population(cycleId), request),
-    confirmPopulation: (cycleId: string, expectedVersion: number) =>
-      client.post<PopulationDto>(
-        performancePaths.confirmPopulation(cycleId),
-        { expectedVersion }
       ),
 
     getGoals: (cycleId: string, signal?: AbortSignal) =>

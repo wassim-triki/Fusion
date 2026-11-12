@@ -209,25 +209,6 @@ public sealed class EmployeePlansTests
     }
 
     [Fact]
-    public async Task Draft_roster_changes_cannot_orphan_a_plan_because_planning_has_not_opened()
-    {
-        var f = await ArrangeAsync(active: false);
-        await using (var db = f.Store.NewContext())
-        {
-            var create = await new CreateMyPlanHandler(db, f.Workforce, f.Store.Tenant).Handle(new(f.CycleId, Employee(f.EmployeeId)), default);
-            Assert.Equal("Cycle.NotActive", create.Error.Code);
-        }
-        await using (var db = f.Store.NewContext())
-        {
-            var changed = await new EY.HRPlatform.Performance.Features.Population.SetPopulationHandler(db, f.Store.Tenant, new(f.Workforce)).Handle(new(f.CycleId, new(PopulationMode.AllActive, [], [], [new(f.EmployeeId, "Outside this cycle")]) { ExpectedVersion = 0 }), default);
-            Assert.True(changed.IsSuccess);
-        }
-        await using var verify = f.Store.NewContext();
-        Assert.Empty(await verify.Participants.Where(p => p.CycleId == f.CycleId).ToListAsync());
-        Assert.Empty(await verify.EmployeePlans.Where(p => p.CycleId == f.CycleId).ToListAsync());
-    }
-
-    [Fact]
     public async Task A_plan_left_in_a_draft_cycle_cannot_be_authored_submitted_or_decided()
     {
         var f = await ArrangeAsync(active: false);

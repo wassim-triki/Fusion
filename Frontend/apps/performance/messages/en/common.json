@@ -99,12 +99,6 @@
       "PerformanceEndReached": "Performance end",
       "ClosureReady": "Closure ready"
     },
-    "issue": {
-      "InactiveEmployment": "Employment is not active as of {date}.",
-      "NoPrimaryAssignment": "No active primary assignment as of {date}.",
-      "MissingManager": "A valid manager is required for plan reviews.",
-      "InactiveManager": "The assigned manager is not active as of {date}."
-    },
     "milestones": "{count, plural, one {# milestone} other {# milestones}}",
     "planState": {
       "Draft": "Draft",

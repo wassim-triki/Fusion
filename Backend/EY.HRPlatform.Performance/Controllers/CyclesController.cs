@@ -42,11 +42,20 @@ public sealed class CyclesController(IMediator mediator, IPerformanceAccessPolic
         return MapResult(await mediator.Send(new UpdateCycleCommand(cycleId, request), cancellationToken));
     }
 
-    [HttpPost("{cycleId:guid}/activate")]
-    public async Task<ActionResult<ApiResponse<CycleDetailDto>>> Activate(Guid cycleId, [FromBody] ExpectedVersionRequest version, CancellationToken cancellationToken)
+    /// <summary>Setting up a year (D-91): the draft or the year proposed from last year, who's in and what comes along.</summary>
+    [HttpGet("setup")]
+    public async Task<ActionResult<ApiResponse<YearSetupDto>>> Setup(CancellationToken cancellationToken)
     {
         if (!policy.CanAdministerCycles(User)) return CapabilityForbidden();
-        return MapResult(await mediator.Send(new ActivateCycleCommand(cycleId, version.ExpectedVersion), cancellationToken));
+        return MapResult(await mediator.Send(new GetYearSetupQuery(), cancellationToken));
+    }
+
+    /// <summary>Launches a year being set up onto the Year; the year before ends with its unfinished goals carried (D-57).</summary>
+    [HttpPost("{cycleId:guid}/launch")]
+    public async Task<ActionResult<ApiResponse<YearLaunchDto>>> Launch(Guid cycleId, [FromBody] ExpectedVersionRequest version, CancellationToken cancellationToken)
+    {
+        if (!policy.CanAdministerCycles(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new LaunchYearCommand(cycleId, version.ExpectedVersion, User.GetEmployeeId() ?? Guid.Empty), cancellationToken));
     }
 
     /// <summary>Cycle › Insights: organization-wide counts by unit and manager, for cycle administrators only.</summary>
@@ -65,20 +74,6 @@ public sealed class CyclesController(IMediator mediator, IPerformanceAccessPolic
     {
         if (!policy.CanAdministerCycles(User)) return CapabilityForbidden();
         return MapResult(await mediator.Send(new GetInsightsPeopleQuery(cycleId, metric, unitId, managerId, level, page, pageSize), cancellationToken));
-    }
-
-    [HttpGet("{cycleId:guid}/closure")]
-    public async Task<ActionResult<ApiResponse<CycleClosureDto>>> GetClosure(Guid cycleId, CancellationToken cancellationToken)
-    {
-        if (!policy.CanAdministerCycles(User)) return CapabilityForbidden();
-        return MapResult(await mediator.Send(new GetCycleClosureQuery(cycleId), cancellationToken));
-    }
-
-    [HttpPost("{cycleId:guid}/close")]
-    public async Task<ActionResult<ApiResponse<CycleDetailDto>>> Close(Guid cycleId, [FromBody] CloseCycleRequest request, CancellationToken cancellationToken)
-    {
-        if (!policy.CanAdministerCycles(User)) return CapabilityForbidden();
-        return MapResult(await mediator.Send(new CloseCycleCommand(cycleId, request), cancellationToken));
     }
 
     /// <summary>The year as one object (D-34, D-55): its phase, its steps with the people in each at the viewer's reach, HR's next move.</summary>

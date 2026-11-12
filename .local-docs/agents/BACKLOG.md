@@ -18,13 +18,16 @@ Open work only. Agents keep it current from the conversation; closed items leave
 ```
 
 - **Hierarchy:** a parent is an outcome the user would recognise; children are its pieces. Two levels by default, three only when it helps. Agents split, merge, reparent, reorder and retitle freely; IDs never change.
-- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-440.**
+- **IDs:** unique, never reused; next is one above the highest ever used (check `LOG.md`). **Next ID: B-446.**
 - **Review gate:** only noticeable, judgment-dependent work goes to In review. Evidence-settled work (backend, refactors, config, small or as-asked fixes) closes straight to `LOG.md` with ○.
 - **Closing:** user approval in conversation (or a ticked box) closes ✓; a complaint becomes a Ready child and the parent stays In review.
 
 ## In progress
 
 ## In review
+
+- [ ] **B-440** slice 12, setting up a year and closing the one before (B-405 closing, B-416, B-389 replaced), built 2026-11-12: Set up FY… as one page with the year as its object (the year drawn with its steps dragged or picked, last year ghosted, public holidays, a moment on a day off caught with a one-click move; who's in from Core HR, what comes along, what people see), Keep as a draft or Launch; launching ends the year before (nobody presses Close, D-57) and carries its unfinished goals into their owners' drafts. The sidebar's foot (B-415) split off as B-442 · Performance · 2026-11-12
+      Look at `http://localhost:3000/performance/year/setup` as Amira Khelifi, the administrator (`amira.khelifi@nextcycle-5.example.test`, password in `FUSION_LOCAL_PASSWORD`): drag a step's edge on the year, pick a date below, see Goals agreed caught on a Sunday and Move to Monday, untick a company goal, then Launch FY2027 (it opens the Year on FY2027; the preset is spent after, `demo-preset.mjs reset nextcycle` rebuilds it). Compare with the drawing's setup (`archive/plans/B-412-ending.html`, Setting up a year). Screens: `plans/B-440-screens/` (`node .local-docs/agents/data/screens-b440-setup.cjs` retakes them).
 
 - [ ] **B-411** Performance across Fusion: the Team page's Performance tab inside the frame (each person's year with the one action due, the team's goals under the manager's), the person page's tab as the one place (Performance's own person page goes), Needs you acting in place on Home, one notification per moment to act (D-37), results export from the round · Performance, Core HR, shell · 2026-11-10
       Parent: B-390. Scope: S1 at 3; S2, S3, S5 at 2; S6 at 1. Folds in B-392's "No one reports to you" (B-383).
@@ -89,7 +92,7 @@ From B-331's walk (2026-11-09; the user's words, step by step, in `design/walkth
   - [ ] **B-435** Performance's top bar (was a second B-411): the cycle strip (the year's name, its phase and dates, the year picker) is a legacy choice that repeats the Year page's own header; overhaul it across Performance's pages (the user: "we might wanna overhaul that") · Performance, shell · 2026-11-10
   - [ ] **B-405** Year page: the administrator's first next step is setting the company's goals ("Use these three" from last year), with Goals' domain (slice 4) · Performance · 2026-11-10
   - [ ] **B-405** Year page: goal updates in four columns (this month, last month, earlier, never) and a manager's team by goal state (on track, at risk, off track) as drawn; built as updated or not in 30 days · Performance · 2026-11-10
-  - [ ] **B-405** Year page: the design-role lint flags raw text sizes and radii in `components/year/` (about 30 warnings: `type-*` and `rounded-*` roles instead of pixel sizes ported from the drawing); move them onto the roles, adding a role to the DS where the drawing needs one · Performance · 2026-11-10
+  - [ ] **B-405** Year page: the design-role lint flags raw text sizes and radii in `components/year/` (about 30 warnings, plus about 50 in `year-setup.tsx` from slice 12: `type-*` and `rounded-*` roles instead of pixel sizes ported from the drawing); move them onto the roles, adding a role to the DS where the drawing needs one · Performance · 2026-11-10
   - [ ] **B-406** Goals from the company down (hero H2): one Goals place (Company, units, You, Your team, the map as a view), company and unit goals at a glance, measures read back as sentences with direction from the numbers, the plan with even weights and its line up to the company's, approval from Home and Team with what changed, progress updated from the goal, the coach's quiet suggestions, goal grades from the measure (D-38) · Performance · 2026-11-10
           Scope: G1 at 3, G2–G7 at 2, N12 pulled back (D-38), weights per D-40. Slice 5 part 1 (the goal panel and the progress dialog) ✓ accepted 2026-11-10; part 2 (Goals' pages and approval with what changed) In review 2026-11-10. Slice 4 (the domain) ○ 2026-11-10: direction from the numbers, even weights totalling 100 on plans and contributions, grades on plan goals and plans, what changed since a return on a resubmitted plan; slice 5 draws them (the grade as a number with the measure's words behind an icon, D-51; "shared evenly" on unchosen weights; the changes beside Approve) and the empty plan's AI starters (D-59), which the coach doesn't offer yet.
     - [ ] **B-406** Company's roll-up averages in put-forward personal goals the viewer can't open: where one sits beside goals the viewer can read, its progress over time can be worked out (like the per-state counts already can). Decide: accept, or round/limit the line · Performance · 2026-11-11
@@ -109,15 +112,6 @@ From B-331's walk (2026-11-09; the user's words, step by step, in `design/walkth
           - Calibration can't be finalized while any manager review in the round is outstanding (the round holds the whole roster, about 92, with only Aicha's in); the reason sits only in a hover tooltip on the grey button. Decided: calibration by exception, HR finalizes what's ready (D-35). Also: a rating kept as the manager gave it needs a "Discussed" tick before it saves, unexplained.
           - ○ Settled 2026-11-10 by B-405 slice 2: results released read "Results out" and the round closes itself; the phase never goes backwards (D-34).
           - ○ Settled 2026-11-12 by B-434 slice 10: Team's Performance tab reads Core HR's direct reports, and the Team destination counts them (it said "No one reports to you" to Mariam).
-  - [ ] **B-389** Performance cycle setup (`/performance/cycle/setup`): built before the Core HR rework and liked ("not bad at all", "something I'm proud of"); polish, not a redesign · Performance · 2026-11-09
-          Notes, Details: the section headers' little subtitles and icons (Cycle details, Timeline, At a glance) still read as AI-made.
-          Notes: its date range calendar works as intended (unlike Reports', B-387: reuse it there); Next flickers and reloads the same step for a moment before moving to Population.
-          Notes, Population: makes sense for the walk; photos missing here too (B-382); "All active employees" by default, 92 in and 8 needing attention.
-          Bug: in the population table the Reviewer column's avatar is drawn differently from the Employee column's; style it the same.
-          Notes, Review: after confirming the exclusions the admin still clicks Continue by hand to reach Review; Review recaps the setup and offers Launch.
-          Notes, after launch: it lands on the cycle page (`/performance/cycle`), "abysmal"; what the page should be is open; not discussed now (B-390).
-          2026-11-10, 3d: the setup surface itself now reads thin to the user (D-87): redrawn in 3e as one page with the year as its object (D-91), built in slice 12 with these bugs; launch lands on the Year (D-84).
-          Notes: after launch nothing says what to do next; the administrator couldn't find where to set the company's direction (organization objectives) and typed `/performance/goals` by hand.
 - [ ] **B-396** Stack 2 · Core HR after the walk · Core HR · 2026-11-09
           Functions apart from visuals (user, 2026-11-09). The surfaces follow B-397's foundation once it's decided in B-390's first chapter.
   - **Functions**
@@ -218,6 +212,10 @@ Prep for the demo, not active work.
 
 ### Big features
 
+- [ ] **B-442** The sidebar's foot (B-415, D-93), split from slice 12 (B-440): the company's setup while it isn't done ("4 of 7 done", the next step such as Invite your people, opened as a checklist), then Help (search help, what's new with a count, asking the people team with who answers). Needs a Core HR read of the company's setup (units, people, jobs and levels, invitations) with Performance's (first year launched, competencies); drawing `archive/plans/B-412-ending.html` › `foot`, `footPop` · shell, Core HR, Performance · 2026-11-12
+- [ ] **B-443** Joiners and leavers during the year (D-91): the setup's "Who joins during the year" is stored on the year (`JoinersJoin`) but nothing adds a joiner from their first day or takes a leaver out with their goals closed yet; a daily reconcile against Core HR, like the 1:1 one · Performance · 2026-11-12
+- [ ] **B-444** Carried goals shown as carried (D-83): a goal carried into next year's draft keeps `CarriedFromObjectiveId` but Goals and the plan draw it like any other; stripe it and say where it came from ("From FY2027, 66% of 85%") · Performance · 2026-11-12
+
 Each is a project of its own: a decision page first, then sessions.
 
 - [ ] **B-090** Product tour: an interactive walkthrough that takes a new tenant from the platform admin's invite through its first real use of Fusion · Shell, Core, Performance · 2026-10-20
@@ -239,6 +237,8 @@ Each is a project of its own: a decision page first, then sessions.
       User 2026-10-30: B-116 is low priority for now.
 ### Before hosting
 
+- [ ] **B-441** Public holidays on the year's setup follow Tunisia (`date-holidays`, TN): record the company's country in Core HR's settings and read holidays from it · Core HR, Performance · 2026-11-12
+
 - [ ] **B-426** Gateway logs at `Yarp: Information` write each forwarded path, so a 1:1 calendar feed's secret lands in the gateway's log; turn `Yarp.ReverseProxy.Forwarder` down to Warning in hosted config (security review of B-424) · Gateway · 2026-11-11
 - [ ] **B-427** A leaver's 1:1 calendar link keeps listing their last 90 days of meetings until revoked; drop the person's feed when their account is deactivated (security review of B-424) · Performance · 2026-11-11
 
@@ -251,6 +251,8 @@ Security and scale that must hold once Fusion is online; nothing changes in the 
 - [ ] **B-255** Scale Reports filter values with viewer-scoped server search when company data grows; report runs currently return the complete allowed value set.
 
 ### Cleanup and tooling
+
+- [ ] **B-445** Identity stopped sending mail for hours on 2026-11-12 (Mailpit's newest was 11:57; a preset build failed on the bootstrap invitation twice) until Identity was restarted; find why its sender stalls instead of restarting · Identity · 2026-11-12
 
 - [ ] **B-432** Calibration, left from slice 9 (slice accepted 2026-11-12): raw text sizes and radii in `components/calibration/` and `year-release.tsx` flagged by the design-role lint (with B-405's); Home's Needs you for a calibrator is the generic work item ("N reviews to look at"), not acted in place (slice 10) · Performance · 2026-11-11
 - [ ] **B-404** The memory index (`memory/MEMORY.md`) is ~21 KB, near its 24 KB read limit: compact it under ~17 KB (one short line per entry, merge or drop stale ones) · tooling · 2026-11-09

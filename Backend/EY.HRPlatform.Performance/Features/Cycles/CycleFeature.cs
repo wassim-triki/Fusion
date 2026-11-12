@@ -18,7 +18,6 @@ namespace EY.HRPlatform.Performance.Features.Cycles;
 public sealed record GetCycleDetailQuery(Guid CycleId, CycleVisibilityActor Actor) : IQuery<Result<CycleDetailDto>>;
 public sealed record CreateCycleCommand(CreateCycleRequest Request) : ICommand<Result<CycleSummaryDto>>;
 public sealed record UpdateCycleCommand(Guid CycleId, UpdateCycleRequest Request) : ICommand<Result<CycleSummaryDto>>;
-public sealed record ActivateCycleCommand(Guid CycleId, uint ExpectedVersion = 0) : ICommand<Result<CycleDetailDto>>;
 
 public sealed class GetCycleDetailHandler(PerformanceDbContext db)
     : IQueryHandler<GetCycleDetailQuery, Result<CycleDetailDto>>
@@ -54,6 +53,7 @@ public sealed class CreateCycleHandler(PerformanceDbContext db, ITenantContext t
         try
         {
             cycle = PerformanceCycle.CreateDraft(tenant.TenantId, request.Name, request.StartDate, request.EndDate, planningDeadline, request.Description);
+            if (request.Plan is { } plan) Apply(cycle, plan);
         }
         catch (ArgumentException ex)
         {
@@ -70,6 +70,10 @@ public sealed class CreateCycleHandler(PerformanceDbContext db, ITenantContext t
         var candidate = start.AddDays(offsetDays);
         return candidate <= end ? candidate : start.AddDays(1) <= end ? start.AddDays(1) : end;
     }
+
+    internal static void Apply(PerformanceCycle cycle, YearPlanInput plan)
+        => cycle.PlanYear(plan.ReviewOpensOn, plan.ResultsOutOn, plan.MidYearCheckInOn, plan.SelfReviewsDueOn, plan.CalibrationOn,
+            plan.JoinersJoin, plan.DroppedCompanyGoalIds ?? []);
 }
 
 public sealed class UpdateCycleHandler(PerformanceDbContext db)
@@ -91,6 +95,7 @@ public sealed class UpdateCycleHandler(PerformanceDbContext db)
         try
         {
             cycle.UpdateDraftDetails(request.Name, request.StartDate, request.EndDate, request.PlanningDeadline, request.Description);
+            if (request.Plan is { } plan) CreateCycleHandler.Apply(cycle, plan);
         }
         catch (ArgumentException ex)
         {
@@ -115,64 +120,5 @@ public sealed class UpdateCycleHandler(PerformanceDbContext db)
 
         await db.SaveChangesAsync(cancellationToken);
         return PerformanceMappers.ToSummary(cycle);
-    }
-}
-
-public sealed class ActivateCycleHandler(PerformanceDbContext db, IPerformanceAudit audit)
-    : ICommandHandler<ActivateCycleCommand, Result<CycleDetailDto>>
-{
-    public async Task<Result<CycleDetailDto>> Handle(ActivateCycleCommand command, CancellationToken cancellationToken)
-    {
-        var cycle = await db.Cycles.Include(c => c.ActivationSnapshot).FirstOrDefaultAsync(c => c.Id == command.CycleId, cancellationToken);
-        if (cycle is null)
-            return Result.Failure<CycleDetailDto>(PerformanceErrors.NotFound("Cycle", command.CycleId));
-        if (cycle.IsActive && cycle.ActivationSnapshot is not null)
-            return await CycleDetailComposer.ComposeAsync(db, cycle, cancellationToken);
-        if (!cycle.IsDraft)
-            return Result.Failure<CycleDetailDto>(PerformanceErrors.InvalidState(PerformanceErrors.Codes.CycleNotDraft, "Only a Draft Cycle can be activated."));
-
-        if (VersionGuard.Check(cycle, command.ExpectedVersion) is { } stale)
-            return Result.Failure<CycleDetailDto>(stale);
-
-        var blockers = await CycleDetailComposer.ResolveBlockersAsync(db, cycle, cancellationToken);
-        if (blockers.Count > 0)
-            return Result.Failure<CycleDetailDto>(PerformanceErrors.InvalidState(PerformanceErrors.Codes.CycleNotActivatable, string.Join(" ", blockers)));
-
-        var settings = await db.CycleSettings.AsNoTracking().FirstOrDefaultAsync(cancellationToken)
-            ?? CycleSettings.CreateDefault(cycle.TenantId);
-        var participants = await db.Participants.AsNoTracking()
-            .Where(p => p.CycleId == cycle.Id)
-            .OrderBy(p => p.DisplayName)
-            .ToListAsync(cancellationToken);
-        var publishedStrategy = await db.Objectives.AsNoTracking()
-            .Where(o => o.CycleId == cycle.Id && o.State == ObjectiveLifecycleState.Published)
-            .OrderBy(o => o.Title)
-            .ToListAsync(cancellationToken);
-        var definition = await db.PopulationDefinitions.AsNoTracking().FirstOrDefaultAsync(d => d.CycleId == cycle.Id, cancellationToken);
-
-        var snapshot = ActivationSnapshot.Capture(
-            cycle.TenantId,
-            cycle.Id,
-            cycle.Name,
-            cycle.StartDate,
-            cycle.EndDate,
-            cycle.PlanningDeadline,
-            definition?.EligibilityDate ?? cycle.StartDate,
-            participants.Count,
-            JsonSerializer.Serialize(settings.ToSnapshot()),
-            JsonSerializer.Serialize(new { definition?.Mode, InclusionCount = definition?.Inclusions.Count ?? 0, ExclusionCount = definition?.Exclusions.Count ?? 0 }),
-            JsonSerializer.Serialize(participants.Select(p => new { p.EmployeeId, p.DisplayName, p.OrgUnitId, p.OrgUnitName, ReviewerEmployeeId = p.ManagerEmployeeId, p.ManagerDisplayName, ReviewerBasis = p.ReviewerBasis.ToString(), p.ReviewerAsOf })),
-            JsonSerializer.Serialize(publishedStrategy.Select(o => new { o.Id, o.Title, o.AccountablePersonId })));
-
-        cycle.Activate(snapshot);
-        // The snapshot is a brand-new 1:1 child with a client-generated key reachable from the
-        // already-tracked Cycle; EF's graph detection would otherwise assume it exists and try to
-        // UPDATE a missing row. It is always new here, so mark it added explicitly.
-        db.Entry(snapshot).State = EntityState.Added;
-        audit.Record(cycle.TenantId, "Cycle", cycle.Id, cycle.Id, PerformanceAuditActions.CycleActivated,
-            new { before = "Draft", after = "Active", snapshotId = snapshot.Id, participantCount = participants.Count });
-        await db.SaveChangesAsync(cancellationToken);
-
-        return await CycleDetailComposer.ComposeAsync(db, cycle, cancellationToken);
     }
 }

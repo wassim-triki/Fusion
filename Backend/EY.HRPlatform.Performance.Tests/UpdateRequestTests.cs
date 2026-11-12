@@ -146,10 +146,11 @@ public sealed class UpdateRequestTests
         Assert.Equal(UpdateRequestState.Withdrawn, (await handler.Handle(new(withdrawn.Value.Id, withdrawn.Value.Version, As(w.Lina)), default)).Value.State);
         Assert.Equal(UpdateRequestState.Withdrawn, (await handler.Handle(new(withdrawn.Value.Id, 0, As(w.Lina)), default)).Value.State);
 
-        var cycle = await db.Cycles.AsNoTracking().SingleAsync();
-        var closed = await new CloseCycleHandler(db, new TestPerformanceAudit(db)).Handle(new CloseCycleCommand(w.CycleId,
-            new CloseCycleRequest(cycle.Version, "Closing early in the test.", "Test exception")), default);
-        Assert.True(closed.IsSuccess, closed.IsFailure ? closed.Error.Message : null);
+        // The year ends when the next one launches; requests still open end unresolved with it.
+        var cycle = await db.Cycles.SingleAsync();
+        cycle.Close();
+        await EY.HRPlatform.Performance.Features.Plans.UpdateRequests.CloseOpenAsync(db, new TestPerformanceAudit(db), w.CycleId, DateTime.UtcNow, default);
+        await db.SaveChangesAsync();
         Assert.Equal(UpdateRequestState.Unresolved, (await db.UpdateRequests.AsNoTracking().SingleAsync(r => r.Id == open.Value.Id)).State);
         Assert.Equal(UpdateRequestState.Withdrawn, (await db.UpdateRequests.AsNoTracking().SingleAsync(r => r.Id == withdrawn.Value.Id)).State);
     }

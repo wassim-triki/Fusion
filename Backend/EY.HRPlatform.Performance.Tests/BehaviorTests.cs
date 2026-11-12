@@ -1,145 +1,50 @@
+using EY.HRPlatform.Performance.Domain.Common;
 using EY.HRPlatform.Performance.Domain.Cycles;
 using EY.HRPlatform.Performance.Domain.Objectives;
+using EY.HRPlatform.Performance.Domain.Plans;
 using EY.HRPlatform.Performance.Domain.Population;
 using EY.HRPlatform.Performance.Domain.Settings;
 using EY.HRPlatform.Performance.Features.Cycles;
 using EY.HRPlatform.Performance.Features.Population;
+using EY.HRPlatform.Performance.Infrastructure.Notifications;
 using EY.HRPlatform.Performance.Models;
 using EY.HRPlatform.Performance.Tests.TestHelpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace EY.HRPlatform.Performance.Tests;
 
+/// <summary>Setting up a year and launching it (D-57, D-91): who's in, what comes along, the year before ending.</summary>
 public sealed class BehaviorTests
 {
     private static readonly DateOnly Start = new(2026, 1, 1);
     private static readonly DateOnly End = new(2026, 12, 31);
 
-    private static async Task<(TestStore Store, FakeCoreWorkforceClient Workforce, Guid CycleId)> ArrangeAsync()
+    private static YearPlanInput Plan(DateOnly start, DateOnly end, IReadOnlyList<Guid>? dropped = null)
+        => new(end.AddDays(-45), end.AddDays(-14), start.AddMonths(6), end.AddDays(-30), end.AddDays(-20), true, dropped ?? []);
+
+    /// <summary>A planned draft year that runs from <paramref name="start"/> for a year.</summary>
+    private static PerformanceCycle Draft(Guid tenant, string name, DateOnly start, IReadOnlyList<Guid>? dropped = null)
     {
-        var store = TestStore.ForNewTenant();
-        var cycle = PerformanceCycle.CreateDraft(store.TenantId, "FY2026", Start, End, Start.AddDays(30));
+        var end = start.AddYears(1).AddDays(-1);
+        var cycle = PerformanceCycle.CreateDraft(tenant, name, start, end, start.AddDays(30));
+        var plan = Plan(start, end, dropped);
+        cycle.PlanYear(plan.ReviewOpensOn, plan.ResultsOutOn, plan.MidYearCheckInOn, plan.SelfReviewsDueOn, plan.CalibrationOn, plan.JoinersJoin,
+            plan.DroppedCompanyGoalIds!);
+        return cycle;
+    }
+
+    private static Task<SharedKernel.Results.Result<YearLaunchDto>> LaunchAsync(TestStore store, FakeCoreWorkforceClient workforce, Guid cycleId,
+        uint version)
+    {
+        var db = store.NewContext();
+        return new LaunchYearHandler(db, store.Tenant, new PopulationResolutionService(workforce), new TestPerformanceAudit(db), new PerformanceNotifications(db))
+            .Handle(new LaunchYearCommand(cycleId, version, Guid.Empty), default);
+    }
+
+    private static async Task<uint> VersionAsync(TestStore store, Guid cycleId)
+    {
         await using var db = store.NewContext();
-        db.Cycles.Add(cycle);
-        await db.SaveChangesAsync();
-        return (store, new FakeCoreWorkforceClient(), cycle.Id);
-    }
-
-    [Fact]
-    public async Task Eligibility_is_resolved_as_of_the_cycle_start_date()
-    {
-        var (store, workforce, cycleId) = await ArrangeAsync();
-        workforce.Add("Amina", orgUnitId: Guid.NewGuid());
-
-        await using var db = store.NewContext();
-        var result = await new GetPopulationHandler(db, store.Tenant, new PopulationResolutionService(workforce))
-            .Handle(new GetPopulationQuery(cycleId), default);
-
-        Assert.True(result.IsSuccess);
-        Assert.Equal(Start.ToDateTime(TimeOnly.MinValue), workforce.LastAsOf);
-        Assert.Single(result.Value.Candidates);
-    }
-
-    [Fact]
-    public async Task Inclusion_cannot_override_invalid_employment_or_assignment()
-    {
-        var (store, workforce, cycleId) = await ArrangeAsync();
-        workforce.Add("Amina", orgUnitId: Guid.NewGuid());
-        workforce.AddIneligible("Ghost", inactive: true, noAssignment: true, out var ghostId);
-        var resolver = new PopulationResolutionService(workforce);
-
-        await using (var db = store.NewContext())
-        {
-            var set = await new SetPopulationHandler(db, store.Tenant, resolver).Handle(
-                new SetPopulationCommand(cycleId, new SetPopulationRequest(PopulationMode.AllActive, [], [ghostId], [])), default);
-            Assert.True(set.IsSuccess);
-            var ghost = set.Value.Candidates.Single(candidate => candidate.EmployeeId == ghostId);
-            Assert.False(ghost.IsEligible);
-            Assert.False(ghost.CountsToRoster);
-        }
-
-        await using (var db = store.NewContext())
-        {
-            var confirm = await new ConfirmPopulationHandler(db, store.Tenant, resolver).Handle(
-                new ConfirmPopulationCommand(cycleId), default);
-            Assert.True(confirm.IsFailure);
-            Assert.Contains("attention", confirm.Error.Message, StringComparison.OrdinalIgnoreCase);
-        }
-    }
-
-    [Fact]
-    public async Task Setting_scope_then_adding_units_on_an_existing_definition_persists()
-    {
-        var (store, workforce, cycleId) = await ArrangeAsync();
-        var org = Guid.NewGuid();
-        workforce.Add("Amina", orgUnitId: org);
-        var resolver = new PopulationResolutionService(workforce);
-
-        // GET first persists a default definition, so the next Set mutates an existing one.
-        await using (var db = store.NewContext())
-        {
-            await new GetPopulationHandler(db, store.Tenant, resolver).Handle(new GetPopulationQuery(cycleId), default);
-        }
-
-        // Switching to ByScope with no units is a valid empty intermediate state.
-        await using (var db = store.NewContext())
-        {
-            var empty = await new SetPopulationHandler(db, store.Tenant, resolver).Handle(
-                new SetPopulationCommand(cycleId, new SetPopulationRequest(PopulationMode.ByScope, [], [], [])), default);
-            Assert.True(empty.IsSuccess);
-            Assert.Empty(empty.Value.Candidates);
-        }
-
-        // Then adding a unit to the existing definition must persist and resolve.
-        await using (var db = store.NewContext())
-        {
-            var scoped = await new SetPopulationHandler(db, store.Tenant, resolver).Handle(
-                new SetPopulationCommand(cycleId, new SetPopulationRequest(
-                    PopulationMode.ByScope, [new OrgUnitSelectionInput(org, true)], [], [])), default);
-            Assert.True(scoped.IsSuccess, scoped.IsFailure ? scoped.Error.Message : null);
-            Assert.Single(scoped.Value.Candidates);
-        }
-    }
-
-    [Fact]
-    public async Task Activation_is_blocked_without_a_confirmed_population()
-    {
-        var (store, _, cycleId) = await ArrangeAsync();
-
-        await using var db = store.NewContext();
-        var result = await new ActivateCycleHandler(db, new TestPerformanceAudit(db)).Handle(new ActivateCycleCommand(cycleId), default);
-
-        Assert.True(result.IsFailure);
-        // Strategy is no longer a launch prerequisite; the population gate is what blocks here.
-        Assert.Contains("population", result.Error.Message, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("strategic", result.Error.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task Activation_succeeds_without_any_published_strategy()
-    {
-        var (store, workforce, cycleId) = await ArrangeAsync();
-        var resolver = new PopulationResolutionService(workforce);
-        workforce.Add("Amina", orgUnitId: Guid.NewGuid(), managerId: Guid.NewGuid());
-
-        await using (var db = store.NewContext())
-        {
-            await new SetPopulationHandler(db, store.Tenant, resolver).Handle(
-                new SetPopulationCommand(cycleId, new SetPopulationRequest(PopulationMode.AllActive, [], [], [])), default);
-        }
-        await using (var db = store.NewContext())
-        {
-            var confirm = await new ConfirmPopulationHandler(db, store.Tenant, resolver).Handle(new ConfirmPopulationCommand(cycleId), default);
-            Assert.True(confirm.IsSuccess, confirm.IsFailure ? confirm.Error.Message : null);
-        }
-
-        await using (var db = store.NewContext())
-        {
-            var activate = await new ActivateCycleHandler(db, new TestPerformanceAudit(db)).Handle(new ActivateCycleCommand(cycleId), default);
-            Assert.True(activate.IsSuccess, activate.IsFailure ? activate.Error.Message : null);
-            Assert.Equal(CycleLifecycleState.Active, activate.Value.Cycle.State);
-            await AuditAssertions.RecordedAsync(db, "Cycle.Activated", cycleId, cycleId);
-        }
+        return (await db.Cycles.AsNoTracking().SingleAsync(c => c.Id == cycleId)).Version;
     }
 
     [Fact]
@@ -165,313 +70,203 @@ public sealed class BehaviorTests
     }
 
     [Fact]
-    public async Task Moving_the_start_date_reopens_a_confirmed_population_and_drops_participants()
+    public async Task A_year_set_up_keeps_its_steps_and_moments_in_order()
     {
-        var (store, workforce, cycleId) = await ArrangeAsync();
-        var resolver = new PopulationResolutionService(workforce);
-        workforce.Add("Amina", orgUnitId: Guid.NewGuid(), managerId: Guid.NewGuid());
-
-        await using (var db = store.NewContext())
-        {
-            await new SetPopulationHandler(db, store.Tenant, resolver).Handle(
-                new SetPopulationCommand(cycleId, new SetPopulationRequest(PopulationMode.AllActive, [], [], [])), default);
-        }
-        await using (var db = store.NewContext())
-        {
-            var confirm = await new ConfirmPopulationHandler(db, store.Tenant, resolver).Handle(new ConfirmPopulationCommand(cycleId), default);
-            Assert.True(confirm.IsSuccess, confirm.IsFailure ? confirm.Error.Message : null);
-        }
-
-        var newStart = Start.AddDays(7);
-        await using (var db = store.NewContext())
-        {
-            var update = await new UpdateCycleHandler(db).Handle(
-                new UpdateCycleCommand(cycleId, new UpdateCycleRequest("FY2026", newStart, End, newStart.AddDays(30))), default);
-            Assert.True(update.IsSuccess, update.IsFailure ? update.Error.Message : null);
-        }
-
-        await using (var db = store.NewContext())
-        {
-            var definition = await db.PopulationDefinitions.AsNoTracking().FirstAsync(d => d.CycleId == cycleId);
-            Assert.False(definition.IsConfirmed);
-            Assert.Equal(newStart, definition.EligibilityDate);
-            Assert.Empty(await db.Participants.AsNoTracking().Where(p => p.CycleId == cycleId).ToListAsync());
-        }
-    }
-
-    [Fact]
-    public async Task Editing_only_name_or_description_keeps_the_population_confirmed()
-    {
-        var (store, workforce, cycleId) = await ArrangeAsync();
-        var resolver = new PopulationResolutionService(workforce);
-        workforce.Add("Amina", orgUnitId: Guid.NewGuid(), managerId: Guid.NewGuid());
-
-        await using (var db = store.NewContext())
-        {
-            await new SetPopulationHandler(db, store.Tenant, resolver).Handle(
-                new SetPopulationCommand(cycleId, new SetPopulationRequest(PopulationMode.AllActive, [], [], [])), default);
-        }
-        await using (var db = store.NewContext())
-        {
-            await new ConfirmPopulationHandler(db, store.Tenant, resolver).Handle(new ConfirmPopulationCommand(cycleId), default);
-        }
-
-        await using (var db = store.NewContext())
-        {
-            var update = await new UpdateCycleHandler(db).Handle(
-                new UpdateCycleCommand(cycleId, new UpdateCycleRequest("Renamed", Start, End, Start.AddDays(30), Description: "A new note")), default);
-            Assert.True(update.IsSuccess, update.IsFailure ? update.Error.Message : null);
-        }
-
-        await using (var db = store.NewContext())
-        {
-            var definition = await db.PopulationDefinitions.AsNoTracking().FirstAsync(d => d.CycleId == cycleId);
-            Assert.True(definition.IsConfirmed);
-            Assert.Single(await db.Participants.AsNoTracking().Where(p => p.CycleId == cycleId).ToListAsync());
-        }
-    }
-
-    [Fact]
-    public async Task A_participant_without_a_manager_blocks_confirmation_until_excluded()
-    {
-        var (store, workforce, cycleId) = await ArrangeAsync();
-        var resolver = new PopulationResolutionService(workforce);
-        var org = Guid.NewGuid();
-        var noManager = workforce.Add("Amina", orgUnitId: org, managerId: null);
-        workforce.Add("Bilel", orgUnitId: org, managerId: Guid.NewGuid());
-
-        await using (var db = store.NewContext())
-        {
-            var set = await new SetPopulationHandler(db, store.Tenant, resolver).Handle(
-                new SetPopulationCommand(cycleId, new SetPopulationRequest(PopulationMode.AllActive, [], [], [])), default);
-            Assert.True(set.IsSuccess);
-            var amina = set.Value.Candidates.Single(c => c.EmployeeId == noManager.EmployeeId);
-            Assert.False(amina.IsEligible);
-            Assert.False(amina.CountsToRoster);
-        }
-
-        await using (var db = store.NewContext())
-        {
-            var confirm = await new ConfirmPopulationHandler(db, store.Tenant, resolver).Handle(new ConfirmPopulationCommand(cycleId), default);
-            Assert.True(confirm.IsFailure);
-            Assert.Contains("attention", confirm.Error.Message, StringComparison.OrdinalIgnoreCase);
-        }
-
-        // Excluding the reviewer-less participant with a reason clears the blocker.
-        await using (var db = store.NewContext())
-        {
-            await new SetPopulationHandler(db, store.Tenant, resolver).Handle(
-                new SetPopulationCommand(cycleId, new SetPopulationRequest(
-                    PopulationMode.AllActive, [], [], [new ExclusionInput(noManager.EmployeeId, "No reviewer")])), default);
-        }
-        await using (var db = store.NewContext())
-        {
-            var confirm = await new ConfirmPopulationHandler(db, store.Tenant, resolver).Handle(new ConfirmPopulationCommand(cycleId), default);
-            Assert.True(confirm.IsSuccess, confirm.IsFailure ? confirm.Error.Message : null);
-        }
-    }
-
-    [Fact]
-    public async Task An_inactive_manager_is_a_reviewer_issue_that_blocks_confirmation()
-    {
-        var (store, workforce, cycleId) = await ArrangeAsync();
-        var resolver = new PopulationResolutionService(workforce);
-        var org = Guid.NewGuid();
-        var inactiveMgr = workforce.Add("Mila", orgUnitId: org, managerId: Guid.NewGuid(), managerActive: false);
-        workforce.Add("Bilel", orgUnitId: org, managerId: Guid.NewGuid());
-
-        await using (var db = store.NewContext())
-        {
-            var set = await new SetPopulationHandler(db, store.Tenant, resolver).Handle(
-                new SetPopulationCommand(cycleId, new SetPopulationRequest(PopulationMode.AllActive, [], [], [])), default);
-            Assert.True(set.IsSuccess);
-            var mila = set.Value.Candidates.Single(c => c.EmployeeId == inactiveMgr.EmployeeId);
-            Assert.False(mila.IsEligible);
-            Assert.False(mila.HasValidReviewer);
-            Assert.Contains(mila.Issues, i => i.Code == ReadinessIssueCode.InactiveManager && i.IsHard);
-            // The manager is still named (with inactive state) so the surface can show who it is.
-            Assert.NotNull(mila.ManagerDisplayName);
-            Assert.False(mila.ManagerIsActive);
-        }
-
-        await using (var db = store.NewContext())
-        {
-            var confirm = await new ConfirmPopulationHandler(db, store.Tenant, resolver).Handle(new ConfirmPopulationCommand(cycleId), default);
-            Assert.True(confirm.IsFailure);
-        }
-    }
-
-    [Fact]
-    public async Task A_self_referential_manager_is_not_a_valid_reviewer()
-    {
-        var (store, workforce, cycleId) = await ArrangeAsync();
-        var resolver = new PopulationResolutionService(workforce);
-        var selfMgr = workforce.Add("Sole", orgUnitId: Guid.NewGuid(), managerIsSelf: true);
-
+        var store = TestStore.ForNewTenant();
         await using var db = store.NewContext();
-        var set = await new SetPopulationHandler(db, store.Tenant, resolver).Handle(
-            new SetPopulationCommand(cycleId, new SetPopulationRequest(PopulationMode.AllActive, [], [], [])), default);
-        Assert.True(set.IsSuccess);
-        var sole = set.Value.Candidates.Single(c => c.EmployeeId == selfMgr.EmployeeId);
-        Assert.False(sole.IsEligible);
-        Assert.False(sole.HasValidReviewer);
-        Assert.Contains(sole.Issues, i => i.Code == ReadinessIssueCode.MissingManager);
-        // A self-manager is not surfaced as a resolved reviewer.
-        Assert.Null(sole.ManagerEmployeeId);
+        var created = await new CreateCycleHandler(db, store.Tenant).Handle(new CreateCycleCommand(
+            new CreateCycleRequest("FY2026", Start, End, Start.AddDays(30)) { Plan = Plan(Start, End) }), default);
+        Assert.True(created.IsSuccess, created.IsFailure ? created.Error.Message : null);
+        var stored = await db.Cycles.AsNoTracking().SingleAsync();
+        Assert.Equal(End.AddDays(-45), stored.ReviewOpensOn);
+        Assert.Equal(End.AddDays(-14), stored.ResultsOutOn);
+
+        // The review can't open before planning ends.
+        var backwards = await new CreateCycleHandler(db, store.Tenant).Handle(new CreateCycleCommand(
+            new CreateCycleRequest("FY2027", Start, End, Start.AddDays(30)) { Plan = Plan(Start, End) with { ReviewOpensOn = Start.AddDays(10) } }), default);
+        Assert.True(backwards.IsFailure);
     }
 
     [Fact]
-    public async Task Reviewer_coverage_counts_only_valid_reviewers_among_non_excluded()
+    public void Next_year_is_named_and_dated_a_year_on()
     {
-        var (store, workforce, cycleId) = await ArrangeAsync();
-        var resolver = new PopulationResolutionService(workforce);
-        var org = Guid.NewGuid();
-        workforce.Add("Ready1", orgUnitId: org, managerId: Guid.NewGuid());
-        workforce.Add("Ready2", orgUnitId: org, managerId: Guid.NewGuid());
-        workforce.Add("BadReviewer", orgUnitId: org, managerId: Guid.NewGuid(), managerActive: false);
-        var toExclude = workforce.Add("Contractor", orgUnitId: org, managerId: Guid.NewGuid());
-
-        await using var db = store.NewContext();
-        var set = await new SetPopulationHandler(db, store.Tenant, resolver).Handle(
-            new SetPopulationCommand(cycleId, new SetPopulationRequest(
-                PopulationMode.AllActive, [], [], [new ExclusionInput(toExclude.EmployeeId, "External contractor")])), default);
-        Assert.True(set.IsSuccess);
-        // 4 resolved, 1 excluded => 3 in scope; 2 have a valid reviewer (the inactive-manager one does not).
-        Assert.Equal(3, set.Value.ReviewerRequiredCount);
-        Assert.Equal(2, set.Value.ReviewerReadyCount);
-        Assert.Equal(1, set.Value.ExcludedCount);
+        Assert.Equal("FY2028", YearSetup.NextName("FY2027"));
+        Assert.Equal("Performance 2027–2028", YearSetup.NextName("Performance 2027–2027"));
+        var last = new YearPlanDto("FY2027", new(2026, 4, 25), new(2027, 4, 24), new(2026, 5, 25), new(2027, 3, 1), new(2027, 4, 9),
+            null, null, null, true, []);
+        var next = YearSetup.Propose(last, new DateOnly(2027, 4, 10));
+        Assert.Equal("FY2028", next.Name);
+        Assert.Equal(new DateOnly(2027, 4, 25), next.StartDate);
+        Assert.Equal(new DateOnly(2028, 3, 1), next.ReviewOpensOn);
     }
 
     [Fact]
-    public async Task Re_sending_an_equivalent_population_rule_preserves_confirmation()
+    public async Task Launch_brings_everyone_in_core_hr_with_a_manager_and_freezes_a_snapshot()
     {
-        var (store, workforce, cycleId) = await ArrangeAsync();
-        var resolver = new PopulationResolutionService(workforce);
-        var org = Guid.NewGuid();
-        workforce.Add("Amina", orgUnitId: org, managerId: Guid.NewGuid());
-        workforce.Add("Bilel", orgUnitId: org, managerId: Guid.NewGuid());
-
-        await using (var db = store.NewContext())
-        {
-            await new SetPopulationHandler(db, store.Tenant, resolver).Handle(
-                new SetPopulationCommand(cycleId, new SetPopulationRequest(
-                    PopulationMode.ByScope, [new OrgUnitSelectionInput(org, true)], [], [])), default);
-        }
-        await using (var db = store.NewContext())
-        {
-            var confirm = await new ConfirmPopulationHandler(db, store.Tenant, resolver).Handle(new ConfirmPopulationCommand(cycleId), default);
-            Assert.True(confirm.IsSuccess, confirm.IsFailure ? confirm.Error.Message : null);
-        }
-
-        // Re-send the same normalized rule: confirmation and the participant snapshot survive.
-        await using (var db = store.NewContext())
-        {
-            var resent = await new SetPopulationHandler(db, store.Tenant, resolver).Handle(
-                new SetPopulationCommand(cycleId, new SetPopulationRequest(
-                    PopulationMode.ByScope, [new OrgUnitSelectionInput(org, true)], [], [])), default);
-            Assert.True(resent.IsSuccess);
-            Assert.True(resent.Value.Selection.IsConfirmed);
-        }
-        await using (var db = store.NewContext())
-        {
-            Assert.Equal(2, await db.Participants.CountAsync(p => p.CycleId == cycleId));
-        }
-
-        // A real change (drop descendant intent) reopens confirmation and clears the snapshot.
-        await using (var db = store.NewContext())
-        {
-            var changed = await new SetPopulationHandler(db, store.Tenant, resolver).Handle(
-                new SetPopulationCommand(cycleId, new SetPopulationRequest(
-                    PopulationMode.ByScope, [new OrgUnitSelectionInput(org, false)], [], [])), default);
-            Assert.True(changed.IsSuccess);
-            Assert.False(changed.Value.Selection.IsConfirmed);
-        }
-        await using (var db = store.NewContext())
-        {
-            Assert.Equal(0, await db.Participants.CountAsync(p => p.CycleId == cycleId));
-        }
-    }
-
-    [Fact]
-    public async Task Full_setup_activates_and_freezes_an_immutable_snapshot()
-    {
-        var (store, workforce, cycleId) = await ArrangeAsync();
-        var resolver = new PopulationResolutionService(workforce);
-        var aminaUnit = Guid.NewGuid();
-        var aminaManager = Guid.NewGuid();
-        workforce.Add("Amina", orgUnitId: aminaUnit, managerId: aminaManager);
-
-        // Settings + published strategy.
+        var store = TestStore.ForNewTenant();
+        var workforce = new FakeCoreWorkforceClient();
+        var unit = Guid.NewGuid();
+        var manager = Guid.NewGuid();
+        workforce.Add("Amina", orgUnitId: unit, managerId: manager);
+        workforce.Add("Rania", orgUnitId: unit); // no manager: left out, she can't be reviewed
+        var cycle = Draft(store.TenantId, "FY2026", Start);
         await using (var db = store.NewContext())
         {
             db.CycleSettings.Add(CycleSettings.CreateDefault(store.TenantId));
-            var strategy = Objective.CreateStrategic(store.TenantId, cycleId, "Grow revenue", null, Guid.NewGuid(),
-                Start, End, ObjectiveMeasurement.NumericTarget(1000m, 1300m, "k€"), Start, End);
-            strategy.Publish();
-            db.Objectives.Add(strategy);
+            db.Cycles.Add(cycle);
             await db.SaveChangesAsync();
         }
 
-        // Population: one eligible employee, then confirm.
-        await using (var db = store.NewContext())
-        {
-            await new SetPopulationHandler(db, store.Tenant, resolver).Handle(
-                new SetPopulationCommand(cycleId, new SetPopulationRequest(PopulationMode.AllActive, [], [], [])), default);
-        }
-        await using (var db = store.NewContext())
-        {
-            var confirm = await new ConfirmPopulationHandler(db, store.Tenant, resolver).Handle(new ConfirmPopulationCommand(cycleId), default);
-            Assert.True(confirm.IsSuccess);
-        }
+        var launched = await LaunchAsync(store, workforce, cycle.Id, await VersionAsync(store, cycle.Id));
 
-        // Confirmation records who reviews each participant, why, and as of when.
+        Assert.True(launched.IsSuccess, launched.IsFailure ? launched.Error.Message : null);
+        Assert.Equal(1, launched.Value.People);
         await using (var db = store.NewContext())
         {
-            var participant = await db.Participants.AsNoTracking().SingleAsync(p => p.CycleId == cycleId);
-            Assert.Equal(aminaManager, participant.ManagerEmployeeId);
+            var active = await db.Cycles.Include(c => c.ActivationSnapshot).AsNoTracking().SingleAsync();
+            Assert.Equal(CycleLifecycleState.Active, active.State);
+            Assert.Equal(1, active.ActivationSnapshot!.ConfirmedParticipantCount);
+            var participant = await db.Participants.AsNoTracking().SingleAsync();
+            Assert.Equal(manager, participant.ManagerEmployeeId);
             Assert.Equal(ReviewerBasis.CoreManagerAtCycleStart, participant.ReviewerBasis);
-            Assert.Equal(Start, participant.ReviewerAsOf);
+            await AuditAssertions.RecordedAsync(db, "Cycle.Activated", cycle.Id, cycle.Id);
+            // Everyone in is told, once.
+            Assert.Single(await db.OutboxMessages.IgnoreQueryFilters().Where(m => m.Kind == Domain.Notifications.PerformanceNotificationKind.YearLaunched).ToListAsync());
         }
+    }
 
-        // Activate.
-        string frozenSettings;
+    [Fact]
+    public async Task A_year_without_its_steps_does_not_launch()
+    {
+        var store = TestStore.ForNewTenant();
+        var workforce = new FakeCoreWorkforceClient();
+        workforce.Add("Amina", orgUnitId: Guid.NewGuid(), managerId: Guid.NewGuid());
+        var cycle = PerformanceCycle.CreateDraft(store.TenantId, "FY2026", Start, End, Start.AddDays(30));
         await using (var db = store.NewContext())
         {
-            var activate = await new ActivateCycleHandler(db, new TestPerformanceAudit(db)).Handle(new ActivateCycleCommand(cycleId), default);
-            Assert.True(activate.IsSuccess, activate.IsFailure ? activate.Error.Message : null);
-            Assert.Equal(CycleLifecycleState.Active, activate.Value.Cycle.State);
-            await AuditAssertions.RecordedAsync(db, "Cycle.Activated", cycleId, cycleId);
-        }
-
-        await using (var db = store.NewContext())
-        {
-            var activated = await db.Cycles.Include(c => c.ActivationSnapshot).AsNoTracking().FirstAsync(c => c.Id == cycleId);
-            Assert.NotNull(activated.ActivationSnapshot);
-            Assert.Equal(1, activated.ActivationSnapshot!.ConfirmedParticipantCount);
-            frozenSettings = activated.ActivationSnapshot.SettingsJson;
-
-            // The frozen roster carries identities and reviewer responsibility, not names only.
-            using var roster = System.Text.Json.JsonDocument.Parse(activated.ActivationSnapshot.RosterJson);
-            var entry = roster.RootElement.EnumerateArray().Single();
-            Assert.Equal(aminaUnit, entry.GetProperty("OrgUnitId").GetGuid());
-            Assert.Equal(aminaManager, entry.GetProperty("ReviewerEmployeeId").GetGuid());
-            Assert.Equal("CoreManagerAtCycleStart", entry.GetProperty("ReviewerBasis").GetString());
-            Assert.True(entry.TryGetProperty("EmployeeId", out _));
-        }
-
-        // Later settings change must not alter the frozen snapshot.
-        await using (var db = store.NewContext())
-        {
-            var settings = await db.CycleSettings.FirstAsync();
-            settings.Update(MeasurementMethod.ManualPercentage, 1, 2, 15, PlanAlignmentPolicy.EveryObjectiveConnected);
+            db.Cycles.Add(cycle);
             await db.SaveChangesAsync();
         }
 
+        var launched = await LaunchAsync(store, workforce, cycle.Id, await VersionAsync(store, cycle.Id));
+
+        Assert.True(launched.IsFailure);
+        Assert.Equal(Features.Failures.PerformanceErrors.Codes.CycleNotActivatable, launched.Error.Code);
+    }
+
+    [Fact]
+    public async Task Next_year_waits_while_this_one_is_still_running()
+    {
+        var store = TestStore.ForNewTenant();
+        var workforce = new FakeCoreWorkforceClient();
+        workforce.Add("Amina", orgUnitId: Guid.NewGuid(), managerId: Guid.NewGuid());
+        var today = PerformanceClock.Today;
+        var running = PerformanceCycle.CreateDraft(store.TenantId, "FY2026", today.AddDays(-100), today.AddDays(200), today.AddDays(-70)).Activated();
+        var next = Draft(store.TenantId, "FY2027", today.AddDays(201));
         await using (var db = store.NewContext())
         {
-            var reread = await db.Cycles.Include(c => c.ActivationSnapshot).AsNoTracking().FirstAsync(c => c.Id == cycleId);
-            Assert.Equal(frozenSettings, reread.ActivationSnapshot!.SettingsJson);
+            db.Cycles.AddRange(running, next);
+            await db.SaveChangesAsync();
         }
+
+        var launched = await LaunchAsync(store, workforce, next.Id, await VersionAsync(store, next.Id));
+
+        Assert.True(launched.IsFailure);
+        Assert.Contains("still running", launched.Error.Message, StringComparison.Ordinal);
+        await using var check = store.NewContext();
+        Assert.Equal(CycleLifecycleState.Active, (await check.Cycles.AsNoTracking().SingleAsync(c => c.Id == running.Id)).State);
+    }
+
+    [Fact]
+    public async Task Launch_ends_last_year_and_carries_its_unfinished_goals_and_kept_company_goals()
+    {
+        var store = TestStore.ForNewTenant();
+        var tenant = store.TenantId;
+        var workforce = new FakeCoreWorkforceClient();
+        var lina = workforce.Add("Lina", orgUnitId: Guid.NewGuid(), managerId: Guid.NewGuid()).EmployeeId;
+        var nour = workforce.Add("Nour", orgUnitId: Guid.NewGuid(), managerId: lina).EmployeeId;
+        var lastStart = new DateOnly(2025, 1, 1);
+        var lastEnd = new DateOnly(2025, 12, 31);
+        var last = PerformanceCycle.CreateDraft(tenant, "FY2025", lastStart, lastEnd, lastStart.AddDays(30)).Activated();
+        var kept = Objective.CreateStrategic(tenant, last.Id, "Grow repeat business", null, lina, lastStart, lastEnd,
+            ObjectiveMeasurement.NumericTarget(0m, 10m, "clients"), lastStart, lastEnd);
+        kept.Publish();
+        var dropped = Objective.CreateStrategic(tenant, last.Id, "Open the Sousse office", null, lina, lastStart, lastEnd,
+            ObjectiveMeasurement.ManualPercentage(), lastStart, lastEnd);
+        dropped.Publish();
+        var participant = Participant.Create(tenant, last.Id, nour, "Nour", "Engineer", null, "Platform", lina, "Lina", false, lastStart);
+        var plan = EmployeePlan.Create(tenant, last.Id, participant.Id, nour, "Nour", "Platform", lina, "Lina");
+        var unfinished = Objective.CreateEmployee(tenant, last.Id, plan.Id, nour, "Automate the regression suite", null, null, lastStart, lastEnd,
+            ObjectiveMeasurement.NumericTarget(20m, 85m, "%"), 50m, null, null, lastStart, lastEnd);
+        unfinished.ApplyNumericActual(66m);
+        var done = Objective.CreateEmployee(tenant, last.Id, plan.Id, nour, "Document the runbooks", null, null, lastStart, lastEnd,
+            ObjectiveMeasurement.ManualPercentage(), 50m, null, null, lastStart, lastEnd);
+        done.ApplyManualPercentage(100m);
+        plan.Submit(nour, new PlanSubmissionFacts(2, true, 100m, true, false, PlanAlignmentPolicy.Optional));
+        plan.Approve(lina);
+        var next = Draft(tenant, "FY2026", Start, [dropped.Id]);
+        await using (var db = store.NewContext())
+        {
+            db.Cycles.AddRange(last, next);
+            db.Objectives.AddRange(kept, dropped, unfinished, done);
+            db.Participants.Add(participant);
+            db.EmployeePlans.Add(plan);
+            await db.SaveChangesAsync();
+        }
+
+        var launched = await LaunchAsync(store, workforce, next.Id, await VersionAsync(store, next.Id));
+
+        Assert.True(launched.IsSuccess, launched.IsFailure ? launched.Error.Message : null);
+        Assert.Equal(last.Id, launched.Value.EndedCycleId);
+        await using var check = store.NewContext();
+        Assert.Equal(CycleLifecycleState.Closed, (await check.Cycles.AsNoTracking().SingleAsync(c => c.Id == last.Id)).State);
+        // The kept company goal comes along as a draft; the dropped one stays behind.
+        var company = await check.Objectives.AsNoTracking().Where(o => o.CycleId == next.Id && o.OwnershipScope == ObjectiveOwnershipScope.Company).ToListAsync();
+        var carriedCompany = Assert.Single(company);
+        Assert.Equal(kept.Id, carriedCompany.CarriedFromObjectiveId);
+        Assert.Equal(ObjectiveLifecycleState.Draft, carriedCompany.State);
+        // Nour's unfinished goal waits in his draft, picking up where it stood; the finished one doesn't come.
+        var draftPlan = await check.EmployeePlans.AsNoTracking().SingleAsync(p => p.CycleId == next.Id);
+        Assert.Equal(nour, draftPlan.EmployeeId);
+        Assert.Equal(PlanLifecycleState.Draft, draftPlan.State);
+        var goal = Assert.Single(await check.Objectives.AsNoTracking().Where(o => o.EmployeePlanId == draftPlan.Id).ToListAsync());
+        Assert.Equal(unfinished.Id, goal.CarriedFromObjectiveId);
+        Assert.Equal(66m, goal.Measurement!.Baseline);
+        Assert.Equal(100m, goal.PlanWeight);
+        Assert.Equal(1, launched.Value.CarriedGoals);
+    }
+
+    [Fact]
+    public async Task Setup_reads_last_years_goals_coming_along()
+    {
+        var store = TestStore.ForNewTenant();
+        var tenant = store.TenantId;
+        var workforce = new FakeCoreWorkforceClient();
+        var lina = workforce.Add("Lina", orgUnitId: Guid.NewGuid(), managerId: Guid.NewGuid()).EmployeeId;
+        var lastStart = new DateOnly(2025, 1, 1);
+        var lastEnd = new DateOnly(2025, 12, 31);
+        var last = PerformanceCycle.CreateDraft(tenant, "FY2025", lastStart, lastEnd, lastStart.AddDays(30)).Activated();
+        var goal = Objective.CreateStrategic(tenant, last.Id, "Grow repeat business", null, lina, lastStart, lastEnd,
+            ObjectiveMeasurement.ManualPercentage(), lastStart, lastEnd);
+        goal.Publish();
+        await using (var db = store.NewContext())
+        {
+            db.Cycles.Add(last);
+            db.Objectives.Add(goal);
+            await db.SaveChangesAsync();
+        }
+
+        await using var read = store.NewContext();
+        var setup = await new GetYearSetupHandler(read, store.Tenant, new PopulationResolutionService(workforce)).Handle(new GetYearSetupQuery(), default);
+
+        Assert.True(setup.IsSuccess, setup.IsFailure ? setup.Error.Message : null);
+        Assert.Null(setup.Value.DraftId);
+        Assert.Equal("FY2026", setup.Value.Year.Name);
+        Assert.Equal(lastStart.AddYears(1), setup.Value.Year.StartDate);
+        Assert.Equal("FY2025", setup.Value.LastYearName);
+        Assert.Null(setup.Value.LaunchBlocker); // last year ended on its own date
+        Assert.Equal(1, setup.Value.PeopleCount);
+        Assert.Equal(goal.Id, Assert.Single(setup.Value.CompanyGoals).Id);
     }
 
     [Fact]
@@ -496,33 +291,6 @@ public sealed class BehaviorTests
         await using (var db = store.NewContext(TestTenantContext.Unresolved()))
         {
             Assert.Empty(await db.Cycles.ToListAsync());
-        }
-    }
-    [Fact]
-    public async Task Activation_retry_preserves_its_single_snapshot_even_with_an_old_version()
-    {
-        var (store, _, cycleId) = await ArrangeAsync();
-        await using (var db = store.NewContext())
-        {
-            var cycle = await db.Cycles.FindAsync(cycleId);
-            var snapshot = ActivationSnapshot.Capture(store.TenantId, cycleId, "FY2026", Start, End, Start.AddDays(30), Start, 1, "{}", "{}", "[]", "[]");
-            cycle!.Activate(snapshot);
-            db.Entry(snapshot).State = EntityState.Added;
-            await db.SaveChangesAsync();
-        }
-        CycleDetailDto first;
-        await using (var db = store.NewContext())
-        {
-            var result = await new ActivateCycleHandler(db, new TestPerformanceAudit(db)).Handle(new(cycleId), default);
-            Assert.True(result.IsSuccess);
-            first = result.Value;
-        }
-        await using (var db = store.NewContext())
-        {
-            var result = await new ActivateCycleHandler(db, new TestPerformanceAudit(db)).Handle(new(cycleId, 1), default);
-            Assert.True(result.IsSuccess);
-            Assert.Equal(System.Text.Json.JsonSerializer.Serialize(first), System.Text.Json.JsonSerializer.Serialize(result.Value));
-            Assert.Single(await db.Set<ActivationSnapshot>().ToListAsync());
         }
     }
 }

@@ -92,49 +92,6 @@ public static class PerformanceMappers
     private static string Trim(decimal? value)
         => value?.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture) ?? "?";
 
-    public static PopulationCandidateDto ToDto(PopulationCandidate candidate)
-        => new(
-            candidate.EmployeeId,
-            candidate.DisplayName,
-            candidate.JobTitle,
-            candidate.OrgUnitId,
-            candidate.OrgUnitName,
-            candidate.ManagerEmployeeId,
-            candidate.ManagerDisplayName,
-            candidate.ManagerIsActive,
-            candidate.IsActive,
-            candidate.ByExplicitInclusion,
-            candidate.IsExcluded,
-            candidate.ExclusionReason,
-            candidate.IsEligible,
-            candidate.CountsToRoster,
-            candidate.HasValidReviewer,
-            candidate.Issues.Select(ToDto).ToList());
-
-    public static ReadinessIssueDto ToDto(ReadinessIssueCode code)
-        => new(code, ReadinessIssueLabel(code), ReadinessIssue.IsHard(code));
-
-    public static string ReadinessIssueLabel(ReadinessIssueCode code)
-        => code switch
-        {
-            ReadinessIssueCode.InactiveEmployment => "Employment is inactive",
-            ReadinessIssueCode.NoPrimaryAssignment => "No primary assignment",
-            ReadinessIssueCode.MissingManager => "No eligible manager found",
-            ReadinessIssueCode.InactiveManager => "Manager is inactive",
-            _ => code.ToString(),
-        };
-
-    public static PopulationSelectionDto ToSelectionDto(PopulationDefinition definition)
-        => new(
-            definition.Mode,
-            definition.EligibilityDate,
-            definition.IsConfirmed,
-            definition.OrgUnitSelections
-                .Select(selection => new OrgUnitSelectionInput(selection.OrgUnitId, selection.IncludeDescendants))
-                .ToList(),
-            definition.Inclusions.Select(inclusion => inclusion.EmployeeId).ToList(),
-            definition.Exclusions.Select(exclusion => new ExclusionInput(exclusion.EmployeeId, exclusion.Reason)).ToList()) { Version = definition.Version };
-
     public static ObjectiveMeasurement ToMeasurement(MeasurementInput input, Guid tenantId)
         => input.Method switch
         {

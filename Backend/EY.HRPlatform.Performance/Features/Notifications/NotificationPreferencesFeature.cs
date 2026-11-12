@@ -61,6 +61,7 @@ public static class NotificationPreferenceCatalog
                 new("Your plan approved or returned", Reader.Everyone, [Kind.PlanApproved, Kind.PlanReturned]),
                 new("Updates asked of you", Reader.Everyone, [Kind.UpdateRequested]),
                 new("Development goals added to your plan", Reader.Everyone, [Kind.DevelopmentGoalAdded]),
+                new("A new year opens", Reader.Everyone, [Kind.YearLaunched]),
             ]),
         new(NotificationGroups.ReviewsAndCalibration, "Reviews and calibration",
             "Your self-assessment opens, peer input asked of you, your review released",

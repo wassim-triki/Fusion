@@ -241,9 +241,9 @@ public static class YearComposer
         DateOnly? released, IReadOnlyList<YearStandings.Person> people, bool capFaces, DateOnly? opensOn = null)
     {
         var planningEnd = Clamp(cycle.PlanningDeadline, cycle.StartDate, cycle.EndDate);
-        // Review starts when the round launched, else on the day the drafted round opens by itself, else the last month.
-        var reviewStart = Clamp(launched ?? opensOn ?? cycle.EndDate.AddDays(-29), planningEnd.AddDays(1), cycle.EndDate);
-        var resultsStart = Clamp(released ?? cycle.EndDate.AddDays(-6), reviewStart.AddDays(1), cycle.EndDate);
+        // Review starts when the round launched, else on the day the drafted round opens by itself, else as the year was set up.
+        var reviewStart = Clamp(launched ?? opensOn ?? cycle.ReviewOpensOn ?? cycle.EndDate.AddDays(-29), planningEnd.AddDays(1), cycle.EndDate);
+        var resultsStart = Clamp(released ?? cycle.ResultsOutOn ?? cycle.EndDate.AddDays(-6), reviewStart.AddDays(1), cycle.EndDate);
         var spans = new (CyclePhase Phase, DateOnly Start, DateOnly End, bool Estimated)[]
         {
             (CyclePhase.Planning, cycle.StartDate, planningEnd, false),

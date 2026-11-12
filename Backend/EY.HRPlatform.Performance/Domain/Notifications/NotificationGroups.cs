@@ -27,7 +27,7 @@ public static class NotificationGroups
         PerformanceNotificationKind.PlanSubmitted or PerformanceNotificationKind.PlanReturned
             or PerformanceNotificationKind.PlanApproved or PerformanceNotificationKind.UpdateRequested
             or PerformanceNotificationKind.ObjectiveAtRisk or PerformanceNotificationKind.UpdateRequestAnswered
-            or PerformanceNotificationKind.DevelopmentGoalAdded => PlansAndGoals,
+            or PerformanceNotificationKind.DevelopmentGoalAdded or PerformanceNotificationKind.YearLaunched => PlansAndGoals,
         PerformanceNotificationKind.SelfAssessmentOpened or PerformanceNotificationKind.ManagerAssessmentOpened
             or PerformanceNotificationKind.SelfAssessmentSubmitted or PerformanceNotificationKind.ReviewFinalized
             or PerformanceNotificationKind.CalibrationDecided

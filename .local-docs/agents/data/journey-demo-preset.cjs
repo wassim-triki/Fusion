@@ -127,20 +127,21 @@ const CHECKS = {
     check("Omar rates above Mariam", avg(omar) > avg(mariam) + 0.4, `Omar ${avg(omar).toFixed(2)}, Mariam ${avg(mariam).toFixed(2)}`);
     check("One of Mariam's ratings is a 5", mariam.includes(5), mariam.join(","));
     const next = await get("Amira", base("next"));
-    check("Next year's cycle is in Draft with its population confirmed", next.cycle.state === "Draft" && next.populationConfirmed, `${next.cycle.state} ${next.populationConfirmed}`);
+    check("Next year's cycle waits in Draft", next.cycle.state === "Draft", next.cycle.state);
     await bell();
   },
 
   async nextcycle() {
     await lastYear();
     const current = await get("Amira", base("current"));
-    check("This year is closed", current.cycle.state === "Closed", current.cycle.state);
+    // Nobody closes a year (D-57): it ended on its date with results out, and ends for good when the next one launches.
+    check("This year has ended with its results out", current.cycle.state === "Active" && current.phase === "ResultsOut", `${current.cycle.state} ${current.phase}`);
     const own = (await get("Aicha", `/api/performance/reviews/workspace?cycle=${cycle("current").id}`)).own;
     const review = await get("Aicha", `/api/performance/reviews/${own.reviewId}`);
     check("Aicha sees this year's released result", review.finalRating != null && Boolean(review.finalizedAt), `${review.finalRating}`);
-    const next = await get("Amira", base("next"));
-    check("Next year's cycle can be activated now", next.cycle.state === "Draft" && next.launchReadiness?.canActivate === true,
-      `${next.cycle.state} canActivate=${next.launchReadiness?.canActivate}`);
+    const setup = await get("Amira", "/api/performance/cycles/setup");
+    check("Next year is set up and can launch now", setup.draftId === cycle("next").id && setup.launchBlocker === null,
+      `${setup.year.name} blocker=${setup.launchBlocker}`);
     await bell();
   },
 };

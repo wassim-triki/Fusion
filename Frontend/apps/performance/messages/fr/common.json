@@ -99,12 +99,6 @@
       "PerformanceEndReached": "Fin de la période de performance",
       "ClosureReady": "Clôture possible"
     },
-    "issue": {
-      "InactiveEmployment": "Le contrat n’est pas actif au {date}.",
-      "NoPrimaryAssignment": "Aucune affectation principale active au {date}.",
-      "MissingManager": "Un manager valide est requis pour la revue des plans.",
-      "InactiveManager": "Le manager affecté n’est pas actif au {date}."
-    },
     "milestones": "{count, plural, one {# jalon} other {# jalons}}",
     "planState": {
       "Draft": "Brouillon",

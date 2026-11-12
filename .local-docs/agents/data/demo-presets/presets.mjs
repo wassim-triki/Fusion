@@ -13,7 +13,6 @@ function years(start) {
   const last = {
     key: "last", name: fy(lastEnd), start: lastStart, end: lastEnd, deadline: addDays(lastStart, 30), cadence: 90,
     round: { launch: addDays(release, -22), selfDue: addDays(release, -12), managerDue: addDays(release, -6), release },
-    closeAt: lastEnd,
   };
   const current = { key: "current", name: fy(end), start, end, deadline: addDays(start, 30), cadence: 30 };
   return { last, current, asOf: addDays(lastStart, -40) };
@@ -71,13 +70,12 @@ export const PRESETS = {
   },
   nextcycle: {
     label: "Next cycle",
-    summary: "This year ended 2 days ago and is closed with released results; next year's cycle is ready to activate.",
+    summary: "This year ended 2 days ago with released results; next year is set up and ready to launch.",
     plan: (D) => {
       const end = addDays(D, -2);
       const { last, current, asOf } = years(addDays(end, -364));
       const release = addDays(D, -9);
       current.round = { launch: addDays(release, -22), selfDue: addDays(release, -12), managerDue: addDays(release, -6), release };
-      current.closeAt = addDays(D, -1);
       return {
         asOf,
         schedule: (t, ctx) => {

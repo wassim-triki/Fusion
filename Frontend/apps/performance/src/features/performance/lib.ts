@@ -1,30 +1,9 @@
-import type {
-  MeasurementDto,
-  ReadinessIssueCode,
-} from "@repo/api";
+import type { MeasurementDto } from "@repo/api";
 import { formatDate as formatSharedDate, formatDateRange as formatSharedRange, formatDateTime as formatSharedDateTime, formatRelative } from "@repo/ds/lib/dates";
 import { english, type Say } from "@/i18n/say";
 
 /** Shared Performance words (`common.words`) in English, for helpers outside a translated tree. */
 const en = english("common.words");
-
-/**
- * The secondary detail line for a readiness issue, dated to the cycle's eligibility date where it
- * matters. The short title comes from the server (`issue.label`); this composes the specific
- * consequence the admin needs to act on.
- */
-export function readinessIssueDetail(code: ReadinessIssueCode, eligibilityDate: string, say: Say = en, locale?: string): string {
-  const date = formatDate(eligibilityDate, locale);
-  switch (code) {
-    case "InactiveEmployment":
-    case "NoPrimaryAssignment":
-    case "MissingManager":
-    case "InactiveManager":
-      return say(`issue.${code}`, { date });
-    default:
-      return "";
-  }
-}
 
 /** A calendar date in Fusion's one date grammar ("20 Oct", "20 Oct 2025"). */
 export function formatDate(value: string | null | undefined, locale?: string): string {

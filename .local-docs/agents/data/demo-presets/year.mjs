@@ -200,13 +200,19 @@ export function companySetup(t, ctx, when) {
 // ── A cycle ────────────────────────────────────────────────────────────────────────────────────────────────────────
 const cycleVersion = async (session, cycle) => (await session.get(`/api/performance/cycles/${cycle.id}`)).cycle.version;
 
-/** Draft, company objectives, population (everyone but the CEO), confirmed: ready to activate. */
+/** Draft with its steps planned and company objectives: ready to launch (everyone in Core HR with a manager is in). */
 function prepareCycle(t, ctx, cycle, when) {
   t.add(moment(when, 9), `Amira prepares ${cycle.name}`, async () => {
     const amira = ctx.amira();
     const created = await amira.post("/api/performance/cycles", {
       name: cycle.name, startDate: ymd(cycle.start), endDate: ymd(cycle.end), planningDeadline: ymd(cycle.deadline),
       description: "Annual performance and growth cycle for Carthage Digital Group.",
+      plan: {
+        reviewOpensOn: ymd(cycle.round?.launch ?? addDays(cycle.end, -45)),
+        resultsOutOn: ymd(cycle.round?.release ?? addDays(cycle.end, -14)),
+        midYearCheckInOn: ymd(addDays(cycle.start, 182)), selfReviewsDueOn: null, calibrationOn: null,
+        joinersJoin: true, droppedCompanyGoalIds: [],
+      },
     });
     cycle.id = created.id ?? created.cycle?.id;
     cycle.base = `/api/performance/cycles/${cycle.id}`;
@@ -220,20 +226,9 @@ function prepareCycle(t, ctx, cycle, when) {
       cycle.strategy.push(objective.id);
     }
   });
-  t.add(moment(addDays(when, 2), 10), `Amira confirms the ${cycle.name} population`, async () => {
-    const amira = ctx.amira();
-    let population = await amira.get(`${cycle.base}/population`);
-    population = await amira.put(`${cycle.base}/population`, {
-      mode: "AllActive", orgUnitSelections: [], inclusions: [],
-      exclusions: [{ employeeId: ctx.byIndex(1).employeeId, reason: "Top executive role has no in-cycle reviewer." }],
-      expectedVersion: population.selection.version,
-    });
-    if (population.needsAttentionCount) throw new Error(`${population.needsAttentionCount} people need attention in the population`);
-    await amira.post(`${cycle.base}/population/confirm`, { expectedVersion: population.selection.version });
-  });
 }
 
-/** A Draft for next year with its population confirmed, so it opens with one click. */
+/** A Draft for next year, its steps planned, so it launches with one click. */
 export function draftCycle(t, ctx, cycle, when) {
   ctx.cycles[cycle.key] = cycle;
   prepareCycle(t, ctx, cycle, when);
@@ -242,15 +237,16 @@ export function draftCycle(t, ctx, cycle, when) {
 /**
  * One cycle from preparation to wherever `until` stops it.
  * cycle: { key, name, start, end, deadline, cadence: 30|90, round?: { launch, selfDue, managerDue, calibration, release? },
- *          closeAt?, askUpdateAt? }
+ *          askUpdateAt? }. Nobody closes a year: it ends when the next one launches.
  */
 export function runCycle(t, ctx, cycle) {
   ctx.cycles[cycle.key] = cycle;
   cycle.plans = {};
   prepareCycle(t, ctx, cycle, addDays(cycle.start, -10));
-  t.add(moment(cycle.start, 8), `Amira activates ${cycle.name}`, async () => {
+  // Launching ends the year before it (D-57), carrying its unfinished goals into their owners' drafts.
+  t.add(moment(cycle.start, 8), `Amira launches ${cycle.name}`, async () => {
     const amira = ctx.amira();
-    await amira.post(`${cycle.base}/activate`, { expectedVersion: await cycleVersion(amira, cycle) });
+    await amira.post(`${cycle.base}/launch`, { expectedVersion: await cycleVersion(amira, cycle) });
   });
   teamObjectives(t, ctx, cycle, addDays(cycle.start, 1));
   for (const person of ctx.participants) planning(t, ctx, cycle, person);
@@ -258,13 +254,6 @@ export function runCycle(t, ctx, cycle) {
   development(t, ctx, cycle);
   if (cycle.askUpdateAt) askForUpdate(t, ctx, cycle, cycle.askUpdateAt);
   if (cycle.round) reviewRound(t, ctx, cycle);
-  if (cycle.closeAt) t.add(moment(cycle.closeAt, 17), `Amira closes ${cycle.name}`, async () => {
-    const amira = ctx.amira();
-    const body = { expectedVersion: await cycleVersion(amira, cycle), earlyCloseReason: null, exceptionReason: null };
-    const first = await amira.call("POST", `${cycle.base}/close`, body, { allow: [409] });
-    if (first?.cycle?.state !== "Closed" && first?.state !== "Closed")
-      await amira.post(`${cycle.base}/close`, { ...body, expectedVersion: await cycleVersion(amira, cycle), exceptionReason: "Plans were not completed for everyone this year." });
-  });
 }
 
 function teamObjectives(t, ctx, cycle, when) {
@@ -326,6 +315,9 @@ function planning(t, ctx, cycle, person) {
 
   t.addBatched(`${cycle.name} plans`, moment(addDays(s, plan.write), hour), `${person.name} writes a plan`, async () => {
     let written = await me.post(`${base()}/plan`, { expectedVersion: await cycleVersion(me, cycle) });
+    // Goals carried from last year wait in the draft; this cast writes its own year, so they drop them.
+    for (const carried of written.objectives ?? [])
+      written = await me.call("DELETE", `${base()}/plan/objectives/${carried.id}`, { expectedVersion: written.version });
     for (const objective of objectivesFor(ctx, cycle, person))
       written = await me.post(`${base()}/plan/objectives`, { ...objective, expectedVersion: written.version });
     cycle.plans[i] = written.id;

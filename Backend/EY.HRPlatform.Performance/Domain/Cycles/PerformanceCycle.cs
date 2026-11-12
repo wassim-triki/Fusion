@@ -71,6 +71,56 @@ public sealed class PerformanceCycle : PerformanceAggregate
         MarkUpdated();
     }
 
+    /// <summary>The day the year's review opens, as planned when it was set up (D-81); the round's own date wins once drafted.</summary>
+    public DateOnly? ReviewOpensOn { get; private set; }
+
+    /// <summary>The day results go out, as planned.</summary>
+    public DateOnly? ResultsOutOn { get; private set; }
+
+    /// <summary>The year's moments pinned on it as planned (D-91): shown on the year, never gates anything.</summary>
+    public DateOnly? MidYearCheckInOn { get; private set; }
+    public DateOnly? SelfReviewsDueOn { get; private set; }
+    public DateOnly? CalibrationOn { get; private set; }
+
+    /// <summary>Whether people who join during the year come in from their first day, or wait for the next year.</summary>
+    public bool JoinersJoin { get; private set; } = true;
+
+    /// <summary>Last year's company goals the setup leaves behind; every other one comes along as a draft.</summary>
+    public List<Guid> DroppedCompanyGoalIds { get; private set; } = [];
+
+    /// <summary>
+    /// Plans the year's steps and moments while it is a draft: Planning to the deadline, then Execution to the day the
+    /// review opens, Review to results out, Results out to the year's end. Each step has at least a day.
+    /// </summary>
+    public void PlanYear(DateOnly reviewOpensOn, DateOnly resultsOutOn, DateOnly? midYearCheckInOn, DateOnly? selfReviewsDueOn,
+        DateOnly? calibrationOn, bool joinersJoin, IEnumerable<Guid> droppedCompanyGoalIds)
+    {
+        RequireDraft();
+        if (reviewOpensOn <= PlanningDeadline)
+            throw new ArgumentException("The review opens after planning ends.", nameof(reviewOpensOn));
+        if (resultsOutOn <= reviewOpensOn)
+            throw new ArgumentException("Results go out after the review opens.", nameof(resultsOutOn));
+        if (resultsOutOn > EndDate)
+            throw new ArgumentException("Results go out before the year ends.", nameof(resultsOutOn));
+        foreach (var (moment, label) in new[] { (midYearCheckInOn, "mid-year check-in"), (selfReviewsDueOn, "self-reviews"), (calibrationOn, "calibration") })
+        {
+            if (moment is { } on && (on < StartDate || on > EndDate))
+                throw new ArgumentException($"The {label} falls inside the year.", nameof(midYearCheckInOn));
+        }
+
+        ReviewOpensOn = reviewOpensOn;
+        ResultsOutOn = resultsOutOn;
+        MidYearCheckInOn = midYearCheckInOn;
+        SelfReviewsDueOn = selfReviewsDueOn;
+        CalibrationOn = calibrationOn;
+        JoinersJoin = joinersJoin;
+        DroppedCompanyGoalIds = droppedCompanyGoalIds.Distinct().ToList();
+        MarkUpdated();
+    }
+
+    /// <summary>Whether the year's steps are planned, so it can launch.</summary>
+    public bool IsPlanned => ReviewOpensOn is not null && ResultsOutOn is not null;
+
     private static string? NormalizeDescription(string? description)
         => string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
@@ -119,28 +169,10 @@ public sealed class PerformanceCycle : PerformanceAggregate
         MarkUpdated();
     }
 
-    /// <summary>Why the Cycle was closed before its end date, when it was.</summary>
-    public string? EarlyCloseReason { get; private set; }
-
     /// <summary>
-    /// Closes an Active Cycle deliberately. Reaching the end date never closes a Cycle on its own;
-    /// closing before it requires a stated reason. Participant-level closure exceptions are the
-    /// caller's responsibility because they live on the roster.
+    /// Ends the year (D-57): nobody presses Close; it ends when the next year launches, which needs its results out or
+    /// its end date passed (the caller reads the phase).
     /// </summary>
-    public void CloseDeliberately(DateOnly today, string? earlyCloseReason)
-    {
-        if (State != CycleLifecycleState.Active)
-            throw new InvalidOperationException("Only an Active Cycle can be closed.");
-        var reason = string.IsNullOrWhiteSpace(earlyCloseReason) ? null : earlyCloseReason.Trim();
-        if (today < EndDate && reason is null)
-            throw new ArgumentException("Closing before the Cycle's end date requires a reason.", nameof(earlyCloseReason));
-        if (reason is { Length: > 1000 })
-            throw new ArgumentException("The early-close reason must be 1000 characters or fewer.", nameof(earlyCloseReason));
-
-        EarlyCloseReason = today < EndDate ? reason : null;
-        Close();
-    }
-
     public void Close()
     {
         if (State != CycleLifecycleState.Active)

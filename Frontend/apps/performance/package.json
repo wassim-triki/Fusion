@@ -29,6 +29,7 @@
     "@repo/performance-ui": "workspace:*",
     "@repo/workforce-ui": "workspace:*",
     "@xyflow/react": "^12.10.2",
+    "date-holidays": "3.23.12",
     "next": "^15.1.0",
     "next-intl": "^4.13.0",
     "react": "^19.0.0",

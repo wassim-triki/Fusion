@@ -1119,6 +1119,9 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("ActiveTenantSlot")
                         .HasColumnType("uuid");
 
+                    b.Property<DateOnly?>("CalibrationOn")
+                        .HasColumnType("date");
+
                     b.Property<DateTime?>("ClosedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1132,11 +1135,17 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
-                    b.Property<string>("EarlyCloseReason")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
+                    b.PrimitiveCollection<List<Guid>>("DroppedCompanyGoalIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]");
 
                     b.Property<DateOnly>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("JoinersJoin")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateOnly?>("MidYearCheckInOn")
                         .HasColumnType("date");
 
                     b.Property<string>("Name")
@@ -1148,6 +1157,15 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                         .HasColumnType("date");
 
                     b.Property<DateOnly>("PlanningDeadline")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("ResultsOutOn")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("ReviewOpensOn")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("SelfReviewsDueOn")
                         .HasColumnType("date");
 
                     b.Property<DateOnly>("StartDate")
@@ -1626,6 +1644,9 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime?>("ArchivedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CarriedFromObjectiveId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime?>("ContributionBaselineLockedAt")
                         .HasColumnType("timestamp with time zone");

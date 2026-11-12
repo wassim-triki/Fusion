@@ -31,9 +31,6 @@ public static class PerformanceErrors
         public const string CoachInvalid = "Coach.Invalid";
         public const string CycleClosed = "Cycle.Closed";
         public const string CycleNotActive = "Cycle.NotActive";
-        public const string CycleHasActiveReviewRound = "Cycle.HasActiveReviewRound";
-        public const string CycleClosureUnresolved = "Cycle.ClosureUnresolved";
-        public const string CycleEarlyCloseReason = "Cycle.EarlyCloseReason";
         public const string CycleNotDeletable = "Cycle.NotDeletable";
         public const string CycleInvalid = "Cycle.Invalid";
         public const string CycleNotActivatable = "Cycle.NotActivatable";

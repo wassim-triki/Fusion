@@ -99,12 +99,6 @@
       "PerformanceEndReached": "نهاية فترة الأداء",
       "ClosureReady": "جاهزة للإغلاق"
     },
-    "issue": {
-      "InactiveEmployment": "التوظيف غير نشط بتاريخ {date}.",
-      "NoPrimaryAssignment": "لا إسناد رئيسي نشط بتاريخ {date}.",
-      "MissingManager": "يلزم مدير صالح لمراجعة الخطط.",
-      "InactiveManager": "المدير المسند غير نشط بتاريخ {date}."
-    },
     "milestones": "{count, plural, one {مرحلة واحدة} two {مرحلتان} other {# مراحل}}",
     "planState": {
       "Draft": "مسودة",

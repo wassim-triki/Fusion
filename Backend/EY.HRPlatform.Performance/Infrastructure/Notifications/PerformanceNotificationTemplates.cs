@@ -62,6 +62,11 @@ public static class PerformanceNotificationTemplates
     public static PerformanceNotificationMessage ForYearNudge(string actorName, string stepKey, string path)
         => Message($"YearNudge.{stepKey}", "YearNudge.context", actorName, path, ("actor", actorName));
 
+    /// <summary>"FY2028 is open: write your goals" with the planning deadline; a carried goal is said to be in the draft.</summary>
+    public static PerformanceNotificationMessage ForYearLaunched(string yearName, DateOnly planningEnds, int carried, string path)
+        => Message(carried > 0 ? "YearLaunched.carried" : "YearLaunched", "YearLaunched.context", null, path,
+            ("year", yearName), ("due", Date(planningEnds)), ("carried", carried > 0 ? carried.ToString(CultureInfo.InvariantCulture) : null));
+
     public static string DevelopmentPath(Guid cycleId, Guid? planId, Guid employeeId, bool forOwner)
         => forOwner ? $"/performance/goals?cycle={cycleId}#development"
             : planId is Guid id ? $"{PlanPath(cycleId, id)}#development" : TeamPath;

@@ -19,9 +19,7 @@ import {
   type UpdateCompetencyRequest,
   type UpdateRatingScaleRequest,
   type ExceptionalApprovePlanRequest,
-  type PopulationDto,
   type ReturnPlanRequest,
-  type SetPopulationRequest,
   type ProgressUpdateDto,
   type SubmitProgressRequest,
   type UpdateCycleRequest,
@@ -182,15 +180,6 @@ export function useStrategy(cycleId: string | null) {
     performanceQueryKeys.strategy(cycleId ?? "none"),
     (signal) => performance.listStrategy(cycleId as string, signal),
     { enabled: Boolean(cycleId) }
-  );
-}
-
-export function usePopulation(cycleId: string | null, enabled = true) {
-  const { performance } = useApis();
-  return useApiQuery(
-    performanceQueryKeys.population(cycleId ?? "none"),
-    (signal) => performance.getPopulation(cycleId as string, signal),
-    { enabled: Boolean(cycleId) && enabled }
   );
 }
 
@@ -573,20 +562,9 @@ export function useUpdateCycle(cycleId: string) {
   });
 }
 
-export function useActivateCycle(cycleId: string) {
-  const { performance } = useApis();
-  return usePerformanceMutation((expectedVersion: number) => performance.activateCycle(cycleId, expectedVersion), {
-    invalidateQueries: [
-      { queryKey: [...performanceQueryKeys.all(), "workspace-context"] },
-      { queryKey: performanceQueryKeys.cycle(cycleId) },
-    ],
-  });
-}
-
 const cycleLifecycleInvalidations = (cycleId: string) => [
   { queryKey: [...performanceQueryKeys.all(), "workspace-context"] },
   { queryKey: performanceQueryKeys.cycle(cycleId) },
-  { queryKey: performanceQueryKeys.cycleClosure(cycleId) },
 ];
 
 export function useDeleteDraftCycle(cycleId: string) {
@@ -641,30 +619,33 @@ export function useSaveStrategy(cycleId: string) {
   return { create, update, publish, archive, remove };
 }
 
-export function usePopulationMutations(cycleId: string) {
+/** Setting up a year (D-91): the draft, or the year proposed from last year a year on. */
+export function useYearSetup() {
   const { performance } = useApis();
-  const queryClient = useApiQueryClient();
+  return useApiQuery(performanceQueryKeys.yearSetup(), (signal) => performance.yearSetup(signal));
+}
 
-  // Scope edits (org selections, include-sub-units) fire often during setup. The PUT
-  // already returns the fully recomputed population, so write it straight into the
-  // cache instead of invalidating and paying a second GET. Overview counts refresh in
-  // the background (fire-and-forget) so the interaction never waits on them.
-  const set = usePerformanceMutation(
-    (request: SetPopulationRequest) => performance.setPopulation(cycleId, request),
+/** Keeps the year as a draft (nobody is told): creates it the first time, saves it after. */
+export function useSaveYear() {
+  const { performance } = useApis();
+  return usePerformanceMutation(
+    (args: { draftId: string | null; version: number; request: CreateCycleRequest }) =>
+      args.draftId
+        ? performance.updateCycle(args.draftId, { ...args.request, planningDeadline: args.request.planningDeadline!, expectedVersion: args.version })
+        : performance.createCycle(args.request),
     {
-      onSuccess: (data: PopulationDto) => {
-        queryClient.setQueryData(performanceQueryKeys.population(cycleId), data);
-        void queryClient.invalidateQueries({ queryKey: performanceQueryKeys.cycle(cycleId) });
-      },
+      invalidateQueries: [
+        { queryKey: [...performanceQueryKeys.all(), "workspace-context"] },
+        { queryKey: performanceQueryKeys.yearSetup() },
+      ],
     }
   );
+}
 
-  const confirm = usePerformanceMutation((expectedVersion: number) => performance.confirmPopulation(cycleId, expectedVersion), {
-    invalidateQueries: [
-      { queryKey: performanceQueryKeys.population(cycleId) },
-      { queryKey: performanceQueryKeys.cycle(cycleId) },
-      { queryKey: performanceQueryKeys.cycle(cycleId) },
-    ],
+/** Launches the year onto the Year; the year before ends (D-57). */
+export function useLaunchYear() {
+  const { performance } = useApis();
+  return usePerformanceMutation((args: { cycleId: string; version: number }) => performance.launchYear(args.cycleId, args.version), {
+    invalidateQueries: [{ queryKey: performanceQueryKeys.all() }],
   });
-  return { set, confirm };
 }

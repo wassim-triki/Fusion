@@ -529,6 +529,28 @@ public sealed class Objective : PerformanceAggregate
         MarkUpdated();
     }
 
+    /// <summary>Last year's goal this one carries on (D-57), drawn striped where it shows (D-83).</summary>
+    public Guid? CarriedFromObjectiveId { get; private set; }
+
+    /// <summary>
+    /// This unfinished employee goal, or this company goal, as a draft in the next year: the same words and measure from
+    /// where it stood, over the new year's dates, unaligned and with an even weight until its owner chooses.
+    /// </summary>
+    public Objective CarryInto(Guid cycleId, Guid? employeePlanId, DateOnly cycleStart, DateOnly cycleEnd)
+    {
+        if (OwnershipScope == ObjectiveOwnershipScope.OrgUnit)
+            throw new InvalidOperationException("A unit's goal is set again under next year's company goals, not carried.");
+        if (OwnershipScope == ObjectiveOwnershipScope.Employee && employeePlanId is null)
+            throw new ArgumentException("A carried goal lands in its owner's plan.", nameof(employeePlanId));
+        var measurement = (Measurement ?? ObjectiveMeasurement.ManualPercentage()).CarriedOn(TenantId, CurrentActual);
+        var copy = OwnershipScope == ObjectiveOwnershipScope.Employee
+            ? CreateEmployee(TenantId, cycleId, employeePlanId!.Value, AccountablePersonId, Title, Description, null,
+                cycleStart, cycleEnd, measurement, null, null, null, cycleStart, cycleEnd)
+            : CreateStrategic(TenantId, cycleId, Title, Description, AccountablePersonId, cycleStart, cycleEnd, measurement, cycleStart, cycleEnd);
+        copy.CarriedFromObjectiveId = Id;
+        return copy;
+    }
+
     /// <summary>Whether this employee objective connects to strategic direction through an aligned parent.</summary>
     public bool IsAligned => ParentObjectiveId is not null;
 

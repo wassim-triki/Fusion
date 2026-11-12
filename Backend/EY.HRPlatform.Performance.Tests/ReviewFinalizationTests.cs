@@ -137,11 +137,6 @@ public sealed class ReviewFinalizationTests
         db.Objectives.AddRange(fixture.Objectives);
         await db.SaveChangesAsync();
 
-        var cycleClose = await new CloseCycleHandler(db, new TestPerformanceAudit(db)).Handle(
-            new(fixture.Cycle.Id, new CloseCycleRequest(fixture.Cycle.Version, "End of cycle", null)), default);
-        Assert.True(cycleClose.IsFailure);
-        Assert.Equal("Cycle.HasActiveReviewRound", cycleClose.Error.Code);
-
         var audit = new TestPerformanceAudit(db);
         var reviewHandler = new CloseReviewHandler(db, audit, new PerformanceNotifications(db));
         var idle = fixture.Reviews[1];

@@ -885,7 +885,9 @@
     "answered": "Answered",
     "declined": "Declined",
     "remove": "Stop asking {name}",
-    "addSomeone": "Add someone"
+    "addSomeone": "Add someone",
+    "expectedAt": "What {level} asks",
+    "nextLevelAsks": "The next level, {level}"
   },
   "Letter": {
     "from": "From {name}, released {day}",

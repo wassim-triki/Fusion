@@ -51,6 +51,7 @@ public sealed class PerformanceDbContext : DbContext
     public DbSet<RatingScale> RatingScales => Set<RatingScale>();
     public DbSet<RatingScaleVersion> RatingScaleVersions => Set<RatingScaleVersion>();
     public DbSet<Competency> Competencies => Set<Competency>();
+    public DbSet<CompetencyExpectation> CompetencyExpectations => Set<CompetencyExpectation>();
     public DbSet<PopulationDefinition> PopulationDefinitions => Set<PopulationDefinition>();
     public DbSet<Participant> Participants => Set<Participant>();
     public DbSet<Objective> Objectives => Set<Objective>();
@@ -130,6 +131,8 @@ public sealed class PerformanceDbContext : DbContext
         modelBuilder.Entity<RatingScaleVersion>()
             .HasQueryFilter(e => CurrentTenantId != Guid.Empty && e.TenantId == CurrentTenantId);
         modelBuilder.Entity<Competency>()
+            .HasQueryFilter(e => CurrentTenantId != Guid.Empty && e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<CompetencyExpectation>()
             .HasQueryFilter(e => CurrentTenantId != Guid.Empty && e.TenantId == CurrentTenantId);
         modelBuilder.Entity<PopulationDefinition>()
             .HasQueryFilter(e => CurrentTenantId != Guid.Empty && e.TenantId == CurrentTenantId);

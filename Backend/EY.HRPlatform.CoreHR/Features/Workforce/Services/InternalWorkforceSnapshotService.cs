@@ -54,10 +54,31 @@ public interface IInternalWorkforceSnapshotService
         string term,
         int limit,
         CancellationToken cancellationToken);
+
+    /// <summary>The company's job families and levels, and its live jobs with a family and a level.</summary>
+    Task<InternalJobCatalogueDto> GetJobCatalogueAsync(CancellationToken cancellationToken);
 }
 
 public sealed class InternalWorkforceSnapshotService(CoreHRDbContext dbContext) : IInternalWorkforceSnapshotService
 {
+    public async Task<InternalJobCatalogueDto> GetJobCatalogueAsync(CancellationToken cancellationToken)
+    {
+        var values = await dbContext.CompanyListValues.AsNoTracking()
+            .Where(value => !value.IsRetired && (value.List == CompanyList.JobFamilies || value.List == CompanyList.Levels))
+            .OrderBy(value => value.SortOrder)
+            .Select(value => new { value.Id, value.List, value.Label, value.SortOrder })
+            .ToListAsync(cancellationToken);
+        var pairs = await dbContext.Jobs.AsNoTracking()
+            .Where(job => !job.IsRetired && job.FamilyId != null && job.LevelId != null)
+            .OrderBy(job => job.Title)
+            .Select(job => new InternalJobFamilyLevelDto(job.FamilyId!.Value, job.LevelId!.Value, job.Title))
+            .ToListAsync(cancellationToken);
+        return new InternalJobCatalogueDto(
+            values.Where(value => value.List == CompanyList.JobFamilies).Select(value => new InternalCompanyListValueDto(value.Id, value.Label, value.SortOrder)).ToList(),
+            values.Where(value => value.List == CompanyList.Levels).Select(value => new InternalCompanyListValueDto(value.Id, value.Label, value.SortOrder)).ToList(),
+            pairs);
+    }
+
     public async Task<IReadOnlyList<InternalOrgUnitSnapshotDto>> ResolveOrgUnitsAsync(
         DateTime asOf,
         IReadOnlyCollection<Guid> orgUnitIds,
@@ -327,7 +348,8 @@ public sealed class InternalWorkforceSnapshotService(CoreHRDbContext dbContext) 
             {
                 assignment.EmployeeId,
                 assignment.OrgUnitId,
-                assignment.JobTitle
+                assignment.JobTitle,
+                assignment.JobId
             })
             .ToListAsync(cancellationToken);
         var assignmentByEmployee = assignments
@@ -370,6 +392,12 @@ public sealed class InternalWorkforceSnapshotService(CoreHRDbContext dbContext) 
                 .Distinct()
                 .ToListAsync(cancellationToken))
                 .ToHashSet();
+
+        var jobIds = assignmentByEmployee.Values.Select(assignment => assignment.JobId).Distinct().ToList();
+        var jobs = await dbContext.Jobs.AsNoTracking()
+            .Where(job => jobIds.Contains(job.Id))
+            .Select(job => new { job.Id, job.FamilyId, job.LevelId })
+            .ToDictionaryAsync(job => job.Id, cancellationToken);
 
         var orgUnitIds = assignmentByEmployee.Values
             .Select(assignment => assignment.OrgUnitId)
@@ -414,7 +442,11 @@ public sealed class InternalWorkforceSnapshotService(CoreHRDbContext dbContext) 
                             : null,
                     employmentStartByEmployee.TryGetValue(employee.Id, out var started) ? DateOnly.FromDateTime(started) : null,
                     EY.HRPlatform.CoreHR.Features.People.EmployeePhotos.UrlFor(employee.StableEmployeeKey, employee.PhotoKey),
-                    leaves.TryGetValue(employee.Id, out var leave) ? leave.WithoutType() : null);
+                    leaves.TryGetValue(employee.Id, out var leave) ? leave.WithoutType() : null)
+                {
+                    JobFamilyId = isActive && assignment is not null && jobs.TryGetValue(assignment.JobId, out var job) ? job.FamilyId : null,
+                    LevelId = isActive && assignment is not null && jobs.TryGetValue(assignment.JobId, out var held) ? held.LevelId : null,
+                };
             })
             .ToList();
     }

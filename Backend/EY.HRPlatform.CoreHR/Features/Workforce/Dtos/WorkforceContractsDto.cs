@@ -122,7 +122,22 @@ public sealed record InternalWorkforceEmployeeSnapshotDto(
     DateOnly? EmploymentStart = null,
     string? PhotoUrl = null,
     /// <summary>Leave they are on today, or their next; the type is left out.</summary>
-    EY.HRPlatform.CoreHR.Features.People.Changes.PersonLeaveDto? Leave = null);
+    EY.HRPlatform.CoreHR.Features.People.Changes.PersonLeaveDto? Leave = null)
+{
+    /// <summary>The held job's family and level, from the company's lists; null when the job has none.</summary>
+    public Guid? JobFamilyId { get; init; }
+    public Guid? LevelId { get; init; }
+}
+
+/// <summary>The company's job families and levels in their order, and its live jobs that have both.</summary>
+public sealed record InternalJobCatalogueDto(
+    IReadOnlyList<InternalCompanyListValueDto> Families,
+    IReadOnlyList<InternalCompanyListValueDto> Levels,
+    IReadOnlyList<InternalJobFamilyLevelDto> Jobs);
+
+public sealed record InternalCompanyListValueDto(Guid Id, string Label, int SortOrder);
+
+public sealed record InternalJobFamilyLevelDto(Guid FamilyId, Guid LevelId, string Title);
 
 public sealed record InternalWorkforceOrgSnapshotDto(
     Guid OrgUnitId,

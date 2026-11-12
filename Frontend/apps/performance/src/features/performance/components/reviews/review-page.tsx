@@ -132,8 +132,22 @@ function WrittenReview({ record, side, readOnly }: { record: PerformanceReviewDt
                 <div key={item.itemId} className={cn("grid gap-2.5", index > 0 && "border-t border-border pt-3.5")}>
                   <div className="flex items-baseline gap-3">
                     <b className="text-sm font-semibold text-foreground">{item.title}</b>
-                    {item.description ? <span className="ms-auto text-end text-[13px] text-muted-foreground">{item.description}</span> : null}
+                    {item.expectation ? null : item.description ? <span className="ms-auto text-end text-[13px] text-muted-foreground">{item.description}</span> : null}
                   </div>
+                  {item.expectation ? (
+                    <div className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
+                      <div className="grid gap-0.5">
+                        <span className="text-[12.5px] text-muted-foreground">{t("expectedAt", { level: item.expectation.level })}</span>
+                        <span className="font-editorial text-[15px] leading-snug text-foreground">{item.expectation.text}</span>
+                      </div>
+                      {item.nextExpectation ? (
+                        <div className="grid gap-0.5">
+                          <span className="text-[12.5px] text-muted-foreground">{t("nextLevelAsks", { level: item.nextExpectation.level })}</span>
+                          <span className="font-editorial text-[15px] leading-snug text-muted-foreground">{item.nextExpectation.text}</span>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
                   <Scale levels={record.ratingScale} label={item.title} readOnly={readOnly}
                     value={form.draft.ratings[item.itemId] ?? null}
                     onPick={(value) => form.change((d) => ({ ...d, ratings: { ...d.ratings, [item.itemId]: value } }))}

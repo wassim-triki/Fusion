@@ -111,6 +111,31 @@ export interface CreateCompetencyRequest { name: string; description: string; be
 export interface UpdateCompetencyRequest extends CreateCompetencyRequest { expectedVersion: number }
 export interface CompetencyVersionRequest { expectedVersion: number }
 
+/** Competencies by job (D-41): Core HR's families with the levels their jobs use, and what each competency asks of each. */
+export interface CompetenciesByJobDto {
+  families: JobFamilyDto[];
+  competencies: CompetencyDto[];
+  expectations: CompetencyExpectationDto[];
+  canDraft: boolean;
+}
+export interface JobFamilyDto { id: string; label: string; people: number; levels: JobLevelDto[] }
+/** A level, with someone who holds it in this family today (where an expectation lands), when anyone does. */
+export interface JobLevelDto { id: string; label: string; people: number; example: { employeeId: string; displayName: string; photoUrl: string | null } | null }
+export type ExpectationSource = "Written" | "Drafted" | "File";
+export interface CompetencyExpectationDto { competencyId: string; familyId: string; levelId: string; text: string; source: ExpectationSource }
+/** Cells of one family to write; an empty text clears the cell. */
+export interface SaveCompetencyExpectationsRequest {
+  familyId: string;
+  cells: { competencyId: string; levelId: string; text: string | null; source: ExpectationSource }[];
+}
+/** Proposed words, not saved: drafted from the jobs, or read from the company's own file (with how many of `of` cells it filled). */
+export interface CompetencyExpectationProposalsDto {
+  cells: { competencyId: string; levelId: string; text: string }[];
+  fileName: string | null;
+  of: number;
+  unread: string[];
+}
+
 export interface CycleSummaryDto {
   version: number;
   id: string;
@@ -573,6 +598,9 @@ export interface ReviewEvidenceRefDto {
 
 export interface ReviewItemAssessmentDto extends ReviewItemRecordFields {
   kind: ReviewItemKind;
+  /** A competency's expectation at the person's job family and level today, and the next level's (D-41). */
+  expectation?: { level: string; text: string } | null;
+  nextExpectation?: { level: string; text: string } | null;
   itemId: string;
   title: string;
   description: string | null;
@@ -1878,6 +1906,10 @@ export const performancePaths = {
   competencies: () => "/performance/settings/competencies",
   competency: (id: string) => `/performance/settings/competencies/${id}`,
   archiveCompetency: (id: string) => `/performance/settings/competencies/${id}/archive`,
+  competenciesByJob: () => "/performance/settings/competencies/by-job",
+  competencyExpectations: () => "/performance/settings/competencies/expectations",
+  draftCompetencyExpectations: () => "/performance/settings/competencies/expectations/draft",
+  readCompetencyExpectations: () => "/performance/settings/competencies/expectations/read",
   createCycle: () => "/performance/cycles",
   cycle: (id: string) => `/performance/cycles/${id}`,
   context: (cycleId?: string | null) =>
@@ -1986,6 +2018,7 @@ export const performanceQueryKeys = {
   settings: () => [...performanceQueryKeys.all(), "settings"] as const,
   ratingScale: () => [...performanceQueryKeys.all(), "rating-scale"] as const,
   competencies: () => [...performanceQueryKeys.all(), "competencies"] as const,
+  competenciesByJob: () => [...performanceQueryKeys.all(), "competencies", "by-job"] as const,
   cycle: (id: string) => [...performanceQueryKeys.all(), "cycle", id] as const,
   cycleClosure: (id: string) => [...performanceQueryKeys.all(), "cycle-closure", id] as const,
   /** Every year read and preview: what anything that moves someone through the year invalidates. */
@@ -2054,6 +2087,17 @@ export function createPerformanceApi(client: ApiClient) {
     createCompetency: (request: CreateCompetencyRequest) => client.post<CompetencyDto>(performancePaths.competencies(), request),
     updateCompetency: (id: string, request: UpdateCompetencyRequest) => client.put<CompetencyDto>(performancePaths.competency(id), request),
     archiveCompetency: (id: string, request: CompetencyVersionRequest) => client.post<CompetencyDto>(performancePaths.archiveCompetency(id), request),
+    getCompetenciesByJob: (signal?: AbortSignal) => client.get<CompetenciesByJobDto>(performancePaths.competenciesByJob(), { signal }),
+    saveCompetencyExpectations: (request: SaveCompetencyExpectationsRequest) =>
+      client.put<CompetencyExpectationDto[]>(performancePaths.competencyExpectations(), request),
+    draftCompetencyExpectations: (familyId: string) =>
+      client.post<CompetencyExpectationProposalsDto>(performancePaths.draftCompetencyExpectations(), { familyId }),
+    readCompetencyExpectations: (familyId: string, file: File) => {
+      const form = new FormData();
+      form.append("familyId", familyId);
+      form.append("file", file);
+      return client.post<CompetencyExpectationProposalsDto>(performancePaths.readCompetencyExpectations(), form);
+    },
     deleteCompetency: (id: string, request: CompetencyVersionRequest) => client.delete<boolean>(performancePaths.competency(id), { body: request }),
 
     /** The detail of one authorized Cycle. */

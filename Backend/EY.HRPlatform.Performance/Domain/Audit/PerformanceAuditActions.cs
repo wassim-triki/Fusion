@@ -47,6 +47,7 @@ public static class PerformanceAuditActions
     public const string CompetencyChanged = "Competency.Changed";
     public const string CompetencyArchived = "Competency.Archived";
     public const string CompetencyDeleted = "Competency.Deleted";
+    public const string CompetencyExpectationsChanged = "Competency.ExpectationsChanged";
     public const string ReviewQuestionCreated = "ReviewQuestion.Created";
     public const string ReviewQuestionChanged = "ReviewQuestion.Changed";
     public const string ReviewQuestionArchived = "ReviewQuestion.Archived";

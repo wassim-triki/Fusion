@@ -118,6 +118,7 @@ public sealed class GetSettingsSectionsHandler(PerformanceDbContext db, ICoreWor
         PerformanceAuditActions.CompetencyChanged,
         PerformanceAuditActions.CompetencyArchived,
         PerformanceAuditActions.CompetencyDeleted,
+        PerformanceAuditActions.CompetencyExpectationsChanged,
         PerformanceAuditActions.ValueAdded,
         PerformanceAuditActions.ValueRenamed,
         PerformanceAuditActions.ValueRemoved,

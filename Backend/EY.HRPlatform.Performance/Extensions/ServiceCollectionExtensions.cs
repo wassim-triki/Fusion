@@ -61,6 +61,7 @@ public static class ServiceCollectionExtensions
             .Get<InternalServiceAuthenticationOptions>() ?? new InternalServiceAuthenticationOptions();
         services.AddSingleton<IInternalServiceRequestSigner>(_ => new InternalServiceRequestSigner(internalAuth));
 
+        services.AddSingleton<EY.HRPlatform.SharedKernel.Imports.ISafeTabularSourceReader, EY.HRPlatform.SharedKernel.Imports.SafeTabularSourceReader>();
         services.AddHttpClient<ICoreWorkforceClient, CoreWorkforceClient>(client =>
         {
             var baseUrl = configuration["ServiceUrls:CoreHRApiBaseUrl"];

@@ -885,7 +885,9 @@
     "answered": "أجاب",
     "declined": "اعتذر",
     "remove": "التوقف عن سؤال {name}",
-    "addSomeone": "إضافة شخص"
+    "addSomeone": "إضافة شخص",
+    "expectedAt": "ما يطلبه مستوى {level}",
+    "nextLevelAsks": "المستوى التالي، {level}"
   },
   "Letter": {
     "from": "من {name}، نُشرت في {day}",

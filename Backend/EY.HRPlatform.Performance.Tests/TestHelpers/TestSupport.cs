@@ -134,6 +134,15 @@ public sealed class FakeCoreWorkforceClient : ICoreWorkforceClient
         return Task.FromResult<IReadOnlyList<WorkforceSnapshot>>(resolved);
     }
 
+    /// <summary>The company's job families and levels, as Core HR lists them.</summary>
+    public JobCatalogue Catalogue { get; set; } = new([], [], []);
+
+    public Task<JobCatalogue> GetJobCatalogueAsync(CancellationToken cancellationToken)
+    {
+        ThrowIfUnavailable();
+        return Task.FromResult(Catalogue);
+    }
+
     public WorkforceSnapshot Add(
         string name,
         bool isActive = true,

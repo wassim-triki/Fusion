@@ -43,7 +43,7 @@ public sealed class PerformanceAiOptions
 }
 
 /// <summary>One Performance feature's structured request; the provider adds credentials, model and limits.</summary>
-public sealed record PerformanceAiRequest(string Instructions, object Input, string SchemaName, object Schema);
+public sealed record PerformanceAiRequest(string Instructions, object Input, string SchemaName, object Schema, int? MaxCompletionTokens = null);
 
 /// <summary>
 /// The only way Performance reaches an AI model. Callers ask <see cref="IsAvailable"/> before offering
@@ -148,7 +148,7 @@ public sealed class PerformanceAiProvider(HttpClient httpClient, PerformanceAiOp
         request.Input,
         request.SchemaName,
         request.Schema,
-        MaxCompletionTokens,
+        request.MaxCompletionTokens ?? MaxCompletionTokens,
         "low",
         Temperature);
 }

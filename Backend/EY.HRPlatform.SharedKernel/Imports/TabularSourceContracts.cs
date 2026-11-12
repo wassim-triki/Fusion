@@ -1,4 +1,6 @@
-namespace EY.HRPlatform.CoreHR.Infrastructure.Imports;
+using Microsoft.AspNetCore.Http;
+
+namespace EY.HRPlatform.SharedKernel.Imports;
 
 // Domain-neutral safe tabular source model. This layer knows nothing about people, units or business
 // validation; the import reads what columns mean on top of it.

@@ -18,7 +18,35 @@ public sealed record WorkforceSnapshot(
     WorkforceManagerSnapshot? Manager,
     DateOnly? EmploymentStart = null,
     string? PhotoUrl = null,
-    WorkforceLeaveSnapshot? Leave = null);
+    WorkforceLeaveSnapshot? Leave = null)
+{
+    /// <summary>The held job's family and level from the company's lists (<see cref="JobCatalogue"/>); null when unset.</summary>
+    public Guid? JobFamilyId { get; init; }
+    public Guid? LevelId { get; init; }
+}
+
+/// <summary>Core HR's job families and levels in their order, and which family-level pairs its live jobs use.</summary>
+public sealed record JobCatalogue(IReadOnlyList<JobCatalogueValue> Families, IReadOnlyList<JobCatalogueValue> Levels, IReadOnlyList<JobFamilyLevel> Jobs)
+{
+    /// <summary>The levels a family's jobs use, lowest first.</summary>
+    public IReadOnlyList<JobCatalogueValue> LevelsOf(Guid familyId)
+    {
+        var used = Jobs.Where(job => job.FamilyId == familyId).Select(job => job.LevelId).ToHashSet();
+        return Levels.Where(level => used.Contains(level.Id)).OrderBy(level => level.SortOrder).ToArray();
+    }
+
+    /// <summary>The level after <paramref name="levelId"/> among the family's, or null at the top.</summary>
+    public JobCatalogueValue? NextLevel(Guid familyId, Guid levelId)
+    {
+        var levels = LevelsOf(familyId);
+        var at = levels.ToList().FindIndex(level => level.Id == levelId);
+        return at >= 0 && at + 1 < levels.Count ? levels[at + 1] : null;
+    }
+}
+
+public sealed record JobCatalogueValue(Guid Id, string Label, int SortOrder);
+
+public sealed record JobFamilyLevel(Guid FamilyId, Guid LevelId, string Title);
 
 /// <summary>Leave the person is on today (<paramref name="Now"/>), or their next; Performance shows it and pauses nothing.</summary>
 public sealed record WorkforceLeaveSnapshot(DateOnly From, DateOnly? Until, DateOnly? Back, bool Now);

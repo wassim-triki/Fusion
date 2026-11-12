@@ -1,0 +1,360 @@
+<title>Competencies Redraw</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: Fusion's settings frame (families on the left) holding three ways to read one family's expectations, level by level. */
+:root {
+  --bg: oklch(0.985 0.002 286); --section: oklch(0.967 0.003 286); --card: oklch(1 0 0); --inlay: oklch(0.955 0.003 286);
+  --fg: oklch(0.21 0.006 286); --mu: oklch(0.52 0.014 286); --line: oklch(0.91 0.004 286);
+  --pr: oklch(0.795 0.184 86); --pr-ink: oklch(0.52 0.12 70); --on-pr: oklch(0.21 0.006 286);
+  --ai: oklch(0.52 0.17 295); --ok: oklch(0.55 0.14 150);
+  --h1: oklch(0.52 0.15 255); --h2: oklch(0.52 0.1 185); --h3: oklch(0.53 0.14 140); --h4: oklch(0.55 0.18 340); --h5: oklch(0.58 0.15 50);
+  --sans: "Geist", ui-sans-serif, system-ui, sans-serif; --serif: "Lora", Georgia, "Times New Roman", serif;
+  --r-surface: 28px; --r-control: 14px; --r-inset: 18px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: oklch(0.16 0.004 286); --section: oklch(0.19 0.005 286); --card: oklch(0.215 0.006 286); --inlay: oklch(0.26 0.006 286);
+  --fg: oklch(0.96 0.002 286); --mu: oklch(0.7 0.012 286); --line: oklch(0.3 0.006 286);
+  --pr: oklch(0.795 0.184 86); --pr-ink: oklch(0.83 0.15 86); --on-pr: oklch(0.21 0.006 286);
+  --ai: oklch(0.75 0.14 295); --ok: oklch(0.75 0.14 150);
+  --h1: oklch(0.76 0.12 255); --h2: oklch(0.78 0.1 185); --h3: oklch(0.8 0.15 140); --h4: oklch(0.76 0.15 340); --h5: oklch(0.78 0.13 60);
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: oklch(0.16 0.004 286); --section: oklch(0.19 0.005 286); --card: oklch(0.215 0.006 286); --inlay: oklch(0.26 0.006 286);
+  --fg: oklch(0.96 0.002 286); --mu: oklch(0.7 0.012 286); --line: oklch(0.3 0.006 286);
+  --pr: oklch(0.795 0.184 86); --pr-ink: oklch(0.83 0.15 86); --on-pr: oklch(0.21 0.006 286);
+  --ai: oklch(0.75 0.14 295); --ok: oklch(0.75 0.14 150);
+  --h1: oklch(0.76 0.12 255); --h2: oklch(0.78 0.1 185); --h3: oklch(0.8 0.15 140); --h4: oklch(0.76 0.15 340); --h5: oklch(0.78 0.13 60);
+  color-scheme: dark }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 14px/1.5 var(--sans); }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, textarea:focus-visible { outline: 2px solid var(--pr); outline-offset: 2px; }
+
+.xbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--section); border-bottom: 1px solid var(--line);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 10px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--section); }
+.xbar-in { max-width: 1240px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.xname { font-weight: 600; }
+.seg { display: inline-flex; background: var(--inlay); border-radius: 12px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+.seg button { border: 0; background: none; padding: 5px 12px; border-radius: 9px; font-size: 13px; color: var(--mu); font-weight: 500; }
+.seg button[aria-pressed="true"] { background: var(--card); color: var(--fg); box-shadow: 0 1px 2px oklch(0 0 0 / 0.12); }
+.grow { flex: 1; }
+
+main { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 36px 60px; }
+.page { max-width: 1240px; margin: 0 auto; display: grid; gap: 22px; }
+.crumbs { color: var(--mu); font-size: 13px; }
+h1 { font: 500 30px/1.2 var(--serif); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.card { background: var(--card); border-radius: var(--r-surface); padding: 26px; display: grid; gap: 20px; min-width: 0; }
+.head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.head h2 { font: 500 19px/1.3 var(--serif); margin: 0; }
+.head .acts { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.btn { border: 0; border-radius: var(--r-control); padding: 7px 13px; font-size: 13px; font-weight: 600; background: var(--inlay); display: inline-flex; gap: 7px; align-items: center; }
+.btn.p { background: var(--pr); color: var(--on-pr); }
+.btn.ghost { background: none; color: var(--mu); }
+.btn svg { width: 15px; height: 15px; }
+.meta { font-size: 12.5px; color: var(--mu); }
+.frame { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 26px; align-items: start; }
+.fam { display: grid; gap: 2px; }
+.fam div { padding: 8px 12px; border-radius: 12px; color: var(--mu); display: flex; justify-content: space-between; font-size: 14px; }
+.fam div.on { background: var(--inlay); color: var(--fg); font-weight: 600; }
+.fam span:last-child { font-variant-numeric: tabular-nums; font-size: 12.5px; }
+
+/* competency identity: hue, serif name, what it means */
+.cname { font: 500 17px/1.3 var(--serif); margin: 0; text-wrap: balance; }
+.cmean { font-size: 13px; color: var(--mu); line-height: 1.45; }
+.hue { width: 10px; height: 10px; border-radius: 4px; flex: none; background: var(--c); }
+.words { font: 400 16px/1.45 var(--serif); }
+.words.sm { font-size: 14.5px; }
+.stripes { background: repeating-linear-gradient(135deg, color-mix(in oklab, var(--mu) 16%, transparent) 0 1.5px, transparent 1.5px 8px); }
+.write { opacity: 0; transition: opacity .15s; display: inline-flex; gap: 5px; align-items: center; font-weight: 600; font-size: 12.5px; background: var(--card);
+  border-radius: 99px; padding: 4px 11px 4px 8px; box-shadow: inset 0 0 0 1px var(--line); border: 0; }
+.empty:hover .write, .empty:focus-within .write { opacity: 1; }
+.draft { background: color-mix(in oklab, var(--ai) 10%, var(--card)); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ai) 30%, transparent); }
+.dacts { display: flex; gap: 6px; align-items: center; }
+.dacts .apply { border: 0; background: var(--card); border-radius: 8px; padding: 3px 10px; font-weight: 600; font-size: 12px; }
+.dacts .x { border: 0; background: none; color: var(--mu); padding: 2px 4px; font-size: 15px; line-height: 1; }
+.spark { color: var(--ai); width: 14px; height: 14px; }
+.face { width: 22px; height: 22px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 9.5px; font-weight: 700; background: var(--inlay); color: var(--fg); flex: none; }
+.who { display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; color: var(--mu); }
+.ok { color: var(--ok); }
+
+/* A: the ladder */
+.a-wrap { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 24px; align-items: start; }
+.a-list { display: grid; gap: 4px; }
+.a-item { border: 0; background: none; text-align: left; border-radius: 16px; padding: 12px 14px; display: grid; gap: 8px; }
+.a-item.on { background: var(--inlay); }
+.a-item .row { display: flex; gap: 9px; align-items: center; }
+.a-item .cname { font-size: 15.5px; }
+.pips { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
+.pips i { height: 5px; border-radius: 3px; background: var(--inlay); }
+.a-item.on .pips i { background: color-mix(in oklab, var(--mu) 25%, transparent); }
+.pips i.w { background: var(--c) !important; }
+.pips i.d { background: color-mix(in oklab, var(--ai) 55%, transparent) !important; }
+.a-main { display: grid; gap: 18px; min-width: 0; }
+.a-title { display: grid; gap: 6px; }
+.a-title .cname { font-size: 26px; display: flex; gap: 12px; align-items: center; }
+.a-title .hue { width: 14px; height: 14px; border-radius: 5px; }
+.ladder { display: grid; gap: 8px; position: relative; }
+.rung { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 18px; align-items: stretch; }
+.rung .lv { display: grid; gap: 4px; align-content: start; padding-top: 14px; }
+.rung .lv b { font-weight: 600; font-size: 14px; }
+.rung .body { border-radius: var(--r-inset); padding: 14px 18px; display: flex; gap: 14px; align-items: center; min-height: 58px; }
+.rung .body.w { background: var(--inlay); }
+.rung .body.empty { justify-content: center; }
+.rung .body .words { flex: 1; min-width: 0; }
+.rung .step { display: block; width: 100%; height: 3px; border-radius: 3px; background: var(--c); opacity: calc(0.25 + var(--i) * 0.18); }
+
+/* B: one level across every competency */
+.track { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.tstep { border: 0; background: var(--inlay); border-radius: 14px; padding: 10px 12px; text-align: left; display: grid; gap: 2px; }
+.tstep b { font-size: 14px; font-weight: 600; }
+.tstep.on { background: var(--pr); color: var(--on-pr); }
+.tstep.on .meta { color: color-mix(in oklab, var(--on-pr) 70%, transparent); }
+.blist { display: grid; }
+.brow { display: grid; grid-template-columns: 240px minmax(0, 1fr) minmax(0, 0.8fr); gap: 22px; padding: 18px 0; border-top: 1px solid var(--line); align-items: start; }
+.brow:first-child { border-top: 0; padding-top: 4px; }
+.brow .id { display: grid; gap: 4px; }
+.brow .id .row { display: flex; gap: 9px; align-items: center; }
+.brow .here { border-radius: var(--r-inset); padding: 12px 16px; min-height: 52px; display: flex; gap: 12px; align-items: center; }
+.brow .here.w { background: var(--inlay); }
+.brow .here.empty { justify-content: center; }
+.brow .here .words { flex: 1; }
+.brow .near { display: grid; gap: 10px; padding-top: 4px; }
+.brow .near div { display: grid; gap: 2px; }
+.brow .near .words { color: var(--mu); font-size: 14px; }
+
+/* C: the map with the reading beside it */
+.c-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; align-items: start; }
+.map { display: grid; grid-template-columns: minmax(150px, 1.3fr) repeat(5, minmax(0, 1fr)); gap: 6px; align-items: center; }
+.map .lh { font-size: 12.5px; color: var(--mu); font-weight: 500; padding: 0 4px 4px; }
+.map .lh small { display: block; font-size: 11.5px; }
+.map .cn { display: flex; gap: 9px; align-items: center; padding: 6px 0; }
+.map .cn .cname { font-size: 15px; }
+.tile { border: 0; height: 44px; border-radius: 12px; position: relative; }
+.tile.w { background: color-mix(in oklab, var(--c) 30%, var(--card)); }
+.tile.d { background: color-mix(in oklab, var(--ai) 14%, var(--card)); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ai) 40%, transparent); }
+.tile.d::after { content: ""; position: absolute; inset: 0; margin: auto; width: 6px; height: 6px; border-radius: 50%; background: var(--ai); }
+.tile.on { box-shadow: inset 0 0 0 2px var(--pr) !important; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; }
+.legend span { display: inline-flex; gap: 7px; align-items: center; font-size: 12.5px; color: var(--mu); }
+.legend i { width: 18px; height: 12px; border-radius: 4px; display: inline-block; }
+.side { background: var(--inlay); border-radius: var(--r-surface); padding: 22px; display: grid; gap: 16px; position: sticky; top: 76px; }
+.side .lvls { display: grid; gap: 2px; }
+.side .lvls button { border: 0; background: none; text-align: left; padding: 8px 10px; border-radius: 12px; display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 10px; align-items: start; }
+.side .lvls button.on { background: var(--card); }
+.side .lvls .words { font-size: 13.5px; }
+.side .lvls .nil { height: 10px; border-radius: 5px; margin-top: 6px; }
+.side .big { background: var(--card); border-radius: var(--r-inset); padding: 16px 18px; display: grid; gap: 10px; }
+.side .big .words { font-size: 18px; }
+
+/* the editing state, for any layout */
+.edit { width: 100%; border: 0; resize: none; background: var(--card); color: var(--fg); border-radius: 12px; padding: 10px 12px; font: 400 16px/1.45 var(--serif);
+  box-shadow: inset 0 0 0 1.5px var(--pr); min-height: 54px; }
+
+/* answer */
+.ask { background: var(--section); border-radius: var(--r-surface); padding: 24px; display: grid; gap: 14px; }
+.ask h2 { font: 500 19px/1.3 var(--serif); margin: 0; }
+.opts { display: flex; gap: 8px; flex-wrap: wrap; }
+.opt { border: 0; border-radius: 14px; padding: 10px 14px; background: var(--card); font-weight: 500; display: inline-flex; gap: 8px; align-items: center; box-shadow: inset 0 0 0 1px var(--line); }
+.opt[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--pr); font-weight: 600; }
+.opt small { color: var(--pr-ink); font-weight: 600; font-size: 11.5px; }
+#note { width: 100%; min-height: 76px; border: 0; border-radius: 14px; padding: 12px 14px; background: var(--card); color: var(--fg); font: inherit; box-shadow: inset 0 0 0 1px var(--line); }
+.saved { font-size: 12.5px; color: var(--mu); min-height: 18px; }
+
+@media (max-width: 980px) {
+  .frame, .a-wrap, .c-wrap { grid-template-columns: minmax(0, 1fr); }
+  .fam { grid-auto-flow: column; overflow-x: auto; }
+  .brow { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .side { position: static; }
+}
+@media (max-width: 600px) {
+  .rung { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .rung .lv { padding-top: 0; }
+  .track { grid-template-columns: repeat(5, minmax(110px, 1fr)); overflow-x: auto; }
+  .map { grid-template-columns: minmax(110px, 1fr) repeat(5, 34px); }
+  .card { padding: 18px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="xbar"><div class="xbar-in">
+  <span class="xname">Competencies by job, redrawn</span>
+  <div class="seg" id="layouts" role="group" aria-label="Layout"></div>
+  <div class="seg" id="sits" role="group" aria-label="Situation"></div>
+  <span class="grow"></span>
+  <div class="seg" id="theme" role="group" aria-label="Theme"></div>
+</div></div>
+<main><div class="page" id="page"></div></main>
+
+<script>
+const LEVELS = [
+  { label: "Mid-level", people: 24, who: "Adel Brahim" },
+  { label: "Senior", people: 4, who: "Khaled Sassi" },
+  { label: "Lead", people: 3, who: "Oumaima Sellami" },
+  { label: "Manager", people: 3, who: "Hela Ben Amor" },
+  { label: "Director", people: 1, who: "Omar Mansour" },
+];
+const COMPS = [
+  { name: "Customer Partnership", mean: "Works with clients and colleagues to shape useful, dependable digital outcomes.", c: "--h1" },
+  { name: "Data-Informed Decision Making", mean: "Uses relevant evidence to prioritize work and evaluate results.", c: "--h2" },
+  { name: "Inclusive Collaboration", mean: "Creates conditions for diverse teams to contribute and deliver well together.", c: "--h3" },
+  { name: "Secure Engineering", mean: "Builds and operates technology with security and privacy built in.", c: "--h4" },
+  { name: "Systems Thinking", mean: "Connects product, platform and service decisions to wider business outcomes.", c: "--h5" },
+];
+const W = [[0,2,"Owns a client's quality concerns end to end"],[0,1,"Listens for underlying needs; closes feedback loops"],[1,0,"Uses the measures the team already tracks"],
+  [1,2,"Sets the measures the team tracks quality by"],[1,1,"Chooses meaningful measures; explains trade-offs"],[2,0,"Asks for context before starting"],
+  [2,2,"Brings other teams into decisions before they're made"],[2,1,"Shares context openly; invites different views"],[4,2,"Shapes the test strategy across services"],
+  [4,1,"Identifies dependencies; balances near and long term"],[3,2,"Reviews others' designs for security risks"],[3,1,"Applies secure-by-design practices; raises risks early"]];
+const D = [[0,0,"Clarifies client needs and confirms expectations for own tasks"],[0,3,"Coordinates client quality standards across multiple engineering teams"],
+  [0,4,"Defines organization-wide client partnership strategy and ensures alignment"],[1,3,"Prioritizes cross-team initiatives using evidence and communicates trade-offs"],
+  [1,4,"Sets enterprise data-driven decision framework and monitors outcomes"],[2,3,"Facilitates inclusive workshops that align several teams on shared goals"],
+  [2,4,"Leads organization-wide inclusion practices and integrates diverse perspectives"],[3,0,"Implements secure coding patterns in own feature development"],
+  [3,3,"Oversees security standards implementation across multiple engineering groups"],[3,4,"Defines corporate security engineering vision and ensures enterprise compliance"],
+  [4,0,"Maps component dependencies while building own service"],[4,3,"Architects system-wide dependency models balancing delivery and sustainability"],
+  [4,4,"Sets group-level systems thinking agenda linking products to business outcomes"]];
+const FAMS = [["Leadership", 4], ["Data and AI", 8], ["Product and Design", 9], ["Engineering", 35], ["Consulting and Delivery", 24], ["Finance and Operations", 8], ["People", 9], ["Marketing", 3]];
+const LAYOUTS = [["a", "A · One competency as a ladder"], ["b", "B · One level across them all"], ["c", "C · The map, read beside it"]];
+const SITS = [["drafts", "Drafts to look at"], ["before", "Before drafting"]];
+
+const ui = { layout: "a", sit: "drafts", comp: 2, level: 1, editing: null, applied: {}, gone: {}, written: {}, pick: null, note: "" };
+const key = (c, l) => c + "-" + l;
+function cell(c, l) {
+  const k = key(c, l);
+  if (ui.written[k]) return { s: "w", t: ui.written[k] };
+  const w = W.find((x) => x[0] === c && x[1] === l); if (w) return { s: "w", t: w[2] };
+  const d = D.find((x) => x[0] === c && x[1] === l);
+  if (d && ui.applied[k]) return { s: "w", t: d[2] };
+  if (d && ui.sit === "drafts" && !ui.gone[k]) return { s: "d", t: d[2] };
+  return { s: "e" };
+}
+const initials = (n) => n.split(" ").map((p) => p[0]).slice(0, 2).join("");
+const first = (n) => n.split(" ")[0];
+const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+const SPARK = `<svg class="spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/></svg>`;
+const PLUS = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>`;
+const UP = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>`;
+
+function body(c, l, cls, small) {
+  const x = cell(c, l), k = key(c, l), lab = `${COMPS[c].name}, ${LEVELS[l].label}`;
+  if (ui.editing === k) return `<div class="${cls} w" style="padding:6px"><textarea class="edit" id="ed-${k}" aria-label="${esc(lab)}" data-k="${k}">${esc(x.t ?? "")}</textarea></div>`;
+  if (x.s === "w") return `<div class="${cls} w"><span class="words${small ? " sm" : ""}">${esc(x.t)}</span></div>`;
+  if (x.s === "d") return `<div class="${cls} draft"><span class="words${small ? " sm" : ""}">${esc(x.t)}</span><span class="dacts">${SPARK}<button class="apply" data-act="apply" data-k="${k}">Apply</button><button class="x" data-act="gone" data-k="${k}" aria-label="Dismiss the draft for ${esc(lab)}">×</button></span></div>`;
+  return `<div class="${cls} empty stripes"><button class="write" data-act="write" data-k="${k}" aria-label="Write ${esc(lab)}">${PLUS}Write</button></div>`;
+}
+function counts() {
+  let d = 0, e = 0;
+  COMPS.forEach((_, c) => LEVELS.forEach((_, l) => { const s = cell(c, l).s; if (s === "d") d++; if (s === "e") e++; }));
+  return { d, e };
+}
+function headActs() {
+  const { d, e } = counts();
+  if (ui.sit === "drafts" && d) return `<span class="meta">${d} ${d === 1 ? "draft" : "drafts"} to look at</span><button class="btn" data-act="applyAll">Apply all ${d}</button>`;
+  if (!e) return `<span class="meta ok">Every level set</span>`;
+  return `<button class="btn" data-act="sit" data-v="drafts">${SPARK}Draft the empty ones</button><button class="btn ghost">${UP}Use your own file</button>`;
+}
+
+function layoutA() {
+  const list = COMPS.map((cp, c) => `<button class="a-item ${ui.comp === c ? "on" : ""}" style="--c:var(${cp.c})" data-act="comp" data-v="${c}" aria-current="${ui.comp === c}">
+    <span class="row"><span class="hue"></span><span class="cname">${esc(cp.name)}</span></span>
+    <span class="pips">${LEVELS.map((_, l) => `<i class="${cell(c, l).s === "w" ? "w" : cell(c, l).s === "d" ? "d" : ""}"></i>`).join("")}</span></button>`).join("");
+  const cp = COMPS[ui.comp];
+  const rungs = LEVELS.map((lv, l) => `<div class="rung" style="--c:var(${cp.c});--i:${l}">
+      <div class="lv"><b>${lv.label}</b><span class="who"><span class="face">${initials(lv.who)}</span>${lv.people} ${lv.people === 1 ? "person" : "people"}</span></div>
+      ${body(ui.comp, l, "body")}</div>`).join("");
+  return `<div class="a-wrap"><div class="a-list">${list}</div>
+    <div class="a-main" style="--c:var(${cp.c})"><div class="a-title"><h3 class="cname"><span class="hue"></span>${esc(cp.name)}</h3><span class="cmean">${esc(cp.mean)}</span></div>
+    <div class="ladder">${rungs}</div></div></div>`;
+}
+function layoutB() {
+  const track = LEVELS.map((lv, l) => `<button class="tstep ${ui.level === l ? "on" : ""}" data-act="level" data-v="${l}" aria-pressed="${ui.level === l}"><b>${lv.label}</b><span class="meta">${lv.people} ${lv.people === 1 ? "person" : "people"}</span></button>`).join("");
+  const l = ui.level, prev = LEVELS[l - 1], next = LEVELS[l + 1];
+  const near = (c, i, lab) => { if (!LEVELS[i]) return ""; const x = cell(c, i); return `<div><span class="meta">${lab}, ${LEVELS[i].label}</span>${x.s === "e" ? `<span class="stripes" style="height:10px;border-radius:5px;display:block;margin-top:5px"></span>` : `<span class="words">${esc(x.t)}</span>`}</div>`; };
+  const rows = COMPS.map((cp, c) => `<div class="brow" style="--c:var(${cp.c})">
+      <div class="id"><span class="row"><span class="hue"></span><span class="cname">${esc(cp.name)}</span></span><span class="cmean">${esc(cp.mean)}</span></div>
+      ${body(c, l, "here")}
+      <div class="near">${near(c, l - 1, "Below")}${near(c, l + 1, "Next")}</div></div>`).join("");
+  return `<div class="track">${track}</div>
+    <div class="who" style="margin-top:-4px"><span class="face">${initials(LEVELS[l].who)}</span>Lands in ${first(LEVELS[l].who)}'s review${LEVELS[l].people > 1 ? ` and ${LEVELS[l].people - 1} more` : ""}</div>
+    <div class="blist">${rows}</div>`;
+}
+function layoutC() {
+  const head = `<span></span>${LEVELS.map((lv) => `<span class="lh">${lv.label}<small>${lv.people}</small></span>`).join("")}`;
+  const rows = COMPS.map((cp, c) => `<span class="cn" style="--c:var(${cp.c})"><span class="hue"></span><span class="cname">${esc(cp.name)}</span></span>` +
+    LEVELS.map((lv, l) => { const x = cell(c, l); return `<button class="tile ${x.s === "w" ? "w" : x.s === "d" ? "d" : "stripes"} ${ui.comp === c && ui.level === l ? "on" : ""}" style="--c:var(${cp.c})" data-act="tile" data-c="${c}" data-l="${l}" aria-label="${esc(cp.name)}, ${lv.label}"></button>`; }).join("")).join("");
+  const cp = COMPS[ui.comp], lv = LEVELS[ui.level];
+  const lvls = LEVELS.map((v, l) => { const x = cell(ui.comp, l); return `<button class="${ui.level === l ? "on" : ""}" data-act="tile" data-c="${ui.comp}" data-l="${l}"><span class="meta">${v.label}</span>${x.s === "e" ? `<span class="nil stripes"></span>` : `<span class="words sm" style="${x.s === "d" ? "color:var(--ai)" : ""}">${esc(x.t)}</span>`}</button>`; }).join("");
+  return `<div class="c-wrap"><div style="display:grid;gap:16px;min-width:0"><div class="map">${head}${rows}</div>
+      <div class="legend"><span><i style="background:color-mix(in oklab,var(--h3) 30%,var(--card))"></i>Written</span><span><i style="background:color-mix(in oklab,var(--ai) 14%,var(--card));box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--ai) 40%,transparent)"></i>Drafted</span><span><i class="stripes"></i>Empty</span></div></div>
+    <aside class="side" style="--c:var(${cp.c})"><div style="display:grid;gap:4px"><h3 class="cname" style="display:flex;gap:10px;align-items:center;font-size:21px"><span class="hue"></span>${esc(cp.name)}</h3><span class="cmean">${esc(cp.mean)}</span></div>
+      <div class="big"><span class="who"><span class="face">${initials(lv.who)}</span>${lv.label} · lands in ${first(lv.who)}'s review</span>${body(ui.comp, ui.level, "here", false).replace('class="here', 'style="display:flex;gap:12px;align-items:center;border-radius:12px;padding:0;min-height:40px" class="here')}</div>
+      <div class="lvls">${lvls}</div></aside></div>`;
+}
+
+function render() {
+  document.getElementById("layouts").innerHTML = LAYOUTS.map(([k, l]) => `<button data-layout="${k}" aria-pressed="${ui.layout === k}">${l}</button>`).join("");
+  document.getElementById("sits").innerHTML = SITS.map(([k, l]) => `<button data-sit="${k}" aria-pressed="${ui.sit === k}">${l}</button>`).join("");
+  const theme = document.documentElement.dataset.theme || "system";
+  document.getElementById("theme").innerHTML = [["system", "System"], ["light", "Light"], ["dark", "Dark"]].map(([k, l]) => `<button data-theme-pick="${k}" aria-pressed="${theme === k}">${l}</button>`).join("");
+  const fam = `<div class="fam">${FAMS.map(([n, p]) => `<div class="${n === "Engineering" ? "on" : ""}"><span>${n}</span><span>${p}</span></div>`).join("")}</div>`;
+  const view = ui.layout === "a" ? layoutA() : ui.layout === "b" ? layoutB() : layoutC();
+  const opts = LAYOUTS.map(([k, l]) => `<button class="opt" data-pick="${k}" aria-pressed="${ui.pick === k}">${l}${k === "a" ? "<small>Recommended</small>" : ""}</button>`).join("");
+  document.getElementById("page").innerHTML = `
+    <span class="crumbs">Settings › Performance › Competencies</span><h1>Competencies</h1>
+    <section class="card"><div class="head"><h2>Engineering, level by level</h2><div class="acts">${headActs()}</div></div>
+      <div class="frame">${fam}<div style="display:grid;gap:18px;min-width:0">${view}</div></div></section>
+    <section class="ask" aria-labelledby="ask-h"><h2 id="ask-h">Which layout?</h2><div class="opts">${opts}</div>
+      <label class="meta" for="note">Anything to change</label><textarea id="note" placeholder="What to keep, what to change">${esc(ui.note)}</textarea>
+      <span class="saved" id="saved" aria-live="polite"></span></section>`;
+  if (ui.editing) { const ed = document.getElementById("ed-" + ui.editing); if (ed) { ed.focus(); ed.selectionStart = ed.value.length; } }
+}
+
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.layout) { ui.layout = b.dataset.layout; ui.editing = null; return render(); }
+  if (b.dataset.sit) { ui.sit = b.dataset.sit; ui.applied = {}; ui.gone = {}; return render(); }
+  if (b.dataset.themePick) { const v = b.dataset.themePick; if (v === "system") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = v; return render(); }
+  if (b.dataset.pick) { ui.pick = b.dataset.pick; render(); return save(); }
+  const a = b.dataset.act, k = b.dataset.k;
+  if (a === "comp") ui.comp = +b.dataset.v;
+  else if (a === "level") ui.level = +b.dataset.v;
+  else if (a === "tile") { ui.comp = +b.dataset.c; ui.level = +b.dataset.l; }
+  else if (a === "apply") ui.applied[k] = true;
+  else if (a === "gone") ui.gone[k] = true;
+  else if (a === "applyAll") D.forEach(([c, l]) => { if (!ui.gone[key(c, l)]) ui.applied[key(c, l)] = true; });
+  else if (a === "write") ui.editing = k;
+  else if (a === "sit") ui.sit = b.dataset.v;
+  else return;
+  render();
+});
+document.addEventListener("keydown", (e) => {
+  const t = e.target; if (!t.classList?.contains("edit")) return;
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (t.value.trim()) ui.written[t.dataset.k] = t.value.trim(); ui.editing = null; render(); }
+  if (e.key === "Escape") { ui.editing = null; render(); }
+});
+document.addEventListener("focusout", (e) => {
+  const t = e.target;
+  if (t.classList?.contains("edit")) { setTimeout(() => { if (ui.editing === t.dataset.k) { if (t.value.trim()) ui.written[t.dataset.k] = t.value.trim(); ui.editing = null; render(); } }, 120); }
+  if (t.id === "note" && t.value !== ui.note) { ui.note = t.value; save(); }
+});
+
+let doc = null;
+async function save() {
+  const el = document.getElementById("saved");
+  if (!doc) { if (el) el.textContent = "Your pick shows here, but this view can't save it."; return; }
+  try { await doc.set({ pick: ui.pick, note: ui.note, at: new Date().toISOString() }); if (el) el.textContent = "Saved"; }
+  catch { if (el) el.textContent = "Not saved. Try again."; }
+}
+render();
+(async () => {
+  try {
+    const db = await window.claude?.use?.("db");
+    if (!db) return;
+    doc = db.doc("answers/main");
+    const snap = await doc.get();
+    const data = snap.data();
+    if (data) { ui.pick = typeof data.pick === "string" ? data.pick : null; ui.note = typeof data.note === "string" ? data.note : ""; render(); }
+  } catch { doc = null; }
+})();
+</script>

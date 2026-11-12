@@ -229,5 +229,7 @@ public sealed class RelationalNotificationTests
             => Task.FromResult<IReadOnlyList<WorkforceSnapshot>>([]);
         public Task<IReadOnlyList<WorkforceSnapshot>> SearchAsync(DateTime asOf, string term, int limit, CancellationToken cancellationToken)
             => throw new NotSupportedException();
+        public Task<JobCatalogue> GetJobCatalogueAsync(CancellationToken cancellationToken)
+            => throw new NotSupportedException();
     }
 }

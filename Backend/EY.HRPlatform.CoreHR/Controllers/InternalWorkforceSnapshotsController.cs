@@ -86,6 +86,15 @@ public sealed class InternalWorkforceSnapshotsController(
             cancellationToken));
     }
 
+    [HttpPost("job-catalogue")]
+    public async Task<ActionResult<InternalJobCatalogueDto>> GetJobCatalogue(CancellationToken cancellationToken)
+    {
+        if (!await authorizer.AuthorizeAsync(Request, cancellationToken))
+            return Unauthorized();
+
+        return Ok(await workforceSnapshotService.GetJobCatalogueAsync(cancellationToken));
+    }
+
     [HttpPost("search")]
     public async Task<ActionResult<IReadOnlyList<InternalWorkforceEmployeeSnapshotDto>>> Search(
         [FromBody] InternalWorkforceSearchRequest request,

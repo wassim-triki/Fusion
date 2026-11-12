@@ -5,6 +5,7 @@ using EY.HRPlatform.CoreHR.Features.CompanyImport;
 using EY.HRPlatform.CoreHR.Features.Organization;
 using EY.HRPlatform.CoreHR.Features.Workforce.Services;
 using EY.HRPlatform.CoreHR.Infrastructure.Imports;
+using EY.HRPlatform.SharedKernel.Imports;
 using EY.HRPlatform.CoreHR.Infrastructure.Persistence;
 using EY.HRPlatform.CoreHR.Tests.Features.Organization;
 using EY.HRPlatform.CoreHR.Tests.TestHelpers;

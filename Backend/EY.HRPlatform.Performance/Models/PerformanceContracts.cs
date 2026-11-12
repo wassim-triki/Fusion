@@ -90,6 +90,31 @@ public sealed record UpdateCompetencyRequest([property: System.Text.Json.Seriali
     string Name, string Description, IReadOnlyList<string>? Behaviors);
 public sealed record CompetencyVersionRequest([property: System.Text.Json.Serialization.JsonRequired] uint ExpectedVersion);
 
+/// <summary>Competencies by job (D-41): Core HR's job families with the levels their jobs use, and what each competency asks of each.</summary>
+public sealed record CompetenciesByJobDto(IReadOnlyList<JobFamilyDto> Families, IReadOnlyList<CompetencyDto> Competencies,
+    IReadOnlyList<CompetencyExpectationDto> Expectations, bool CanDraft);
+/// <summary>A family with its people today and its levels, lowest first.</summary>
+public sealed record JobFamilyDto(Guid Id, string Label, int People, IReadOnlyList<JobLevelDto> Levels);
+/// <summary>A level, with someone who holds it in this family today (where an expectation lands), when anyone does.</summary>
+public sealed record JobLevelDto(Guid Id, string Label, int People, JobLevelPersonDto? Example);
+public sealed record JobLevelPersonDto(Guid EmployeeId, string DisplayName, string? PhotoUrl);
+public sealed record CompetencyExpectationDto(Guid CompetencyId, Guid FamilyId, Guid LevelId, string Text, string Source);
+
+/// <summary>Cells of one family to write; an empty text clears the cell.</summary>
+public sealed record SaveCompetencyExpectationsRequest(Guid FamilyId, IReadOnlyList<CompetencyExpectationCellRequest> Cells);
+public sealed record CompetencyExpectationCellRequest(Guid CompetencyId, Guid LevelId, string? Text, string Source);
+public sealed record DraftCompetencyExpectationsRequest(Guid FamilyId);
+
+/// <summary>Proposed words for cells, not saved: drafted from the jobs, or read from the company's own file.</summary>
+public sealed record CompetencyExpectationProposalsDto(IReadOnlyList<CompetencyExpectationProposalDto> Cells)
+{
+    /// <summary>The file read, how many of the family's cells it filled, and the rows and columns it couldn't place.</summary>
+    public string? FileName { get; init; }
+    public int Of { get; init; }
+    public IReadOnlyList<string> Unread { get; init; } = [];
+}
+public sealed record CompetencyExpectationProposalDto(Guid CompetencyId, Guid LevelId, string Text);
+
 public sealed record ReviewQuestionDto(Guid Id, string Text, ReviewQuestionAudience Audience, int SortOrder,
     ReviewQuestionState State, DateTime? FirstUsedAt, uint Version)
 {

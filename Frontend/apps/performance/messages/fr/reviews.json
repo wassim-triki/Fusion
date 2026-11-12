@@ -885,7 +885,9 @@
     "answered": "A répondu",
     "declined": "A décliné",
     "remove": "Ne plus solliciter {name}",
-    "addSomeone": "Ajouter quelqu'un"
+    "addSomeone": "Ajouter quelqu'un",
+    "expectedAt": "Ce que demande le niveau {level}",
+    "nextLevelAsks": "Le niveau suivant, {level}"
   },
   "Letter": {
     "from": "De {name}, publiée le {day}",

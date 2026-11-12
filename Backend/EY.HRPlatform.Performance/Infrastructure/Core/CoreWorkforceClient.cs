@@ -42,6 +42,9 @@ public interface ICoreWorkforceClient
         string term,
         int limit,
         CancellationToken cancellationToken);
+
+    /// <summary>The company's job families and levels, and which levels each family's jobs use.</summary>
+    Task<JobCatalogue> GetJobCatalogueAsync(CancellationToken cancellationToken);
 }
 
 public sealed class CoreWorkforceClient(
@@ -126,6 +129,12 @@ public sealed class CoreWorkforceClient(
             cancellationToken);
     }
 
+    public async Task<JobCatalogue> GetJobCatalogueAsync(CancellationToken cancellationToken)
+    {
+        using var response = await SendAsync($"{BasePath}/job-catalogue", new { }, cancellationToken);
+        return await response.Content.ReadFromJsonAsync<JobCatalogue>(cancellationToken: cancellationToken) ?? new JobCatalogue([], [], []);
+    }
+
     private Task<IReadOnlyList<WorkforceSnapshot>> PostAsync<TRequest>(
         string path,
         TRequest body,
@@ -136,6 +145,13 @@ public sealed class CoreWorkforceClient(
         string path,
         TRequest body,
         CancellationToken cancellationToken)
+    {
+        using var response = await SendAsync(path, body, cancellationToken);
+        var snapshots = await response.Content.ReadFromJsonAsync<List<TResponse>>(cancellationToken: cancellationToken);
+        return snapshots ?? [];
+    }
+
+    private async Task<HttpResponseMessage> SendAsync<TRequest>(string path, TRequest body, CancellationToken cancellationToken)
     {
         if (!tenantContext.IsResolved)
             throw new InvalidOperationException("A resolved tenant context is required to read Core workforce truth.");
@@ -152,10 +168,12 @@ public sealed class CoreWorkforceClient(
 
         await signer.SignAsync(request, cancellationToken);
 
-        using var response = await httpClient.SendAsync(request, cancellationToken);
-        response.EnsureSuccessStatusCode();
-
-        var snapshots = await response.Content.ReadFromJsonAsync<List<TResponse>>(cancellationToken: cancellationToken);
-        return snapshots ?? [];
+        var response = await httpClient.SendAsync(request, cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            response.Dispose();
+            throw new HttpRequestException($"Core HR answered {(int)response.StatusCode}.", null, response.StatusCode);
+        }
+        return response;
     }
 }

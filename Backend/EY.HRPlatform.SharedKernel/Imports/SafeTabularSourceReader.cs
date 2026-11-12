@@ -7,8 +7,9 @@ using CsvHelper.Configuration;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Http;
 
-namespace EY.HRPlatform.CoreHR.Infrastructure.Imports;
+namespace EY.HRPlatform.SharedKernel.Imports;
 
 /// <summary>
 /// Domain-neutral safe reader for CSV/XLSX tabular sources. Bounded read,

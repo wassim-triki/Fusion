@@ -12,6 +12,9 @@ import {
   type CreateOrganizationalObjectiveRequest,
   type CreateStrategicObjectiveRequest,
   type CompetencyDto,
+  type CompetenciesByJobDto,
+  type SaveCompetencyExpectationsRequest,
+  fusionSettingsQueryKeys,
   type CreateCompetencyRequest,
   type UpdateCompetencyRequest,
   type UpdateRatingScaleRequest,
@@ -116,6 +119,32 @@ export function useUpdateRatingScale() {
 export function useCompetencies(enabled = true) {
   const { performance } = useApis();
   return useApiQuery(performanceQueryKeys.competencies(), (signal) => performance.getCompetencies(signal), { enabled });
+}
+
+/** Competencies by job (D-41): Core HR's families and levels with what each competency asks of each. */
+export function useCompetenciesByJob(enabled = true) {
+  const { performance } = useApis();
+  return useApiQuery(performanceQueryKeys.competenciesByJob(), (signal) => performance.getCompetenciesByJob(signal), { enabled });
+}
+
+/** Writes a family's cells (the answer replaces that family's in the cache), drafts its empty ones, or reads a file into it. */
+export function useCompetencyExpectationMutations() {
+  const { performance } = useApis();
+  const cache = useApiQueryClient();
+  return {
+    save: usePerformanceMutation((request: SaveCompetencyExpectationsRequest) => performance.saveCompetencyExpectations(request), {
+      onSuccess: (saved, request) => {
+        cache.setQueryData<CompetenciesByJobDto>(performanceQueryKeys.competenciesByJob(), (current) =>
+          current
+            ? { ...current, expectations: [...current.expectations.filter((item) => item.familyId !== request.familyId), ...saved] }
+            : current
+        );
+        void cache.invalidateQueries({ queryKey: fusionSettingsQueryKeys.all() });
+      },
+    }),
+    draft: usePerformanceMutation((familyId: string) => performance.draftCompetencyExpectations(familyId)),
+    read: usePerformanceMutation(({ familyId, file }: { familyId: string; file: File }) => performance.readCompetencyExpectations(familyId, file)),
+  };
 }
 
 export function useCompetencyMutations() {

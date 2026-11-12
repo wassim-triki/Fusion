@@ -4,6 +4,7 @@ using EY.HRPlatform.Performance.Features.Security;
 using EY.HRPlatform.Performance.Features.Settings;
 using EY.HRPlatform.Performance.Models;
 using EY.HRPlatform.SharedKernel.Api;
+using EY.HRPlatform.SharedKernel.Imports;
 using EY.HRPlatform.SharedKernel.Notifications;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -163,6 +164,42 @@ public sealed class SettingsController(IMediator mediator, IPerformanceAccessPol
     {
         if (!policy.CanManageSettings(User)) return CapabilityForbidden();
         return MapResult(await mediator.Send(new DeleteReviewQuestionCommand(id, request), cancellationToken));
+    }
+
+    /// <summary>Competencies by job (D-41): Core HR's families and levels and what each competency asks of each.</summary>
+    [HttpGet("competencies/by-job")]
+    public async Task<ActionResult<ApiResponse<CompetenciesByJobDto>>> CompetenciesByJob(CancellationToken cancellationToken)
+    {
+        if (!policy.CanViewSettings(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new GetCompetenciesByJobQuery(), cancellationToken));
+    }
+
+    [HttpPut("competencies/expectations")]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<CompetencyExpectationDto>>>> SaveExpectations(
+        [FromBody] SaveCompetencyExpectationsRequest request, CancellationToken cancellationToken)
+    {
+        if (!policy.CanManageSettings(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new SaveCompetencyExpectationsCommand(request), cancellationToken));
+    }
+
+    /// <summary>Words for a family's empty cells drafted from its jobs; nothing is saved until a person applies them.</summary>
+    [HttpPost("competencies/expectations/draft")]
+    public async Task<ActionResult<ApiResponse<CompetencyExpectationProposalsDto>>> DraftExpectations(
+        [FromBody] DraftCompetencyExpectationsRequest request, CancellationToken cancellationToken)
+    {
+        if (!policy.CanManageSettings(User)) return CapabilityForbidden();
+        return MapResult(await mediator.Send(new DraftCompetencyExpectationsCommand(request.FamilyId), cancellationToken));
+    }
+
+    /// <summary>The company's own framework file read into a family's cells; nothing is saved until a person uses them.</summary>
+    [HttpPost("competencies/expectations/read")]
+    [RequestSizeLimit(SafeTabularSourceReader.MaxFileBytes + 4096)]
+    public async Task<ActionResult<ApiResponse<CompetencyExpectationProposalsDto>>> ReadExpectations(
+        [FromForm] Guid familyId, IFormFile file, CancellationToken cancellationToken)
+    {
+        if (!policy.CanManageSettings(User)) return CapabilityForbidden();
+        await using var stream = file.OpenReadStream();
+        return MapResult(await mediator.Send(new ReadCompetencyExpectationsCommand(familyId, stream, file.FileName, file.ContentType), cancellationToken));
     }
 
     [HttpDelete("competencies/{id:guid}")]

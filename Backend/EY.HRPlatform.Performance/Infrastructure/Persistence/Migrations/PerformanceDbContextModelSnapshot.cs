@@ -3439,6 +3439,64 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                     b.ToTable("Competencies", "performance");
                 });
 
+            modelBuilder.Entity("EY.HRPlatform.Performance.Domain.Settings.CompetencyExpectation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CompetencyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("LevelId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompetencyId");
+
+                    b.HasIndex("TenantId", "FamilyId");
+
+                    b.HasIndex("TenantId", "CompetencyId", "FamilyId", "LevelId")
+                        .IsUnique();
+
+                    b.ToTable("CompetencyExpectations", "performance");
+                });
+
             modelBuilder.Entity("EY.HRPlatform.Performance.Domain.Settings.CycleSettings", b =>
                 {
                     b.Property<Guid>("Id")
@@ -4181,6 +4239,15 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                     b.HasOne("EY.HRPlatform.Performance.Domain.Reviews.ReviewRound", null)
                         .WithMany()
                         .HasForeignKey("ReviewRoundId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("EY.HRPlatform.Performance.Domain.Settings.CompetencyExpectation", b =>
+                {
+                    b.HasOne("EY.HRPlatform.Performance.Domain.Settings.Competency", null)
+                        .WithMany()
+                        .HasForeignKey("CompetencyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

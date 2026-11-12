@@ -1,3 +1,4 @@
+using EY.HRPlatform.Performance.Infrastructure.Core;
 using EY.HRPlatform.Performance.Domain.Common;
 using EY.HRPlatform.Performance.Domain.Conversations;
 using EY.HRPlatform.Performance.Domain.Notifications;
@@ -26,6 +27,9 @@ public sealed record ReviewItemAssessmentDto(ReviewItemKind Kind, Guid ItemId, s
 {
     /// <summary>The objective's latest reported status.</summary>
     public ObjectiveStatus? Status { get; init; }
+    /// <summary>A competency's expectation at the person's job family and level today, and the next level's (D-41).</summary>
+    public ReviewLevelExpectationDto? Expectation { get; init; }
+    public ReviewLevelExpectationDto? NextExpectation { get; init; }
     /// <summary>Recent feedback about the objective the reader may see (shared, or addressed to them as manager).</summary>
     public IReadOnlyList<ReviewObjectiveFeedbackDto> Feedback { get; init; } = [];
     /// <summary>A goal's grade read from its measure (D-38) and its plan weight; each side may change the grade with a reason.</summary>
@@ -266,7 +270,11 @@ public static class ReviewComposer
         => new(value.Summary, isSubject ? null : value.OverallRating, value.SavedAt, value.SubmittedAt);
 }
 
-public sealed class GetPerformanceReviewHandler(PerformanceDbContext db)
+/// <summary>What a competency asks at a level, with the level's name.</summary>
+public sealed record ReviewLevelExpectationDto(string Level, string Text);
+
+/// <remarks>Without <paramref name="workforce"/> (the PDF, finalization and peers' compositions) competencies come without expectations.</remarks>
+public sealed class GetPerformanceReviewHandler(PerformanceDbContext db, ICoreWorkforceClient? workforce = null)
     : IQueryHandler<GetPerformanceReviewQuery, Result<PerformanceReviewDto>>
 {
     public async Task<Result<PerformanceReviewDto>> Handle(GetPerformanceReviewQuery query, CancellationToken token)
@@ -314,6 +322,8 @@ public sealed class GetPerformanceReviewHandler(PerformanceDbContext db)
         var responses = await db.ReviewItemResponses.AsNoTracking().Where(item => item.ReviewId == review.Id).ToListAsync(token);
         var responseMap = responses.ToDictionary(item => (item.Kind, item.ItemId));
         var competencySnapshot = ReadCompetencies(round.ConfigSnapshotJson);
+        var expectations = competencySnapshot.Count == 0 || workforce is null ? new Dictionary<Guid, (ReviewLevelExpectationDto? Here, ReviewLevelExpectationDto? Next)>()
+            : await ExpectationsAsync(review.SubjectEmployeeId, competencySnapshot.Select(item => item.Id).ToArray(), token);
         var viewer = actor.IsAdministrator && !visibility.IsReviewer ? Guid.Empty : actor.EmployeeId;
         var objectiveFeedback = objectiveIds.Length == 0 || actor.IsCalibrationFacilitator && !visibility.IsReviewer && !visibility.IsSubject
             ? [] : await VisibleFeedback(review.SubjectEmployeeId, viewer)
@@ -350,7 +360,11 @@ public sealed class GetPerformanceReviewHandler(PerformanceDbContext db)
             responseMap.TryGetValue((ReviewItemKind.Competency, competency.Id), out var response);
             return new ReviewItemAssessmentDto(ReviewItemKind.Competency, competency.Id, competency.Name, competency.Description,
                 competency.Behaviors, null, false, null, 0, [], response?.SelfReflection, response?.SelfRating,
-                response?.SelfComment, response?.ManagerAssessment, response?.ManagerRating);
+                response?.SelfComment, response?.ManagerAssessment, response?.ManagerRating)
+            {
+                Expectation = expectations.TryGetValue(competency.Id, out var expected) ? expected.Here : null,
+                NextExpectation = expectations.TryGetValue(competency.Id, out var next) ? next.Next : null,
+            };
         })).ToArray();
         var extras = await ExtrasAsync(review, token);
         var dto = ReviewComposer.Compose(review, round, actor, plan is not null, items, calibration, ratingScaleVersion.Number, extras);
@@ -361,6 +375,41 @@ public sealed class GetPerformanceReviewHandler(PerformanceDbContext db)
             Year = await YearAsync(review, round, viewer, token),
             TalkItOverAt = visibility.IsSubject && review.State == PerformanceReviewState.Finalized ? await TalkItOverAsync(review, token) : null,
             Activity = visibility.IsAdministrator || actor.IsAdministrator && visibility.IsReviewer ? await ActivityAsync(review, token) : [],
+        });
+    }
+
+    /// <summary>
+    /// Per competency, what it asks at the person's job family and level today and at the next level. Read live from
+    /// Core HR: a person promoted since the round opened reads their new level. Core HR unreachable leaves them out.
+    /// </summary>
+    private async Task<Dictionary<Guid, (ReviewLevelExpectationDto? Here, ReviewLevelExpectationDto? Next)>> ExpectationsAsync(
+        Guid employeeId, IReadOnlyCollection<Guid> competencyIds, CancellationToken token)
+    {
+        var none = new Dictionary<Guid, (ReviewLevelExpectationDto? Here, ReviewLevelExpectationDto? Next)>();
+        WorkforceSnapshot? person;
+        JobCatalogue catalogue;
+        try
+        {
+            person = (await workforce!.ResolveAsync(PerformanceClock.UtcNow, [employeeId], token)).FirstOrDefault();
+            if (person?.JobFamilyId is not Guid familyId || person.LevelId is not Guid levelId) return none;
+            if (!await db.CompetencyExpectations.AsNoTracking().AnyAsync(item => item.FamilyId == familyId, token)) return none;
+            catalogue = await workforce.GetJobCatalogueAsync(token);
+        }
+        catch (HttpRequestException) { return none; }
+        var family = person.JobFamilyId!.Value;
+        var level = catalogue.Levels.FirstOrDefault(item => item.Id == person.LevelId);
+        if (level is null) return none;
+        var nextLevel = catalogue.NextLevel(family, level.Id);
+        var rows = await db.CompetencyExpectations.AsNoTracking()
+            .Where(item => item.FamilyId == family && competencyIds.Contains(item.CompetencyId)
+                && (item.LevelId == level.Id || nextLevel != null && item.LevelId == nextLevel.Id))
+            .ToListAsync(token);
+        return competencyIds.ToDictionary(id => id, id =>
+        {
+            var here = rows.FirstOrDefault(item => item.CompetencyId == id && item.LevelId == level.Id);
+            var next = nextLevel is null ? null : rows.FirstOrDefault(item => item.CompetencyId == id && item.LevelId == nextLevel.Id);
+            return (here is null ? null : new ReviewLevelExpectationDto(level.Label, here.Text),
+                next is null ? null : new ReviewLevelExpectationDto(nextLevel!.Label, next.Text));
         });
     }
 

@@ -6,7 +6,6 @@ import { createPerformanceApi, createPlatformApiClient, performanceQueryKeys, ty
 import { useApiQuery, useFieldVisibility } from "@repo/api/query";
 import { useFusionViewer } from "@repo/api/react";
 import {
-  ChartNoAxesColumn,
   CalendarRange,
   FeedbackIcon,
   FileCheck2,
@@ -32,7 +31,6 @@ import {
   canSeeCoreSettingsNavigation,
   canSeeWholeCoreOrgChart,
   canViewCoreOrganization,
-  canViewCoreReports,
 } from "./roles";
 
 /**
@@ -74,7 +72,6 @@ type NavLabel =
   | "people"
   | "organization"
   | "changes"
-  | "reports"
   | "goals"
   | "oneOnOnes"
   | "feedback"
@@ -102,7 +99,6 @@ export function useCorePages(): ModulePages {
         Stamp,
         canApproveCoreChanges(user) || canProposeCoreChanges(user) || canManageCoreEmployees(user),
       ),
-      ...page("reports", "/reports", ChartNoAxesColumn, canViewCoreReports(user)),
     ];
     return { items, pending: isLoading, settings: canSeeCoreSettingsNavigation(user) };
   }, [t, user, isLoading, orgChart.canSee]);

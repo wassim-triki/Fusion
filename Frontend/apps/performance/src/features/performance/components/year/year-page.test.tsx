@@ -80,6 +80,21 @@ describe("The Year page", () => {
     expect(screen.getByText("0 of 99 put forward")).toBeTruthy();
   });
 
+  it("once a year has ended with its results out, its administrator lands on Insights, unless they picked the year (D-89)", () => {
+    const replace = vi.fn();
+    vi.stubGlobal("location", { ...window.location, replace });
+    m.year = year({ phase: "ResultsOut", today: "2027-04-26", nextMove: null });
+    const { unmount } = render(<YearPage />);
+    expect(replace).toHaveBeenCalledWith("/core/insights/performance");
+    unmount();
+    replace.mockReset();
+    m.search = "cycle=fy27";
+    render(<YearPage />);
+    expect(replace).not.toHaveBeenCalled();
+    expect(screen.getByRole("heading", { name: "FY2027" })).toBeTruthy();
+    vi.unstubAllGlobals();
+  });
+
   it("HR nudges everyone still to put a plan forward, by standing, then has nothing to do", async () => {
     m.year = year({ planning: [group("notStarted", ["Elyes Jaziri"], 14), group("drafting", ["Rim Mahjoub"], 22), group("submitted", ["Aicha Bouazizi"], 21)], execution: [group("updated", ["Fares Lachheb"], 42)] });
     render(<YearPage />);

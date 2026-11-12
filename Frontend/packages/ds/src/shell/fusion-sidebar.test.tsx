@@ -103,6 +103,18 @@ describe("FusionSidebar", () => {
     expect(within(nav).getAllByRole("link", { name: "Overview" }).map((link) => link.getAttribute("aria-current"))).toEqual([null, null]);
   });
 
+  it("Insights sits under Home for who has it, current on its pages though Core HR serves them (D-88)", () => {
+    const { unmount } = renderSidebar();
+    expect(screen.queryByRole("link", { name: "Insights" })).toBeNull();
+    unmount();
+    renderSidebar({ insights: true, currentModuleKey: "core", basePath: "/core", activePath: "/insights/performance" });
+    const nav = screen.getByRole("complementary", { name: "Fusion navigation" });
+    const insights = within(nav).getByRole("link", { name: "Insights" });
+    expect(insights).toHaveAttribute("href", "/core/insights");
+    expect(insights).toHaveAttribute("aria-current", "page");
+    expect(within(nav).getByRole("link", { name: /Home/ })).not.toHaveAttribute("aria-current");
+  });
+
   it("offers Settings at the end only when asked", () => {
     const { unmount } = renderSidebar();
     expect(screen.queryByRole("link", { name: "Settings" })).not.toBeInTheDocument();

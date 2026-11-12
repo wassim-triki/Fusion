@@ -16,6 +16,7 @@ import {
   FileCheck2,
   History,
   Home,
+  ChartNoAxesColumn,
   List,
   ListChecks,
   Lock,
@@ -49,6 +50,9 @@ import type {
 
 /** Where Fusion Settings opens: Preferences, served by the shell. */
 const SETTINGS_HREF = "/settings";
+
+/** Where Insights opens (D-88): served by Core HR. */
+const INSIGHTS_HREF = "/core/insights";
 
 /**
  * The page "Back to …" returns to, kept for the browser session: the key `@repo/api`'s `readSettingsReturn`
@@ -222,6 +226,7 @@ export function FusionSidebar({
   tenantLogoUrl,
   brandColor,
   homeCount,
+  insights = false,
   modules,
   currentModuleKey,
   basePath = "",
@@ -238,7 +243,9 @@ export function FusionSidebar({
   const [animate, setAnimate] = useState(false);
   useCompanyColor(brandColor);
   const inSettings = mode === "settings" && settings !== undefined;
-  const onHome = !currentModuleKey && !inSettings;
+  // Insights (D-88) is Fusion's one dashboard, beside Home rather than inside a module, though Core HR serves it.
+  const onInsights = !inSettings && absolutePath(basePath, activePath).startsWith(INSIGHTS_HREF);
+  const onHome = !currentModuleKey && !inSettings && !onInsights;
 
   // Ctrl+B (⌘B) folds or opens it from anywhere but a text field, where the keys belong to the writing.
   const collapsedRef = useRef(collapsed);
@@ -386,6 +393,23 @@ export function FusionSidebar({
                   <Count value={homeCount} collapsed={collapsed} />
                 </a>,
               )}
+
+              {insights
+                ? withTooltip(
+                    collapsed,
+                    t("insights"),
+                    <a
+                      href={INSIGHTS_HREF}
+                      aria-current={onInsights ? "page" : undefined}
+                      aria-label={collapsed ? t("insights") : undefined}
+                      className={cn(rowClass(onInsights, collapsed), "mt-0.5")}
+                    >
+                      <ActiveMark active={onInsights} />
+                      <ChartNoAxesColumn className="size-4 shrink-0" />
+                      {!collapsed ? <span className="flex-1 truncate">{t("insights")}</span> : null}
+                    </a>,
+                  )
+                : null}
 
               <div className="mx-1 my-2.5 h-px bg-border" />
 

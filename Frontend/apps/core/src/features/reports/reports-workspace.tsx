@@ -150,7 +150,7 @@ export function ReportsWorkspace({ reportId }: { reportId: string }) {
     return <ReportsPageSkeleton />;
   if (saved.error || fields.error || list.error)
     return (
-      <PageContainer width="wide">
+      <div>
         <p role="alert">{t("loadFailed")}</p>
         <Button
           variant="outline"
@@ -162,7 +162,7 @@ export function ReportsWorkspace({ reportId }: { reportId: string }) {
         >
           {t("retry")}
         </Button>
-      </PageContainer>
+      </div>
     );
   return (
     <ReportEditor
@@ -412,7 +412,7 @@ function ReportEditor({
   }
 
   return (
-    <PageContainer width="wide" className="px-10 pt-9 pb-14">
+    <div>
       <div className="grid items-start gap-9 lg:grid-cols-[260px_minmax(0,1fr)]">
         <nav aria-label={t("title")} className="rounded-surface bg-card p-4">
           <div className="px-2 pb-5 pt-1">
@@ -425,7 +425,7 @@ function ReportEditor({
               const Mark = reportMarks[id].icon;
               return <Link
                 key={id}
-                href={`/reports/${id}`}
+                href={`/insights/reports/${id}`}
                 aria-current={reportId === id ? "page" : undefined}
                 className={cn(
                   "flex min-w-0 items-center justify-between gap-2 rounded-control px-2.5 py-1.5 transition-colors",
@@ -450,7 +450,7 @@ function ReportEditor({
             {list.map((item) => (
               <Link
                 key={item.id}
-                href={`/reports/${item.id}`}
+                href={`/insights/reports/${item.id}`}
                 aria-current={reportId === item.id ? "page" : undefined}
                 className={cn(
                   "flex min-w-0 items-center justify-between gap-2 rounded-control px-2.5 py-1.5 transition-colors",
@@ -472,7 +472,7 @@ function ReportEditor({
         <div className="grid min-w-0 gap-[18px]">
           <header className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h1 className="type-page-title">{title}</h1>
+              <h2 className="type-page-title">{title}</h2>
               <p className="mt-1 type-body text-muted-foreground">
                 {t(`standardDescription.${definition.measure}`)} · {t(
                   definition.measure === "open-roles" ? "currentDescription" : definition.mode === "date"
@@ -854,7 +854,7 @@ function ReportEditor({
                     void act(async () => {
                       const result = await api.save(name.trim(), definition);
                       remember(result);
-                      router.push(`/reports/${result.id}`);
+                      router.push(`/insights/reports/${result.id}`);
                       toast.success(t("saved"));
                     })
                   }
@@ -942,7 +942,7 @@ function ReportEditor({
                       );
                       await api.share(report.id, chosen);
                       remember({ ...report, roleIds: chosen });
-                      if (!persisted) router.push(`/reports/${report.id}`);
+                      if (!persisted) router.push(`/insights/reports/${report.id}`);
                       toast.success(t("shared"));
                     }, "shareFailed")
                   }
@@ -968,7 +968,7 @@ function ReportEditor({
                   onClick={() =>
                     void act(async () => {
                       await api.remove(persisted!.id);
-                      router.push("/reports");
+                      router.push("/insights/reports");
                     })
                   }
                 >
@@ -979,7 +979,7 @@ function ReportEditor({
           )}
         </DialogContent>
       </Dialog>
-    </PageContainer>
+    </div>
   );
 }
 

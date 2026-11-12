@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -37,6 +37,7 @@ export function YearPage() {
   const administers = context.data?.capabilities.administers ?? false;
   const cycleId = selected && selected.state !== "Draft" ? selected.id : null;
   const year = useYear(cycleId);
+  const chosen = useInsightsLanding(year.data, administers);
 
   if (context.isLoading || (cycleId && year.isLoading)) return <PageSkeleton rows={4} label={t("loading")} />;
   if (context.error) return <ContentUnavailable error={context.error} onRetry={context.refetch} />;
@@ -57,8 +58,25 @@ export function YearPage() {
     );
   }
   if (year.error) return <ContentUnavailable error={year.error} onRetry={year.refetch} />;
-  if (!year.data) return <PageSkeleton rows={4} label={t("loading")} />;
+  if (!year.data || (!chosen && landsOnInsights(year.data, administers))) return <PageSkeleton rows={4} label={t("loading")} />;
   return <TheYear year={year.data} refetch={year.refetch} />;
+}
+
+/**
+ * D-89: once a year has ended with its results out, its administrator lands on Insights › Performance (how it ended,
+ * with setting up the next on top) instead of the Year page, unless they picked a year to look at.
+ */
+function landsOnInsights(year: YearDto, administers: boolean): boolean {
+  return administers && year.phase === "ResultsOut" && year.today > year.endDate;
+}
+
+function useInsightsLanding(year: YearDto | undefined, administers: boolean) {
+  const params = useSearchParams();
+  const chosen = params.has("cycle");
+  useEffect(() => {
+    if (year && !chosen && landsOnInsights(year, administers)) window.location.replace("/core/insights/performance");
+  }, [year, administers, chosen]);
+  return chosen;
 }
 
 function TheYear({ year, refetch }: { year: YearDto; refetch: () => Promise<unknown> }) {

@@ -6,6 +6,8 @@ import { useFusionViewer } from "@repo/api/react";
 import { visibleFusionModules, type FusionModuleKey } from "@repo/api";
 import { FusionSidebar as FusionSidebarFrame, pagePaths, type FusionSidebarModule } from "@repo/ds/shell";
 import { useCorePages, usePerformancePages } from "../module-navigation";
+import { useAuth } from "../auth-context";
+import { canSeeInsights } from "../roles";
 
 /**
  * The one Fusion sidebar (D-45), the same from the shell, Core HR and Performance: every module the person can enter
@@ -24,6 +26,7 @@ export function FusionSidebar({
   /** Performance: the year in view, so its pages follow the one being looked at. */
   cycleId?: string | null;
 }) {
+  const { user } = useAuth();
   const core = useCorePages();
   const performance = usePerformancePages(cycleId);
   const pages: Partial<Record<FusionModuleKey, typeof core>> = useMemo(() => ({ core, performance }), [core, performance]);
@@ -50,6 +53,7 @@ export function FusionSidebar({
       tenantLogoUrl={navigation.tenantLogoUrl}
       brandColor={navigation.brandColor}
       homeCount={navigation.homeCount}
+      insights={canSeeInsights(user)}
       modules={modules}
       currentModuleKey={current ?? undefined}
       basePath={basePath}

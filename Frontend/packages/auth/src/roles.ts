@@ -226,6 +226,16 @@ export function canViewCoreReports(user: AuthUser | null): boolean {
   );
 }
 
+/** Sets up and runs Performance's years: reads Insights › Performance (the server checks the same grant). */
+export function canAdministerPerformanceYears(user: AuthUser | null): boolean {
+  return hasCorePermission(user, "performance.cycle.manage", "Tenant");
+}
+
+/** Insights (D-88): anyone with one of its tabs: People and Reports for report viewers, Performance for year administrators. */
+export function canSeeInsights(user: AuthUser | null): boolean {
+  return canViewCoreReports(user) || canAdministerPerformanceYears(user);
+}
+
 export function canBuildCoreReports(user: AuthUser | null): boolean {
   return (
     canViewCoreReports(user) &&

@@ -41,7 +41,7 @@ describe("Core HR's pages", () => {
       ].map(tenant) as AuthUser["effectivePermissions"],
     });
     const admin = renderHook(() => useCorePages()).result.current;
-    expect(hrefs(admin.items)).toEqual(["/", "/profile", "/team", "/people", "/organization", "/changes", "/reports"]);
+    expect(hrefs(admin.items)).toEqual(["/", "/profile", "/team", "/people", "/organization", "/changes"]);
     expect(admin.settings).toBe(true);
   });
 });

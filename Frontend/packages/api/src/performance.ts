@@ -1246,104 +1246,156 @@ export interface UpdateRequestDto {
   version: number;
 }
 
-// ── Cycle › Insights (performance-hr-insights): cycle administrators only ──
+// ── Insights › Performance (D-88–D-90): year administrators only ──
 
-export interface LevelCountDto {
-  value: number;
-  label: string;
-  count: number;
+export interface InsightsYearDto {
+  cycleId: string;
+  name: string;
+  startDate: string;
+  endDate: string;
 }
 
-/** One unit's figures (or the total): counts and shares only; execution and review figures arrive with the phase. */
-export interface InsightsRowDto {
+export interface InsightsPointDto {
+  date: string;
+  value: number;
+}
+
+export type InsightsTrendKey = "on-track" | "at-risk" | "not-updated" | "supporting";
+
+/** One figure this year against last on the same days; last year's points carry this year's dates. */
+export interface InsightsTrendDto {
+  key: InsightsTrendKey;
+  now: number;
+  of: number | null;
+  atRisk: number | null;
+  offTrack: number | null;
+  lastNow: number | null;
+  this: InsightsPointDto[];
+  last: InsightsPointDto[] | null;
+}
+
+export interface InsightsUnitFigureDto {
   unitId: string | null;
   name: string;
   people: number;
-  plansApproved: number;
-  approvedPlans: number | null;
-  updatedIn30Days: number | null;
-  status: StatusMixDto | null;
-  objectives: number | null;
-  aligned: number | null;
-  reviews: number | null;
-  onTime: number | null;
-  late: number | null;
-  released: number | null;
-  acknowledged: number | null;
-  levels: LevelCountDto[] | null;
-  raised: number | null;
-  lowered: number | null;
+  goals: number;
+  share: number;
+  lastShare: number | null;
 }
 
-export interface InsightsManagerDto {
-  employeeId: string;
+export interface InsightsManagerNudgeDto {
+  managerId: string;
   name: string;
-  unitName: string | null;
   people: number;
-  late: number;
-  released: number;
-  acknowledged: number;
+  notUpdated: { employeeId: string; name: string }[];
 }
 
-export interface InsightsDirectionDto {
+export interface InsightsRatingDto {
+  value: number;
+  label: string;
+  count: number;
+  lastCount: number | null;
+}
+
+export interface InsightsGoalsEndDto {
+  met: number;
+  partly: number;
+  notMet: number;
+  carried: number;
+}
+
+export type InsightsTenureKey = "under-1" | "1-2" | "2-4" | "4-6" | "over-6";
+
+export interface InsightsTenureDto {
+  key: InsightsTenureKey;
+  people: number;
+  rated: number;
+  share: number | null;
+  lastShare: number | null;
+}
+
+export interface InsightsCarriedGoalDto {
   objectiveId: string;
+  cycleId: string;
   title: string;
-  owner: string | null;
-  alignedObjectives: number;
-  unitsContributing: number;
-  units: number;
+  ownerId: string;
+  ownerName: string;
   progress: number;
-  hasProgress: boolean;
+}
+
+export interface InsightsMonthDto {
+  year: number;
+  month: number;
+  count: number;
+  lastCount: number | null;
+}
+
+export interface InsightsReviewsDto {
+  openedOn: string;
+  resultsOn: string | null;
+  reviews: number;
+  this: { day: number; share: number }[];
+  last: { day: number; share: number }[] | null;
+}
+
+/** How the year ended (D-89), once its results are out. */
+export interface InsightsEndDto {
+  strongLabel: string | null;
+  ratings: InsightsRatingDto[];
+  goals: InsightsGoalsEndDto;
+  lastGoals: InsightsGoalsEndDto | null;
+  metByDepartment: InsightsUnitFigureDto[];
+  byTenure: InsightsTenureDto[];
+  reviews: InsightsReviewsDto | null;
+  updates: InsightsMonthDto[];
+  carried: InsightsCarriedGoalDto[];
+  carriedCount: number;
 }
 
 export interface InsightsDto {
   cycleId: string;
-  cycleName: string;
-  state: CycleLifecycleState;
+  name: string;
+  startDate: string;
+  endDate: string;
   asOf: string;
-  final: boolean;
+  ended: boolean;
   participants: number;
+  lastYear: InsightsYearDto | null;
+  nextYear: InsightsYearDto | null;
+  nextYearLaunched: boolean;
+  years: InsightsYearDto[];
   unitId: string | null;
   scopeName: string;
   units: { unitId: string; name: string; depth: number }[];
-  showsExecution: boolean;
-  showsReviews: boolean;
-  roundId: string | null;
-  roundName: string | null;
-  managerDue: string | null;
-  releasedAt: string | null;
-  neverApproved: number;
-  withoutRecentUpdate: number;
-  byUnit: InsightsRowDto[];
-  total: InsightsRowDto;
-  direction: InsightsDirectionDto[];
-  notAligned: number;
-  byManager: InsightsManagerDto[];
+  trends: InsightsTrendDto[];
+  onTrackByDepartment: InsightsUnitFigureDto[];
+  notUpdatedByManager: InsightsManagerNudgeDto[];
+  end: InsightsEndDto | null;
 }
 
 /** The figures Insights can open into people. */
 export type InsightsMetric =
   | "people"
-  | "plans-approved"
-  | "plans-not-approved"
-  | "updated"
+  | "on-track"
+  | "at-risk"
   | "not-updated"
-  | "at-risk-or-off-track"
-  | "reviews"
-  | "on-time"
-  | "late"
-  | "released"
-  | "acknowledged"
-  | "not-acknowledged"
+  | "supporting"
   | "level"
-  | "raised"
-  | "lowered";
+  | "strong"
+  | "met"
+  | "partly"
+  | "not-met"
+  | "carried"
+  | "reviews-done"
+  | "reviews-not-done";
 
 export interface InsightsPeopleQuery {
   metric: InsightsMetric;
   unitId?: string | null;
+  departmentId?: string | null;
   managerId?: string | null;
   level?: number | null;
+  bucket?: InsightsTenureKey | null;
   page?: number;
   pageSize?: number;
 }
@@ -1354,14 +1406,6 @@ export interface InsightsPersonDto {
   jobTitle: string | null;
   unitName: string | null;
   managerName: string | null;
-  planState: RosterPlanStatus | null;
-  lastUpdateAt: string | null;
-  managerDue: string | null;
-  managerSubmittedAt: string | null;
-  releasedAt: string | null;
-  acknowledgedAt: string | null;
-  level: number | null;
-  managerLevel: number | null;
   href: string | null;
 }
 
@@ -1372,8 +1416,6 @@ export interface InsightsPeoplePageDto {
   pageSize: number;
   items: InsightsPersonDto[];
 }
-
-
 
 /**
  * Cycle-wide planning and execution standing for administration: operational counts only. There is
@@ -1929,8 +1971,8 @@ export const performancePaths = {
   answerOffTrack: (cycleId: string, planId: string, answer: "ask-for-update" | "talk-it-over") =>
     `/performance/cycles/${cycleId}/plans/${planId}/attention/${answer}`,
   roundResults: (roundId: string) => `/api/performance/review-rounds/${roundId}/results.csv`,
-  insights: (cycleId: string) => `/performance/cycles/${cycleId}/insights`,
-  insightsPeople: (cycleId: string) => `/performance/cycles/${cycleId}/insights/people`,
+  insights: "/performance/insights",
+  insightsPeople: "/performance/insights/people",
   planDetail: (cycleId: string, planId: string) =>
     `/performance/cycles/${cycleId}/plans/${planId}`,
   updateRequests: (cycleId: string, planId: string) =>
@@ -2012,10 +2054,10 @@ export const performanceQueryKeys = {
   alignmentTargets: (cycleId: string) =>
     [...performanceQueryKeys.all(), "alignment-targets", cycleId] as const,
   teamYear: (cycleId: string) => [...performanceQueryKeys.all(), "team-year", cycleId] as const,
-  insights: (cycleId: string, unitId?: string | null) =>
-    [...performanceQueryKeys.all(), "insights", cycleId, unitId ?? "all"] as const,
-  insightsPeople: (cycleId: string, query: InsightsPeopleQuery) =>
-    [...performanceQueryKeys.all(), "insights-people", cycleId, query] as const,
+  insights: (cycleId: string | null, unitId?: string | null) =>
+    [...performanceQueryKeys.all(), "insights", cycleId ?? "latest", unitId ?? "all"] as const,
+  insightsPeople: (cycleId: string | null, query: InsightsPeopleQuery) =>
+    [...performanceQueryKeys.all(), "insights-people", cycleId ?? "latest", query] as const,
   planDetail: (cycleId: string, planId: string) =>
     [...performanceQueryKeys.all(), "plan", cycleId, planId] as const,
   updateRequests: (cycleId: string, planId: string) =>
@@ -2264,16 +2306,22 @@ export function createPerformanceApi(client: ApiClient) {
       client.post<EmployeePlanDto>(performancePaths.submitPlan(cycleId), { expectedVersion }),
     getTeamYear: (cycleId: string, signal?: AbortSignal) =>
       client.get<TeamYearDto>(performancePaths.teamYear(cycleId), { signal }),
-    getInsights: (cycleId: string, unitId?: string | null, signal?: AbortSignal) =>
-      client.get<InsightsDto>(performancePaths.insights(cycleId), { signal, params: { unitId: unitId ?? undefined } }),
-    getInsightsPeople: (cycleId: string, query: InsightsPeopleQuery, signal?: AbortSignal) =>
-      client.get<InsightsPeoplePageDto>(performancePaths.insightsPeople(cycleId), {
+    getInsights: (cycleId: string | null, unitId?: string | null, signal?: AbortSignal) =>
+      client.get<InsightsDto>(performancePaths.insights, {
+        signal,
+        params: { cycleId: cycleId ?? undefined, unitId: unitId ?? undefined },
+      }),
+    getInsightsPeople: (cycleId: string | null, query: InsightsPeopleQuery, signal?: AbortSignal) =>
+      client.get<InsightsPeoplePageDto>(performancePaths.insightsPeople, {
         signal,
         params: {
           metric: query.metric,
+          cycleId: cycleId ?? undefined,
           unitId: query.unitId ?? undefined,
+          departmentId: query.departmentId ?? undefined,
           managerId: query.managerId ?? undefined,
           level: query.level ?? undefined,
+          bucket: query.bucket ?? undefined,
           page: query.page ?? 1,
           pageSize: query.pageSize ?? 25,
         },

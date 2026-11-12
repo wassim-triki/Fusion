@@ -139,7 +139,7 @@ export function SettingsPageSkeleton() {
 
 /** The dedicated loading skeleton for a core route (module-relative path). */
 export function getRoutePageSkeleton(corePath: string): ReactNode {
-  if (corePath === "/reports" || corePath.startsWith("/reports/"))
+  if (corePath.startsWith("/insights/reports/"))
     return <ReportsPageSkeleton />;
   if (corePath === "/") return <OverviewPageSkeleton />;
   if (corePath === "/people") return <EmployeesPageSkeleton />;

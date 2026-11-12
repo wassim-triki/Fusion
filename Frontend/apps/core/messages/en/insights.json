@@ -1,0 +1,117 @@
+{
+  "title": "Insights",
+  "tabs": {
+    "people": "People",
+    "performance": "Performance",
+    "reports": "Reports"
+  },
+  "noAccess": {
+    "title": "Not for your role",
+    "body": "Insights shows the company's figures to the people team and report viewers."
+  },
+  "sheet": {
+    "count": "{count, plural, one {# person} other {# people}}",
+    "failed": "These people couldn't be loaded. Try again in a moment.",
+    "nobody": "Nobody here.",
+    "more": "Show {count} more"
+  },
+  "people": {
+    "period": "Period",
+    "today": "Today",
+    "endOf": "End of {year}",
+    "unavailable": "Figures unavailable",
+    "loadFailed": "Core HR's records couldn't be loaded.",
+    "retry": "Try again",
+    "headcount": "People at the company",
+    "byDepartment": "By department",
+    "noDepartment": "No department",
+    "joined": "Joined each quarter",
+    "joinedTip": "{count, plural, =0 {Nobody joined} other {# joined}}",
+    "joinedIn": "Joined in Q{quarter} {year}",
+    "nobodySince": "Nobody since {date}",
+    "timeAtCompany": "Time at the company"
+  },
+  "performance": {
+    "scope": "Who",
+    "everyone": "Everyone",
+    "year": "Year",
+    "against": "against {year}",
+    "soFar": "so far",
+    "ended": "ended",
+    "noYear": {
+      "title": "No year yet",
+      "body": "Performance figures start once a year is under way.",
+      "action": "Set up a year"
+    },
+    "unavailable": "Figures unavailable",
+    "loadFailed": "Performance's figures couldn't be loaded.",
+    "retry": "Try again",
+    "notStarted": "This year hasn't started yet.",
+    "againstLast": "This year against last",
+    "sameDays": "{year}, same days",
+    "sameDay": "{year}, same day",
+    "today": "Today",
+    "onTrackByDepartment": "On track, by department",
+    "noGoals": "No approved goals yet.",
+    "people": "{count, plural, one {# person} other {# people}}",
+    "strongByTenure": "{level} or above, by time at the company",
+    "strongFallback": "Strong",
+    "afterReviews": "Opens after the reviews",
+    "tenure": {
+      "under-1": "Under a year",
+      "1-2": "1 to 2 years",
+      "2-4": "2 to 4 years",
+      "4-6": "4 to 6 years",
+      "over-6": "Over 6 years"
+    },
+    "tenureSource": "Time at the company from Core HR, ratings from Performance",
+    "trends": {
+      "on-track": "Goals on track",
+      "at-risk": "At risk or off track",
+      "not-updated": "Not updated in 30 days",
+      "supporting": "Goals supporting a company goal",
+      "atRiskSub": "{atRisk} at risk, {offTrack} off track",
+      "ofPeople": "of {count, plural, one {# person} other {# people}} with approved goals",
+      "ofGoals": "{count} of {total} goals",
+      "pointsMore": "{count, plural, one {# point} other {# points}} more",
+      "pointsFewer": "{count, plural, one {# point} other {# points}} fewer",
+      "more": "{count} more",
+      "fewer": "{count} fewer",
+      "same": "Same as {year}"
+    },
+    "nudges": {
+      "theirPeople": "{name}'s people not updated",
+      "names": "{more, plural, =0 {{names}} other {{names} and # more}}",
+      "ofTheirs": "{count} of {total}",
+      "nudge": "Nudge",
+      "nudged": "Nudged",
+      "nudgeAll": "Nudge all {count}"
+    },
+    "nextStep": "Your next step",
+    "setUp": "Set up next year",
+    "launch": "Launch {year}",
+    "endedOn": "{year} ended {date}",
+    "ratings": "How the ratings came out",
+    "ratingTip": "{count} rated {label}",
+    "goalsEnded": "How the goals ended",
+    "goals": "{count, plural, one {# goal} other {# goals}}",
+    "endings": {
+      "met": "Met",
+      "partly": "Partly met",
+      "notMet": "Not met",
+      "carried": "Carried on"
+    },
+    "lastShare": "{share}% in {year}",
+    "metByDepartment": "Goals met, by department",
+    "reviewsWeekly": "Reviews done, week by week",
+    "noReviews": "No reviews this year.",
+    "opened": "Opened {date}",
+    "weeks": "{count, plural, one {# week} other {# weeks}}",
+    "updatesMonthly": "Goal updates each month",
+    "carried": "Carried into {year}",
+    "nextYear": "next year",
+    "carriedNote": "{count, plural, one {# goal, back in its owner's draft} other {# goals, back in their owners' drafts}}",
+    "carriedOwner": "{name}, {progress}% done",
+    "carriedMore": "and {count, plural, one {# more goal} other {# more goals}}"
+  }
+}

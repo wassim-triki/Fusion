@@ -6,11 +6,9 @@ using EY.HRPlatform.Performance.Domain.Plans;
 using EY.HRPlatform.Performance.Domain.Progress;
 using EY.HRPlatform.Performance.Domain.Reviews;
 using EY.HRPlatform.Performance.Domain.Settings;
+using EY.HRPlatform.Performance.Features.Cycles;
 using EY.HRPlatform.Performance.Features.Failures;
-using EY.HRPlatform.Performance.Features.Goals;
-using EY.HRPlatform.Performance.Features.Security;
 using EY.HRPlatform.Performance.Infrastructure.Core;
-using EY.HRPlatform.Performance.Infrastructure.Notifications;
 using EY.HRPlatform.Performance.Infrastructure.Persistence;
 using EY.HRPlatform.Performance.Models;
 using EY.HRPlatform.SharedKernel.CQRS;
@@ -19,80 +17,94 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EY.HRPlatform.Performance.Features.Insights;
 
-public sealed record GetInsightsQuery(Guid CycleId, Guid? UnitId) : IQuery<Result<InsightsDto>>;
+/// <summary>Insights › Performance for a year (the latest started one when none is named), scoped to a unit and below.</summary>
+public sealed record GetInsightsQuery(Guid? CycleId, Guid? UnitId) : IQuery<Result<InsightsDto>>;
 
-public sealed record GetInsightsPeopleQuery(Guid CycleId, string Metric, Guid? UnitId, Guid? ManagerId, int? Level, int Page, int PageSize)
-    : IQuery<Result<InsightsPeoplePageDto>>;
+/// <summary>The people behind one Insights figure, paged. Department and Bucket narrow a by-department or by-tenure figure.</summary>
+public sealed record GetInsightsPeopleQuery(Guid? CycleId, string Metric, Guid? UnitId, Guid? DepartmentId, Guid? ManagerId, int? Level,
+    string? Bucket, int Page, int PageSize) : IQuery<Result<InsightsPeoplePageDto>>;
 
 /// <summary>
-/// The facts Insights counts, one row per participant of the cycle's frozen population (performance-hr-insights):
-/// plan state, update recency, owner-set objective status and alignment, and the latest launched round's review.
-/// Read inside the tenant filter by a caller the controller has already checked administers cycles.
+/// The facts Insights counts for one year, read inside the tenant filter by a caller the controller has checked
+/// administers years: the frozen population, approved plans and their goals, every check-in (so any past day can be
+/// replayed), the latest launched round's reviews, and the goals carried into a later year.
 /// </summary>
 internal static class InsightsData
 {
     public const int RecentDays = 30;
 
-    public sealed record ReviewFacts(Guid Id, Guid ReviewerId, string ReviewerName, PerformanceReviewState State, DateOnly? ManagerDue,
-        DateTime? ManagerSubmittedAt, int? ManagerRating, int? FinalRating, bool CalibrationChanged, DateTime? FinalizedAt, DateTime? AcknowledgedAt)
+    public sealed record Goal(Guid Id, Guid OwnerId, string Title, bool Supporting, ObjectiveStatus? Status,
+        DateTime? LastCheckInAt, decimal Grade, decimal Progress, bool Carried);
+
+    public sealed record CheckIn(Guid ObjectiveId, ObjectiveStatus? Status, DateTime RecordedAt);
+
+    public sealed record Review(Guid Id, Guid ReviewerId, string ReviewerName, DateTime? ManagerSubmittedAt, int? FinalRating, bool Released);
+
+    public sealed record Person(Guid EmployeeId, string Name, string? JobTitle, Guid? UnitId, string UnitName, Guid? ManagerId, string? ManagerName,
+        Guid? PlanId, DateTime? ApprovedAt, IReadOnlyList<Goal> Goals, Review? Review)
     {
-        public bool Released => State == PerformanceReviewState.Finalized;
-        public bool Late(DateOnly today) => ManagerDue is DateOnly due
-            && (ManagerSubmittedAt is DateTime submitted ? DateOnly.FromDateTime(submitted) > due : due < today);
-        public bool OnTime => ManagerSubmittedAt is DateTime submitted && (ManagerDue is not DateOnly due || DateOnly.FromDateTime(submitted) <= due);
-        public bool Raised => CalibrationChanged && FinalRating > ManagerRating;
-        public bool Lowered => CalibrationChanged && FinalRating < ManagerRating;
+        public bool Approved => ApprovedAt is not null;
     }
 
-    public sealed record Person(Guid EmployeeId, string Name, string? JobTitle, Guid? UnitId, string UnitName, string? ManagerName,
-        Guid? PlanId, PlanLifecycleState? PlanState, DateTime? LastUpdateAt, IReadOnlyList<ObjectiveStatus?> Statuses, int Aligned,
-        ReviewFacts? Review)
+    public sealed record Year(PerformanceCycle Cycle, IReadOnlyList<Person> People, ILookup<Guid, CheckIn> CheckIns, ReviewRound? Round,
+        IReadOnlyList<RatingScaleLevel> Scale, bool Ended)
     {
-        public bool Approved => PlanState == PlanLifecycleState.Approved;
-        public bool Updated(DateTime since) => Approved && LastUpdateAt >= since;
-        public bool AtRiskOrOff => Statuses.Any(s => s is ObjectiveStatus.AtRisk or ObjectiveStatus.OffTrack);
+        public IEnumerable<Goal> Goals => People.SelectMany(p => p.Goals);
     }
 
-    public sealed record Loaded(PerformanceCycle Cycle, ReviewRound? Round, IReadOnlyList<Person> People, IReadOnlyList<RatingScaleLevel> Scale,
-        GoalsComposer.Graph Graph, IReadOnlyList<Objective> CompanyObjectives, IReadOnlyDictionary<Guid, Guid?> CompanyOf);
-
-    public static async Task<Loaded?> LoadAsync(PerformanceDbContext db, ICoreWorkforceClient workforce, Guid cycleId, CancellationToken token)
+    /// <summary>The year named, else the latest that has started; never a draft.</summary>
+    public static async Task<PerformanceCycle?> PickAsync(PerformanceDbContext db, Guid? cycleId, CancellationToken token)
     {
-        var cycle = await db.Cycles.AsNoTracking().FirstOrDefaultAsync(c => c.Id == cycleId, token);
-        if (cycle is null || cycle.State == CycleLifecycleState.Draft) return null;
+        var started = db.Cycles.AsNoTracking().Where(c => c.State != CycleLifecycleState.Draft);
+        if (cycleId is Guid id) return await started.FirstOrDefaultAsync(c => c.Id == id, token);
+        var today = PerformanceClock.Today;
+        return await started.Where(c => c.StartDate <= today).OrderByDescending(c => c.StartDate).FirstOrDefaultAsync(token)
+            ?? await started.OrderBy(c => c.StartDate).FirstOrDefaultAsync(token);
+    }
 
+    public static async Task<Year> LoadAsync(PerformanceDbContext db, PerformanceCycle cycle, CancellationToken token)
+    {
+        var cycleId = cycle.Id;
         var participants = await db.Participants.AsNoTracking().Where(p => p.CycleId == cycleId)
-            .Select(p => new { p.EmployeeId, p.DisplayName, p.JobTitle, p.OrgUnitId, p.OrgUnitName, p.ManagerDisplayName })
+            .Select(p => new { p.EmployeeId, p.DisplayName, p.JobTitle, p.OrgUnitId, p.OrgUnitName, p.ManagerEmployeeId, p.ManagerDisplayName })
             .ToListAsync(token);
         var plans = (await db.EmployeePlans.AsNoTracking().Where(p => p.CycleId == cycleId)
-                .Select(p => new { p.Id, p.EmployeeId, p.State }).ToListAsync(token))
+                .Select(p => new { p.Id, p.EmployeeId, p.State, p.ApprovedAt }).ToListAsync(token))
             .GroupBy(p => p.EmployeeId).ToDictionary(g => g.Key, g => g.First());
 
-        // The whole cycle's objective graph as administration sees it: owner-set status, alignment up to the company.
-        var graph = await GoalsComposer.LoadGraphAsync(db, workforce, cycle, token,
-            new CycleViewer(new Goals.GoalActorContext(Guid.Empty, true, HasOrgManageGrant: false, CanReviewReports: false), null));
-        var companyOf = new Dictionary<Guid, Guid?>();
-        Guid? CompanyOf(Objective objective)
+        var objectives = await db.Objectives.AsNoTracking()
+            .Where(o => o.CycleId == cycleId && o.State != ObjectiveLifecycleState.Archived).ToListAsync(token);
+        var byId = objectives.ToDictionary(o => o.Id);
+        bool Supporting(Objective objective)
         {
-            if (companyOf.TryGetValue(objective.Id, out var known)) return known;
             var seen = new HashSet<Guid>();
             var current = objective;
-            Guid? found = null;
-            while (current.ParentObjectiveId is Guid parentId && seen.Add(parentId) && graph.ById.TryGetValue(parentId, out var parent))
+            while (current.ParentObjectiveId is Guid parentId && seen.Add(parentId) && byId.TryGetValue(parentId, out var parent))
             {
-                if (parent.OwnershipScope == ObjectiveOwnershipScope.Company) { found = parent.Id; break; }
+                if (parent.OwnershipScope == ObjectiveOwnershipScope.Company) return true;
                 current = parent;
             }
-            companyOf[objective.Id] = found;
-            return found;
+            return false;
         }
-        var byPlan = graph.All.Where(o => o.EmployeePlanId != null && o.State != ObjectiveLifecycleState.Archived)
-            .GroupBy(o => o.EmployeePlanId!.Value).ToDictionary(g => g.Key, g => g.ToList());
+        var ids = objectives.Select(o => o.Id).ToList();
+        var carried = (await db.Objectives.AsNoTracking()
+                .Where(o => o.CycleId != cycleId && o.CarriedFromObjectiveId != null)
+                .Select(o => o.CarriedFromObjectiveId!.Value).ToListAsync(token))
+            .Where(ids.Contains).ToHashSet();
 
-        var round = await db.ReviewRounds.AsNoTracking()
-            .Where(r => r.CycleId == cycleId && r.LaunchedAt != null)
+        var approvedPlans = plans.Values.Where(p => p.State == PlanLifecycleState.Approved).Select(p => p.Id).ToHashSet();
+        var goalsByPlan = objectives.Where(o => o.EmployeePlanId is Guid plan && approvedPlans.Contains(plan))
+            .GroupBy(o => o.EmployeePlanId!.Value)
+            .ToDictionary(g => g.Key, g => g.Select(o => new Goal(o.Id, o.AccountablePersonId, o.Title, Supporting(o), o.CurrentStatus,
+                o.LastCheckInAt, GoalGrades.Of(o), o.HasProgress ? o.DerivedProgress : 0m, carried.Contains(o.Id))).ToList());
+
+        var checkIns = (await db.ProgressUpdates.AsNoTracking().Where(u => u.CycleId == cycleId)
+                .Select(u => new CheckIn(u.ObjectiveId, u.Status, u.RecordedAt)).ToListAsync(token))
+            .ToLookup(c => c.ObjectiveId);
+
+        var round = await db.ReviewRounds.AsNoTracking().Where(r => r.CycleId == cycleId && r.LaunchedAt != null)
             .OrderByDescending(r => r.LaunchedAt).FirstOrDefaultAsync(token);
-        var reviews = new Dictionary<Guid, ReviewFacts>();
+        var reviews = new Dictionary<Guid, Review>();
         IReadOnlyList<RatingScaleLevel> scale = [];
         if (round is not null)
         {
@@ -101,184 +113,328 @@ internal static class InsightsData
                 .Select(r => new
                 {
                     r.Id, r.SubjectEmployeeId, r.ReviewerEmployeeId, r.ReviewerDisplayName, r.State,
-                    Due = r.ManagerAssessmentDueDate ?? round.ManagerAssessmentDueDate,
-                    r.ManagerAssessment.SubmittedAt, Manager = r.ManagerAssessment.OverallRating,
-                    r.FinalRating, r.CalibrationChangedRating, r.FinalizedAt, r.AcknowledgedAt, r.RatingScaleSnapshotJson,
+                    r.ManagerAssessment.SubmittedAt, r.FinalRating, r.RatingScaleSnapshotJson,
                 })
                 .ToListAsync(token);
             foreach (var r in rows)
-                reviews[r.SubjectEmployeeId] = new ReviewFacts(r.Id, r.ReviewerEmployeeId, r.ReviewerDisplayName, r.State, r.Due, r.SubmittedAt,
-                    r.Manager, r.FinalRating, r.CalibrationChangedRating, r.FinalizedAt, r.AcknowledgedAt);
+                reviews[r.SubjectEmployeeId] = new Review(r.Id, r.ReviewerEmployeeId, r.ReviewerDisplayName, r.SubmittedAt, r.FinalRating,
+                    r.State == PerformanceReviewState.Finalized);
             scale = rows.Select(r => r.RatingScaleSnapshotJson).FirstOrDefault() is string json
                 ? JsonSerializer.Deserialize<RatingScaleLevel[]>(json) ?? []
                 : [];
         }
 
-        static DateTime? CheckIn(Objective o) => o.LastCheckInAt;
         var people = participants.Select(p =>
         {
             var plan = plans.GetValueOrDefault(p.EmployeeId);
-            var objectives = plan is not null && plan.State == PlanLifecycleState.Approved ? byPlan.GetValueOrDefault(plan.Id) ?? [] : [];
-            return new Person(p.EmployeeId, p.DisplayName, p.JobTitle, p.OrgUnitId, p.OrgUnitName ?? "No unit", p.ManagerDisplayName,
-                plan?.Id, plan?.State, objectives.Select(CheckIn).Where(d => d is not null).Max(),
-                objectives.Select(o => o.CurrentStatus).ToList(), objectives.Count(o => CompanyOf(o) is not null),
-                reviews.GetValueOrDefault(p.EmployeeId));
+            var approved = plan is not null && plan.State == PlanLifecycleState.Approved;
+            return new Person(p.EmployeeId, p.DisplayName, p.JobTitle, p.OrgUnitId, p.OrgUnitName ?? "No unit", p.ManagerEmployeeId,
+                p.ManagerDisplayName, plan?.Id, approved ? plan!.ApprovedAt ?? DateTime.MinValue : null,
+                approved ? goalsByPlan.GetValueOrDefault(plan!.Id) ?? [] : [], reviews.GetValueOrDefault(p.EmployeeId));
         }).ToList();
 
-        var company = graph.All.Where(o => o.OwnershipScope == ObjectiveOwnershipScope.Company && o.State == ObjectiveLifecycleState.Published)
-            .OrderBy(o => o.Title).ToList();
-        foreach (var objective in graph.All.Where(o => o.EmployeePlanId != null)) CompanyOf(objective);
-        return new Loaded(cycle, round, people, scale, graph, company, companyOf);
+        var ended = cycle.State == CycleLifecycleState.Closed || reviews.Values.Any(r => r.Released);
+        return new Year(cycle, people, checkIns, round, scale, ended);
     }
 
-    /// <summary>The units in the filter: the unit itself and every unit below it, from Core HR's structure.</summary>
-    public static async Task<(HashSet<Guid>? Scope, string Name, IReadOnlyList<InsightsUnitOptionDto> Options)> ScopeAsync(
-        ICoreWorkforceClient workforce, IReadOnlyList<Person> people, Guid? unitId, CancellationToken token)
+    /// <summary>The unit structure the filter and the departments read: names, depth, and the department each unit sits in.</summary>
+    public sealed class Units(Dictionary<Guid, string> names, Dictionary<Guid, IReadOnlyList<Guid>> ancestors)
     {
-        var populationUnits = people.Where(p => p.UnitId is not null).Select(p => p.UnitId!.Value).Distinct().ToList();
-        IReadOnlyList<Infrastructure.Core.WorkforceOrgUnitContext> contexts = [];
+        public int Depth(Guid unit) => ancestors.GetValueOrDefault(unit)?.Count ?? 0;
+        public string Name(Guid unit) => names.GetValueOrDefault(unit) ?? "Unit";
+
+        /// <summary>Departments sit at the top, or one level below when the company is one unit at the top.</summary>
+        private int DepartmentDepth => names.Keys.Count(u => Depth(u) == 0) == 1 ? 1 : 0;
+
+        /// <summary>The department that holds this unit; the unit itself at or above the departments' level.</summary>
+        public Guid Department(Guid unit)
+        {
+            var level = DepartmentDepth;
+            if (Depth(unit) <= level) return unit;
+            var found = ancestors[unit].FirstOrDefault(a => Depth(a) == level);
+            return found != Guid.Empty ? found : unit;
+        }
+
+        public bool Within(Guid unit, Guid filter) => unit == filter || (ancestors.GetValueOrDefault(unit)?.Contains(filter) ?? false);
+
+        public IReadOnlyList<InsightsUnitOptionDto> Options => names
+            .Select(n => new InsightsUnitOptionDto(n.Key, n.Value, Depth(n.Key))).OrderBy(o => o.Depth).ThenBy(o => o.Name).ToList();
+    }
+
+    public static async Task<Units> UnitsAsync(ICoreWorkforceClient workforce, IEnumerable<Person> people, CancellationToken token)
+    {
+        var list = people.ToList();
+        var populationUnits = list.Where(p => p.UnitId is not null).Select(p => p.UnitId!.Value).Distinct().ToList();
+        IReadOnlyList<WorkforceOrgUnitContext> contexts = [];
         try
         {
             if (populationUnits.Count > 0)
             {
                 contexts = await workforce.ResolveOrgUnitsAsync(PerformanceClock.UtcNow, populationUnits, token);
-                var ancestors = contexts.SelectMany(c => c.AncestorOrgUnitIds).Distinct().Except(populationUnits).ToList();
-                if (ancestors.Count > 0)
-                    contexts = [.. contexts, .. await workforce.ResolveOrgUnitsAsync(PerformanceClock.UtcNow, ancestors, token)];
+                var above = contexts.SelectMany(c => c.AncestorOrgUnitIds).Distinct().Except(populationUnits).ToList();
+                if (above.Count > 0) contexts = [.. contexts, .. await workforce.ResolveOrgUnitsAsync(PerformanceClock.UtcNow, above, token)];
             }
         }
         catch (HttpRequestException)
         {
-            // Core HR down: each unit filters to itself only; names come from the population.
+            // Core HR down: each unit stands alone, named from the population.
             contexts = [];
         }
-
-        var names = people.Where(p => p.UnitId is not null).GroupBy(p => p.UnitId!.Value).ToDictionary(g => g.Key, g => g.First().UnitName);
+        var names = list.Where(p => p.UnitId is not null).GroupBy(p => p.UnitId!.Value).ToDictionary(g => g.Key, g => g.First().UnitName);
         foreach (var context in contexts) names[context.OrgUnitId] = context.Name;
-        var ancestorsOf = contexts.GroupBy(c => c.OrgUnitId).ToDictionary(g => g.Key, g => g.First().AncestorOrgUnitIds);
-        var options = names.Select(n => new InsightsUnitOptionDto(n.Key, n.Value, ancestorsOf.GetValueOrDefault(n.Key)?.Count ?? 0))
-            .OrderBy(o => o.Depth).ThenBy(o => o.Name).ToList();
-
-        if (unitId is not Guid filter) return (null, "All units", options);
-        var scope = populationUnits.Where(u => u == filter || (ancestorsOf.GetValueOrDefault(u)?.Contains(filter) ?? false)).ToHashSet();
-        return (scope, names.GetValueOrDefault(filter) ?? "Unit", options);
+        var ancestors = contexts.GroupBy(c => c.OrgUnitId).ToDictionary(g => g.Key, g => g.First().AncestorOrgUnitIds);
+        return new Units(names, ancestors);
     }
 
-    public static bool InScope(Person person, HashSet<Guid>? scope) => scope is null || (person.UnitId is Guid unit && scope.Contains(unit));
+    public static bool InScope(Person person, Units units, Guid? filter)
+        => filter is not Guid unit || (person.UnitId is Guid own && units.Within(own, unit));
+
+    /// <summary>A goal's state on a day: its latest check-in by then; today and after, its state now.</summary>
+    public static ObjectiveStatus? StatusOn(Year year, Goal goal, DateTime at, DateTime now)
+        => at >= now ? goal.Status : year.CheckIns[goal.Id].Where(c => c.RecordedAt <= at).MaxBy(c => c.RecordedAt)?.Status;
+
+    public static DateTime? LastUpdateBy(Year year, Person person, DateTime at, DateTime now)
+        => at >= now ? person.Goals.Max(g => g.LastCheckInAt)
+            : person.Goals.SelectMany(g => year.CheckIns[g.Id]).Where(c => c.RecordedAt <= at).Max(c => (DateTime?)c.RecordedAt);
+
+    /// <summary>People with an approved plan by the day and no check-in in the 30 days before it.</summary>
+    public static bool NotUpdated(Year year, Person person, DateTime at, DateTime now)
+        => person.Approved && person.ApprovedAt <= at && !(LastUpdateBy(year, person, at, now) >= at.AddDays(-RecentDays));
+
+    public static bool Strong(Year year, int rating) => year.Scale.Count >= 2
+        ? rating >= year.Scale.OrderByDescending(l => l.Value).ElementAt(1).Value
+        : year.Scale.Count == 1 && rating >= year.Scale[0].Value;
+
+    public static string Ending(Goal goal) => goal.Carried ? "carried" : goal.Grade >= 1m ? "met" : goal.Grade > 0m ? "partly" : "not-met";
+
+    /// <summary>Time at the company on the year's last day (or today), in the buckets the chart draws.</summary>
+    public static string? Bucket(DateOnly? start, DateOnly on)
+    {
+        if (start is not DateOnly first) return null;
+        var years = (on.DayNumber - first.DayNumber) / 365.25;
+        return years < 1 ? "under-1" : years < 2 ? "1-2" : years < 4 ? "2-4" : years < 6 ? "4-6" : "over-6";
+    }
+
+    public static readonly string[] Buckets = ["under-1", "1-2", "2-4", "4-6", "over-6"];
+
+    public static async Task<IReadOnlyDictionary<Guid, WorkforceSnapshot>> WorkforceAsync(ICoreWorkforceClient workforce,
+        IReadOnlyCollection<Guid> employeeIds, CancellationToken token)
+    {
+        if (employeeIds.Count == 0) return new Dictionary<Guid, WorkforceSnapshot>();
+        try
+        {
+            return (await workforce.ResolveAsync(PerformanceClock.UtcNow, employeeIds, token))
+                .GroupBy(s => s.EmployeeId).ToDictionary(g => g.Key, g => g.First());
+        }
+        catch (HttpRequestException)
+        {
+            return new Dictionary<Guid, WorkforceSnapshot>();
+        }
+    }
+
+    /// <summary>The year before: the latest started year that ended before this one began.</summary>
+    public static Task<PerformanceCycle?> YearBeforeAsync(PerformanceDbContext db, PerformanceCycle cycle, CancellationToken token)
+        => db.Cycles.AsNoTracking().Where(c => c.State != CycleLifecycleState.Draft && c.Id != cycle.Id && c.StartDate < cycle.StartDate)
+            .OrderByDescending(c => c.StartDate).FirstOrDefaultAsync(token);
 }
 
 /// <summary>
-/// Cycle › Insights (performance-hr-insights, D-33): counts and shares by unit and by manager for cycle administrators,
-/// with the sections the phase has facts for, ordered by what needs attention, plus an all-units total row.
+/// Insights › Performance (D-88–D-90): during the year, four figures against last year on the same days, on track by
+/// department and the people to nudge by manager; once results are out, how the year ended (D-89). Counts and shares
+/// only, never averages.
 /// </summary>
-public sealed class GetInsightsHandler(PerformanceDbContext db, ICoreWorkforceClient workforce)
+public sealed class GetInsightsHandler(PerformanceDbContext db, ICoreWorkforceClient workforceClient)
     : IQueryHandler<GetInsightsQuery, Result<InsightsDto>>
 {
     public async Task<Result<InsightsDto>> Handle(GetInsightsQuery request, CancellationToken cancellationToken)
     {
-        var data = await InsightsData.LoadAsync(db, workforce, request.CycleId, cancellationToken);
-        if (data is null) return Result.Failure<InsightsDto>(PerformanceErrors.NotFound("Cycle", request.CycleId));
-        var (scope, scopeName, options) = await InsightsData.ScopeAsync(workforce, data.People, request.UnitId, cancellationToken);
-        var people = data.People.Where(p => InsightsData.InScope(p, scope)).ToList();
+        var cycle = await InsightsData.PickAsync(db, request.CycleId, cancellationToken);
+        if (cycle is null)
+            return request.CycleId is Guid id
+                ? Result.Failure<InsightsDto>(PerformanceErrors.NotFound("Cycle", id))
+                : Result.Failure<InsightsDto>(PerformanceErrors.NotFound("Cycle", Guid.Empty));
 
-        var cycle = data.Cycle;
+        var year = await InsightsData.LoadAsync(db, cycle, cancellationToken);
+        var lastCycle = await InsightsData.YearBeforeAsync(db, cycle, cancellationToken);
+        var last = lastCycle is null ? null : await InsightsData.LoadAsync(db, lastCycle, cancellationToken);
+        var units = await InsightsData.UnitsAsync(workforceClient, year.People.Concat(last?.People ?? []), cancellationToken);
+        var people = year.People.Where(p => InsightsData.InScope(p, units, request.UnitId)).ToList();
+        var lastPeople = last?.People.Where(p => InsightsData.InScope(p, units, request.UnitId)).ToList() ?? [];
+
+        var now = PerformanceClock.UtcNow;
         var today = PerformanceClock.Today;
-        var since = PerformanceClock.UtcNow.AddDays(-InsightsData.RecentDays);
-        var execution = cycle.State == CycleLifecycleState.Closed || today > cycle.PlanningDeadline;
-        var reviews = data.Round is not null && people.Any(p => p.Review is not null);
+        var asOf = today < cycle.EndDate ? today : cycle.EndDate;
+        var shift = lastCycle is null ? 0 : cycle.StartDate.DayNumber - lastCycle.StartDate.DayNumber;
 
-        InsightsRowDto Row(Guid? unitId, string name, IReadOnlyList<InsightsData.Person> group)
+        // Days to replay: each month's end from the start, and the last day shown.
+        var days = new List<DateOnly>();
+        for (var d = new DateOnly(cycle.StartDate.Year, cycle.StartDate.Month, 1).AddMonths(1).AddDays(-1); d < asOf; d = d.AddDays(1).AddMonths(1).AddDays(-1))
+            if (d >= cycle.StartDate) days.Add(d);
+        days.Add(asOf);
+
+        var trends = new List<InsightsTrendDto>();
+        if (cycle.StartDate <= today)
         {
-            var approved = group.Where(p => p.Approved).ToList();
-            var withReview = group.Where(p => p.Review is not null).Select(p => p.Review!).ToList();
-            var released = withReview.Where(r => r.Released).ToList();
-            return new InsightsRowDto(unitId, name, group.Count,
-                approved.Count,
-                execution ? approved.Count : null,
-                execution ? approved.Count(p => p.Updated(since)) : null,
-                execution ? Mix(approved.SelectMany(p => p.Statuses)) : null,
-                execution ? approved.Sum(p => p.Statuses.Count) : null,
-                execution ? approved.Sum(p => p.Aligned) : null,
-                reviews ? withReview.Count : null,
-                reviews ? withReview.Count(r => r.OnTime) : null,
-                reviews ? withReview.Count(r => r.Late(today)) : null,
-                reviews ? released.Count : null,
-                reviews ? released.Count(r => r.AcknowledgedAt is not null) : null,
-                reviews && released.Count > 0 ? Levels(data.Scale, released) : null,
-                reviews ? released.Count(r => r.Raised) : null,
-                reviews ? released.Count(r => r.Lowered) : null);
+            InsightsTrendDto Trend(string key, Func<InsightsData.Year, IReadOnlyList<InsightsData.Person>, DateTime, decimal> figure, Func<int>? of = null,
+                int? atRisk = null, int? offTrack = null)
+            {
+                var points = days.Select(d => new InsightsPointDto(d, figure(year, people, End(d)))).ToList();
+                List<InsightsPointDto>? lastPoints = null;
+                if (last is not null)
+                    lastPoints = days.Select(d => (d, at: d.AddDays(-shift))).Where(x => x.at <= last.Cycle.EndDate)
+                        .Select(x => new InsightsPointDto(x.d, figure(last, lastPeople, End(x.at)))).ToList();
+                return new InsightsTrendDto(key, points[^1].Value, of?.Invoke(), atRisk, offTrack, lastPoints is { Count: > 0 } ? lastPoints[^1].Value : null,
+                    points, lastPoints);
+            }
+            DateTime End(DateOnly d) => d >= today ? now : d.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+            // A plan's goals count from the day it was approved (the clock stamps approvals; it doesn't stamp creation).
+            IEnumerable<(InsightsData.Person Person, InsightsData.Goal Goal)> GoalsBy(IReadOnlyList<InsightsData.Person> group, DateTime at)
+                => group.Where(p => p.Approved && p.ApprovedAt <= at).SelectMany(p => p.Goals.Select(g => (p, g)));
+            decimal Share(int count, int total) => total == 0 ? 0m : decimal.Round(count * 100m / total, 0);
+
+            var currentGoals = GoalsBy(people, now).ToList();
+            trends.Add(Trend("on-track", (y, g, at) =>
+            {
+                var goals = GoalsBy(g, at).ToList();
+                return Share(goals.Count(x => InsightsData.StatusOn(y, x.Goal, at, now) == ObjectiveStatus.OnTrack), goals.Count);
+            }, () => currentGoals.Count));
+            trends.Add(Trend("at-risk", (y, g, at) => GoalsBy(g, at)
+                    .Count(x => InsightsData.StatusOn(y, x.Goal, at, now) is ObjectiveStatus.AtRisk or ObjectiveStatus.OffTrack),
+                atRisk: currentGoals.Count(x => x.Goal.Status == ObjectiveStatus.AtRisk),
+                offTrack: currentGoals.Count(x => x.Goal.Status == ObjectiveStatus.OffTrack)));
+            trends.Add(Trend("not-updated", (y, g, at) => g.Count(p => InsightsData.NotUpdated(y, p, at, now)),
+                () => people.Count(p => p.Approved)));
+            trends.Add(Trend("supporting", (y, g, at) =>
+            {
+                var goals = GoalsBy(g, at).ToList();
+                return Share(goals.Count(x => x.Goal.Supporting), goals.Count);
+            }, () => currentGoals.Count));
         }
 
-        var byUnit = people.GroupBy(p => (p.UnitId, p.UnitName)).Select(g => Row(g.Key.UnitId, g.Key.UnitName, g.ToList())).ToList();
-        // Units furthest behind first for the phase's question; ties by size, then name.
-        IOrderedEnumerable<InsightsRowDto> ordered = reviews
-            ? byUnit.OrderByDescending(u => u.Late).ThenBy(u => Share(u.Acknowledged, u.Released))
-            : execution
-                ? byUnit.OrderBy(u => Share(u.UpdatedIn30Days, u.ApprovedPlans)).ThenByDescending(u => u.People)
-                : byUnit.OrderBy(u => Share(u.PlansApproved, u.People)).ThenByDescending(u => u.People);
-        byUnit = ordered.ThenBy(u => u.Name).ToList();
+        // Departments: this year's share against last year's on the same day (on track) or at its end (met).
+        IReadOnlyList<InsightsUnitFigureDto> ByDepartment(Func<InsightsData.Year, InsightsData.Goal, DateTime, bool> counts, DateTime at, DateTime lastAt)
+        {
+            Guid? Dept(InsightsData.Person p) => p.UnitId is Guid unit ? units.Department(unit) : null;
+            var lastByDept = lastPeople.Where(p => p.Approved).GroupBy(Dept).ToDictionary(g => g.Key ?? Guid.Empty, g => g.SelectMany(p => p.Goals).ToList());
+            return people.GroupBy(Dept).Select(g =>
+            {
+                var goals = g.Where(p => p.Approved).SelectMany(p => p.Goals).ToList();
+                var lastGoals = lastByDept.GetValueOrDefault(g.Key ?? Guid.Empty);
+                return new InsightsUnitFigureDto(g.Key, g.Key is Guid id ? units.Name(id) : "No unit", g.Count(), goals.Count,
+                    goals.Count == 0 ? 0m : decimal.Round(goals.Count(x => counts(year, x, at)) * 100m / goals.Count, 0),
+                    last is null || lastGoals is not { Count: > 0 } ? null
+                        : decimal.Round(lastGoals.Count(x => counts(last, x, lastAt)) * 100m / lastGoals.Count, 0));
+            }).Where(d => d.Goals > 0).OrderByDescending(d => d.People).ThenBy(d => d.Name).ToList();
+        }
 
-        var managers = reviews
-            ? people.Where(p => p.Review is not null).GroupBy(p => (p.Review!.ReviewerId, p.Review.ReviewerName))
-                .Select(g =>
-                {
-                    var unitName = data.People.FirstOrDefault(p => p.EmployeeId == g.Key.ReviewerId)?.UnitName;
-                    var released = g.Where(p => p.Review!.Released).ToList();
-                    return new InsightsManagerDto(g.Key.ReviewerId, g.Key.ReviewerName, unitName, g.Count(),
-                        g.Count(p => p.Review!.Late(today)), released.Count, released.Count(p => p.Review!.AcknowledgedAt is not null));
-                })
-                .OrderByDescending(m => m.Late).ThenBy(m => Share(m.Acknowledged, m.Released)).ThenBy(m => m.Name).ToList()
+        var lastSameDay = last is null ? now : asOf.AddDays(-shift).ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+        var onTrack = cycle.StartDate <= today
+            ? ByDepartment((y, g, at) => InsightsData.StatusOn(y, g, at, now) == ObjectiveStatus.OnTrack, now, lastSameDay)
             : [];
 
-        var direction = new List<InsightsDirectionDto>();
-        var notAligned = 0;
-        if (execution)
+        var byManager = people.Where(p => InsightsData.NotUpdated(year, p, now, now))
+            .GroupBy(p => (p.ManagerId ?? Guid.Empty, p.ManagerName ?? "No manager"))
+            .Select(g => new InsightsManagerNudgeDto(g.Key.Item1, g.Key.Item2, people.Count(p => (p.ManagerId ?? Guid.Empty) == g.Key.Item1),
+                g.OrderBy(p => p.Name).Select(p => new InsightsPersonRefDto(p.EmployeeId, p.Name)).ToList()))
+            .OrderByDescending(m => m.NotUpdated.Count).ThenBy(m => m.Name).ToList();
+
+        var end = year.Ended ? await EndAsync(year, last, people, lastPeople, ByDepartment, cancellationToken) : null;
+
+        var years = await db.Cycles.AsNoTracking().Where(c => c.State != CycleLifecycleState.Draft).OrderByDescending(c => c.StartDate)
+            .Select(c => new InsightsYearDto(c.Id, c.Name, c.StartDate, c.EndDate)).ToListAsync(cancellationToken);
+        var next = await db.Cycles.AsNoTracking().Where(c => c.Id != cycle.Id && c.StartDate > cycle.StartDate)
+            .OrderBy(c => c.StartDate).FirstOrDefaultAsync(cancellationToken);
+        return Result.Success(new InsightsDto(
+            cycle.Id, cycle.Name, cycle.StartDate, cycle.EndDate, asOf, year.Ended, people.Count,
+            lastCycle is null ? null : new InsightsYearDto(lastCycle.Id, lastCycle.Name, lastCycle.StartDate, lastCycle.EndDate),
+            next is null ? null : new InsightsYearDto(next.Id, next.Name, next.StartDate, next.EndDate), next is { State: not CycleLifecycleState.Draft },
+            years, request.UnitId is Guid unitId ? unitId : null, request.UnitId is Guid scoped ? units.Name(scoped) : "Everyone", units.Options,
+            trends, onTrack, byManager, end));
+    }
+
+    private async Task<InsightsEndDto> EndAsync(InsightsData.Year year, InsightsData.Year? last,
+        IReadOnlyList<InsightsData.Person> people, IReadOnlyList<InsightsData.Person> lastPeople,
+        Func<Func<InsightsData.Year, InsightsData.Goal, DateTime, bool>, DateTime, DateTime, IReadOnlyList<InsightsUnitFigureDto>> byDepartment,
+        CancellationToken token)
+    {
+        var scale = year.Scale.Count > 0 ? year.Scale : last?.Scale ?? [];
+        int Rated(IReadOnlyList<InsightsData.Person> group, int value) => group.Count(p => p.Review is { Released: true } r && r.FinalRating == value);
+        var ratings = scale.OrderBy(l => l.Value)
+            .Select(l => new InsightsRatingDto(l.Value, l.Label, Rated(people, l.Value), last is null ? null : Rated(lastPeople, l.Value))).ToList();
+
+        static InsightsGoalsEndDto Ends(IEnumerable<InsightsData.Goal> goals)
         {
-            var approvedPlanIds = people.Where(p => p.Approved && p.PlanId is not null).Select(p => p.PlanId!.Value).ToHashSet();
-            var unitByPlan = people.Where(p => p.PlanId is not null).ToDictionary(p => p.PlanId!.Value, p => p.UnitId);
-            var planObjectives = data.Graph.All.Where(o => o.EmployeePlanId is Guid planId && approvedPlanIds.Contains(planId)
-                && o.State != ObjectiveLifecycleState.Archived).ToList();
-            var unitCount = people.Select(p => p.UnitId).Distinct().Count();
-            foreach (var company in data.CompanyObjectives)
+            var list = goals.Select(InsightsData.Ending).ToList();
+            return new InsightsGoalsEndDto(list.Count(e => e == "met"), list.Count(e => e == "partly"), list.Count(e => e == "not-met"), list.Count(e => e == "carried"));
+        }
+        var goals = people.SelectMany(p => p.Goals).ToList();
+
+        var met = byDepartment((_, g, _) => InsightsData.Ending(g) == "met", DateTime.MaxValue, DateTime.MaxValue);
+
+        // Time at the company from Core HR, ratings from Performance.
+        var workforce = await InsightsData.WorkforceAsync(workforceClient,
+            people.Select(p => p.EmployeeId).Concat(lastPeople.Select(p => p.EmployeeId)).Distinct().ToList(), token);
+        decimal? StrongShare(InsightsData.Year y, IEnumerable<InsightsData.Person> group)
+        {
+            var rated = group.Where(p => p.Review is { Released: true, FinalRating: not null }).ToList();
+            return rated.Count == 0 ? null : decimal.Round(rated.Count(p => InsightsData.Strong(y, p.Review!.FinalRating!.Value)) * 100m / rated.Count, 0);
+        }
+        string? BucketOf(InsightsData.Year y, InsightsData.Person p)
+            => InsightsData.Bucket(workforce.GetValueOrDefault(p.EmployeeId)?.EmploymentStart, y.Cycle.EndDate);
+        var tenure = InsightsData.Buckets.Select(b =>
+        {
+            var inBucket = people.Where(p => BucketOf(year, p) == b).ToList();
+            return new InsightsTenureDto(b, inBucket.Count, inBucket.Count(p => p.Review is { Released: true, FinalRating: not null }),
+                StrongShare(year, inBucket), last is null ? null : StrongShare(last, lastPeople.Where(p => BucketOf(last, p) == b)));
+        }).Where(t => t.People > 0).ToList();
+
+        // Manager reviews done, day by day from the round's opening to results out.
+        InsightsReviewsDto? reviews = null;
+        if (year.Round is { } round)
+        {
+            var opened = round.OpensOn ?? DateOnly.FromDateTime(round.LaunchedAt!.Value);
+            IReadOnlyList<InsightsDayPointDto> Line(InsightsData.Year y, IEnumerable<InsightsData.Person> group, DateOnly from)
             {
-                var aligned = planObjectives.Where(o => data.CompanyOf.GetValueOrDefault(o.Id) == company.Id).ToList();
-                var node = GoalsComposer.ToNode(company, data.Graph);
-                direction.Add(new InsightsDirectionDto(company.Id, company.Title, node.AccountablePersonName, aligned.Count,
-                    aligned.Select(o => unitByPlan.GetValueOrDefault(o.EmployeePlanId!.Value)).Distinct().Count(), unitCount,
-                    node.DerivedProgress, node.HasProgress));
+                var due = group.Where(p => p.Review is not null).Select(p => p.Review!).ToList();
+                if (due.Count == 0) return [];
+                var done = due.Where(r => r.ManagerSubmittedAt is not null).Select(r => DateOnly.FromDateTime(r.ManagerSubmittedAt!.Value).DayNumber - from.DayNumber)
+                    .OrderBy(d => d).ToList();
+                var lastDay = Math.Max(done.LastOrDefault(), 0);
+                var line = new List<InsightsDayPointDto>();
+                for (var day = 0; day <= lastDay + 7; day += 7)
+                    line.Add(new InsightsDayPointDto(day, decimal.Round(done.Count(d => d <= day) * 100m / due.Count, 0)));
+                return line;
             }
-            notAligned = planObjectives.Count(o => data.CompanyOf.GetValueOrDefault(o.Id) is null);
+            IReadOnlyList<InsightsDayPointDto>? lastLine = null;
+            if (last?.Round is { } lastRound)
+                lastLine = Line(last, lastPeople, lastRound.OpensOn ?? DateOnly.FromDateTime(lastRound.LaunchedAt!.Value));
+            reviews = new InsightsReviewsDto(opened, year.Cycle.ResultsOutOn, people.Count(p => p.Review is not null), Line(year, people, opened), lastLine);
         }
 
-        var releasedAll = people.Where(p => p.Review?.Released == true).ToList();
-        return Result.Success(new InsightsDto(
-            cycle.Id, cycle.Name, cycle.State, today, cycle.State == CycleLifecycleState.Closed, people.Count,
-            scope is null ? null : request.UnitId, scopeName, options,
-            execution, reviews, data.Round?.Id, data.Round?.Name, data.Round?.ManagerAssessmentDueDate,
-            releasedAll.Max(p => p.Review!.FinalizedAt),
-            people.Count(p => !p.Approved),
-            people.Count(p => p.Approved && !p.Updated(since)),
-            byUnit, Row(null, scope is null ? "All units" : scopeName, people),
-            direction, notAligned, managers));
+        // Goal updates each month of the year, against the same months of the one before.
+        var shift = last is null ? 0 : year.Cycle.StartDate.DayNumber - last.Cycle.StartDate.DayNumber;
+        var goalIds = goals.Select(g => g.Id).ToHashSet();
+        var lastGoalIds = lastPeople.SelectMany(p => p.Goals).Select(g => g.Id).ToHashSet();
+        var updates = new List<InsightsMonthDto>();
+        for (var month = new DateOnly(year.Cycle.StartDate.Year, year.Cycle.StartDate.Month, 1); month <= year.Cycle.EndDate; month = month.AddMonths(1))
+        {
+            var from = month.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            var to = month.AddMonths(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            int Count(InsightsData.Year y, HashSet<Guid> ids, DateTime a, DateTime b)
+                => ids.Sum(id => y.CheckIns[id].Count(c => c.RecordedAt >= a && c.RecordedAt < b));
+            updates.Add(new InsightsMonthDto(month.Year, month.Month, Count(year, goalIds, from, to),
+                last is null ? null : Count(last, lastGoalIds, from.AddDays(-shift), to.AddDays(-shift))));
+        }
+
+        var carried = people.SelectMany(p => p.Goals.Where(g => g.Carried).Select(g => (p, g))).OrderBy(x => x.p.Name).ThenBy(x => x.g.Title).ToList();
+        return new InsightsEndDto(scale.Count >= 2 ? scale.OrderByDescending(l => l.Value).ElementAt(1).Label : null,
+            ratings, Ends(goals), last is null ? null : Ends(lastPeople.SelectMany(p => p.Goals)), met, tenure, reviews, updates,
+            carried.Take(8).Select(x => new InsightsCarriedGoalDto(x.g.Id, year.Cycle.Id, x.g.Title, x.p.EmployeeId, x.p.Name, x.g.Progress)).ToList(),
+            carried.Count);
     }
-
-    private static double Share(int? count, int? total) => total is > 0 ? (double)(count ?? 0) / total.Value : 1d;
-
-    private static StatusMixDto Mix(IEnumerable<ObjectiveStatus?> statuses)
-    {
-        var list = statuses.ToList();
-        return new StatusMixDto(list.Count(s => s == ObjectiveStatus.OnTrack), list.Count(s => s == ObjectiveStatus.AtRisk),
-            list.Count(s => s == ObjectiveStatus.OffTrack), list.Count(s => s is null));
-    }
-
-    private static IReadOnlyList<LevelCountDto> Levels(IReadOnlyList<RatingScaleLevel> scale, IReadOnlyList<InsightsData.ReviewFacts> released)
-        => scale.Select(level => new LevelCountDto(level.Value, level.Label, released.Count(r => r.FinalRating == level.Value)))
-            .Concat(released.Where(r => r.FinalRating is int value && scale.All(l => l.Value != value))
-                .GroupBy(r => r.FinalRating!.Value).Select(g => new LevelCountDto(g.Key, $"Level {g.Key}", g.Count())))
-            .OrderBy(l => l.Value).ToList();
 }
 
-/// <summary>The participants behind one Insights figure, paged on the server; each opens their plan or review.</summary>
+/// <summary>The people behind one Insights figure, paged on the server; each opens their page in Core HR.</summary>
 public sealed class GetInsightsPeopleHandler(PerformanceDbContext db, ICoreWorkforceClient workforce)
     : IQueryHandler<GetInsightsPeopleQuery, Result<InsightsPeoplePageDto>>
 {
@@ -286,62 +442,54 @@ public sealed class GetInsightsPeopleHandler(PerformanceDbContext db, ICoreWorkf
 
     public static readonly IReadOnlySet<string> Metrics = new HashSet<string>
     {
-        "people", "plans-approved", "plans-not-approved", "updated", "not-updated", "at-risk-or-off-track",
-        "reviews", "on-time", "late", "released", "acknowledged", "not-acknowledged", "level", "raised", "lowered",
+        "people", "on-track", "at-risk", "not-updated", "supporting", "level", "strong", "met", "partly", "not-met", "carried",
+        "reviews-done", "reviews-not-done",
     };
 
     public async Task<Result<InsightsPeoplePageDto>> Handle(GetInsightsPeopleQuery request, CancellationToken cancellationToken)
     {
-        if (!Metrics.Contains(request.Metric) || (request.Metric == "level" && request.Level is null))
+        if (!Metrics.Contains(request.Metric) || (request.Metric == "level" && request.Level is null)
+            || (request.Bucket is not null && !InsightsData.Buckets.Contains(request.Bucket)))
             return Result.Failure<InsightsPeoplePageDto>(PerformanceErrors.Validation("Insights.Invalid", "Choose a figure to open."));
-        var data = await InsightsData.LoadAsync(db, workforce, request.CycleId, cancellationToken);
-        if (data is null) return Result.Failure<InsightsPeoplePageDto>(PerformanceErrors.NotFound("Cycle", request.CycleId));
-        var (scope, _, _) = await InsightsData.ScopeAsync(workforce, data.People, request.UnitId, cancellationToken);
+        var cycle = await InsightsData.PickAsync(db, request.CycleId, cancellationToken);
+        if (cycle is null) return Result.Failure<InsightsPeoplePageDto>(PerformanceErrors.NotFound("Cycle", request.CycleId ?? Guid.Empty));
+        var year = await InsightsData.LoadAsync(db, cycle, cancellationToken);
+        var units = await InsightsData.UnitsAsync(workforce, year.People, cancellationToken);
+        var now = PerformanceClock.UtcNow;
 
-        var today = PerformanceClock.Today;
-        var since = PerformanceClock.UtcNow.AddDays(-InsightsData.RecentDays);
+        var scoped = year.People.Where(p => InsightsData.InScope(p, units, request.UnitId)
+            && (request.DepartmentId is not Guid dept || (p.UnitId is Guid unit && units.Department(unit) == dept))
+            && (request.ManagerId is not Guid manager || p.ManagerId == manager)).ToList();
+        IReadOnlyDictionary<Guid, WorkforceSnapshot> snapshots = request.Bucket is null
+            ? new Dictionary<Guid, WorkforceSnapshot>()
+            : await InsightsData.WorkforceAsync(workforce, scoped.Select(p => p.EmployeeId).ToList(), cancellationToken);
         bool Matches(InsightsData.Person p) => request.Metric switch
         {
             "people" => true,
-            "plans-approved" => p.Approved,
-            "plans-not-approved" => !p.Approved,
-            "updated" => p.Updated(since),
-            "not-updated" => p.Approved && !p.Updated(since),
-            "at-risk-or-off-track" => p.Approved && p.AtRiskOrOff,
-            "reviews" => p.Review is not null,
-            "on-time" => p.Review?.OnTime == true,
-            "late" => p.Review?.Late(today) == true,
-            "released" => p.Review?.Released == true,
-            "acknowledged" => p.Review is { Released: true, AcknowledgedAt: not null },
-            "not-acknowledged" => p.Review is { Released: true, AcknowledgedAt: null },
+            "on-track" => p.Goals.Any(g => g.Status == ObjectiveStatus.OnTrack),
+            "at-risk" => p.Goals.Any(g => g.Status is ObjectiveStatus.AtRisk or ObjectiveStatus.OffTrack),
+            "not-updated" => InsightsData.NotUpdated(year, p, now, now),
+            "supporting" => p.Goals.Any(g => g.Supporting),
             "level" => p.Review is { Released: true } review && review.FinalRating == request.Level,
-            "raised" => p.Review is { Released: true, Raised: true },
-            "lowered" => p.Review is { Released: true, Lowered: true },
+            "strong" => p.Review is { Released: true, FinalRating: int rating } && InsightsData.Strong(year, rating),
+            "met" or "partly" or "not-met" or "carried" => p.Goals.Any(g => InsightsData.Ending(g) == request.Metric),
+            "reviews-done" => p.Review?.ManagerSubmittedAt is not null,
+            "reviews-not-done" => p.Review is { ManagerSubmittedAt: null },
             _ => false,
         };
-
-        var matching = data.People
-            .Where(p => InsightsData.InScope(p, scope) && (request.ManagerId is not Guid manager || p.Review?.ReviewerId == manager) && Matches(p))
+        var matching = scoped
+            .Where(p => Matches(p) && (request.Bucket is null
+                || InsightsData.Bucket(snapshots.GetValueOrDefault(p.EmployeeId)?.EmploymentStart, cycle.EndDate) == request.Bucket))
             .OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase).ToList();
         var pageSize = Math.Clamp(request.PageSize, 1, MaxPageSize);
         var page = Math.Max(1, request.Page);
-        var cycleId = data.Cycle.Id;
-        var items = matching.Skip((page - 1) * pageSize).Take(pageSize).Select(p => new InsightsPersonDto(
-            p.EmployeeId, p.Name, p.JobTitle, p.UnitName, p.Review?.ReviewerName ?? p.ManagerName,
-            p.PlanState switch
-            {
-                null => RosterPlanStatus.NotStarted,
-                PlanLifecycleState.Approved => RosterPlanStatus.Approved,
-                PlanLifecycleState.Submitted => RosterPlanStatus.Submitted,
-                _ => RosterPlanStatus.Draft,
-            },
-            p.LastUpdateAt, p.Review?.ManagerDue, p.Review?.ManagerSubmittedAt, p.Review?.FinalizedAt, p.Review?.AcknowledgedAt,
-            p.Review?.Released == true ? p.Review.FinalRating : null,
-            p.Review?.Released == true && p.Review.CalibrationChanged ? p.Review.ManagerRating : null,
-            p.Review is not null && request.Metric is "reviews" or "on-time" or "late" or "released" or "acknowledged" or "not-acknowledged" or "level" or "raised" or "lowered"
-                ? PerformanceNotificationTemplates.ReviewPath(p.Review.Id)
-                : p.PlanId is Guid planId ? PerformanceNotificationTemplates.PlanPath(cycleId, planId) : null))
-            .ToList();
-        return Result.Success(new InsightsPeoplePageDto(request.Metric, matching.Count, page, pageSize, items));
+        var items = matching.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+        var keys = request.Bucket is null
+            ? await InsightsData.WorkforceAsync(workforce, items.Select(p => p.EmployeeId).ToList(), cancellationToken)
+            : snapshots;
+        return Result.Success(new InsightsPeoplePageDto(request.Metric, matching.Count, page, pageSize, items.Select(p => new InsightsPersonDto(
+            p.EmployeeId, p.Name, p.JobTitle, p.UnitName, p.ManagerName,
+            keys.GetValueOrDefault(p.EmployeeId) is { } snapshot ? $"/core/people/{Uri.EscapeDataString(snapshot.StableEmployeeKey)}?tab=performance" : null))
+            .ToList()));
     }
 }

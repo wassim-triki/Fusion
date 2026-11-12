@@ -129,6 +129,8 @@ export interface FusionSidebarProps {
   brandColor?: string | null;
   /** All of the person's waiting work; absent until a module answers. */
   homeCount?: number;
+  /** Insights (D-88), Fusion's one dashboard, as a row under Home: shown to who has one of its tabs. */
+  insights?: boolean;
   /** The modules the person can enter, in sidebar order. */
   modules: FusionSidebarModule[];
   /** The module being shown; its pages are client navigations. Omitted on the Fusion home. */

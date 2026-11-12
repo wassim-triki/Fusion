@@ -5,6 +5,7 @@ import checklists from "../../messages/en/checklists.json";
 import common from "../../messages/en/common.json";
 import companyImport from "../../messages/en/companyImport.json";
 import frame from "../../messages/en/frame.json";
+import insights from "../../messages/en/insights.json";
 import invite from "../../messages/en/invite.json";
 import orgChart from "../../messages/en/orgChart.json";
 import organization from "../../messages/en/organization.json";
@@ -24,6 +25,7 @@ export const englishMessages = {
   common,
   companyImport,
   frame,
+  insights,
   invite,
   orgChart,
   organization,

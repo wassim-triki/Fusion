@@ -54,6 +54,8 @@ export {
   canAccessCorePeople,
   canManageCoreEmployees,
   canViewCoreReports,
+  canAdministerPerformanceYears,
+  canSeeInsights,
   canBuildCoreReports,
   canImportCoreEmployees,
   canManageCoreReporting,

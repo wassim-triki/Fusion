@@ -1,0 +1,117 @@
+{
+  "title": "التحليلات",
+  "tabs": {
+    "people": "الأشخاص",
+    "performance": "الأداء",
+    "reports": "التقارير"
+  },
+  "noAccess": {
+    "title": "غير متاح لدورك",
+    "body": "تعرض التحليلات أرقام الشركة لفريق الموارد البشرية وقرّاء التقارير."
+  },
+  "sheet": {
+    "count": "{count, plural, one {شخص واحد} other {# أشخاص}}",
+    "failed": "تعذّر تحميل هؤلاء الأشخاص. حاول بعد قليل.",
+    "nobody": "لا أحد هنا.",
+    "more": "عرض {count} آخرين"
+  },
+  "people": {
+    "period": "الفترة",
+    "today": "اليوم",
+    "endOf": "نهاية {year}",
+    "unavailable": "الأرقام غير متاحة",
+    "loadFailed": "تعذّر تحميل سجلات الموارد البشرية.",
+    "retry": "إعادة المحاولة",
+    "headcount": "عدد الأشخاص في الشركة",
+    "byDepartment": "حسب القسم",
+    "noDepartment": "بلا قسم",
+    "joined": "المنضمون كل ربع",
+    "joinedTip": "{count, plural, =0 {لا أحد} other {# منضمين}}",
+    "joinedIn": "منضمو الربع {quarter} من {year}",
+    "nobodySince": "لا أحد منذ {date}",
+    "timeAtCompany": "مدة العمل في الشركة"
+  },
+  "performance": {
+    "scope": "من",
+    "everyone": "الجميع",
+    "year": "السنة",
+    "against": "مقارنة بـ {year}",
+    "soFar": "حتى الآن",
+    "ended": "انتهت",
+    "noYear": {
+      "title": "لا توجد سنة بعد",
+      "body": "تبدأ أرقام الأداء مع بدء سنة.",
+      "action": "إعداد سنة"
+    },
+    "unavailable": "الأرقام غير متاحة",
+    "loadFailed": "تعذّر تحميل أرقام الأداء.",
+    "retry": "إعادة المحاولة",
+    "notStarted": "لم تبدأ هذه السنة بعد.",
+    "againstLast": "هذه السنة مقارنة بالسابقة",
+    "sameDays": "{year}، الأيام نفسها",
+    "sameDay": "{year}، اليوم نفسه",
+    "today": "اليوم",
+    "onTrackByDepartment": "على المسار، حسب القسم",
+    "noGoals": "لا أهداف معتمدة بعد.",
+    "people": "{count, plural, one {شخص واحد} other {# أشخاص}}",
+    "strongByTenure": "{level} فأعلى، حسب مدة العمل",
+    "strongFallback": "قوي",
+    "afterReviews": "بعد التقييمات",
+    "tenure": {
+      "under-1": "أقل من سنة",
+      "1-2": "سنة إلى سنتين",
+      "2-4": "2 إلى 4 سنوات",
+      "4-6": "4 إلى 6 سنوات",
+      "over-6": "أكثر من 6 سنوات"
+    },
+    "tenureSource": "مدة العمل من الموارد البشرية، والتقييمات من الأداء",
+    "trends": {
+      "on-track": "أهداف على المسار",
+      "at-risk": "معرّضة للخطر أو خارج المسار",
+      "not-updated": "بلا تحديث منذ 30 يومًا",
+      "supporting": "أهداف تدعم هدفًا للشركة",
+      "atRiskSub": "{atRisk} معرّضة للخطر، {offTrack} خارج المسار",
+      "ofPeople": "من {count} أشخاص لديهم أهداف معتمدة",
+      "ofGoals": "{count} من {total} أهداف",
+      "pointsMore": "أكثر بـ {count} نقاط",
+      "pointsFewer": "أقل بـ {count} نقاط",
+      "more": "أكثر بـ {count}",
+      "fewer": "أقل بـ {count}",
+      "same": "مثل {year}"
+    },
+    "nudges": {
+      "theirPeople": "أشخاص {name} بلا تحديث",
+      "names": "{more, plural, =0 {{names}} other {{names} و# آخرون}}",
+      "ofTheirs": "{count} من {total}",
+      "nudge": "تذكير",
+      "nudged": "تم التذكير",
+      "nudgeAll": "تذكير الـ {count}"
+    },
+    "nextStep": "خطوتك التالية",
+    "setUp": "إعداد السنة التالية",
+    "launch": "إطلاق {year}",
+    "endedOn": "انتهت {year} في {date}",
+    "ratings": "نتائج التقييمات",
+    "ratingTip": "{count} بتقييم {label}",
+    "goalsEnded": "كيف انتهت الأهداف",
+    "goals": "{count, plural, one {هدف واحد} other {# أهداف}}",
+    "endings": {
+      "met": "محققة",
+      "partly": "محققة جزئيًا",
+      "notMet": "غير محققة",
+      "carried": "مرحّلة"
+    },
+    "lastShare": "{share}% في {year}",
+    "metByDepartment": "الأهداف المحققة، حسب القسم",
+    "reviewsWeekly": "التقييمات المنجزة أسبوعيًا",
+    "noReviews": "لا تقييمات هذه السنة.",
+    "opened": "فُتحت {date}",
+    "weeks": "{count} أسابيع",
+    "updatesMonthly": "تحديثات الأهداف كل شهر",
+    "carried": "مرحّلة إلى {year}",
+    "nextYear": "السنة التالية",
+    "carriedNote": "{count} أهداف عادت إلى مسودات أصحابها",
+    "carriedOwner": "{name}، أُنجز {progress}%",
+    "carriedMore": "و{count} أهداف أخرى"
+  }
+}

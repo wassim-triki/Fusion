@@ -1,0 +1,117 @@
+{
+  "title": "Analyses",
+  "tabs": {
+    "people": "Personnes",
+    "performance": "Performance",
+    "reports": "Rapports"
+  },
+  "noAccess": {
+    "title": "Pas pour votre rôle",
+    "body": "Les analyses montrent les chiffres de l'entreprise à l'équipe RH et aux lecteurs de rapports."
+  },
+  "sheet": {
+    "count": "{count, plural, one {# personne} other {# personnes}}",
+    "failed": "Impossible de charger ces personnes. Réessayez dans un instant.",
+    "nobody": "Personne ici.",
+    "more": "Afficher {count} de plus"
+  },
+  "people": {
+    "period": "Période",
+    "today": "Aujourd'hui",
+    "endOf": "Fin {year}",
+    "unavailable": "Chiffres indisponibles",
+    "loadFailed": "Les dossiers RH n'ont pas pu être chargés.",
+    "retry": "Réessayer",
+    "headcount": "Personnes dans l'entreprise",
+    "byDepartment": "Par département",
+    "noDepartment": "Sans département",
+    "joined": "Arrivées par trimestre",
+    "joinedTip": "{count, plural, =0 {Aucune arrivée} one {# arrivée} other {# arrivées}}",
+    "joinedIn": "Arrivées au T{quarter} {year}",
+    "nobodySince": "Personne depuis {date}",
+    "timeAtCompany": "Ancienneté"
+  },
+  "performance": {
+    "scope": "Qui",
+    "everyone": "Tout le monde",
+    "year": "Année",
+    "against": "face à {year}",
+    "soFar": "à ce jour",
+    "ended": "terminée",
+    "noYear": {
+      "title": "Pas encore d'année",
+      "body": "Les chiffres de performance commencent avec une année en cours.",
+      "action": "Préparer une année"
+    },
+    "unavailable": "Chiffres indisponibles",
+    "loadFailed": "Les chiffres de performance n'ont pas pu être chargés.",
+    "retry": "Réessayer",
+    "notStarted": "Cette année n'a pas encore commencé.",
+    "againstLast": "Cette année face à la précédente",
+    "sameDays": "{year}, mêmes jours",
+    "sameDay": "{year}, même jour",
+    "today": "Aujourd'hui",
+    "onTrackByDepartment": "En bonne voie, par département",
+    "noGoals": "Aucun objectif approuvé.",
+    "people": "{count, plural, one {# personne} other {# personnes}}",
+    "strongByTenure": "{level} ou plus, par ancienneté",
+    "strongFallback": "Solide",
+    "afterReviews": "Après les évaluations",
+    "tenure": {
+      "under-1": "Moins d'un an",
+      "1-2": "1 à 2 ans",
+      "2-4": "2 à 4 ans",
+      "4-6": "4 à 6 ans",
+      "over-6": "Plus de 6 ans"
+    },
+    "tenureSource": "Ancienneté issue des RH, évaluations issues de Performance",
+    "trends": {
+      "on-track": "Objectifs en bonne voie",
+      "at-risk": "À risque ou hors piste",
+      "not-updated": "Sans mise à jour depuis 30 jours",
+      "supporting": "Objectifs liés à un objectif de l'entreprise",
+      "atRiskSub": "{atRisk} à risque, {offTrack} hors piste",
+      "ofPeople": "sur {count, plural, one {# personne} other {# personnes}} aux objectifs approuvés",
+      "ofGoals": "{count} sur {total} objectifs",
+      "pointsMore": "{count, plural, one {# point} other {# points}} de plus",
+      "pointsFewer": "{count, plural, one {# point} other {# points}} de moins",
+      "more": "{count} de plus",
+      "fewer": "{count} de moins",
+      "same": "Comme en {year}"
+    },
+    "nudges": {
+      "theirPeople": "Personnes de {name} sans mise à jour",
+      "names": "{more, plural, =0 {{names}} other {{names} et # autres}}",
+      "ofTheirs": "{count} sur {total}",
+      "nudge": "Relancer",
+      "nudged": "Relancé",
+      "nudgeAll": "Relancer les {count}"
+    },
+    "nextStep": "Votre prochaine étape",
+    "setUp": "Préparer l'année suivante",
+    "launch": "Lancer {year}",
+    "endedOn": "{year} terminée le {date}",
+    "ratings": "Répartition des évaluations",
+    "ratingTip": "{count} évalués {label}",
+    "goalsEnded": "Bilan des objectifs",
+    "goals": "{count, plural, one {# objectif} other {# objectifs}}",
+    "endings": {
+      "met": "Atteints",
+      "partly": "Partiellement",
+      "notMet": "Non atteints",
+      "carried": "Reportés"
+    },
+    "lastShare": "{share} % en {year}",
+    "metByDepartment": "Objectifs atteints, par département",
+    "reviewsWeekly": "Évaluations faites, semaine par semaine",
+    "noReviews": "Pas d'évaluations cette année.",
+    "opened": "Ouverture {date}",
+    "weeks": "{count, plural, one {# semaine} other {# semaines}}",
+    "updatesMonthly": "Mises à jour d'objectifs par mois",
+    "carried": "Reportés sur {year}",
+    "nextYear": "l'année suivante",
+    "carriedNote": "{count, plural, one {# objectif, de retour en brouillon} other {# objectifs, de retour en brouillon}}",
+    "carriedOwner": "{name}, {progress} % fait",
+    "carriedMore": "et {count, plural, one {# autre objectif} other {# autres objectifs}}"
+  }
+}

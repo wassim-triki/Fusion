@@ -94,7 +94,7 @@ export function searchPages(user: AuthUser | null, rights: SearchRights): Search
     core && canViewCoreOrganization(user) && { id: "organization", href: "/core/organization", icon: "team" },
     core && canViewCoreOrganization(user) && { id: "jobs", href: "/core/organization/jobs", icon: "job" },
     core && canViewCoreOrganization(user) && { id: "places", href: "/core/organization/places", icon: "place" },
-    core && canViewCoreReports(user) && { id: "reports", href: "/core/reports", icon: "report" },
+    core && canViewCoreReports(user) && { id: "reports", href: "/core/insights/reports", icon: "report" },
     rights.manageEmployees && { id: "hire", href: "/core/people/add", icon: "hire" },
     core && canViewCoreAccessProfiles(user) && { id: "roles", href: "/core/settings/roles", icon: "roles" },
     core && canAccessCoreSettings(user) && { id: "coreSettings", href: "/core/settings", icon: "settings" },
@@ -299,7 +299,7 @@ export function buildResults(
     ...performance.cycles.map((c): SearchItem => ({ kind: "thing", key: `cycle:${c.id}`, label: c.name, sub: text.sub.cycle, icon: "cycle", href: `/performance?cycle=${encodeURIComponent(c.id)}` })),
   ] : [];
   const reportItems: SearchItem[] = (core?.reports ?? []).map((r) => ({
-    kind: "thing", key: `report:${r.id}`, label: r.name, sub: text.sub.report, icon: "report", href: `/core/reports/${r.id}`,
+    kind: "thing", key: `report:${r.id}`, label: r.name, sub: text.sub.report, icon: "report", href: `/core/insights/reports/${r.id}`,
   }));
   perfItems.push(...reportItems);
   const pageItems: SearchItem[] = pages

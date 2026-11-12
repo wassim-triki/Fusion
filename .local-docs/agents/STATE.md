@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** B-447, slice 13 (Insights), 2026-11-12, In review (look at `plans/B-447-screens/`). Next: after slice 13, B-395 (a year demoed in one sitting) or the Home rework (B-378); the review queue holds B-405, B-424, B-431, B-434, B-440/B-446, B-447.
+**Last finished:** B-395, a year demoed in one sitting, 2026-11-12, In review (run sheet in `data/README.md`; `sitting` preset, rehearsal 14/14). Next: the Home rework (B-378); the review queue holds B-395, B-405, B-424, B-431, B-434, B-440/B-446, B-447.
 
 ## Active work
 

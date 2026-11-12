@@ -1,6 +1,6 @@
 // The five presets (D-41), every date counted from the run day D (design D9). Each returns the foundation's as-of
 // date and a schedule that fills a timeline; history presets share last year's closed, released cycle.
-import { addDays, companySetup, conversations, draftCycle, readNotifications, runCycle } from "./year.mjs";
+import { addDays, companySetup, conversations, draftCycle, draftRound, readNotifications, runCycle } from "./year.mjs";
 
 const fy = (end) => `FY${end.getUTCFullYear()}`;
 
@@ -40,6 +40,22 @@ export const PRESETS = {
     plan: (D) => {
       const { last, current, asOf } = years(addDays(D, -12));
       return { asOf, schedule: (t, ctx) => history(t, ctx, D, last, current) };
+    },
+  },
+  // B-395: the planning story with the Year-end round already drafted, so the whole year walks in one sitting: Mariam
+  // approves, HR closes planning, opens the round, the two reviews are written, results go out, next year launches.
+  sitting: {
+    label: "One sitting",
+    summary: "The planning story with the Year-end round drafted: walk the whole year live (run sheet in data/README.md).",
+    plan: (D) => {
+      const { last, current, asOf } = years(addDays(D, -12));
+      return {
+        asOf,
+        schedule: (t, ctx) => {
+          history(t, ctx, D, last, current);
+          draftRound(t, ctx, current, addDays(D, -1), addDays(current.end, -45));
+        },
+      };
     },
   },
   midyear: {

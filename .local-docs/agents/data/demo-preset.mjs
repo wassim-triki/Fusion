@@ -1,7 +1,7 @@
 // Demo presets (B-095, D-40/D-41): each preset is its own Carthage tenant at one point of the performance year,
 // relative to the day it is built, written through the product API (the gateway) with the Development-only demo clock.
 //   node .local-docs/agents/data/demo-preset.mjs list
-//   node .local-docs/agents/data/demo-preset.mjs build <fresh|planning|midyear|yearend|nextcycle>   (no-op if built)
+//   node .local-docs/agents/data/demo-preset.mjs build <fresh|planning|sitting|midyear|yearend|nextcycle>   (no-op if built)
 //   node .local-docs/agents/data/demo-preset.mjs reset <preset>   (builds a new one, then retires the old one)
 //   node .local-docs/agents/data/demo-preset.mjs tidy   (archives every retired or failed preset tenant still listed)
 // Accounts use the local password (README) at <preset>-<n>.example.test; the manifest demo-presets.local.json records

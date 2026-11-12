@@ -33,12 +33,13 @@ The repeatable setup script is [prepare-carthage-demo.mjs](prepare-carthage-demo
 
 ## Demo presets (B-095)
 
-Five presets, each its own Carthage tenant at one point of the performance year, built through the product API at the gateway (`:5000`; the shell's `/api` forwards there unchanged, but its dev server is ~20× slower and drops connections under a build's load) with the Development-only demo clock (`X-Demo-Clock`, Performance refuses it outside Development). Every date counts from the day the build runs, so a preset shows the same situation whatever day it is built; rebuild it before a demo so its "today" is the demo day. Today's Carthage Digital Group tenant above is unchanged and keeps its own scripts.
+Six presets, each its own Carthage tenant at one point of the performance year, built through the product API at the gateway (`:5000`; the shell's `/api` forwards there unchanged, but its dev server is ~20× slower and drops connections under a build's load) with the Development-only demo clock (`X-Demo-Clock`, Performance refuses it outside Development). Every date counts from the day the build runs, so a preset shows the same situation whatever day it is built; rebuild it before a demo so its "today" is the demo day. Today's Carthage Digital Group tenant above is unchanged and keeps its own scripts.
 
 | Preset | Tenant | What it shows on the build day |
 | --- | --- | --- |
 | `fresh` | Carthage · Fresh | Organization, workforce and accounts; nothing in Performance. |
 | `planning` | Carthage · Planning | This year started 12 days ago, planning closes in 18 days; plans in every state (Aicha submitted, Leila Draft, Khaled returned with a change request, Rim approved, some not started). |
+| `sitting` | Carthage · One sitting | The `planning` story with the Year-end round already drafted (opens by itself 45 days before the year ends), so the whole year can be walked live: see "A year in one sitting" below. |
 | `midyear` | Carthage · Mid-year | About 180 days in: every plan approved, monthly check-ins (Aicha's first objective at risk), Mariam's open update request to Aicha. |
 | `yearend` | Carthage · Year-end | The cycle ends in 14 days; the Year-end round launched 10 days ago (about 81% of self-assessments in, not Aicha's; three peers answered about her; Omar rates generously; one of Mariam's people is rated 5 against off-track objectives); their flagged reviews wait on a look in calibration; next year's cycle in Draft with its population confirmed. |
 | `nextcycle` | Carthage · Next cycle | This year ended 2 days ago: calibrated, released, mostly acknowledged (it stays at Results out; nobody closes a year, D-57); next year set up as a draft from tomorrow, ready to launch. Launching it ends this year and carries its unfinished goals. |
@@ -52,6 +53,19 @@ Commands (stack up, Performance in Development):
 - `node .local-docs/agents/data/demo-preset.mjs tidy`: archives every retired or failed preset tenant still in the platform list.
 - `node .local-docs/agents/data/demo-preset.mjs reset <preset>`: builds a new one, then retires the previous one. If the new build fails, the previous one stays as it was.
 - `node .local-docs/agents/data/journey-demo-preset.cjs <preset>`: read-only checks that the preset reached its state, plus the demo clock's refusals.
+- `node .local-docs/agents/data/rehearse-year-in-one-sitting.mjs`: B-395, walks the `sitting` preset through the run sheet below via the API on today's clock and prints what the Year says after each move; the first refusal stops it. It spends the tenant: `reset sitting` afterwards.
+
+### A year in one sitting (B-395)
+
+The phase follows what happened (D-34), so HR moves the year on and the whole year runs live on one company, no cut-over. Rebuild the morning of the demo (`reset sitting`, ~4 min), then sign in at `http://localhost:3000` as each person (`<first>.<last>@sitting-<n>.example.test`, local password):
+
+1. **Planning.** Amira Khelifi, the administrator, opens Performance: the year at Planning, who hasn't sent a plan, Nudge them. Mariam Gharbi, a manager, opens Aicha Bouazizi's submitted plan from Home's Needs you and approves it.
+2. **Execution.** Amira moves the year on to Execution (the preview names who it changes for, then confirm). Aicha updates a goal from Goals.
+3. **Review.** Amira's Year shows the drafted round with Open it today; opening it moves the year to Review. Aicha writes her self-review from its draft; Mariam writes Aicha's review beside the year.
+4. **Calibration and results.** Amira looks at the flagged reviews (keep or change with a reason), then releases: the year reads Results out. Aicha reads her results and acknowledges them. For a calibration with a full company behind it, cut to the `yearend` preset.
+5. **Next year.** Amira sets up next year (prefilled a year on, last year ghosted) and launches it: this year ends, unfinished goals land in their owners' drafts, and the new year is at Planning. Insights shows the year that ended.
+
+Rehearsed 2026-11-12: all 14 moves passed (only Aicha's review goes out; the rest of the company stays "still being written", which is how release works, D-72).
 - `node .local-docs/agents/data/screens-b406-goal-panel.cjs`: B-406 slice 5 part 1, the goal panel (mid-year, just written, a company goal) and the progress dialog on the `midyear` and `planning` presets, dark 1440×900 through the shell (opens the dialog, never saves).
 - `node .local-docs/agents/data/screens-b406-goals-pages.cjs`: B-406 slice 5 part 2, Goals (You mid-year and while planning, a manager's unit tab and Company) on the `midyear` and `planning` presets, dark 1440×900 through the shell
 - `node .local-docs/agents/data/journey-b424-calendar-feed.cjs`: B-424 the 1:1 calendar feed through the shell on the `midyear` preset as Mariam Gharbi: the link reads without a session and lists only her 1:1s; the secret under another tenant, a signed-in person of another tenant, a made-up, a replaced and a turned-off link all read nothing; also checks her 1:1 with Aicha offers the year's suggestions and Aicha's goals. Leaves her link off.

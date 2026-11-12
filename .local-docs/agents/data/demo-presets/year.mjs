@@ -475,30 +475,44 @@ const PEER_WORDS = [
  * Round dates: launch, selfDue, managerDue; `release` (when set) runs calibration, release, acknowledgements and the
  * round's close; without it the round is left running (the year-end preset).
  */
+/**
+ * Drafts the Year-end round with its questions, competencies and peers; `r` carries selfDue/managerDue (or opensOn, when
+ * the round opens by itself and its due dates follow from that day). Anyone without an active reviewer is left out.
+ */
+async function setUpRound(ctx, cycle, r, periodEnd) {
+  const amira = ctx.amira();
+  const created = await amira.post(`${cycle.base}/review-rounds`, { name: "Year-end review", periodStart: ymd(cycle.start), periodEnd: ymd(periodEnd) });
+  r.id = created.id;
+  const library = await amira.get("/api/performance/settings/review-questions");
+  const pick = (audience, n) => library.filter((q) => q.audience === audience && q.state === "Active").slice(0, n).map((q) => q.id);
+  const competencies = (await amira.get("/api/performance/settings/competencies")).filter((c) => c.state === "Active").map((c) => c.id);
+  let round = await amira.get(`/api/performance/review-rounds/${r.id}`);
+  round = await amira.put(`/api/performance/review-rounds/${r.id}`, {
+    expectedVersion: round.version, name: "Year-end review", periodStart: round.periodStart, periodEnd: round.periodEnd,
+    selfAssessmentEnabled: true, objectiveRatingsEnabled: true, calibrationEnabled: true,
+    selfAssessmentDueDate: r.selfDue ? ymd(r.selfDue) : null, managerAssessmentDueDate: r.managerDue ? ymd(r.managerDue) : null,
+    ...(r.opensOn ? { opensOn: ymd(r.opensOn) } : {}), competencyIds: competencies,
+    peerInputEnabled: true, questionsEnabled: true, potentialEnabled: true,
+    questionIds: [...pick("Person", 3), ...pick("Manager", 2), ...pick("Peer", 3)],
+  });
+  const blocked = round.subjects.filter((s) => !s.isExcluded && s.readinessIssues?.length);
+  if (blocked.length) await amira.put(`/api/performance/review-rounds/${r.id}/population`, {
+    expectedVersion: round.version,
+    subjects: blocked.map((s) => ({ participantId: s.participantId, isExcluded: true, exclusionReason: "No active reviewer this cycle", reviewerEmployeeId: s.reviewerEmployeeId })),
+  });
+}
+
+/** A Year-end round drafted ahead, opening by itself on `opensOn` (or the day HR opens it): the one-sitting preset's. */
+export function draftRound(t, ctx, cycle, when, opensOn) {
+  cycle.round = { opensOn };
+  t.add(moment(when, 10), `Amira drafts the Year-end review of ${cycle.name}`, () => setUpRound(ctx, cycle, cycle.round, opensOn));
+}
+
 function reviewRound(t, ctx, cycle) {
   const r = cycle.round;
   const amira = () => ctx.amira();
   r.reviews = {};
-  t.add(moment(addDays(r.launch, -2), 10), `Amira sets up the Year-end review of ${cycle.name}`, async () => {
-    const created = await amira().post(`${cycle.base}/review-rounds`, { name: "Year-end review", periodStart: ymd(cycle.start), periodEnd: ymd(r.launch) });
-    r.id = created.id;
-    const library = await amira().get("/api/performance/settings/review-questions");
-    const pick = (audience, n) => library.filter((q) => q.audience === audience && q.state === "Active").slice(0, n).map((q) => q.id);
-    const competencies = (await amira().get("/api/performance/settings/competencies")).filter((c) => c.state === "Active").map((c) => c.id);
-    let round = await amira().get(`/api/performance/review-rounds/${r.id}`);
-    round = await amira().put(`/api/performance/review-rounds/${r.id}`, {
-      expectedVersion: round.version, name: "Year-end review", periodStart: round.periodStart, periodEnd: round.periodEnd,
-      selfAssessmentEnabled: true, objectiveRatingsEnabled: true, calibrationEnabled: true,
-      selfAssessmentDueDate: ymd(r.selfDue), managerAssessmentDueDate: ymd(r.managerDue), competencyIds: competencies,
-      peerInputEnabled: true, questionsEnabled: true, potentialEnabled: true,
-      questionIds: [...pick("Person", 3), ...pick("Manager", 2), ...pick("Peer", 3)],
-    });
-    const blocked = round.subjects.filter((s) => !s.isExcluded && s.readinessIssues?.length);
-    if (blocked.length) await amira().put(`/api/performance/review-rounds/${r.id}/population`, {
-      expectedVersion: round.version,
-      subjects: blocked.map((s) => ({ participantId: s.participantId, isExcluded: true, exclusionReason: "No active reviewer this cycle", reviewerEmployeeId: s.reviewerEmployeeId })),
-    });
-  });
+  t.add(moment(addDays(r.launch, -2), 10), `Amira sets up the Year-end review of ${cycle.name}`, () => setUpRound(ctx, cycle, r, r.launch));
   t.add(moment(r.launch, 9), "Amira launches the Year-end review", async () => {
     const round = await amira().get(`/api/performance/review-rounds/${r.id}`);
     await amira().post(`/api/performance/review-rounds/${r.id}/launch`, { expectedVersion: round.version });

@@ -60,24 +60,18 @@
     "keep": "Maintenir {level}"
   },
   "Grid": {
-    "spread": "Répartition",
-    "rated": "{count} notées",
-    "ratingAgainstGrade": "Note face à la note des objectifs",
-    "gradeFromMeasures": "Note des objectifs lue dans les mesures",
-    "below": "Sous {level}",
-    "above": "Au-dessus de {level}",
-    "rows": {
-      "0": "0,8 et plus",
-      "1": "0,5 à 0,8",
-      "2": "Moins de 0,5"
-    },
+    "goalsGrade": "Note des objectifs",
+    "plotLabel": "Chaque personne par note et note des objectifs",
+    "ratedBelow": "notées sous leurs objectifs",
+    "ratedAbove": "notées au-dessus de leurs objectifs",
+    "onLast": "{delta} par rapport à {cycle}",
+    "sameAsLast": "Comme {cycle}",
+    "dragHint": "Glissez un visage sur une autre note pour la changer",
     "fromTo": "{from} à {to}",
     "whyPlaceholder": "Pourquoi, {name} le lira",
     "why": "Pourquoi",
     "cancel": "Annuler",
     "change": "Changer",
-    "andMore": "et {count} de plus",
-    "dragHint": "Glissez un visage dans une autre colonne pour changer une note",
     "ungraded": "{count, plural, one {# personne} other {# personnes}} sans objectifs à noter"
   }
 }

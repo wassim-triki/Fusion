@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
-import type { CyclePhase, FusionWorkItem, YearDto, YearPersonDto, YearReviewerDto, YearStanding, YearStepDto } from "@repo/api";
+import type { CyclePhase, FusionWorkItem, YearDto, YearPersonDto, YearReleaseDto, YearReviewerDto, YearStanding, YearStepDto } from "@repo/api";
 import { useFusionWork } from "@repo/api/query";
 import { Button } from "@repo/ds/components/ui/button";
 import { dateFormatter } from "@repo/ds/lib/dates";
@@ -20,7 +20,7 @@ import { appHref, day, dayMonth, daysBetween, firstName } from "./year-words";
 import { YearYou } from "./year-you";
 import { OpenItToday, ReviewersBehind, RoundOpened, RoundOpens } from "./year-round";
 import { FlowSection, StepFlow, type FlowColumn, type FlowTone } from "./step-flow";
-import { LookedAt, ReleasedToday, ReleaseProgress, ReleaseRows, useReleaseRun } from "./year-release";
+import { LookedAt, ReleasedToday, ReleaseMoment, useReleaseRun } from "./year-release";
 import { calibrationHref } from "@/lib/performance-routes";
 
 const PERFORMANCE: ["performance"] = ["performance"];
@@ -73,6 +73,8 @@ function TheYear({ year, refetch }: { year: YearDto; refetch: () => Promise<unkn
   const long = dateFormatter({ day: "numeric", month: "long", year: "numeric" }, locale);
   const longDay = (iso: string) => long.format(new Date(Number(iso.slice(0, 4)), Number(iso.slice(5, 7)) - 1, Number(iso.slice(8, 10))));
   const caretAt = yearPosition(year.startDate, year.endDate, year.today);
+  // Once released, the moment stays on screen as the year moves on, until it's closed (B-433).
+  const [released, setReleased] = useState<{ count: number; release: YearReleaseDto; roundId: string | null } | null>(null);
 
   const openPreview = async () => {
     await refetch();
@@ -98,8 +100,13 @@ function TheYear({ year, refetch }: { year: YearDto; refetch: () => Promise<unkn
         <div className="-mt-2">
           <YearTimeline start={year.startDate} end={year.endDate} today={year.today} steps={steps} current={previewing && move ? move.to : current} />
         </div>
-        {previewing && move ? (
-          <MovePreview year={year} caretAt={caretAt} onDone={() => setPreviewing(false)} />
+        {released ? (
+          <ReleaseMoment release={released.release} affected={released.count} roundId={released.roundId} insteadOf={null} run={null}
+            released={{ count: released.count, day: dayMonth(year.today, locale) }} pending={false} caret={<Caret at={caretAt} />}
+            onRelease={() => undefined} onCancel={() => setReleased(null)} onDone={() => setReleased(null)} />
+        ) : previewing && move ? (
+          <MovePreview year={year} caretAt={caretAt} onDone={() => setPreviewing(false)}
+            onReleased={(count, release, roundId) => { setReleased({ count, release, roundId }); setPreviewing(false); }} />
         ) : (
           <NextStep year={year} caretAt={caretAt} onPreview={() => void openPreview()} />
         )}
@@ -333,7 +340,12 @@ function useNext(year: YearDto, onPreview: () => void): Next {
 
 // ── Moving the year on, previewed in place (D-58) ─────────────────────────────────────────────────
 
-function MovePreview({ year, caretAt, onDone }: { year: YearDto; caretAt: number; onDone: () => void }) {
+function MovePreview({ year, caretAt, onDone, onReleased }: {
+  year: YearDto;
+  caretAt: number;
+  onDone: () => void;
+  onReleased: (count: number, release: YearReleaseDto, roundId: string | null) => void;
+}) {
   const t = useTranslations("year.MovePreview");
   const locale = useLocale();
   const commands = useYearCommands(year.cycleId);
@@ -343,23 +355,26 @@ function MovePreview({ year, caretAt, onDone }: { year: YearDto; caretAt: number
   const sum = (groups: YearStepDto["groups"]) => groups.reduce((n, g) => n + g.count, 0);
   const faces = (groups: YearStepDto["groups"]) => groups.flatMap((g) => g.people).slice(0, 3);
   const original = move.kind === "closePlanning" ? step("Planning").end : move.kind === "launchRound" ? step("Review").start : step("ResultsOut").start;
-  const releasing = useReleaseRun(year);
+  const releasing = useReleaseRun(year, (count) => {
+    toast.success(t("released", { count }));
+    if (move.release) onReleased(count, move.release, move.roundId);
+  });
 
-  const confirm = () => (move.kind === "release" && move.release
-    ? releasing.start().then((count) => {
-      toast.success(t("released", { count }));
-      onDone();
-    })
-    : commands.move.mutateAsync({ expectedVersion: year.version, to: move.to }).then(() => {
+  const confirm = () => commands.move.mutateAsync({ expectedVersion: year.version, to: move.to })
+    .then(() => {
       toast.success(t(`moved.${move.kind}`));
       onDone();
-    }))
+    })
     .catch((error) => reportPerformanceFailure(error, t("couldntMove")));
 
-  if (releasing.run) {
+  // Releasing is its own moment (B-433): held to confirm, counted out in the same card.
+  if (move.kind === "release" && move.canMove && move.release) {
     return (
-      <InPlacePreview eyebrow={t("releasing")} title={t("releasedOf", { done: releasing.run.done, total: releasing.run.total })}
-        progress={<><Caret at={caretAt} preview /><ReleaseProgress run={releasing.run} /></>} />
+      <ReleaseMoment release={move.release} affected={move.affected} roundId={move.roundId}
+        insteadOf={original !== year.today ? t("insteadOf", { day: day(original, locale) }) : null}
+        run={releasing.run} released={null} pending={releasing.run !== null} caret={<Caret at={caretAt} />}
+        onRelease={() => void releasing.start().catch((error) => reportPerformanceFailure(error, t("couldntMove")))}
+        onCancel={onDone} onDone={onDone} />
     );
   }
 
@@ -372,7 +387,7 @@ function MovePreview({ year, caretAt, onDone }: { year: YearDto; caretAt: number
         <>
           <Button variant="outline" onClick={onDone}>{t("cancel")}</Button>
           {move.canMove ? (
-            <AsyncButton pending={commands.move.isLoading || releasing.run !== null} onClick={() => void confirm()}>
+            <AsyncButton pending={commands.move.isLoading} onClick={() => void confirm()}>
               {t(`go.${move.kind}`, { count: move.affected })}
             </AsyncButton>
           ) : null}
@@ -408,7 +423,7 @@ function MovePreview({ year, caretAt, onDone }: { year: YearDto; caretAt: number
           </>
         ) : null}
       </div>
-      {move.kind === "release" ? (move.release ? <ReleaseRows release={move.release} /> : null) : (
+      {move.kind === "release" ? null : (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Bell aria-hidden className="size-[15px]" />
           {t("oneNotificationEach")}

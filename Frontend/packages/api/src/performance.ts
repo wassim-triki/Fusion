@@ -251,6 +251,14 @@ export interface YearReleaseDto {
   stillWritingFaces: YearPersonDto[];
   reviewIds: string[];
   roundVersion: number;
+  /** What goes out, by the level it goes out with: highest first. */
+  mix: YearLevelCountDto[];
+}
+
+export interface YearLevelCountDto {
+  value: number;
+  label: string;
+  count: number;
 }
 
 /** A flagged review looked at: the manager's level and the one it goes out with. */

@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** B-432 slice 9, Calibration and release (only flagged reviews with why, keep or change with a reason, the grid against goals' grade, release previewed in place with a live count), 2026-11-11, In review. Next: slice 10, Across Fusion.
+**Last finished:** B-433 Release and Everyone redrawn (Release as its own moment held to confirm; Everyone as the plot by rating and goals' grade), 2026-11-12, In review under B-432. Next: slice 10, Across Fusion.
 
 ## Active work
 

@@ -201,7 +201,14 @@ public sealed record YearMoveDto(CyclePhase From, CyclePhase To, string Kind, bo
 /// flagged ones still to look at and reviews still being written go out once they are ready.
 /// </summary>
 public sealed record YearReleaseDto(int AsRated, IReadOnlyList<YearPersonDto> AsRatedFaces, IReadOnlyList<YearDecisionDto> LookedAt,
-    int ToLookAt, int StillWriting, IReadOnlyList<YearPersonDto> StillWritingFaces, IReadOnlyList<Guid> ReviewIds, uint RoundVersion);
+    int ToLookAt, int StillWriting, IReadOnlyList<YearPersonDto> StillWritingFaces, IReadOnlyList<Guid> ReviewIds, uint RoundVersion)
+{
+    /// <summary>What goes out, by the level it goes out with: highest first, levels nobody has left out.</summary>
+    public IReadOnlyList<YearLevelCountDto> Mix { get; init; } = [];
+}
+
+/// <summary>How many people a level of the rating scale holds.</summary>
+public sealed record YearLevelCountDto(int Value, string Label, int Count);
 
 /// <summary>A flagged review looked at: the manager's level and the one it goes out with.</summary>
 public sealed record YearDecisionDto(Guid EmployeeId, string Name, string From, string To, bool Kept);

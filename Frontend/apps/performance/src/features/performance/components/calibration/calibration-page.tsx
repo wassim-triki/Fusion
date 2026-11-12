@@ -18,7 +18,7 @@ import { ContentUnavailable } from "../content-unavailable";
 import { FlowSection, StepFlow, type FlowColumn } from "../year/step-flow";
 import { yearPosition } from "../year/year-timeline";
 import { day, daysBetween } from "../year/year-words";
-import { CalibrationGrid } from "./calibration-grid";
+import { CalibrationPlot } from "./calibration-plot";
 import { FlagCard, firstName } from "./flag-card";
 
 /**
@@ -94,7 +94,7 @@ function Calibration({ data }: { data: CalibrationDto }) {
         {everyoneView ? (
           everyone.error ? <ContentUnavailable error={everyone.error} onRetry={everyone.refetch} />
             : !everyone.data ? <PageSkeleton rows={3} label={t("loading")} />
-              : <CalibrationGrid calibration={data} everyone={everyone.data} pending={decide.isLoading}
+              : <CalibrationPlot calibration={data} everyone={everyone.data} pending={decide.isLoading}
                   onChange={(person: CalibrationPersonDto, rating, reason) => change(person, rating, reason)} />
         ) : (
           <>

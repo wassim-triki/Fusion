@@ -60,24 +60,18 @@
     "keep": "إبقاء {level}"
   },
   "Grid": {
-    "spread": "التوزيع",
-    "rated": "{count} مقيَّمون",
-    "ratingAgainstGrade": "الدرجة مقابل درجة الأهداف",
-    "gradeFromMeasures": "درجة الأهداف مأخوذة من مقاييسها",
-    "below": "أدنى من {level}",
-    "above": "أعلى من {level}",
-    "rows": {
-      "0": "0.8 فأكثر",
-      "1": "من 0.5 إلى 0.8",
-      "2": "أقل من 0.5"
-    },
+    "goalsGrade": "درجة الأهداف",
+    "plotLabel": "كل شخص حسب تقييمه ودرجة أهدافه",
+    "ratedBelow": "قُيّموا دون أهدافهم",
+    "ratedAbove": "قُيّموا فوق أهدافهم",
+    "onLast": "{delta} مقارنة بـ{cycle}",
+    "sameAsLast": "مثل {cycle}",
+    "dragHint": "اسحب وجهًا إلى تقييم آخر لتغييره",
     "fromTo": "من {from} إلى {to}",
     "whyPlaceholder": "السبب، سيقرؤه {name}",
     "why": "السبب",
     "cancel": "إلغاء",
     "change": "تغيير",
-    "andMore": "و{count} آخرون",
-    "dragHint": "اسحب وجهًا إلى عمود آخر لتغيير الدرجة",
     "ungraded": "{count, plural, one {شخص واحد} other {# أشخاص}} بلا أهداف لتقييمها"
   }
 }

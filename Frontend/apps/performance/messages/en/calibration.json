@@ -60,24 +60,18 @@
     "keep": "Keep {level}"
   },
   "Grid": {
-    "spread": "Spread",
-    "rated": "{count} rated",
-    "ratingAgainstGrade": "Rating against goals' grade",
-    "gradeFromMeasures": "Goals' grade read from the measures",
-    "below": "Below {level}",
-    "above": "Above {level}",
-    "rows": {
-      "0": "0.8 and up",
-      "1": "0.5 to 0.8",
-      "2": "Below 0.5"
-    },
+    "goalsGrade": "Goals' grade",
+    "plotLabel": "Each person by rating and goals' grade",
+    "ratedBelow": "rated below their goals",
+    "ratedAbove": "rated above their goals",
+    "onLast": "{delta} on {cycle}",
+    "sameAsLast": "Same as {cycle}",
+    "dragHint": "Drag a face onto another rating to change it",
     "fromTo": "{from} to {to}",
     "whyPlaceholder": "Why, {name} reads this",
     "why": "Why",
     "cancel": "Cancel",
     "change": "Change",
-    "andMore": "and {count} more",
-    "dragHint": "Drag a face to another column to change a rating",
     "ungraded": "{count, plural, one {# person} other {# people}} without goals to grade"
   }
 }

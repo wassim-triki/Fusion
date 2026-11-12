@@ -110,9 +110,7 @@
       "reviewsOpen": "Reviews to write open as self-reviews come in"
     },
     "oneNotificationEach": "One notification each, opening where to act",
-    "released": "{count, plural, one {# result released} other {# results released}}",
-    "releasing": "Releasing",
-    "releasedOf": "{done} of {total} released"
+    "released": "{count, plural, one {# result released} other {# results released}}"
   },
   "PhaseSteps": {
     "yourTeam": "Your team",
@@ -189,18 +187,31 @@
     "people": "{count, plural, one {# person} other {# people}}"
   },
   "Release": {
-    "asRated": "Ready as rated",
-    "lookedAt": "Looked at",
+    "eyebrow": "Release results",
+    "releasing": "Releasing",
+    "headline": "{count, plural, one {# person gets their year today} other {# people get their year today}}",
+    "ofOut": "of {total} out",
+    "keepOpen": "Keep this page open until the count ends",
+    "toGo": "{count} to go",
+    "hold": "{count, plural, one {Hold to release # result} other {Hold to release # results}}",
+    "keepHolding": "Keep holding",
+    "cantTakeBack": "Can't be taken back",
+    "cancel": "Cancel",
+    "releasedOn": "Released today, {day}",
+    "areOut": "{count, plural, one {# result is out} other {# results are out}}",
+    "told": "Each person and their manager told",
+    "ready": "Ready",
+    "goingOut": "Going out now",
+    "out": "Out",
+    "eachTold": "Each person and their manager told",
+    "withLookedAt": "{count, plural, one {Including # looked at} other {Including # looked at}}",
     "toLookAt": "To look at",
+    "whenLookedAt": "Out once looked at",
+    "lookAt": "Look at {count}",
     "stillWriting": "Still being written",
-    "rows": {
-      "asRated": "Released now; each person and their manager told",
-      "lookedAt": "Released with the decision",
-      "toLookAt": "Released once looked at",
-      "stillWriting": "Released when their manager submits"
-    },
-    "final": "Released results can't be taken back",
-    "oneEach": "One notification each, opening the result",
+    "whenSubmitted": "Out when their manager submits",
+    "done": "Done",
+    "setUpNextYear": "Set up next year",
     "kept": "Kept {level}",
     "changed": "{from} to {to}",
     "outToday": "{count, plural, one {# result out today} other {# results out today}}, each person and their manager told"

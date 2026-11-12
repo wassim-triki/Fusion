@@ -110,9 +110,7 @@
       "reviewsOpen": "Les évaluations à rédiger s’ouvrent au fil des auto-évaluations"
     },
     "oneNotificationEach": "Une notification par personne, qui ouvre là où agir",
-    "released": "{count, plural, one {# résultat publié} other {# résultats publiés}}",
-    "releasing": "Publication",
-    "releasedOf": "{done} sur {total} publiés"
+    "released": "{count, plural, one {# résultat publié} other {# résultats publiés}}"
   },
   "PhaseSteps": {
     "yourTeam": "Votre équipe",
@@ -189,18 +187,31 @@
     "people": "{count, plural, one {# personne} other {# personnes}}"
   },
   "Release": {
-    "asRated": "Prêtes telles que notées",
-    "lookedAt": "Regardées",
+    "eyebrow": "Publier les résultats",
+    "releasing": "Publication",
+    "headline": "{count, plural, one {# personne reçoit son année aujourd'hui} other {# personnes reçoivent leur année aujourd'hui}}",
+    "ofOut": "sur {total} publiés",
+    "keepOpen": "Gardez cette page ouverte jusqu'à la fin du décompte",
+    "toGo": "Encore {count}",
+    "hold": "{count, plural, one {Maintenir pour publier # résultat} other {Maintenir pour publier # résultats}}",
+    "keepHolding": "Maintenez",
+    "cantTakeBack": "Impossible de revenir en arrière",
+    "cancel": "Annuler",
+    "releasedOn": "Publiés aujourd'hui, {day}",
+    "areOut": "{count, plural, one {# résultat est publié} other {# résultats sont publiés}}",
+    "told": "Chaque personne et son manager prévenus",
+    "ready": "Prêts",
+    "goingOut": "En cours de publication",
+    "out": "Publiés",
+    "eachTold": "Chaque personne et son manager prévenus",
+    "withLookedAt": "{count, plural, one {Dont # regardé} other {Dont # regardés}}",
     "toLookAt": "À regarder",
+    "whenLookedAt": "Publiés une fois regardés",
+    "lookAt": "Regarder les {count}",
     "stillWriting": "En cours de rédaction",
-    "rows": {
-      "asRated": "Publiées maintenant ; chaque personne et son manager prévenus",
-      "lookedAt": "Publiées avec la décision",
-      "toLookAt": "Publiées une fois regardées",
-      "stillWriting": "Publiées quand leur manager les envoie"
-    },
-    "final": "Les résultats publiés ne peuvent pas être repris",
-    "oneEach": "Une notification chacun, qui ouvre le résultat",
+    "whenSubmitted": "Publiés quand leur manager les envoie",
+    "done": "Terminé",
+    "setUpNextYear": "Préparer l'année suivante",
     "kept": "{level} maintenu",
     "changed": "{from} à {to}",
     "outToday": "{count, plural, one {# résultat publié aujourd'hui} other {# résultats publiés aujourd'hui}}, chaque personne et son manager prévenus"

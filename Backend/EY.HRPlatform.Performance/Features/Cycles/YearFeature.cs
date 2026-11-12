@@ -281,7 +281,11 @@ public static class YearComposer
             lookedAt.Select(r => new YearDecisionDto(r.SubjectEmployeeId, r.SubjectDisplayName, Level(state.Original(r)), Level(state.Rating(r)),
                 state.Original(r) == state.Rating(r))).ToList(),
             state.Reviews.Count(state.ToLookAt), writing.Count, writing.Take(YearStandings.CompanyFaces).Select(Face).ToList(),
-            ready.Select(r => r.Id).ToList(), round.Version);
+            ready.Select(r => r.Id).ToList(), round.Version)
+        {
+            Mix = ready.GroupBy(state.Rating).OrderByDescending(g => g.Key)
+                .Select(g => new YearLevelCountDto(g.Key, Level(g.Key), g.Count())).ToList(),
+        };
     }
 
     /// <summary>What the drafted round opens, read the day HR looks (the goals' grades are read again on the day it opens).</summary>

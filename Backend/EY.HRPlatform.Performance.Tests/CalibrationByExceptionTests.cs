@@ -54,6 +54,13 @@ public sealed class CalibrationByExceptionTests
         var card = Assert.Single(read.Flagged);
         Assert.Equal(("Rim", "goals", 0.46m, 5), (card.Name, card.Flag.Kind, card.Flag.Grade!.Value, card.Rating));
 
+        // The year's Release shows what goes out by level: only Khaled, at 3.
+        var cycle = await db.Cycles.AsNoTracking().SingleAsync(c => c.Id == world.Cycle.Id);
+        var move = await EY.HRPlatform.Performance.Features.Cycles.YearComposer.NextMoveAsync(db, cycle, EY.HRPlatform.Performance.Domain.Cycles.CyclePhase.Review,
+            DateOnly.FromDateTime(DateTime.UtcNow), [], CancellationToken.None);
+        Assert.Equal(3, Assert.Single(move!.Release!.Mix).Value);
+        Assert.Equal(1, move.Release.Mix[0].Count);
+
         var released = (await ReleaseAsync(db, world)).Value;
         Assert.Equal(world.Of("Khaled").Id, Assert.Single(released.Finalized).ReviewId);
         Assert.Contains(released.Skipped, s => s.ReviewId == rim.Id && s.Reason.Contains("Flagged"));

@@ -199,7 +199,7 @@ describe("The Year page", () => {
     expect(screen.getByRole("link", { name: "Look at them" }).getAttribute("href")).toBe("/reviews/rounds/round-1/calibration");
   });
 
-  it("releases what is ready from a preview in place, in batches with a live count (D-72)", async () => {
+  it("releases what is ready as its own moment, held to confirm, in batches with a live count (D-72, B-433)", async () => {
     const ids = Array.from({ length: 10 }, (_, i) => `r${i}`);
     m.release.mockImplementation(async (_round: string, version: number, batch: string[]) =>
       ({ reviewRoundId: "round-1", finalized: batch.map((reviewId) => ({ reviewId })), skipped: [], state: "Active", version: version + 1 }));
@@ -208,6 +208,7 @@ describe("The Year page", () => {
       nextMove: {
         from: "Review", to: "ResultsOut", kind: "release", canMove: true, blocker: null, roundId: "round-1", planningDeadline: null, affected: 10, people: [], opensOn: null, opens: null,
         release: { asRated: 9, asRatedFaces: [person("Salah Ben Hassine", "reviewed")], toLookAt: 0, stillWriting: 4, stillWritingFaces: [], reviewIds: ids, roundVersion: 7,
+          mix: [{ value: 4, label: "Strong", count: 3 }, { value: 3, label: "Effective", count: 7 }],
           lookedAt: [{ employeeId: "mouna", name: "Mouna Trabelsi", from: "Developing", to: "Effective", kept: false }] },
       },
       review: { roundId: "round-1", openedOn: "2027-03-01", selfDue: "2027-03-15", managerDue: "2027-03-29", reviewed: 95, total: 99, reviewers: [], toLookAt: 0, toLookAtFaces: [] },
@@ -216,13 +217,21 @@ describe("The Year page", () => {
     expect(screen.getByRole("heading", { name: "Release results" })).toBeTruthy();
     expect(screen.getByText("Developing to Effective")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Release 10 results" }));
-    expect(await screen.findByText("Released now; each person and their manager told")).toBeTruthy();
-    expect(screen.getByText("Released when their manager submits")).toBeTruthy();
-    expect(screen.getByText("Released results can't be taken back")).toBeTruthy();
-    fireEvent.click(screen.getAllByRole("button", { name: "Release 10 results" }).at(-1)!);
-    await waitFor(() => expect(m.release).toHaveBeenCalledTimes(2));
+    expect(await screen.findByRole("heading", { name: "10 people get their year today" })).toBeTruthy();
+    expect(screen.getByText("Including 1 looked at")).toBeTruthy();
+    expect(screen.getByText("Out when their manager submits")).toBeTruthy();
+    expect(screen.getByText("Can't be taken back")).toBeTruthy();
+    const hold = screen.getByRole("button", { name: "Hold to release 10 results" });
+    // Letting go early releases nothing.
+    fireEvent.pointerDown(hold);
+    fireEvent.pointerUp(hold);
+    await new Promise((resolve) => setTimeout(resolve, 1300));
+    expect(m.release).not.toHaveBeenCalled();
+    fireEvent.pointerDown(hold);
+    await waitFor(() => expect(m.release).toHaveBeenCalledTimes(2), { timeout: 3000 });
     expect(m.release).toHaveBeenNthCalledWith(1, "round-1", 7, ids.slice(0, 8));
     expect(m.release).toHaveBeenNthCalledWith(2, "round-1", 8, ids.slice(8));
+    expect(await screen.findByRole("heading", { name: "10 results are out" })).toBeTruthy();
     expect(m.move).not.toHaveBeenCalled();
-  });
+  }, 10_000);
 });

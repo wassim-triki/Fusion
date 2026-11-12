@@ -110,9 +110,7 @@
       "reviewsOpen": "تُفتح التقييمات المطلوبة مع وصول التقييمات الذاتية"
     },
     "oneNotificationEach": "إشعار واحد لكل شخص، يفتح حيث يجب التصرف",
-    "released": "{count, plural, one {نُشرت نتيجة واحدة} other {نُشرت # نتائج}}",
-    "releasing": "جارٍ النشر",
-    "releasedOf": "نُشر {done} من {total}"
+    "released": "{count, plural, one {نُشرت نتيجة واحدة} other {نُشرت # نتائج}}"
   },
   "PhaseSteps": {
     "yourTeam": "فريقك",
@@ -189,18 +187,31 @@
     "people": "{count, plural, one {شخص واحد} two {شخصان} few {# أشخاص} other {# شخصًا}}"
   },
   "Release": {
-    "asRated": "جاهزة كما قُيّمت",
-    "lookedAt": "تمت مراجعتها",
+    "eyebrow": "نشر النتائج",
+    "releasing": "جارٍ النشر",
+    "headline": "{count, plural, one {شخص واحد يتسلّم سنته اليوم} other {# أشخاص يتسلّمون سنتهم اليوم}}",
+    "ofOut": "من {total} نُشرت",
+    "keepOpen": "أبقِ هذه الصفحة مفتوحة حتى ينتهي العدّ",
+    "toGo": "بقي {count}",
+    "hold": "{count, plural, one {اضغط مطوّلًا لنشر نتيجة واحدة} other {اضغط مطوّلًا لنشر # نتائج}}",
+    "keepHolding": "واصل الضغط",
+    "cantTakeBack": "لا يمكن التراجع",
+    "cancel": "إلغاء",
+    "releasedOn": "نُشرت اليوم، {day}",
+    "areOut": "{count, plural, one {نُشرت نتيجة واحدة} other {نُشرت # نتائج}}",
+    "told": "أُبلغ كل شخص ومديره",
+    "ready": "جاهزة",
+    "goingOut": "تُنشر الآن",
+    "out": "نُشرت",
+    "eachTold": "أُبلغ كل شخص ومديره",
+    "withLookedAt": "{count, plural, one {منها واحدة تمت مراجعتها} other {منها # تمت مراجعتها}}",
     "toLookAt": "للمراجعة",
+    "whenLookedAt": "تُنشر بعد مراجعتها",
+    "lookAt": "راجِع {count}",
     "stillWriting": "قيد الكتابة",
-    "rows": {
-      "asRated": "تُنشر الآن؛ ويُبلَّغ كل شخص ومديره",
-      "lookedAt": "تُنشر مع القرار",
-      "toLookAt": "تُنشر بعد مراجعتها",
-      "stillWriting": "تُنشر عندما يرسلها المدير"
-    },
-    "final": "لا يمكن التراجع عن النتائج المنشورة",
-    "oneEach": "إشعار واحد لكل شخص يفتح النتيجة",
+    "whenSubmitted": "تُنشر عندما يرسلها المدير",
+    "done": "تم",
+    "setUpNextYear": "إعداد السنة التالية",
     "kept": "أُبقيت {level}",
     "changed": "من {from} إلى {to}",
     "outToday": "{count, plural, one {نُشرت نتيجة واحدة اليوم} other {نُشرت # نتائج اليوم}}، وأُبلغ كل شخص ومديره"

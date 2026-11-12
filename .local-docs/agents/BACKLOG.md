@@ -27,8 +27,6 @@ Open work only. Agents keep it current from the conversation; closed items leave
 
 ## In review
 
-- [ ] **B-395** A year demoed in one sitting, built 2026-11-12: Planning → Execution → Review → Results out → next year at Planning, live on one company (`sitting` preset), rehearsed 14/14 through the API · demo data, Performance
-      Look at: the run sheet in `data/README.md` › "A year in one sitting", then walk it at `http://localhost:3000` on `sitting-<n>.example.test` (`demo-preset.mjs list` names it; password in `FUSION_LOCAL_PASSWORD`) as Amira Khelifi, the administrator, Mariam Gharbi, a manager, and Aicha Bouazizi, an employee. Deviation from 2026-11-09's plan: no cut-over to a prepared company; `yearend` stays the fallback for a calibration with a full company behind it.
 
 - [ ] **B-447** slice 13, Insights (B-414, B-405 insights), built 2026-11-12: Fusion's one dashboard at `/core/insights`, a row under Home, tabs People · Performance · Reports; Core HR's Reports moved in (`/core/reports` gone); Performance during the year (this year against last on the same days, on track by department, nudges by manager) and at its end (ratings, how goals ended, goals met by department, the strong level by time at the company, reviews week by week, updates each month, goals carried), where the administrator lands from the Year page once a year ends; People (headcount, by department, joiners each quarter, time at the company); every figure opens its people. Leftovers boarded as B-448 · Insights · 2026-11-12
       Look at `http://localhost:3000/core/insights/performance` as Amira Khelifi, the administrator, on `midyear` (`amira.khelifi@midyear-11.example.test`, password in `FUSION_LOCAL_PASSWORD`): click Not updated in 30 days for the nudges by manager, a department row for its people; then People. On `nextcycle` (`amira.khelifi@nextcycle-5.example.test`) open `http://localhost:3000/performance`: it lands on Insights › Performance with how FY2026 ended and Launch FY2027 on top. Compare with `archive/plans/B-412-ending.html` (Insights, mid-year / People / the year's end). Screens: `plans/B-447-screens/` (mid-year and People; the year's end not captured).
@@ -214,6 +212,9 @@ From B-331's walk (2026-11-09; the user's words, step by step, in `design/walkth
 ### Demo preparation
 
 Prep for the demo, not active work.
+
+- [ ] **B-395** A year demoed in one sitting: rework the first build into two acts with real data behind each · demo data, Performance · 2026-11-09
+      2026-11-12 build (`sitting` preset, rehearsal 14/14 through the API) works but tells a hollow story: a year 12 days old gives thin review drafts, one calibration card, one result out, 78 goals carried and a next year 11 months away; no screens were looked at. Agreed fix (2026-11-13, parked until closer to the jury date, after the review queue and B-378): act 1 on `planning` (Mariam approves Aicha, Amira closes planning); act 2 on a new `lateyear` preset replacing `sitting` (~330 days in with the year's history, the Year-end round drafted not opened): Amira opens it, Aicha and Mariam write from real drafts, a "meanwhile" script has ~80% of the company write theirs, real flags in calibration, release, next year launched two weeks out. Rehearsal for both acts, screens of the key moments (Year at Review, Aicha's draft, calibration, release, next year at Planning).
 
 
 ### Big features

@@ -231,21 +231,19 @@
     "yearName": "Nom de l'année",
     "publicHolidays": "Jours fériés",
     "aYearOn": "Ceux de {name}, un an plus tard",
-    "from": "depuis le {day}",
     "stepEnds": "Fin de {step}",
     "stepSpan": "{step}, du {start} au {end}",
     "days": "{count, plural, one {# jour} other {# jours}}",
     "fallsOn": "{moment} tombe le {day}",
     "andHoliday": ", et le {day} est {holiday}",
     "moveTo": "Déplacer au {day}",
-    "everyoneTold": "Tout le monde est prévenu",
-    "whenYouLaunch": "Au lancement",
     "moment": {
       "goalsAgreed": "Objectifs validés",
       "midYearCheckInOn": "Point de mi-année",
       "selfReviewsDueOn": "Auto-évaluations",
       "calibrationOn": "Calibrage",
-      "resultsOut": "Résultats publiés"
+      "resultsOut": "Résultats publiés",
+      "reviewsOpen": "Ouverture des évaluations"
     },
     "whosIn": "Qui en fait partie",
     "fromCoreHr": "Depuis Core HR",
@@ -271,6 +269,15 @@
     "writeGoals": "Écrivez vos objectifs {name}",
     "by": "Avant le {day}",
     "homeAndEmail": "L'accueil et l'e-mail de {name} le jour du lancement",
-    "homeAndEmailCarried": "L'accueil et l'e-mail de {name} le jour du lancement, un objectif repris déjà dans le brouillon"
+    "homeAndEmailCarried": "L'accueil et l'e-mail de {name} le jour du lancement, un objectif repris déjà dans le brouillon",
+    "titleEditable": "Préparer <name></name>",
+    "crumbs": "Où vous êtes",
+    "crumbPerformance": "Performance",
+    "crumbYear": "Année",
+    "minusWeek": "− semaine",
+    "minusDay": "− jour",
+    "plusDay": "+ jour",
+    "plusWeek": "+ semaine",
+    "everyoneAt": "Tout le monde chez {company} au {day}"
   }
 }

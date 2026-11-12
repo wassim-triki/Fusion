@@ -8,6 +8,7 @@ import { usePerformanceSettingsLabel } from "@/features/settings/performance-set
 import { PerformanceCycleContext } from "@/shell/performance-cycle-context";
 import { FusionNotificationBell } from "@/shell/fusion-notification-bell";
 import { RecordCycleScopeProvider, useSelectedCycleId } from "@/features/performance/api/use-workspace";
+import { YearSetupCrumbs } from "@/features/performance/components/year/year-setup";
 
 export function PerformancePagesShell({ children }: { children: ReactNode }) {
   // The light-mode white working surface is applied via a `--background` token
@@ -20,6 +21,8 @@ export function PerformancePagesShell({ children }: { children: ReactNode }) {
   const settingsSection = /^(?:\/performance)?\/settings(?:\/([^/?#]+))?$/.exec(pathname);
   const left = settingsSection ? (
     <SettingsBreadcrumb trail={["Performance", ...(settingsSection[1] ? [performanceSettingsLabel(settingsSection[1])] : [])]} />
+  ) : /^(?:\/performance)?\/year\/setup$/.test(pathname) ? (
+    <YearSetupCrumbs />
   ) : (
     <PerformanceCycleContext />
   );

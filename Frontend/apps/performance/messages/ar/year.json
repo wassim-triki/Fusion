@@ -231,21 +231,19 @@
     "yearName": "اسم السنة",
     "publicHolidays": "العطل الرسمية",
     "aYearOn": "تواريخ {name} بعد سنة",
-    "from": "من {day}",
     "stepEnds": "نهاية {step}",
     "stepSpan": "{step}، من {start} إلى {end}",
     "days": "{count, plural, one {يوم واحد} other {# يومًا}}",
     "fallsOn": "{moment} يقع يوم {day}",
     "andHoliday": "، و{day} هو {holiday}",
     "moveTo": "النقل إلى {day}",
-    "everyoneTold": "يُبلَّغ الجميع",
-    "whenYouLaunch": "عند الإطلاق",
     "moment": {
       "goalsAgreed": "اعتماد الأهداف",
       "midYearCheckInOn": "مراجعة منتصف السنة",
       "selfReviewsDueOn": "التقييمات الذاتية",
       "calibrationOn": "المعايرة",
-      "resultsOut": "صدور النتائج"
+      "resultsOut": "صدور النتائج",
+      "reviewsOpen": "فتح التقييمات"
     },
     "whosIn": "من يشارك",
     "fromCoreHr": "من Core HR",
@@ -271,6 +269,15 @@
     "writeGoals": "اكتب أهدافك لـ{name}",
     "by": "قبل {day}",
     "homeAndEmail": "الصفحة الرئيسية والبريد لـ{name} يوم الإطلاق",
-    "homeAndEmailCarried": "الصفحة الرئيسية والبريد لـ{name} يوم الإطلاق، مع هدف منقول في المسودة"
+    "homeAndEmailCarried": "الصفحة الرئيسية والبريد لـ{name} يوم الإطلاق، مع هدف منقول في المسودة",
+    "titleEditable": "إعداد <name></name>",
+    "crumbs": "أين أنت",
+    "crumbPerformance": "الأداء",
+    "crumbYear": "السنة",
+    "minusWeek": "− أسبوع",
+    "minusDay": "− يوم",
+    "plusDay": "+ يوم",
+    "plusWeek": "+ أسبوع",
+    "everyoneAt": "الجميع في {company} يوم {day}"
   }
 }

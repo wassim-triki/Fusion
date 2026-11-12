@@ -44,6 +44,8 @@ export interface SegmentedProps<T extends string> {
   size?: "sm" | "md";
   /** Stretch across the container, options sharing the width. */
   fill?: boolean;
+  /** `quiet` sits back in a card where the choice is a setting, not the page's action. */
+  tone?: "primary" | "quiet";
   disabled?: boolean;
   className?: string;
 }
@@ -56,6 +58,7 @@ export function Segmented<T extends string>({
   label,
   size = "md",
   fill = false,
+  tone = "primary",
   disabled,
   className,
 }: SegmentedProps<T>) {
@@ -71,7 +74,8 @@ export function Segmented<T extends string>({
       aria-label={label}
       disabled={disabled}
       className={cn(
-        "max-w-full items-center gap-0.5 rounded-control border border-border bg-inlay p-[3px]",
+        "max-w-full items-center gap-0.5 rounded-control bg-inlay p-[3px]",
+        tone === "primary" && "border border-border",
         fill ? "flex w-full" : "inline-flex",
         className
       )}
@@ -88,7 +92,9 @@ export function Segmented<T extends string>({
               ? "h-6 px-2.5 type-meta [&_svg]:size-3.5"
               : "h-7 px-3 type-label [&_svg]:size-4",
             fill && "flex-1",
-            "data-[state=checked]:border-primary/45 data-[state=checked]:bg-primary-tint data-[state=checked]:text-primary-ink"
+            tone === "primary"
+              ? "data-[state=checked]:border-primary/45 data-[state=checked]:bg-primary-tint data-[state=checked]:text-primary-ink"
+              : "data-[state=checked]:border-border data-[state=checked]:bg-card data-[state=checked]:text-foreground"
           )}
         >
           {option.icon}

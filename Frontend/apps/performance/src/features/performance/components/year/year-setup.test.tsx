@@ -15,7 +15,10 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: m.push }) }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("../content-unavailable", () => ({ ContentUnavailable: () => <div>Unavailable</div> }));
 vi.mock("@repo/auth", () => ({ PageRefusal: () => <div>Refused</div> }));
-vi.mock("@repo/api/query", () => ({ useCompanyWorkWeek: () => ({ data: { workingDays: [1, 2, 3, 4, 5] } }) }));
+vi.mock("@repo/api/query", () => ({
+  useCompanyWorkWeek: () => ({ data: { workingDays: [1, 2, 3, 4, 5] } }),
+  useTenantSummary: () => ({ data: { name: "Carthage" } }),
+}));
 vi.mock("date-holidays", () => ({
   default: class {
     getHolidays(year: number) {
@@ -90,6 +93,25 @@ describe("Setting up a year", () => {
     await waitFor(() => expect(m.save).toHaveBeenCalled());
     expect(m.save.mock.calls[0]![0].request.plan.resultsOutOn).toBe("2028-04-10");
     expect(m.launch).not.toHaveBeenCalled();
+  });
+
+  it("renames the year in its title and moves a date from the year itself, proposing the moments a draft lacks", async () => {
+    m.setup = setup({ year: { ...setup().year, midYearCheckInOn: null, selfReviewsDueOn: null, calibrationOn: null } });
+    render(<YearSetupPage />);
+    const name = screen.getByRole("textbox", { name: "The year's name" });
+    name.textContent = "FY2028 pilot";
+    fireEvent.blur(name);
+    expect(screen.getByRole("button", { name: /Launch FY2028 pilot/ })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: /Goals agreed/ }));
+    fireEvent.click(await screen.findByRole("button", { name: "+ week" }));
+    fireEvent.click(screen.getByRole("button", { name: "Keep as a draft" }));
+    await waitFor(() => expect(m.save).toHaveBeenCalled());
+    const sent = m.save.mock.calls[0]![0].request;
+    expect(sent.name).toBe("FY2028 pilot");
+    expect(sent.planningDeadline).toBe("2027-06-02");
+    expect(sent.plan.midYearCheckInOn).toBeTruthy();
+    expect(sent.plan.calibrationOn! > sent.plan.selfReviewsDueOn!).toBe(true);
   });
 
   it("waits for last year's results before it can launch", () => {

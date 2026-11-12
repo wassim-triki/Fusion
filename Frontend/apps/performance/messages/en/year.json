@@ -231,21 +231,19 @@
     "yearName": "The year's name",
     "publicHolidays": "Public holidays",
     "aYearOn": "{name}'s, a year on",
-    "from": "from {day}",
     "stepEnds": "{step} ends",
     "stepSpan": "{step}, {start} to {end}",
     "days": "{count, plural, one {# day} other {# days}}",
     "fallsOn": "{moment} falls on {day}",
     "andHoliday": ", and {day} is {holiday}",
     "moveTo": "Move to {day}",
-    "everyoneTold": "Everyone is told",
-    "whenYouLaunch": "When you launch",
     "moment": {
       "goalsAgreed": "Goals agreed",
       "midYearCheckInOn": "Mid-year check-in",
       "selfReviewsDueOn": "Self-reviews due",
       "calibrationOn": "Calibration",
-      "resultsOut": "Results out"
+      "resultsOut": "Results out",
+      "reviewsOpen": "Reviews open"
     },
     "whosIn": "Who's in",
     "fromCoreHr": "From Core HR",
@@ -271,6 +269,15 @@
     "writeGoals": "Write your {name} goals",
     "by": "By {day}",
     "homeAndEmail": "{name}'s Home and email the day you launch",
-    "homeAndEmailCarried": "{name}'s Home and email the day you launch, a carried goal already in the draft"
+    "homeAndEmailCarried": "{name}'s Home and email the day you launch, a carried goal already in the draft",
+    "titleEditable": "Set up <name></name>",
+    "crumbs": "Where you are",
+    "crumbPerformance": "Performance",
+    "crumbYear": "Year",
+    "minusWeek": "− week",
+    "minusDay": "− day",
+    "plusDay": "+ day",
+    "plusWeek": "+ week",
+    "everyoneAt": "Everyone at {company} on {day}"
   }
 }

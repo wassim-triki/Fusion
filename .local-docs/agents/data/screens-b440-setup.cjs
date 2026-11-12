@@ -2,7 +2,7 @@
 /**
  * B-440 slice 12 (setting up a year): Amira Khelifi (the administrator) on Set up FY…, live through the shell, dark,
  * 1440x900, on the `nextcycle` preset (this year ended with results out, next year waiting as a draft): the page as it
- * opens, and the Year page with its next step. Writes .local-docs/agents/plans/B-440-screens/{setup,year}.png. Changes
+ * opens, and the Year page with its next step. Writes .local-docs/agents/plans/B-440-screens/{setup,setup-below,year}.png. Changes
  * no data.
  * Usage: node .local-docs/agents/data/screens-b440-setup.cjs [domain]   (default: the nextcycle preset's domain)
  */
@@ -49,7 +49,13 @@ async function shoot(browser, who) {
   for (const [name, route] of [["setup.png", "/performance/year/setup"], ["year.png", "/performance"]]) {
     await page.goto(`${BASE}${route}`, { waitUntil: "domcontentloaded", timeout: 300_000 });
     await settled(page, 3000);
-    await page.screenshot({ path: path.join(OUT, name), fullPage: name === "setup.png" });
+    await page.screenshot({ path: path.join(OUT, name) });
+    if (name === "setup.png") {
+      // The page scrolls inside the shell's main area: the cards below the year.
+      await page.evaluate(() => { for (const el of document.querySelectorAll("main, main *")) if (el.scrollHeight > el.clientHeight + 40 && getComputedStyle(el).overflowY !== "visible") { el.scrollTop = 600; break; } });
+      await page.waitForTimeout(600);
+      await page.screenshot({ path: path.join(OUT, "setup-below.png") });
+    }
     console.log(`ok ${name} ${new URL(page.url()).pathname}${errors.length ? ` page errors: ${errors.join(" | ")}` : ""}`);
   }
   await context.close();

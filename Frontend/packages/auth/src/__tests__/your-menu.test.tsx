@@ -3,7 +3,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { YourMenu } from "../components/your-menu";
 
-const { mockSetLanguage, mockRefresh, mockLogout } = vi.hoisted(() => ({
+const { mockSetLanguage, mockRefresh, mockLogout, mockSetTheme } = vi.hoisted(() => ({
+  mockSetTheme: vi.fn(),
   mockSetLanguage: vi.fn(),
   mockRefresh: vi.fn(),
   mockLogout: vi.fn(),
@@ -19,7 +20,7 @@ vi.mock("@repo/api/react", () => ({
   useFusionViewer: () => ({ viewer: { canOpenOwnProfile: true }, isLoading: false }),
 }));
 vi.mock("@repo/ds/shell", () => ({
-  useTheme: () => ({ theme: "dark", resolvedTheme: "dark", setTheme: vi.fn() }),
+  useTheme: () => ({ theme: "dark", resolvedTheme: "dark", setTheme: mockSetTheme }),
 }));
 
 beforeEach(() => {
@@ -41,8 +42,15 @@ describe("YourMenu", () => {
     expect(screen.getByRole("menuitem", { name: "Your profile" })).toHaveAttribute("href", "/core/profile");
     expect(screen.getByRole("menuitem", { name: "Notifications" })).toHaveAttribute("href", "/settings/notifications");
     expect(screen.getByRole("menuitem", { name: /Language/ })).toHaveTextContent("English");
-    expect(screen.getByRole("radio", { name: "Dark" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("switch", { name: "Dark mode" })).toHaveAttribute("aria-checked", "true");
     expect(screen.getByRole("menuitem", { name: "Sign out" })).toBeInTheDocument();
+  });
+
+  it("switches between dark and light from one switch (B-449)", async () => {
+    render(<YourMenu />);
+    await openMenu();
+    await userEvent.click(screen.getByRole("switch", { name: "Dark mode" }));
+    expect(mockSetTheme).toHaveBeenCalledWith("light");
   });
 
   it("saves the language on the account, then asks the bell again in it", async () => {

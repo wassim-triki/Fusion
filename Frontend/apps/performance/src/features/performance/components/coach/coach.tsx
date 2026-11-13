@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { Button } from "@repo/ds/components/ui/button";
 import { cn } from "@repo/ds/lib/utils";
-import { Loader2, Sparkles, X } from "@repo/ds/icons";
+import { Sparkles, X } from "@repo/ds/icons";
+import { Spinner } from "@repo/ds/components/ui/spinner";
 import type { CoachState } from "./coach-model";
 import { useTranslations } from "next-intl";
 
@@ -25,7 +26,7 @@ export function CoachTrigger({
       disabled={running}
     >
       {running ? (
-        <Loader2 className="size-3.5 animate-spin" aria-hidden />
+        <Spinner className="size-3.5" aria-hidden />
       ) : (
         <Sparkles className="size-3.5" aria-hidden />
       )}

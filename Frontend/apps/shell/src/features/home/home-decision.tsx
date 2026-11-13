@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
 import { createPlatformApiClient, fusionAttentionQueryKeys, getFusionAttentionModule, type FusionAttentionModuleKey } from "@repo/api";
 import { Check, X } from "@repo/ds/icons";
-import { Button, Textarea } from "@repo/ds";
+import { Button, Textarea, showStatus } from "@repo/ds";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ds/components/ui/popover";
 import type { WorkListItem } from "@repo/ds/shell";
 
@@ -26,12 +26,13 @@ export function HomeDecision({ item }: { item: WorkListItem }) {
   const base = getFusionAttentionModule(item.module as FusionAttentionModuleKey).apiBase;
 
   // Done means the row leaves Needs you; a refusal (someone answered first, the person changed) shows beside it.
-  const send = async (path: string, body: object) => {
+  const send = async (path: string, body: object, done: string) => {
     setBusy(true);
     setError(null);
     try {
       await client.post(`${base}${path}`, body);
       setAsking(false);
+      showStatus(done);
       await queryClient.invalidateQueries({ queryKey: fusionAttentionQueryKeys.all() });
     } catch (caught) {
       setError(caught instanceof Error && caught.message ? caught.message : t("failed"));
@@ -55,7 +56,7 @@ export function HomeDecision({ item }: { item: WorkListItem }) {
           <Textarea id={`why-${item.id}`} autoFocus rows={3} maxLength={500} value={why} onChange={(event) => setWhy(event.target.value)}
             placeholder={t("whyPlaceholder")} className="resize-none" />
           <Button writes type="button" variant={item.decision.declineLabel ? "default" : "destructive"} className="justify-self-end" disabled={!why.trim() || busy}
-            onClick={() => void send(item.decision!.declinePath, { reason: why.trim() })}>
+            onClick={() => void send(item.decision!.declinePath, { reason: why.trim() }, t("answered"))}>
             {no}
           </Button>
         </PopoverContent>
@@ -63,7 +64,7 @@ export function HomeDecision({ item }: { item: WorkListItem }) {
       {/* Approve in the company's color: an outline with a subtle fill. */}
       <Button writes type="button" size="sm" variant="outline" disabled={busy}
         className="border-primary-ring bg-primary-tint text-primary-ink hover:bg-primary/20 hover:text-primary-ink dark:border-primary-ring dark:bg-primary-tint dark:hover:bg-primary/20"
-        onClick={() => void send(item.decision!.approvePath, {})}>
+        onClick={() => void send(item.decision!.approvePath, {}, t("approved"))}>
         <Check className="size-4" />
         {t("approve")}
       </Button>

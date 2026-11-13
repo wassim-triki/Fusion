@@ -336,6 +336,7 @@
       "notifications": "Notifications",
       "language": "Language",
       "appearance": "Appearance",
+      "darkMode": "Dark mode",
       "dark": "Dark",
       "light": "Light",
       "languageFailed": "Not saved, try again",

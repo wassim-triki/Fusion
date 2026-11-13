@@ -88,6 +88,10 @@ Open work only. Agents keep it current from the conversation; closed items leave
         - Drag the date slider back and forth: the thumb, the date and the chart move with the hand, cards jump straight to each date with their lines drawn; let go, nothing reloads.
         - Press Replay: the company grows from 2018 to today without pauses between steps; it ends on today's 101 people.
         - Then pan the chart and drag a person onto someone else: the chip follows the pointer.
+- [ ] **B-456** The floating status pill, built 2026-11-13 (queue row 2): `showStatus()` in `@repo/ds` (`components/ui/status-pill.tsx`), a dark pill centred at the bottom with a green tick (amber mark for a notice), one at a time, gone in about 2 seconds; it mounts itself, so no host in the layouts. Used by the review's autosave ("Saved", the line at the bottom gone), Home's approve and decline in place ("Approved", "Answer sent") and Performance's "This changed since you opened it" (was a red error toast). Other toasts are untouched; move them over as surfaces are reworked.
+      Look at a review being written as Aicha Bouazizi, the employee, on `sitting-2` (type in an answer, pause), and approve something from Home as Mariam Gharbi, her manager.
+- [ ] **B-449** Your menu's Appearance as a round switch, built 2026-11-13 (queue row 2): `ThemeSwitch` in `@repo/ds`, the thumb carries the sun or the moon and slides across with a quarter turn (a script animation, since the theme change turns CSS transitions off). Settings › Preferences keeps Light · System · Dark.
+      Look at your menu (your face, top right) on any page and flip Appearance.
 
 ## Ready
 
@@ -102,10 +106,6 @@ Open work only. Agents keep it current from the conversation; closed items leave
 - [ ] **B-469** A review draft declines too easily on a thin year: with 4 things in Aicha Bouazizi's year (`sitting-2`), 5 of 6 self-review drafts and all 3 of her manager's came back "too little" (audit, 2026-11-13). The rule drops any answer under two cited sentences, and forward-looking questions ("what next year?") have nothing to cite. Let one cited sentence through, or tell the model which questions it may answer from goals alone; the page now says why and offers Try again (B-461) · Performance · 2026-11-13
 - [ ] **B-450** The plan page (`/performance/cycles/{c}/plans/{p}`), a manager reading a plan before deciding, was never redrawn in B-390: slice 5 only added "what changed", so a plan opened from Home's Needs you lands on the October page. Redraw it in the Goals language (or drop it for the goals opened in place, decided when drawn), with B-378's note on how a plan's goals and weights read · Performance · 2026-11-13
       User, 2026-11-13: "all I'm seeing is the same old one"; it's one surface for the plan's owner and its reviewer, and both "really need a big polish like we did with the rest".
-- [ ] **B-456** A floating status pill, Fusion-wide: small badges that behave as toasts, centred at the top or bottom (e.g. "Saved", "Approved"), in `@repo/ds`, replacing the review's "Saved" line at the bottom and the "something changed since you…" toast the user called bad; then used wherever a quiet confirmation is due (Home's in-place approve, B-378) · `@repo/ds`, Performance · 2026-11-13
-      User, 2026-11-13, writing Aicha's self-review: "I don't really like that saved at the bottom there … maybe some kind of a toast thing … those little badges … that sit in the middle, like upper or lower. It's a whole component we can actually incorporate more into the app."
-- [ ] **B-462** One loading spinner, Fusion-wide: the spinner seen on the review pages (the user likes it) becomes the one `@repo/ds` component for every in-control and in-place wait (buttons, drafting, saving); every other spinner implementation found across the apps is deleted for it. Pages keep their fixed skeletons · `@repo/ds`, all our apps · 2026-11-13
-- [ ] **B-449** Your menu's Appearance as a real switch: a round, smoothly animated light/dark toggle instead of the two segmented tabs · Shell, `@repo/ds` · 2026-11-13
 
 ### After the walkthrough (B-331): three stacks
 

@@ -3,13 +3,13 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useFormatter, useTranslations } from "next-intl";
-import { Button, PersonAvatar } from "@repo/ds";
+import { Button, PersonAvatar, Spinner } from "@repo/ds";
 import { PageContainer, ProgressSegments, Section } from "@repo/ds/shell";
 import { useSetupGuide } from "@repo/api/query";
 import { canViewTenantAdministration, useAuth } from "@repo/auth";
 import { cn } from "@repo/ds/lib/utils";
 import type { CompanyImportDto, CompanyImportProgressDto } from "@repo/api";
-import { AlertTriangle, Check, CheckCircle2, Clock, File as FileGlyph, Loader2, Mail, MapPin, Network, PencilLine, RefreshCw } from "@repo/ds/icons";
+import { AlertTriangle, Check, CheckCircle2, Clock, File as FileGlyph, Mail, MapPin, Network, PencilLine, RefreshCw } from "@repo/ds/icons";
 import { useImportChange } from "../api/use-company-import";
 import { leftSummary } from "./understood";
 
@@ -173,10 +173,10 @@ function Stopped({ data, stopped }: { data: CompanyImportDto; stopped: NonNullab
 }
 
 function Fact({ state, children }: { state: FactState; children: ReactNode }) {
-  const Icon = state === "done" ? Check : state === "now" ? Loader2 : Clock;
+  const Icon = state === "done" ? Check : Clock;
   return (
     <span className={cn("inline-flex items-center gap-1.5 type-label tabular-nums", state === "wait" ? "text-muted-foreground" : "text-foreground")}>
-      <Icon className={cn("size-4", state === "now" && "animate-spin text-primary-ink", state === "done" && "text-success")} aria-hidden />
+      {state === "now" ? <Spinner aria-hidden className="text-primary-ink" /> : <Icon className={cn("size-4", state === "done" && "text-success")} aria-hidden />}
       {children}
     </span>
   );

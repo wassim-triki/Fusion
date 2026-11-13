@@ -3,9 +3,10 @@
 import { reportPerformanceFailure } from "@/features/performance/api/performance-failure";
 
 import { useRef, useState } from "react";
-import { FileText, Link2, Loader2, Paperclip, Plus, Type, X } from "@repo/ds/icons";
+import { FileText, Link2, Paperclip, Plus, Type, X } from "@repo/ds/icons";
 import type { EvidenceInput } from "@repo/api";
 import { Button } from "@repo/ds/components/ui/button";
+import { Spinner } from "@repo/ds/components/ui/spinner";
 import { Input } from "@repo/ds/components/ui/input";
 import { cn } from "@repo/ds/lib/utils";
 import { useTranslations } from "next-intl";
@@ -118,7 +119,7 @@ export function EvidenceUploader({
             onClick={() => fileInput.current?.click()}
             className={cn(dragging && "border-primary bg-primary/[0.04]")}
           >
-            {uploading ? <Loader2 className="size-3.5 animate-spin" data-icon="inline-start" /> : <Paperclip className="size-3.5" data-icon="inline-start" />}
+            {uploading ? <Spinner aria-hidden className="size-3.5" data-icon="inline-start" /> : <Paperclip className="size-3.5" data-icon="inline-start" />}
             {uploading ? t("uploading") : t("attachFile")}
           </Button>
           <Button type="button" variant="outline" size="sm" onClick={() => setMode("link")}>

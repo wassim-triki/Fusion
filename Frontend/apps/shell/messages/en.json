@@ -230,6 +230,8 @@
       "decline": "Decline",
       "why": "Why not?",
       "whyPlaceholder": "Say what would change your answer",
+      "approved": "Approved",
+      "answered": "Answer sent",
       "failed": "That didn't work. Try again."
     },
     "setup": {

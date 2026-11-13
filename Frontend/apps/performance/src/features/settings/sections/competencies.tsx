@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Archive, Check, FileSpreadsheet, Loader2, Pencil, Plus, Sparkles, Trash2, Upload, X } from "@repo/ds/icons";
+import { Archive, Check, FileSpreadsheet, Pencil, Plus, Sparkles, Trash2, Upload, X } from "@repo/ds/icons";
 import {
   ApiError,
   type CompetencyDto,
@@ -12,7 +12,7 @@ import {
   type JobFamilyDto,
 } from "@repo/api";
 import { useStagedSettings } from "@repo/api/react";
-import { Button, cn, Dialog, DialogContent, DialogTitle, Input, Label, Textarea } from "@repo/ds";
+import { Button, cn, Dialog, DialogContent, DialogTitle, Input, Label, Spinner, Textarea } from "@repo/ds";
 import { formatDate } from "@repo/ds/lib/dates";
 import { SettingsPage, StatusBadge, useSettingsSectionName } from "@repo/ds/shell";
 import { ValueDot, VALUE_TONE, type ValueTone } from "@repo/performance-ui";
@@ -502,12 +502,12 @@ export function CompetenciesSettings({ section }: { section: FusionSettingsSecti
       <>
         {data?.canDraft && emptyCount > 0 && competencies.length > 0 ? (
           <Button writes variant="outline" size="sm" disabled={draft.isLoading} onClick={() => void runDraft()}>
-            {draft.isLoading ? <Loader2 aria-hidden className="size-4 animate-spin" /> : <Sparkles aria-hidden className="size-4" />}
+            {draft.isLoading ? <Spinner aria-hidden className="size-4" /> : <Sparkles aria-hidden className="size-4" />}
             {t("draftEmpty")}
           </Button>
         ) : null}
         <Button variant="ghost" size="sm" disabled={read.isLoading} onClick={() => fileInput.current?.click()}>
-          {read.isLoading ? <Loader2 aria-hidden className="size-4 animate-spin" /> : <Upload aria-hidden className="size-4" />}
+          {read.isLoading ? <Spinner aria-hidden className="size-4" /> : <Upload aria-hidden className="size-4" />}
           {t("fromFile")}
         </Button>
       </>
@@ -641,12 +641,12 @@ export function CompetenciesSettings({ section }: { section: FusionSettingsSecti
             <>
               {data.canDraft ? (
                 <Button writes disabled={draft.isLoading} onClick={() => void runDraft()}>
-                  {draft.isLoading ? <Loader2 aria-hidden className="size-4 animate-spin" /> : <Sparkles aria-hidden className="size-4" />}
+                  {draft.isLoading ? <Spinner aria-hidden className="size-4" /> : <Sparkles aria-hidden className="size-4" />}
                   {t("draftFromJobs")}
                 </Button>
               ) : null}
               <Button variant="outline" disabled={read.isLoading} onClick={() => fileInput.current?.click()}>
-                {read.isLoading ? <Loader2 aria-hidden className="size-4 animate-spin" /> : <Upload aria-hidden className="size-4" />}
+                {read.isLoading ? <Spinner aria-hidden className="size-4" /> : <Upload aria-hidden className="size-4" />}
                 {t("ownFramework")}
               </Button>
               <Button variant="outline" onClick={writeFirstEmpty}>

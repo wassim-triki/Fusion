@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@repo/ds/components/ui/dropdown-menu";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
-import { Segmented } from "@repo/ds/choice";
+import { ThemeSwitch } from "@repo/ds/components/ui/theme-switch";
 import { useTheme } from "@repo/ds/shell";
 import { cn } from "@repo/ds/lib/utils";
 import { useAuth } from "../auth-context";
@@ -125,16 +125,7 @@ export function YourMenu() {
         <div className="flex items-center gap-2.5 rounded-inset px-2 py-1.5 text-sm">
           {dark ? <Moon className="size-4 text-muted-foreground" /> : <Sun className="size-4 text-muted-foreground" />}
           <span className="flex-1">{t("appearance")}</span>
-          <Segmented
-            size="sm"
-            label={t("appearance")}
-            value={theme === "light" || theme === "dark" ? theme : null}
-            onChange={setTheme}
-            options={[
-              { value: "light", label: t("light") },
-              { value: "dark", label: t("dark") },
-            ]}
-          />
+          <ThemeSwitch dark={dark} onChange={setTheme} label={t("darkMode")} />
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem

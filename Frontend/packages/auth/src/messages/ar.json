@@ -336,6 +336,7 @@
       "notifications": "الإشعارات",
       "language": "اللغة",
       "appearance": "المظهر",
+      "darkMode": "الوضع الداكن",
       "dark": "داكن",
       "light": "فاتح",
       "languageFailed": "لم يُحفظ، حاول مجددًا",

@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import { ApiError } from "@repo/api";
+import { showStatus } from "@repo/ds/components/ui/status-pill";
 import enCommon from "../../../../messages/en/common.json";
 import frCommon from "../../../../messages/fr/common.json";
 import arCommon from "../../../../messages/ar/common.json";
@@ -37,7 +38,10 @@ const reported = new WeakSet<Error>();
 export function reportPerformanceFailure(error: unknown, fallback?: string) {
   if (error instanceof Error && reported.has(error)) return;
   if (error instanceof Error) reported.add(error);
-  toast.error(performanceFailure(error, fallback).message);
+  const failure = performanceFailure(error, fallback);
+  // Someone else changed it first: nothing broke, so a quiet pill says so while the page catches up (B-456).
+  if (failure.kind === "Stale") showStatus(failure.message, { tone: "notice" });
+  else toast.error(failure.message);
 }
 
 export async function recoverPerformanceFailure(error: unknown, refresh: () => Promise<unknown>) {

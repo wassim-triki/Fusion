@@ -12,7 +12,7 @@ import type {
   ReviewPotential,
 } from "@repo/api";
 import { REVIEW_POTENTIALS } from "@repo/api";
-import { cn } from "@repo/ds";
+import { cn, showStatus } from "@repo/ds";
 import { Button } from "@repo/ds/components/ui/button";
 import { Input } from "@repo/ds/components/ui/input";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
@@ -162,7 +162,7 @@ export function useReviewDraftForm(record: PerformanceReviewDto, side: Side) {
     if (saving.current) await saving.current.catch(() => undefined);
     setState("saving");
     const run = (side === "self" ? mutations.saveSelf.mutateAsync(request()) : mutations.saveManager.mutateAsync(request()))
-      .then((result) => { version.current = result.version; setState("saved"); })
+      .then((result) => { version.current = result.version; setState("saved"); showStatus(t("saved")); })
       .catch((error) => { setState("failed"); reportPerformanceFailure(error, t("couldntSave")); });
     saving.current = run;
     await run;

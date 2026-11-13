@@ -174,9 +174,6 @@ function WrittenReview({ record, side, readOnly }: { record: PerformanceReviewDt
             ) : null}
           </section>
           {!self && record.calibration ? <CalibratedOutcome record={record} /> : null}
-          {form.state === "saving" || form.state === "saved" ? (
-            <span aria-live="polite" className="text-[13px] text-muted-foreground">{form.state === "saving" ? t("saving") : t("saved")}</span>
-          ) : null}
         </div>
         <ReviewYear record={record} items={year.data} loading={year.isLoading} cite={cite} pendingPeers={pendingPeers}
           title={self ? t("yourYear") : t("theirYear", { name: subject })}

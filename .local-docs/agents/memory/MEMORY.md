@@ -128,6 +128,7 @@
 - [Port accepted drawings closely](port-accepted-drawings-closely.md) — build to the explorer's specs (spacing, chips, hues, borderless cards); user reviews side by side (B-177 round 1).
 - [Reuse only if it fits](reuse-only-if-it-fits.md) — never keep a UI pattern because it exists; judge it against the target design, redo or board it (B-175 tabs, hire form).
 - [UI: no explanatory text](ui-no-explanatory-text.md) — carry state with structure, never caption sentences.
+- [`next` takes the top row](next-takes-top-row.md) — a fresh session prompted "next" runs STATE's top queue row end to end and commits; no ceremony.
 - [Actions say what happens](actions-say-what-happens.md) — a button tells its outcome and who it touches before the click, and confirms after; unclear ones make the user afraid to click (2026-11-13).
 - [Polish includes UI/UX + refactor](polish-includes-uiux-and-refactor.md) — polish requests expect audit-then-fix, not wording.
 - [Prefers minimal-overhead fix](prefers-minimal-overhead-fix.md) — smallest root-cause fix; hardening as a footnote.

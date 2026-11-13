@@ -21,11 +21,24 @@ public sealed record PopulationCandidate(
     string? ExclusionReason,
     IReadOnlyList<ReadinessIssueCode> Issues)
 {
+    /// <summary>The facts the Leave out rules read (D-104).</summary>
+    public string? EmploymentType { get; init; }
+    public DateOnly? StartedOn { get; init; }
+    public bool OnLeaveOnDayOne { get; init; }
+    public DateOnly? LeaveUntil { get; init; }
+    public string? PhotoUrl { get; init; }
+
+    /// <summary>The first Leave out rule that catches them, written as stored; null when none does.</summary>
+    public string? RuledOutBy { get; init; }
+
+    /// <summary>Why they were brought in by name, though a rule catches them.</summary>
+    public string? InclusionReason { get; init; }
+
     /// <summary>No hard readiness issue — may join the confirmed roster.</summary>
     public bool IsEligible => !Issues.Any(ReadinessIssue.IsHard);
 
-    /// <summary>Counts toward the confirmed roster: eligible and not excluded.</summary>
-    public bool CountsToRoster => IsEligible && !IsExcluded;
+    /// <summary>Counts toward the confirmed roster: eligible, not left out by name, and no rule catches them unless they were brought in.</summary>
+    public bool CountsToRoster => IsEligible && !IsExcluded && (RuledOutBy is null || ByExplicitInclusion);
 
     /// <summary>A valid, active reviewer (accountable manager) resolves for this candidate.</summary>
     public bool HasValidReviewer => !Issues.Any(ReadinessIssue.IsReviewerIssue);

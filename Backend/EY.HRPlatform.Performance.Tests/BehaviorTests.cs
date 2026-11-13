@@ -6,6 +6,7 @@ using EY.HRPlatform.Performance.Domain.Population;
 using EY.HRPlatform.Performance.Domain.Settings;
 using EY.HRPlatform.Performance.Features.Cycles;
 using EY.HRPlatform.Performance.Features.Population;
+using EY.HRPlatform.Performance.Infrastructure.Core;
 using EY.HRPlatform.Performance.Infrastructure.Notifications;
 using EY.HRPlatform.Performance.Models;
 using EY.HRPlatform.Performance.Tests.TestHelpers;
@@ -237,6 +238,89 @@ public sealed class BehaviorTests
     }
 
     [Fact]
+    public async Task Leave_out_rules_and_exceptions_by_name_decide_who_launches()
+    {
+        var store = TestStore.ForNewTenant();
+        var workforce = new FakeCoreWorkforceClient();
+        var company = Guid.NewGuid();
+        var engineering = Guid.NewGuid();
+        var platform = Guid.NewGuid(); // under Engineering
+        var sales = Guid.NewGuid();
+        workforce.OrgUnits[engineering] = new WorkforceOrgUnitContext(engineering, "Engineering", company, true, [company]);
+        workforce.OrgUnits[platform] = new WorkforceOrgUnitContext(platform, "Platform", engineering, true, [engineering, company]);
+        workforce.OrgUnits[sales] = new WorkforceOrgUnitContext(sales, "Sales", company, true, [company]);
+        workforce.OrgUnits[company] = new WorkforceOrgUnitContext(company, "Carthage", null, true, []);
+        var manager = Guid.NewGuid();
+        WorkforceSnapshot In(string name, Guid unit, string unitName) => workforce.Add(name, orgUnitId: unit, orgUnitName: unitName, managerId: manager);
+        In("Amina", sales, "Sales");
+        workforce.Replace(In("Lotfi", sales, "Sales") with { EmploymentType = "Contractor" });
+        var hela = workforce.Replace(In("Hela", sales, "Sales") with { EmploymentType = "contractor" });
+        var wafa = workforce.Replace(In("Wafa", sales, "Sales") with { Leave = new WorkforceLeaveSnapshot(Start.AddDays(-10), Start.AddMonths(4), null, false) });
+        var rim = In("Rim", platform, "Platform"); // in a unit under the ruled one
+        var sana = In("Sana", sales, "Sales");
+        workforce.Replace(In("Omar", sales, "Sales") with { EmploymentStart = Start.AddDays(-3) });
+        var cycle = Draft(store.TenantId, "FY2026", Start);
+        var definition = PopulationDefinition.Create(store.TenantId, cycle.Id, Start);
+        definition.SetWhoIsIn(
+            new[] { "employmentType:Contractor", "onLeave", $"unit:{engineering}", $"startedAfter:{Start.AddDays(-7):yyyy-MM-dd}" }.Select(LeaveOutRule.Parse),
+            [(hela.EmployeeId, true, "Runs the finance close"), (sana.EmployeeId, false, "On secondment until June")]);
+        await using (var db = store.NewContext())
+        {
+            db.CycleSettings.Add(CycleSettings.CreateDefault(store.TenantId));
+            db.Cycles.Add(cycle);
+            db.PopulationDefinitions.Add(definition);
+            await db.SaveChangesAsync();
+        }
+
+        await using (var read = store.NewContext())
+        {
+            var setup = await new GetYearSetupHandler(read, store.Tenant, new PopulationResolutionService(workforce), workforce)
+                .Handle(new GetYearSetupQuery(), default);
+            Assert.True(setup.IsSuccess, setup.IsFailure ? setup.Error.Message : null);
+            Assert.Equal(2, setup.Value.PeopleCount);
+            Assert.Equal(7, setup.Value.Everyone.Count); // everyone who can be in, with their facts
+            Assert.True(setup.Value.Everyone.Single(p => p.EmployeeId == wafa.EmployeeId).OnLeave);
+            Assert.Equal(engineering, setup.Value.Everyone.Single(p => p.EmployeeId == rim.EmployeeId).DivisionId);
+            Assert.Equal(["Sales", "Engineering"], setup.Value.Divisions.Select(d => d.Name));
+            Assert.Equal(4, setup.Value.LeaveOut.Count);
+            Assert.Contains(setup.Value.Exceptions, e => e.EmployeeId == hela.EmployeeId && e.In && e.Reason == "Runs the finance close");
+        }
+
+        var launched = await LaunchAsync(store, workforce, cycle.Id, await VersionAsync(store, cycle.Id));
+
+        Assert.True(launched.IsSuccess, launched.IsFailure ? launched.Error.Message : null);
+        await using var check = store.NewContext();
+        var names = (await check.Participants.AsNoTracking().Select(p => p.DisplayName).ToListAsync()).Order().ToList();
+        // Amina has no rule; Hela is a contractor brought in by name. Lotfi (contractor), Wafa (on leave on day one), Rim
+        // (a unit under Engineering), Omar (started after the date) and Sana (out by name) stay out.
+        Assert.Equal(["Amina", "Hela"], names);
+    }
+
+    [Fact]
+    public async Task Saving_a_year_keeps_who_is_in_and_refuses_a_rule_it_cannot_read()
+    {
+        var store = TestStore.ForNewTenant();
+        var end = Start.AddYears(1).AddDays(-1);
+        var person = Guid.NewGuid();
+        var plan = Plan(Start, end) with { WhoIsIn = new WhoIsInInput(["employmentType:Intern"], [new WhoIsInExceptionDto(person, false, "On secondment")]) };
+        var created = await new CreateCycleHandler(store.NewContext(), store.Tenant)
+            .Handle(new CreateCycleCommand(new CreateCycleRequest("FY2026", Start, end, Start.AddDays(30)) { Plan = plan }), default);
+        Assert.True(created.IsSuccess, created.IsFailure ? created.Error.Message : null);
+        await using (var db = store.NewContext())
+        {
+            var definition = await db.PopulationDefinitions.Include(d => d.Exclusions).AsNoTracking().SingleAsync();
+            Assert.Equal(["employmentType:Intern"], definition.LeaveOut);
+            Assert.Equal("On secondment", Assert.Single(definition.Exclusions).Reason);
+        }
+
+        var refused = await new UpdateCycleHandler(store.NewContext(), store.Tenant).Handle(new UpdateCycleCommand(created.Value.Id,
+            new UpdateCycleRequest("FY2026", Start, end, Start.AddDays(30)) { ExpectedVersion = await VersionAsync(store, created.Value.Id),
+                Plan = plan with { WhoIsIn = new WhoIsInInput(["salary:high"], []) } }), default);
+        Assert.True(refused.IsFailure);
+        Assert.Equal(Features.Failures.PerformanceErrors.Codes.CycleInvalid, refused.Error.Code);
+    }
+
+    [Fact]
     public async Task Setup_reads_last_years_goals_coming_along()
     {
         var store = TestStore.ForNewTenant();
@@ -257,7 +341,7 @@ public sealed class BehaviorTests
         }
 
         await using var read = store.NewContext();
-        var setup = await new GetYearSetupHandler(read, store.Tenant, new PopulationResolutionService(workforce)).Handle(new GetYearSetupQuery(), default);
+        var setup = await new GetYearSetupHandler(read, store.Tenant, new PopulationResolutionService(workforce), workforce).Handle(new GetYearSetupQuery(), default);
 
         Assert.True(setup.IsSuccess, setup.IsFailure ? setup.Error.Message : null);
         Assert.Null(setup.Value.DraftId);

@@ -174,7 +174,16 @@ public sealed record YearPlanInput(
     DateOnly? SelfReviewsDueOn,
     DateOnly? CalibrationOn,
     bool JoinersJoin,
-    IReadOnlyList<Guid>? DroppedCompanyGoalIds);
+    IReadOnlyList<Guid>? DroppedCompanyGoalIds,
+    WhoIsInInput? WhoIsIn = null);
+
+/// <summary>Who's in (D-104): the Leave out rules as written ("employmentType:Contractor", "unit:{id}", "startedAfter:2028-03-01", "onLeave") and exceptions by name.</summary>
+public sealed record WhoIsInInput(
+    IReadOnlyList<string> LeaveOut,
+    IReadOnlyList<WhoIsInExceptionDto> Exceptions);
+
+/// <summary>One person in or out by name, whatever the rules say, with why.</summary>
+public sealed record WhoIsInExceptionDto(Guid EmployeeId, bool In, string Reason);
 
 /// <summary>A year as set up: its name, dates, steps' ends and moments.</summary>
 public sealed record YearPlanDto(
@@ -190,8 +199,23 @@ public sealed record YearPlanDto(
     bool JoinersJoin,
     IReadOnlyList<Guid> DroppedCompanyGoalIds);
 
-/// <summary>Someone on the setup page: who's in, left out, or carrying goals over.</summary>
+/// <summary>Someone on the setup page: who can't be in, or carrying goals over.</summary>
 public sealed record YearSetupPersonDto(Guid EmployeeId, string Name, string? UnitName);
+
+/// <summary>Someone who can be in the year, with the facts the Leave out rules read (D-104).</summary>
+public sealed record YearSetupCandidateDto(
+    Guid EmployeeId,
+    string Name,
+    string? PhotoUrl,
+    Guid? DivisionId,
+    string? UnitName,
+    string? EmploymentType,
+    DateOnly? StartedOn,
+    bool OnLeave,
+    DateOnly? LeaveUntil);
+
+/// <summary>A division of the company: the department level the faces are grouped by.</summary>
+public sealed record YearSetupDivisionDto(Guid Id, string Name);
 
 /// <summary>A goal coming along into the next year, with whose it is.</summary>
 public sealed record YearSetupGoalDto(Guid Id, string Title, Guid OwnerEmployeeId, string? OwnerName);
@@ -209,8 +233,11 @@ public sealed record YearSetupDto(
     CyclePhase? LastYearPhase,
     string? LaunchBlocker,
     int PeopleCount,
-    IReadOnlyList<YearSetupPersonDto> People,
-    IReadOnlyList<YearSetupPersonDto> LeftOut,
+    IReadOnlyList<YearSetupCandidateDto> Everyone,
+    IReadOnlyList<YearSetupDivisionDto> Divisions,
+    IReadOnlyList<string> LeaveOut,
+    IReadOnlyList<WhoIsInExceptionDto> Exceptions,
+    IReadOnlyList<YearSetupPersonDto> CannotBeIn,
     IReadOnlyList<YearSetupGoalDto> CompanyGoals,
     int UnfinishedGoals,
     IReadOnlyList<YearSetupPersonDto> UnfinishedOwners);

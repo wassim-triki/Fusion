@@ -115,6 +115,29 @@ public sealed class InternalWorkforceSnapshotServiceTests
         Assert.NotNull(ok.OrgUnit);
     }
 
+    [Fact]
+    public async Task Snapshot_carries_the_employment_type_in_effect_on_the_as_of_date()
+    {
+        var tenantId = Guid.NewGuid();
+        await using var db = TestDbContextFactory.Create(TestTenantContext.WithTenant(tenantId));
+        var unit = await UnitAsync(db, tenantId);
+        var fullTime = CompanyListValue.Create(tenantId, CompanyList.EmploymentTypes, "Full-time", "full-time", 0, null);
+        var contractor = CompanyListValue.Create(tenantId, CompanyList.EmploymentTypes, "Contractor", "contractor", 1, null);
+        db.AddRange(fullTime, contractor);
+        await db.SaveChangesAsync();
+        var lotfi = await HireAsync(db, tenantId, unit, "Lotfi", "Bouhlel");
+        var employment = db.Employments.Single(e => e.EmployeeId == lotfi.Employee.Id);
+        // Full-time when he started, a contractor since a month before the as-of date, full-time again after it.
+        db.AddRange(EmploymentTypePeriod.Start(tenantId, lotfi.Employee.Id, employment.Id, Start, fullTime, null),
+            EmploymentTypePeriod.Start(tenantId, lotfi.Employee.Id, employment.Id, AsOf.AddMonths(-1), contractor, null),
+            EmploymentTypePeriod.Start(tenantId, lotfi.Employee.Id, employment.Id, AsOf.AddMonths(1), fullTime, null));
+        await db.SaveChangesAsync();
+
+        var snapshot = Assert.Single(await new InternalWorkforceSnapshotService(db).GetAllActiveAsOfAsync(AsOf, includeInactive: false, CancellationToken.None));
+
+        Assert.Equal("Contractor", snapshot.EmploymentType);
+    }
+
     private static readonly DateTime Start = new(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
     private static readonly DateTime AsOf = new(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc);
 

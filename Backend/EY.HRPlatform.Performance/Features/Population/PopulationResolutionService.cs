@@ -45,8 +45,20 @@ public sealed class PopulationResolutionService(ICoreWorkforceClient workforceCl
             }
         }
 
+        // A unit rule covers the units under it, so the people's units are read with their ancestors.
+        var rules = definition.Rules;
+        var ruledUnits = rules.Where(rule => rule.UnitId is not null).Select(rule => rule.UnitId!.Value).ToHashSet();
+        var ancestors = new Dictionary<Guid, IReadOnlyList<Guid>>();
+        if (ruledUnits.Count > 0)
+        {
+            var units = byEmployee.Values.Where(s => s.OrgUnit is not null).Select(s => s.OrgUnit!.OrgUnitId).Distinct().ToList();
+            foreach (var context in await workforceClient.ResolveOrgUnitsAsync(asOf, units, cancellationToken))
+                ancestors[context.OrgUnitId] = context.AncestorOrgUnitIds;
+        }
+        bool Within(Guid? unit, Guid ruled) => unit is { } own && (own == ruled || (ancestors.GetValueOrDefault(own)?.Contains(ruled) ?? false));
+
         var candidates = byEmployee.Values
-            .Select(snapshot => ToCandidate(snapshot, definition))
+            .Select(snapshot => ToCandidate(snapshot, definition, cycle.StartDate, rules, Within))
             .OrderByDescending(candidate => candidate.CountsToRoster)
             .ThenBy(candidate => candidate.DisplayName, StringComparer.OrdinalIgnoreCase)
             .ToList();
@@ -88,7 +100,8 @@ public sealed class PopulationResolutionService(ICoreWorkforceClient workforceCl
         return merged.Values.ToList();
     }
 
-    private static PopulationCandidate ToCandidate(WorkforceSnapshot snapshot, PopulationDefinition definition)
+    private static PopulationCandidate ToCandidate(WorkforceSnapshot snapshot, PopulationDefinition definition, DateOnly dayOne,
+        IReadOnlyList<LeaveOutRule> rules, Func<Guid?, Guid, bool> within)
     {
         var issues = new List<ReadinessIssueCode>();
         if (!snapshot.IsActive) issues.Add(ReadinessIssueCode.InactiveEmployment);
@@ -117,6 +130,16 @@ public sealed class PopulationResolutionService(ICoreWorkforceClient workforceCl
         }
 
         var excluded = definition.IsExcluded(snapshot.EmployeeId);
+        var leave = snapshot.Leave;
+        var onLeave = leave is not null && leave.From <= dayOne && (leave.Until is null || leave.Until >= dayOne);
+        var ruledOut = rules.FirstOrDefault(rule => rule.Kind switch
+        {
+            LeaveOutRule.EmploymentType => string.Equals(rule.Value, snapshot.EmploymentType, StringComparison.OrdinalIgnoreCase),
+            LeaveOutRule.Unit => within(snapshot.OrgUnit?.OrgUnitId, rule.UnitId!.Value),
+            LeaveOutRule.StartedAfter => snapshot.EmploymentStart > rule.Date,
+            LeaveOutRule.OnLeave => onLeave,
+            _ => false,
+        });
 
         return new PopulationCandidate(
             snapshot.EmployeeId,
@@ -131,6 +154,15 @@ public sealed class PopulationResolutionService(ICoreWorkforceClient workforceCl
             definition.IsExplicitlyIncluded(snapshot.EmployeeId),
             excluded,
             excluded ? definition.ExclusionReason(snapshot.EmployeeId) : null,
-            issues);
+            issues)
+        {
+            EmploymentType = snapshot.EmploymentType,
+            StartedOn = snapshot.EmploymentStart,
+            OnLeaveOnDayOne = onLeave,
+            LeaveUntil = onLeave ? leave!.Until : null,
+            PhotoUrl = snapshot.PhotoUrl,
+            RuledOutBy = ruledOut?.ToString(),
+            InclusionReason = definition.InclusionReason(snapshot.EmployeeId),
+        };
     }
 }

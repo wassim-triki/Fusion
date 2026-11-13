@@ -161,7 +161,11 @@ internal static class InsightsData
             .Select(n => new InsightsUnitOptionDto(n.Key, n.Value, Depth(n.Key))).OrderBy(o => o.Depth).ThenBy(o => o.Name).ToList();
     }
 
-    public static async Task<Units> UnitsAsync(ICoreWorkforceClient workforce, IEnumerable<Person> people, CancellationToken token)
+    public static Task<Units> UnitsAsync(ICoreWorkforceClient workforce, IEnumerable<Person> people, CancellationToken token)
+        => UnitsAsync(workforce, people.Select(p => (p.UnitId, (string?)p.UnitName)), token);
+
+    /// <summary>The units people sit in, with the ones above them; each unit stands alone when Core HR is down.</summary>
+    public static async Task<Units> UnitsAsync(ICoreWorkforceClient workforce, IEnumerable<(Guid? UnitId, string? UnitName)> people, CancellationToken token)
     {
         var list = people.ToList();
         var populationUnits = list.Where(p => p.UnitId is not null).Select(p => p.UnitId!.Value).Distinct().ToList();
@@ -180,7 +184,7 @@ internal static class InsightsData
             // Core HR down: each unit stands alone, named from the population.
             contexts = [];
         }
-        var names = list.Where(p => p.UnitId is not null).GroupBy(p => p.UnitId!.Value).ToDictionary(g => g.Key, g => g.First().UnitName);
+        var names = list.Where(p => p.UnitId is not null).GroupBy(p => p.UnitId!.Value).ToDictionary(g => g.Key, g => g.First().UnitName ?? "Unit");
         foreach (var context in contexts) names[context.OrgUnitId] = context.Name;
         var ancestors = contexts.GroupBy(c => c.OrgUnitId).ToDictionary(g => g.Key, g => g.First().AncestorOrgUnitIds);
         return new Units(names, ancestors);

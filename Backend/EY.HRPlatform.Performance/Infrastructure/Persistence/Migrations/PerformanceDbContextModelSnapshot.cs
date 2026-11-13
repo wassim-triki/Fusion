@@ -2144,6 +2144,10 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsConfirmed")
                         .HasColumnType("boolean");
 
+                    b.PrimitiveCollection<List<string>>("LeaveOut")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
                     b.Property<string>("Mode")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -2231,6 +2235,10 @@ namespace EY.HRPlatform.Performance.Infrastructure.Persistence.Migrations
 
                     b.Property<Guid>("PopulationDefinitionId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");

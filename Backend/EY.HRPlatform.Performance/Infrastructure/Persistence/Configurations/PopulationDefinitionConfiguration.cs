@@ -13,6 +13,7 @@ public sealed class PopulationDefinitionConfiguration : IEntityTypeConfiguration
         builder.Property(definition => definition.Version).IsRowVersion();
 
         builder.Property(definition => definition.Mode).HasConversion<string>().HasMaxLength(20).IsRequired();
+        builder.Ignore(definition => definition.Rules);
 
         // One population definition per Cycle.
         builder.HasIndex(definition => definition.CycleId).IsUnique();
@@ -57,6 +58,7 @@ public sealed class PopulationInclusionConfiguration : IEntityTypeConfiguration<
     {
         builder.ToTable("PopulationInclusions");
         builder.HasKey(item => item.Id);
+        builder.Property(item => item.Reason).HasMaxLength(500);
         builder.HasIndex(item => new { item.PopulationDefinitionId, item.EmployeeId }).IsUnique();
     }
 }

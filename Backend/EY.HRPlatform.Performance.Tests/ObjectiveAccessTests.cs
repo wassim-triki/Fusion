@@ -331,7 +331,7 @@ public sealed class ObjectiveAccessTests
         switch (family)
         {
             case "cycle":
-                error = (await new EY.HRPlatform.Performance.Features.Cycles.UpdateCycleHandler(db).Handle(new(f.CycleId,
+                error = (await new EY.HRPlatform.Performance.Features.Cycles.UpdateCycleHandler(db, f.Store.Tenant).Handle(new(f.CycleId,
                     new("Changed", Start, End, Start.AddDays(30)) { ExpectedVersion = 1 }), default)).Error;
                 break;
             case "strategy":

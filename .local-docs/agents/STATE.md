@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** the redraws explorer (queue row 4), 2026-11-13: picks recorded as D-103 to D-109, builds queued as rows 5 to 8 (LOG). Before it: the review page made clear (queue row 3), accepted.
+**Last finished:** setting up a year built from the redraws (queue row 5, B-466 with B-467, B-468), 2026-11-13, In review (LOG). Before it: the redraws explorer (queue row 4).
 
 ## Active work
 
@@ -14,11 +14,10 @@ Session queue (the user opens a fresh session with "next"): it takes the first o
 
 | # | Session | Board items | Notes |
 |---|---|---|---|
-| 5 | Build: setting up a year | B-466 with B-467, B-468 | D-103, D-104 (D-102's year bar goes). Port `plans/B-466-redraws.html` › Setting up a year (variant a for the dates, a for who's in); who's in needs Core HR's employment type and leave for the rules, check what Core HR holds first. One screen compared with the drawing. |
 | 6 | Build: the Year's next step | B-453 | D-105 to D-107. Port › The Year's next step (a, a); nudges carry a bell. |
 | 7 | Build: one goal drawer | B-451 | D-108 (the progress dialog goes). Port › One goal drawer (a); the original updates list is in git at `d935d5b2^` (`progress-history-timeline.tsx`). |
 | 8 | Build: a team member's plan as a wide panel | B-450 | D-109. Port › A plan, before deciding (b), parts reusable for a plan page. |
 | 9 | Home rework | B-378 | Research brief, long list, explorer (memory `scope-with-depth-ladders`), then build. |
 | 10 | The demo in two acts | B-395 | `lateyear` preset + "meanwhile" script, rehearsal, screens; shows a little of the HR side (questions, competencies, scale). Near the jury date. |
 
-Still In review (the user's verdicts land as Ready children): B-405, B-424, B-431, B-434, B-440/B-446, B-447, and the shared pieces B-456, B-449. Ready leftovers: B-442, B-443, B-444, B-448, B-469.
+Still In review (the user's verdicts land as Ready children): B-466 with B-467, B-468 (setting up a year), B-405, B-424, B-431, B-434, B-440/B-446, B-447, and the shared pieces B-456, B-449. Ready leftovers: B-442, B-443, B-444, B-448, B-469.

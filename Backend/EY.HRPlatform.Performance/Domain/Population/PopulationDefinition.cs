@@ -40,52 +40,41 @@ public sealed class PopulationDefinition : PerformanceAggregate
         };
     }
 
-    /// <summary>Replaces the selection rule. Editing the rule clears any prior confirmation.</summary>
-    public void SetSelection(
-        PopulationMode mode,
-        IEnumerable<(Guid OrgUnitId, bool IncludeDescendants)> orgUnitSelections,
-        IEnumerable<Guid> inclusions,
-        IEnumerable<(Guid EmployeeId, string Reason)> exclusions)
+    /// <summary>
+    /// Who's in (D-104): everyone active in Core HR on the year's first day, less the Leave out rules, with exceptions by
+    /// name and a reason: one person left out though no rule catches them, or brought in though one does. Editing it
+    /// clears any prior confirmation.
+    /// </summary>
+    public void SetWhoIsIn(IEnumerable<LeaveOutRule> rules, IEnumerable<(Guid EmployeeId, bool In, string Reason)> exceptions)
     {
         GuardDraft();
-
         _orgUnitSelections.Clear();
         _inclusions.Clear();
         _exclusions.Clear();
+        LeaveOut = rules.Select(rule => rule.ToString()).Distinct().ToList();
 
-        if (mode == PopulationMode.ByScope)
-        {
-            foreach (var (orgUnitId, includeDescendants) in orgUnitSelections ?? [])
-            {
-                if (orgUnitId == Guid.Empty) continue;
-                if (_orgUnitSelections.Any(selection => selection.OrgUnitId == orgUnitId)) continue;
-                _orgUnitSelections.Add(PopulationOrgUnitSelection.Create(TenantId, Id, orgUnitId, includeDescendants));
-            }
-
-            // Zero selected units is a valid intermediate state (the admin has chosen the scope
-            // mode but not yet picked units); it simply resolves to an empty population. Emptiness
-            // is enforced at confirmation/activation, not while the rule is still being edited.
-        }
-
-        foreach (var employeeId in (inclusions ?? []).Where(id => id != Guid.Empty).Distinct())
-        {
-            _inclusions.Add(PopulationInclusion.Create(TenantId, Id, employeeId));
-        }
-
-        foreach (var (employeeId, reason) in exclusions ?? [])
+        foreach (var (employeeId, brought, reason) in exceptions)
         {
             if (employeeId == Guid.Empty) continue;
             if (string.IsNullOrWhiteSpace(reason))
-                throw new InvalidOperationException("An exclusion requires a reason.");
-            if (_exclusions.Any(exclusion => exclusion.EmployeeId == employeeId)) continue;
-            _exclusions.Add(PopulationExclusion.Create(TenantId, Id, employeeId, reason.Trim()));
+                throw new ArgumentException("An exception by name requires a reason.", nameof(exceptions));
+            if (IsExcluded(employeeId) || IsExplicitlyIncluded(employeeId)) continue;
+            var why = reason.Trim();
+            if (why.Length > 500) throw new ArgumentException("A reason is at most 500 characters.", nameof(exceptions));
+            if (brought) _inclusions.Add(PopulationInclusion.Create(TenantId, Id, employeeId, why));
+            else _exclusions.Add(PopulationExclusion.Create(TenantId, Id, employeeId, why));
         }
 
-        Mode = mode;
+        Mode = PopulationMode.AllActive;
         IsConfirmed = false;
         ConfirmedAt = null;
         MarkUpdated();
     }
+
+    /// <summary>The Leave out rules, each as <see cref="LeaveOutRule"/> writes it.</summary>
+    public List<string> LeaveOut { get; private set; } = [];
+
+    public IReadOnlyList<LeaveOutRule> Rules => LeaveOut.Select(LeaveOutRule.Parse).ToList();
 
     public void MarkConfirmed()
     {
@@ -125,73 +114,15 @@ public sealed class PopulationDefinition : PerformanceAggregate
         // before activation; this aggregate carries no lifecycle of its own beyond confirm.
     }
 
-    /// <summary>
-    /// Whether the given selection is effectively identical to the current one after the same
-    /// normalization <see cref="SetSelection"/> applies (dedup, trimmed reasons, order-independent).
-    /// Lets the caller treat an equivalent re-send as a no-op and preserve confirmation, rather
-    /// than reopening the population every time the same rule is PUT.
-    /// </summary>
-    public bool MatchesSelection(
-        PopulationMode mode,
-        IEnumerable<(Guid OrgUnitId, bool IncludeDescendants)> orgUnitSelections,
-        IEnumerable<Guid> inclusions,
-        IEnumerable<(Guid EmployeeId, string Reason)> exclusions)
-    {
-        if (mode != Mode) return false;
-
-        var incomingOrg = mode == PopulationMode.ByScope
-            ? NormalizeOrgSelections(orgUnitSelections)
-            : new HashSet<(Guid, bool)>();
-        var currentOrg = NormalizeOrgSelections(
-            _orgUnitSelections.Select(selection => (selection.OrgUnitId, selection.IncludeDescendants)));
-        if (!incomingOrg.SetEquals(currentOrg)) return false;
-
-        var incomingInclusions = (inclusions ?? []).Where(id => id != Guid.Empty).ToHashSet();
-        var currentInclusions = _inclusions.Select(inclusion => inclusion.EmployeeId).ToHashSet();
-        if (!incomingInclusions.SetEquals(currentInclusions)) return false;
-
-        var incomingExclusions = NormalizeExclusions(exclusions);
-        var currentExclusions = NormalizeExclusions(
-            _exclusions.Select(exclusion => (exclusion.EmployeeId, exclusion.Reason)));
-        return incomingExclusions.SetEquals(currentExclusions);
-    }
-
-    private static HashSet<(Guid, bool)> NormalizeOrgSelections(
-        IEnumerable<(Guid OrgUnitId, bool IncludeDescendants)> selections)
-    {
-        var result = new HashSet<(Guid, bool)>();
-        var seen = new HashSet<Guid>();
-        foreach (var (orgUnitId, includeDescendants) in selections ?? [])
-        {
-            if (orgUnitId == Guid.Empty) continue;
-            if (!seen.Add(orgUnitId)) continue; // first selection for a unit wins, mirroring SetSelection
-            result.Add((orgUnitId, includeDescendants));
-        }
-
-        return result;
-    }
-
-    private static HashSet<(Guid, string)> NormalizeExclusions(
-        IEnumerable<(Guid EmployeeId, string Reason)> exclusions)
-    {
-        var result = new HashSet<(Guid, string)>();
-        var seen = new HashSet<Guid>();
-        foreach (var (employeeId, reason) in exclusions ?? [])
-        {
-            if (employeeId == Guid.Empty) continue;
-            if (!seen.Add(employeeId)) continue;
-            result.Add((employeeId, (reason ?? string.Empty).Trim()));
-        }
-
-        return result;
-    }
-
     public bool IsExcluded(Guid employeeId) => _exclusions.Any(exclusion => exclusion.EmployeeId == employeeId);
 
     public bool IsExplicitlyIncluded(Guid employeeId) => _inclusions.Any(inclusion => inclusion.EmployeeId == employeeId);
 
     public string? ExclusionReason(Guid employeeId)
         => _exclusions.FirstOrDefault(exclusion => exclusion.EmployeeId == employeeId)?.Reason;
+
+    public string? InclusionReason(Guid employeeId)
+        => _inclusions.FirstOrDefault(inclusion => inclusion.EmployeeId == employeeId)?.Reason;
 }
 
 public sealed class PopulationOrgUnitSelection : PerformanceChildEntity
@@ -218,13 +149,15 @@ public sealed class PopulationInclusion : PerformanceChildEntity
 
     public Guid PopulationDefinitionId { get; private set; }
     public Guid EmployeeId { get; private set; }
+    public string? Reason { get; private set; }
 
-    public static PopulationInclusion Create(Guid tenantId, Guid populationDefinitionId, Guid employeeId)
+    public static PopulationInclusion Create(Guid tenantId, Guid populationDefinitionId, Guid employeeId, string? reason = null)
         => new()
         {
             TenantId = tenantId,
             PopulationDefinitionId = populationDefinitionId,
             EmployeeId = employeeId,
+            Reason = reason,
         };
 }
 
@@ -244,4 +177,39 @@ public sealed class PopulationExclusion : PerformanceChildEntity
             EmployeeId = employeeId,
             Reason = reason,
         };
+}
+
+/// <summary>
+/// One Leave out rule (D-104): people of an employment type, in a unit (with the units under it), who started after a
+/// date, or on leave on the year's first day. Written "employmentType:Contractor", "unit:{id}", "startedAfter:2028-03-01"
+/// or "onLeave".
+/// </summary>
+public sealed record LeaveOutRule(string Kind, string? Value)
+{
+    public const string EmploymentType = "employmentType";
+    public const string Unit = "unit";
+    public const string StartedAfter = "startedAfter";
+    public const string OnLeave = "onLeave";
+
+    public static LeaveOutRule Parse(string text)
+    {
+        var at = (text ?? string.Empty).IndexOf(':');
+        var kind = at < 0 ? text?.Trim() ?? string.Empty : text![..at].Trim();
+        var value = at < 0 ? null : text![(at + 1)..].Trim();
+        var valid = kind switch
+        {
+            EmploymentType => !string.IsNullOrWhiteSpace(value) && value.Length <= 100,
+            Unit => Guid.TryParse(value, out _),
+            StartedAfter => DateOnly.TryParseExact(value, "yyyy-MM-dd", out _),
+            OnLeave => value is null,
+            _ => false,
+        };
+        if (!valid) throw new ArgumentException($"\"{text}\" is not a rule for who's left out.", nameof(text));
+        return new LeaveOutRule(kind, value);
+    }
+
+    public Guid? UnitId => Kind == Unit ? Guid.Parse(Value!) : null;
+    public DateOnly? Date => Kind == StartedAfter ? DateOnly.ParseExact(Value!, "yyyy-MM-dd") : null;
+
+    public override string ToString() => Value is null ? Kind : $"{Kind}:{Value}";
 }

@@ -1623,6 +1623,23 @@ export interface YearPlanInput {
   calibrationOn: string | null;
   joinersJoin: boolean;
   droppedCompanyGoalIds: string[];
+  whoIsIn?: WhoIsInInput | null;
+}
+
+/**
+ * Who's in (D-104): the Leave out rules as written ("employmentType:Contractor", "unit:{id}", "startedAfter:2028-03-01",
+ * "onLeave") and the exceptions by name.
+ */
+export interface WhoIsInInput {
+  leaveOut: string[];
+  exceptions: WhoIsInExceptionDto[];
+}
+
+/** One person in or out by name, whatever the rules say, with why. */
+export interface WhoIsInExceptionDto {
+  employeeId: string;
+  in: boolean;
+  reason: string;
 }
 
 /** A year as set up: its name, dates, the steps' ends and its moments. */
@@ -1646,6 +1663,24 @@ export interface YearSetupPersonDto {
   unitName: string | null;
 }
 
+/** Someone who can be in the year, with the facts the Leave out rules read. */
+export interface YearSetupCandidateDto {
+  employeeId: string;
+  name: string;
+  photoUrl: string | null;
+  divisionId: string | null;
+  unitName: string | null;
+  employmentType: string | null;
+  startedOn: string | null;
+  onLeave: boolean;
+  leaveUntil: string | null;
+}
+
+export interface YearSetupDivisionDto {
+  id: string;
+  name: string;
+}
+
 export interface YearSetupGoalDto {
   id: string;
   title: string;
@@ -1663,9 +1698,15 @@ export interface YearSetupDto {
   lastYearPhase: CyclePhase | null;
   /** "lastYearRunning" while last year's results aren't out and its end hasn't passed. */
   launchBlocker: string | null;
+  /** Who's in as saved; the page counts its own changes before they're kept. */
   peopleCount: number;
-  people: YearSetupPersonDto[];
-  leftOut: YearSetupPersonDto[];
+  everyone: YearSetupCandidateDto[];
+  /** Largest first. */
+  divisions: YearSetupDivisionDto[];
+  leaveOut: string[];
+  exceptions: WhoIsInExceptionDto[];
+  /** Active but not ready (no place or no manager): they can't be in until Core HR has it. */
+  cannotBeIn: YearSetupPersonDto[];
   companyGoals: YearSetupGoalDto[];
   unfinishedGoals: number;
   unfinishedOwners: YearSetupPersonDto[];

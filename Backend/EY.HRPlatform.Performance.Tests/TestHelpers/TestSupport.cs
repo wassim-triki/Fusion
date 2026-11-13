@@ -169,6 +169,14 @@ public sealed class FakeCoreWorkforceClient : ICoreWorkforceClient
         return snapshot;
     }
 
+    /// <summary>Puts a changed copy of someone already added in their place.</summary>
+    public WorkforceSnapshot Replace(WorkforceSnapshot changed)
+    {
+        AllActive[AllActive.FindIndex(snapshot => snapshot.EmployeeId == changed.EmployeeId)] = changed;
+        ById[changed.EmployeeId] = changed;
+        return changed;
+    }
+
     public void AddIneligible(string name, bool inactive, bool noAssignment, out Guid id)
     {
         var snapshot = new WorkforceSnapshot(

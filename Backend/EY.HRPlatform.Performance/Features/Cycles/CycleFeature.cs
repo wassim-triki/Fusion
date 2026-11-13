@@ -5,7 +5,9 @@ using EY.HRPlatform.Performance.Features.Security.Policies;
 using System.Text.Json;
 using EY.HRPlatform.Performance.Domain.Cycles;
 using EY.HRPlatform.Performance.Domain.Objectives;
+using EY.HRPlatform.Performance.Domain.Population;
 using EY.HRPlatform.Performance.Domain.Settings;
+using EY.HRPlatform.Performance.Features.Population;
 using EY.HRPlatform.Performance.Infrastructure.Persistence;
 using EY.HRPlatform.Performance.Models;
 using EY.HRPlatform.SharedKernel.CQRS;
@@ -54,13 +56,14 @@ public sealed class CreateCycleHandler(PerformanceDbContext db, ITenantContext t
         {
             cycle = PerformanceCycle.CreateDraft(tenant.TenantId, request.Name, request.StartDate, request.EndDate, planningDeadline, request.Description);
             if (request.Plan is { } plan) Apply(cycle, plan);
+            db.Cycles.Add(cycle);
+            if (request.Plan?.WhoIsIn is { } who) await ApplyWhoIsInAsync(db, tenant, cycle, who, cancellationToken);
         }
         catch (ArgumentException ex)
         {
             return Result.Failure<CycleSummaryDto>(PerformanceErrors.Validation(PerformanceErrors.Codes.CycleInvalid, ex.Message));
         }
 
-        db.Cycles.Add(cycle);
         await db.SaveChangesAsync(cancellationToken);
         return PerformanceMappers.ToSummary(cycle);
     }
@@ -74,9 +77,22 @@ public sealed class CreateCycleHandler(PerformanceDbContext db, ITenantContext t
     internal static void Apply(PerformanceCycle cycle, YearPlanInput plan)
         => cycle.PlanYear(plan.ReviewOpensOn, plan.ResultsOutOn, plan.MidYearCheckInOn, plan.SelfReviewsDueOn, plan.CalibrationOn,
             plan.JoinersJoin, plan.DroppedCompanyGoalIds ?? []);
+
+    /// <summary>Who's in as set up (D-104): the Leave out rules and the exceptions by name, kept on the year's population.</summary>
+    internal static async Task ApplyWhoIsInAsync(PerformanceDbContext db, ITenantContext tenant, PerformanceCycle cycle, WhoIsInInput who,
+        CancellationToken cancellationToken)
+    {
+        var leaveOut = who.LeaveOut ?? [];
+        var exceptions = who.Exceptions ?? [];
+        if (leaveOut.Count > 20) throw new ArgumentException("A year takes at most 20 rules for who's left out.", nameof(who));
+        if (exceptions.Count > 5000) throw new ArgumentException("Too many exceptions by name.", nameof(who));
+        var rules = leaveOut.Select(LeaveOutRule.Parse).ToList();
+        var definition = await YearPopulation.LoadOrCreateDefinitionAsync(db, tenant, cycle, cancellationToken);
+        definition.SetWhoIsIn(rules, exceptions.Select(e => (e.EmployeeId, e.In, e.Reason)));
+    }
 }
 
-public sealed class UpdateCycleHandler(PerformanceDbContext db)
+public sealed class UpdateCycleHandler(PerformanceDbContext db, ITenantContext tenant)
     : ICommandHandler<UpdateCycleCommand, Result<CycleSummaryDto>>
 {
     public async Task<Result<CycleSummaryDto>> Handle(UpdateCycleCommand command, CancellationToken cancellationToken)
@@ -96,6 +112,7 @@ public sealed class UpdateCycleHandler(PerformanceDbContext db)
         {
             cycle.UpdateDraftDetails(request.Name, request.StartDate, request.EndDate, request.PlanningDeadline, request.Description);
             if (request.Plan is { } plan) CreateCycleHandler.Apply(cycle, plan);
+            if (request.Plan?.WhoIsIn is { } who) await CreateCycleHandler.ApplyWhoIsInAsync(db, tenant, cycle, who, cancellationToken);
         }
         catch (ArgumentException ex)
         {

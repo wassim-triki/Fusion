@@ -124,6 +124,8 @@ public sealed record InternalWorkforceEmployeeSnapshotDto(
     /// <summary>Leave they are on today, or their next; the type is left out.</summary>
     EY.HRPlatform.CoreHR.Features.People.Changes.PersonLeaveDto? Leave = null)
 {
+    /// <summary>The current employment's type from the company's list (Full-time, Contractor, …); null when unset.</summary>
+    public string? EmploymentType { get; init; }
     /// <summary>The held job's family and level, from the company's lists; null when the job has none.</summary>
     public Guid? JobFamilyId { get; init; }
     public Guid? LevelId { get; init; }

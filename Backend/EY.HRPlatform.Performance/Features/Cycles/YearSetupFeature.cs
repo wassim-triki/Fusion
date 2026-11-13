@@ -9,8 +9,10 @@ using EY.HRPlatform.Performance.Domain.Plans;
 using EY.HRPlatform.Performance.Domain.Population;
 using EY.HRPlatform.Performance.Domain.Settings;
 using EY.HRPlatform.Performance.Features.Failures;
+using EY.HRPlatform.Performance.Features.Insights;
 using EY.HRPlatform.Performance.Features.Population;
 using EY.HRPlatform.Performance.Infrastructure.Audit;
+using EY.HRPlatform.Performance.Infrastructure.Core;
 using EY.HRPlatform.Performance.Infrastructure.Notifications;
 using EY.HRPlatform.Performance.Infrastructure.Persistence;
 using EY.HRPlatform.Performance.Models;
@@ -108,7 +110,8 @@ public static class YearSetup
     }
 }
 
-public sealed class GetYearSetupHandler(PerformanceDbContext db, ITenantContext tenant, PopulationResolutionService resolver)
+public sealed class GetYearSetupHandler(PerformanceDbContext db, ITenantContext tenant, PopulationResolutionService resolver,
+    ICoreWorkforceClient workforce)
     : IQueryHandler<GetYearSetupQuery, Result<YearSetupDto>>
 {
     public async Task<Result<YearSetupDto>> Handle(GetYearSetupQuery request, CancellationToken token)
@@ -119,14 +122,27 @@ public sealed class GetYearSetupHandler(PerformanceDbContext db, ITenantContext 
         var lastPlan = last is null ? null : await YearSetup.AsRunAsync(db, last, token);
         var year = draft is not null ? YearSetup.Plan(draft) : YearSetup.Propose(lastPlan, PerformanceClock.Today);
 
-        // Who's in, from Core HR on the year's first day: everyone active with a place and a manager.
+        // Who's in, from Core HR on the year's first day: everyone active with a place and a manager, less the Leave out
+        // rules and with the exceptions by name (D-104).
         var probe = draft ?? PerformanceCycle.CreateDraft(tenant.TenantId, year.Name, year.StartDate, year.EndDate, year.PlanningEndsOn);
         var definition = await db.PopulationDefinitions.AsNoTracking().Include(d => d.Inclusions).Include(d => d.Exclusions)
             .Include(d => d.OrgUnitSelections).FirstOrDefaultAsync(d => d.CycleId == probe.Id, token)
             ?? PopulationDefinition.Create(tenant.TenantId, probe.Id, year.StartDate);
         var resolution = await resolver.ResolveAsync(probe, definition, token);
         var inYear = resolution.Candidates.Where(c => c.CountsToRoster).ToList();
+        var canBeIn = resolution.Candidates.Where(c => c.IsEligible).ToList();
         static YearSetupPersonDto Face(PopulationCandidate c) => new(c.EmployeeId, c.DisplayName, c.OrgUnitName);
+
+        // The faces are grouped by division, the department level Insights reads, largest first.
+        var units = await InsightsData.UnitsAsync(workforce, canBeIn.Select(c => (c.OrgUnitId, c.OrgUnitName)), token);
+        Guid? DivisionOf(PopulationCandidate c) => c.OrgUnitId is { } unit ? units.Department(unit) : null;
+        var everyone = canBeIn.Select(c => new YearSetupCandidateDto(c.EmployeeId, c.DisplayName, c.PhotoUrl, DivisionOf(c), c.OrgUnitName,
+            c.EmploymentType, c.StartedOn, c.OnLeaveOnDayOne, c.LeaveUntil)).ToList();
+        var divisions = everyone.Where(p => p.DivisionId is not null).GroupBy(p => p.DivisionId!.Value)
+            .OrderByDescending(g => g.Count()).ThenBy(g => units.Name(g.Key), StringComparer.OrdinalIgnoreCase)
+            .Select(g => new YearSetupDivisionDto(g.Key, units.Name(g.Key))).ToList();
+        var exceptions = definition.Exclusions.Select(e => new WhoIsInExceptionDto(e.EmployeeId, false, e.Reason))
+            .Concat(definition.Inclusions.Select(i => new WhoIsInExceptionDto(i.EmployeeId, true, i.Reason ?? string.Empty))).ToList();
 
         var goals = last is null ? [] : await YearSetup.CompanyGoalsAsync(db, last.Id, token);
         var unfinished = last is null ? [] : await YearSetup.UnfinishedAsync(db, last.Id, token);
@@ -140,8 +156,8 @@ public sealed class GetYearSetupHandler(PerformanceDbContext db, ITenantContext 
 
         var blocker = await YearSetup.BlockerAsync(db, last, token);
         return new YearSetupDto(draft?.Id, draft?.Version ?? 0, year, last?.Name, lastPlan, last is null ? null : await YearPhases.ComputeAsync(db, last, token),
-            blocker, inYear.Count, inYear.Take(YearStandings.CompanyFaces).Select(Face).ToList(),
-            resolution.Candidates.Where(c => !c.IsExcluded && !c.IsEligible).Select(Face).ToList(),
+            blocker, inYear.Count, everyone, divisions, definition.LeaveOut, exceptions,
+            resolution.Candidates.Where(c => !c.IsEligible).Select(Face).ToList(),
             goals.Select(g => new YearSetupGoalDto(g.Id, g.Title, g.AccountablePersonId, Name(g.AccountablePersonId))).ToList(),
             unfinished.Count, ownerFaces);
     }
@@ -225,7 +241,7 @@ public sealed class LaunchYearHandler(PerformanceDbContext db, ITenantContext te
         var settings = await db.CycleSettings.AsNoTracking().FirstOrDefaultAsync(token) ?? CycleSettings.CreateDefault(cycle.TenantId);
         var snapshot = ActivationSnapshot.Capture(cycle.TenantId, cycle.Id, cycle.Name, cycle.StartDate, cycle.EndDate, cycle.PlanningDeadline,
             definition.EligibilityDate, participants.Count, JsonSerializer.Serialize(settings.ToSnapshot()),
-            JsonSerializer.Serialize(new { definition.Mode, InclusionCount = definition.Inclusions.Count, ExclusionCount = definition.Exclusions.Count }),
+            JsonSerializer.Serialize(new { definition.Mode, definition.LeaveOut, InclusionCount = definition.Inclusions.Count, ExclusionCount = definition.Exclusions.Count }),
             JsonSerializer.Serialize(participants.Select(p => new { p.EmployeeId, p.DisplayName, p.OrgUnitId, p.OrgUnitName, ReviewerEmployeeId = p.ManagerEmployeeId,
                 p.ManagerDisplayName, ReviewerBasis = p.ReviewerBasis.ToString(), p.ReviewerAsOf })),
             JsonSerializer.Serialize(companyGoals.Select(o => new { o.Id, o.Title, o.AccountablePersonId })));

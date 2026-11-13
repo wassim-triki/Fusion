@@ -324,18 +324,29 @@ public sealed class InternalWorkforceSnapshotService(CoreHRDbContext dbContext) 
             return [];
         }
 
-        // The current employment's start, so consumers can say when someone joined (e.g. after a population was set).
-        var employmentStartByEmployee = (await dbContext.Employments
+        // The current employment's start and type, so consumers can say when someone joined and on what terms.
+        var employmentByEmployee = (await dbContext.Employments
                 .AsNoTracking()
                 .Where(employment => employeeIds.Contains(employment.EmployeeId)
                     && employment.Status == EmploymentStatus.Active
                     && employment.EffectiveFrom <= asOf
                     && (employment.EffectiveTo == null || asOf < employment.EffectiveTo))
-                .Select(employment => new { employment.EmployeeId, employment.EffectiveFrom })
+                .Select(employment => new { employment.Id, employment.EmployeeId, employment.EffectiveFrom, employment.EmploymentType })
                 .ToListAsync(cancellationToken))
             .GroupBy(employment => employment.EmployeeId)
-            .ToDictionary(group => group.Key, group => group.Max(employment => employment.EffectiveFrom));
-        var activeEmployeeIds = employmentStartByEmployee.Keys.ToHashSet();
+            .ToDictionary(group => group.Key, group => group.MaxBy(employment => employment.EffectiveFrom)!);
+        var activeEmployeeIds = employmentByEmployee.Keys.ToHashSet();
+        // The type is dated: the period in effect on the as-of date wins over the one the employment started with.
+        var employmentIds = employmentByEmployee.Values.Select(employment => employment.Id).ToList();
+        var typeByEmployment = (await dbContext.EmploymentTypePeriods
+                .AsNoTracking()
+                .Where(period => employmentIds.Contains(period.EmploymentId)
+                    && period.EffectiveFrom <= asOf
+                    && (period.EffectiveTo == null || asOf < period.EffectiveTo))
+                .Select(period => new { period.EmploymentId, period.EffectiveFrom, period.EmploymentType })
+                .ToListAsync(cancellationToken))
+            .GroupBy(period => period.EmploymentId)
+            .ToDictionary(group => group.Key, group => group.MaxBy(period => period.EffectiveFrom)!.EmploymentType);
 
         var assignments = await dbContext.WorkAssignments
             .AsNoTracking()
@@ -440,10 +451,11 @@ public sealed class InternalWorkforceSnapshotService(CoreHRDbContext dbContext) 
                                 BuildDisplayName(manager),
                                 activeManagerIds.Contains(manager.Id))
                             : null,
-                    employmentStartByEmployee.TryGetValue(employee.Id, out var started) ? DateOnly.FromDateTime(started) : null,
+                    employmentByEmployee.TryGetValue(employee.Id, out var employment) ? DateOnly.FromDateTime(employment.EffectiveFrom) : null,
                     EY.HRPlatform.CoreHR.Features.People.EmployeePhotos.UrlFor(employee.StableEmployeeKey, employee.PhotoKey),
                     leaves.TryGetValue(employee.Id, out var leave) ? leave.WithoutType() : null)
                 {
+                    EmploymentType = employment is null ? null : typeByEmployment.GetValueOrDefault(employment.Id) ?? employment.EmploymentType,
                     JobFamilyId = isActive && assignment is not null && jobs.TryGetValue(assignment.JobId, out var job) ? job.FamilyId : null,
                     LevelId = isActive && assignment is not null && jobs.TryGetValue(assignment.JobId, out var held) ? held.LevelId : null,
                 };

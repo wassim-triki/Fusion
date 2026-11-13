@@ -90,19 +90,25 @@ public sealed class DomainTests
     }
 
     [Fact]
-    public void Exclusion_requires_a_reason()
+    public void An_exception_by_name_requires_a_reason()
     {
         var definition = PopulationDefinition.Create(Tenant, Guid.NewGuid(), Start);
-        Assert.Throws<InvalidOperationException>(() =>
-            definition.SetSelection(PopulationMode.AllActive, [], [], [(Guid.NewGuid(), "  ")]));
+        Assert.Throws<ArgumentException>(() => definition.SetWhoIsIn([], [(Guid.NewGuid(), false, "  ")]));
     }
 
-    [Fact]
-    public void ByScope_allows_an_empty_intermediate_selection()
-    {
-        var definition = PopulationDefinition.Create(Tenant, Guid.NewGuid(), Start);
-        definition.SetSelection(PopulationMode.ByScope, [], [], []);
-        Assert.Equal(PopulationMode.ByScope, definition.Mode);
-        Assert.Empty(definition.OrgUnitSelections);
-    }
+    [Theory]
+    [InlineData("employmentType:Contractor")]
+    [InlineData("startedAfter:2028-03-01")]
+    [InlineData("onLeave")]
+    public void A_leave_out_rule_reads_back_as_written(string text)
+        => Assert.Equal(text, LeaveOutRule.Parse(text).ToString());
+
+    [Theory]
+    [InlineData("unit:not-a-guid")]
+    [InlineData("startedAfter:soon")]
+    [InlineData("employmentType:")]
+    [InlineData("onLeave:yes")]
+    [InlineData("salary:high")]
+    public void A_rule_Fusion_cannot_read_is_refused(string text)
+        => Assert.Throws<ArgumentException>(() => LeaveOutRule.Parse(text));
 }

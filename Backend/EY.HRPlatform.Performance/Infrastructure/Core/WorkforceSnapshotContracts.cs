@@ -20,6 +20,8 @@ public sealed record WorkforceSnapshot(
     string? PhotoUrl = null,
     WorkforceLeaveSnapshot? Leave = null)
 {
+    /// <summary>The current employment's type from Core HR's list (Full-time, Contractor, …); null when unset.</summary>
+    public string? EmploymentType { get; init; }
     /// <summary>The held job's family and level from the company's lists (<see cref="JobCatalogue"/>); null when unset.</summary>
     public Guid? JobFamilyId { get; init; }
     public Guid? LevelId { get; init; }

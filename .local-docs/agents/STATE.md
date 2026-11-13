@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** the review page made clear (queue row 3), 2026-11-13, accepted (B-454 with B-455, B-458, B-459, B-460, B-464; the waiting cards put back as the user liked them, with clearer words; LOG). Before it: the shared pieces (queue row 2).
+**Last finished:** the redraws explorer (queue row 4), 2026-11-13: picks recorded as D-103 to D-109, builds queued as rows 5 to 8 (LOG). Before it: the review page made clear (queue row 3), accepted.
 
 ## Active work
 
@@ -14,8 +14,10 @@ Session queue (the user opens a fresh session with "next"): it takes the first o
 
 | # | Session | Board items | Notes |
 |---|---|---|---|
-| 4 | Explorer: the redraws | B-466 (+B-467, B-468 scoped from Lattice, Culture Amp, BambooHR, Workday), B-453, B-451, B-450 | One artifact, a chapter per surface, variants drawn on real Carthage data; B-468 is a wow moment for the demo. The user picks; answers snapshot to `plans/*.answers.json`, decisions D-103 on. |
-| 5–8 | Build each picked redraw | B-466, B-453, B-451, B-450 | One per session, in the user's order; one screen per surface compared with the drawing. |
+| 5 | Build: setting up a year | B-466 with B-467, B-468 | D-103, D-104 (D-102's year bar goes). Port `plans/B-466-redraws.html` › Setting up a year (variant a for the dates, a for who's in); who's in needs Core HR's employment type and leave for the rules, check what Core HR holds first. One screen compared with the drawing. |
+| 6 | Build: the Year's next step | B-453 | D-105 to D-107. Port › The Year's next step (a, a); nudges carry a bell. |
+| 7 | Build: one goal drawer | B-451 | D-108 (the progress dialog goes). Port › One goal drawer (a); the original updates list is in git at `d935d5b2^` (`progress-history-timeline.tsx`). |
+| 8 | Build: a team member's plan as a wide panel | B-450 | D-109. Port › A plan, before deciding (b), parts reusable for a plan page. |
 | 9 | Home rework | B-378 | Research brief, long list, explorer (memory `scope-with-depth-ladders`), then build. |
 | 10 | The demo in two acts | B-395 | `lateyear` preset + "meanwhile" script, rehearsal, screens; shows a little of the HR side (questions, competencies, scale). Near the jury date. |
 

@@ -9,7 +9,7 @@ import { useRecentRecord } from "@repo/api/react";
 import { cn, showStatus } from "@repo/ds";
 import { Button } from "@repo/ds/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ds/components/ui/popover";
-import { Bell, Briefcase, ClipboardList, Measurement, Scale as ScaleIcon, X } from "@repo/ds/icons";
+import { Briefcase, ClipboardList, Measurement, Scale as ScaleIcon, X } from "@repo/ds/icons";
 import { AsyncButton, FlowSteps, PageContainer, PageEmpty, PagePermissionNotice, PageSkeleton } from "@repo/ds/shell";
 import { AvatarStack, PersonInitials } from "@repo/performance-ui";
 import { useReview } from "../../api/use-reviews";
@@ -93,9 +93,9 @@ function WrittenReview({ record, side, readOnly }: { record: PerformanceReviewDt
   return (
     <div className="grid gap-4 pb-16">
       <ReviewHead record={record} side={side} readOnly={readOnly} onSend={send} sending={form.sending} />
+      {!self && !readOnly ? <WaitingOn record={record} /> : null}
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_450px]">
         <div className="grid content-start gap-5">
-          {!self && !readOnly ? <WaitingOn record={record} /> : null}
           {goals.length ? (
             <section className="grid gap-3.5 rounded-surface bg-card px-6 py-[22px]">
               <SectionHead title={self ? t("yourGoals") : t("goals")} icon={Measurement} from={t("goalsFrom")}
@@ -254,9 +254,9 @@ function ReviewHead({ record, side, readOnly, onSend, sending }: {
 }
 
 /**
- * What the manager's review still waits on (D-60), in the page's left column: the self-review and the colleagues asked
- * about the person, each row saying who is waited on and what its button sends (B-464); who is asked changes until the
- * review is in (D-40).
+ * What the manager's review still waits on (D-60), as two small cards above the review: the self-review and the
+ * colleagues asked about the person, each saying who is waited on and what its button sends (B-464); who is asked
+ * changes until the review is in (D-40).
  */
 function WaitingOn({ record }: { record: PerformanceReviewDto }) {
   const t = useTranslations("reviews.Review");
@@ -274,31 +274,31 @@ function WaitingOn({ record }: { record: PerformanceReviewDto }) {
     .catch((error) => reportPerformanceFailure(error, t("couldntNudge")));
   if (!selfOpen && !record.peerInputEnabled) return null;
   return (
-    <section aria-label={t("waitingOn")} className="grid rounded-surface bg-card px-6 py-2">
+    <section aria-label={t("waitingOn")} className="flex flex-wrap gap-2.5">
       {selfOpen ? (
-        <div className="flex flex-wrap items-center gap-3 py-3">
+        <div className="flex items-center gap-3 rounded-inset bg-card py-2.5 pe-3 ps-3.5">
           <PersonInitials name={record.subjectDisplayName} size="md" />
-          <div className="grid min-w-0 flex-1">
-            <b className="text-sm font-semibold text-foreground">{t("selfReviewOf", { name: subject })}</b>
+          <div className="grid">
+            <b className="text-[13.5px] font-semibold text-foreground">{t("selfReviewOf", { name: subject })}</b>
             <span className="text-[13px] text-muted-foreground">{record.schedule?.selfAssessmentDue ? t("writingDue", { day: dayMonth(record.schedule.selfAssessmentDue, locale) }) : t("writing")}</span>
           </div>
           {nudged.has("self") ? <span className="text-[13px] text-muted-foreground">{t("nudgedToday")}</span> : (
             <AsyncButton size="sm" variant="outline" pending={actions.nudge.isLoading} title={t("remindSends")} onClick={() => void nudge("self")}>
-              <Bell aria-hidden className="size-[15px]" />{t("remind", { name: subject })}
+              {t("remind", { name: subject })}
             </AsyncButton>
           )}
         </div>
       ) : null}
       {record.peerInputEnabled ? (
-        <div className={cn("flex flex-wrap items-center gap-3 py-3", selfOpen && "border-t border-border")}>
+        <div className="flex items-center gap-3 rounded-inset bg-card py-2.5 pe-3 ps-3.5">
           {people.length ? <AvatarStack names={(open.length ? open : people).map((p) => p.displayName)} size="md" max={3} /> : null}
-          <div className="grid min-w-0 flex-1">
-            <b className="text-sm font-semibold text-foreground">{people.length ? t("peersAnswered", { answered, count: people.length, name: subject }) : t("nobodyAsked", { name: subject })}</b>
-            {people.length ? <span className="truncate text-[13px] text-muted-foreground">{open.length ? t("stillToAnswer", { names: openNames.join(", ") }) : t("allAnswered")}</span> : null}
+          <div className="grid min-w-0">
+            <b className="text-[13.5px] font-semibold text-foreground">{people.length ? t("peersAnswered", { answered, count: people.length, name: subject }) : t("nobodyAsked", { name: subject })}</b>
+            {people.length ? <span className="max-w-72 truncate text-[13px] text-muted-foreground">{open.length ? t("stillToAnswer", { names: openNames.join(", ") }) : t("allAnswered")}</span> : null}
           </div>
           {open.length && !nudged.has("peers") ? (
             <AsyncButton size="sm" variant="outline" pending={actions.nudge.isLoading} title={t("remindSends")} onClick={() => void nudge("peers")}>
-              <Bell aria-hidden className="size-[15px]" />{open.length === 1 ? t("remind", { name: openNames[0]! }) : t("remindThem", { count: open.length })}
+              {open.length === 1 ? t("remind", { name: openNames[0]! }) : t("remindThem", { count: open.length })}
             </AsyncButton>
           ) : null}
           {nudged.has("peers") ? <span className="text-[13px] text-muted-foreground">{t("nudgedToday")}</span> : null}

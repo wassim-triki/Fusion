@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** the review page made clear (queue row 3), 2026-11-13: where each part comes from, drafts marked as AI, every goal's same facts, grades as shares, the year column's icons, the waiting card (B-454 with B-455, B-458, B-459, B-460, B-464), built and In review under B-431 (LOG). Before it: the shared pieces (queue row 2).
+**Last finished:** the review page made clear (queue row 3), 2026-11-13, accepted (B-454 with B-455, B-458, B-459, B-460, B-464; the waiting cards put back as the user liked them, with clearer words; LOG). Before it: the shared pieces (queue row 2).
 
 ## Active work
 
@@ -19,4 +19,4 @@ Session queue (the user opens a fresh session with "next"): it takes the first o
 | 9 | Home rework | B-378 | Research brief, long list, explorer (memory `scope-with-depth-ladders`), then build. |
 | 10 | The demo in two acts | B-395 | `lateyear` preset + "meanwhile" script, rehearsal, screens; shows a little of the HR side (questions, competencies, scale). Near the jury date. |
 
-Still In review (the user's verdicts land as Ready children): B-405, B-424, B-431 (with the review page made clear, B-454), B-434, B-440/B-446, B-447, and the shared pieces B-456, B-449. Ready leftovers: B-442, B-443, B-444, B-448, B-469.
+Still In review (the user's verdicts land as Ready children): B-405, B-424, B-431, B-434, B-440/B-446, B-447, and the shared pieces B-456, B-449. Ready leftovers: B-442, B-443, B-444, B-448, B-469.

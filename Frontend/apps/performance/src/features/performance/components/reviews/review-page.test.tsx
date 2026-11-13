@@ -91,11 +91,11 @@ describe("Writing a review beside the year (H3)", () => {
     render(<ReviewPage />);
     expect(screen.getByRole("heading", { name: "Your self-review" })).toBeTruthy();
     expect(m.draft).not.toHaveBeenCalled();
-    expect(screen.getAllByText("0.71")).toHaveLength(2);
+    expect(screen.getAllByText("71%")).toHaveLength(2);
     expect(screen.getByRole("img", { name: "66 % of 85 %" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /Draft from my year/ }));
     await waitFor(() => expect(m.draft).toHaveBeenCalledWith("review-1", "Question", "q-keep"));
-    expect(await screen.findByText("Drafted from your year")).toBeTruthy();
+    expect(await screen.findByText("AI draft from your year")).toBeTruthy();
     fireEvent.click(screen.getByText(/I ran the incident/));
     await waitFor(() => expect(m.saveSelf).toHaveBeenCalledWith(expect.objectContaining({
       answers: [{ questionId: "q-keep", text: "I ran the incident drill. Salah called it the best.", citations: [
@@ -131,6 +131,17 @@ describe("Writing a review beside the year (H3)", () => {
     await waitFor(() => expect(m.draft).toHaveBeenCalledTimes(3));
   });
 
+  it("every goal says where it got and its state, graded as a share of its target (B-458, B-459)", () => {
+    m.record = review({ items: [{ ...goal, status: "AtRisk" }, competency] });
+    render(<ReviewPage />);
+    expect(screen.getByText("66 % of 85 %")).toBeTruthy();
+    expect(screen.getByText("At risk")).toBeTruthy();
+    expect(screen.getAllByText("71%").length).toBe(2); // the goal's grade and the plan's
+    expect(screen.queryByText("0.71")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Change grade" }));
+    expect((screen.getByRole("spinbutton", { name: "Grade" }) as HTMLInputElement).value).toBe("71");
+  });
+
   it("the measure behind a grade shows on hover or focus (B-457)", async () => {
     m.record = review({});
     render(<ReviewPage />);
@@ -158,12 +169,16 @@ describe("Writing a review beside the year (H3)", () => {
     m.nudge.mockResolvedValue({ nudged: 1 });
     render(<ReviewPage />);
     await waitFor(() => expect(m.draft).toHaveBeenCalledWith("review-1", "Question", "q-m"));
-    expect(await screen.findByText("Drafts when Aicha's self-review is in")).toBeTruthy();
-    expect(screen.getByText("Peers, 1 of 2")).toBeTruthy();
+    expect(await screen.findByText("AI drafts this when Aicha's self-review is in")).toBeTruthy();
+    // Where each part comes from, and what the review waits on in plain words (B-454, B-464).
+    expect(screen.getByText("Asked by HR in FY2027 year-end")).toBeTruthy();
+    expect(screen.getByText("Set by HR for QA Automation Engineer")).toBeTruthy();
+    expect(screen.getByText("1 of 2 colleagues answered about Aicha")).toBeTruthy();
+    expect(screen.getByText("Still to answer: Leila")).toBeTruthy();
     expect((screen.getByRole("button", { name: "Submit review" }) as HTMLButtonElement).disabled).toBe(true);
-    fireEvent.click(screen.getAllByRole("button", { name: "Nudge" })[0]!);
+    fireEvent.click(screen.getByRole("button", { name: "Remind Aicha" }));
     await waitFor(() => expect(m.nudge).toHaveBeenCalledWith("self"));
-    fireEvent.click(screen.getByRole("button", { name: "Nudge them" }));
+    fireEvent.click(screen.getByRole("button", { name: "Remind Leila" }));
     await waitFor(() => expect(m.nudge).toHaveBeenCalledWith("peers"));
   });
 });

@@ -1,15 +1,15 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useState, type ComponentType, type ReactNode } from "react";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 import type { PerformanceReviewDto } from "@repo/api";
 import { useRecentRecord } from "@repo/api/react";
-import { cn } from "@repo/ds";
+import { cn, showStatus } from "@repo/ds";
 import { Button } from "@repo/ds/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ds/components/ui/popover";
-import { X } from "@repo/ds/icons";
+import { Bell, Briefcase, ClipboardList, Measurement, Scale as ScaleIcon, X } from "@repo/ds/icons";
 import { AsyncButton, FlowSteps, PageContainer, PageEmpty, PagePermissionNotice, PageSkeleton } from "@repo/ds/shell";
 import { AvatarStack, PersonInitials } from "@repo/performance-ui";
 import { useReview } from "../../api/use-reviews";
@@ -18,11 +18,11 @@ import { RecordCycleScope, useWorkspaceContext } from "../../api/use-workspace";
 import { reportPerformanceFailure } from "../../api/performance-failure";
 import { ContentUnavailable } from "../content-unavailable";
 import { ColleaguePicker } from "../conversations/colleague-picker";
-import { dayMonth, fullDay } from "../year/year-words";
+import { dayMonth, firstName, fullDay } from "../year/year-words";
 import { CalibratedOutcome } from "./calibrated-outcome";
 import { AdministratorView } from "./review-admin";
 import { ReviewLetter } from "./review-letter";
-import { Answer, GoalGradeRow, names, planGrade, PotentialPick, Scale, gradeOf, useReviewDraftForm, type Side } from "./review-form";
+import { Answer, GoalGradeRow, gradeShare, names, planGrade, PotentialPick, Scale, gradeOf, useReviewDraftForm, type Side } from "./review-form";
 import { citationNumbers, ReviewYear } from "./review-year";
 
 /**
@@ -93,17 +93,13 @@ function WrittenReview({ record, side, readOnly }: { record: PerformanceReviewDt
   return (
     <div className="grid gap-4 pb-16">
       <ReviewHead record={record} side={side} readOnly={readOnly} onSend={send} sending={form.sending} />
-      {!self && !readOnly ? <WaitingStrip record={record} /> : null}
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_450px]">
         <div className="grid content-start gap-5">
+          {!self && !readOnly ? <WaitingOn record={record} /> : null}
           {goals.length ? (
             <section className="grid gap-3.5 rounded-surface bg-card px-6 py-[22px]">
-              <div className="flex items-center gap-3">
-                <h2 className="type-section-title text-foreground">{self ? t("yourGoals") : t("goals")}</h2>
-                <span className="ms-auto text-sm text-muted-foreground">
-                  <span className="text-[17px] font-semibold tabular-nums text-foreground">{planGrade(goals, grade).toFixed(2)}</span> {t("forTheYear")}
-                </span>
-              </div>
+              <SectionHead title={self ? t("yourGoals") : t("goals")} icon={Measurement} from={t("goalsFrom")}
+                aside={<><span className="text-[17px] font-semibold tabular-nums text-foreground">{gradeShare(planGrade(goals, grade))}</span> {t("forTheYear")}</>} />
               <div>
                 {goals.map((item) => (
                   <GoalGradeRow key={item.itemId} item={item} side={side} readOnly={readOnly} who={t("you")}
@@ -115,6 +111,7 @@ function WrittenReview({ record, side, readOnly }: { record: PerformanceReviewDt
           ) : null}
           {questions.length ? (
             <section className="grid gap-[22px] rounded-surface bg-card px-6 py-[22px]">
+              <SectionHead title={t("inYourWords")} icon={ClipboardList} from={t("questionsFrom", { round: record.reviewRoundName })} />
               {questions.map((q) => (
                 <Answer key={q.questionId} reviewId={record.id} question={q} readOnly={readOnly} numbers={numbers} cite={cite} onCite={pick}
                   value={form.draft.answers[q.questionId] ?? { text: "", citations: [] }}
@@ -127,7 +124,8 @@ function WrittenReview({ record, side, readOnly }: { record: PerformanceReviewDt
           ) : null}
           {competencies.length ? (
             <section className="grid gap-3.5 rounded-surface bg-card px-6 py-[22px]">
-              <h2 className="type-section-title text-foreground">{self ? t("howYouWorked") : t("howTheyWorked", { name: subject })}</h2>
+              <SectionHead title={self ? t("howYouWorked") : t("howTheyWorked", { name: subject })} icon={Briefcase}
+                from={record.subjectJobTitle ? t("competenciesFromJob", { job: record.subjectJobTitle }) : t("competenciesFrom")} />
               {competencies.map((item, index) => (
                 <div key={item.itemId} className={cn("grid gap-2.5", index > 0 && "border-t border-border pt-3.5")}>
                   <div className="flex items-baseline gap-3">
@@ -157,12 +155,8 @@ function WrittenReview({ record, side, readOnly }: { record: PerformanceReviewDt
             </section>
           ) : null}
           <section className="grid gap-3.5 rounded-surface bg-card px-6 py-[22px]">
-            <div className="flex items-center gap-3">
-              <h2 className="type-section-title text-foreground">{self ? t("yourYearOverall") : t("overall")}</h2>
-              <span className="ms-auto text-[13px] text-muted-foreground">
-                {lastYear ? (self ? t("lastYearFrom", { name: reviewer, label: lastYear }) : t("lastYear", { label: lastYear })) : t("firstReview")}
-              </span>
-            </div>
+            <SectionHead title={self ? t("yourYearOverall") : t("overall")} icon={ScaleIcon} from={t("scaleFrom")}
+              aside={lastYear ? (self ? t("lastYearFrom", { name: reviewer, label: lastYear }) : t("lastYear", { label: lastYear })) : t("firstReview")} />
             <Scale levels={record.ratingScale} label={self ? t("yourYearOverall") : t("overall")} readOnly={readOnly}
               value={form.draft.overall} onPick={(value) => form.change((d) => ({ ...d, overall: value }))}
               mine={!self && record.selfAssessment?.overallRating != null ? { value: record.selfAssessment.overallRating, name: record.subjectDisplayName } : undefined} />
@@ -179,6 +173,19 @@ function WrittenReview({ record, side, readOnly }: { record: PerformanceReviewDt
           title={self ? t("yourYear") : t("theirYear", { name: subject })}
           since={t("since", { start: fullDay(record.periodStart, locale) })} />
       </div>
+    </div>
+  );
+}
+
+/** A section's title with where it comes from under it, in the same place on every section (B-454). */
+function SectionHead({ title, icon: Icon, from, aside }: { title: string; icon: ComponentType<{ className?: string }>; from: string; aside?: ReactNode }) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="grid min-w-0 gap-1">
+        <h2 className="type-section-title text-foreground">{title}</h2>
+        <span data-from className="inline-flex items-center gap-1.5 text-[12.5px] text-muted-foreground"><Icon aria-hidden className="size-3.5 shrink-0" />{from}</span>
+      </div>
+      {aside ? <span className="ms-auto shrink-0 text-sm text-muted-foreground">{aside}</span> : null}
     </div>
   );
 }
@@ -247,10 +254,11 @@ function ReviewHead({ record, side, readOnly, onSend, sending }: {
 }
 
 /**
- * What the manager's review still waits on (D-60): the self-review and the peers who haven't answered, a nudge each;
- * and who is asked, changed until the review is in (D-40).
+ * What the manager's review still waits on (D-60), in the page's left column: the self-review and the colleagues asked
+ * about the person, each row saying who is waited on and what its button sends (B-464); who is asked changes until the
+ * review is in (D-40).
  */
-function WaitingStrip({ record }: { record: PerformanceReviewDto }) {
+function WaitingOn({ record }: { record: PerformanceReviewDto }) {
   const t = useTranslations("reviews.Review");
   const locale = useLocale();
   const actions = useReviewActions(record.id);
@@ -260,36 +268,44 @@ function WaitingStrip({ record }: { record: PerformanceReviewDto }) {
   const people = record.peers?.people ?? [];
   const open = people.filter((p) => p.state === "Open");
   const answered = people.filter((p) => p.state === "Answered").length;
+  const openNames = open.map((p) => firstName(p.displayName));
   const nudge = (who: "self" | "peers") => actions.nudge.mutateAsync(who)
-    .then(() => { setNudged((n) => new Set([...n, who])); toast.success(who === "self" ? t("nudgedOne", { name: subject }) : t("nudgedPeers")); })
+    .then(() => { setNudged((n) => new Set([...n, who])); showStatus(who === "self" ? t("nudgedOne", { name: subject }) : t("nudgedPeers", { count: open.length })); })
     .catch((error) => reportPerformanceFailure(error, t("couldntNudge")));
   if (!selfOpen && !record.peerInputEnabled) return null;
   return (
-    <div className="flex flex-wrap gap-2.5">
+    <section aria-label={t("waitingOn")} className="grid rounded-surface bg-card px-6 py-2">
       {selfOpen ? (
-        <div className="flex items-center gap-3 rounded-inset bg-card py-2.5 pe-3 ps-3.5">
+        <div className="flex flex-wrap items-center gap-3 py-3">
           <PersonInitials name={record.subjectDisplayName} size="md" />
-          <div className="grid">
-            <b className="text-[13.5px] font-semibold text-foreground">{t("selfReview")}</b>
+          <div className="grid min-w-0 flex-1">
+            <b className="text-sm font-semibold text-foreground">{t("selfReviewOf", { name: subject })}</b>
             <span className="text-[13px] text-muted-foreground">{record.schedule?.selfAssessmentDue ? t("writingDue", { day: dayMonth(record.schedule.selfAssessmentDue, locale) }) : t("writing")}</span>
           </div>
-          {nudged.has("self") ? <span className="text-[13px] text-muted-foreground">{t("nudgedToday")}</span>
-            : <AsyncButton size="sm" variant="outline" pending={actions.nudge.isLoading} onClick={() => void nudge("self")}>{t("nudge")}</AsyncButton>}
+          {nudged.has("self") ? <span className="text-[13px] text-muted-foreground">{t("nudgedToday")}</span> : (
+            <AsyncButton size="sm" variant="outline" pending={actions.nudge.isLoading} title={t("remindSends")} onClick={() => void nudge("self")}>
+              <Bell aria-hidden className="size-[15px]" />{t("remind", { name: subject })}
+            </AsyncButton>
+          )}
         </div>
       ) : null}
       {record.peerInputEnabled ? (
-        <div className="flex items-center gap-3 rounded-inset bg-card py-2.5 pe-3 ps-3.5">
-          {open.length ? <AvatarStack names={open.map((p) => p.displayName)} size="md" max={3} /> : people.length ? <AvatarStack names={people.map((p) => p.displayName)} size="md" max={3} /> : null}
-          <div className="grid">
-            <b className="text-[13.5px] font-semibold text-foreground">{t("peersAnswered", { answered, count: people.length })}</b>
-            <span className="max-w-64 truncate text-[13px] text-muted-foreground">{open.length ? open.map((p) => p.displayName).join(", ") : people.length ? t("allAnswered") : t("nobodyAsked")}</span>
+        <div className={cn("flex flex-wrap items-center gap-3 py-3", selfOpen && "border-t border-border")}>
+          {people.length ? <AvatarStack names={(open.length ? open : people).map((p) => p.displayName)} size="md" max={3} /> : null}
+          <div className="grid min-w-0 flex-1">
+            <b className="text-sm font-semibold text-foreground">{people.length ? t("peersAnswered", { answered, count: people.length, name: subject }) : t("nobodyAsked", { name: subject })}</b>
+            {people.length ? <span className="truncate text-[13px] text-muted-foreground">{open.length ? t("stillToAnswer", { names: openNames.join(", ") }) : t("allAnswered")}</span> : null}
           </div>
-          {open.length && !nudged.has("peers") ? <AsyncButton size="sm" variant="outline" pending={actions.nudge.isLoading} onClick={() => void nudge("peers")}>{t("nudgeThem")}</AsyncButton> : null}
+          {open.length && !nudged.has("peers") ? (
+            <AsyncButton size="sm" variant="outline" pending={actions.nudge.isLoading} title={t("remindSends")} onClick={() => void nudge("peers")}>
+              <Bell aria-hidden className="size-[15px]" />{open.length === 1 ? t("remind", { name: openNames[0]! }) : t("remindThem", { count: open.length })}
+            </AsyncButton>
+          ) : null}
           {nudged.has("peers") ? <span className="text-[13px] text-muted-foreground">{t("nudgedToday")}</span> : null}
           {record.canChangePeers ? <ChangePeers record={record} /> : null}
         </div>
       ) : null}
-    </div>
+    </section>
   );
 }
 
@@ -306,7 +322,10 @@ function ChangePeers({ record }: { record: PerformanceReviewDto }) {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild><Button size="sm" variant="ghost">{t("changeWho")}</Button></PopoverTrigger>
       <PopoverContent align="end" className="grid w-80 gap-3 p-4">
-        <span className="text-sm font-semibold text-foreground">{t("whoIsAsked")}</span>
+        <div className="flex items-baseline gap-2">
+          <span className="text-sm font-semibold text-foreground">{t("whoIsAsked", { name: names(record).subject })}</span>
+          <span className="ms-auto text-xs tabular-nums text-muted-foreground">{t("askedOfFive", { count: people.length })}</span>
+        </div>
         <div className="grid gap-1.5">
           {people.map((p) => (
             <div key={p.employeeId} className="flex items-center gap-2.5">
@@ -314,7 +333,7 @@ function ChangePeers({ record }: { record: PerformanceReviewDto }) {
               <span className="min-w-0 flex-1 truncate text-sm text-foreground">{p.displayName}</span>
               {p.source === "Fusion" ? <span className="text-xs text-muted-foreground">{t("pickedByFusion")}</span> : null}
               {done(p.state) ? <span className="text-xs text-muted-foreground">{p.state === "Answered" ? t("answered") : t("declined")}</span> : (
-                <button type="button" aria-label={t("remove", { name: p.displayName })} className="text-muted-foreground hover:text-foreground"
+                <button type="button" aria-label={t("remove", { name: p.displayName })} title={t("remove", { name: firstName(p.displayName) })} className="text-muted-foreground hover:text-foreground"
                   onClick={() => void save(people.filter((x) => x.employeeId !== p.employeeId).map((x) => x.employeeId))}>
                   <X aria-hidden className="size-4" />
                 </button>

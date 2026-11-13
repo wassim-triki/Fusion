@@ -45,7 +45,7 @@ export function FlagCard({ card, scale, pending, onKeep, onChange }: {
     : flag.kind === "moved" ? (flag.lastRating! > card.rating ? t("why.down", { count: flag.lastRating! - card.rating }) : t("why.up", { count: card.rating - flag.lastRating! }))
       : flag.kind === "ratesHigh" ? t("why.ratesHigh", { name: manager }) : t("why.ratesLow", { name: manager });
   const marks: Mark[] = flag.kind === "goals"
-    ? [{ at: index(card.rating), tag: t("mark.rating", { name: manager }), tone: "wa" }, { at: (flag.grade ?? 0) * (scale.length - 1), tag: t("mark.goals", { grade: (flag.grade ?? 0).toFixed(2) }), tone: "mu" }]
+    ? [{ at: index(card.rating), tag: t("mark.rating", { name: manager }), tone: "wa" }, { at: (flag.grade ?? 0) * (scale.length - 1), tag: t("mark.goals", { grade: `${Math.round((flag.grade ?? 0) * 100)}%` }), tone: "mu" }]
     : flag.kind === "moved"
       ? [{ at: index(flag.lastRating!), tag: t("mark.lastYear"), tone: "mu" }, { at: index(card.rating), tag: t("mark.thisYear"), tone: "wa" }]
       : [{ at: flag.managerAverage! - lowest, tag: t("mark.average", { name: manager, count: flag.managerReviews! }), tone: "wa" },

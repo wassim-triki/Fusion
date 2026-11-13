@@ -41,7 +41,7 @@ describe("Calibration by exception", () => {
   it("shows only the flagged review still to look at, with why, and keeps it in one click (D-35, D-70)", async () => {
     render(<CalibrationPage roundId="round-1" />);
     expect(screen.getByText("Rating and goals disagree")).toBeTruthy();
-    expect(screen.getByText("Goals 0.46")).toBeTruthy();
+    expect(screen.getByText("Goals 46%")).toBeTruthy();
     expect(screen.getByText("Omar's words")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Keep Exceptional" }));
     await waitFor(() => expect(m.decide).toHaveBeenCalledWith({ reviewId: "r-Rim Mahjoub", rating: 5, reason: null, expectedVersion: 3 }));

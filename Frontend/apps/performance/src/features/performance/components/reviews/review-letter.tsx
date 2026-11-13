@@ -13,7 +13,7 @@ import { PersonInitials } from "@repo/performance-ui";
 import { useAcknowledge, useDownloadReviewPdf, useReviewActions } from "../../api/use-review-work";
 import { reportPerformanceFailure } from "../../api/performance-failure";
 import { day, dayMonth } from "../year/year-words";
-import { Grade, gradeOf, names, planGrade, useMeasureWords } from "./review-form";
+import { Grade, gradeOf, gradeShare, names, planGrade, useMeasureWords } from "./review-form";
 
 /**
  * The released review, read like a letter (D-73): from the manager, the overall rating on top, then their words, the
@@ -65,7 +65,7 @@ export function ReviewLetter({ record }: { record: PerformanceReviewDto }) {
           {graded ? (
             <div className="grid justify-items-end gap-1.5">
               <span className="text-[13px] text-muted-foreground">{t("yourGoals")}</span>
-              <span className="text-[30px] font-semibold tabular-nums text-foreground">{planGrade(goals, finalGrade).toFixed(2)}</span>
+              <span className="text-[30px] font-semibold tabular-nums text-foreground">{gradeShare(planGrade(goals, finalGrade))}</span>
               <span className="text-[13px] text-muted-foreground">{t("forTheYear")}</span>
             </div>
           ) : null}
@@ -96,7 +96,7 @@ export function ReviewLetter({ record }: { record: PerformanceReviewDto }) {
             <h2 className="type-section-title text-foreground">{t("yourGoals")}</h2>
             {graded ? (
               <span className="ms-auto text-sm text-muted-foreground">
-                <span className="text-[17px] font-semibold tabular-nums text-foreground">{planGrade(goals, finalGrade).toFixed(2)}</span> {t("forTheYear")}
+                <span className="text-[17px] font-semibold tabular-nums text-foreground">{gradeShare(planGrade(goals, finalGrade))}</span> {t("forTheYear")}
               </span>
             ) : null}
           </div>
@@ -105,7 +105,7 @@ export function ReviewLetter({ record }: { record: PerformanceReviewDto }) {
               <div key={item.itemId} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-[22px] border-t border-border px-1 py-3.5 first:border-t-0">
                 <div className="grid min-w-0 gap-0.5">
                   <span className="type-narrative text-[15.5px] font-medium text-foreground">{item.title}</span>
-                  {item.measurementSummary ? <span className="text-[13px] text-muted-foreground">{item.measurementSummary}</span> : null}
+                  <span className="text-[13px] text-muted-foreground">{words(item)}</span>
                   {item.managerGradeReason ? <span className="text-[13px] text-muted-foreground">{t("gradeChanged", { name: reviewer, reason: item.managerGradeReason })}</span> : null}
                 </div>
                 {graded ? <Grade value={finalGrade(item)} words={words(item)} /> : null}

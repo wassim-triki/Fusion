@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type { PerformanceReviewDto, ReviewYearItemDto } from "@repo/api";
 import { cn } from "@repo/ds";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
-import { Clapping, FileText, Lock, MessagesSquare, OneOnOnes, Target, Users } from "@repo/ds/icons";
+import { Clapping, Lock, MessagesSquare, OneOnOnes, Paperclip, Pencil, Target, Users } from "@repo/ds/icons";
 import { dayMonth } from "../year/year-words";
 
 export type YearFilter = "all" | "goals" | "praise" | "feedback" | "peers" | "oneone";
@@ -15,6 +15,16 @@ const GROUP: Record<string, Kind> = {
   objective: "goals", evidence: "goals", praise: "praise", feedback: "feedback", peer: "peers", "one-on-one": "oneone", "private-note": "oneone",
 };
 const ICON: Record<Kind, typeof Target> = { goals: Target, praise: Clapping, feedback: MessagesSquare, peers: Users, oneone: OneOnOnes };
+/** Each kind of item with its own icon and hue (B-460), so a goal's update, its evidence, a 1:1 and a note never look alike. */
+const KIND: Record<string, { icon: typeof Target; tone: string }> = {
+  objective: { icon: Target, tone: "text-primary-ink" },
+  evidence: { icon: Paperclip, tone: "text-identity-2" },
+  praise: { icon: Clapping, tone: "text-identity-5" },
+  feedback: { icon: MessagesSquare, tone: "text-identity-1" },
+  peer: { icon: Users, tone: "text-identity-3" },
+  "one-on-one": { icon: OneOnOnes, tone: "text-identity-6" },
+  "private-note": { icon: Pencil, tone: "text-muted-foreground" },
+};
 
 /** An item's number in the year by its key, what a drafted sentence shows as its citation. */
 export function citationNumbers(items: readonly ReviewYearItemDto[] | undefined): Map<string, number> {
@@ -51,11 +61,13 @@ export function ReviewYear({ record, items, loading, cite, title, since, pending
       <div className="flex flex-wrap gap-1.5" role="group" aria-label={t("filter")}>
         {filters.map((f) => {
           const n = count(f);
+          const FilterIcon = f === "all" ? null : ICON[f];
           return (
             <button key={f} type="button" aria-pressed={filter === f} onClick={() => setFilter(f)}
               className={cn("inline-flex h-[30px] items-center gap-1.5 rounded-full px-3 text-[13px] font-medium transition-colors",
                 filter === f ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:bg-card/60 hover:text-foreground",
                 n === 0 && f !== "all" && "opacity-50")}>
+              {FilterIcon ? <FilterIcon aria-hidden className="size-3.5" /> : null}
               {t(`filters.${f}`)}
               <span className="tabular-nums opacity-60">{n}</span>
             </button>
@@ -88,11 +100,11 @@ function YearItem({ item, lit }: { item: ReviewYearItemDto; lit: boolean }) {
   const t = useTranslations("reviews.Year");
   const locale = useLocale();
   const group: Kind = GROUP[item.kind] ?? "goals";
-  const Icon = item.kind === "evidence" ? FileText : ICON[group];
+  const { icon: Icon, tone } = KIND[item.kind] ?? { icon: ICON[group], tone: "text-muted-foreground" };
   const when = dayMonth(item.at, locale);
   const head =
     item.kind === "objective" ? t("head.goal", { day: when })
-      : item.kind === "evidence" ? t("head.evidence")
+      : item.kind === "evidence" ? t("head.evidence", { day: when })
         : item.kind === "praise" ? t("head.praise", { who: item.who ?? "", day: when })
           : item.kind === "feedback" ? t("head.feedback", { who: item.who ?? "", day: when })
             : item.kind === "one-on-one" ? t("head.oneOnOne", { day: when })
@@ -103,7 +115,7 @@ function YearItem({ item, lit }: { item: ReviewYearItemDto; lit: boolean }) {
     <div id={`year-${item.key}`} className={cn("grid gap-1.5 rounded-inset bg-card px-3.5 py-3 transition-[box-shadow,background-color] duration-300",
       lit && "bg-primary/[0.08] shadow-[inset_0_0_0_1.5px_var(--primary)]")}>
       <div className="flex items-center gap-2 text-[12.5px] text-muted-foreground">
-        <Icon aria-hidden className="size-[15px] shrink-0" />
+        <span data-kind={item.kind} className={cn("inline-grid size-6 shrink-0 place-items-center rounded-lg bg-inlay", tone)}><Icon aria-hidden className="size-[15px]" /></span>
         <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-md bg-inlay px-[5px] text-[11px] font-semibold tabular-nums">{item.number}</span>
         <span className="min-w-0 truncate">{head}</span>
         {item.private ? <span className="ms-auto inline-flex shrink-0 items-center gap-1" title={t("private")}><Lock aria-hidden className="size-3.5" /><span className="sr-only">{t("private")}</span></span> : null}

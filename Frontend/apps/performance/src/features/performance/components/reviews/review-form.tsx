@@ -45,6 +45,11 @@ export function planGrade(goals: readonly ReviewItemAssessmentDto[], grade: (ite
   return goals.reduce((sum, g, i) => sum + grade(g) * weights[i]!, 0) / total;
 }
 
+/** A grade, 0 to 1, as the share of the goal's target reached: "31%" (B-459). */
+export function gradeShare(value: number): string {
+  return `${Math.round(value * 100)}%`;
+}
+
 /** The measure's words behind the grade's icon (D-51): "66 % of 85 %", "2 of 3 milestones done", "71 %". */
 export function useMeasureWords() {
   const t = useTranslations("reviews.Form");
@@ -60,7 +65,7 @@ export function useMeasureWords() {
 export function Grade({ value, words, size = "md" }: { value: number; words: string; size?: "md" | "lg" }) {
   return (
     <span className="inline-flex items-center gap-1">
-      <span className={cn("font-semibold tabular-nums tracking-[-0.01em] text-foreground", size === "lg" ? "text-[30px]" : "text-[22px]")}>{value.toFixed(2)}</span>
+      <span className={cn("font-semibold tabular-nums tracking-[-0.01em] text-foreground", size === "lg" ? "text-[30px]" : "text-[22px]")}>{gradeShare(value)}</span>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -89,7 +94,7 @@ export function Scale({ levels, value, onPick, label, readOnly, mine }: {
     <div role="group" aria-label={label} className="flex flex-wrap gap-1.5">
       {levels.map((level) => (
         <button key={level.value} type="button" aria-pressed={value === level.value} disabled={readOnly}
-          onClick={() => onPick(level.value)}
+          onClick={() => onPick(level.value)} title={level.description ?? undefined}
           className={cn("relative rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors disabled:cursor-default",
             value === level.value ? "bg-primary font-semibold text-primary-foreground" : "bg-inlay text-foreground enabled:hover:bg-foreground/[0.08]")}>
           {level.label}
@@ -246,7 +251,7 @@ export function Answer({ question, value, onChange, readOnly, numbers, cite, onC
   else if (!empty) {
     right = (
       <>
-        {cited ? <span className="inline-flex items-center gap-1 text-xs font-medium text-primary-ink"><Sparkles aria-hidden className="size-3.5" />{draftLabel}</span>
+        {cited ? <span className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--identity-4)_14%,var(--card))] px-2 py-0.5 text-xs font-medium text-[var(--identity-4)]"><Sparkles aria-hidden className="size-3.5" />{draftLabel}</span>
           : <span className="text-xs text-muted-foreground">{t("yourWords")}</span>}
         {readOnly ? null : (
           <button type="button" className="inline-flex items-center gap-1 text-[13px] font-semibold text-primary-ink hover:underline" onClick={() => setEditing(true)}>
@@ -260,18 +265,19 @@ export function Answer({ question, value, onChange, readOnly, numbers, cite, onC
       <>
         {missed ? <span role="status" className="text-xs text-muted-foreground">{missed === "failed" ? t("couldntDraft") : t("tooLittleToDraft")}</span> : null}
         <Button size="sm" variant="outline" onClick={() => void draft()}>
-          <Sparkles aria-hidden className="size-[15px]" />{missed ? t("tryAgain") : t("draftFromYear")}
+          <Sparkles aria-hidden className="size-[15px] text-[var(--identity-4)]" />{missed ? t("tryAgain") : t("draftFromYear")}
         </Button>
       </>
     );
   } else if (empty && waitingLabel && abstained) {
-    right = <span className="inline-flex items-center gap-1 text-xs font-medium text-primary-ink"><Sparkles aria-hidden className="size-3.5" />{waitingLabel}</span>;
+    right = <span className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--identity-4)_14%,var(--card))] px-2 py-0.5 text-xs font-medium text-[var(--identity-4)]"><Sparkles aria-hidden className="size-3.5" />{waitingLabel}</span>;
   }
 
   let body: ReactNode;
   if (drafting) {
     body = (
-      <div className="grid gap-2 rounded-inset bg-inlay px-4 py-3.5" aria-label={t("drafting")}>
+      <div className="grid gap-2 rounded-inset bg-[color-mix(in_oklab,var(--identity-4)_9%,var(--card))] shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--identity-4)_28%,transparent)] px-4 py-3.5" aria-label={t("drafting")}>
+        <span className="inline-flex items-center gap-1 text-xs font-medium text-[var(--identity-4)]"><Sparkles aria-hidden className="size-3.5" />{t("drafting")}</span>
         <Skeleton className="h-4 w-11/12" /><Skeleton className="h-4 w-10/12" /><Skeleton className="h-4 w-7/12" />
       </div>
     );
@@ -288,13 +294,13 @@ export function Answer({ question, value, onChange, readOnly, numbers, cite, onC
     );
   } else if (cited) {
     body = (
-      <div className="type-narrative rounded-inset bg-inlay px-4 py-3.5 text-[15.5px] leading-normal text-foreground">
+      <div data-drafted className="type-narrative rounded-inset bg-[color-mix(in_oklab,var(--identity-4)_9%,var(--card))] shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--identity-4)_28%,transparent)] px-4 py-3.5 text-[15.5px] leading-normal text-foreground">
         {value.citations.map((c, i) => {
           const n = numbers.get(c.key);
           return (
             <span key={i}>
               <span role="button" tabIndex={0} onClick={() => onCite(c.key)} onKeyDown={(e) => { if (e.key === "Enter") onCite(c.key); }}
-                className={cn("cursor-pointer rounded-md transition-colors hover:bg-primary/[0.18]", cite === c.key && "bg-primary/[0.18]")}>
+                className={cn("cursor-pointer rounded-md transition-colors hover:bg-[color-mix(in_oklab,var(--identity-4)_22%,transparent)]", cite === c.key && "bg-[color-mix(in_oklab,var(--identity-4)_22%,transparent)]")}>
                 {/* The number stays with the sentence's last word, never wrapping onto the next line. */}
                 {c.text.slice(0, c.text.lastIndexOf(" ") + 1)}
                 <span className="whitespace-nowrap">
@@ -324,6 +330,8 @@ export function Answer({ question, value, onChange, readOnly, numbers, cite, onC
   );
 }
 
+const STATUS_DOT: Record<string, string> = { OnTrack: "bg-success", AtRisk: "bg-warning", OffTrack: "bg-destructive" };
+
 /** A goal in the review: its measure's grade, changed only with a short reason (D-38). */
 export function GoalGradeRow({ item, side, value, onChange, readOnly, who }: {
   item: ReviewItemAssessmentDto;
@@ -337,22 +345,33 @@ export function GoalGradeRow({ item, side, value, onChange, readOnly, who }: {
   const t = useTranslations("reviews.Form");
   const words = useMeasureWords();
   const [editing, setEditing] = useState(false);
-  const [grade, setGrade] = useState((value?.grade ?? item.grade ?? 0).toFixed(2));
+  const tStatus = useTranslations("reviews.Form.status");
+  const [grade, setGrade] = useState(String(Math.round((value?.grade ?? item.grade ?? 0) * 100)));
   const [reason, setReason] = useState(value?.reason ?? "");
   const shown = value?.grade ?? item.grade ?? 0;
   const number = Number(grade);
-  const valid = Number.isFinite(number) && number >= 0 && number <= 1 && reason.trim().length > 0;
+  const valid = grade.trim() !== "" && Number.isFinite(number) && number >= 0 && number <= 100 && reason.trim().length > 0;
   void side;
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-[22px] gap-y-1.5 border-t border-border px-1 py-3.5 first:border-t-0">
       <div className="grid min-w-0 gap-0.5">
         <span className="type-narrative text-[15.5px] font-medium text-foreground">{item.title}</span>
-        {item.measurementSummary ? <span className="text-[13px] text-muted-foreground">{item.measurementSummary}</span> : null}
+        {/* The same two facts on every goal (B-458): where it got against its target, and its state. */}
+        <span className="flex flex-wrap items-center gap-x-2.5 text-[13px] text-muted-foreground">
+          <span>{words(item)}</span>
+          {item.status ? (
+            <span className="inline-flex items-center gap-1.5">
+              <span aria-hidden className={cn("size-1.5 rounded-full", STATUS_DOT[item.status])} />{tStatus(item.status)}
+            </span>
+          ) : null}
+        </span>
         {editing ? (
           <div className="mt-1.5 flex flex-wrap items-center gap-2">
-            <Input type="number" step="0.05" min={0} max={1} aria-label={t("grade")} className="h-8 w-20" value={grade} onChange={(e) => setGrade(e.target.value)} />
+            <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+              <Input type="number" step="5" min={0} max={100} aria-label={t("grade")} className="h-8 w-20" value={grade} onChange={(e) => setGrade(e.target.value)} />%
+            </span>
             <Input aria-label={t("why")} placeholder={t("why")} className="h-8 min-w-48 flex-1" maxLength={300} value={reason} onChange={(e) => setReason(e.target.value)} />
-            <Button size="sm" disabled={!valid} onClick={() => { onChange({ grade: Math.round(number * 100) / 100, reason: reason.trim() }); setEditing(false); }}>{t("change")}</Button>
+            <Button size="sm" disabled={!valid} onClick={() => { onChange({ grade: Math.round(number) / 100, reason: reason.trim() }); setEditing(false); }}>{t("setGrade")}</Button>
             <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>{t("cancel")}</Button>
           </div>
         ) : value ? (
@@ -364,7 +383,7 @@ export function GoalGradeRow({ item, side, value, onChange, readOnly, who }: {
         <div className="flex items-center gap-2.5">
           {value ? (
             readOnly ? null : <button type="button" className="text-[12.5px] font-semibold text-primary-ink hover:underline" onClick={() => onChange(null)}>{t("useTheMeasure")}</button>
-          ) : <span className="text-xs text-muted-foreground">{t("fromTheMeasure")}</span>}
+          ) : <span className="text-xs text-muted-foreground">{t("ofItsTarget")}</span>}
           {readOnly || editing ? null : (
             <button type="button" className="text-[12.5px] font-semibold text-primary-ink hover:underline" onClick={() => setEditing(true)}>{t("change")}</button>
           )}

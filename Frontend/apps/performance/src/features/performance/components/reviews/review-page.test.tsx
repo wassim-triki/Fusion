@@ -106,6 +106,38 @@ describe("Writing a review beside the year (H3)", () => {
     await waitFor(() => expect(m.submitSelf).toHaveBeenCalledWith(expect.objectContaining({ overallRating: 4 })));
   });
 
+  it("typing an answer keeps the field open past the first character (B-463)", () => {
+    m.record = review({});
+    render(<ReviewPage />);
+    const field = screen.getByRole("textbox", { name: "What went well this year?" });
+    fireEvent.change(field, { target: { value: "I" } });
+    fireEvent.change(screen.getByRole("textbox", { name: "What went well this year?" }), { target: { value: "I ran" } });
+    expect((screen.getByRole("textbox", { name: "What went well this year?" }) as HTMLTextAreaElement).value).toBe("I ran");
+    fireEvent.click(screen.getByRole("button", { name: "Done" }));
+    expect(screen.queryByRole("textbox", { name: "What went well this year?" })).toBeNull();
+    expect(screen.getByText("I ran")).toBeTruthy();
+  });
+
+  it("a draft that doesn't come says why and can be tried again (B-461)", async () => {
+    m.record = review({});
+    m.draft.mockResolvedValueOnce({ outcome: "Abstained", sentences: [], sourceCount: 4, privateSentenceCount: 0, sourceKinds: [] });
+    render(<ReviewPage />);
+    fireEvent.click(screen.getByRole("button", { name: /Draft from my year/ }));
+    expect(await screen.findByText("Too little in the year to draft this one")).toBeTruthy();
+    m.draft.mockRejectedValueOnce(new Error("503"));
+    fireEvent.click(screen.getByRole("button", { name: /Try again/ }));
+    expect(await screen.findByText("The draft didn't come through")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Try again/ }));
+    await waitFor(() => expect(m.draft).toHaveBeenCalledTimes(3));
+  });
+
+  it("the measure behind a grade shows on hover or focus (B-457)", async () => {
+    m.record = review({});
+    render(<ReviewPage />);
+    fireEvent.focus(screen.getByRole("img", { name: "66 % of 85 %" }));
+    expect((await screen.findByRole("tooltip")).textContent).toContain("66 % of 85 %");
+  });
+
   it("a sent self-review can be taken back until the manager sends theirs", async () => {
     m.record = review({ state: "ManagerAssessment", canEditSelfAssessment: false, canTakeBack: true,
       selfAssessment: { summary: "", overallRating: 4, savedAt: null, submittedAt: "2099-03-10T10:00:00Z" } });

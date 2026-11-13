@@ -13,7 +13,7 @@ import { toObjectiveRecord, type ObjectiveRecord, type RecordSectionId } from ".
 import { ObjectiveRecordSheet, type RecordSheetState } from "./objective-record-sheet";
 import { RecordActions } from "./record-actions";
 import { GoalHead, GoalHero, GoalStory, GoalUnits } from "./goal-panel";
-import { ProgressDialog } from "./progress-dialog";
+import { ProgressDialog, updatesAlone } from "./progress-dialog";
 import { ContributionSection } from "./sections/contribution-section";
 import { DescriptionSection } from "./sections/description-section";
 import { FeedbackSection } from "./sections/feedback-section";
@@ -68,12 +68,15 @@ export function ObjectiveRecordHost({ reference, presentation = "sheet" }: { ref
   const canUpdate = Boolean(record?.can.updateProgress && record.isExecuting);
   const dialogOpen = canUpdate && (updating || mode === "record");
   const update = canUpdate ? () => setUpdating(true) : undefined;
+  // Asked from a page's Update progress, the dialog comes alone: the panel stays shut behind it and closing the
+  // dialog returns to the page. A goal that can't be updated after all falls back to its panel.
+  const dialogOnly = updatesAlone({ presentation, mode, canUpdate, loading: state.status === "loading" });
 
   return (
     <>
       <ObjectiveRecordSheet
         presentation={presentation}
-        open={openRef !== null}
+        open={openRef !== null && !dialogOnly}
         onOpenChange={(next) => {
           if (!next) close();
         }}
@@ -112,7 +115,9 @@ export function ObjectiveRecordHost({ reference, presentation = "sheet" }: { ref
           open={dialogOpen}
           onOpenChange={(next) => {
             setUpdating(next);
-            if (!next && mode === "record") open(record.ref, { replace: true });
+            if (next || mode !== "record") return;
+            if (dialogOnly) close();
+            else open(record.ref, { replace: true });
           }}
         />
       ) : null}

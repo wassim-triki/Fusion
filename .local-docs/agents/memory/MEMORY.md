@@ -1,152 +1,112 @@
 # Fusion HR Platform — Project Memory
 
 ## Project & environment
-- [Project overview](project-overview.md) — EY Tunisia HRIS; user owns Core HR + Performance; colleagues own Training/Onboarding & Interview/Recruitment; ports, launch.
-- [Local dev auth](local-dev-auth.md) — platform admin `admin@ey-hr.com` (password in data/README.md) via shell :3000; ASK for tenant credentials.
-- [Dont reset demo passwords](dont-reset-demo-passwords.md) — never rewrite identity password hashes; try known pw, then ask.
-- [OpenSpec CLI](openspec-cli.md) — 1.14.2 via pnpm global (Git Bash needs pnpm dir on PATH); openspec/ gitignored; main specs strict-valid (gate archives).
-- [fusion-dev skill](fusion-dev-skill.md) — stack, backend tests (relational + no lock), read-only SQL, API helper; replaces dev-stack.ps1.
-- [EF migration while running](ef-migration-while-running.md) — `UseArtifactsOutput`/`ArtifactsPath` env vars + restore, then `dotnet ef migrations add`; service keeps its lock (B-202).
-- [Next dev/build output split](next-dev-build-output-split.md) — dev → `.next-dev`, build → `.next`; fixes "CSS bugged" dev corruption.
-- [Machine memory & checks](machine-memory-checks.md) — 13.9 GB RAM; checks one package at a time, vitest --maxWorkers=2; free memory yourself (stop the frontend for backend stretches).
-- [Rendered verification via Playwright](rendered-verification-playwright.md) — only when the user asks; repo Playwright, hydration-tolerant sign-in.
-- [No screens for small changes](no-screens-for-small-changes.md) — trivial/minor fixes: tests + commit, no screenshots.
-- [Dark, 1440×900 only](ds-dark-only-verification.md) — rendered QA and live screenshots: dark mode, one laptop size; no narrow/mobile/huge passes.
-- [Presentation diagrams](presentation-diagrams.md) — `.local-docs/diagrams/`, Mermaid + PlantUML use-case, `-v0` versioning.
-- [Audit/history deferred](audit-history-deferred.md) — change-history UI deferred to a unified Perf+Core audit integration.
-
-- [Artifacts: one account](artifacts-one-account.md) — explorers and answers live in the publishing claude.ai account; on "not found" ask for `/login`; snapshot answers to `plans/*.answers.json`.
-- [Cloud sessions, fallback](cloud-sessions-partial.md) — local is normal; cloud occasional (B-158); home repo is the fork `wassim-triki/Fusion` (`origin`), org repo read-only `upstream`.
+- [Project overview](project-overview.md) — EY Tunisia HRIS; user owns Core HR + Performance; colleagues own the other modules.
+- [Local dev auth](local-dev-auth.md) — platform admin `admin@ey-hr.com` via shell :3000; ASK for tenant credentials.
+- [Dont reset demo passwords](dont-reset-demo-passwords.md) — never rewrite identity hashes; try the known password, then ask.
+- [OpenSpec CLI](openspec-cli.md) — 1.14.2 via pnpm global; `openspec/` gitignored; main specs strict-valid.
+- [fusion-dev skill](fusion-dev-skill.md) — stack, backend tests, read-only SQL, API helper.
+- [EF migration while running](ef-migration-while-running.md) — `UseArtifactsOutput`/`ArtifactsPath` + restore, then `dotnet ef migrations add` (B-202).
+- [Next dev/build output split](next-dev-build-output-split.md) — dev → `.next-dev`, build → `.next`.
+- [Machine memory & checks](machine-memory-checks.md) — 13.9 GB RAM; one package at a time, vitest `--maxWorkers=2`; free memory yourself.
+- [Rendered verification via Playwright](rendered-verification-playwright.md) — only on request; repo Playwright, hydration-tolerant sign-in.
+- [No screens for small changes](no-screens-for-small-changes.md) — minor fixes: tests + commit.
+- [Dark, 1440×900 only](ds-dark-only-verification.md) — rendered QA and screenshots: dark, one laptop size.
+- [Presentation diagrams](presentation-diagrams.md) — `.local-docs/diagrams/`, Mermaid + PlantUML, `-v0` versioning.
+- [Audit/history deferred](audit-history-deferred.md) — change-history UI waits for a unified Perf+Core audit.
+- [Artifacts: one account](artifacts-one-account.md) — on "not found" ask for `/login`; snapshot answers to `plans/*.answers.json`.
+- [Cloud sessions, fallback](cloud-sessions-partial.md) — local is normal (B-158); fork `wassim-triki/Fusion` is `origin`, org repo read-only `upstream`.
 
 ## Design system & doctrine
-- [Radius role system](radius-role-system.md) — radii are roles (squircle tier surface 28/control 18/menu/inset/nested/detail/full), ChatGPT-fitted, lint-guarded.
-- [Surface tone ladder](surface-tone-ladder.md) — containers lift per level: canvas → `bg-section` → `bg-card` → `bg-inlay` (overlays `bg-popover`); no translucent fills at rest; `@repo/eslint-config/design-roles`.
-- [Document + sidebar layout](layout-document-sidebar.md) — frame objects not columns; unframed sticky sidebar; no height-matching/filler; actions in header; Plan pages done, sweep pending.
-- [Friendly, not enterprise](design-friendly-not-enterprise.md) — BambooHR-like warmth, alive, self-explanatory; pre-October designs aren't references; read `design/direction.md` first; style frame before big generations.
-- [Person pages: lively, not document](person-pages-lively-not-document.md) — band grammar (big photo, glance row, tabs in band, left rail) accepted at B-166 3a and carried to Home; document layout reads newspaper-like.
-- [Layout from first principles](layout-from-first-principles.md) — sidebar isn't mandatory; pick the layout that conveys the screen's job (single column, full width, new).
-- [Data table kit](data-table-kit.md) — `@repo/ds/data-table` on TanStack v9: useDataTable + DataTable/Search/Views/FacetFilter/Pagination; adoption follow-ups.
-- [Icon set: Hugeicons](icon-set-hugeicons.md) — Performance + Platform icons via `src/lib/icons.tsx` adapters (lint-guarded); core/shell/DS chrome still Lucide.
-- [No side-stripe accents](no-side-stripe-accents.md) — coloured left-border status edges read as vibecoded to the user (B-083).
-- [Refine the liked version, don't redraw](vibecode-tells-tinted-hero-cards.md) — B-166 Home went downhill through 4 redraws; "could be nicer" = polish; steppers and tinted hero cards read vibe-coded.
-- [Beyond primitives](bespoke-ui-beyond-primitives.md) — crafted UI for specific moments, shadcn-based libraries (ReUI) allowed; front pages: visual design and wow first, offer variants.
-- [Anti-vibecode design governance](design-governance-antivibecode.md) — DESIGN.md §33 tells→rules + §34 test; motion/elevation tokens.
-- [DS preset provenance](ds-preset-provenance.md) — `@repo/ds` = shadcn preset b6GMQMg3l (zinc + yellow + amber); 5 deliberate overrides.
-- [No useEffectEvent under Next 15.5](next-bundled-react-no-useeffectevent.md) — Next's bundled React lacks it; type-check passes, page crashes; use a ref.
-- [replaceState(null) for Next](next-replacestate-null-state.md) — a state carrying Next's `__NA` skips the useSearchParams sync (B-419).
-- [DS Spinner animation](ds-spinner-animation.md) — custom keyframes tree-shaken in TW4 prod; use built-in `animate-spin`.
-- [@repo/ui consolidation](repo-ui-consolidation.md) — owned apps moved to `@repo/ds`; interns' modules still on `@repo/ui`.
-- [Loading architecture](loading-architecture.md) — B-280 verified pending contract and stable Home frame; scoped production/dev evidence, retained hydration guards, independent auth/header follow-ups. July notes are historical.
-- [Roles model](roles-model.md) — B-177: areas over access profiles, holders by rule recomputed from Core HR, chosen = user ids, Personal on its own keys since B-214.
-- [Section titles inside sections](section-titles-inside-sections.md) — title + actions in the container; fields darker than surface; DS pickers only; icon row actions (B-179 review).
-- [Failure pages](page-failure-family.md) — B-302: `PageFailure` in `@repo/auth` picks the state, `PageState` in DS draws it; no hooks in `page-states.tsx` (server `loading.tsx` imports it).
-- [Permission-gate: hide, don't deny](permission-gate-hide-not-deny.md) — hide inaccessible nav/actions; gate on operational access.
+- [Radius role system](radius-role-system.md) — radii are roles (surface 28 / control 18 / …), lint-guarded.
+- [Surface tone ladder](surface-tone-ladder.md) — canvas → `bg-section` → `bg-card` → `bg-inlay`; no translucent fills at rest.
+- [Document + sidebar layout](layout-document-sidebar.md) — frame objects not columns; unframed sticky sidebar; actions in header.
+- [Friendly, not enterprise](design-friendly-not-enterprise.md) — BambooHR-like warmth; read `design/direction.md` first; style frame before big generations.
+- [Person pages: lively](person-pages-lively-not-document.md) — band grammar (big photo, glance row, tabs in band, left rail), B-166.
+- [Layout from first principles](layout-from-first-principles.md) — pick the layout for the screen's job; a sidebar isn't mandatory.
+- [Data table kit](data-table-kit.md) — `@repo/ds/data-table` on TanStack v9.
+- [Icon set: Hugeicons](icon-set-hugeicons.md) — via `src/lib/icons.tsx` adapters (lint-guarded).
+- [No side-stripe accents](no-side-stripe-accents.md) — coloured left-border edges read vibecoded (B-083).
+- [Refine the liked version](vibecode-tells-tinted-hero-cards.md) — "could be nicer" = polish, not redraw; steppers and tinted hero cards read vibe-coded.
+- [Beyond primitives](bespoke-ui-beyond-primitives.md) — crafted UI for specific moments; front pages: wow first, offer variants.
+- [Anti-vibecode governance](design-governance-antivibecode.md) — DESIGN.md §33 tells→rules, §34 test.
+- [DS preset provenance](ds-preset-provenance.md) — shadcn preset b6GMQMg3l; 5 deliberate overrides.
+- [No useEffectEvent under Next 15.5](next-bundled-react-no-useeffectevent.md) — type-check passes, page crashes; use a ref.
+- [replaceState(null) for Next](next-replacestate-null-state.md) — a state carrying `__NA` skips the useSearchParams sync (B-419).
+- [DS Spinner animation](ds-spinner-animation.md) — custom keyframes tree-shaken in TW4 prod; use `animate-spin`.
+- [@repo/ui consolidation](repo-ui-consolidation.md) — our apps on `@repo/ds`; interns' modules still on `@repo/ui`.
+- [Loading architecture](loading-architecture.md) — B-280 pending contract and stable Home frame; hydration guards kept.
+- [Roles model](roles-model.md) — B-177: areas over profiles, holders by rule from Core HR, chosen = user ids.
+- [Section titles inside sections](section-titles-inside-sections.md) — title + actions in the container; fields darker than surface; DS pickers only.
+- [Failure pages](page-failure-family.md) — `PageFailure` (`@repo/auth`) picks, `PageState` (DS) draws; no hooks in `page-states.tsx`.
+- [Permission-gate: hide, don't deny](permission-gate-hide-not-deny.md) — hide inaccessible nav and actions.
 
 ## Core HR / Platform work
-
-- [Reports engine](reports-engine.md) — B-189/B-190: shared engine for Reports, exports and the front page; scoped dated snapshots, local Replay, required-field completion, current branch before aggregates, viewer field policy.
-- [Tenant record redesign](tenant-record-redesign.md) — `/platform/tenants/{id}` 4 tabs all built (B-120) + tenant archival (B-099).
-- [Auth/invite surface redesign](auth-invite-surface-redesign.md) — forced-dark sign-in + invite acceptance on DS.
-- [Invite surfaces unified](invite-surfaces-unified.md) — workforce invite matches shell activation via shared `@repo/ds/shell` parts.
-- [Home company and manager contracts](home-company-manager.md) — B-247/B-248: authoritative work week, self-only canonical manager and first-week Home card.
-- [Workforce invitation lifecycle](workforce-invitation-lifecycle.md) — B-235: tracked command lookup, withdrawal/acceptance row locking, credential rotation, People cache refresh and live regression journey.
-- [Administrators page redesign](administrators-page-redesign.md) — historical `/core/access` workspace; superseded by Settings › Roles › Administrators, its paths removed in B-326.
-- [Worker profile consolidation](worker-profile-consolidation.md) — one `WorkerProfile` behind `/core/profile` + `/core/people/{id}`.
-- [Workforce foundation hardening](workforce-foundation-hardening.md) — OpenSpec Employee→Employment→WorkAssignment→Manager; resume `/opsx:apply`.
-- [Workforce People Establishment Slice 1](workforce-people-establishment-slice1.md) — done, archived, committed on `refactor/temp-branch`.
-- [People Experience Reengineering](people-experience-reengineering.md) — `/core/people` rebuilt on the temporal domain.
-- [Temporal Workforce Maintenance](temporal-workforce-maintenance.md) — as-of profile, timeline, change work/manager/end employment.
-- [Workforce Access Activation](workforce-access-activation.md) — archived; membership-scoped binding, cohort activation; frozen.
-- [Shell/auth/MFE runtime stabilization](stabilize-shell-auth-mfe-runtime-archived.md) — archived + committed; fail-closed frame, api retry, `/api` proxy.
-- [F4A org-import AI UX](f4a-org-import-ai-ux.md) — interpretation phase model; Groq via CoreHR env var.
-- [Org Chart interaction polish](org-chart-interaction-polish.md) — reveal halo, anchor-stable expand/collapse, dark React Flow controls.
-- [Org import stage architecture](org-import-stage-architecture.md) — Upload→Match→Review; stage from product readiness.
-- [Org import semantic assistance](org-import-semantic-assistance.md) — implicit AI matching at upload, auto-apply + abstain.
-- [Org import Review Phase 1](org-import-review-phase1.md) — read-only Review, bounded resolutions, fingerprinted publish.
-- [First person's imported start](first-person-import-start.md) — B-246: authoritative activation provenance, keep-by-default earlier-date offer, atomic canonical correction in the frozen import plan.
-- [Import on-ramp unified](import-onramp-unified.md) — shared `features/data-import/` entry for org + workforce imports.
-- [Workforce Import establishment](workforce-import-establishment-proposed.md) — archived; create-only XLSX/CSV establishment.
-- [Workforce Import demo-readiness pass](workforce-import-demo-readiness-pass.md) — 7 UI fixes; demo CSV + tenant10 reset recipe.
-- [Workforce Import experience audit](workforce-import-experience-audit.md) — 10 ranked findings (2026-08-27).
-- [People org chart](people-org-chart-proposal.md) — B-094 card design C; sessions A–C committed by 2026-10-28 (C = open roles B-128), In review (own transform stage, not React Flow).
-- [Record validation attributes](aspnet-record-validation-attributes.md) — `[property: MaxLength]` on a request record 500s every call; use parameter targets; prove endpoints with a journey.
-- [Dictionary query binding](aspnet-dictionary-query-binding.md) — `[FromQuery] Dictionary` swallows every query key without its prefix; parse `fields[...]` by hand (B-182).
-- [Change requests dry run](change-requests-dry-run.md) — B-179 requests stage in a rolled-back tx (clears the tracker); profile hooks above early returns.
-- [People changes redesign](people-changes-redesign.md) — B-139 accepted 2026-10-27 (change records + one panel); manager lookups key on employee, not assignment.
-- [Workforce import platform reconciliation](workforce-import-platform-reconciliation.md) — approved: workforce onto the org import platform.
+- [Reports engine](reports-engine.md) — B-189/B-190: one engine for Reports, exports and the front page; dated snapshots, viewer field policy.
+- [Tenant record redesign](tenant-record-redesign.md) — `/platform/tenants/{id}` 4 tabs (B-120) + archival (B-099).
+- [Home company and manager contracts](home-company-manager.md) — B-247/B-248: work week, self-only manager, first-week card.
+- [Workforce invitation lifecycle](workforce-invitation-lifecycle.md) — B-235: lookup, row locking, credential rotation, cache refresh.
+- [First person's imported start](first-person-import-start.md) — B-246: activation provenance, earlier-date offer.
+- [People org chart](people-org-chart-proposal.md) — B-094 card design C, open roles B-128; own transform stage, not React Flow.
+- [People changes redesign](people-changes-redesign.md) — B-139: change records + one panel; manager lookups key on employee.
+- [Change requests dry run](change-requests-dry-run.md) — B-179: staged in a rolled-back tx; profile hooks above early returns.
+- [Record validation attributes](aspnet-record-validation-attributes.md) — `[property: MaxLength]` on a request record 500s; use parameter targets.
+- [Dictionary query binding](aspnet-dictionary-query-binding.md) — `[FromQuery] Dictionary` swallows every key; parse `fields[...]` by hand.
+- Auth and invites (history): [surfaces](auth-invite-surface-redesign.md) · [unified](invite-surfaces-unified.md) · [administrators page](administrators-page-redesign.md) · [access activation](workforce-access-activation.md) · [shell/auth runtime](stabilize-shell-auth-mfe-runtime-archived.md)
+- Workforce domain (history): [profile](worker-profile-consolidation.md) · [foundation](workforce-foundation-hardening.md) · [establishment 1](workforce-people-establishment-slice1.md) · [People rebuilt](people-experience-reengineering.md) · [temporal maintenance](temporal-workforce-maintenance.md)
+- Imports (history): [AI UX](f4a-org-import-ai-ux.md) · [stages](org-import-stage-architecture.md) · [semantic help](org-import-semantic-assistance.md) · [review 1](org-import-review-phase1.md) · [on-ramp](import-onramp-unified.md) · [workforce](workforce-import-establishment-proposed.md) · [demo pass](workforce-import-demo-readiness-pass.md) · [audit](workforce-import-experience-audit.md) · [reconciliation](workforce-import-platform-reconciliation.md) · [org chart polish](org-chart-interaction-polish.md)
 
 ## Performance
-- [Perf target-state change](perf-target-state-change.md) — archived 2026-10-15; main specs = as-built baseline, not authority for reworked areas.
-- [Perf first-principles rework](perf-first-principles-rework.md) — B-065 with Claude: whole module rebuilt, integrated, demo-ready; agent owns domain/contracts/surfaces, user agrees add-ons/wow; settings last.
-- [Perf slice 2a plan pages](perf-slice-2a-plan-pages.md) — archived+committed 2026-10-16: check-in status, change requests, development, PlanRail; shapes later slices reuse.
-- [Perf slice 2b AI + alignment](perf-slice-2b-ai-alignment.md) — accepted, archived, committed 2026-10-17 (incl. B-081–B-084): SharedKernel AI transport/gate, coach, map; Groq strict-schema compile + dagre label gotchas.
-- [Perf slice 3 conversations](perf-slice-3-conversations.md) — accepted, archived, committed 2026-10-19: 1:1s, feedback, requests, praise; B-087 redesign rebuilt; @source gotcha, formatDay.
-- [Perf slice 5 calibration](perf-slice-5-calibration.md) — accepted, archived, committed 2026-10-20; archive EBUSY gotcha; Carthage rebuilt with a calibrated round; Sheet width + averages guard gotchas.
-- [Perf slice 6 overview/team/insights](perf-slice-6-overview-team-insights.md) — accepted, archived 2026-10-22, committed 2026-10-22 with B-078; one phase rule (`PhaseAsync`), DataTable `rowGroup`, strict-spec gotcha.
-- [Slice close settles everything](slice-close-settles-everything.md): check each B-070 slice against the accepted B-069 canvas, list parity, settle open questions before closing.
-- [Canvas first for taste rework](canvas-first-for-taste-rework.md) — rejected-on-taste UI: HTML canvas per state, approval, then code (B-087 approved).
-- [Perf design reference surfaces](perf-design-reference-surfaces.md) — design from rendered My Plan/drawer screenshots; extend approved surfaces; no bland row-list mockups.
-- [Perf Cycle & Goals proposal](perf-cycle-goals-proposed.md) — earlier OpenSpec change (4 chunks); history behind the target-state change.
-- [Chunk A](perf-cycle-goals-chunk-a.md) · [Chunks B/C/D](perf-cycle-goals-chunks-bcd.md) — setup→activation; goals/plans/progress; tenant10 recipes.
-- [Perf frontend re-engineering pass](perf-frontend-reengineering-pass.md) — A–D coherence pass (IA, headers, composers).
-- [Perf org-objective publication](perf-org-objective-publication.md) — Draft→Published by scope owner (approval superseded).
-- [Perf org-objective scope authority](perf-org-objective-scope-authority.md) — `performance.objective.org.manage`, coarse `@Tenant` scope.
-- [Performance IA: Overview + objective record](performance-ia-overview-record.md) — Org Goals out of sidebar, cycle-aware `?cycle=&objective=` record, ObjectiveAccess policy, compositional Overview.
-- [Perf Org Goals scoped planning](perf-org-goals-scoped-planning.md) — `/goals` workspace internals (now contextual "Organization direction").
-- [Perf org composer modal](perf-org-composer-modal.md) — org objective composer is a modal; shared `MeasurementEditor`.
-- [Perf cycle-setup refactor](perf-cycle-setup-refactor.md) — guided nested-route flow; QA tenant Solara (`qa-admin@fusion.test`).
-- [Perf cycle-setup Population step](perf-cycle-setup-population-step.md) — Step 2 rebuilt + 4 brownfield fixes.
-- [Perf cycle-setup Review redesign](perf-cycle-setup-review-redesign.md) — Step 3 confirmation-and-launch surface.
-- [Perf My Plan populated Draft](perf-my-plan-populated-draft.md) — plan-object workspace; Nour asteria-demo Draft seeded.
-- [Perf My Plan execution surface](perf-my-plan-execution.md) — approved plan → progress rows + rail; colour rule.
-- [Perf reviewer Plan surface](perf-reviewer-plan-surface.md) — `/team/[planId]` reviewer view (Hana).
-- [Perf Team "Your People" roster](perf-team-your-people.md) — `plans/roster` endpoint + grid table; Hana demo seed.
-- [Evaluation execution overhaul](performance-evaluation-execution-overhaul.md) — shipped as PR #517.
-- [Performance audit + remediation](performance-audit-remediation-proposed.md) — 32 findings → OpenSpec, not implemented.
+- [First-principles rework](perf-first-principles-rework.md) — B-065: module rebuilt; agent owns domain/contracts/surfaces, user agrees add-ons and wow.
+- [Target-state change](perf-target-state-change.md) — main specs = as-built baseline, not authority for reworked areas.
+- [Slice close settles everything](slice-close-settles-everything.md) — check each slice against its accepted canvas; settle open questions before closing.
+- [Canvas first for taste rework](canvas-first-for-taste-rework.md) — rejected-on-taste UI: HTML canvas per state, approval, then code.
+- [Design reference surfaces](perf-design-reference-surfaces.md) — extend approved surfaces; no bland row-list mockups.
+- October slices (gotchas inside): [2a plan pages](perf-slice-2a-plan-pages.md) · [2b AI + alignment](perf-slice-2b-ai-alignment.md) (Groq strict schema) · [3 conversations](perf-slice-3-conversations.md) · [5 calibration](perf-slice-5-calibration.md) · [6 overview/team](perf-slice-6-overview-team-insights.md)
+- Before the rework (history, replaced by B-390): [cycle & goals](perf-cycle-goals-proposed.md) · [chunk A](perf-cycle-goals-chunk-a.md) · [B/C/D](perf-cycle-goals-chunks-bcd.md) · [frontend pass](perf-frontend-reengineering-pass.md) · [org-objective publication](perf-org-objective-publication.md) · [scope authority](perf-org-objective-scope-authority.md) · [IA](performance-ia-overview-record.md) · [org goals](perf-org-goals-scoped-planning.md) · [composer](perf-org-composer-modal.md) · [setup](perf-cycle-setup-refactor.md) · [population](perf-cycle-setup-population-step.md) · [setup review](perf-cycle-setup-review-redesign.md) · [My Plan draft](perf-my-plan-populated-draft.md) · [execution](perf-my-plan-execution.md) · [reviewer plan](perf-reviewer-plan-surface.md) · [roster](perf-team-your-people.md) · [evaluation](performance-evaluation-execution-overhaul.md) · [audit](performance-audit-remediation-proposed.md)
 
 ## User preferences
-- [Engineering-first agent workflow](engineering-first-agent-workflow.md) — features over process; rendered QA on request; `.local-docs/agents/` STATE/BACKLOG/LOG; stock skills untouched.
-- [Review notes: board, fix later](review-notes-board-later.md) — review-round notes become Ready items; fix only when told to include them in the round.
-- [Review gate](finished-is-not-accepted.md) — only taste work goes In review; evidence-settled work closes ○; verdict read from conversation; no Done lane.
-- [Agent-run board](agent-run-board.md) — agents run `.local-docs/agents` autonomously ("Jarvis"); user rarely touches it; AGENTS.md ~70 lines.
-- [STATE for every task](state-for-every-task.md) — set Active work before the first edit of any task, audits included; update as you go.
-- [Agent commits everything](agent-commits-everything.md) — the user never commits; commit finished work yourself (applies too), logical commits, then hand over the next session's prompt; push/PR stay the user's.
-- [Short replies, keep the rest](short-replies-keep-the-rest.md) — store what matters; reply with one concrete next thing; good enough outside the main demo journey.
-- [Minimize ETA, no fluff](minimize-eta-no-fluff.md) — long applies: shortest path, checks in background, few final screenshots; ask before committing when the user steers the finish.
-- [i18n speed mode](i18n-speed-mode.md) — after B-118: FR+AR just working, few demo screens, no polish; B-119 then B-115 lean.
-- [Name items, not just IDs](name-items-not-just-ids.md) — in replies say what B-NNN / a change is in plain words; bare IDs lose the user.
-- [Name people with their roles](name-people-with-roles.md) — "Amira Khelifi, the administrator", never a bare demo name; Carthage cast listed.
-- [Review handoff: screens or credentials](review-handoff-screens-or-credentials.md) — send screenshots inline, or give email + password with every localhost link.
-- [Commit hook + message shape](commit-hook-and-message-shape.md) — pre-commit = lint+type-check of our apps only since B-234 (minutes, background it); blank line after the subject.
-- [Prettier reflows whole files](prettier-reflows-whole-files.md) — `.prettierrc` is 80 cols, code is ~120+; prettier only new files.
-- [No cosmetic history rewrites](no-cosmetic-history-rewrites.md) — leave commits as they are unless it matters; don't raise cosmetic slips.
-- [Fresh session for applies](fresh-session-for-applies.md) — every apply/coding task starts in a new session; write a cold-pickup recipe into STATE first.
-- [Build speed mode](build-speed-mode.md) — one slice = one session, one agent, one commit (board files included); only tests that prove the behavior; checks once; journeys only for authz; one screen per new surface; no backward compat; never cut authz/isolation tests (AGENTS.md › Build speed, B-234).
-- [Colleague modules only must not break](colleague-modules-only-must-not-break.md) — don't coordinate with or wait on Learning/Recruitment/Interview/Onboarding; just keep them working; since 2026-10-30 (internship over, fork) product plans may hide or replace them.
-- Deviate from issue wording when the architecture suggests a better fit.
-- [Rewrites acceptable](rewrites-acceptable.md) — don't bias toward refactor-in-place.
-- [Port accepted drawings closely](port-accepted-drawings-closely.md) — build to the explorer's specs (spacing, chips, hues, borderless cards); user reviews side by side (B-177 round 1).
-- [Reuse only if it fits](reuse-only-if-it-fits.md) — never keep a UI pattern because it exists; judge it against the target design, redo or board it (B-175 tabs, hire form).
-- [UI: no explanatory text](ui-no-explanatory-text.md) — carry state with structure, never caption sentences.
-- [`next` takes the top row](next-takes-top-row.md) — a fresh session prompted "next" runs STATE's top queue row end to end and commits; no ceremony.
-- [Actions say what happens](actions-say-what-happens.md) — a button tells its outcome and who it touches before the click, and confirms after; unclear ones make the user afraid to click (2026-11-13).
-- [Polish includes UI/UX + refactor](polish-includes-uiux-and-refactor.md) — polish requests expect audit-then-fix, not wording.
+- [Engineering-first workflow](engineering-first-agent-workflow.md) — features over process; rendered QA on request.
+- [Agent-run board](agent-run-board.md) — agents run `.local-docs/agents`; the user rarely touches it.
+- [STATE for every task](state-for-every-task.md) — set Active work before the first edit, audits included.
+- [`next` takes the top row](next-takes-top-row.md) — "next" runs STATE's top queue row end to end and commits.
+- [Fresh session for applies](fresh-session-for-applies.md) — each coding task in a new session; cold-pickup recipe in STATE first.
+- [Build speed mode](build-speed-mode.md) — one slice = one session, one agent, one commit; only proving tests; never cut authz/isolation tests.
+- [Minimize ETA, no fluff](minimize-eta-no-fluff.md) — shortest path, checks in background, few screenshots.
+- [Agent commits everything](agent-commits-everything.md) — commit finished work yourself, then hand over the next prompt; push/PR stay the user's.
+- [Commit hook + message shape](commit-hook-and-message-shape.md) — hook = lint + type-check of our apps (minutes, background it); blank line after the subject.
+- [Prettier reflows whole files](prettier-reflows-whole-files.md) — prettier only new files.
+- [No cosmetic history rewrites](no-cosmetic-history-rewrites.md) — leave commits as they are.
+- [Review gate](finished-is-not-accepted.md) — only taste work goes In review; the rest closes ○; verdict read from conversation.
+- [Review notes: board, fix later](review-notes-board-later.md) — review notes become Ready items; fix only when told.
+- [Review handoff](review-handoff-screens-or-credentials.md) — screenshots inline, or email + password with every localhost link.
+- [Short replies, keep the rest](short-replies-keep-the-rest.md) — reply with one concrete next thing.
+- [Name items, not just IDs](name-items-not-just-ids.md) — say what B-NNN is in plain words.
+- [Name people with their roles](name-people-with-roles.md) — "Amira Khelifi, the administrator".
+- [Walkthrough: one step at a time](walkthrough-one-step-at-a-time.md) — one step per message, stable numbering.
+- [Board categories](board-essentials-definition.md) — Big features · Polish · Before hosting · Cleanup and tooling · Parked.
+- [Colleague modules must not break](colleague-modules-only-must-not-break.md) — don't wait on them; product plans may hide or replace them.
+- [Rewrites acceptable](rewrites-acceptable.md) — no bias toward refactor-in-place; deviate from issue wording when the architecture fits better.
 - [Prefers minimal-overhead fix](prefers-minimal-overhead-fix.md) — smallest root-cause fix; hardening as a footnote.
-- [No reduced-motion gating](no-reduced-motion-gating.md) — plain animate-*, never motion-safe unless asked.
+- [Polish includes UI/UX + refactor](polish-includes-uiux-and-refactor.md) — audit-then-fix, not wording.
+- [Architecture-durable planning](architecture-durable-planning.md) — cycle-aware identity, one authz policy, capabilities not personas.
+- [Decide yourself, show an explorer](decide-surface-architecture-yourself.md) — product/architecture calls are mine; ask only on taste.
+- [Scope with depth ladders](scope-with-depth-ladders.md) — big reworks: open long list, a 0–3 depth ladder per feature.
+- [UI decisions: shown, per situation](ui-decisions-shown-per-situation.md) — draw the variants, labels only; one chapter per session.
+- [Explorers show only new screens](explorers-show-only-new-screens.md) — accepted screens stay in the decisions file.
+- [Artifact db snapshots are frozen](artifact-db-snapshots-frozen.md) — clone `snap.data()` before using it as state.
+- [Port accepted drawings closely](port-accepted-drawings-closely.md) — build to the explorer's specs; reviewed side by side.
+- [Redesigns: bold, not tweaks](redesigns-bold-not-tweaks.md) — change structure from the surface's job.
+- [Reuse only if it fits](reuse-only-if-it-fits.md) — judge an existing pattern against the target design.
+- [Brain dumps are examples](brain-dumps-are-examples.md) — named features are signals, not rules.
+- [Brain dumps are surface overhauls](brain-dumps-are-surface-overhauls.md) — screen complaints = rethink the surface; one item per surface.
+- [UI: no explanatory text](ui-no-explanatory-text.md) — carry state with structure, not captions.
+- [Actions say what happens](actions-say-what-happens.md) — a button tells its outcome before the click and confirms after.
+- [Fusion does the bookkeeping](fusion-does-the-bookkeeping.md) — nothing typed or ticked that Fusion can compute (D-35, D-40).
+- [No reduced-motion gating](no-reduced-motion-gating.md) — plain `animate-*`.
+- [Graduation demo and report](graduation-demo-and-report.md) — jury audience, real HRIS; report marks parity / improvement / new.
+- [i18n speed mode](i18n-speed-mode.md) — FR+AR just working, no polish.
 - [No disuse cleanup on thin window](no-disuse-cleanup-thin-window.md) — don't disable tools from low usage over short windows.
-- [Explorers show only new screens](explorers-show-only-new-screens.md) — accepted screens stay in the decisions file, not redrawn; new account = new artifact link.
-- [Decide yourself, show an explorer](decide-surface-architecture-yourself.md) — product/architecture calls are mine from research + first principles; ask only on taste; present as an interactive artifact.
-- [Artifact db snapshots are frozen](artifact-db-snapshots-frozen.md) — clone `snap.data()` before using it as page state, or clicks silently do nothing.
-- [Scope with depth ladders](scope-with-depth-ladders.md) — big reworks: derive intent yourself, open long list, a 0–3 depth ladder per feature the user picks; no closed research spec.
-- [UI decisions: shown, per situation](ui-decisions-shown-per-situation.md) — draw the variants, labels only; split each topic by situation, no universal rule; one chapter per session with the full Core HR system.
-- [Redesigns: bold, not tweaks](redesigns-bold-not-tweaks.md) — a redesign changes structure from the surface's job; restyled card columns read as tweaking (B-397 colour note).
-- [Brain dumps are examples](brain-dumps-are-examples.md) — named features/exclusions are signals, not rules; contextual questions draw out their thinking; keep process to yourself.
-- [Board categories](board-essentials-definition.md) — Ready/Needs discussion grouped: Big features · Polish · Before hosting · Cleanup and tooling · Parked.
-- [Graduation demo and report](graduation-demo-and-report.md) — jury audience, but build a real self-explanatory HRIS, no demo-story dumbing; time never constrains scope; report studies existing solutions → mark parity / improvement / new.
-- [Architecture-durable planning](architecture-durable-planning.md) — cycle-aware identity, one domain authz policy, capability composition not personas, no dubious aggregates.
-- [Fusion does the bookkeeping](fusion-does-the-bookkeeping.md) — frictionless first: nothing typed, ticked or waited on that Fusion can compute; calibration by exception (D-35, D-40).
 
-## Working notes (tracked since B-159, 2026-10-29)
-- `.local-docs/agents/` (AGENTS.md, STATE, BACKLOG, LOG, plans, data/, git-conventions, this memory/) is tracked in the public repo; `archive/`, screen images, `data/*.local.json` and `.work/` stay local. The Claude memory folder is a junction to `memory/` here. No passwords in any of it: `FUSION_LOCAL_PASSWORD` (accounts) and `FUSION_PG_PASSWORD` (Postgres) are Windows user variables. Older notes are zipped in `archive/old-notes-2026-10.zip`; paths to `.local-docs/specs|core|screenshots` in older memories are gone.
-- [Walkthrough: one step at a time](walkthrough-one-step-at-a-time.md) — roadmap stays mine; one step per message, stable numbering, thorough where it matters.
-- [Brain dumps are surface overhauls](brain-dumps-are-surface-overhauls.md) — screen complaints = rethink that surface; one board item per surface, remarks as evidence.
+## Working notes
+- `.local-docs/agents/` is tracked in the public repo (`archive/`, screens, `data/*.local.json`, `.work/` stay local); the Claude memory folder is a junction to `memory/`. No passwords: `FUSION_LOCAL_PASSWORD` and `FUSION_PG_PASSWORD` are Windows user variables. Paths to `.local-docs/specs|core|screenshots` in older memories are gone.

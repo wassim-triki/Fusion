@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { paceOn, positionIn } from "@repo/performance-ui";
-import { shareOf, statusFromPace } from "./progress-dialog";
+import { shareOf, statusFromPace, updatesAlone } from "./progress-dialog";
 
 describe("updating progress (D-63)", () => {
   it("reads where a goal should be by a day from a straight pace across its window", () => {
@@ -14,6 +14,15 @@ describe("updating progress (D-63)", () => {
     expect(statusFromPace(30, 50)).toBe("AtRisk");
     expect(statusFromPace(10, 50)).toBe("OffTrack");
     expect(statusFromPace(80, 50)).toBe("OnTrack");
+  });
+
+  it("opens alone from a page's Update progress, never with the goal's panel behind it", () => {
+    expect(updatesAlone({ presentation: "sheet", mode: "record", canUpdate: true, loading: false })).toBe(true);
+    expect(updatesAlone({ presentation: "sheet", mode: "record", canUpdate: false, loading: true })).toBe(true);
+    // A goal that turns out not to be updatable shows its panel; so does a goal opened to read, and the full page.
+    expect(updatesAlone({ presentation: "sheet", mode: "record", canUpdate: false, loading: false })).toBe(false);
+    expect(updatesAlone({ presentation: "sheet", mode: "details", canUpdate: true, loading: false })).toBe(false);
+    expect(updatesAlone({ presentation: "page", mode: "record", canUpdate: true, loading: false })).toBe(false);
   });
 
   it("reads a number's share of the way whichever way the measure runs", () => {

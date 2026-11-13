@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** the year walk-through on `sitting-2`, 2026-11-13: the user walked the whole year live and every note is on the board (B-449–B-468, B-378's evidence). B-390's slices 1–13 are all built; B-395 is parked with its two-act rework.
+**Last finished:** the walk-through's bugs (queue row 1), 2026-11-13: B-463, B-461, B-457, B-452 and B-451's double-open closed on evidence (LOG); B-469 boarded (drafts decline too easily on a thin year). Before it: the year walk-through on `sitting-2`, every note on the board (B-449–B-468).
 
 ## Active work
 
@@ -14,7 +14,6 @@ Session queue (the user opens a fresh session with "next"): it takes the first o
 
 | # | Session | Board items | Notes |
 |---|---|---|---|
-| 1 | Walk-through bugs | B-463, B-461, B-457, B-452, B-451's double-open | First trim `memory/MEMORY.md` under 17 KB (one line per entry, merge stale ones). Typing in a review answer closes the field; a failed AI draft shows nothing (find the cause, show it with a retry); the measure ruler's hover shows nothing; Update progress faded in light mode; the goal drawer and the update dialog open together. Tests that prove each; no screens. |
 | 2 | Shared pieces | B-456, B-462, B-449 | The floating status pill in `@repo/ds` (then the review's Saved, Home's approve, the "changed since" toast replaced); one spinner (the review pages' one) replacing every other; the theme switch in your menu. |
 | 3 | The review page made clear | B-454, B-455, B-458, B-459, B-460, B-464 | Where each part comes from, the draft marked as AI, every goal's same facts, grades as share or level, an icon per kind in the year column, the peers strip saying what it does and lined up. One screen of the review after. |
 | 4 | Explorer: the redraws | B-466 (+B-467, B-468 scoped from Lattice, Culture Amp, BambooHR, Workday), B-453, B-451, B-450 | One artifact, a chapter per surface, variants drawn on real Carthage data; B-468 is a wow moment for the demo. The user picks; answers snapshot to `plans/*.answers.json`, decisions D-103 on. |
@@ -22,4 +21,4 @@ Session queue (the user opens a fresh session with "next"): it takes the first o
 | 9 | Home rework | B-378 | Research brief, long list, explorer (memory `scope-with-depth-ladders`), then build. |
 | 10 | The demo in two acts | B-395 | `lateyear` preset + "meanwhile" script, rehearsal, screens; shows a little of the HR side (questions, competencies, scale). Near the jury date. |
 
-Still In review from the slices (the user's verdicts land as Ready children): B-405, B-424, B-431, B-434, B-440/B-446, B-447. Ready leftovers: B-442, B-443, B-444, B-448.
+Still In review from the slices (the user's verdicts land as Ready children): B-405, B-424, B-431, B-434, B-440/B-446, B-447. Ready leftovers: B-442, B-443, B-444, B-448, B-469.

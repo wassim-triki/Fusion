@@ -17,6 +17,7 @@ import { Button } from "@repo/ds/components/ui/button";
 import { Input } from "@repo/ds/components/ui/input";
 import { Skeleton } from "@repo/ds/components/ui/skeleton";
 import { Textarea } from "@repo/ds/components/ui/textarea";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@repo/ds/components/ui/tooltip";
 import { Measurement, Pencil, Sparkles } from "@repo/ds/icons";
 import { PersonInitials } from "@repo/performance-ui";
 import { useReviewsApi } from "../../api/use-review-work";
@@ -60,10 +61,17 @@ export function Grade({ value, words, size = "md" }: { value: number; words: str
   return (
     <span className="inline-flex items-center gap-1">
       <span className={cn("font-semibold tabular-nums tracking-[-0.01em] text-foreground", size === "lg" ? "text-[30px]" : "text-[22px]")}>{value.toFixed(2)}</span>
-      <span tabIndex={0} role="img" aria-label={words} title={words}
-        className="inline-grid size-6 cursor-help place-items-center rounded-lg text-muted-foreground outline-none hover:bg-inlay hover:text-foreground focus-visible:bg-inlay">
-        <Measurement aria-hidden className="size-4" />
-      </span>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span tabIndex={0} role="img" aria-label={words}
+              className="inline-grid size-6 place-items-center rounded-lg text-muted-foreground outline-none hover:bg-inlay hover:text-foreground focus-visible:bg-inlay">
+              <Measurement aria-hidden className="size-4" />
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="top" sideOffset={4}>{words}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </span>
   );
 }
@@ -204,20 +212,23 @@ export function Answer({ question, value, onChange, readOnly, numbers, cite, onC
   const ai = context.data?.capabilities.aiAssistance === true;
   const [editing, setEditing] = useState(false);
   const [drafting, setDrafting] = useState(false);
-  const [abstained, setAbstained] = useState(false);
+  // Why a draft didn't come: the year holds too little for this question, or the call itself failed.
+  const [missed, setMissed] = useState<"abstained" | "failed" | null>(null);
+  const abstained = missed !== null;
   const tried = useRef(false);
   const cited = value.citations.length > 0;
   const empty = !value.text.trim();
 
   const draft = useCallback(async () => {
     setDrafting(true);
+    setMissed(null);
     try {
       const result = await reviews.draft(reviewId, "Question", question.questionId);
-      if (result.outcome === "Abstained" || result.sentences.length === 0) { setAbstained(true); return; }
+      if (result.outcome === "Abstained" || result.sentences.length === 0) { setMissed("abstained"); return; }
       const citations = result.sentences.map((s) => ({ text: s.text.trim(), key: s.sources[0]?.key ?? "" })).filter((c) => c.key);
       onChange({ text: citations.map((c) => c.text).join(" "), citations });
     } catch {
-      setAbstained(true);
+      setMissed("failed");
     } finally {
       setDrafting(false);
     }
@@ -246,9 +257,12 @@ export function Answer({ question, value, onChange, readOnly, numbers, cite, onC
     );
   } else if (!readOnly && ai && !drafting && !(autoDraft && abstained && waitingLabel)) {
     right = (
-      <Button size="sm" variant="outline" onClick={() => void draft()}>
-        <Sparkles aria-hidden className="size-[15px]" />{t("draftFromYear")}
-      </Button>
+      <>
+        {missed ? <span role="status" className="text-xs text-muted-foreground">{missed === "failed" ? t("couldntDraft") : t("tooLittleToDraft")}</span> : null}
+        <Button size="sm" variant="outline" onClick={() => void draft()}>
+          <Sparkles aria-hidden className="size-[15px]" />{missed ? t("tryAgain") : t("draftFromYear")}
+        </Button>
+      </>
     );
   } else if (empty && waitingLabel && abstained) {
     right = <span className="inline-flex items-center gap-1 text-xs font-medium text-primary-ink"><Sparkles aria-hidden className="size-3.5" />{waitingLabel}</span>;
@@ -266,7 +280,11 @@ export function Answer({ question, value, onChange, readOnly, numbers, cite, onC
       <Textarea aria-label={question.text} placeholder={t("yourWordsPlaceholder")} rows={editing ? 5 : 4} autoFocus={editing}
         className="type-narrative min-h-24 resize-y text-[15.5px] leading-normal"
         value={value.text}
-        onChange={(event) => onChange({ text: event.target.value, citations: [] })} />
+        onChange={(event) => {
+          // Typing into an empty answer keeps the field open: without this the first character swaps it for the read view.
+          setEditing(true);
+          onChange({ text: event.target.value, citations: [] });
+        }} />
     );
   } else if (cited) {
     body = (

@@ -37,6 +37,16 @@ export function shareOf(baseline: number, target: number, value: number): number
   return target === baseline ? 0 : ((value - baseline) / (target - baseline)) * 100;
 }
 
+/** Whether an address asking to record shows the update dialog by itself, the goal's panel shut behind it. */
+export function updatesAlone({ presentation, mode, canUpdate, loading }: {
+  presentation: "sheet" | "page";
+  mode: string;
+  canUpdate: boolean;
+  loading: boolean;
+}): boolean {
+  return presentation === "sheet" && mode === "record" && (canUpdate || loading);
+}
+
 /**
  * Updating a goal's progress (D-63): a small dialog over the page. A number on a rail from baseline to target with
  * where it should be by now, How it's going prefilled from the pace (changeable), milestones ticked, a note; saving

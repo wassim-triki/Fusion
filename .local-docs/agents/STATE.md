@@ -1,6 +1,6 @@
 # STATE - live handoff
 
-**Last finished:** B-395 first build, 2026-11-12; parked 2026-11-13 in Demo preparation with its two-act rework agreed (hollow story, not an app problem). Next: the user works through the review queue (B-405, B-424, B-431, B-434, B-440/B-446, B-447), then the Home rework (B-378).
+**Last finished:** the year walk-through on `sitting-2`, 2026-11-13: the user walked the whole year live and every note is on the board (B-449–B-468, B-378's evidence). B-390's slices 1–13 are all built; B-395 is parked with its two-act rework.
 
 ## Active work
 
@@ -8,10 +8,18 @@ None.
 
 ## Next
 
-Session queue: a fresh session takes the first open row, sets it as Active work and moves its items to In progress. Each row is one session, one commit, everything it needs referenced on the board.
+Session queue: a fresh session takes the first open row, sets it as Active work and moves its items to In progress. Each row is one session, one agent, one commit (code + board), medium effort unless noted; the commit's last message is the next row's prompt. Free memory yourself when a job (the commit hook too) is refused: stop the frontend, run it, restart only when the next step needs it.
 
-**How the user wants this work done (2026-11-09):** one chapter at a time, each with the full Core HR system (B-164: research brief, open long list, then the page) and a session's whole effort. UI choices drawn, labels not paragraphs, per situation, not universal; decide the obvious yourself; offer combinations where options aren't exclusive; judge visual rules on full-size screens of the target design, never thumbnails of today's layouts. Redesigns make bold structural decisions from the surface's job, not restyled card columns. Feel: warm and friendly like BambooHR and Upwork, modern and professional. Memories: `ui-decisions-shown-per-situation`, `redesigns-bold-not-tweaks`, `design-friendly-not-enterprise`. Superseded pages, don't ask the user to answer them: `plans/B-390-scope.html`, `plans/B-397-foundation.html`.
+**How the user wants this work done (2026-11-13):** fast but clean; bugs before redraws; a redraw is an explorer first (drawn variants, labels not paragraphs, the user picks), then a build session that ports it literally. Feel: warm and friendly like BambooHR and Upwork. Every action says what happens before the click and confirms after (memory `actions-say-what-happens`). Memories: `ui-decisions-shown-per-situation`, `redesigns-bold-not-tweaks`, `port-accepted-drawings-closely`. D-95 holds everywhere.
 
-| # | Session | Board items | Effort | Notes |
-|---|---|---|---|---|
-| 5+ | Performance's slices 5–13 | B-405–B-411, B-392, B-389, B-418 (edges) | per slice | One row of `plans/B-390-slices.md` per session, in its order; Insights is slice 13. Slice 1 (the frame, B-422) and slice 2 (the year's domain: `GET cycles/{id}/year`, `GET|POST cycles/{id}/move-on`, `POST cycles/{id}/nudges`, `CyclePhase.ResultsOut`) built 2026-11-10; slice 3 (the Year page at `/`, `components/year/`) built 2026-11-10, In review. Slice 4 (Goals' domain) built 2026-11-10. Slice 5 part 1 (the goal panel and dialog) built 2026-11-10. Slice 5 (Goals) accepted 2026-11-11 with its redraw (D-96 to D-100). Slice 6 (1:1s, B-424) built 2026-11-11, In review. Slice 7 (Feedback and praise, B-428) accepted 2026-11-11. Slice 8 (Reviews, B-431) built 2026-11-11, In review. Slice 9 (Calibration and release, B-432) accepted 2026-11-12 with its redraw (B-433). Slice 10 (Across Fusion, B-434) built 2026-11-12, In review. Slice 11 (Competencies by job, B-438) accepted 2026-11-12 with its ladder redraw (B-439). Slice 12 (setting up a year, B-440) built 2026-11-12, In review; its sidebar's foot split off as B-442 (Ready). B-446 (the year's section redrawn, D-102) built 2026-11-12, In review with B-440. Slice 13 (Insights, B-447) built 2026-11-12, In review; leftovers B-448. The `midyear` preset builds again (rebuilt 2026-11-11 as `midyear-11` after its script caught up with slices 2 and 6 and the roles model). Port the explorers' drawings literally (memory `port-accepted-drawings-closely`); every slice holds D-95 (no brown in light mode, sections' edges lined up). |
+| # | Session | Board items | Notes |
+|---|---|---|---|
+| 1 | Walk-through bugs | B-463, B-461, B-457, B-452, B-451's double-open | Typing in a review answer closes the field; a failed AI draft shows nothing (find the cause, show it with a retry); the measure ruler's hover shows nothing; Update progress faded in light mode; the goal drawer and the update dialog open together. Tests that prove each; no screens. |
+| 2 | Shared pieces | B-456, B-462, B-449 | The floating status pill in `@repo/ds` (then the review's Saved, Home's approve, the "changed since" toast replaced); one spinner (the review pages' one) replacing every other; the theme switch in your menu. |
+| 3 | The review page made clear | B-454, B-455, B-458, B-459, B-460, B-464 | Where each part comes from, the draft marked as AI, every goal's same facts, grades as share or level, an icon per kind in the year column, the peers strip saying what it does and lined up. One screen of the review after. |
+| 4 | Explorer: the redraws | B-466 (+B-467, B-468 scoped from Lattice, Culture Amp, BambooHR, Workday), B-453, B-451, B-450 | One artifact, a chapter per surface, variants drawn on real Carthage data; B-468 is a wow moment for the demo. The user picks; answers snapshot to `plans/*.answers.json`, decisions D-103 on. |
+| 5–8 | Build each picked redraw | B-466, B-453, B-451, B-450 | One per session, in the user's order; one screen per surface compared with the drawing. |
+| 9 | Home rework | B-378 | Research brief, long list, explorer (memory `scope-with-depth-ladders`), then build. |
+| 10 | The demo in two acts | B-395 | `lateyear` preset + "meanwhile" script, rehearsal, screens; shows a little of the HR side (questions, competencies, scale). Near the jury date. |
+
+Still In review from the slices (the user's verdicts land as Ready children): B-405, B-424, B-431, B-434, B-440/B-446, B-447. Ready leftovers: B-442, B-443, B-444, B-448.
